@@ -3,6 +3,7 @@
  */
 import { CurrentObject, FlipEventArgs, FrameType, ImageEditor, Point, ResizeEventArgs, RotateEventArgs, SelectionPoint, ShapeChangeEventArgs, StrokeSettings, TextSettings, ToolbarEventArgs, ShapeSettings, BeforeSaveEventArgs } from '../src/image-editor/index';
 import { createElement, remove, isNullOrUndefined, extend } from '@syncfusion/ej2-base';
+import { NumericTextBox } from '@syncfusion/ej2-inputs';
 
 async function urlToFile(url: ImageData, filename: string, mimeType: string) {
     const canvas = document.createElement('canvas');
@@ -9367,6 +9368,66 @@ describe('ImageEditor', () => {
                 done();
             }, 100);
         });
+        it('Toolbar Coverage Improvement3', (done) => {
+            const imageEditor = new ImageEditor({
+                height: '450px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.notify('toolbar', { prop: 'cancelPan' });
+                const zoomInEvent = new MouseEvent('mousedown');
+                imageEditor.notify('toolbar', { prop: 'zoomInBtnMouseDownHandler', value: { event: zoomInEvent } });
+                const zoomOutEvent = new MouseEvent('mousedown');
+                imageEditor.notify('toolbar', { prop: 'zoomOutBtnMouseDownHandler', value: { event: zoomOutEvent } });
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                imageEditor.notify('toolbar', { prop: 'drawDashedLine', value: { context: context } });
+                const saveBtn: any = document.querySelectorAll('#image-editor_save')[0];
+                saveBtn.click();
+                imageEditor.notify('toolbar', { prop: 'saveDialogClosed', value: { id: 'image-editor' }});
+                const itemsToTest = ['rotateLeft', 'rotateRight', 'horizontalFlip', 'verticalFlip', 'arrowStart', 'arrowEnd', 'fontColor'];
+                itemsToTest.forEach((item) => {
+                    imageEditor.notify('toolbar', { prop: 'getIndex', value: { item: item }});
+                });
+                const rectRadiusTests = [0, 2, 4, 6, 8, 10];
+                rectRadiusTests.forEach(radius => {
+                    imageEditor.notify('toolbar', { prop: 'getRectRadius', value: { text: radius.toString() }});
+                });
+                imageEditor.currObjType.isFiltered = true;
+                imageEditor.notify('toolbar', { prop: 'applyPreviewFilter' });
+                const typesToTest = ['transparency', 'straighten'];
+                typesToTest.forEach((type) => {
+                    imageEditor.notify('toolbar', { prop: 'renderSlider', value: { type: type, isSelect: true }});
+                });
+                imageEditor.drawingShape = 'rectangle';
+                imageEditor.notify('toolbar', { prop: 'zoomInBtnClickHandler', value: { e: new MouseEvent('click') }});
+                imageEditor.notify('toolbar', { prop: 'zoomOutBtnClickHandler', value: { e: new MouseEvent('click') }});
+                imageEditor.toolbar = ['Brightness', 'Contrast', 'Hue', 'Saturation', 'Exposure', 'Opacity', 'Blur'];
+                imageEditor.notify('toolbar', { prop: 'getAdjustmentToolbarItem' });
+                imageEditor.toolbar = ['Default', 'Chrome', 'Cold', 'Warm'];
+                imageEditor.notify('toolbar', { prop: 'getFilterToolbarItem' });
+                imageEditor.toolbar = ['CustomSelection', 'CircleSelection', 'SquareSelection', 'RatioSelection'];
+                imageEditor.notify('toolbar', { prop: 'renderCropBtn' });
+                const id = imageEditor.element.id;
+                const aspectRatioWidth = document.createElement('input');
+                aspectRatioWidth.id = id + '_resizeWidth';
+                imageEditor.element.appendChild(aspectRatioWidth);
+                const widthNumeric = new NumericTextBox({ value: 500, format: 'n0' });
+                widthNumeric.appendTo('#' + id + '_resizeWidth');
+                const aspectRatioHeight = document.createElement('input');
+                aspectRatioHeight.id = id + '_resizeHeight';
+                imageEditor.element.appendChild(aspectRatioHeight);
+                const heightNumeric = new NumericTextBox({ value: 500, format: 'n0' });
+                heightNumeric.appendTo('#' + id + '_resizeHeight');
+                const icon = document.createElement('span');
+                icon.id = id + '_aspectratio';
+                imageEditor.element.appendChild(icon);
+                imageEditor.notify('toolbar', { prop: 'widthAspectRatio', value: { e: new MouseEvent('click') }});
+                imageEditor.notify('toolbar', { prop: 'heightAspectRatio', value: { e: new MouseEvent('click') }});
+                imageEditor.reset();
+                done();
+            }, 100);
+        });
 
         it('Redact Coverage Improvement2', (done) => {
             imageEditor = new ImageEditor({
@@ -9470,9 +9531,67 @@ describe('ImageEditor', () => {
                 imageEditor.notify('selection', { prop: 'drawMaskCircle', value: {x: 0, y: 0} });
                 imageEditor.notify('selection', { prop: 'isValueUpdated' });
                 imageEditor.notify('selection', { prop: 'getDistance', value: {x: 0, y: 0} });
+                const touchEvent = new TouchEvent('touchstart', {
+                    touches: [new Touch({ identifier: 0, target: imageEditor.lowerCanvas, clientX: 10, clientY: 10 })]
+                });
+                imageEditor.notify('selection', { prop: 'touchStartHandler', value: { e: touchEvent } });
+                imageEditor.notify('selection', { prop: 'isInside', value: { x: 50, y: 50, z1: 0, z2: 0, z3: 100, z4: 100 }});
+                const ctx = imageEditor.lowerCanvas.getContext('2d');
+                imageEditor.notify('selection', { prop: 'rgbToHex', value: { r: 128, g: 128, b: 128, a: 0.5 } });
+                imageEditor.notify('selection', { prop: 'redact', value: { shape: 'rectangle' } });
+                imageEditor.notify('selection', { prop: 'padLeft', value: { value: '1', length: 2, padChar: '0' } });
+                const event = new MouseEvent('mousedown', { view: window, bubbles: true, cancelable: true, clientX: 50, clientY: 50 });
+                imageEditor.notify('selection', { prop: 'setTimer', value: { e: event } });
+                const touchList = [{ pageX: 100, pageY: 100 }, { pageX: 200, pageY: 200 }];
+                imageEditor.notify('selection', { prop: 'targetTouches', value: { touches: touchList} });
+                const start = [{ x: 0, y: 0 }, { x: 100, y: 100 }];
+                const end = [{ x: 0, y: 0 }, { x: 200, y: 200 }];
+                imageEditor.notify('selection', { prop: 'calculateScale', value: { startTouches: start, endTouches: end } });
+                imageEditor.isKBDNavigation = true;
+                let nonAspectRatioButton = document.createElement('button');
+                nonAspectRatioButton.id = imageEditor.element.id + '_nonaspectratio';
+                document.body.appendChild(nonAspectRatioButton);
+                imageEditor.notify('selection', { prop: 'focusRatioBtn' });
+                setTimeout(() => {
+                    document.body.removeChild(nonAspectRatioButton);
+                },50);
                 imageEditor.reset();
                 done();
             },100);
+        });
+        it('Selection Coverage Improvement4', (done) => {
+            imageEditor = new ImageEditor({
+                height: '450px'
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                const saveArgs = { fileName: 'test', fileType: 'jpeg', cancel: false };
+                const saveEvent = new KeyboardEvent('keydown', { ctrlKey: true, key: 's' });
+                imageEditor.notify('selection', { prop: 'beforeSaveEvent', value: { args: saveArgs, e: saveEvent } });
+                imageEditor.notify('selection', { prop: 'focusRatioBtn' });
+                imageEditor.notify('selection', { prop: 'getImagePoints', value: { x: 50, y: 50 } });
+                const actPoint = { startX: 0, startY: 0, endX: 100, endY: 100, width: 100, height: 100 };
+                const tempActiveObj = { activePoint: { startX: 10, startY: 10, endX: 110, endY: 110, width: 100, height: 100 }};
+                imageEditor.notify('selection', { prop: 'revertPoints', value: { actPoint: actPoint, tempActiveObj: tempActiveObj }});
+                imageEditor.notify('selection', { prop: 'performNWResize', value: { x: 20, y: 20, tempActiveObj: tempActiveObj, actPoint: actPoint }});
+                imageEditor.notify('selection', { prop: 'performSEResize', value: { x: 50, y: 50, tempActiveObj: tempActiveObj, actPoint: actPoint }});
+                imageEditor.notify('selection', { prop: 'isMouseOutsideImg', value: { x: 400, y: 400 }});
+                const keyboardCropEvent = new KeyboardEvent('keydown', { key: 'Enter' });
+                Object.defineProperty(keyboardCropEvent, 'target', { value: imageEditor.element });
+                imageEditor.notify('selection', { prop: 'isKeyBoardCrop', value: { e: keyboardCropEvent }});
+                imageEditor.isResize = true;
+                imageEditor.notify('selection', { prop: 'performEnterAction', value: { e: keyboardCropEvent }});
+                imageEditor.isKBDNavigation = true;
+                let aspectRatioButton = document.createElement('button');
+                aspectRatioButton.id = imageEditor.element.id + '_aspectratio';
+                document.body.appendChild(aspectRatioButton);
+                imageEditor.notify('selection', { prop: 'focusRatioBtn' });
+                setTimeout(() => {
+                    document.body.removeChild(aspectRatioButton);
+                },50);
+                imageEditor.reset();
+                done();
+            }, 100);
         });
         it('Filter toolbar opened while opening redact toolbar', (done) => {
             imageEditor = new ImageEditor({
@@ -9776,7 +9895,7 @@ describe('ImageEditor', () => {
             }, 100);
         });
 
-        it('blob url passing in open method', (done) => {
+       it('blob url passing in open method', (done) => {
             imageEditor = new ImageEditor({
                height : '450px',
             }, '#image-editor');

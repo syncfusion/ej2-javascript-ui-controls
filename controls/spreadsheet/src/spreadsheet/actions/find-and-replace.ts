@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { findDlg, locale, dialog, gotoDlg, findHandler, focus, getUpdateUsingRaf, activeSheetChanged, removeElements } from '../common/index';
+import { findDlg, locale, dialog, gotoDlg, findHandler, focus, getUpdateUsingRaf, activeSheetChanged, removeElements, finiteAlert } from '../common/index';
 import { DialogBeforeOpenEventArgs } from '../common/index';
 import { L10n, getComponent, isNullOrUndefined, closest, select, EventHandler, detach, Browser } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
@@ -314,8 +314,8 @@ export class FindAndReplace {
                     } else {
                         dialogInst.dialogInstance.content = this.findandreplaceContent();
                         dialogInst.dialogInstance.dataBind();
+                        focus(this.parent.element);
                     }
-                    focus(this.parent.element);
                 },
                 buttons: [{
                     buttonModel: { content: l10n.getConstant('FindPreviousBtn'), isPrimary: true, cssClass: 'e-btn-findPrevious',
@@ -360,8 +360,7 @@ export class FindAndReplace {
                         focus(findInput);
                     });
                 },
-                beforeClose: this.dialogBeforeClose.bind(this),
-                close: (): void => dialogInst.hide()
+                beforeClose: this.dialogBeforeClose.bind(this)
             };
             dialogInst.show(dlg);
         } else {
@@ -424,8 +423,8 @@ export class FindAndReplace {
                     } else {
                         dialogInst.dialogInstance.content = this.GotoContent();
                         dialogInst.dialogInstance.dataBind();
+                        focus(this.parent.element);
                     }
-                    focus(this.parent.element);
                 },
                 buttons: [{
                     buttonModel: {
@@ -548,8 +547,12 @@ export class FindAndReplace {
                 isNotAlertShown = false;
             } else {
                 const indexes: number[] = getSwapRange(getRangeIndexes(addr));
+                const sheet: SheetModel = this.parent.getActiveSheet();
                 if (indexes[2] >= 1048576 || indexes[3] >= 16384) {
                     this.gotoAlert();
+                    isNotAlertShown = false;
+                } else if (this.parent.scrollSettings.isFinite && (sheet.rowCount < indexes[2] + 1 || sheet.colCount < indexes[3] + 1)) {
+                    this.parent.notify(finiteAlert, null);
                     isNotAlertShown = false;
                 } else {
                     this.parent.goTo(gotoAddress);
@@ -583,6 +586,10 @@ export class FindAndReplace {
     private replaceAllDialog(options: { [key: string]: number | string }): void {
         if (this.parent.element.querySelector('.e-find-alert-span')) {
             this.parent.element.querySelector('.e-find-alert-span').remove();
+        }
+        const replaceAlert: HTMLElement = this.parent.element.querySelector('.e-replace-alert-span');
+        if (replaceAlert) {
+            replaceAlert.remove();
         }
         const l10n: L10n = (this.parent.serviceLocator.getService(locale));
         const replaceSpan: HTMLElement = this.parent.createElement('span', { className: 'e-replace-alert-span' });

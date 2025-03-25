@@ -136,7 +136,7 @@ describe('TreeGrid Infinite Scroll', () => {
         });
         it('initial render', () => {
             expect(treegrid.getRows().length).toBe(150);
-            expect(parseInt(treegrid.getRows()[0].getAttribute('data-rowindex'), 10)).toBe(0);
+            expect(parseInt(treegrid.getRows()[0].getAttribute('aria-rowindex'), 10) - 1).toBe(0);
             expect(treegrid.getCurrentViewRecords().length).toBe(150);
             expect(treegrid.grid.infiniteScrollSettings.enableCache).toBeFalsy();
             expect(treegrid.grid.infiniteScrollSettings.initialBlocks).toBe(3);
@@ -160,7 +160,7 @@ describe('TreeGrid Infinite Scroll', () => {
         });
         it('scroll bottom', () => {
             expect(treegrid.getCurrentViewRecords().length).toBe(200);
-            expect(parseInt(treegrid.getRows()[150].getAttribute('data-rowindex'), 10)).toBe(150);
+            expect(parseInt(treegrid.getRows()[150].getAttribute('aria-rowindex'), 10) - 1).toBe(150);
             expect(treegrid.getRows().length).toBe(200);
             expect(Object.keys((treegrid.grid.infiniteScrollModule as any).infiniteCurrentViewData).length).toBe(treegrid.infiniteScrollSettings.initialBlocks + 1);
         });

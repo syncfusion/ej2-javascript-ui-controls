@@ -5,6 +5,13 @@
 }
 
 @include export-module('multicolumn-combobox-layout') {
+  .e-multicolumn-list-icon .e-spinner-pane .e-spinner-inner svg {
+    /* stylelint-disable declaration-no-important */
+    height: 20px !important;
+    width: 20px !important;
+    transform-origin: 10px 10px 10px !important;
+    /* stylelint-enable declaration-no-important */
+  }
   .e-multicolumn-grid tr.e-groupcaptionrow {
     position: sticky;
     top: 0;
@@ -128,7 +135,8 @@
     overflow: auto !important; /* stylelint-disable-line declaration-no-important */
   }
 
-  .e-multicolumn-container .e-input-group-icon.e-multicolumn-list-icon.e-ddl-disable-icon {
+  .e-multicolumn-container .e-input-group-icon.e-multicolumn-list-icon.e-ddl-disable-icon,
+  .e-multicolumn-list.e-input-group .e-input-group-icon {
     position: relative;
   }
 

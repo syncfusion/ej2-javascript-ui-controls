@@ -88,6 +88,11 @@
   
       .e-ribbon-skeleton {
         border-radius: 4px;
+
+        @if ($skin-name == 'highcontrast-light' or $skin-name == 'highcontrast') {
+          border-radius: 0;
+          border: 1px solid;
+        }
       }
   
       .e-ribbon-overlay {
@@ -146,6 +151,7 @@
         height: $ribbon-help-template-height;
         padding-right: $ribbon-help-template-padding;
         border-bottom: $ribbon-help-template-border;
+        z-index: 1;
       }
 
       .e-tab-header {
@@ -508,6 +514,11 @@
         padding-left: 30px;
       }
     }
+    .e-ribbon-content-height {
+      .e-ribbon-collection {
+        max-height: $ribbon-group-content-height;
+      }
+    }
   }
 
   .e-ribbon-backstage-popup {
@@ -552,6 +563,16 @@
         &:focus:hover {
           @include ribbon-backstage-border($ribbon-backstage-btn-focus-border);
         }
+        @if ($skin-name == 'tailwind3' or $theme-name == 'tailwind3-dark' or $skin-name == 'tailwind' or $theme-name == 'tailwind-dark') {
+          @include ribbon-backstage-border(2px);
+        }
+        &:focus,
+        &:hover,
+        &:focus:hover {
+          @if ($skin-name == 'tailwind3' or $theme-name == 'tailwind3-dark' or $skin-name == 'tailwind' or $theme-name == 'tailwind-dark') {
+            @include ribbon-backstage-border(2px);
+          }
+        }
       }
 
       .e-ribbon-backstage-menu {
@@ -583,7 +604,17 @@
             &.e-selected:focus {
               @include ribbon-backstage-border($ribbon-backstage-menu-hover-border);
             }
-
+            @if ($skin-name == 'tailwind3' or $theme-name == 'tailwind3-dark' or $skin-name == 'tailwind' or $theme-name == 'tailwind-dark') {
+              @include ribbon-backstage-border(2px);
+            }
+            &:focus,
+            &.e-selected,
+            &:hover,
+            &.e-selected:focus {
+              @if ($skin-name == 'tailwind3' or $theme-name == 'tailwind3-dark' or $skin-name == 'tailwind' or $theme-name == 'tailwind-dark') {
+                @include ribbon-backstage-border(2px);
+              }
+            }
             .e-menu-icon {
               @include ribbon-font-props($ribbon-backstage-menu-icon-font-size, $ribbon-backstage-menu-icon-line-height);
               @include ribbon-items-icon-images($ribbon-backstage-menu-icon-font-size);
@@ -630,7 +661,6 @@
       input.e-input {
         @include ribbon-font-styles($ribbon-input-size, $ribbon-input-weight, $ribbon-input-height);
         @include ribbon-items-height(auto, auto);
-        padding: $ribbon-input-padding;
       }
 
       &.e-control-wrapper {
@@ -744,17 +774,18 @@
       &.e-hidden {
         display: none;
       }
+      &:not(:has(.e-ribbon-template)) {
+        .e-btn {
+          border: $ribbon-items-border;
+          border-radius: $ribbon-items-border-radius;
+          font-weight: $ribbon-items-font-weight;
+          font-size: $ribbon-items-btn-size;
+          text-transform: none;
+          box-shadow: none;
 
-      .e-btn {
-        border: $ribbon-items-border;
-        border-radius: $ribbon-items-border-radius;
-        font-weight: $ribbon-items-font-weight;
-        font-size: $ribbon-items-btn-size;
-        text-transform: none;
-        box-shadow: none;
-
-        &:focus {
-          outline: none;
+          &:focus {
+            outline: none;
+          }
         }
       }
 
@@ -763,7 +794,7 @@
         border: $ribbon-items-border;
       }
 
-      &.e-ribbon-large-item {
+      &.e-ribbon-large-item:not(:has(.e-ribbon-template)) {
         .e-btn {
           @include ribbon-items-height(100%, inherit);
           @include ribbon-display(flex, column);
@@ -816,7 +847,7 @@
       padding: $ribbon-group-overflow-padding;
     }
 
-    .e-ribbon-item {
+    .e-ribbon-item:not(:has(.e-ribbon-template)) {
       min-height: 33%;
       padding: $ribbon-items-padding;
 
@@ -842,6 +873,7 @@
 
         .e-label {
           font-size: $ribbon-items-checkbox-size;
+          font-weight: $ribbon-text-font-weight;
         }
       }
 
@@ -959,12 +991,17 @@
       }
     }
 
-    &:not(.e-rtl) .e-ribbon-item {
+    &:not(.e-rtl) .e-ribbon-item:not(:has(.e-ribbon-template)) {
       @include ribbon-item-padding($ribbon-items-btn-padding, 0 2px 0 0);
     }
 
-    &.e-rtl .e-ribbon-item {
+    &.e-rtl .e-ribbon-item:not(:has(.e-ribbon-template)) {
       @include ribbon-item-padding($ribbon-items-btn-rtl-padding, 0 0 0 2px);
+
+      .e-ribbon-gallery-button {
+        border-width: 0 1px 0 0;
+        border-radius: 4px 0 0 4px;
+      }
     }
   }
 
@@ -984,7 +1021,7 @@
         border: 0;
       }
       @if ($skin-name == 'fluent2') {
-        .e-ribbon-item.e-ribbon-medium-item .e-dropdown-btn.e-btn {
+        .e-ribbon-item.e-ribbon-medium-item:not(:has(.e-ribbon-template)) .e-dropdown-btn.e-btn {
           padding: 0;
         }
       }
@@ -1042,7 +1079,7 @@
         .e-ribbon-template {
           margin: $ribbon-overflow-wrapper-item-margin;
         }
-        .e-btn .e-btn-icon {
+        &:not(:has(.e-ribbon-template)) .e-btn .e-btn-icon {
           font-size: $ribbon-items-btn-icon-size;
         }
       }
@@ -1056,32 +1093,33 @@
         padding: $ribbon-overflow-item-padding;
         width: 100%;
         height: $ribbon-medium-item-height;
-
-        .e-btn .e-btn-icon {
-          &:not(.e-caret) {
-            min-width: $ribbon-overflow-items-min-width-height;
-            min-height: $ribbon-overflow-items-min-width-height;
+        &:not(:has(.e-ribbon-template)) {
+          .e-btn .e-btn-icon {
+            &:not(.e-caret) {
+              min-width: $ribbon-overflow-items-min-width-height;
+              min-height: $ribbon-overflow-items-min-width-height;
+            }
           }
-        }
 
-        .e-btn .e-btn-icon.e-icon-left {
-          margin: 0;
-        }
+          .e-btn .e-btn-icon.e-icon-left {
+            margin: 0;
+          }
 
-        > .e-split-btn-wrapper .e-btn,
-        > .e-btn {
-          line-height: $ribbon-overflow-item-btn-height;
-          overflow: hidden;
-        }
+          > .e-split-btn-wrapper .e-btn,
+          > .e-btn {
+            line-height: $ribbon-overflow-item-btn-height;
+            overflow: hidden;
+          }
 
-        >.e-split-btn-wrapper {
-          width: inherit;
-        }
+          >.e-split-btn-wrapper {
+            width: inherit;
+          }
 
-        >.e-split-btn-wrapper .e-split-btn,
-        >.e-btn {
-          width: 100%;
-          justify-content: flex-start;
+          >.e-split-btn-wrapper .e-split-btn,
+          >.e-btn {
+            width: 100%;
+            justify-content: flex-start;
+          }
         }
       }
 
@@ -1094,7 +1132,7 @@
   }
 
   .e-ribbon-group-overflow-ddb:not(.e-rtl) {
-    .e-ribbon-overflow-target .e-ribbon-item {
+    .e-ribbon-overflow-target .e-ribbon-item:not(:has(.e-ribbon-template)) {
       @if ($skin-name == 'fluent2') {
         &.e-ribbon-medium-item .e-btn {
           &:not(.e-icon-btn, .e-dropdown-btn) {
@@ -1142,7 +1180,7 @@
       .e-ribbon-overflow-header {
         padding: $ribbon-rtl-overflow-header-padding;
       }
-      .e-ribbon-item {
+      .e-ribbon-item:not(:has(.e-ribbon-template)) {
         @if ($skin-name == 'fluent2') {
           &.e-ribbon-medium-item .e-btn {
             &:not(.e-icon-btn, .e-dropdown-btn) {
@@ -1182,7 +1220,7 @@
           }
         }
       }
-      .e-ribbon-item > .e-checkbox-wrapper {
+      .e-ribbon-item:not(:has(.e-ribbon-template)) > .e-checkbox-wrapper {
         margin: $ribbon-rtl-checkbox-margin;
       }
     }
@@ -1360,23 +1398,27 @@
   .e-ribbon-menu {
     display: block;
 
-    &.e-menu-wrapper ul.e-vertical,
-    &.e-menu-wrapper ul.e-ul {
-      &.e-menu {
-        border: $ribbon-menu-border;
-        border-radius: $ribbon-menu-border-radius;
-      }
-
-      .e-menu-item {
-        border-radius: unset;
-
-        .e-menu-icon {
-          @include ribbon-items-icon-images($ribbon-file-menu-min-width-height);
-          width: auto;
+    &.e-menu-wrapper,
+    &.e-menu-container {
+      ul.e-vertical,
+      ul.e-ul {
+        &.e-menu {
+          padding: $filemenu-popup-padding;
+          border: $ribbon-menu-border;
+          border-radius: $ribbon-menu-border-radius;
         }
-
-        &.e-blankicon {
-          padding-left: $ribbon-menu-blank-icon-padding !important; /* stylelint-disable-line declaration-no-important */
+  
+        .e-menu-item {
+          border-radius: unset;
+          font-weight: $ribbon-text-font-weight;
+          .e-menu-icon {
+            @include ribbon-items-icon-images($ribbon-file-menu-min-width-height);
+            width: auto;
+          }
+  
+          &.e-blankicon {
+            padding-left: $ribbon-menu-blank-icon-padding !important; /* stylelint-disable-line declaration-no-important */
+          }
         }
       }
     }

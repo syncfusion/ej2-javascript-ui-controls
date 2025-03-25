@@ -12,7 +12,7 @@ export class WorkbookImage {
         this.addEventListener();
     }
 
-    private setImage(args: { options: ImageModel[], range: string }): void {
+    private setImage(args: { options: ImageModel[], range: string, isPositionChanged?: boolean, isElementRemoved?: boolean }): boolean {
         const lastIndex: number = args.range ? args.range.lastIndexOf('!') : -1;
         const imgRange: string = args.range ? (lastIndex > -1) ? args.range.substring(lastIndex + 1) : args.range
             : this.parent.getActiveSheet().selectedRange;
@@ -25,11 +25,27 @@ export class WorkbookImage {
         const imgData: ImageModel[] = args.options;
         if (cell && cell.image) {
             oldImgData = cell.image;
-            for (let i: number = 0; i < imgData.length; i++) {
-                oldImgData.push(imgData[i as number]);
+            if (args.isPositionChanged) {
+                for (let i: number = 0; i < oldImgData.length; i++) {
+                    for (let j: number = 0; j < imgData.length; j++) {
+                        if (oldImgData[i as number].id === imgData[j as number].id) {
+                            oldImgData[i as number] = imgData[j as number];
+                            if (document.getElementById(imgData[j as number].id)) {
+                                args.isElementRemoved = true;
+                                document.getElementById(imgData[j as number].id).remove();
+                            }
+                        }
+                    }
+                }
+            } else {
+                oldImgData = cell.image;
+                for (let i: number = 0; i < imgData.length; i++) {
+                    oldImgData.push(imgData[i as number]);
+                }
             }
         }
-        setCell(indexes[0], indexes[1], sheet, { image: (cell && cell.image) ? oldImgData : imgData }, true);
+        setCell(indexes[0], indexes[1], sheet, { image: (cell && cell.image) ? oldImgData : imgData }, true, true);
+        return args.isElementRemoved;
     }
 
     /**

@@ -65,8 +65,12 @@
   .e-float-input.e-control-wrapper textarea[disabled],
   .e-float-input.e-disabled,
   .e-float-input.e-control-wrapper.e-disabled  {
-    @if ($input-skin-name != 'bootstrap5' and $input-skin-name != 'bootstrap5.3') {
+    @if ($input-skin-name != 'bootstrap5' and $input-skin-name != 'bootstrap5.3' and $input-skin-name != 'tailwind3') {
       -webkit-text-fill-color: $input-disable-font-color;
+    }
+    @if $input-skin-name == 'tailwind3'
+    {
+      -webkit-text-fill-color: $content-text-color-disabled;
     }
     background: $input-disable-bg-color;
     color: $input-disable-font-color;

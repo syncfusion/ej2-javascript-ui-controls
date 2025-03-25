@@ -1,7 +1,7 @@
 import { Spreadsheet } from '../base/index';
-import { Dialog as DialogComponent, DialogModel } from '@syncfusion/ej2-popups';
+import { Dialog as DialogComponent, DialogModel, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { extend, remove, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { locale } from '../common/index';
+import { focus, locale } from '../common/index';
 
 /**
  * Dialog Service.
@@ -31,6 +31,7 @@ export class Dialog {
     public show(dialogModel: DialogModel, cancelBtn?: boolean): void {
         let btnContent: string;
         cancelBtn = isNullOrUndefined(cancelBtn) ? true : false;
+        const beforeOpenHandler: Function = dialogModel.beforeOpen || null;
         const closeHandler: Function = dialogModel.close || null;
         const model: DialogModel = {
             header: 'Spreadsheet',
@@ -38,6 +39,17 @@ export class Dialog {
             target: this.parent.element,
             buttons: [],
             allowDragging: true
+        };
+        dialogModel.beforeOpen = (args: BeforeOpenEventArgs) => {
+            if (beforeOpenHandler) {
+                beforeOpenHandler(args);
+                if (args.cancel) {
+                    this.hide(true);
+                    if (!(args as { preventFocus?: boolean }).preventFocus) {
+                        focus(this.parent.element);
+                    }
+                }
+            }
         };
         dialogModel.close = () => {
             this.destroyDialog();

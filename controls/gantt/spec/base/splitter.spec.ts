@@ -579,7 +579,7 @@ describe('Splitter resize with large separator size', () => {
         triggerMouseEvent(splitterIcon, 'mousedown');
         triggerMouseEvent(splitterIcon, 'mousemove', 100, 0);
         triggerMouseEvent(splitterIcon, 'mouseup');
-      //  expect(ganttObj.splitterModule.splitterObject.paneSettings[1].size).toBe('579px')
+        // expect(ganttObj.splitterModule.splitterObject.paneSettings[1].size).toBe('530px')
     });
 
     afterAll(() => {

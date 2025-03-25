@@ -1,15 +1,18 @@
+@use 'sass:color';
+@use 'sass:meta';
+@use 'sass:list';
 @import '../common/mixin.scss';
 
 $brand-primary: #0070f0 !default;
-$brand-primary-darken-10: darken($brand-primary, 10%) !default;
-$brand-primary-darken-15: darken($brand-primary, 20%) !default;
-$brand-primary-darken-25: darken($brand-primary, 30%) !default;
-$brand-primary-darken-35: darken($brand-primary, 40%) !default;
-$brand-primary-lighten-10: lighten($brand-primary, 10%) !default;
-$brand-primary-lighten-15: lighten($brand-primary, 15%) !default;
-$brand-primary-lighten-20: lighten($brand-primary, 20%) !default;
-$brand-primary-lighten-30: lighten($brand-primary, 30%) !default;
-$brand-primary-lighten-40: lighten($brand-primary, 40%) !default;
+$brand-primary-darken-10: color.adjust($brand-primary, $lightness: -10%) !default;
+$brand-primary-darken-15: color.adjust($brand-primary, $lightness: -20%) !default;
+$brand-primary-darken-25: color.adjust($brand-primary, $lightness: -30%) !default;
+$brand-primary-darken-35: color.adjust($brand-primary, $lightness: -40%) !default;
+$brand-primary-lighten-10: color.adjust($brand-primary, $lightness: 10%) !default;
+$brand-primary-lighten-15: color.adjust($brand-primary, $lightness: 15%) !default;
+$brand-primary-lighten-20: color.adjust($brand-primary, $lightness: 20%) !default;
+$brand-primary-lighten-30: color.adjust($brand-primary, $lightness: 30%) !default;
+$brand-primary-lighten-40: color.adjust($brand-primary, $lightness: 40%) !default;
 $brand-primary-font: #fff !default;
 $gray-base: #1a1a1a !default;
 $gray-darker: #131313 !default;
@@ -81,17 +84,17 @@ $msg-close-icon-color: $grey-cc !default;
 $msg-close-icon-color-alt1: $grey-cc !default;
 $msg-close-icon-color-alt2: $brand-primary-font !default;
 
-$msg-danger-color: lighten($brand-danger, 30%) !default;
-$msg-danger-bg-color: darken($brand-danger, 25%) !default;
-$msg-danger-border-color: darken($brand-danger, 22%) !default;
-$msg-danger-color-alt1: lighten($brand-danger, 20%) !default;
+$msg-danger-color: color.adjust($brand-danger, $lightness: 30%) !default;
+$msg-danger-bg-color: color.adjust($brand-danger, $lightness: -25%) !default;
+$msg-danger-border-color: color.adjust($brand-danger, $lightness: -22%) !default;
+$msg-danger-color-alt1: color.adjust($brand-danger, $lightness: 20%) !default;
 $msg-danger-bg-color-alt1: transparent !default;
 $msg-danger-border-color-alt1: $brand-danger !default;
 $msg-danger-color-alt2: $gray-base !default;
 $msg-danger-bg-color-alt2: $brand-danger !default;
 $msg-danger-border-color-alt2: $brand-danger !default;
 
-$msg-danger-icon-color: lighten($brand-danger, 30%) !default;
+$msg-danger-icon-color: color.adjust($brand-danger, $lightness: 30%) !default;
 $msg-danger-icon-color-alt1: $brand-danger !default;
 $msg-danger-icon-color-alt2: $gray-base !default;
 
@@ -99,9 +102,9 @@ $msg-danger-close-icon-color: $grey-cc !default;
 $msg-danger-close-icon-color-alt1: $grey-cc !default;
 $msg-danger-close-icon-color-alt2: $gray-base !default;
 
-$msg-success-color: lighten($brand-success, 20%) !default;
-$msg-success-bg-color: darken($brand-success, 25%) !default;
-$msg-success-border-color: darken($brand-success, 20%) !default;
+$msg-success-color: color.adjust($brand-success, $lightness: 20%) !default;
+$msg-success-bg-color: color.adjust($brand-success, $lightness: -25%) !default;
+$msg-success-border-color: color.adjust($brand-success, $lightness: -20%) !default;
 $msg-success-color-alt1: $brand-success !default;
 $msg-success-bg-color-alt1: transparent !default;
 $msg-success-border-color-alt1: $brand-success !default;
@@ -109,7 +112,7 @@ $msg-success-color-alt2: $gray-base !default;
 $msg-success-bg-color-alt2: $brand-success !default;
 $msg-success-border-color-alt2: $brand-success !default;
 
-$msg-success-icon-color: lighten($brand-success, 20%) !default;
+$msg-success-icon-color: color.adjust($brand-success, $lightness: 20%) !default;
 $msg-success-icon-color-alt1: $brand-success !default;
 $msg-success-icon-color-alt2: $gray-base !default;
 
@@ -117,9 +120,9 @@ $msg-success-close-icon-color: $grey-cc !default;
 $msg-success-close-icon-color-alt1: $grey-cc !default;
 $msg-success-close-icon-color-alt2: $gray-base !default;
 
-$msg-warning-color: lighten($brand-warning, 20%) !default;
-$msg-warning-bg-color: darken($brand-warning, 50%) !default;
-$msg-warning-border-color: darken($brand-warning, 45%) !default;
+$msg-warning-color: color.adjust($brand-warning, $lightness: 20%) !default;
+$msg-warning-bg-color: color.adjust($brand-warning, $lightness: -50%) !default;
+$msg-warning-border-color: color.adjust($brand-warning, $lightness: -45%) !default;
 $msg-warning-color-alt1: $brand-warning !default;
 $msg-warning-bg-color-alt1: transparent !default;
 $msg-warning-border-color-alt1: $brand-warning !default;
@@ -135,9 +138,9 @@ $msg-warning-close-icon-color: $grey-cc !default;
 $msg-warning-close-icon-color-alt1: $grey-cc !default;
 $msg-warning-close-icon-color-alt2: $gray-base !default;
 
-$msg-info-color: lighten($brand-info, 35%) !default;
-$msg-info-bg-color: darken($brand-info, 25%) !default;
-$msg-info-border-color: darken($brand-info, 22%) !default;
+$msg-info-color: color.adjust($brand-info, $lightness: 35%) !default;
+$msg-info-bg-color: color.adjust($brand-info, $lightness: -25%) !default;
+$msg-info-border-color: color.adjust($brand-info, $lightness: -22%) !default;
 $msg-info-color-alt1: $brand-info !default;
 $msg-info-bg-color-alt1: transparent !default;
 $msg-info-border-color-alt1: $brand-info !default;

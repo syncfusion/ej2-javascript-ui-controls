@@ -1194,7 +1194,7 @@ describe('EJ2-57487 - edit the cell using editCell method and press tab key for 
         gridObj.editCell(2, 'taskName');
         expect(gridObj.getRows()[2].classList.contains('e-editedrow')).toBe(true);
         gridObj.grid.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
-        expect(gridObj.getRows()[2].getAttribute('data-rowindex') === '2').toBe(true);
+        expect(parseInt(gridObj.getRows()[2].getAttribute('aria-rowindex'), 10) - 1 === 2).toBe(true);
         done();
     });
     afterAll(() => {

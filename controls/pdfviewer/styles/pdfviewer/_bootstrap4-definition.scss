@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 /*! PdfViewer's default definitions and variables */
 $pv-background: $gray-200 !default;
 $pv-control-border-color: $gray-300 !default;
@@ -206,7 +208,7 @@ $pv-sidebar-content-background: $gray-100 !default;
 $pv-sidebar-content-overflow-x: hidden !default;
 $pv-sidebar-content-z-index: 103 !default;
 $pv-sidebar-resizer-width: 8px !default;
-$pv-sidebar-resizer-background: darken($gray-100, 2%) !default;
+$pv-sidebar-resizer-background: color.adjust($gray-100, $lightness: -2%) !default;
 $pv-sidebar-resizer-height: calc(100%) !default;
 $pv-sidebar-resizer-cursor: ew-resize !default;
 $pv-sidebar-resizer-left: 202px !default;

@@ -26,10 +26,19 @@
     .e-hide {
       visibility: hidden;
     }
+
+    &.sf-pivotfieldlist {
+      position: relative;
+      
+      &:not(.e-device) {
+        height: 100%;
+      }
+    }
   }
 
   .e-pivot-formatting-dialog {
     /* stylelint-disable */
+    height: auto !important;
     max-height: 480px !important;
     max-width: 627px !important;
     width: 100%;
@@ -73,6 +82,15 @@
       td.e-format-input-value {
         padding-right: 0;
         margin-right: 8px;
+        display: table;
+
+        .e-format-input-value-row {
+          display: table-row;
+
+          .e-format-input-value-cell {
+            display: table-cell;
+          }
+        }
       }
     }
 
@@ -938,7 +956,6 @@
       .e-member-editor-container ul {
         /* stylelint-disable */
         margin-left: $field-list-member-filter-list-padding-size;
-        overflow: auto !important;
         /* stylelint-enable */
 
         li {
@@ -1055,6 +1072,14 @@
         opacity: $field-list-editor-label-excel-opacity;
         @if ($skin-name == 'Material3') {
           border-top: $field-list-separator-border;
+        }
+
+        &.e-label-container-visible {
+          display: block;
+        }
+
+        &.e-label-container-hide {
+          display: none;
         }
 
         .e-editor-label {

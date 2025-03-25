@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getValue, INotifyPropertyChanged, EmitType, Event, ModuleDeclaration, NotifyPropertyChanges, Base, Property, isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
+import { getValue, INotifyPropertyChanged, EmitType, Event, NotifyPropertyChanges, Base, isNullOrUndefined, isUndefined } from '@syncfusion/ej2-base';
 import { BasicFormulas } from './../formulas/index';
 import { CalculateModel } from './calculate-model';
-import { getModules, ModuleLoader } from '../common/index';
 import { CommonErrors, FormulasErrorsStrings } from '../common/enum';
 import { IFormulaColl, FailureEventArgs, StoredCellInfo } from '../common/interface';
 import { Parser } from './parser';
-import { getRangeIndexes, getCellIndexes, getCellAddress, isDateTime, workbookFormulaOperation } from '../../workbook/index';
+import { getRangeIndexes, getCellIndexes, getCellAddress, isDateTime, workbookFormulaOperation, SheetModel, isHiddenRow, isHiddenCol } from '../../workbook/index';
 import { getSheetIndexByName } from '../../workbook/index';
 import { DataUtil } from '@syncfusion/ej2-data';
 
@@ -135,19 +134,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     private tempSheetPlaceHolder: string = String.fromCharCode(133);
     /** @hidden */
     public namedRanges: Map<string, string> = new Map<string, string>();
-    protected injectedModules: Function[];
     private formulaInfoTable: Map<string, FormulaInfo> = null;
-    private oaDate: Date = new Date(1899, 11, 30);
     private millisecondsOfaDay: number = 24 * 60 * 60 * 1000;
     private parseDateTimeSeparator: string = '/';
-
-    /**
-     * Specifies a value that indicates whether the basic formulas need to be included.
-     *
-     * @default true
-     */
-    @Property(true)
-    public includeBasicFormulas: boolean;
 
     /**
      * Triggers when the calculation caught any errors.
@@ -164,13 +153,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      */
     constructor(parent?: Object) {
         super(null, null);
-        const moduleLoader: ModuleLoader = new ModuleLoader(this);
-        if (this.includeBasicFormulas) {
-            Calculate.Inject(BasicFormulas);
-        }
-        if (this.injectedModules && this.injectedModules.length) {
-            moduleLoader.inject(this.requiredModules(), this.injectedModules);
-        }
+        new BasicFormulas(this);
         this.parentObject = isNullOrUndefined(parent) ? this : parent;
         this.grid = this.parentObject;
         this.parser = new Parser(this);
@@ -236,44 +219,6 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      */
     public setParseDateTimeSeparator(value: string): void {
         this.parseDateTimeSeparator = value;
-    }
-
-    /**
-     * To provide the array of modules needed.
-     *
-     * @hidden
-     * @returns {ModuleDeclaration[]} - To provide the array of modules needed.
-     */
-    public requiredModules(): ModuleDeclaration[] {
-        return getModules(this);
-    }
-
-    /**
-     * Dynamically injects the required modules to the library.
-     *
-     * @hidden
-     * @param {Function[]} moduleList - Specify the module list
-     * @returns {void} - Dynamically injects the required modules to the library.
-     */
-    public static Inject(...moduleList: Function[]): void {
-        if (!this.prototype.injectedModules) {
-            this.prototype.injectedModules = [];
-        }
-        for (let j: number = 0; j < moduleList.length; j++) {
-            if (this.prototype.injectedModules.indexOf(moduleList[j as number]) === -1) {
-                this.prototype.injectedModules.push(moduleList[j as number]);
-            }
-        }
-    }
-
-    /**
-     * Get injected modules
-     *
-     * @hidden
-     * @returns {Function[]} - get Injected Modules
-     */
-    public getInjectedModules(): Function[] {
-        return this.injectedModules;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -445,21 +390,6 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             }
             return this.formulaInfoTable;
         }
-    }
-
-    /**
-     * To get the formula text.
-     *
-     * @private
-     * @param {string} key - specify the key.
-     * @returns {string} - To get the formula text.
-     */
-    private getFormula(key: string): string {
-        key = key.toUpperCase();
-        if (this.storedData.has(key)) {
-            return this.storedData.get(key).getFormulaText();
-        }
-        return '';
     }
 
     /**
@@ -1280,7 +1210,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         return this.getErrorStrings()[CommonErrors.NA];
     }
 
-    public computeVHLookup(range: string[], isVLookup?: boolean): string {
+    public computeVHLookup(range: string[], isVlookup?: boolean): string {
         const argArr: string[] = range;
         if (isNullOrUndefined(argArr) || argArr.length < 3 || argArr.length > 4) {
             return this.formulaErrorStrings[FormulasErrorsStrings.WrongNumberArguments];
@@ -1361,7 +1291,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 return errorStrings[CommonErrors.Ref];
             }
             const getCellValue: (row: number, col: number, curCell: string) => string = this.getCellValueFn(grid, this.cell, sheetId, true);
-            if (isVLookup) {
+            if (isVlookup) {
                 const matchIndex: number = colIdx + colNumIdx - 1;
                 if (matchIndex > endColIdx) {
                     return errorStrings[CommonErrors.Ref];
@@ -3241,19 +3171,19 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             const token: string = calcFamily.parentObjectToToken.get(pgrid);
             cellTxt = token + cellTxt;
         }
-        const argVal: string = changeArgs.getValue().toUpperCase();
+        const argVal: string = changeArgs.getFormulaValue().toUpperCase();
         if (argVal.indexOf('=RAND()') > - 1 || argVal.indexOf('=NOW()') > -1 || argVal.indexOf('NOW()') > -1 || argVal.indexOf('RAND()') > - 1 || argVal.indexOf('=RANDBETWEEN(') > - 1 ||
             argVal.indexOf('RANDBETWEEN(') > - 1 || this.randomValues.has(cellTxt)) {
             let randStrVal: string = this.randCollection.toString();
             if (!this.randomValues.has(cellTxt)) {
-                this.randomValues.set(cellTxt, changeArgs.getValue());
+                this.randomValues.set(cellTxt, changeArgs.getFormulaValue());
                 this.randCollection.push(cellTxt);
                 this.isRandomVal = true;
             } else if (this.randomValues.has(cellTxt)) {
                 if (argVal.indexOf('=RAND()') > -1 || argVal.indexOf('=NOW()') > -1 || argVal.indexOf('NOW()') > -1 || argVal.indexOf('RAND()') > -1 || argVal.indexOf('=RANDBETWEEN(') > - 1 ||
                     argVal.indexOf('RANDBETWEEN(') > - 1) {
-                    this.randomValues.set(cellTxt, changeArgs.getValue());
-                } else if (changeArgs.getValue().toUpperCase() !== this.randomValues.get(cellTxt.toUpperCase())) {
+                    this.randomValues.set(cellTxt, changeArgs.getFormulaValue());
+                } else if (changeArgs.getFormulaValue().toUpperCase() !== this.randomValues.get(cellTxt.toUpperCase())) {
                     this.randomValues.delete(cellTxt);
                     randStrVal = randStrVal.split(cellTxt + this.parseArgumentSeparator).join('').split(
                         this.parseArgumentSeparator + cellTxt).join('').split(cellTxt).join('');
@@ -3266,7 +3196,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 }
             }
         }
-        if (changeArgs.getValue() && changeArgs.getValue()[0] === this.getFormulaCharacter()) {
+        if (changeArgs.getFormulaValue() && changeArgs.getFormulaValue()[0] === this.getFormulaCharacter()) {
             this.cell = cellTxt;
             let formula: FormulaInfo;
             if (!isNullOrUndefined(isCompute)) {
@@ -3274,13 +3204,13 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             }
             if (this.getFormulaInfoTable().has(cellTxt)) {
                 formula = this.getFormulaInfoTable().get(cellTxt);
-                if (changeArgs.getValue() !== formula.getFormulaText() || formula.getParsedFormula() == null) {
-                    formula.setFormulaText(changeArgs.getValue());
+                if (changeArgs.getFormulaValue() !== formula.getFormulaText() || formula.getParsedFormula() == null) {
+                    formula.setFormulaText(changeArgs.getFormulaValue());
                     if (this.getDependentFormulaCells().has(this.cell)) {
                         this.clearFormulaDependentCells(this.cell);
                     }
                     try {
-                        formula.setParsedFormula(this.parser.parseFormula(changeArgs.getValue()));
+                        formula.setParsedFormula(this.parser.parseFormula(changeArgs.getFormulaValue()));
                     } catch (ex) {
                         formula.setFormulaValue(ex);
                         isCompute = false;
@@ -3297,13 +3227,13 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 }
             } else {
                 formula = new FormulaInfo();
-                formula.setFormulaText(changeArgs.getValue());
+                formula.setFormulaText(changeArgs.getFormulaValue());
                 if (!this.getDependentFormulaCells().has(cellTxt)) {
                     this.getDependentFormulaCells().set(cellTxt, new Map<string, string>());
                 }
                 this.getFormulaInfoTable().set(cellTxt, formula);
                 try {
-                    formula.setParsedFormula(this.parser.parseFormula(changeArgs.getValue()));
+                    formula.setParsedFormula(this.parser.parseFormula(changeArgs.getFormulaValue()));
                 } catch (ex) {
                     formula.setFormulaValue(ex);
                     isCompute = false;
@@ -3399,10 +3329,17 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     public computeMinMax(args: string[], operation: string): string {
         let result: number;
         let argVal: string;
-        let isSubtotalFormula: boolean = false;
-        if (args.length && args[args.length - 1] === 'isSubtotal') {
-            isSubtotalFormula = true;
-            args.pop();
+        let isSubtotalFormula: boolean = false;  let isAggregateComputation: boolean; let sheet: SheetModel;
+        if (args.length) {
+            const lastArgument: string = args[args.length - 1];
+            if (lastArgument === 'isSubtotal') {
+                isSubtotalFormula = true;
+                args.pop();
+            } else if (lastArgument === 'isAggregate') {
+                sheet = (this.parentObject as { getActiveSheet: Function }).getActiveSheet();
+                isAggregateComputation = true;
+                args.pop();
+            }
         }
         if (isNullOrUndefined(args) || args.length === 0) {
             return this.formulaErrorStrings[FormulasErrorsStrings.WrongNumberArguments];
@@ -3413,7 +3350,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                 result = 0;
             }
         }
-        const argArr: string[] = args;
+        const argArr: string[] = args; let indexes: number[];
         if (argArr.length > 255) {
             return this.getErrorStrings()[CommonErrors.Value];
         }
@@ -3421,6 +3358,12 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             if (argArr[i as number].indexOf(':') > -1 && this.isCellReference(argArr[i as number])) {
                 const cellValue: string[] | string = this.getCellCollection(argArr[i as number]);
                 for (let j: number = 0; j < cellValue.length; j++) {
+                    if (isAggregateComputation) {
+                        indexes = getCellIndexes(cellValue[j as number]);
+                        if (isHiddenRow(sheet, indexes[0]) || isHiddenCol(sheet, indexes[1])) {
+                            continue;
+                        }
+                    }
                     argVal = !isSubtotalFormula ? this.getValueFromArg(cellValue[j as number]) :
                         this.getValueFromArg(cellValue[j as number], null, null, true);
                     if (isSubtotalFormula && argVal.includes('SUBTOTAL(')) {
@@ -3473,19 +3416,29 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      * @hidden
      * @param {string[]} args - Specify the args.
      * @param {boolean} isSubtotalFormula - Specify the args is from subtotal formula or not.
+     * @param {boolean} isAggregateComputation - Specify the args is from aggregate calculation or not.
      * @returns {string} - to calculate average.
      */
-    public calculateAvg(args: string[], isSubtotalFormula?: boolean): string {
+    public calculateAvg(args: string[], isSubtotalFormula?: boolean, isAggregateComputation?: boolean): string {
         const argArr: string[] = args;
         let cellColl: string[] | string = [];
         let cellVal: string; let value: string;
         let avgVal: number = 0;
-        let countNum: number = 0;
+        let countNum: number = 0; let indexes: number[]; let sheet: SheetModel;
+        if (isAggregateComputation) {
+            sheet = (this.parentObject as { getActiveSheet: Function }).getActiveSheet();
+        }
         for (let k: number = 0; k < argArr.length; k++) {
             if (this.isCellReference(argArr[k as number])) {
                 if (argArr[k as number].indexOf(':') > -1) {
                     cellColl = this.getCellCollection(argArr[k as number]);
                     for (let i: number = 0; i < cellColl.length; i++) {
+                        if (isAggregateComputation) {
+                            indexes = getCellIndexes(cellColl[i as number]);
+                            if (isHiddenRow(sheet, indexes[0]) || isHiddenCol(sheet, indexes[1])) {
+                                continue;
+                            }
+                        }
                         cellVal = !isSubtotalFormula ? this.getValueFromArg(cellColl[i as number]) :
                             this.getValueFromArg(cellColl[i as number], null, null, true);
                         if (isSubtotalFormula && cellVal.includes('SUBTOTAL(')) {
@@ -3964,7 +3917,7 @@ export class ValueChangedArgs {
     /** @hidden */
     public setColIndex: Function;
     /** @hidden */
-    public getValue: Function;
+    public getFormulaValue: Function;
     constructor(row: number, col: number, value: number | string) {
         this.row = row;
         this.col = col;
@@ -3981,7 +3934,7 @@ export class ValueChangedArgs {
         this.setColIndex = (value: number): void => {
             col = value;
         };
-        this.getValue = (): number | string => {
+        this.getFormulaValue = (): number | string => {
             return value;
         };
         return this;

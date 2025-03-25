@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData, InventoryList } from '../util/datasource.spec';
-import { SheetModel,CellModel, getCellAddress, Spreadsheet, ConditionalFormatModel, getRangeAddress, getCell, onContentScroll, ImageModel } from '../../../src/index';
+import { SheetModel,CellModel, getCellAddress, Spreadsheet, ConditionalFormatModel, getRangeAddress, getCell, onContentScroll, ImageModel, Workbook } from '../../../src/index';
 import { L10n, EventHandler } from '@syncfusion/ej2-base';
 
 describe('Insert & Delete ->', () => {
@@ -128,6 +128,21 @@ describe('Insert & Delete ->', () => {
                 },0);
             },0);
         });
+        it('EJ2-914962 - Sheet tab actions can be performed through methods when workbook is protected', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const workbook: Workbook = helper.getInstance();
+            expect(spreadsheet.sheets.length).toBe(1);
+            expect(workbook.isProtected).toBe(false);
+            helper.switchRibbonTab(4);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_protectworkbook').click();
+            (document.getElementsByClassName('e-primary')[1] as HTMLElement).click();
+            expect(workbook.isProtected).toBe(true);
+            helper.invoke('insertSheet', [1, 1]);
+            expect(spreadsheet.sheets.length).toBe(1);
+            helper.invoke('duplicateSheet', [1]);
+            expect(spreadsheet.sheets.length).toBe(1);
+            done();
+        });
     });
 
     describe('UI-Interaction->', () => {
@@ -199,7 +214,7 @@ describe('Insert & Delete ->', () => {
                 expect(helper.invoke('getCell', [0, 3]).textContent).toBe('');
                 expect(helper.invoke('getCell', [0, 4]).textContent).toBe('Time');
                 done();
-            });
+            }, 10);
         });
 
         it('Delete Column->', (done: Function) => {
@@ -513,6 +528,34 @@ describe('Insert & Delete ->', () => {
                 expect(image.top).toBe(40);
                 expect(image.left).toBe(128);
                 expect(helper.getElement('#' + image.id).style.left).toBe('128px');
+                done();
+            });
+        });
+        it('EJ2-886475 - Wrap text option is not enabled for newly inserted column and row', (done: Function) => {
+            helper.invoke('selectRange', ['A15']);
+            helper.click('#spreadsheet_wrap');
+            expect(helper.getInstance().sheets[0].rows[14].cells[0].wrap).toBe(true);
+            helper.invoke('selectRange', ['J1']);
+            helper.click('#spreadsheet_wrap');
+            expect(helper.getInstance().sheets[0].rows[0].cells[9].wrap).toBe(true);
+            helper.invoke('insertRow', [15]);
+            helper.invoke('insertColumn', [10]);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[15].cells[0].wrap).toBe(true);
+                expect(helper.getInstance().sheets[0].rows[0].cells[10].wrap).toBe(true);
+                done();
+            });
+        });
+        it('EJ2-941153 - Redo action does not retain formatting for inserted rows and columns', (done: Function) => {
+            helper.invoke('selectRange', ['I1']);
+            helper.invoke('cellFormat', [{ backgroundColor: '#ffff00' }]);
+            expect(helper.getInstance().sheets[0].rows[0].cells[8].style.backgroundColor).toBe('#ffff00');
+            helper.openAndClickCMenuItem(0, 8, [6,2], false, true);
+            setTimeout(function () {
+                expect(helper.getInstance().sheets[0].rows[0].cells[9].style.backgroundColor).toBe('#ffff00');
+                helper.getElement('#' + helper.id + '_undo').click();
+                helper.getElement('#' + helper.id + '_redo').click();
+                expect(helper.getInstance().sheets[0].rows[0].cells[9].style.backgroundColor).toBe('#ffff00');
                 done();
             });
         });
@@ -2074,6 +2117,39 @@ describe('Insert & Delete ->', () => {
             done();
         });
     });
+
+    describe('EJ2-943530->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }], frozenRows: 3, frozenColumns: 2 }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Cells do not render correctly when inserting a column or row with merged cells in a frozen pane->', (done: Function) => {
+            helper.invoke('merge', ['B2:D6']);
+            let td: HTMLTableCellElement = helper.invoke('getCell', [1, 1]);
+            expect(td.rowSpan).toBe(5);
+            expect(td.colSpan).toBe(3);
+            helper.invoke('insertRow', [4, 6]);
+            setTimeout(() => {
+                td = helper.invoke('getCell', [1, 1]);
+                expect(td.rowSpan).toBe(8);
+                expect(td.rowSpan).not.toBe(5);
+                expect(td.colSpan).toBe(3);
+                helper.invoke('insertColumn', [3, 5]);
+                setTimeout(() => {
+                    td = helper.invoke('getCell', [1, 1]);
+                    expect(td.rowSpan).toBe(8);
+                    expect(td.colSpan).toBe(6);
+                    expect(td.colSpan).not.toBe(3);
+                    done();
+                });
+            });
+        });
+    });
+
     describe('CR - Issues->', () => {
         describe('EJ2-50688, EJ2-53476, EJ2-54600, EJ2-50688, EJ2-51865, EJ2-911330 ', () => {
             beforeAll((done: Function) => {

@@ -594,6 +594,7 @@ export class DialogEdit {
         this.dialogEditValidationFlag = false;
         this.isFromAddDialog = false;
         this.isFromEditDialog = false;
+        this.parent.dataOperation['isDurationValueUpdated'] = false;
         if (this.dialog && !this.dialogObj.isDestroyed) {
             this.destroyDialogInnerElements();
             this.dialogObj.destroy();
@@ -3104,6 +3105,7 @@ export class DialogEdit {
                     this.updateNotesTab(element);
                 } else if (id === 'Resources') {
                     this.updateResourceTab(element);
+                    this.dialogEditValidationFlag = false;
                 } else if (id.indexOf('Custom') !== -1) {
                     this.updateCustomTab(element);
                 } else if (id === 'Segments') {
@@ -3298,13 +3300,13 @@ export class DialogEdit {
         this.parent.setRecordValue('resourceNames', fromRecord.ganttProperties.resourceNames, toRecord.ganttProperties, true);
         this.parent.setRecordValue('resourceInfo', fromRecord.ganttProperties.resourceInfo, toRecord.ganttProperties, true);
         if (!isNullOrUndefined(this.parent.taskFields.startDate)) {
-            this.parent.dataOperation.updateMappingData(toRecord, this.parent.taskFields.startDate);
+            this.parent.dataOperation.updateMappingData(toRecord, 'startDate');
         }
         if (!isNullOrUndefined(this.parent.taskFields.endDate)) {
-            this.parent.dataOperation.updateMappingData(toRecord, this.parent.taskFields.endDate);
+            this.parent.dataOperation.updateMappingData(toRecord, 'endDate');
         }
         if (!isNullOrUndefined(this.parent.taskFields.duration)) {
-            this.parent.dataOperation.updateMappingData(toRecord, this.parent.taskFields.duration);
+            this.parent.dataOperation.updateMappingData(toRecord, 'duration');
             this.parent.setRecordValue('durationUnit', fromRecord.ganttProperties.durationUnit, this.rowData, true);
             if (this.rowData.ganttProperties.duration === 0) {
                 this.parent.setRecordValue('isMilestone', true, toRecord.ganttProperties, true);
@@ -3313,10 +3315,10 @@ export class DialogEdit {
             }
         }
         if (!isNullOrUndefined(this.parent.taskFields.work)) {
-            this.parent.dataOperation.updateMappingData(this.rowData, this.parent.taskFields.work);
+            this.parent.dataOperation.updateMappingData(this.rowData, 'work');
         }
         if (!isNullOrUndefined(this.parent.taskFields.manual)) {
-            this.parent.dataOperation.updateMappingData(this.rowData, this.parent.taskFields.manual);
+            this.parent.dataOperation.updateMappingData(this.rowData, 'manual');
         }
         if (!isNullOrUndefined(this.parent.taskFields.type)) {
             this.parent.dataOperation.updateMappingData(this.rowData, 'type');

@@ -244,7 +244,7 @@ export function laneCollection(
         if (shape.phases && shape.phases.length > 0 && shape.phases[parseInt(l.toString(), 10)] ) {
             const phase: Node = diagram.nameTable[(shape.phases[parseInt(l.toString(), 10)] as any).header.id];
             if (phase) {
-                phase.laneGrids.push(canvas.id);
+                phase.laneGrids.splice(laneIndex, 0, canvas.id);
             }
         }
         parentWrapper.children[0].isCalculateDesiredSize = false;
@@ -773,6 +773,9 @@ export function updateConnectorsProperties(connectors: string[], diagram: Diagra
     if (connectors && connectors.length > 0) {
         let edges: Connector;
         if (diagram.lineRoutingModule && (diagram.constraints & DiagramConstraints.LineRouting)) {
+            if (diagram.avoidLineOverlappingModule) {
+                diagram.avoidLineOverlappingModule.removeConnectors(connectors);
+            }
             diagram.lineRoutingModule.renderVirtualRegion(diagram, true);
         }
         for (let i: number = 0; i < connectors.length; i++) {
@@ -828,6 +831,8 @@ export function laneInterChanged(diagram: Diagram, obj: NodeModel, target: NodeM
                 }
                 if (sourceIndex !== targetIndex) {
                     grid.updateRowIndex(sourceIndex, targetIndex);
+                    //To update the laneGrids arrangement after swaping lanes
+                    updatePhaseLaneGrids(sourceLaneIndex, targetLaneIndex, swimLane, diagram);
                 }
             }
 
@@ -859,6 +864,8 @@ export function laneInterChanged(diagram: Diagram, obj: NodeModel, target: NodeM
                         }
                     }
                     grid.updateColumnIndex(0, sourceIndex, targetIndex);
+                    //To update the laneGrids arrangement after swaping lanes
+                    updatePhaseLaneGrids(sourceLaneIndex, targetLaneIndex, swimLane, diagram);
                 }
             }
         }
@@ -892,6 +899,32 @@ export function laneInterChanged(diagram: Diagram, obj: NodeModel, target: NodeM
         }
     }
     diagram.updateDiagramElementQuad();
+}
+/**
+ * Swaps the positions of two lane grid entries within each phase of a swimlane.
+ *
+ * @param {number} sourceIndex - The index of the lane grid to be moved.
+ * @param {number} targetIndex - The index where the lane grid should be moved to.
+ * @param {NodeModel} swimlane - The swimlane node containing the phases.
+ * @param {Diagram} diagram - The diagram instance containing the node data.
+ * @returns {void}
+ * @private
+ */
+export function updatePhaseLaneGrids(sourceIndex: number, targetIndex: number, swimlane: NodeModel, diagram: Diagram): void {
+    const phases: PhaseModel[] = (swimlane.shape as SwimLaneModel).phases;
+    if (phases && phases.length > 0) {
+        for (let i: number = 0; i < phases.length; i++ ) {
+            const phaseId: string = swimlane.id + phases[parseInt(i.toString(), 10)].id + '_header';
+            const phaseObj: Node = diagram.nameTable[`${phaseId}`];
+            if (phaseObj && phaseObj.laneGrids && sourceIndex >= 0 && targetIndex >= 0 &&
+                sourceIndex < phaseObj.laneGrids.length && targetIndex < phaseObj.laneGrids.length) {
+                // Remove the element at sourceIndex
+                const [removed]: any = phaseObj.laneGrids.splice(sourceIndex, 1);
+                // Insert it at targetIndex
+                phaseObj.laneGrids.splice(targetIndex, 0, removed);
+            }
+        }
+    }
 }
 /**
  * updateSwimLaneObject method \
@@ -1992,6 +2025,8 @@ export function removeLane(diagram: Diagram, lane: NodeModel, swimLane: NodeMode
                             for (j = 0; j < cell.children.length; j++) {
                                 child = cell.children[parseInt(j.toString(), 10)] as Canvas;
                                 removeChildren(diagram, child);
+                                //To remove the lane Id from the laneGrid collection of phase
+                                removeLaneGridFromPhase(child, swimLane, diagram);
                             }
                         }
                     }
@@ -2005,6 +2040,8 @@ export function removeLane(diagram: Diagram, lane: NodeModel, swimLane: NodeMode
                             for (j = 0; j < cell.children.length; j++) {
                                 child = cell.children[parseInt(j.toString(), 10)] as Canvas;
                                 removeChildren(diagram, child);
+                                //To remove the lane Id from the laneGrid collection of phase
+                                removeLaneGridFromPhase(child, swimLane, diagram);
                             }
                         }
                     }
@@ -2023,6 +2060,30 @@ export function removeLane(diagram: Diagram, lane: NodeModel, swimLane: NodeMode
                 ChangeLaneIndex(diagram, swimLane, index);
                 diagram.drag(swimLane, x - swimLane.wrapper.bounds.x, y - swimLane.wrapper.bounds.y);
                 diagram.updateDiagramObject(swimLane);
+            }
+        }
+    }
+}
+
+/**
+ * removeLaneGridFromPhase method \
+ *
+ * @returns {void} removeLaneGridFromPhase method .\
+ * @param {Canvas} child - provide the child lane value.
+ * @param {Swimlane} swimlane - provide the swimlane value.
+ * @param {Diagram} diagram - provide the diagram  value.
+ * @private
+ */
+export function removeLaneGridFromPhase(child: Canvas, swimlane: NodeModel, diagram: Diagram): void {
+    const id: string = child.id;
+    const phases: PhaseModel[] = (swimlane.shape as SwimLaneModel).phases;
+    if (phases && phases.length > 0) {
+        for (let i: number = 0; i < phases.length; i++ ) {
+            const phaseId: string = swimlane.id + phases[parseInt(i.toString(), 10)].id + '_header';
+            const phase: Node = diagram.nameTable[`${phaseId}`];
+            const index: number = phase.laneGrids.indexOf(id);
+            if (index !== -1) {
+                phase.laneGrids.splice(index, 1);
             }
         }
     }

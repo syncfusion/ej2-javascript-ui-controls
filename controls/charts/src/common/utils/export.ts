@@ -280,7 +280,7 @@ export class ExportUtils {
                 if ((!isMultiPages && !((this.control as Chart).enableCanvas)) || (isMultiPages && !isCanvas)) {
                     svgObject.setAttribute('width', width + '');
                     svgObject.setAttribute('height', height + '');
-                    svgObject.setAttribute('style', 'background-color: ' + backgroundColor + ';');
+                    (svgObject as HTMLElement).style.backgroundColor = backgroundColor;
                 }
                 controlValues.push({
                     'width': width,

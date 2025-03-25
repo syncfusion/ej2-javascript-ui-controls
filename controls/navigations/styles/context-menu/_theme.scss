@@ -57,11 +57,19 @@
 
     &:not(.e-menu-container) {
       & .e-menu-vscroll.e-vscroll {
-        background-color: inherit;
+        @if $skin-name == 'Material3' {
+          background: $cmenu-ul-bgcolor;
+        }
+        @else {
+          background-color: $cmenu-ul-bgcolor;
+        }
         border: $cmenu-ul-border;
 
         & .e-scroll-nav {
           border-color: $cmenu-li-border-color;
+          @if $skin-name == 'material-dark' {
+            background: $cmenu-ul-bgcolor;
+          }
         }
       }
     }

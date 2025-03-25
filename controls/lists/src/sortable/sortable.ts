@@ -303,8 +303,8 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
         }
     }
     private queryPositionInfo(value: DragPosition): DragPosition {
-        value.left = pageXOffset ? `${parseFloat(value.left) - pageXOffset}px` : value.left;
-        value.top = pageYOffset ? `${parseFloat(value.top) - pageYOffset}px` : value.top;
+        value.left = scrollX ? `${parseFloat(value.left) - scrollX}px` : value.left;
+        value.top = scrollY ? `${parseFloat(value.top) - scrollY}px` : value.top;
         return value;
     }
     private isPlaceHolderPresent(instance: Sortable): boolean {

@@ -2,40 +2,39 @@ import { Property, ChildProperty, Collection, getEnumValue, compile, DateFormatO
 import { Internationalization } from '@syncfusion/ej2-base';
 import { AggregateColumnModel } from './summary-model';
 import { CustomSummaryType, AggregateType, CellType } from '@syncfusion/ej2-grids';
+
 /**
- * Configures the TreeGrid's aggregate column.
+ * Configures the aggregate column for the TreeGrid.
  */
 export class AggregateColumn extends ChildProperty<AggregateColumn> {
-
     private formatFn: Function;
-
     private intl: Internationalization = new Internationalization();
-
     private templateFn: { [x: string]: { fn: Function, property: string } } = {};
+
     /**
-     * Defines the aggregate type of a particular column.
-     * To use multiple aggregates for single column, specify the `type` as array.
-     * Types of aggregate are,
-     * * sum
-     * * average
-     * * max
-     * * min
-     * * count
-     * * falsecount
-     * * truecount
-     * * custom
-     * > Specify the `type` value as `custom` to use custom aggregation.
+     * Defines the aggregate type(s) for a particular column.
+     * To apply multiple aggregates to a single column, specify the `type` as an array.
+     * Available aggregate types include:
+     * * `sum`: Calculates the sum of all values in a column.
+     * * `average`: Computes the average of the column values.
+     * * `max`: Finds the maximum value in a column.
+     * * `min`: Finds the minimum value in a column.
+     * * `count`: Counts the number of records.
+     * * `falsecount`: Counts the number of false values.
+     * * `truecount`: Counts the number of true values.
+     * * `custom`: Allows for a custom aggregate function.
+     *
+     * Use `custom` to specify a custom aggregation.
      *
      * @aspType string
      * @default null
      */
     @Property()
     public type: AggregateType | AggregateType[] | string;
+
     /**
-     * Defines the footer cell template as a string for the aggregate column.
-     * The `type` name should be used to access aggregate values inside the template.
-     *
-     * {% codeBlock src="grid/footer-template-api/index.ts" %}{% endcodeBlock %}
+     * Defines a template for the footer cell of the aggregate column.
+     * Use the aggregate `type` names within the template to access aggregate values.
      *
      * @default null
      * @aspType string
@@ -43,37 +42,40 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
      */
     @Property()
     public footerTemplate: string | Function;
+
     /**
-     * Defines the column name to perform aggregation.
+     * Specifies the column name on which to perform the aggregation.
      *
      * @default null
      */
     @Property()
     public field: string;
+
     /**
-     * Format is applied to a calculated value before it is displayed.
-     * Gets the format from the user, which can be standard or custom
-     * [`number`](https://ej2.syncfusion.com/documentation/common/internationalization/#supported-format-string)
-     * and [`date`](https://ej2.syncfusion.com/documentation/common/internationalization/#supported-format-string-1) formats.
+     * Specifies the format to be applied to the calculated aggregate value before display.
+     * Supports both standard and custom formats for numbers and dates.
+     * Refer to the Syncfusion documentation for [number](https://ej2.syncfusion.com/documentation/common/internationalization/#supported-format-string)
+     * and [date](https://ej2.syncfusion.com/documentation/common/internationalization#date-formatting) formats.
      *
      * @aspType string
      * @default null
      */
     @Property()
     public format: string | NumberFormatOptions | DateFormatOptions;
+
     /**
-     * Defines the column name to display the aggregate value. If `columnName` is not defined,
-     * then `field` name value will be assigned to the `columnName` property.
+     * Specifies the column name to display the aggregate value. If not defined, the `field` name is used by default.
      *
      * @default null
      */
     @Property()
     public columnName: string;
+
     /**
-     * Defines a function to calculate custom aggregate value. The `type` value should be set to `custom`.
-     * To use custom aggregate value in the template, use the key as `${custom}`.
-     * **Total aggregation**: The custom function will be called with the whole data and the current `AggregateColumn` object.
-     * **Group aggregation**: This will be called with the current group details and the `AggregateColumn` object.
+     * Defines a custom function to calculate the aggregate value. The `type` must be set to `custom`.
+     * Use the custom value as `${custom}` in templates.
+     * * `Total aggregation`: The custom function is called with the entire dataset and the current `AggregateColumn` object.
+     * * `Group aggregation`: It is called with the current group details and the `AggregateColumn` object.
      *
      * @default null
      */
@@ -147,11 +149,12 @@ export class AggregateColumn extends ChildProperty<AggregateColumn> {
 
 }
 
-
+/**
+ * Configures the aggregate rows in the TreeGrid.
+ */
 export class AggregateRow extends ChildProperty<AggregateRow> {
-
     /**
-     * Configures the aggregate columns.
+     * Configures the collection of aggregate columns.
      *
      * @default []
      */
@@ -159,13 +162,9 @@ export class AggregateRow extends ChildProperty<AggregateRow> {
     public columns: AggregateColumnModel[];
 
     /**
-     * Display the childSummary for each parent.
+     * Determines whether to display child summaries for each parent row.
+     *
      */
     @Property(true)
     public showChildSummary: boolean;
 }
-
-
-
-
-

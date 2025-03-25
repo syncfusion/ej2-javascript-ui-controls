@@ -845,9 +845,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         const td: HTMLElement = this.parent.createElement('td', { className: 'e-xlfl-radio', attrs: { 'colSpan': '2' } });
         tr.appendChild(td);
 
-        const radioDiv: HTMLElement = this.parent
-            .createElement('div', { className: 'e-xlfl-radiodiv', attrs: { 'style': 'display: inline-block' } });
-
+        const radioDiv: HTMLElement = this.parent.createElement('div', { className: 'e-xlfl-radiodiv' });
+        radioDiv.style.display = 'inline-block';
         const isComplex: boolean = !isNullOrUndefined(column) && isComplexField(column);
         const complexFieldName: string = !isNullOrUndefined(column) && getComplexFieldID(column);
         const frstpredicate: HTMLInputElement = this.parent.createElement('input', { id: isComplex ? complexFieldName + 'e-xlfl-frstpredicate' : column + 'e-xlfl-frstpredicate', attrs: { 'type': 'radio' } }) as HTMLInputElement;
@@ -957,7 +956,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             valueDiv.appendChild(valueInput);
             value.appendChild(valueDiv);
 
-            let flValue: string | number | Date | boolean;
+            let flValue: string | number | Date | boolean | (string | number | boolean | Date)[];
             let predicate: PredicateModel;
             if (predicates && predicates.length > 0) {
                 predicate = predicates.length === 2 ?
@@ -1001,7 +1000,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
 
     // eslint-disable-next-line max-len
     private renderMatchCase(column: string, tr: HTMLElement, matchCase: HTMLElement, elementId: string, predicates: PredicateModel[]): void {
-        const matchCaseDiv: HTMLElement = this.parent.createElement('div', { className: 'e-xlfl-matchcasediv', attrs: { 'style': 'display: inline-block' } });
+        const matchCaseDiv: HTMLElement = this.parent.createElement('div', { className: 'e-xlfl-matchcasediv' });
+        matchCaseDiv.style.display = 'inline-block';
 
         const isComplex: boolean = !isNullOrUndefined(column) && isComplexField(column);
         const complexFieldName: string = !isNullOrUndefined(column) && getComplexFieldID(column);

@@ -1,4 +1,7 @@
 @use 'sass:math';
+@use 'sass:color';
+@use 'sass:meta';
+@use 'sass:list';
 @import '../common/mixin.scss';
 
 @function mapcolorvariable($pallete-name){

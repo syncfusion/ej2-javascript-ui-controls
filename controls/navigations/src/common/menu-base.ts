@@ -282,6 +282,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private currentTarget: Element;
     private isCmenuHover: boolean;
     private isAnimationNone: boolean = false;
+    private isKBDAction: boolean = false;
+    private touchStartFn: (e: TouchEvent) => void;
+    private touchMoveFn: (e: TouchEvent) => void;
     /**
      * Triggers while rendering each menu item.
      *
@@ -529,6 +532,32 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         }
     }
 
+    private enableTouchScroll(scrollList: HTMLElement): void {
+        let touchStartY: number = 0;
+        this.touchStartFn = (e: TouchEvent) => {
+            touchStartY = e.touches[0].clientY;
+        };
+        this.touchMoveFn = (e: TouchEvent) => {
+            const touchEndY: number = e.touches[0].clientY;
+            const touchDiff: number = touchStartY - touchEndY;
+            const atTop: boolean = scrollList.scrollTop === 0;
+            const atBottom: boolean = scrollList.scrollTop + scrollList.clientHeight === scrollList.scrollHeight;
+            if ((atTop && touchDiff < 0) || (atBottom && touchDiff > 0)) {
+                e.preventDefault();
+            }
+            touchStartY = touchEndY;
+        };
+        scrollList.addEventListener('touchstart', this.touchStartFn, { passive: false });
+        scrollList.addEventListener('touchmove', this.touchMoveFn, { passive: false });
+    }
+
+    private touchOutsideHandler(e: TouchEvent): void {
+        const target: Element = (e.target as Element);
+        if (!closest(target, '.e-' + this.getModuleName() + '-wrapper')) {
+            this.closeMenu();
+        }
+    }
+
     protected initialize(): void {
         let wrapper: Element = this.getWrapper();
         if (!wrapper) {
@@ -622,6 +651,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         EventHandler.add(document, 'click', this.delegateClickHandler, this);
         this.wireKeyboardEvent(wrapper);
         this.rippleFn = rippleEffect(wrapper, { selector: '.' + ITEM });
+        if (!this.isMenu && this.enableScrolling) {
+            this.enableTouchScroll(wrapper);
+            document.addEventListener('touchstart', this.touchOutsideHandler.bind(this), { passive: true });
+        }
     }
 
     private wireKeyboardEvent(element: HTMLElement): void {
@@ -678,6 +711,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         if (this.enableScrolling && e.keyCode ===  13 && trgt.classList.contains('e-scroll-nav')) {
             this.removeLIStateByClass([FOCUSED, SELECTED], [closest(trgt, '.e-' + this.getModuleName() + '-wrapper')]);
         }
+        this.isKBDAction = true;
         if (actionNeeded) {
             switch (e.action) {
             case RIGHTARROW:
@@ -732,6 +766,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 this.rightEnterKeyHandler(e);
             }
             break;
+        }
+        if (this.isAnimationNone) {
+            this.isKBDAction = false;
         }
         if (actionNeeded) {
             e.action = actionName;
@@ -1440,8 +1477,14 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             }
         } else {
             if (Browser.isDevice) {
-                top = Number(this.element.style.top.replace(px, ''));
-                left = Number(this.element.style.left.replace(px, ''));
+                if (!this.isMenu && this.enableScrolling) {
+                    const menuScrollElement: HTMLElement = document.querySelector<HTMLElement>('.e-menu-vscroll');
+                    top = Number(menuScrollElement.style.top.replace('px', ''));
+                    left = Number(menuScrollElement.style.left.replace('px', ''));
+                } else {
+                    top = Number(this.element.style.top.replace(px, ''));
+                    left = Number(this.element.style.left.replace(px, ''));
+                }
             } else {
                 const x: string = this.enableRtl ? 'left' : 'right';
                 let offset: OffsetPosition = calculatePosition(li, x, 'top');
@@ -1456,7 +1499,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 if (this.enableRtl || xCollision) {
                     left = (this.enableRtl && xCollision) ? left : left - ul.offsetWidth;
                 }
-                if (collide.indexOf('bottom') > -1) {
+                if (collide.indexOf('bottom') > -1 && (this.isMenu || !this.enableScrolling)) {
                     offset = this.callFit(ul, false, true, top, left);
                     top = offset.top;
                 }
@@ -1746,6 +1789,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 const sli: Element = this.getLIByClass(ul, SELECTED);
                 if (sli) {
                     sli.classList.remove(SELECTED);
+                }
+                const scrollMenu: HTMLElement = this.enableScrolling && !this.isMenu ? closest(cli.parentElement, '.e-menu-vscroll') as HTMLElement : null;
+                if (scrollMenu) {
+                    destroyScroll(getInstance(scrollMenu, VScroll) as VScroll, scrollMenu);
                 }
                 detach(cli.parentNode);
                 this.navIdx.pop();
@@ -2177,6 +2224,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         EventHandler.remove(document, 'click', this.delegateClickHandler);
         this.unWireKeyboardEvent(wrapper);
         this.rippleFn();
+        if (!this.isMenu && this.enableScrolling) {
+            wrapper.removeEventListener('touchstart', this.touchStartFn);
+            wrapper.removeEventListener('touchmove', this.touchMoveFn);
+            document.removeEventListener('touchstart', this.touchOutsideHandler);
+        }
     }
 
     private unWireKeyboardEvent(element: HTMLElement): void {
@@ -2230,6 +2282,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     } else {
                         this.end(options.element, isMenuOpen);
                     }
+                    this.isKBDAction = false;
                 }
             });
         }
@@ -2257,20 +2310,20 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 scrollMenu.style.display = 'block';
             }
             this.triggerOpen(ul);
-            if (ul.querySelector('.' + FOCUSED)) {
+            if (ul.querySelector('.' + FOCUSED) && this.isKBDAction) {
                 (ul.querySelector('.' + FOCUSED) as HTMLElement).focus();
             } else {
                 const ele: HTMLElement = this.getWrapper().children[this.getIdx(this.getWrapper(), ul) - 1] as HTMLElement;
                 if (this.currentTarget) {
                     if (!(this.currentTarget.classList.contains('e-numerictextbox') || this.currentTarget.classList.contains('e-textbox') || this.currentTarget.tagName === 'INPUT')) {
-                        if (ele) {
+                        if (ele && this.isKBDAction) {
                             (ele.querySelector('.' + SELECTED) as HTMLElement).focus();
                         } else {
                             this.element.focus();
                         }
                     }
                 } else {
-                    if (ele) {
+                    if (ele && this.isKBDAction) {
                         (ele.querySelector('.' + SELECTED) as HTMLElement).focus();
                     } else {
                         this.element.focus();
@@ -2390,6 +2443,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     } else {
                         if (Browser.isDevice && !ul.classList.contains('e-contextmenu')) {
                             ul.children[idx + 1].classList.remove(disabled);
+                        } else if (this.enableScrolling && !ul.classList.contains('e-menu-parent')) {
+                            const mainUl: Element = ul.querySelector('.e-menu-parent');
+                            mainUl.children[idx as number].classList.remove(disabled);
                         } else {
                             ul.children[idx as number].classList.remove(disabled);
                         }

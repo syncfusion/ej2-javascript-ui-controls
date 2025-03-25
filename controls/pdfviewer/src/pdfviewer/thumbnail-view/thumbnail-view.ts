@@ -1,4 +1,4 @@
-import { PdfViewer, PdfViewerBase, AjaxHandler } from '../index';
+import { PdfViewer, PdfViewerBase, AjaxHandler, ExtractTextOption } from '../index';
 import { createElement, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { TaskPriorityLevel } from '../base/pdfviewer-utlis';
 
@@ -285,11 +285,21 @@ export class ThumbnailView {
         } else {
             for (let count: number = proxy.startIndex; count < proxy.thumbnailLimit; count++) {
                 const currentPageImage: HTMLImageElement = this.getThumbnailImageElement(count);
+                const jsonObject: object = { documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId,
+                    elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId };
+                const isTextNeed: boolean = proxy.pdfViewer.textSearch ? true : false;
+                const isSkipCharacterBounds: boolean = (this.pdfViewer.extractTextOption === ExtractTextOption.None ||
+                    this.pdfViewer.extractTextOption === ExtractTextOption.TextOnly) ? true : false;
                 if ((currentPageImage && currentPageImage.src === '') || (isNullOrUndefined(currentPageImage) && !isNullOrUndefined(this.pdfViewer.pageOrganizer))) {
                     this.pdfViewerBase.pdfViewerRunner.addTask({
                         pageIndex: count,
-                        message: 'renderThumbnail'
-                    }, TaskPriorityLevel.Medium);
+                        message: 'renderThumbnail',
+                        isTextNeed: isTextNeed,
+                        jsonObject: jsonObject,
+                        isRenderText: isTextNeed,
+                        requestType: isTextNeed ? 'pdfTextSearchRequest' : '',
+                        isSkipCharacterBounds: isSkipCharacterBounds
+                    }, TaskPriorityLevel.Low);
                 }
             }
             this.isThumbnailViewOpen();
@@ -317,21 +327,19 @@ export class ThumbnailView {
             if (currentPageImage){
                 currentPageImage.src = imageUrl;
             }
-            if (this.pdfViewer.pageOrganizerModule) {
-                const data: any = ({
-                    thumbnailImage: imageUrl,
-                    startPage: this.startIndex,
-                    endPage: this.thumbnailLimit,
-                    uniqueId: this.pdfViewerBase.documentId,
-                    pageIndex: pageIndex
-                });
-                if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
-                    this.updateThumbnailCollection(data);
-                }
-                else {
-                    if (!isNullOrUndefined(this.pdfViewer.pageOrganizer)) {
-                        this.pdfViewer.pageOrganizer.updatePreviewCollection(data);
-                    }
+            const data: any = ({
+                thumbnailImage: imageUrl,
+                startPage: this.startIndex,
+                endPage: this.thumbnailLimit,
+                uniqueId: this.pdfViewerBase.documentId,
+                pageIndex: pageIndex
+            });
+            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
+                this.updateThumbnailCollection(data);
+            }
+            else {
+                if (!isNullOrUndefined(this.pdfViewer.pageOrganizer)) {
+                    this.pdfViewer.pageOrganizer.updatePreviewCollection(data);
                 }
             }
         }

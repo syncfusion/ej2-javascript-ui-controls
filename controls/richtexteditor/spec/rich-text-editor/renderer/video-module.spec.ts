@@ -5,6 +5,8 @@ import { Browser, isNullOrUndefined, closest, detach, createElement } from '@syn
 import { RichTextEditor, QuickToolbar, IRenderer, DialogType } from './../../../src/index';
 import { NodeSelection } from './../../../src/selection/index';
 import { renderRTE, destroy, setCursorPoint, dispatchEvent, androidUA, iPhoneUA, currentBrowserUA, VideoResizeGripper, clickVideo, moveGripper, leaveGripper, clickGripper } from "./../render.spec";
+import { BASIC_MOUSE_EVENT_INIT, DELETE_EVENT_INIT } from '../../constant.spec';
+import { MACOS_USER_AGENT } from '../user-agent.spec';
 
 function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
     return rteObj.quickToolbarModule;
@@ -4798,6 +4800,67 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
+
+    describe('Bug-934076- Video is not deleted when press delete button', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let innerHTML1: string = '<ul><li>Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert im<span class=\"e-video-wrap\" contenteditable=\"false\" title=\"mov_bbb.mp4\"><video class=\"e-rte-video e-videoinline\" controls=\"\"><source src=\"https://www.w3schools.com/html/mov_bbb.mp4\" type=\"video/mp4\"></video></span>ages, tables, audio, and video.</li><li>Inline styles include bold, italic, underline, strikethrough, hyperlinks, and more.</li></ul>';
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Video', 'Bold']
+                },
+                value: innerHTML1
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Video delete action checking using delete key inside list', (done: Function) => {
+            let node: any = (rteObj as any).inputElement.childNodes[0].childNodes[0].childNodes[0];
+            setCursorPoint(node, 101);
+            const deleteKeyDownEvent: KeyboardEvent =  new KeyboardEvent('keydown', DELETE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(deleteKeyDownEvent);
+            setTimeout(function () {
+                expect((<any>rteObj).inputElement.querySelector('.e-video-wrap')).toBe(null);
+                expect((<any>rteObj).inputElement.childNodes[0].childNodes[0].childElementCount === 0).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+
+    describe('Bug-934076- Video is not deleted when press delete button', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let innerHTML1: string = `<h1><span class="e-video-wrap" contenteditable="false" title="Cursor_Error.mp4" style="cursor: auto;"><video class="e-rte-video e-video-inline" controls="" width="auto" height="auto" style="min-width: 200px; max-width: 1449px; min-height: 90px; width: 115.556px; height: 52px;"><source src="blob:null/1a2556b9-b597-4805-9b92-6e391eee4b76" type="video/mp4"></video></span> Welcome to the Syncfusion Rich Text Editor</h1>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Video', 'Bold']
+                },
+                value: innerHTML1
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Video delete action checking using delete key in starting of H1 tag', (done: Function) => {
+            let node: any = (rteObj as any).inputElement.childNodes[0].childNodes[0].childNodes[0];
+            setCursorPoint(node, 1);
+            const deleteKeyDownEvent: KeyboardEvent =  new KeyboardEvent('keydown', DELETE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(deleteKeyDownEvent);
+            setTimeout(function () {
+                expect((<any>rteObj).inputElement.querySelector('.e-video-wrap')).toBe(null);
+                expect((<any>rteObj).inputElement.childNodes[0].childElementCount === 0).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+
     describe('942817: IFrame - Script Error Occurs After Replacing Embedded Code with a Web URL ', function () {
         let rteObj: RichTextEditor;
         let controlId: string;
@@ -4837,6 +4900,35 @@ client side. Customer easy to edit the contents and get the HTML content for
                     expect(result.querySelector('source').src === 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Ocean-Waves.mp4').toBe(true);
                     done();
                 },200);
+            }, 100);
+        });
+    });
+
+    describe('917961: Users cannott interact with other elements after skipping a video as focus stays on the video player.', () => {
+        let editor: RichTextEditor;
+        const defaultUA: string = navigator.userAgent;
+        const safari: string = MACOS_USER_AGENT.SAFARI;
+        beforeAll(() => {
+            Browser.userAgent = safari;
+            editor = renderRTE({
+                value: `<p><video controls style="width: 30%;"><source 
+                    src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Ocean-Waves.mp4" type="video/mp4" /></video></p>`
+            });
+        });
+        afterAll(() => {
+            destroy(editor);
+            Browser.userAgent = defaultUA;
+        });
+
+        it('Should not call the prevent default for the click of the Video SAFARI.', (done: Function) => {
+            editor.focusIn();
+            const videoElem: HTMLVideoElement =  editor.inputElement.querySelector('video');
+            const clickEvent: MouseEvent = new MouseEvent('click', BASIC_MOUSE_EVENT_INIT);
+            spyOn(clickEvent, 'preventDefault');
+            videoElem.dispatchEvent(clickEvent);
+            setTimeout(() => {
+                expect(clickEvent.preventDefault).not.toHaveBeenCalled();
+                done();
             }, 100);
         });
     });

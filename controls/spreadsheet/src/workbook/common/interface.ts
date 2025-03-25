@@ -81,7 +81,7 @@ export interface pdfLayoutSettings {
      * Determines whether the content should fit into a single page in the PDF.
      *
      * - **true**: Content will automatically scale to fit within one page.
-     * - **false**: Content may span across multiple pages if it does not fit.
+     * - **false**: Content may span across multiple pages if it doesn’t fit.
      *
      */
     fitSheetOnOnePage?: boolean;
@@ -345,6 +345,7 @@ export interface CellFormatArgs {
     outsideViewport?: boolean;
     formatColor?: string;
     isFromAutoFillOption?: boolean;
+    rowHeight?: number;
     mergeBorderRows?: number[];
 }
 
@@ -704,6 +705,8 @@ export interface InsertDeleteModelArgs {
     refreshSheet?: boolean;
     conditionalFormats?: ConditionalFormatModel[];
     prevAction?: string;
+    freezePane?: boolean;
+    isRedo?: boolean;
 }
 
 /**
@@ -760,6 +763,7 @@ export interface MergeArgs {
     preventRefresh?: boolean;
     refreshRibbon?: boolean;
     sheetIndex?: number;
+    mergeCollection?: number[][]
 }
 
 /**
@@ -1120,7 +1124,7 @@ export interface SerializationOptions {
      */
     ignoreStyle?: boolean;
     /**
-     * Specifies whether to exclude formula when loading or saving JSON data.
+     * Specifies whether to exclude formulwhen loading or saving JSON data.
      */
     ignoreFormula?: boolean;
     /**

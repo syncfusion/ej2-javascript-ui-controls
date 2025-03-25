@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 @include export-module('badge-theme') {
   //sass-lint:disable no-color-literals
   .e-badge {
@@ -103,7 +105,7 @@
             background-color: $badge-primary-bg-color-darken;
           }
           @else {
-            background-color: darken($color: $color, $amount: 10%);
+            background-color: color.adjust($color: $color, $lightness: -10%);
           }
         }
       }
@@ -113,8 +115,8 @@
       &.e-badge-#{$type}[href].e-badge-ghost {
         &:hover {
           @if $badge-theme != 'Material3' and $badge-theme != 'fluent2' and $badge-theme != 'bootstrap5' and $badge-theme != 'bootstrap5.3' and $badge-theme != 'bds' and $badge-theme != 'tailwind3' {
-            border-color: darken($color: $color, $amount: 15%);
-            color: darken($color: $color, $amount: 15%);
+            border-color: color.adjust($color: $color, $lightness: -15%);
+            color: color.adjust($color: $color, $lightness: -15%);
           }
         }
       }

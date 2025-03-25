@@ -6,16 +6,18 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';import { FilterHi
 export interface SearchSettingsModel {
 
     /**
-     * Specifies the columns to be searched at initial rendering of the TreeGrid. You can also get the columns that were currently filtered.
+     * Specifies the columns to be searched upon the initial rendering of the TreeGrid.
+     * You can also retrieve the list of columns that are currently searched.
      *
      * @default []
      */
     fields?: string[];
 
     /**
-     * If ignoreCase set to true, then search ignores the diacritic characters or accents while filtering.
+     * When set to true, the search operation ignores case sensitivity,
+     * including diacritic characters or accents while filtering.
      *
-     * > Check the [`Diacritics`](../../treegrid/filtering/#diacritics/) filtering.
+     * > Check the [`Diacritics`](../../treegrid/filtering/filtering#diacritics) filtering.
      *
      * @default false
      */
@@ -55,18 +57,18 @@ export interface SearchSettingsModel {
     operator?: string;
 
     /**
-     * A key word for searching the TreeGrid content.
+     * A keyword used for searching within the TreeGrid content.
+     *
      */
     key?: string;
 
     /**
-     *  Defines the search hierarchy modes. The available options are,
-     * ```props
-     * * Parent :- Shows the searched record with parent record.
-     * * Child :- Shows the searched record with child record.
-     * * Both :- shows the searched record with both parent and child record.
-     * * None :- Shows only the searched record.
-     * ```
+     * Defines the search hierarchy modes dictating which parts of the tree should be included in search results.
+     * The available options are:
+     * * `Parent`: Shows the searched record along with its parent record.
+     * * `Child`: Shows the searched record along with its child record.
+     * * `Both`: Shows the searched record with both its parent and child records.
+     * * `None`: Shows only the searched record.
      *
      * @default Parent
      * @isEnumeration true

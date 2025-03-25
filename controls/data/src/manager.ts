@@ -4,7 +4,7 @@ import { Fetch } from '@syncfusion/ej2-base';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DataUtil, Aggregates, Group } from './util';
 import { Predicate, Query, QueryOptions } from './query';
-import { ODataAdaptor, JsonAdaptor, CacheAdaptor, RemoteSaveAdaptor, RemoteOptions, CustomDataAdaptor } from './adaptors';
+import { ODataAdaptor, JsonAdaptor, CacheAdaptor, RemoteSaveAdaptor, RemoteOptions, CustomDataAdaptor, DataResult, Requests } from './adaptors';
 /**
  * DataManager is used to manage and manipulate relational data.
  */
@@ -29,6 +29,12 @@ export class DataManager {
     private requests: Fetch[] = [];
     private fetchDeffered: Deferred;
     private fetchReqOption: Fetch;
+    private guidId: string;
+    private previousCacheQuery: string;
+    private isEnableCache: boolean = false;
+    private cacheQuery: string;
+    /** @hidden */
+    public currentViewData: ReturnOption;
 
     /**
      * Constructor for DataManager class
@@ -43,6 +49,7 @@ export class DataManager {
      */
     constructor(dataSource?: DataOptions | JSON[] | Object[], query?: Query, adaptor?: AdaptorOptions | string) {
         this.isInitialLoad = true;
+        this.isEnableCache = false;
         if (!dataSource && !this.dataSource) {
             dataSource = [];
         }
@@ -80,6 +87,7 @@ export class DataManager {
                 headers: dataSource.headers,
                 accept: dataSource.accept,
                 data: dataSource.data,
+                enableCache: dataSource.enableCache,
                 timeTillExpiration: dataSource.timeTillExpiration,
                 cachingPageSize: dataSource.cachingPageSize,
                 enableCaching: dataSource.enableCaching,
@@ -105,7 +113,7 @@ export class DataManager {
         if (data.dataType === undefined) {
             data.dataType = 'json';
         }
-
+        this.isEnableCache = data.enableCache;
         this.dataSource = data;
         this.defaultQuery = query;
         if (this.dataSource.enablePersistence && this.dataSource.id) {
@@ -130,6 +138,11 @@ export class DataManager {
             data.jsonp = 'callback';
         }
         this.adaptor = <AdaptorOptions>adaptor || this.adaptor;
+        if (this.isEnableCache) {
+            this.guidId = DataUtil.getGuid('cacheAdaptor');
+            const obj: Object = { keys: [], results: [] };
+            window.localStorage.setItem(this.guidId, JSON.stringify(obj));
+        }
         if (data.enableCaching) {
             this.adaptor = new CacheAdaptor(<CacheAdaptor>this.adaptor, data.timeTillExpiration, data.cachingPageSize);
         }
@@ -230,7 +243,7 @@ export class DataManager {
         }
 
         query = query || this.defaultQuery;
-
+        
         const result: ReturnOption = this.adaptor.processQuery(this, query);
 
         if (query.subQuery) {
@@ -289,7 +302,7 @@ export class DataManager {
 
         if (!this.dataSource.offline && (this.dataSource.url !== undefined && this.dataSource.url !== '')
             || (!isNullOrUndefined(this.adaptor[makeRequest])) || this.isCustomDataAdaptor(this.adaptor)) {
-            const result: ReturnOption = this.adaptor.processQuery(this, query);
+            const result: ReturnOption = this.isEnableCache ? this.processQuery(query as Query) :  this.adaptor.processQuery(this, query);
             if (!isNullOrUndefined(this.adaptor[makeRequest])) {
                 this.adaptor[makeRequest](result, deffered, args, <Query>query);
             } else if (!isNullOrUndefined(result.url) || this.isCustomDataAdaptor(this.adaptor)) {
@@ -316,6 +329,67 @@ export class DataManager {
 
         return deffered.promise as Promise<Response>;
     }
+
+    protected getQueryRequest(query: Query): Requests {
+        const req: Requests = { sorts: [], groups: [], filters: [], searches: [], aggregates: [] };
+        req.sorts = Query.filterQueries(query.queries, 'onSortBy');
+        req.groups = Query.filterQueries(query.queries, 'onGroup');
+        req.filters = Query.filterQueries(query.queries, 'onWhere');
+        req.searches = Query.filterQueries(query.queries, 'onSearch');
+        req.aggregates = Query.filterQueries(query.queries, 'onAggregates');
+        return req;
+    }
+
+
+    private generateKey(url: string, query: Query): string {
+        const queries: Requests = this.getQueryRequest(query);
+        const singles: Object = Query.filterQueryLists(query.queries, ['onSelect', 'onPage', 'onSkip', 'onTake', 'onRange']);
+        let key: string = url;
+        const page: string = 'onPage';
+        queries.sorts.forEach((obj: QueryOptions) => {
+            key += obj.e.direction + obj.e.fieldName;
+        });
+        queries.groups.forEach((obj: QueryOptions) => {
+            key += obj.e.fieldName;
+        });
+        queries.searches.forEach((obj: QueryOptions) => {
+            key += obj.e.searchKey;
+        });
+
+        for (let filter: number = 0; filter < queries.filters.length; filter++) {
+            const currentFilter: QueryOptions = queries.filters[filter];
+            if (currentFilter.e.isComplex) {
+                const newQuery: Query = query.clone();
+                newQuery.queries = [];
+                for (let i: number = 0; i < currentFilter.e.predicates.length; i++) {
+                    newQuery.queries.push({ fn: 'onWhere', e: currentFilter.e.predicates[i], filter: query.queries.filter });
+                }
+                key += currentFilter.e.condition + this.generateKey(url, newQuery);
+            } else {
+                key += currentFilter.e.field + currentFilter.e.operator + currentFilter.e.value;
+            }
+        }
+        if (!isNullOrUndefined(this.previousCacheQuery) && this.previousCacheQuery !== key) {
+            const obj: Object = { keys: [], results: [] };
+            window.localStorage.setItem(this.guidId, JSON.stringify(obj));
+        }
+        this.previousCacheQuery = key;
+        if (page in singles) {
+            key += singles[page].pageIndex;
+        }
+        return key;
+    }
+
+    private processQuery(query: Query): Object {
+        const key: string = this.generateKey(this.dataSource.url, query);
+        const cachedItems: DataResult = JSON.parse(window.localStorage.getItem(this.guidId));
+        const data: DataResult = cachedItems ? cachedItems.results[cachedItems.keys.indexOf(key)] : null;
+        if (data != null) {
+            return DataUtil.parse.parseJson(data);
+        }
+        return this.adaptor.processQuery(this, query);
+    }
+
     private static getDeferedArgs(query: Query, result: ReturnOption, args?: ReturnOption): Object {
         if (query.isCountRequired) {
             args.result = result.result;
@@ -396,37 +470,61 @@ export class DataManager {
             if (this.isCustomDataAdaptor(this.adaptor)) {
                 request = extend({}, this.fetchReqOption, request) as Fetch;
             }
-            if (request.contentType.indexOf('xml') === -1 && this.dateParse) {
+            if (request.contentType.indexOf('xml') === -1 && this.dateParse && !this.isEnableCache) {
                 data = DataUtil.parse.parseJson(data);
             }
-            let result: ReturnOption = this.adaptor.processResponse(data, this, query, request.fetchRequest, request);
-            let count: number = 0;
-            let aggregates: Aggregates = null;
-            const virtualSelectRecords: string = 'virtualSelectRecords';
-            const virtualRecords: { virtualSelectRecords: Object } =
-                (<{ [key: string]: { virtualSelectRecords: Object } }>data)[virtualSelectRecords];
-            if (query.isCountRequired) {
-                count = result.count;
-                aggregates = result.aggregates;
-                result = result.result;
-            }
-            if (!query.subQuery) {
-                process(result, count, request.fetchRequest, request.type, data, aggregates, virtualRecords);
-                return;
-            }
-            if (!isSelector) {
-                fnQueryChild(result, request);
-            }
+            let result: ReturnOption;
+            let promise: Promise<Object> = (<Promise<Object>>this.afterReponseRequest(data));
+            promise.then((data: Object) => {
+                result = this.adaptor.processResponse(data, this, query, request.fetchRequest, request);
+                if (this.isEnableCache) {
+                    /* eslint-enable prefer-spread */
+                    const key: string = query ? this.generateKey(this.dataSource.url, query) : this.dataSource.url;
+                    let obj: DataResult = {};
+                    obj = JSON.parse(window.localStorage.getItem(this.guidId));
+                    const index: number = obj.keys.indexOf(key);
+                    if (index !== -1) {
+                        (<Object[]>obj.results).splice(index, 1);
+                        obj.keys.splice(index, 1);
+                    }
+                    obj.results[obj.keys.push(key) - 1] = { keys: key, result: result.result, timeStamp: new Date(), count: result.count };
+                    window.localStorage.setItem(this.guidId, JSON.stringify(obj));
+                }
+                if (request.contentType.indexOf('xml') === -1 && this.dateParse && this.isEnableCache) {
+                    result = DataUtil.parse.parseJson(result);
+                }
+                let count: number = 0;
+                let aggregates: Aggregates = null;
+                const virtualSelectRecords: string = 'virtualSelectRecords';
+                const virtualRecords: { virtualSelectRecords: Object } =
+                    (<{ [key: string]: { virtualSelectRecords: Object } }>data)[virtualSelectRecords];
+                if (query.isCountRequired) {
+                    count = result.count;
+                    aggregates = result.aggregates;
+                    result = result.result;
+                }
+                if (!query.subQuery) {
+                    process(result, count, request.fetchRequest, request.type, data, aggregates, virtualRecords);
+                    return;
+                }
+                if (!isSelector) {
+                    fnQueryChild(result, request);
+                };
+            }).catch((e: Error) => this.dataManagerFailure(e, deffered, args));
         };
         let req: Object = this.extendRequest(url, fnSuccess, fnFail);
         if (!this.isCustomDataAdaptor(this.adaptor)) {
-            const fetch: Fetch = new Fetch(req);
-            fetch.beforeSend = () => {
-                this.beforeSend(fetch.fetchRequest, fetch);
-            };
-            req = fetch.send();
-            (<Promise<Response>>req).catch((e: Error) => true); // to handle failure remote requests.
-            this.requests.push(fetch);
+            let promise: Promise<Object> = (<Promise<Object>>this.useMiddleware(req));
+            let fetch: Fetch;
+            promise.then((response: any) => {
+                fetch = new Fetch(req);
+                fetch.beforeSend = () => {              
+                    this.beforeSend(fetch.fetchRequest, fetch, response);
+                };
+                req = fetch.send();
+                (<Promise<Response>>req).catch((e: Error) => true);
+                this.requests.push(fetch);
+            }).catch((e: Error) => this.dataManagerFailure(e, deffered, args));
         } else {
             this.fetchReqOption = req as Fetch;
             const request: FetchOption = req;
@@ -467,11 +565,68 @@ export class DataManager {
         return req;
     }
 
-    private beforeSend(request: Request, settings?: Fetch): void {
-        this.adaptor.beforeSend(this, request, settings);
+    /**
+     * @param {Error} e - specifies the string
+     * @param {Deferred} deffered - specifies the deffered
+     * @param {RequestOptions} args - specifies the RequestOptions
+     * @hidden
+     */
+    public dataManagerFailure(e: Error, deffered: Deferred, args?: RequestOptions): void {
+        args.error = e;
+        deffered.reject(args);
+    }
 
-        const headers: Object[] = this.dataSource.headers;
+    
+
+    private async afterReponseRequest(data: string | Object): Promise<Object> { 
+        const reponse: Object = await this.applyPostRequestMiddlewares(data);
+        const deffered: Deferred = new Deferred();
+        deffered.resolve(reponse);
+        return deffered.promise as Promise<Response>;
+    }
+
+    /**
+     * Processes the middleware stack after receiving the response.
+     * @param {Response} response - The response object.
+     * @returns {Response} - The potentially modified response.
+     */
+
+    public async applyPostRequestMiddlewares(response: string | Object): Promise<Object> { 
+        return response;
+    }
+
+    /**
+     * Registers a new middleware in the DataManager.
+     * @param {Middleware} middleware - The middleware instance to register.
+     * @returns {void}
+     */
+    public async useMiddleware(request: Object): Promise<Object> { 
+        const reponse: Object = await this.applyPreRequestMiddlewares(request);
+        const deffered: Deferred = new Deferred();
+        deffered.resolve(reponse);
+        return deffered.promise as Promise<Response>;
+    }
+
+    /**
+     * Processes the middleware stack before sending the request.
+     * @param {Request} request - The request object.
+     * @returns {Request} - The potentially modified request.
+     */
+    public async applyPreRequestMiddlewares(request: Object): Promise<Object> { 
+        return request;
+    }
+
+
+    private beforeSend(request: Request, settings?: Fetch, response?: Object): void {
+        this.adaptor.beforeSend(this, request, settings);
+        let headers: Object[] = [];
+        if (this.dataSource.headers) {
+            headers = headers.concat(this.dataSource.headers);
+        }
         let props: Object[];
+        if (response && (<{ headers: Object[] }>response).headers) {
+            headers = headers.concat((<{ headers: Object[] }>response).headers);
+        }
         for (let i: number = 0; headers && i < headers.length; i++) {
             props = [];
             const keys: string[] = Object.keys(headers[i]);
@@ -621,6 +776,10 @@ export class DataManager {
             tableName = null;
         }
 
+        if (this.isEnableCache) {
+            this.cacheQuery = this.generateKey(this.dataSource.url, query);
+        }
+
         const res: Object = this.adaptor.update(this, keyField, value, tableName, query, original);
 
         const dofetchRequest: string = 'dofetchRequest';
@@ -664,11 +823,36 @@ export class DataManager {
         } catch (e) {
             record = [];
         }
+
+        if (this.isEnableCache) {
+            const requests: { action: string, keyColumn: string, key: number | string, value: object } = JSON.parse((<{ data: string }>request).data);
+            if (requests.action === 'insert' || requests.action === 'remove') {
+                const obj: Object = { keys: [], results: [] };
+                window.localStorage.setItem(this.guidId, JSON.stringify(obj));
+            } else if (requests.action === 'update') {
+                const cachedItems: DataResult = JSON.parse(window.localStorage.getItem(this.guidId));
+                const data: DataResult = cachedItems ? cachedItems.results[cachedItems.keys.indexOf(this.cacheQuery)] : null;
+                if (data && data.result) {
+                    let cacheData: Object[] = <[{ [key: string]: Object[] }]>data.result;
+                    for (let i: number = 0; i < cacheData.length; i++) {
+                        if (cacheData[i][requests.keyColumn] === requests.key) {
+                            cacheData[i] = requests.value;
+                            window.localStorage.setItem(this.guidId, JSON.stringify(cachedItems));
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
         record = this.adaptor.processResponse(DataUtil.parse.parseJson(record), this, null, request.fetchRequest, request, changes);
         this.fetchDeffered.resolve(record);
     }
 
     private failureFunc (e: string): void  {
+        if (this.isEnableCache) {
+            this.cacheQuery = '';
+        }
         this.fetchDeffered.reject([{ error: e }]);
     }
 
@@ -755,6 +939,7 @@ export interface DataOptions {
     headers?: Object[];
     accept?: boolean;
     data?: JSON;
+    enableCache?: boolean;
     timeTillExpiration?: number;
     cachingPageSize?: number;
     enableCaching?: boolean;
@@ -801,7 +986,7 @@ export interface RequestOptions {
     aggregates?: Aggregates;
     actual?: Object;
     virtualSelectRecords?: Object;
-    error?: string;
+    error?: string | Error;
 }
 
 /**

@@ -202,22 +202,23 @@ export class Print {
                             const measureShapeAnnotation: number[] = printCollection.measureShapeAnnotation;
                             const stampAnnotation: number[] = printCollection.stampAnnotations;
                             const freeTextAnnotation: number[] = printCollection.freeTextAnnotation;
+                            const inkAnnotation: number[] = printCollection.signatureInkAnnotation;
                             const stickyNoteAnnotation: any = printCollection.stickyNotesAnnotation;
                             annotationSource = this.pdfViewer.annotationModule.textMarkupAnnotationModule.
                                 printAnnotationsInCanvas(textMarkupAnnotation, printImage.pageNumber, stampAnnotation,
                                                          shapeAnnotation, measureShapeAnnotation, stickyNoteAnnotation,
-                                                         freeTextAnnotation);
+                                                         freeTextAnnotation, inkAnnotation);
                         } else {
                             annotationSource = this.pdfViewer.annotationModule.textMarkupAnnotationModule.
                                 printAnnotationsInCanvas(printCollection.textMarkupAnnotation, printImage.pageNumber,
                                                          printCollection.stampAnnotations, printCollection.shapeAnnotation,
-                                                         printCollection.measureShapeAnnotation, printCollection.stickyNoteAnnotation,
-                                                         printCollection.freeTextAnnotation);
+                                                         printCollection.measureShapeAnnotation, printCollection.stickyNotesAnnotation,
+                                                         printCollection.freeTextAnnotation, printCollection.signatureInkAnnotation);
                         }
                     }
                     if (this.pdfViewerBase.isAnnotationCollectionRemoved) {
                         annotationSource = this.pdfViewer.annotationModule.textMarkupAnnotationModule.
-                            printAnnotationsInCanvas(null, printImage.pageNumber, null, null, null, null, null);
+                            printAnnotationsInCanvas(null, printImage.pageNumber, null, null, null, null, null, null);
                     }
                 }
                 const currentPageNumber: number = printImage.pageNumber;
@@ -265,6 +266,7 @@ export class Print {
                 const annotationImage: HTMLImageElement = new Image();
                 const annotationImage1: HTMLImageElement = new Image();
                 pageImage.onload = (): void => {
+                    this.pdfViewerBase.isPrint = true;
                     if ((pageHeight > pageWidth) || !this.pdfViewer.enablePrintRotation) {
                         context.drawImage(pageImage, 0, 0, this.printCanvas.width, this.printCanvas.height);
                         if (annotationSource && annotationSource.annotImg) {
@@ -299,6 +301,7 @@ export class Print {
                         this.printWindowOpen();
                     }
                     this.pdfViewer.renderDrawing(null, pageIndex);
+                    this.pdfViewerBase.isPrint = false;
                 };
                 pageImage.src = printImage.image;
                 if (annotationSource && !isNullOrUndefined(annotationSource.annotImg)) {

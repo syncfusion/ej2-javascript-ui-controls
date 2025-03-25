@@ -435,7 +435,8 @@ export class AggregateMenu {
     private updateDataSource(isRefreshed?: boolean): void {
         if ((this.parent as PivotFieldList).isDeferLayoutUpdate === false || ((this.parent as PivotFieldList).pivotGridModule &&
             (this.parent as PivotFieldList).pivotGridModule.pivotDeferLayoutUpdate === false)
-            || this.parent.getModuleName() === 'pivotview') {
+            || this.parent.getModuleName() === 'pivotview' || (this.parent.isAdaptive && this.parent.getModuleName() === 'pivotfieldlist'
+                && (this.parent as PivotFieldList).renderMode === 'Popup')) {
             this.parent.updateDataSource(isRefreshed);
         } else {
             if (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).renderMode === 'Popup') {
@@ -484,6 +485,7 @@ export class AggregateMenu {
         selectedField.type = summaryInstance.value as SummaryTypes;
         selectedField.baseField = baseFieldInstance.value as string;
         selectedField.baseItem = baseItemInstance.value as string;
+        this.parent.engineModule.fieldList[fieldName as string].aggregateType = selectedField.type;
         valueDialog.close();
         // this.parent.axisFieldModule.render();
         this.parent.lastAggregationInfo = selectedField;

@@ -17,7 +17,7 @@ import { destroy, commandColumnDestroy  } from '../base/constant';
 
 export class CommandColumnRenderer extends CellRenderer implements ICellRenderer<Column> {
     private buttonElement: HTMLButtonElement = <HTMLButtonElement>this.parent.createElement('button', {});
-    private unbounDiv: HTMLElement = this.parent.createElement('div', { className: 'e-unboundcelldiv', styles: 'display: inline-block' });
+    private unbounDiv: HTMLElement = this.parent.createElement('div', { className: 'e-unboundcelldiv' });
     private childRefs: Button[] = [];
 
     public element: HTMLElement = this.parent.createElement('TD', {

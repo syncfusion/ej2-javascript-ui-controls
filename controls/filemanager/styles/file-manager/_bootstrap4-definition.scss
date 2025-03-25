@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 /*! FileManager's bootstrap theme wise override definitions and variables */
 $fm-skin-name: 'bootstrap4' !default;
 $fe-bc-font-size: 14px !default;
@@ -21,15 +23,15 @@ $fe-tb-db-sep-color: $gray-200 !default;
 $fe-active-border-color: $primary !default;
 $fe-active-bg-color: $primary !default;
 $fe-active-font-color: $primary-font !default;
-$fe-hover-border-color: darken($gray-100, 2%) !default;
-$fe-hover-bg-color: darken($gray-100, 2%) !default;
+$fe-hover-border-color: color.adjust($gray-100, $lightness: -2%) !default;
+$fe-hover-bg-color: color.adjust($gray-100, $lightness: -2%) !default;
 $fe-ah-border-color: $primary !default;
 $fe-ah-bg-color: $primary !default;
-$fe-focus-border-color: darken($gray-100, 2%) !default;
+$fe-focus-border-color: color.adjust($gray-100, $lightness: -2%) !default;
 $fe-bc-color: $gray-600 !default;
 $fe-bc-link-color: $primary !default;
 $fe-bc-hover-bg-color: $content-bg !default;
-$fe-bc-hover-font-color: darken($primary, 15%) !default;
+$fe-bc-hover-font-color: color.adjust($primary, $lightness: -15%) !default;
 $fe-grid-header-bg-color: $content-bg !default;
 $fe-grid-type-color: $gray-600 !default;
 $fe-grid-text-color: $gray-900 !default;

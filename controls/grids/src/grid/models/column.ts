@@ -731,6 +731,13 @@ export class Column {
     public getDomSetter(): string {
         return this.disableHtmlEncode ? 'textContent' : 'innerHTML';
     }
+    /**
+     * Determines the behavior of the `aria-label` attribute for cells in template columns.
+     * If enableAriaLabel is set to false, the aria-label attribute is not applied to template column cells, which affects screen reader accessibility.
+     *
+     * @default {}
+     */
+    public templateOptions: TemplateProps = { enableAriaLabel: true };
 }
 
 /**
@@ -1296,6 +1303,14 @@ export interface ColumnModel {
      * @default None
      */
     freeze?: freezeDirection;
+
+    /**
+     * Determines the behavior of the `aria-label` attribute for cells in template columns.
+     * If enableAriaLabel is set to false, the aria-label attribute is not applied to template column cells, which affects screen reader accessibility.
+     *
+     * @default {}
+     */
+    templateOptions?: TemplateProps;
 }
 
 export interface ActionEventArgs {
@@ -1421,6 +1436,15 @@ export interface GridColumnModel extends ColumnModel {
      * @default null
      */
     columns?: string[] | ColumnModel[];
+}
+
+export interface TemplateProps {
+    /**
+     * Specifies whether the `aria-label` attribute is enabled for template column cells.
+     *
+     * @default true
+     */
+    enableAriaLabel?: boolean;
 }
 
 /**

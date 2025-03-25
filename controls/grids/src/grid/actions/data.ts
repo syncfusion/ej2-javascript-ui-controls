@@ -442,6 +442,7 @@ export class Data implements IDataProcessor {
 
     private insert(query: Query, args: Object): Promise<Object> {
         if ((<{ requestType?: string }>args).requestType === 'save') {
+            (<{ query?: Query }>args).query = query;
             this.parent.notify(events.recordAdded, args);
         }
         return this.executeQuery(query);

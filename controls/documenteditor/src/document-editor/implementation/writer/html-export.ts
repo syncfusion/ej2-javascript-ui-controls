@@ -452,7 +452,7 @@ export class HtmlExport {
              if (block.hasOwnProperty(rowsProperty[this.keywordIndex])) {
                 blockStyle += this.serializeTable(block);
             } else if (block.hasOwnProperty(blocksProperty[this.keywordIndex])) {
-                blockStyle += this.serializeSection(block); 
+                blockStyle += this.serializeSection(block);
             } else {
                 blockStyle += this.serializeParagraph(block);
             }

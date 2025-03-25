@@ -277,3 +277,7 @@ export const localizedFormatAction: string = 'localizedFormatAction';
 export const moveSheetHandler: string = 'moveSheetHandler';
 /** @hidden */
 export const addListValidationDropdown: string = 'addListValidationDropdown';
+/** @hidden */
+export const sheetRenameUpdate: string = 'sheetRenameUpdate';
+/** @hidden */
+export const updateSortCollection: string = 'updateSortCollection';

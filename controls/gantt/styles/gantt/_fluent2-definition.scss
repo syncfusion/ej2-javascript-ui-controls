@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // color
 $gantt-header-bg-color: $content-bg-color-alt1 !default;
 $gantt-header-border-color: $border-light !default;
@@ -217,7 +219,6 @@ $gantt-group-clone-text-align: center !default;
 $gantt-clone-prop-box-shadow: 0 3px 8px 0 rgba($black, .26) !default;
 $gantt-border-size: 1px !default;
 $grid-active-container-border: 0 0 0 1px $border-alt inset !default;
-$gantt-collapse-progress-width: 0px !important;
 $gantt-range-container-arc-radius: 1px !default;
 $bigger-column-menu-size: 35px !default;
 $gantt-masked-table-background-color: rgb(225,223,221);

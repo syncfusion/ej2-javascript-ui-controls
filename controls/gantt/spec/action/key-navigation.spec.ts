@@ -1648,7 +1648,7 @@ describe('shift Tab action', function () {
         triggerMouseEvent(endDate, 'dblclick');
         let args: any = { action: 'shiftTab', preventDefault: preventDefault, target: ganttObj.treeGrid.grid.element.querySelector('.e-editedbatchcell') } as any;
         ganttObj.keyboardModule.keyAction(args);
-        expect(ganttObj.element.getElementsByClassName('e-editedbatchcell')[0].getAttribute('data-colindex')).toBe("2");
+        expect(ganttObj.element.getElementsByClassName('e-editedbatchcell')[0].getAttribute('aria-colindex')).toBe("3");
 
     });
     afterAll(function () {

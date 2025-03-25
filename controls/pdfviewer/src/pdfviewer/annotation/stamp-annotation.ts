@@ -359,8 +359,8 @@ export class StampAnnotation {
 
     private calculateImagePosition(position: any, flags?: boolean): IRectCollection {
         let positions: IRectCollection = { width: 0, height: 0, left: 0, top: 0 };
-        const x: number = parseFloat(position.x ? position.x : position.X);
-        const y: number = parseFloat(position.y ? position.y : position.Y);
+        const x: number = parseFloat(!isNullOrUndefined(position.x) ? position.x : position.X);
+        const y: number = parseFloat(!isNullOrUndefined(position.y) ? position.y : position.Y);
         const newWidth: number = parseFloat(position.width ? position.width : position.Width);
         const newHeight: number = parseFloat(position.height ? position.height : position.Height);
         if (flags) {
@@ -481,10 +481,11 @@ export class StampAnnotation {
                 annotation.allowedInteractions = existingAnnotation['AllowedInteractions'] ? existingAnnotation['AllowedInteractions'] : existingAnnotation['allowedInteractions'] ? existingAnnotation['allowedInteractions'] : ['None'];
                 annotation.CustomData = customData;
                 let isPrint: boolean = true;
-                if (annotation.annotationAddMode === 'Imported Annotation') {
-                    isPrint = existingAnnotation['IsPrint'];
+                if (!isNullOrUndefined(existingAnnotation.IsPrint)) {
+                    isPrint = existingAnnotation.IsPrint;
                 } else {
-                    isPrint = existingAnnotation.AnnotationSettings.isPrint;
+                    isPrint = !isNullOrUndefined(existingAnnotation.IsPrint) ?
+                        existingAnnotation.IsPrint : existingAnnotation.AnnotationSettings.isPrint;
                 }
                 annotation.isPrint = isPrint;
                 if (annotation.Author === null) {
@@ -541,7 +542,7 @@ export class StampAnnotation {
                 this.triggerAnnotationAdd(annot, annotation);
             }
             if (isNullOrUndefined(canvass)) {
-                canvass = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
+                canvass = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', pageIndex);
             }
             this.pdfViewer.renderDrawing(canvass as any, pageIndex);
             if (this.pdfViewerBase.stampAdded) {
@@ -840,7 +841,7 @@ export class StampAnnotation {
                 this.customStampName = null;
             }
             if (isNullOrUndefined(canvas)) {
-                canvas = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
+                canvas = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', pageIndex);
             }
             this.pdfViewer.renderDrawing(canvas as any, pageIndex);
             if (this.pdfViewerBase.stampAdded) {
@@ -1320,22 +1321,6 @@ export class StampAnnotation {
                 stampAnnotation.pathdata = splitArrayCollection(collectionData);
                 isDynamic = true;
             }
-        } else {
-            annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings :
-                this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.customStampSettings);
-            annotationObject = {
-                stampAnnotationType: 'image', author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, allowedInteractions: annotation.allowedInteractions,
-                note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor,
-                opacity: annotation.Opacity, stampFillcolor: annotation.FillColor,
-                rotateAngle: annotation.RotateAngle, creationDate: annotation.ModifiedDate, pageNumber: pageNumber, icon: '', stampAnnotationPath: this.findImageData(annotation.Apperarance), randomId: 'image', isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: ' ',
-                bounds: this.calculateImagePosition(annotation.Rect, true), annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.Author, modifiedDate: annotation.ModifiedDate }, shapeAnnotationType: 'stamp',
-                annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.annotationSettings,
-                customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.isPrint,
-                isCommentLock: annotation.IsCommentLock, isMaskedImage: annotation.IsMaskedImage,
-                customStampName: annotation.CustomStampName, template : annotation ? annotation.template : null,
-                templateSize: annotation ? annotation.templateSize : 0
-            };
-            this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_stamp');
         }
         if (stampAnnotation) {
             annotationObject = {
@@ -1353,6 +1338,23 @@ export class StampAnnotation {
                 }
                 annotationObject.isDynamicStamp = true;
             }
+            this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_stamp');
+        }
+        else {
+            annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings :
+                this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.customStampSettings);
+            annotationObject = {
+                stampAnnotationType: 'image', author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, allowedInteractions: annotation.allowedInteractions,
+                note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor,
+                opacity: annotation.Opacity, stampFillcolor: annotation.FillColor,
+                rotateAngle: annotation.RotateAngle, creationDate: annotation.ModifiedDate, pageNumber: pageNumber, icon: '', stampAnnotationPath: this.findImageData(annotation.Apperarance), randomId: 'image', isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: ' ',
+                bounds: this.calculateImagePosition(annotation.Rect, true), annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.Author, modifiedDate: annotation.ModifiedDate }, shapeAnnotationType: 'stamp',
+                annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.annotationSettings,
+                customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.isPrint,
+                isCommentLock: annotation.IsCommentLock, isMaskedImage: annotation.IsMaskedImage,
+                customStampName: annotation.CustomStampName, template : annotation ? annotation.template : null,
+                templateSize: annotation ? annotation.templateSize : 0
+            };
             this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_stamp');
         }
     }
@@ -1511,7 +1513,7 @@ export class StampAnnotation {
         if (toolMoved) {
             this.pdfViewerBase.updateDocumentEditedProperty(true);
         }
-        const currentAnnotObject: IStampAnnotation = null;
+        let currentAnnotObject: IStampAnnotation = null;
         const pageAnnotations: IStampAnnotation[] = this.getAnnotations(pageNumber, null);
         if (pageAnnotations != null && annotationBase) {
             for (let i: number = 0; i < pageAnnotations.length; i++) {
@@ -1524,11 +1526,15 @@ export class StampAnnotation {
                             pageAnnotations[parseInt(i.toString(), 10)].bounds =
                             {
                                 left: annotationBase.wrapper.bounds.x, top: annotationBase.wrapper.bounds.y,
-                                width: annotationBase.wrapper.bounds.width, height: annotationBase.wrapper.bounds.height
+                                width: annotationBase.wrapper.actualSize.width, height: annotationBase.wrapper.actualSize.height
                             };
                         }
                         pageAnnotations[parseInt(i.toString(), 10)].modifiedDate =
                             this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
+                    }
+                    else if (property === 'delete') {
+                        currentAnnotObject = pageAnnotations.splice(i, 1)[0];
+                        break;
                     }
                     this.pdfViewer.annotationModule.storeAnnotationCollections(pageAnnotations[parseInt(i.toString(), 10)], pageNumber);
                 }
@@ -1633,8 +1639,8 @@ export class StampAnnotation {
             stampName = dynamicStampItem.toString();
             apperarance[0] = {baseFontName: 'Helvetica-BoldOblique', currentFontname: '95b303ab-d397-438a-83af-e2ff8a9900f1', fontSize: 10, isImport: true, text: 'By ' + author + ' at ' + dateTime[1] + dateTime[2] + ' , ' + dateTime[0], type: 'string'};
             isDynamic = true;
-            annotationObject.width = annotationObject.width ? annotationObject.width : 140;
-            annotationObject.height = annotationObject.height ? annotationObject.height : 55;
+            annotationObject.width = annotationObject.width ? annotationObject.width : 170.33;
+            annotationObject.height = annotationObject.height ? annotationObject.height : 56.88;
         }
         else if (signStampItem)
         {
@@ -1694,7 +1700,7 @@ export class StampAnnotation {
             IsCommentLock: false,
             IsDynamic: isDynamic,
             IsLocked : annotationObject.isLock ? annotationObject.isLock : false,
-            IsPrint: annotationObject.isPrint ? annotationObject.isPrint : true,
+            IsPrint: !isNullOrUndefined(annotationObject.isPrint) ? annotationObject.isPrint : true,
             ModifiedDate: '',
             Name: null,
             Note: '',

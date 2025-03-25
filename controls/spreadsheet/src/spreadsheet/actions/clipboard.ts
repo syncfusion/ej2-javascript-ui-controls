@@ -1,16 +1,16 @@
 import { detach, EventHandler, Browser, L10n, isNullOrUndefined, extend, isUndefined } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/index';
-import { SheetModel, getRangeIndexes, getCell, getSheet, CellModel, getSwapRange, inRange, Workbook, isReadOnly, getRow } from '../../workbook/index';
+import { SheetModel, getRangeIndexes, getCell, getSheet, CellModel, getSwapRange, inRange, Workbook, isReadOnly, getRow, isReadOnlyCells, setCell, ValidationModel, checkColumnValidation } from '../../workbook/index';
 import { CellStyleModel, getRangeAddress, getSheetIndexFromId, getSheetName, NumberFormatArgs } from '../../workbook/index';
 import { RowModel, getFormattedCellObject, workbookFormulaOperation, checkIsFormula, Sheet, mergedRange } from '../../workbook/index';
 import { ExtendedSheet, Cell, setMerge, MergeArgs, getCellIndexes, ChartModel } from '../../workbook/index';
-import { ribbonClick, ICellRenderer, copy, paste, PasteSpecialType, initiateFilterUI, setPosition, isLockedCells, focus, isReadOnlyCells, readonlyAlert, BeforeActionData } from '../common/index';
+import { ribbonClick, ICellRenderer, copy, paste, PasteSpecialType, initiateFilterUI, setPosition, isLockedCells, focus, readonlyAlert, BeforeActionData } from '../common/index';
 import { BeforePasteEventArgs, hasTemplate, getTextHeightWithBorder, getLines, getExcludedColumnWidth, editAlert } from '../common/index';
 import { enableToolbarItems, rowHeightChanged, completeAction, DialogBeforeOpenEventArgs, insertImage } from '../common/index';
 import { clearCopy, selectRange, dialog, contentLoaded, tabSwitch, cMenuBeforeOpen, createImageElement, setMaxHgt } from '../common/index';
 import { getMaxHgt, setRowEleHeight, locale, deleteImage, getRowIdxFromClientY, getColIdxFromClientX, cut } from '../common/index';
-import { OpenOptions, colWidthChanged, PasteModelArgs, getFilterRange, FilterInfoArgs } from '../common/index';
+import { colWidthChanged, PasteModelArgs, getFilterRange, FilterInfoArgs } from '../common/index';
 import { Dialog } from '../services/index';
 import { Deferred } from '@syncfusion/ej2-data';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
@@ -18,7 +18,7 @@ import { refreshRibbonIcons, refreshClipboard, getColumn, isLocked as isCellLock
 import { setFilteredCollection, setChart, parseIntValue, isSingleCell, activeCellMergedRange, getRowsHeight } from '../../workbook/index';
 import { ConditionalFormatModel, getUpdatedFormula, clearCFRule, checkUniqueRange, clearFormulaDependentCells } from '../../workbook/index';
 import { updateCell, ModelType, beginAction, isFilterHidden, applyCF, CFArgs, ApplyCFArgs, checkRange } from '../../workbook/index';
-import { removeUniquecol } from '../../workbook/common/event';
+import { cellValidation, removeUniquecol } from '../../workbook/common/event';
 import { ColumnModel } from '../../workbook/base/column-model';
 
 /**
@@ -124,7 +124,7 @@ export class Clipboard {
             } else if (isReadonlyCell) {
                 this.parent.enableContextMenuItems([l10n.getConstant('Cut'), l10n.getConstant('Paste'), l10n.getConstant('PasteSpecial'),
                     l10n.getConstant('Filter'), l10n.getConstant('Sort'), l10n.getConstant('Hyperlink'), l10n.getConstant('EditHyperlink'),
-                    l10n.getConstant('OpenHyperlink'), l10n.getConstant('RemoveHyperlink')], false);
+                    l10n.getConstant('OpenHyperlink'), l10n.getConstant('RemoveHyperlink'), l10n.getConstant('AddNote')], false);
             } else if (sheet.isProtected && !sheet.protectSettings.insertLink) {
                 this.parent.enableContextMenuItems([l10n.getConstant('Hyperlink')], false);
             }
@@ -216,7 +216,7 @@ export class Clipboard {
                 }
                 if (!rows || !rows.length) { // If image pasted
                     if ((pasteModelArgs as { file: File }).file) {
-                        this.parent.notify(insertImage, <OpenOptions>{ file: (pasteModelArgs as { file: File }).file });
+                        this.parent.notify(insertImage, { file: (pasteModelArgs as { file: File }).file });
                         return;
                     } else if (this.copiedInfo) {
                         isExternal = false;
@@ -276,6 +276,9 @@ export class Clipboard {
             let pasteType: string = (args && args.type) || 'All';
             if (isReadOnlyCells(this.parent, rfshRange)) {
                 this.parent.notify(readonlyAlert, null);
+                return;
+            } else if (curSheet.isProtected && isLockedCells(this.parent, rfshRange)) {
+                this.parent.notify(editAlert, null);
                 return;
             }
             if (args.isAction && !this.copiedShapeInfo) {
@@ -339,8 +342,8 @@ export class Clipboard {
                     this.copiedShapeInfo.chartInfo.left = null;
                     this.parent.notify(setChart, {
                         chart: [this.copiedShapeInfo.chartInfo], isInitCell: true, isUndoRedo: true, isPaste: true,
-                        dataSheetIdx: this.copiedShapeInfo.sheetIdx, isCut: this.copiedShapeInfo.isCut,
-                        range: args.range || curSheet.selectedRange, sheetId: curSheet.id
+                        dataSheetIdx: this.copiedShapeInfo.sheetIdx, isCut: this.copiedShapeInfo.isCut, sheetId: curSheet.id,
+                        range: args.range || `${curSheet.name}!${curSheet.selectedRange}`
                     });
                 } else {
                     this.parent.notify(createImageElement, {
@@ -369,10 +372,10 @@ export class Clipboard {
                 let isFullRowMerge: boolean = false;
                 let isFullColMerge: boolean = false; let hiddenCount: number = 0;
                 const cf: ConditionalFormatModel[] = [];
-                if (!isRepeative && pasteType !== 'Values') {
-                    this.setCF(cIdx, rfshRange, prevSheet, curSheet, cf);
-                }
                 let cfRule: ConditionalFormatModel[]; let cancel: boolean;
+                if (!isRepeative && pasteType !== 'Values') {
+                    cfRule = this.setCF(cIdx, rfshRange, prevSheet, curSheet, cf, cfRule);
+                }
                 let isUniqueCell: boolean = false;
                 const uniqueCellColl: number[][] = [];
                 const copyCellArgs: { sheet: SheetModel, isExternal?: boolean, isRandFormula?: boolean } = {
@@ -380,6 +383,8 @@ export class Clipboard {
                 };
                 const pasteSetCell: Function = this.setCell(copyCellArgs);
                 const cutSetCell: Function = !isExternal && this.copiedInfo.isCut && this.setCell({ sheet: prevSheet });
+                const prevSheetMergeCollection: { range: number[], rowSpan: number, colSpan: number }[] = [];
+                const colValidationCollection: number[] = [];
                 for (let i: number = cIdx[0], l: number = 0; i <= cIdx[2]; i++, l++) {
                     if (!isExternal && !copyInfo.isCut && isFilterHidden(prevSheet, i)) {
                         l--; hiddenCount++; continue;
@@ -395,18 +400,18 @@ export class Clipboard {
                             extend({}, (isInRange && cRows[i as number] && cRows[i as number].cells[j as number]) ?
                                 cRows[i as number].cells[j as number] : getCell(i, j, prevSheet), null, true);
                         column = getColumn(prevSheet, j);
-                        if (!cell.validation && column.validation) {
-                            // if (this.copiedInfo && !this.copiedInfo.isCut) {
-                            //     const currIdx: number[] = selIdx;
-                            //     const prevIdx: number[] = cIdx;
-                            //     let updatedValue: string = getUpdatedFormula(currIdx, prevIdx, prevSheet, this.parent, { formula: column.validation.value1 });
-                            //     column.validation.value1 = updatedValue;
-                            //     if (column.validation.value2 !== '') {
-                            //         updatedValue = getUpdatedFormula(currIdx, prevIdx, prevSheet, this.parent, { formula: column.validation.value2 });
-                            //         column.validation.value2 = updatedValue;
-                            //     }
-                            // }
-                            cell.validation = column.validation;
+                        if (!cell.validation && checkColumnValidation(column, i, j)) {
+                            const validation: ValidationModel = Object.assign({}, column.validation);
+                            const prevIdx: number[] = [0, cIdx[1], 0, cIdx[3]];
+                            const value1: string = validation.value1;
+                            const value2: string = validation.value2;
+                            if (checkIsFormula(value1)) {
+                                validation.value1 = getUpdatedFormula([i, j], prevIdx, prevSheet, this.parent, { formula: value1 });
+                            }
+                            if (checkIsFormula(value2)) {
+                                validation.value2 = getUpdatedFormula([i, j], prevIdx, prevSheet, this.parent, { formula: value2 });
+                            }
+                            cell.validation = validation;
                         }
                         if (cell && cell.isReadOnly) { delete cell.isReadOnly; }
                         if (isRowSelected || isColSelected) {
@@ -563,12 +568,17 @@ export class Clipboard {
                                 if (cell.isLocked || isNullOrUndefined(cell.isLocked)) {
                                     if ((isRowSelected || isColSelected) && (cell.rowSpan !== undefined || cell.colSpan !== undefined)) {
                                         if (cell.rowSpan > 1 || cell.colSpan > 1) {
-                                            this.parent.notify(setMerge, <MergeArgs>{ merge: false, range: [i, j, i, j], type: 'All' });
+                                            prevSheetMergeCollection.push(
+                                                { range: [i, j, i, j], rowSpan: cell.rowSpan, colSpan: cell.colSpan });
                                             cell = null;
                                         } else {
                                             continue;
                                         }
                                     } else {
+                                        if (!cell.validation && prevSheet.columns[j as number] && prevSheet.columns[j as number].validation
+                                            && colValidationCollection.indexOf(j) === -1) {
+                                            colValidationCollection.push(j);
+                                        }
                                         cell = null;
                                     }
                                 } else if (cell.isLocked === false) {
@@ -583,6 +593,30 @@ export class Clipboard {
                         }
                     }
                     rowIdx++;
+                }
+                if (prevSheetMergeCollection.length) {
+                    prevSheetMergeCollection.forEach((mergeInfo: { range: number[]; rowSpan: number; colSpan: number; }) => {
+                        setCell(mergeInfo.range[0], mergeInfo.range[1], prevSheet, {
+                            rowSpan: mergeInfo.rowSpan, colSpan: mergeInfo.colSpan
+                        });
+                        const mergeArgs: MergeArgs = { range: mergeInfo.range };
+                        this.parent.notify(mergedRange, mergeArgs);
+                        this.parent.notify(setMerge, <MergeArgs>{
+                            merge: false, range: mergeArgs.range, type: 'All',
+                            sheetIndex: pSheetIdx, preventRefresh: pSheetIdx !== this.parent.activeSheetIndex
+                        });
+                        mergeArgs.range = mergeArgs.range as number[];
+                        for (let sRowIdx: number = mergeArgs.range[0]; sRowIdx <= mergeArgs.range[2]; sRowIdx++) {
+                            for (let sColIdx: number = mergeArgs.range[1]; sColIdx <= mergeArgs.range[3]; sColIdx++) {
+                                cutSetCell(sRowIdx, sColIdx, null);
+                            }
+                        }
+                    });
+                }
+                if (colValidationCollection.length) {
+                    colValidationCollection.forEach((colIdx: number) => {
+                        this.parent.notify(cellValidation, { range: prevSheet.name + '!' + getRangeAddress([cIdx[0], colIdx, cIdx[2], colIdx]), isRemoveValidation: true });
+                    });
                 }
                 if (uniqueCellColl.length) {
                     for (let i: number = 0; i < uniqueCellColl.length; i++) {
@@ -1097,7 +1131,11 @@ export class Clipboard {
                         val = <string>eventArgs.formattedText;
                     }
                     data += '>';
-                    data += val;
+                    if (typeof val === 'string' && val.includes('\n')) {
+                        data += val.split('\n').join('<br>');
+                    } else {
+                        data += val;
+                    }
                     text += val;
                     data += '</td>';
                 } else {

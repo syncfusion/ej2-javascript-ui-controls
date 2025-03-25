@@ -189,8 +189,8 @@ $schedule-agenda-big-appointment-padding: $schedule-agenda-appointment-padding !
 $schedule-month-agenda-appointment-padding: 0 16px !default;
 $schedule-month-agenda-item-padding: 10px 0 !default;
 $schedule-timeline-resources-width: 200px !default;
-$schedule-resource-color-margin-top: 10px !default;
-$schedule-bigger-resource-color-margin-top: 8px !default;
+$schedule-resource-color-margin-top: 8px !default;
+$schedule-bigger-resource-color-margin-top: 11px !default;
 $schedule-resource-color-size: 14px !default;
 $schedule-bigger-resource-color-size: 16px !default;
 $schedule-resource-tree-text-content-padding: 0 0 0 12px !default;
@@ -266,6 +266,8 @@ $schedule-bgr-date-time-icon-padding-right: 10px !default;
 $schedule-bgr-more-event-close-icon-padding: unset !default;
 $schedule-bgr-tbar-btn-text-font-size: $schedule-header-bgr-font-size !default;
 $schedule-multiple-event-popup-icon-bg-color: $schedule-header-bg-color !default;
+$schedule-calendar-width: 292px !default;
+$schedule-bgr-calendar-width: 350px !default;
 
 @mixin tbar-btn-animation {
   content: '';

@@ -142,7 +142,7 @@ export class Container extends DiagramElement {
                         child.offsetX = this.offsetX;
                         child.parentTransform = this.parentTransform + this.rotateAngle;
                         if (this.flip && (this.elementActions & ElementAction.ElementIsGroup)) {
-                            child.parentTransform = (this.flip === FlipDirection.Horizontal || this.flip === FlipDirection.Vertical) ?
+                            child.parentTransform = (this.flip === FlipDirection.Horizontal  || this.flip === FlipDirection.Vertical) ?
                                 -child.parentTransform : child.parentTransform;
                         }
                         arrange = true;

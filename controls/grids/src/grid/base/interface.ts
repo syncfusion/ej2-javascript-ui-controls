@@ -749,6 +749,9 @@ export interface IGrid extends Component<HTMLElement> {
     getEditTemplate?(): Function;
     getEditFooterTemplate?(): Function;
     getEditHeaderTemplate?(): Function;
+    getColumnChooserTemplate?(): Function;
+    getColumnChooserHeaderTemplate?(): Function;
+    getColumnChooserFooterTemplate?(): Function;
     getFilterTemplate?(): Function;
     sortColumn?(columnName: string, sortDirection: SortDirection, isMultiSort?: boolean): void;
     changeDataSource?(columns?: Column[] | string[] | ColumnModel[], data?: Object | DataManager | DataResult): void;
@@ -939,6 +942,17 @@ export interface IValueFormatter {
     setCulture?(cultureName: string): void;
     getFormatFunction?(format: NumberFormatOptions | DateFormatOptions): Function;
     getParserFunction?(format: NumberFormatOptions | DateFormatOptions): Function;
+}
+/**
+ * @hidden
+ */
+export interface CustomOperators {
+    stringOperator?: { value: string; text: string }[];
+    numberOperator?: { value: string; text: string }[];
+    dateOperator?: { value: string; text: string }[];
+    datetimeOperator?: { value: string; text: string }[];
+    dateonlyOperator?: { value: string; text: string }[];
+    booleanOperator?: { value: string; text: string }[];
 }
 /**
  * @hidden
@@ -3180,3 +3194,23 @@ export interface RefreshToolbarItemsArgs {
     editSettings?: EditSettingsModel;
     name?: string;
 }
+
+export interface ColumnChooserActionArgs {
+    /** If `cancel` is set to true, then the current action will be stopped. */
+    cancel?: boolean;
+    /** Defines the request type*/
+    requestType?: string;
+    /** Defines the display columns of column chooser. */
+    columns?: Column[];
+}
+
+export interface DetailTemplateDetach {
+    /** The detail row element that is being removed from the DOM. */
+    detailRow: HTMLElement;
+    /** Contains information about the corresponding detail row. */
+    detailRowObject:  Row<Column>;
+    /** Contains information about the corresponding parent row. */
+    parentRowObject:  Row<Column>;
+}
+
+export type DetailTemplateDetachArgs = DetailTemplateDetach[]

@@ -633,7 +633,8 @@ export function getRowHeight(element?: HTMLElement): number {
     if (rowHeight !== undefined) {
         return rowHeight;
     }
-    const table: HTMLTableElement = <HTMLTableElement>createElement('table', { className: literals.table, styles: 'visibility: hidden', attrs: { role: 'grid' } });
+    const table: HTMLTableElement = <HTMLTableElement>createElement('table', { className: literals.table, attrs: { role: 'grid' } });
+    table.style.visibility = 'hidden';
     table.innerHTML = '<tr><td class="e-rowcell">A<td></tr>';
     element.appendChild(table);
     const rect: ClientRect = table.querySelector('td').getBoundingClientRect();
@@ -648,7 +649,8 @@ export function getRowHeight(element?: HTMLElement): number {
  * @hidden
  */
 export function getActualRowHeight(element?: HTMLElement): number {
-    const table: HTMLTableElement = <HTMLTableElement>createElement('table', { className: literals.table, styles: 'visibility: hidden', attrs: { role: 'grid' } });
+    const table: HTMLTableElement = <HTMLTableElement>createElement('table', { className: literals.table, attrs: { role: 'grid' } });
+    table.style.visibility = 'hidden';
     table.innerHTML = '<tr><td class="e-rowcell">A<td></tr>';
     element.appendChild(table);
     const rect: ClientRect = table.querySelector('tr').getBoundingClientRect();
@@ -867,6 +869,44 @@ export function getFilterMenuPostion(target: Element, dialogObj: Dialog): void {
  */
 export function getZIndexCalcualtion(args: { popup: Popup }, dialogObj: Dialog): void {
     args.popup.element.style.zIndex = (dialogObj.zIndex + 1).toString();
+}
+
+/**
+ * @param {string} operator - Defines the operator
+ * @param {string} columnUid - Defines the column uid
+ * @param {Column} column - Defines the column
+ * @param {string} columnType - Defines the column type
+ * @param {Dialog} dlgObj - Defines the dialog
+ * @param {string} previousValue - Defines the previous operator
+ * @returns {void}
+ * @hidden
+ */
+export function toggleFilterUI(
+    operator: string, columnUid: string, column: Column, columnType: string,
+    dlgObj: Dialog, previousValue: string
+): void {
+    if (isNullOrUndefined(column.filterTemplate)) {
+        let columnID: string = '';
+        if (columnType === 'string') {
+            columnID = 'strui-' + columnUid;
+        } else if (columnType === 'number') {
+            columnID = 'numberui-' + columnUid;
+        } else if (columnType === 'boolean') {
+            columnID = 'bool-ui-' + columnUid;
+        } else if (columnType === 'date') {
+            columnID = 'dateui-' + columnUid;
+        }
+        const isPreviousValue: boolean = previousValue === 'in' || previousValue === 'notin';
+        const isMultiSelect: boolean = operator === 'in' || operator === 'notin';
+        const multiselectParent: HTMLElement = parentsUntil(dlgObj.element.querySelector(`#multiselect${columnID}`), 'e-control-wrapper') as HTMLElement;
+        const singleInputParent: HTMLElement = parentsUntil(dlgObj.element.querySelector(`#${columnID}`), 'e-popup-flmenu') as HTMLElement;
+        if (multiselectParent) {
+            multiselectParent.style.display = isMultiSelect ? 'inline-flex' : 'none';
+        }
+        if (singleInputParent) {
+            singleInputParent.style.display = isMultiSelect ? 'none' : 'inline-flex';
+        }
+    }
 }
 
 /**
@@ -1549,7 +1589,6 @@ export function resetRowIndex(gObj: IGrid, rows: Row<Column>[], rowElms: HTMLTab
         if (rows[parseInt(i.toString(), 10)] && rows[parseInt(i.toString(), 10)].isDataRow) {
             rows[parseInt(i.toString(), 10)].index = startIndex;
             rows[parseInt(i.toString(), 10)].isAltRow = gObj.enableAltRow ? startIndex % 2 !== 0 : false;
-            rowElms[parseInt(i.toString(), 10)].setAttribute(literals.dataRowIndex, startIndex.toString());
             rowElms[parseInt(i.toString(), 10)].setAttribute(literals.ariaRowIndex, (startIndex + 1).toString());
             if (rows[parseInt(i.toString(), 10)].isAltRow) {
                 rowElms[parseInt(i.toString(), 10)].classList.add('e-altrow');
@@ -1584,7 +1623,6 @@ export function resetCachedRowIndex(gObj: IGrid): void {
             const rowElement: HTMLTableRowElement | Element = gObj.getRowElementByUID(rowObject.uid);
             if (!isNullOrUndefined(rowElement)) {
                 rowElements[parseInt(k.toString(), 10)] = rowElement;
-                rowElement.setAttribute(literals.dataRowIndex, startIndex.toString());
                 rowElement.setAttribute(literals.ariaRowIndex, (startIndex + 1).toString());
                 if (rowObject.isAltRow) {
                     rowElement.classList.add('e-altrow');
@@ -1642,7 +1680,7 @@ export function groupReorderRowObject(gObj: IGrid, args: RowDropEventArgs, tr: H
         const record: object = {};
         const currentViewData: Object[] = gObj.getCurrentViewRecords();
         for (let i: number = 0, len: number = tr.length; i < len; i++) {
-            const index: number = parseInt(tr[parseInt(i.toString(), 10)].getAttribute(literals.dataRowIndex), 10);
+            const index: number = parseInt(tr[parseInt(i.toString(), 10)].getAttribute(literals.ariaRowIndex), 10) - 1;
             record[parseInt(i.toString(), 10)] = currentViewData[parseInt(index.toString(), 10)];
         }
         const rows: Element[] = gObj.getRows();
@@ -1679,6 +1717,12 @@ export function compareChanges(gObj: IGrid, changes: Object, type: string, keyFi
  * @hidden
  */
 export function setRowElements(gObj: IGrid): void {
+    if (gObj.enableInfiniteScrolling && (gObj.childGrid || gObj.detailTemplate)) {
+        (<{ rowElements?: Element[] }>(gObj).contentModule).rowElements = [].slice.call((gObj.getContentTable() as HTMLTableElement).rows)
+            .filter((row: HTMLElement) => (row.classList.contains('e-row') || row.classList.contains('e-detailrow'))
+            && !row.classList.contains('e-addedrow'));
+        return;
+    }
     (<{ rowElements?: Element[] }>(gObj).contentModule).rowElements =
         [].slice.call(gObj.element.querySelectorAll('.e-row:not(.e-addedrow):not(.e-cloneproperties .e-row)'));
 }
@@ -1886,7 +1930,7 @@ export function resetColandRowSpanStickyPosition(gObj: IGrid, column: Column, no
 export function getCellFromRow(gObj: IGrid, rowIndex: number, colIndex: number): Element {
     const row: HTMLTableRowElement = <HTMLTableRowElement>(gObj.getRowByIndex(rowIndex));
     for (let i: number = 0; i < row.cells.length; i++) {
-        if (row.cells[parseInt(i.toString(), 10)].getAttribute('data-colindex') === colIndex.toString()) {
+        if (parseInt(row.cells[parseInt(i.toString(), 10)].getAttribute('aria-colindex').toString(), 10) - 1 === colIndex) {
             return row.cells[parseInt(i.toString(), 10)];
         }
     }
@@ -2138,9 +2182,9 @@ export function setDisplayValue(tr: Object, idx: number, displayVal: string, row
     for (let i: number = 0; i < trs.length; i++) {
         let td: HTMLTableCellElement = tr[trs[parseInt(i.toString(), 10)]].querySelectorAll('td.e-rowcell')[parseInt(idx.toString(), 10)];
         if (parent && !parent.isFrozenGrid() && !parent.isRowDragable()) {
-            td = (!isNullOrUndefined(td) && (parseInt(td.getAttribute('data-colindex'), 10) === idx ||
+            td = (!isNullOrUndefined(td) && (parseInt(td.getAttribute('aria-colindex'), 10) - 1 === idx ||
                 (parentsUntil(td, 'e-addedrow') && td.parentElement.childNodes[parseInt(idx.toString(), 10)] === td)))
-                ? td : tr[parseInt(i.toString(), 10)].querySelector(`td[data-colindex="${idx}"]`);
+                ? td : tr[parseInt(i.toString(), 10)].querySelector(`td[aria-colindex="${idx + 1}"]`);
             if (isNullOrUndefined(td)) {
                 continue;
             }
@@ -2309,8 +2353,12 @@ export function infiniteAppendElements(appendElem: HTMLElement[], ulElement: HTM
  * @hidden
  */
 export function getListHeight(element: Element, isChooser?: boolean): number {
-    const listDiv: HTMLDivElement = isChooser ? <HTMLDivElement>createElement('li', { className: 'e-cclist', styles: 'visibility: hidden; list-style: none' }) :
-        <HTMLDivElement>createElement('div', { className: 'e-ftrchk', styles: 'visibility: hidden' });
+    const listDiv: HTMLElement = isChooser ? <HTMLLIElement>createElement('li', { className: 'e-cclist' })
+        : <HTMLDivElement>createElement('div', { className: 'e-ftrchk' });
+    listDiv.style.visibility = 'hidden';
+    if (isChooser) {
+        (listDiv as HTMLLIElement).style.listStyle = 'none';
+    }
     listDiv.innerHTML = isChooser ? '<div class="e-ccheck"><div class="e-checkbox-wrapper"><span class="e-frame e-icons e-check"></span><span class="e-label">A</span></div></div>' :
         '<div class="e-checkbox-wrapper"><span class="e-frame e-icons e-check"></span><span class="e-label e-checkboxfiltertext">A</div></span>';
     element.appendChild(listDiv);
@@ -2326,7 +2374,7 @@ export function getListHeight(element: Element, isChooser?: boolean): number {
  * @returns { number } row index
  */
 export function getRowIndexFromElement(row: Element): number {
-    return parseInt(row.getAttribute(literals.dataRowIndex), 10);
+    return parseInt(row.getAttribute(literals.ariaRowIndex), 10) - 1;
 }
 
 /**

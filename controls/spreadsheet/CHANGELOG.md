@@ -2,21 +2,13 @@
 
 ## [Unreleased]
 
-## 28.2.12 (2025-03-19)
+## 29.1.33 (2025-03-25)
 
 ### Spreadsheet
 
 #### Bug fixes
 
-- `#I690915` - Issue with "the formula cell range being incorrect while importing an Excel file containing a user-defined function" has been resolved.
-
-## 28.1.35 (2024-12-18)
-
-### Spreadsheet
-
-#### Bug fixes
-
-- `#I647640` - Issue with "data got changed when multiple text-formatted values from Excel were pasted into Spreadsheet" has been resolved.
+- This release improves usability and stability in Spreadsheet by addressing issues in Conditional Formatting, Editing, Notes, Autofit, Autofill, Protection, Undo/Redo, Filtering, Sorting, and Virtual Scrolling. Enhancements in Import/Export, Data Validation, Number and Cell Formatting, Wrap, Merge, Freeze Pane, and Read-Only Mode further optimize performance, security, and user experience.
 
 ## 28.1.33 (2024-12-12)
 

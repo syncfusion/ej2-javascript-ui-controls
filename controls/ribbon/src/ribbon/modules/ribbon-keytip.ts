@@ -196,7 +196,8 @@ export class RibbonKeyTip {
             if ((isPopUpItem && isPopUpPresent) || !isPopUpItem) {
                 const keytipElement: HTMLElement = this.parent.createElement('div', {
                     className: constants.RIBBON_KEYTIP,
-                    id: id + constants.RIBBON_KEYTIP_ID
+                    id: id + constants.RIBBON_KEYTIP_ID,
+                    attrs: { role: 'dialog', 'aria-label': 'ribbon-keytip' }
                 });
                 document.body.append(keytipElement);
                 const keytipPopup: Popup = new Popup(keytipElement, {
@@ -205,7 +206,8 @@ export class RibbonKeyTip {
                     collision: { X: 'fit', Y: 'flip' },
                     targetType: 'relative',
                     position: { X: xOffset, Y: yOffset },
-                    enableRtl: this.parent.enableRtl
+                    enableRtl: this.parent.enableRtl,
+                    actionOnScroll: 'hide'
                 });
                 keytipPopup.show();
                 this.calculateKeyTipPosition(keyEle, keytipElement, type, yOffset);
@@ -368,24 +370,30 @@ export class RibbonKeyTip {
                 break;
             case 'combobox': {
                 const itemEle: HTMLElement = document.querySelector('#' + itemID);
-                setTimeout(() => {
-                    itemEle.focus();
-                }, 100);
+                if (this.isInteractableElement(itemEle)) {
+                    setTimeout(() => {
+                        itemEle.focus();
+                    }, 100);
+                }
                 break;
             }
             case 'gallery': {
                 const galleryEle: HTMLElement = document.querySelector('#' + itemID);
-                galleryEle.click();
+                if (this.isInteractableElement(galleryEle)) {
+                    galleryEle.click();
+                }
                 break;
             }
             case 'template': {
                 const templateEle: HTMLElement = document.querySelector('#' + itemID);
-                templateEle.focus();
+                if (this.isInteractableElement(templateEle)) {
+                    templateEle.focus();
+                }
                 break;
             }
             case 'group-btn': {
                 const itemElement: HTMLElement = document.querySelector('#' + itemID);
-                if (itemElement) {
+                if (this.isInteractableElement(itemElement)) {
                     const item: DropDownButton = getInstance(itemElement, DropDownButton) as DropDownButton;
                     item.toggle();
                     for (let i: number = 0; i < itemProp.item.groupButtonSettings.items.length; i++) {
@@ -398,6 +406,10 @@ export class RibbonKeyTip {
             }
             }
         }
+    }
+
+    private isInteractableElement(element: HTMLElement): boolean {
+        return element && !element.closest('.e-ribbon-item').classList.contains('e-disabled');
     }
 
     private commonItemsKeyTipPress(keyPress: string, key: string, isMethod: boolean): void {

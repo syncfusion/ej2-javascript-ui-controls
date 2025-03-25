@@ -442,7 +442,8 @@ export function measureImage(source: string, contentSize: Size, id?: string, cal
 
     const element: HTMLElement = document.createElement('img');
     element.setAttribute('src', source);
-    setAttributeHtml(element, { id: id + 'sf-imageNode', style: 'display: none;' });
+    setAttributeHtml(element, { id: id + 'sf-imageNode' });
+    element.style.display = 'none';
     document.body.appendChild(element);
     // eslint-disable-next-line
     element.onload = (event: any) => {
@@ -993,8 +994,8 @@ export function getContent(
             let svgContent: string;
             const div: SVGSVGElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
             document.body.appendChild(div);
-
             div.innerHTML = ((node.shape as any).content) as string;
+
             /* tslint:disable */
             svgContent = (div.getElementsByTagName('svg').length > 0)
                 ? div.getElementsByTagName('svg')[0].outerHTML :

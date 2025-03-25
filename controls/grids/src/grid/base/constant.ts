@@ -581,4 +581,14 @@ export const infiniteScrollComplete: string = 'infinitescroll-complete';
 /** @hidden */
 export const lastRowCellBorderUpdated: string = 'last-rowcell-border-updated';
 /** @hidden */
+export const columnChooserSearch: string = 'columnChooserSearch';
+/** @hidden */
+export const columnChooserClose: string = 'columnChooserClose';
+/** @hidden */
+export const columnChooserUpdate: string = 'columnChooserUpdate';
+/** @hidden */
 export const destroyEditForm: string = 'destroy-edit-form';
+/** @hidden */
+export const beforeDetailTemplateDetach: string = 'beforeDetailTemplateDetach';
+/** @hidden */
+export const detachDetailTemplate: string = 'detach-detail-template';

@@ -2706,7 +2706,7 @@ describe('MultiSelect', () => {
                     setTimeout(() => {
                         expect(listObj.value.length).toBe(3);
                         expect((<any>listObj).chipCollectionWrapper.childElementCount).toBe(3);
-                        let chipContents = (<any>listObj).chipCollectionWrapper.querySelectorAll('.e-chipcontent');
+                       let chipContents = (<any>listObj).chipCollectionWrapper.querySelectorAll('.e-chipcontent');
                         expect(chipContents[0].innerText).toContain('Sales Representative - Maria Anders');
                         expect(chipContents[1].innerText).toContain('Owner - Felipe Izquierdo');
                         expect(chipContents[2].innerText).toContain('Sales Agent - Catherine Dewey');

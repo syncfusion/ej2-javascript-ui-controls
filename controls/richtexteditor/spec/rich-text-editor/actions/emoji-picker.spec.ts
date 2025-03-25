@@ -5,6 +5,7 @@ import { addClass, createElement, detach } from "@syncfusion/ej2-base";
 import { dispatchEvent, RichTextEditor, ToolbarType, ActionBeginEventArgs } from "../../../src/rich-text-editor/index";
 import { destroy, renderRTE, setCursorPoint } from "./../render.spec";
 import { EditorManager } from "../../../src";
+import { BASIC_MOUSE_EVENT_INIT } from "../../constant.spec";
 
 let keyboardEventArgs: any = {
     preventDefault: function () { },
@@ -2115,6 +2116,43 @@ describe('When we press the enter key insert the emoji in IFrame' , () => {
         };
         (<any>rteObj).emojiPickerModule.onKeyDown({preventDefault: function () { },keyCode: 13, target: emoji[0]});
         expect((rteObj as any).inputElement.ownerDocument.activeElement.innerHTML).toBe('<p id="rte-p">Emoji picker : : : : : : 😀</p>');
+    });
+});
+describe('Insert Emoji into Nested List Items', () => {
+    let rteObj: RichTextEditor;
+    let rteEle: HTMLElement;
+    let controlId: string;
+    let defaultRTE: HTMLElement = createElement('div', { id: 'defaultRTE' });
+    let initialHTML: string = `<ul><li style="list-style-type: none;"><ul><li>Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</li><li>Inline styles include <b>bold</b>, <em>italic</em>, <span style="text-decoration: underline">underline</span>, <span style="text-decoration: line-through">strikethrough</span>, <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" title="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" aria-label="Open in new window">hyperlinks</a>, 😀 and more.</li></ul></li><li>The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li><li>Integration with Syncfusion Mention control lets users tag other users. To learn more, check out the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/mention-integration" title="Mention Documentation" aria-label="Open in new window">documentation</a> and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/mention-integration.html" title="Mention Demos" aria-label="Open in new window">demos</a>.</li><li><b>Paste from MS Word</b> - helps to reduce the effort while converting the Microsoft Word content to HTML format with format and styles. To learn more, check out the documentation <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/paste-cleanup" title="Paste from MS Word Documentation" aria-label="Open in new window">here</a>.</li><li>Other features: placeholder text, character count, form validation, enter key configuration, resizable editor, IFrame rendering, tooltip, source code view, RTL mode, persistence, HTML Sanitizer, autosave, and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/" title="Rich Text Editor API" aria-label="Open in new window">more</a>.</li></ul>`;
+    beforeAll(() => {
+        document.body.appendChild(defaultRTE);
+        rteObj = new RichTextEditor({
+            toolbarSettings: {
+                items: ['EmojiPicker']
+            },
+            value: initialHTML
+        });
+        rteObj.appendTo('#defaultRTE');
+        rteEle = rteObj.element;
+        controlId = rteEle.id;
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('should insert emoji into first two nested list items', (done) => {
+        const editor = rteObj.contentModule.getDocument();
+        const firstNestedListItem = editor.querySelector('ul > li > ul > li');
+        const secondNestedListItem = firstNestedListItem.nextElementSibling;
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, firstNestedListItem, secondNestedListItem, 0, 11);
+        const emojiButton: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_EmojiPicker');
+        emojiButton.click();
+        setTimeout(() => {
+            const firstEmojiButton: HTMLElement = document.querySelector('.e-rte-emojipickerbtn-group button');
+            firstEmojiButton.click();
+            const expectedHTML = `<ul><li style="list-style-type: none;"><ul><li>😀</li></ul></li><li>The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li><li>Integration with Syncfusion Mention control lets users tag other users. To learn more, check out the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/mention-integration" title="Mention Documentation" aria-label="Open in new window">documentation</a> and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/mention-integration.html" title="Mention Demos" aria-label="Open in new window">demos</a>.</li><li><b>Paste from MS Word</b> - helps to reduce the effort while converting the Microsoft Word content to HTML format with format and styles. To learn more, check out the documentation <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/paste-cleanup" title="Paste from MS Word Documentation" aria-label="Open in new window">here</a>.</li><li>Other features: placeholder text, character count, form validation, enter key configuration, resizable editor, IFrame rendering, tooltip, source code view, RTL mode, persistence, HTML Sanitizer, autosave, and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/" title="Rich Text Editor API" aria-label="Open in new window">more</a>.</li></ul>`;
+            expect(rteObj.inputElement.innerHTML).toBe(expectedHTML);
+            done();
+        }, 100);
     });
 });
 describe('936848: Add Table Popup Gets Hidden Under the Lower Rich Text Editor’s Toolbar', () => {

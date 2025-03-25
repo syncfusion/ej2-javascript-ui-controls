@@ -259,6 +259,8 @@ $schedule-header-icon-wrapper-bg-color: unset !default;
 $schedule-bgr-date-time-icon-padding-right: 13px !default;
 $schedule-bgr-more-event-close-icon-padding: unset !default;
 $schedule-bgr-tbar-btn-text-font-size: $schedule-header-nrml-font-size !default;
+$schedule-calendar-width: 260px !default;
+$schedule-bgr-calendar-width: 306px !default;
 
 @mixin tbar-btn-animation {
   content: '';

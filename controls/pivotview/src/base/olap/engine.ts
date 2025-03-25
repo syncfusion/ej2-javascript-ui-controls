@@ -575,12 +575,12 @@ export class OlapEngine {
         if (this.drilledMembers.length > 0) {
             // let st1: number = new Date().getTime();
             let orderedInfo: IOrderedInfo;
-            orderedInfo = this.frameMeasureOrder(
-                measureInfo, 'column', columnTuples, valCollection, columnTuples.length, columnTuples.length * rowTuples.length);
+            const valCount: number = columnTuples.length && rowTuples.length ? columnTuples.length * rowTuples.length :
+                columnTuples.length ? columnTuples.length : rowTuples.length;
+            orderedInfo = this.frameMeasureOrder(measureInfo, 'column', columnTuples, valCollection, columnTuples.length, valCount);
             columnTuples = orderedInfo.orderedHeaderTuples;
             valCollection = orderedInfo.orderedValueTuples;
-            orderedInfo = this.frameMeasureOrder(
-                measureInfo, 'row', rowTuples, valCollection, columnTuples.length, columnTuples.length * rowTuples.length);
+            orderedInfo = this.frameMeasureOrder(measureInfo, 'row', rowTuples, valCollection, columnTuples.length, valCount);
             rowTuples = orderedInfo.orderedHeaderTuples;
             valCollection = orderedInfo.orderedValueTuples;
             // let st2: number = (new Date().getTime() - st1) / 1000;

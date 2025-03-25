@@ -120,50 +120,45 @@ export class ConnectorLineEdit {
      * To remove connector line highlight class.
      *
      * @param {IGanttData[]} records .
-     * @returns {string} .
+     * @returns {DocumentFragment} .
      * @private
      */
-    public getEditedConnectorLineString(records: IGanttData[]): string {
+    public getEditedConnectorLineString(records: IGanttData[]): DocumentFragment {
         let ganttRecord: IGanttData;
         let predecessorsCollection: IPredecessor[];
-        let predecessor: IPredecessor;
         let parentGanttRecord: IGanttData;
         let childGanttRecord: IGanttData;
         let connectorObj: IConnectorLineObject;
-        const idArray: string[] = [];
-        const lineArray: string[] = [];
-        let editedConnectorLineString: string = '';
+        const idSet: Set<string> = new Set();
+        const lineFragment: DocumentFragment = document.createDocumentFragment();
         for (let count: number = 0; count < records.length; count++) {
             ganttRecord = records[count as number];
             predecessorsCollection = ganttRecord.ganttProperties.predecessor;
-            if (predecessorsCollection) {
-                for (let predecessorCount: number = 0; predecessorCount < predecessorsCollection.length; predecessorCount++) {
-                    predecessor = predecessorsCollection[predecessorCount as number];
-                    const from: string = 'from'; const to: string = 'to';
-                    this.parent.connectorLineModule.removeConnectorLineById('parent' + predecessor[from as string] + 'child' + predecessor[to as string]);
-                    parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[`${from}`]);
-                    childGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[`${to}`]);
-                    if ((!this.parent.allowParentDependency && (parentGanttRecord && parentGanttRecord.expanded === true) ||
-                    (childGanttRecord && childGanttRecord.expanded === true)) || (this.parent.allowParentDependency &&
-                        (parentGanttRecord || childGanttRecord))) {
-                        connectorObj =
-                            this.parent.predecessorModule.updateConnectorLineObject(parentGanttRecord, childGanttRecord, predecessor);
-                        if (!isNullOrUndefined(connectorObj)) {
-                            const lineIndex: number = idArray.indexOf(connectorObj.connectorLineId);
-                            const lineString: string = this.parent.connectorLineModule.getConnectorLineTemplate(connectorObj);
-                            if (lineIndex !== -1) {
-                                lineArray[lineIndex as number] = lineString;
-                            } else {
-                                idArray.push(connectorObj.connectorLineId);
-                                lineArray.push(lineString);
-                            }
-                        }
+            if (!predecessorsCollection) {
+                continue;
+            }
+            for (let predecessorCount: number = 0; predecessorCount < predecessorsCollection.length; predecessorCount++) {
+                const predecessor: IPredecessor = predecessorsCollection[predecessorCount as number];
+                const from: string = 'from';
+                const to: string = 'to';
+                const connectorLineId: string = 'parent' + predecessor[from as string] + 'child' + predecessor[to as string];
+                this.parent.connectorLineModule.removeConnectorLineById(connectorLineId);
+                parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[from as string]);
+                childGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[to as string]);
+                if ((!this.parent.allowParentDependency && ((parentGanttRecord && parentGanttRecord.expanded) ||
+                    (childGanttRecord && childGanttRecord.expanded))) ||
+                    (this.parent.allowParentDependency && (parentGanttRecord || childGanttRecord))) {
+                    connectorObj = this.parent.predecessorModule.updateConnectorLineObject(parentGanttRecord,
+                                                                                           childGanttRecord, predecessor);
+                    if (!isNullOrUndefined(connectorObj) && !idSet.has(connectorObj.connectorLineId)) {
+                        const lineElement: Element = this.parent.connectorLineModule.getConnectorLineTemplate(connectorObj);
+                        idSet.add(connectorObj.connectorLineId);
+                        lineFragment.appendChild(lineElement);
                     }
                 }
-                editedConnectorLineString = lineArray.join('');
             }
         }
-        return editedConnectorLineString;
+        return lineFragment;
     }
     /**
      * Tp refresh connector lines of edited records
@@ -176,9 +171,10 @@ export class ConnectorLineEdit {
         this.parent.connectorLineModule.removePreviousConnectorLines(this.parent.previousRecords);
         this.parent.connectorLineModule.expandedRecords = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
             this.parent.updatedRecords : this.parent.getExpandedRecords(this.parent.updatedRecords);
-        const editedConnectorLineString: string = this.getEditedConnectorLineString(editedRecord);
-        this.parent.connectorLineModule.svgObject.innerHTML =
-            this.parent.connectorLineModule.svgObject.innerHTML + editedConnectorLineString;
+        const editedConnectorElement: DocumentFragment = this.getEditedConnectorLineString(editedRecord);
+        if (editedConnectorElement) {
+            this.parent.connectorLineModule.svgObject.appendChild(editedConnectorElement);
+        }
     }
 
     private idFromPredecessor(pre: string): string[] {
@@ -779,7 +775,13 @@ export class ConnectorLineEdit {
                     if (validPredecessor.length > 0) {
                         validPredecessor.forEach((element: IPredecessor) => {
                             if (this.validatedOffsetIds.indexOf(element.to) === -1) {
-                                this.calculateOffset(this.parent.getRecordByID(element.to), true);
+                                if (this.parent.viewType === 'ResourceView') {
+                                    this.validatedOffsetIds.push(element.to);
+                                    this.calculateOffset(this.parent.getRecordByID((this.parent.taskIds.indexOf('T' + element.to)).toString()), true);
+                                }
+                                else {
+                                    this.calculateOffset(this.parent.getRecordByID(element.to), true);
+                                }
                             }
                         });
                     }

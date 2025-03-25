@@ -179,9 +179,14 @@
             border-right: $schedule-tbar-separator-size $border-type $schedule-tbar-separator-border;
           }
 
-          &.e-date-range .e-tbar-btn .e-tbar-btn-text {
-            font-size: $schedule-header-nrml-font-size;
-            text-transform: initial;
+          &.e-date-range .e-tbar-btn {
+            &.e-schedule-date-range-tbtn {
+              width: auto;
+            }
+            .e-tbar-btn-text {
+              font-size: $schedule-header-nrml-font-size;
+              text-transform: initial;
+            }
           }
         }
       }
@@ -1309,6 +1314,11 @@
     }
 
     .e-month-view {
+      .e-month-event-table {
+        position: absolute;
+        top: 0;
+      }
+
       .e-content-wrap table tr:last-child td {
         border-bottom-width: 0;
       }
@@ -1510,7 +1520,7 @@
           border: 0;
           flex: 0 25%;
           max-width: 100%;
-          min-width: 260px;
+          min-width: $schedule-calendar-width;
           padding: 10px;
           @if ($theme-name == 'fluent2') {
             box-shadow: none;
@@ -2472,6 +2482,10 @@
     .e-agenda-view {
       background: $schedule-agenda-color;
 
+      .e-agenda-load-more {
+        font-size: 14px;
+      }
+
       .e-content-wrap table td:first-child,
       .e-date-column {
         vertical-align: top;
@@ -2783,11 +2797,19 @@
     visibility: hidden;
   }
 
+  .e-field-error-message {
+    display: block;
+  }
+
   .e-dialog.e-quick-dialog.e-following-events-dialog {
-    width: 420px;
+    width: 440px;
 
     .e-footer-content {
       padding: $schedule-following-events-dlg-padding;
+
+      button {
+        margin-bottom: 6px;
+      }
     }
     @media screen and (max-width: 767px) {
       width: 289px;
@@ -2816,10 +2838,10 @@
 
     .e-footer-content {
       border-top: $schedule-alert-dialog-border;
-    }
 
-    .e-quick-dialog-cancel {
-      box-shadow: none;
+      button {
+        margin-bottom: 6px;
+      }
     }
 
     &.e-rtl {
@@ -2984,7 +3006,12 @@
       }
     }
   }
-  
+
+  .e-editor-content-item-template {
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+
   /*! schedule event window for smaller viewports*/
   @media screen and (max-width: 320px) {
     .e-schedule-dialog.e-popup.e-popup-open {
@@ -3327,6 +3354,9 @@
 
     .e-cell-popup,
     .e-event-popup {
+      .e-popup-header .e-popup-header-title-text {
+        display: none;
+      }
       .e-header-icon-wrapper {
         display: flex;
         justify-content: flex-end;

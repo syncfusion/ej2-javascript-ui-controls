@@ -11,6 +11,12 @@
       color: $grid-filtered-color;
     }
 
+    .e-menu-item:active .e-filtered::before {
+      @if $grid-xlfl-skin == 'bootstrap5' {
+        color: $flyout-text-color-pressed;
+      }
+    }
+
     .e-menu-item.e-focused .e-menu-icon.e-filtered::before {
       @if $grid-xlfl-skin == 'fluent2' {
         color: $icon-color-hover;

@@ -11,18 +11,22 @@ import { getNumericObject, isUndefined } from '@syncfusion/ej2-base';
  * @param {string} decimalSep - Specifies the decimal separator.
  * @param {string} currencySym - Specifies the currency Symbol.
  * @param {boolean} isFractionalType - Defines whether the value is a fractional type or not.
+ * @param {boolean} checkCurrency - Specifies the currency check.
  * @returns {Object} - returns the parsed value.
  * @hidden
  */
 export function checkIsNumberAndGetNumber(
-    cell: CellModel, locale: string, groupSep?: string, decimalSep?: string, currencySym?: string, isFractionalType?: boolean
-): { isNumber: boolean, value: string } {
+    cell: CellModel, locale: string, groupSep?: string, decimalSep?: string, currencySym?: string, isFractionalType?: boolean,
+    checkCurrency?: boolean): { isNumber: boolean, value: string } {
     let cellValue: string = cell.value;
-    if (isNumber(cellValue)) {
-        return { isNumber: true, value: cellValue };
-    }
     if (cellValue && typeof cellValue === 'string') {
-        if (currencySym && cellValue.includes(currencySym) && (cell.format.includes(currencySym) || cell.format.includes('$'))) {
+        if (cellValue.includes('\n')) {
+            return { isNumber: false, value: cellValue };
+        }
+        if (isNumber(cellValue)) {
+            return { isNumber: true, value: cellValue };
+        }
+        if (currencySym && cellValue.includes(currencySym) && (checkCurrency || cell.format.includes(currencySym) || cell.format.includes('$'))) {
             cellValue = cellValue.replace(currencySym, '').trim();
         }
         if (groupSep && cellValue.includes(groupSep) && parseThousandSeparator(cellValue, locale, groupSep, decimalSep)) {
@@ -52,6 +56,8 @@ export function checkIsNumberAndGetNumber(
                 return { isNumber: false, value: cellValue };
             }
         }
+    } else if (isNumber(cellValue)) {
+        return { isNumber: true, value: cellValue };
     }
     return { isNumber: false, value: cellValue };
 }

@@ -1,7 +1,7 @@
 import { IDataOptions, IFieldOptions, IFilter, ISort, IFormatSettings, IFieldListOptions, IMembers, PivotEngine, IDataSet, INumberIndex } from './engine';
 import { IDrillOptions, IValueSortSettings, IGroupSettings, IConditionalFormatSettings, ICustomGroups, FieldItemInfo } from './engine';
 import { ICalculatedFieldSettings, IAuthenticationInfo, IGridValues, IAxisSet } from './engine';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import { PivotView, PivotViewModel } from '../pivotview';
 import { PivotFieldList, PivotFieldListModel } from '../pivotfieldlist';
 import { DataManager, Query } from '@syncfusion/ej2-data';
@@ -11,6 +11,7 @@ import { HeadersSortEventArgs } from '../common/base/interface';
 import { PdfPageSize } from '@syncfusion/ej2-grids';
 import { SizeF } from '@syncfusion/ej2-pdf-export';
 import { PivotChart } from '../pivotchart/base/pivotchart';
+import * as cls from '../common/base/css-constant';
 
 /**
  * This is a file to perform common utility for OLAP and Relational datasource
@@ -152,7 +153,8 @@ export class PivotUtil {
         return clonesDataSource;
     }
 
-    public static getClonedFieldList(fieldListObj: IFieldListOptions | IOlapFieldListOptions): IFieldListOptions | IOlapFieldListOptions {
+    public static getClonedFieldList(fieldListObj: IFieldListOptions | IOlapFieldListOptions,
+                                     isMemberIncluded?: boolean): IFieldListOptions | IOlapFieldListOptions {
         const keys: string[] = Object.keys(fieldListObj);
         const clonedfieldlistObj: IOlapFieldListOptions = {};
         for (let i: number = 0, keysLength: number = keys.length; i < keysLength; i++) {
@@ -166,7 +168,7 @@ export class PivotUtil {
                     sort: fieldlistObj.sort,
                     filterType: fieldlistObj.filterType,
                     index: fieldlistObj.index,
-                    filter: fieldlistObj.filter,
+                    filter: isMemberIncluded ? [] : fieldlistObj.filter,
                     isCustomField: fieldlistObj.isCustomField,
                     showRemoveIcon: fieldlistObj.showRemoveIcon,
                     showFilterIcon: fieldlistObj.showFilterIcon,
@@ -182,8 +184,8 @@ export class PivotUtil {
                     aggregateType: fieldlistObj.aggregateType,
                     baseField: fieldlistObj.baseField,
                     baseItem: fieldlistObj.baseItem,
-                    dateMember: this.cloneDateMembers(fieldlistObj.dateMember),
-                    members: this.cloneFormatMembers(fieldlistObj.members),
+                    dateMember: isMemberIncluded ? [] : this.cloneDateMembers(fieldlistObj.dateMember),
+                    members: isMemberIncluded ? {} : this.cloneFormatMembers(fieldlistObj.members),
                     formatString: fieldlistObj.formatString,
                     format: fieldlistObj.format,
                     formula: fieldlistObj.formula,
@@ -200,14 +202,14 @@ export class PivotUtil {
                     allMember: fieldlistObj.allMember,
                     isChecked: fieldlistObj.isChecked,
                     filterMembers: this.cloneFieldMembers(fieldlistObj.filterMembers),
-                    childMembers: this.cloneFieldMembers(fieldlistObj.childMembers),
-                    searchMembers: this.cloneFieldMembers(fieldlistObj.searchMembers),
+                    childMembers: isMemberIncluded ? [] : this.cloneFieldMembers(fieldlistObj.childMembers),
+                    searchMembers: isMemberIncluded ? [] : this.cloneFieldMembers(fieldlistObj.searchMembers),
                     htmlAttributes: this.getDefinedObj(fieldlistObj.htmlAttributes),
-                    currrentMembers: this.cloneFormatMembers(fieldlistObj.currrentMembers),
+                    currrentMembers: isMemberIncluded ? {} : this.cloneFormatMembers(fieldlistObj.currrentMembers),
                     isHierarchy: fieldlistObj.isHierarchy,
                     isNamedSets: fieldlistObj.isNamedSets,
                     actualFilter: fieldlistObj.actualFilter ? [...fieldlistObj.actualFilter] : fieldlistObj.actualFilter,
-                    levels: this.cloneFieldMembers(fieldlistObj.levels),
+                    levels: isMemberIncluded ? [] : this.cloneFieldMembers(fieldlistObj.levels),
                     levelCount: fieldlistObj.levelCount,
                     fieldType: fieldlistObj.fieldType,
                     memberType: fieldlistObj.memberType,
@@ -375,6 +377,7 @@ export class PivotUtil {
                     allMember: set.allMember,
                     isChecked: set.isChecked,
                     filterMembers: set.filterMembers,
+                    formula: set.formula,
                     childMembers: set.childMembers,
                     searchMembers: set.searchMembers,
                     htmlAttributes: this.getDefinedObj(set.htmlAttributes),
@@ -1284,5 +1287,21 @@ export class PivotUtil {
         return aggreColl.map((item: { 'header': IAxisSet; 'value'?: number }) => {
             return item['header'];
         });
+    }
+
+    public static toggleFieldListIconVisibility(control: PivotView): void {
+        if (control.showFieldList && select('#' + control.element.id + '_PivotFieldList', control.element)) {
+            if (control.toolbar && control.toolbar.indexOf('FieldList') !== -1) {
+                (select('#' + control.element.id + '_PivotFieldList', control.element) as HTMLElement).style.display = 'none';
+            } else {
+                (select('#' + control.element.id + '_PivotFieldList', control.element) as HTMLElement).style.top =
+                    (control.element.querySelector('.' + cls.GRID_TOOLBAR) as HTMLElement).offsetHeight.toString() + 'px';
+                (select('#' + control.element.id + '_PivotFieldList', control.element) as HTMLElement).style.position = 'relative';
+            }
+        }
+        if (control.toolbar && control.toolbar.indexOf('FieldList') !== -1 &&
+            control.showToolbar && control.element.querySelector('.e-toggle-field-list')) {
+            (control.element.querySelector('.e-toggle-field-list') as HTMLElement).style.display = 'none';
+        }
     }
 }

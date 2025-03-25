@@ -3,8 +3,8 @@
  */
 
 import { AccPoints, AccumulationSeries } from '../model/acc-base';
-import { Size, PathOption } from '@syncfusion/ej2-svg-base';
-import { ChartLocation, ColorValue, appendChildElement, removeElement } from '../../common/utils/helper';
+import { Size, PathOption, Rect } from '@syncfusion/ej2-svg-base';
+import { ChartLocation, ColorValue, appendChildElement, colorNameToHex, convertHexToColor, getElement, removeElement } from '../../common/utils/helper';
 import { AccumulationChart } from '../accumulation';
 import { TriangularBase } from './triangular-base';
 
@@ -139,6 +139,119 @@ export class FunnelSeries extends TriangularBase {
         if (point.isExplode) {
             chart.accBaseModule.explodePoints(point.index, chart, true);
         }
+    }
+
+    /**
+     * Renders the Trapezoidal funnel series in an accumulation chart.
+     *
+     * @param {AccumulationSeries} series - The series data for the Trapezoidal  funnel.
+     * @param {AccPoints[]} points - The data points for the series.
+     * @param {AccumulationChart} chart - The instance of the accumulation chart.
+     * @param {PathOption[]} options - The path options for rendering the Trapezoidal funnel.
+     * @param {Element} seriesGroup - The group element for the series.
+     * @param {boolean} redraw - Specifies whether to redraw the series.
+     * @returns {void} - This method does not return a value.
+     */
+    public renderTrapezoidalFunnel(
+        series: AccumulationSeries, points: AccPoints[], chart: AccumulationChart,
+        options: PathOption[], seriesGroup: Element, redraw: boolean): void {
+        const funnelWidth: number = series.triangleSize.width;
+        const funnelHeight: number = series.triangleSize.height;
+        const horizontalMargin: number = (chart.initialClipRect.width - funnelWidth) / 2;
+        const leftMargin: number = horizontalMargin + chart.initialClipRect.x;
+        const funnelTop: number = chart.initialClipRect.y + (chart.initialClipRect.height - funnelHeight) / 2;
+        const maxPointValue: number = Math.max(...points.map((d: AccPoints) => d.y));
+        const barPadding: number = 10;
+        let currentVerticalOffset: number = 0;
+        const polygonGroup: Element = redraw ? getElement(chart.element.id + '_Series_' + series.index + '_Polygon') :
+            chart.renderer.createGroup({ id: chart.element.id + '_Series_' + series.index + '_Polygon' });
+        for (let i: number = 0; i < series.points.length; i++) {
+            const point: AccPoints = series.points[i as number];
+            const pathOption: PathOption = options[point.index];
+            if (!point.visible) {
+                removeElement(pathOption.id);
+                removeElement(pathOption.id + '_polygon');
+                continue;
+            }
+            const availableHeight: number = funnelHeight - barPadding * (points.length - 1);
+            const barHeight: number = availableHeight / points.length;
+            const barWidth: number = funnelWidth * (point.y / maxPointValue);
+            const visiblePointIndex: number = points.indexOf(point);
+            const nextBarWidth: number = visiblePointIndex < points.length - 1 ?
+                funnelWidth * (points[visiblePointIndex + 1].y / maxPointValue) : 0;
+            const x: number = leftMargin + (funnelWidth - barWidth) / 2;
+            const y: number = funnelTop + currentVerticalOffset;
+            const cornerRadius: number = Math.min(series.borderRadius, barHeight / 2);
+            const rectPath: string =
+            'M' + (x + cornerRadius) + ' ' + y + ' ' +
+            'L' + (x + barWidth - cornerRadius) + ' ' + y + ' ' +
+            'A' + cornerRadius + ' ' + cornerRadius + ' 0 0 1 ' + (x + barWidth) + ' ' + (y + cornerRadius) + ' ' +
+            'L' + (x + barWidth) + ' ' + (y + barHeight - cornerRadius) + ' ' +
+            'A' + cornerRadius + ' ' + cornerRadius + ' 0 0 1 ' + (x + barWidth - cornerRadius) + ' ' + (y + barHeight) + ' ' +
+            'L' + (x + cornerRadius) + ' ' + (y + barHeight) + ' ' +
+            'A' + cornerRadius + ' ' + cornerRadius + ' 0 0 1 ' + x + ' ' + (y + barHeight - cornerRadius) + ' ' +
+            'L' + x + ' ' + (y + cornerRadius) + ' ' +
+            'A' + cornerRadius + ' ' + cornerRadius + ' 0 0 1 ' + (x + cornerRadius) + ' ' + y + ' ' +
+            'Z';
+            point.midAngle = 0;
+            pathOption.d = rectPath;
+            const element: Element = chart.renderer.drawPath(pathOption);
+            element.setAttribute('role', series.accessibility.accessibilityRole ? series.accessibility.accessibilityRole : 'img');
+            element.setAttribute('tabindex', (point.index === 0 && series.accessibility.focusable) ? String(series.accessibility.tabIndex) : '-1');
+            element.setAttribute('aria-label', series.accessibility.accessibilityDescription ? series.accessibility.accessibilityDescription : (point.x + ':' + point.y + '%. ' + series.name));
+            appendChildElement(false, seriesGroup, element, redraw);
+            if (visiblePointIndex < points.length - 1) {
+                const polygonOption: PathOption = new PathOption(
+                    pathOption.id + '_polygon',
+                    this.lightenColor(pathOption.fill),
+                    pathOption['stroke-width'] * 0.4, this.lightenColor(pathOption.stroke), pathOption.opacity,
+                    pathOption['stroke-dasharray'], ''
+                );
+                const trapezoidPoints: number[][] = [
+                    [(funnelWidth - barWidth) / 2 + leftMargin + cornerRadius, y + barHeight],
+                    [(funnelWidth + barWidth) / 2 + leftMargin - cornerRadius, y + barHeight],
+                    [(funnelWidth + nextBarWidth) / 2 + leftMargin, y + barHeight + barPadding],
+                    [(funnelWidth - nextBarWidth) / 2 + leftMargin, y + barHeight + barPadding]
+                ];
+                const trapezoidPath: string = '' +
+                    'M' + trapezoidPoints[0][0] + ' ' + trapezoidPoints[0][1] + ' ' +
+                    'L' + trapezoidPoints[1][0] + ' ' + trapezoidPoints[1][1] + ' ' +
+                    'L' + trapezoidPoints[2][0] + ' ' + trapezoidPoints[2][1] + ' ' +
+                    'L' + trapezoidPoints[3][0] + ' ' + trapezoidPoints[3][1] + ' ' + 'Z';
+
+                polygonOption.d = trapezoidPath;
+                const polygon: Element = chart.renderer.drawPath(polygonOption);
+                appendChildElement(false, polygonGroup, polygon, redraw);
+            } else {
+                removeElement(pathOption.id + '_polygon');
+            }
+            currentVerticalOffset += barHeight + barPadding;
+            point.region = new Rect(x, y, barWidth, barHeight);
+            point.symbolLocation = {
+                x: point.region.x + point.region.width / 2,
+                y: point.region.y + point.region.height / 2
+            };
+            point.labelOffset = {
+                x: point.symbolLocation.x + point.region.width / 2,
+                y: point.symbolLocation.y + point.region.height / 2
+            };
+            if (point.isExplode) {
+                chart.accBaseModule.explodePoints(point.index, chart, true);
+            }
+        }
+        appendChildElement(false, chart.getSeriesElement(), seriesGroup, redraw);
+        appendChildElement(false, chart.getSeriesElement(), polygonGroup, redraw);
+    }
+
+    /**
+     * Function to lighten a color by blending it with white.
+     *
+     * @param {string} color - The main color in hex format (e.g., '#1e90ff').
+     * @returns {string} - The lightened color in hex format.
+     */
+    public lightenColor(color: string): string {
+        const rgbValue: ColorValue = convertHexToColor(colorNameToHex(color));
+        return 'rgb(' + rgbValue.r + ',' + rgbValue.g + ',' + rgbValue.b + ',' + 0.4 + ')';
     }
 
     /**

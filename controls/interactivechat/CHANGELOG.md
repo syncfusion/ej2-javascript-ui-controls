@@ -2,37 +2,28 @@
 
 ## [Unreleased]
 
-## 28.2.7 (2025-02-25)
+## 29.1.33 (2025-03-25)
 
-### AI AssistView
-
-#### Bug Fixes
-
-- `#I692622` - Now the issue with scrollbar position when dynamically updating messages using `messageTemplate` property has been resolved.
-
-## 28.2.6 (2025-02-18)
-
-### AI AssistView
+### Chat UI
 
 #### Bug Fixes
 
-- `#I689424` - Now the issue with TextArea doesn't adjust the height dynamically when the text exceeds the current height has been resolved.
+- `#I700931` - Now the issue with TextArea doesn't adjust the height dynamically when the text exceeds the current height has been resolved.
 
-## 28.2.5 (2025-02-11)
+#### Features
 
-### AI AssistView
+- Now we have provided two methods `scrollToMessage` and `focusAsync` to enhance user experience:
 
-#### Bug Fixes
-
-- `#I686430` - Now the issue with scrollbar position when loaded initially using the `messageTemplate` and `loadOnDemand` property enabled has been resolved.
-
-## 28.1.41 (2025-01-21)
+- **scrollToMessage(string messageId)** – Scrolls to the specific message using its unique ID, allowing users to quickly navigate to the messages.
+- **focus** – Sets focus on the input textarea, enabling seamless message typing without manual interaction.
 
 ### AI AssistView
 
 #### Features
 
-- `#I669136` - Now we have provided a new method `scrollToBottom()` to programmatically scroll the view to the bottom in the AssistView.
+- Now we have provided steaming support in the AI AssistView which enables dynamic updates of the responses as chunks by using the existing method `addPromptResponse()` method with an additional argument `isFinal` to indicate the final response.
+
+- Now we have provided a new event `stopRespondingClick` which triggers when the stop responding button is clicked.
 
 ## 27.1.48 (2024-09-18)
 

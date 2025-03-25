@@ -69,8 +69,8 @@ export class DropDownButtons {
      * @param {IDropDownRenderArgs} args - specifies the arguments
      * @returns {void}
      * @hidden
-     * @deprecated
      * @param {HTMLElement} targetEle - specifies the arugument
+     * @deprecated
      */
     public renderDropDowns(args: IDropDownRenderArgs, targetEle?: HTMLElement): void {
         this.initializeInstance();
@@ -198,12 +198,12 @@ export class DropDownButtons {
                     break;
                 case 'align':
                 case 'videoalign':
-                    this.renderAlignmentDropDown(type, tbElement, targetElement, item);
+                    this.renderAlignmentDropDown(type, tbElement, targetEle, item);
                     break;
                 case 'display':
                 case 'audiolayoutoption':
                 case 'videolayoutoption':
-                    this.renderDisplayDropDown(type, tbElement, targetElement, item);
+                    this.renderDisplayDropDown(type, tbElement, targetEle, item);
                     break;
                 case 'tablerows': this.rowDropDown(type, tbElement, targetElement, targetEle);
                     break;
@@ -390,6 +390,7 @@ export class DropDownButtons {
     }
 
     private renderDisplayDropDown(type: string, tbElement: HTMLElement, targetElement: Element, item?: string): void {
+        const targetEle: Element = targetElement;
         targetElement = select('#' + this.parent.getID() + '_' + type + (item === 'display' ? '_Display' : item === 'videolayoutoption' ? '_VideoLayoutOption' : '_AudioLayoutOption'), tbElement);
         if (targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
             return;
@@ -399,10 +400,12 @@ export class DropDownButtons {
             cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ITEMS + ' ' + classes.CLS_QUICK_DROPDOWN,
             itemName: item === 'display' ? 'Display' : item === 'videolayoutoption' ? 'VideoLayoutOption' : 'AudioLayoutOption',
             items: item === 'display' ? model.imageDisplayItems : item === 'videolayoutoption' ? model.videoLayoutOptionItems : model.audioLayoutOptionItems,
-            element: targetElement
+            element: targetElement,
+            activeElement: targetEle
         } as IDropDownModel);
     }
     private renderAlignmentDropDown(type: string, tbElement: HTMLElement, targetElement: Element, item?: string): void {
+        const targetEle: Element = targetElement;
         targetElement = select('#' + this.parent.getID() + '_' + type + (item === 'align' ? '_Align' : '_VideoAlign'), tbElement);
         if (targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) {
             return;
@@ -412,7 +415,8 @@ export class DropDownButtons {
             cssClass: classes.CLS_DROPDOWN_POPUP + ' ' + classes.CLS_DROPDOWN_ICONS + ' ' + classes.CLS_QUICK_DROPDOWN,
             itemName: item === 'align' ? 'Align' : 'VideoAlign',
             items: item === 'align' ? model.imageAlignItems : model.videoAlignItems,
-            element: targetElement
+            element: targetElement,
+            activeElement: targetEle
         } as IDropDownModel);
     }
 

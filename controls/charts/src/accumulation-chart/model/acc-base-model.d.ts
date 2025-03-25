@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, createElement, Browser, animationMode, extend } from '@syncfusion/ej2-base';import { isNullOrUndefined, getValue } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { Border, Font, Animation, EmptyPointSettings, Connector, Accessibility } from '../../common/model/base';import { Rect, Size, PathOption, measureText } from '@syncfusion/ej2-svg-base';import { ChartLocation, stringToNumber, appendChildElement, subtractRect } from '../../common/utils/helper';import { AccumulationType, AccumulationLabelPosition, PyramidModes } from '../model/enum';import { IAccSeriesRenderEventArgs, IAccPointRenderEventArgs, IAccTextRenderEventArgs } from '../model/pie-interface';import { LegendShape, SelectionPattern } from '../../common/utils/enum';import { Data } from '../../common/model/data';import { seriesRender, pointRender } from '../../common/model/constants';import { getSeriesColor } from '../../common/model/theme';import { FontModel, BorderModel, AnimationModel, ConnectorModel, EmptyPointSettingsModel, AccessibilityModel } from '../../common/model/base-model';import { AccumulationChart } from '../accumulation';import { getElement, firstToLowerCase } from '../../common/utils/helper';import { Units, Alignment, Regions, Position, SeriesCategories, LabelOverflow, TextWrap } from '../../common/utils/enum';import { GroupModes } from './enum';import { BaseSelection } from '../../common/user-interaction/selection';import { LegendOptions } from '../../common/legend/legend';
+import { Property, ChildProperty, Complex, createElement, Browser, animationMode, extend } from '@syncfusion/ej2-base';import { isNullOrUndefined, getValue } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { Border, Font, Animation, EmptyPointSettings, Connector, Accessibility } from '../../common/model/base';import { Rect, Size, PathOption, measureText } from '@syncfusion/ej2-svg-base';import { ChartLocation, stringToNumber, appendChildElement, subtractRect } from '../../common/utils/helper';import { AccumulationType, AccumulationLabelPosition, PyramidModes, FunnelModes } from '../model/enum';import { IAccSeriesRenderEventArgs, IAccPointRenderEventArgs, IAccTextRenderEventArgs } from '../model/pie-interface';import { LegendShape, SelectionPattern } from '../../common/utils/enum';import { Data } from '../../common/model/data';import { seriesRender, pointRender } from '../../common/model/constants';import { getSeriesColor } from '../../common/model/theme';import { FontModel, BorderModel, AnimationModel, ConnectorModel, EmptyPointSettingsModel, AccessibilityModel } from '../../common/model/base-model';import { AccumulationChart } from '../accumulation';import { getElement, firstToLowerCase } from '../../common/utils/helper';import { Units, Alignment, Regions, Position, SeriesCategories, LabelOverflow, TextWrap } from '../../common/utils/enum';import { GroupModes } from './enum';import { BaseSelection } from '../../common/user-interaction/selection';import { LegendOptions } from '../../common/legend/legend';
 
 /**
  * Interface for a class AccumulationAnnotationSettings
@@ -558,6 +558,16 @@ export interface AccumulationSeriesModel {
      * @default 'Linear'
      */
     pyramidMode?: PyramidModes;
+
+    /**
+     * Defines the rendering mode for the funnel chart.
+     * Available options are:
+     * * Standard - Displays a funnel shape that narrows down to a point.
+     * * Trapezoid - Displays a funnel shape with parallel sides near the top.
+     *
+     * @default 'Standard'
+     */
+    funnelMode?: FunnelModes;
 
     /**
      * Sets the opacity of the series, with a value between 0 and 1 where 0 is fully transparent and 1 is fully opaque.

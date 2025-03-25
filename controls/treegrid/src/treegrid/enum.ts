@@ -1,11 +1,10 @@
 /**
- * Defines modes of Filter Hierarchy
- * ```props
- * * Parent :- Shows filtered records with its Parent records.
- * * Child :- Shows filtered records with its Child records.
- * * Both :- Shows filtered records with its Parent and Child records.
- * * None :- Shows only the filetred records.
- * ```
+ * Defines modes of Filter Hierarchy used in TreeGrids.
+ * The available modes are:
+ * * `Parent`: Shows filtered records along with their parent records.
+ * * `Child`: Shows filtered records along with their child records.
+ * * `Both`: Shows filtered records with both parent and child records.
+ * * `None`: Shows only the filtered records without any parent or child context.
  */
 export type FilterHierarchyMode =
       'Parent' |
@@ -14,21 +13,20 @@ export type FilterHierarchyMode =
       'None';
 
 /**
- * Defines Predefined toolbar items.
- * ```props
- * * Add :- Add new record.
- * * Edit :- Edit the selected record.
- * * Update :- Update the edited record.
- * * Delete :- Delete the selected record.
- * * Cancel :- Cancel the edited state.
- * * Search :- Searches the TreeGrid records by given key.
- * * ExpandAll :- Expands all the rows in TreeGrid.
- * * CollapseAll :- Collapses all the rows in TreeGrid.
- * * ExcelExport :- Export the TreeGrid to Excel.
- * * PdfExport :- Export the TreeGrid to Pdf.
- * * CsvExport :- Export the TreeGrid to Csv.
- * * Print :- Print the TreeGrid.
- * ```
+ * Defines predefined toolbar items for TreeGrids.
+ * The available toolbar items are:
+ * * `Add`: Add a new record.
+ * * `Edit`: Edit the selected record.
+ * * `Update`: Update the edited record.
+ * * `Delete`: Delete the selected record.
+ * * `Cancel`: Cancel the current edit operation.
+ * * `Search`: Search TreeGrid records by a given key.
+ * * `ExpandAll`: Expand all the rows in the TreeGrid.
+ * * `CollapseAll`: Collapse all the rows in the TreeGrid.
+ * * `ExcelExport`: Export the TreeGrid as an Excel document.
+ * * `PdfExport`: Export the TreeGrid as a PDF document.
+ * * `CsvExport`: Export the TreeGrid as a CSV document.
+ * * `Print`: Print the TreeGrid contents.
  *
  * @hidden
  */
@@ -45,8 +43,9 @@ export type ToolbarItems =
     'PdfExport' |
     'CsvExport' |
     'Print';
+
 /**
- * Defines Predefined toolbar items.
+ * Defines enumerable toolbar items for programmatic access.
  *
  * @hidden
  */
@@ -68,35 +67,38 @@ export enum ToolbarItem {
 }
 
 /**
- * Defines different PageSizeMode
- * ```props
- * * All :- Defines the pageSizeMode as All
- * * Root :- Defines the pageSizeMode as Root
- * ```
+ * Defines the available PageSizeMode options for pagination in a tree grid structure.
+ *
+ * The available page size modes are:
+ *
+ * * `All`: Considers all records, including both parent and child records, when calculating the number of records per page.
+ * * `Root`: Considers only root-level parent records, excluding child records, when calculating the number of records per page.
  */
 export type PageSizeMode =
     'All' |
     'Root';
 
 /**
- * Defines predefined contextmenu items.
- * ```props
- * * AutoFitAll :- Auto fit the size of all columns.
- * * AutoFit :- Auto fit the current column.
- * * SortAscending :- Sort the current column in ascending order.
- * * SortDescending :- Sort the current column in descending order.
- * * Edit :- Edit the current record.
- * * Delete :- Delete the current record.
- * * Save :- Save the edited record.
- * * Cancel :- Cancel the edited state.
- * * PdfExport :- Export the TreeGrid as Pdf format.
- * * ExcelExport :- Export the TreeGrid as Excel format.
- * * CsvExport :- Export the TreeGrid as CSV format.
- * * FirstPage :- Go to the first page.
- * * PrevPage :- Go to the previous page.
- * * LastPage :- Go to the last page.
- * * NextPage :- Go to the next page.
- * ```
+ * Defines predefined context menu items for row and column interactions.
+ * The available context menu items are:
+ * * `AutoFitAll`: Automatically fit the size of all columns.
+ * * `AutoFit`: Automatically fit the size of the current column.
+ * * `SortAscending`: Sort the current column in ascending order.
+ * * `SortDescending`: Sort the current column in descending order.
+ * * `Edit`: Edit the current record.
+ * * `Delete`: Delete the current record.
+ * * `Save`: Save the edited state.
+ * * `Cancel`: Cancel the current edit operation.
+ * * `PdfExport`: Export the TreeGrid as a PDF format.
+ * * `ExcelExport`: Export the TreeGrid as an Excel format.
+ * * `CsvExport`: Export the TreeGrid as a CSV format.
+ * * `FirstPage`: Navigate to the first page.
+ * * `PrevPage`: Navigate to the previous page.
+ * * `LastPage`: Navigate to the last page.
+ * * `NextPage`: Navigate to the next page.
+ * * `AddRow`: Add a new row.
+ * * `Indent`: Indent the selected rows.
+ * * `Outdent`: Outdent the selected rows.
  *
  * @hidden
  */
@@ -116,13 +118,12 @@ export type ContextMenuItem =
     'PrevPage' |
     'LastPage' |
     'NextPage' |
-    'AddRow'|
-    'Indent'|
+    'AddRow' |
+    'Indent' |
     'Outdent';
 
-
 /**
- * Defines predefined contextmenu items.
+ * Enumerates detailed context menu items used for menu configurations.
  *
  * @hidden
  */
@@ -146,57 +147,55 @@ export enum ContextMenuItems {
     RowIndent,
     RowOutdent
 }
+
 /**
- * Defines modes of editing.
- * ```props
- * * Cell :- Defines the editing mode as Cell.
- * * Row :- Defines the editing mode as Row.
- * * Dialog :- Defines the editing mode as Dialog.
- * * Batch :- Defines the editing mode as Batch.
- * ```
+ * Defines modes of editing supported by TreeGrids.
+ * The available editing modes are:
+ * * `Cell`: Enables cell editing mode.
+ * * `Row`: Enables row editing mode.
+ * * `Dialog`: Opens a dialog for editing.
+ * * `Batch`: Allows for batch editing of multiple records.
  */
 export type EditMode =
 'Cell' |
 'Row' |
 'Dialog' |
-'Batch' ;
+'Batch';
 
 /**
- * Defines the position where the new row has to be added.
- * ```props
- * * Top :- Defines new row position as top of all rows.
- * * Bottom :- Defines new row position as bottom of all rows.
- * * Above :- Defines new row position as above the selected row.
- * * Below :- Defines new row position as below the selected row.
- * * Child :- Defines new row position as child to the selected row.
- * ```
+ * Defines the target position for adding new rows in the TreeGrid.
+ * The available positions are:
+ * * `Top`: Adds a new row at the top of all rows.
+ * * `Bottom`: Adds a new row at the bottom of all rows.
+ * * `Above`: Adds a new row above the currently selected row.
+ * * `Below`: Adds a new row below the currently selected row.
+ * * `Child`: Adds a new row as a child to the currently selected row.
  */
 export type RowPosition =
 'Top' |
 'Bottom' |
 'Above' |
 'Below' |
-'Child' ;
+'Child';
 
 /**
- * Defines types of Filter
- * ```props
- * * Menu :- Defines the filter type as Menu.
- * * Excel :- Defines the filter type as Excel.
- * * FilterBar :- Defines the filter type as FilterBar.
- * ```
+ * Defines types of filters available in TreeGrids.
+ * The available filter types are:
+ * * `Menu`: Applies a dialog-based filtering option, where users can select operators such as 'equals', 'contains', etc., and enter filter values for more granular control.
+ * * `Excel`: Provides Excel-like filtering capabilities.
+ * * `FilterBar`: Uses a filter bar at the top of each column.
  */
 export type FilterType =
     'FilterBar' |
     'Excel' |
-    'Menu' ;
+    'Menu';
 
 /**
- * Defines the wrap mode.
- * ```props
- * * Both :-  Wraps both header and content.
- * * Header :- Wraps header alone.
- * * Content :- Wraps content alone.
+ * Defines wrapping modes for column content in TreeGrids.
+ * The available wrap modes are:
+ * * `Both`: Wraps both header and content.
+ * * `Header`: Wraps only the header.
+ * * `Content`: Wraps only the content.
  */
 export type WrapMode =
     'Both' |
@@ -204,16 +203,15 @@ export type WrapMode =
     'Content';
 
 /**
- * Defines types of CopyHierarchyMode. They are
- * ```props
- * * Parent :- Defines CopyHiearchyMode as Parent.
- * * Child :- Defines CopyHiearchyMode as Child.
- * * Both :- Defines CopyHiearchyMode as Both.
- * * None :- Defines CopyHiearchyMode as None.
- * ```
+ * Defines the types of CopyHierarchyMode for grid data.
+ * The available copy hierarchy types are:
+ * * `Parent`: Copies data maintaining only parent hierarchy.
+ * * `Child`: Copies data with child hierarchy.
+ * * `Both`: Maintains both parent and child hierarchy during copy.
+ * * `None`: Copies data without any hierarchy structure.
  */
 export declare type CopyHierarchyType =
 'Parent' |
 'Child' |
 'Both' |
-'None' ;
+'None';

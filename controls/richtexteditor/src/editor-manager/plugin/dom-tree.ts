@@ -230,13 +230,12 @@ export class DOMMethods {
      *
      */
     public getTopMostNode(text: Text): HTMLElement | Text{
-        const domMehtods: DOMMethods = new DOMMethods(this.editableElement as HTMLDivElement);
-        if (domMehtods.isBlockNode(text.parentNode as HTMLElement)) {
+        if (this.isBlockNode(text.parentNode as HTMLElement)) {
             return text;
         }
         let parent: HTMLElement = text.parentNode as HTMLElement;
         while (parent) {
-            if (!domMehtods.isBlockNode(parent.parentNode as HTMLElement) && text.textContent === parent.textContent) {
+            if (!this.isBlockNode(parent.parentNode as HTMLElement) && text.textContent === parent.textContent) {
                 parent = parent.parentNode as HTMLElement;
             } else {
                 return parent;

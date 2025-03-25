@@ -514,7 +514,7 @@ describe('Mention', () => {
         });
     });
 
-    describe('Mention search method testing ', () => {
+     describe('Mention search method testing ', () => {
         let mentionObj: any;
         let element: HTMLDivElement;
         let originalTimeout: number;

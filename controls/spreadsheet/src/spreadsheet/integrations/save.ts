@@ -104,11 +104,12 @@ export class Save {
                     this.parent.trigger('dialogBeforeOpen', dlgArgs);
                     if (dlgArgs.cancel) {
                         args.cancel = true;
+                    } else {
+                        dialogInst.dialogInstance.content = this.OpenContent(type); dialogInst.dialogInstance.dataBind();
+                        (this.parent.element.querySelector('.e-text-open') as HTMLInputElement).setSelectionRange(0, (
+                            this.parent.element.querySelector('.e-text-open') as HTMLInputElement).value.length);
+                        focus(this.parent.element);
                     }
-                    dialogInst.dialogInstance.content = this.OpenContent(type); dialogInst.dialogInstance.dataBind();
-                    (this.parent.element.querySelector('.e-text-open') as HTMLInputElement).setSelectionRange(0, (
-                        this.parent.element.querySelector('.e-text-open') as HTMLInputElement).value.length);
-                    focus(this.parent.element);
                 },
                 buttons: [{
                     buttonModel: {
@@ -135,9 +136,7 @@ export class Save {
                             (this.parent.element.querySelector('.e-open-dlg').querySelector('.e-dlg-content')).appendChild(fileSpan);
                         }
                     }
-                }], close: (): void => {
-                    dialogInst.hide();
-                }
+                }]
             };
             dialogInst.show(dlg);
         } else {

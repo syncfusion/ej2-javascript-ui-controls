@@ -78,8 +78,8 @@ describe('Undo redo ->', () => {
             helper.click('#spreadsheet_sorting');
             helper.click('#spreadsheet_sorting-popup .e-item');
             setTimeout(() => {
-                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Casual Shoes');
-                expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Item Name');
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
+                expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Casual Shoes');
                 helper.click('#spreadsheet_undo');
                 expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
                 expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Casual Shoes');
@@ -886,6 +886,335 @@ describe('Undo redo ->', () => {
             });
         });
     });
+    describe('Freezed panes', () => {
+        let sheet: SheetModel;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet(
+                { sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply freeze', (done: Function) => {
+            sheet = helper.getInstance().getActiveSheet();
+            helper.invoke('selectRange', ['E5']);
+            helper.switchRibbonTab(5);
+            helper.click('#' + helper.id + '_freezepanes');
+            setTimeout((): void => {
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Delete all freeze columns', (done: Function) => {
+            helper.invoke('selectRange', ['A1:D1']);
+            helper.openAndClickCMenuItem(0, 5, [7], null, true);
+            setTimeout((): void => {
+                let td: HTMLElement = helper.invoke('getCell', [0, 3]);
+                expect(td.textContent).toBe('Profit');
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(0);
+                done();
+            });
+        });
+        it('Freeze undo action', (done: Function) => {
+            helper.switchRibbonTab(1);
+            helper.click('#' + helper.id + '_undo');
+            setTimeout((): void => {
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Freeze redo action', (done: Function) => {
+            helper.click('#' + helper.id + '_redo');
+            setTimeout((): void => {
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(0);
+                done();
+            });
+        });
+        it('Freeze undo action-00', (done: Function) => {
+            helper.click('#' + helper.id + '_undo');
+            setTimeout((): void => {
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Delete column', (done: Function) => {
+            helper.invoke('selectRange', ['D1:E1']);
+            helper.openAndClickCMenuItem(0, 5, [7], null, true);
+            setTimeout((): void => {
+                let td: HTMLElement = helper.invoke('getCell', [0, 3]);
+                expect(td.textContent).toBe('Amount');
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(3);
+                done();
+            });
+        });
+        it('Undo action', (done: Function) => {
+            helper.switchRibbonTab(1);
+            helper.click('#' + helper.id + '_undo');
+            setTimeout((): void => {
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Redo action', (done: Function) => {
+            helper.click('#' + helper.id + '_redo');
+            setTimeout((): void => {
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(3);
+                done();
+            });
+        });
+        it('Undo action-00', (done: Function) => {
+            helper.click('#' + helper.id + '_undo');
+            setTimeout((): void => {
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Delete column-1', (done: Function) => {
+            helper.invoke('selectRange', ['A1:C1']);
+            helper.openAndClickCMenuItem(0, 5, [7], null, true);
+            setTimeout((): void => {
+                let td: HTMLElement = helper.invoke('getCell', [0, 3]);
+                expect(td.textContent).toBe('Discount');
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(1);
+                done();
+            });
+        });
+        it('Undo action-1', (done: Function) => {
+            helper.click('#' + helper.id + '_undo');
+            setTimeout((): void => {
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Redo action-1', (done: Function) => {
+            helper.click('#' + helper.id + '_redo');
+            setTimeout((): void => {
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(1);
+                done();
+            });
+        });
+        it('Undo action-01', (done: Function) => {
+            helper.click('#' + helper.id + '_undo');
+            setTimeout((): void => {
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Delete column-2', (done: Function) => {
+            helper.invoke('selectRange', ['F1:H1']);
+            helper.openAndClickCMenuItem(0, 5, [7], null, true);
+            setTimeout((): void => {
+                let td: HTMLElement = helper.invoke('getCell', [0, 6]);
+                expect(td.textContent).toBe('');
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Undo action-2', (done: Function) => {
+            helper.click('#' + helper.id + '_undo');
+            setTimeout((): void => {
+                let td: HTMLElement = helper.invoke('getCell', [0, 6]);
+                expect(td.textContent).toBe('Discount');
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            }, 10);
+        });
+        it('Redo action-2', (done: Function) => {
+            helper.click('#' + helper.id + '_redo');
+            setTimeout((): void => {
+                let td: HTMLElement = helper.invoke('getCell', [0, 6]);
+                expect(td.textContent).toBe('');
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Undo action-02', (done: Function) => {
+            helper.click('#' + helper.id + '_undo');
+            setTimeout((): void => {
+                let td: HTMLElement = helper.invoke('getCell', [0, 6]);
+                expect(td.textContent).toBe('Discount');
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            }, 200);
+        });
+
+        it('Delete all frozen Rows', (done: Function) => {
+            helper.invoke('selectRange', ['1:4']);
+            helper.openAndClickCMenuItem(5, 0, [7], true);
+            setTimeout((): void => {
+                expect(sheet.frozenRows).toBe(0);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Freeze row undo action', (done: Function) => {
+            helper.click('#' + helper.id + '_undo');
+            setTimeout((): void => {
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Freeze row redo action', (done: Function) => {
+            helper.click('#' + helper.id + '_redo');
+            setTimeout((): void => {
+                expect(sheet.frozenRows).toBe(0);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Freeze row undo action-00', (done: Function) => {
+            helper.click('#' + helper.id + '_undo');
+            setTimeout((): void => {
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Delete Row', (done: Function) => {
+            helper.invoke('selectRange', ['4:5']);
+            helper.openAndClickCMenuItem(5, 0, [7], true);
+            setTimeout((): void => {
+                expect(sheet.frozenRows).toBe(3);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Row undo action', (done: Function) => {
+            helper.click('#' + helper.id + '_undo');
+            setTimeout((): void => {
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Row redo action', (done: Function) => {
+            helper.click('#' + helper.id + '_redo');
+            setTimeout((): void => {
+                expect(sheet.frozenRows).toBe(3);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Row undo action-00', (done: Function) => {
+            helper.click('#' + helper.id + '_undo');
+            setTimeout((): void => {
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Delete Row-1', (done: Function) => {
+            helper.invoke('selectRange', ['1:3']);
+            helper.openAndClickCMenuItem(5, 0, [7], true);
+            setTimeout((): void => {
+                expect(sheet.frozenRows).toBe(1);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Row undo action-1', (done: Function) => {
+            helper.click('#' + helper.id + '_undo');
+            setTimeout((): void => {
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Row redo action-1', (done: Function) => {
+            helper.click('#' + helper.id + '_redo');
+            setTimeout((): void => {
+                expect(sheet.frozenRows).toBe(1);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Row undo action-01', (done: Function) => {
+            helper.click('#' + helper.id + '_undo');
+            setTimeout((): void => {
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Delete Row-2', (done: Function) => {
+            helper.invoke('selectRange', ['8:10']);
+            helper.openAndClickCMenuItem(5, 0, [7], true);
+            setTimeout((): void => {
+                let td: HTMLElement = helper.invoke('getCell', [9, 0]);
+                expect(td.textContent).toBe('');
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Row undo action-2', (done: Function) => {
+            helper.click('#' + helper.id + '_undo');
+            setTimeout((): void => {
+                let td: HTMLElement = helper.invoke('getCell', [9, 0]);
+                expect(td.textContent).toBe('Cricket Shoes');
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Row redo action-2', (done: Function) => {
+            helper.click('#' + helper.id + '_redo');
+            setTimeout((): void => {
+                let td: HTMLElement = helper.invoke('getCell', [9, 0]);
+                expect(td.textContent).toBe('');
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(4);
+                done();
+            });
+        });
+        it('Row undo action-02', (done: Function) => {
+            helper.click('#' + helper.id + '_undo');
+            setTimeout((): void => {
+                let td: HTMLElement = helper.invoke('getCell', [9, 0]);
+                expect(td.textContent).toBe('Cricket Shoes');
+                expect(sheet.frozenRows).toBe(4);
+                expect(sheet.frozenColumns).toBe(4);
+                helper.switchRibbonTab(5);
+                done();
+            });
+        });
+        it('UnFreeze panes', (done: Function) => {
+            helper.click('#' + helper.id + '_freezepanes');
+            setTimeout((): void => {
+                helper.invoke('goTo', ['D59']);
+                expect(sheet.frozenRows).toBe(0);
+                expect(sheet.frozenColumns).toBe(0);
+                done();
+            }, 100);
+        });
+        it('Scroll down', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.insertRow(2, 4);
+            setTimeout((): void => {
+                expect(sheet.frozenRows).toBe(0);
+                expect(sheet.frozenColumns).toBe(0);
+                done();
+            }, 100);
+        });
+    });
     describe('SF-362962', () => {
         let sheet: SheetModel;
         beforeAll((done: Function) => {
@@ -928,6 +1257,198 @@ describe('Undo redo ->', () => {
         });
     });
 
+    describe(' Undo redo for row height ->', () => {
+        let spreadsheet: any;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [
+                    {
+                        name: 'Car Sales Report',
+                        ranges: [{ dataSource: defaultData }],
+                        rows: [
+                            {
+                                index: 1,
+                                cells: [
+                                    { style: { fontSize: '18pt' } },
+                                ], height: 50
+                            },
+                            {
+                                index: 3,
+                                cells: [
+                                    { style: { fontSize: '18pt' } },
+                                ], height: 50
+                            },
+                            {
+                                index: 30,
+                                cells: [
+                                    { index: 4, value: 'Total Amount:', style: { fontWeight: 'bold', textAlign: 'right' } },
+                                    { formula: '=SUM(F2:F30)', style: { fontWeight: 'bold' } },
+                                ]
+                            }],
+                        columns: [
+                            { width: 180 }, { width: 130 }, { width: 130 }, { width: 180 },
+                            { width: 130 }, { width: 120 }
+                        ]
+                    }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Copy action', (done: Function) => {
+            helper.invoke('selectRange', ['A2']);
+            helper.getElement('#' + helper.id + '_copy').click();
+            done();
+        });
+        it('Paste action', (done: Function) => {
+            helper.invoke('selectRange', ['A3']);
+            helper.getElement('#' + helper.id + '_paste').click();
+            expect(helper.invoke('getCell', [2, 0]).textContent).toBe('Casual Shoes');
+            done();
+        });
+        it('Paste action-1', (done: Function) => {
+            helper.invoke('selectRange', ['A4']);
+            helper.getElement('#' + helper.id + '_paste').click();
+            expect(helper.invoke('getCell', [3, 0]).textContent).toBe('Casual Shoes');
+            done();
+        });
+        it('Text add', (done: Function) => {
+            helper.edit('A2', 'Just checking for cell text wrap working properly or not');
+            helper.invoke('selectRange', ['A2']);
+            helper.getElement('#' + helper.id + '_wrap').click();
+            let td: HTMLElement = helper.invoke('getCell', [1, 0]);
+            expect(td.classList.contains('e-wraptext')).toBeTruthy();
+            spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].rows[1].height).toBe(121);
+            done();
+        });
+        it('Text add-1', (done: Function) => {
+            helper.edit('A2', 'Just checking for cell text wrap working properly or not. Wow Working fine.');
+            spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].rows[1].height).toBe(150);
+            done();
+        });
+        it('Undo action', () => {
+            helper.getElement('#' + helper.id + '_undo').click();
+            spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].rows[1].height).toBe(121);
+            helper.getElement('#' + helper.id + '_undo').click();
+            expect(spreadsheet.sheets[0].rows[1].height).toBe(50);
+            helper.getElement('#' + helper.id + '_undo').click();
+            expect(helper.invoke('getCell', [1, 0]).textContent).toBe('Casual Shoes');
+            helper.getElement('#' + helper.id + '_undo').click();
+            expect(spreadsheet.sheets[0].rows[3].height).toBe(50);
+            expect(helper.invoke('getCell', [3, 0]).textContent).toBe('Formal Shoes');
+            helper.getElement('#' + helper.id + '_undo').click();
+            expect(spreadsheet.sheets[0].rows[2].height).toBe(20);
+        });
+        it('Redo action', () => {
+            helper.getElement('#' + helper.id + '_redo').click();
+        });
+        it('Redo action-1', () => {
+            spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].rows[2].height).toBe(31);
+            helper.getElement('#' + helper.id + '_redo').click();
+        });
+        it('Redo action-2', () => {
+            spreadsheet = helper.getInstance();
+            expect(helper.invoke('getCell', [3, 0]).textContent).toBe('Casual Shoes');
+            helper.getElement('#' + helper.id + '_redo').click();
+        });
+        it('Redo action-3', () => {
+            spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].rows[1].height).toBe(50);
+            helper.getElement('#' + helper.id + '_redo').click();
+        });
+        it('Redo action-4', () => {
+            spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].rows[1].height).toBe(121);
+            helper.getElement('#' + helper.id + '_redo').click();
+        });
+        it('Redo action-5', () => {
+            spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].rows[1].height).toBe(150);
+        });
+    });
+
+    describe('Undo redo hyperlink selection', () => {
+        let spreadsheet: any;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet(
+                { sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply styles', (done: Function) => {
+            helper.invoke('selectRange', ['A1:B100']);
+            setTimeout((): void => {
+                helper.click('#' + helper.id + '_bold');
+                helper.click('#' + helper.id + '_italic');
+                helper.click('#' + helper.id + '_line-through');
+                setTimeout((): void => {
+                    spreadsheet = helper.getInstance();
+                    expect(spreadsheet.sheets[0].rows[1].cells[1].style.textDecoration).toBe('line-through');
+                    done();
+                });
+            });
+        });
+        it('Insert hyperlink', (done: Function) => {
+            helper.invoke('selectRange', ['A3:B6']);
+            helper.switchRibbonTab(2);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_hyperlink').click();
+            setTimeout(() => {
+                helper.getElements('.e-hyperlink-dlg .e-webpage input')[1].value = 'www.google.com';
+                helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
+                helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+                helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
+                done();
+            });
+        });
+        it('Check', (done: Function) => {
+            helper.switchRibbonTab(1);
+            spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].rows[3].cells[1].hyperlink.address).toBe('http://www.google.com');
+            done();
+        });
+        it('Apply Clear Formats', (done: Function) => {
+            helper.invoke('selectRange', ['A1:B100']);
+            setTimeout((): void => {
+                helper.click('#' + helper.id + '_clear');
+                helper.click('#spreadsheet_clear-popup ul li:nth-child(2)');
+                setTimeout((): void => {
+                    spreadsheet = helper.getInstance();
+                    expect(spreadsheet.sheets[0].rows[1].cells[1].style).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[1].cells[1].value).toBe('41684');
+                    expect(spreadsheet.sheets[0].rows[3].cells[1].hyperlink.address).toBe('http://www.google.com');
+                    expect(spreadsheet.sheets[0].rows[3].cells[1].style.textDecoration).toBe('none');
+                    done();
+                });
+            });
+        });
+        it('Undo action', (done: Function) => {
+            helper.getElement('#' + helper.id + '_undo').click();
+            setTimeout((): void => {
+                spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[1].cells[1].style.fontWeight).toBe('bold');
+                expect(spreadsheet.sheets[0].rows[3].cells[1].hyperlink.address).toBe('http://www.google.com');
+                expect(spreadsheet.sheets[0].rows[3].cells[1].style.textDecoration).toBe('underline');
+                done();
+            });
+        });
+        it('Redo action', (done: Function) => {
+            helper.getElement('#' + helper.id + '_redo').click();
+            setTimeout((): void => {
+                spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[1].cells[1].style).toBeUndefined();
+                expect(spreadsheet.sheets[0].rows[1].cells[1].value).toBe(41684);
+                expect(spreadsheet.sheets[0].rows[3].cells[1].hyperlink.address).toBe('http://www.google.com');
+                expect(spreadsheet.sheets[0].rows[3].cells[1].style.textDecoration).toBe('none');
+                done();
+            });
+        });
+    });
+
     describe('EJ2-60728', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet(
@@ -950,6 +1471,50 @@ describe('Undo redo ->', () => {
                 target.click();
                 helper.getElement('#' + helper.id + '_undo').click();
                 expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
+                done();
+            });
+        });
+    });
+
+    describe('EJ2-910312', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet(
+                { sheets: [{ ranges: [{ dataSource: defaultData }], selectedRange: 'A5' }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Row height is not proper on undo of long text added with Alt + Enter', (done: Function) => {
+            helper.triggerKeyNativeEvent(113);
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const editElem: HTMLElement = helper.getElement('.e-spreadsheet-edit');
+            helper.triggerKeyEvent('keyup', 13, null, null, null, editElem, undefined, true);
+            helper.triggerKeyEvent('keyup', 13, null, null, null, editElem, undefined, true);
+            helper.triggerKeyEvent('keyup', 13, null, null, null, editElem, undefined, true);
+            helper.triggerKeyEvent('keyup', 13, null, null, null, editElem, undefined, true);
+            helper.triggerKeyEvent('keyup', 13, null, null, null, editElem, undefined, true);
+            expect(editElem.textContent.split('\n').length).toBe(6);
+            helper.triggerKeyNativeEvent(13);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[4].cells[0].wrap).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[4].cells[0].value).toBe('Sandals & Floaters\n\n\n\n\n ');
+                expect(spreadsheet.sheets[0].rows[4].height).toBeGreaterThan(20);
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].rows[4].cells[0].wrap).toBeFalsy();
+                    expect(spreadsheet.sheets[0].rows[4].cells[0].value).toBe('Sandals & Floaters');
+                    expect(spreadsheet.sheets[0].rows[4].height).toBe(20);
+                    done();
+                });
+            });
+        });
+        it('Row height is not proper on redo of long text added with Alt + Enter', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.click('#spreadsheet_redo');
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[4].cells[0].wrap).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[4].cells[0].value).toBe('Sandals & Floaters\n\n\n\n\n ');
+                expect(spreadsheet.sheets[0].rows[4].height).toBeGreaterThan(20);
                 done();
             });
         });

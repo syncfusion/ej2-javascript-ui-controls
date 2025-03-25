@@ -603,6 +603,21 @@ describe('Heatmap Control', () => {
             let region: ClientRect = element.getBoundingClientRect();
             trigger.clickEvent(element, 0, 0, region.left + 10, region.top + 10);
         });
+        it('Check hasrightClick property in HeatMap in cellclick ', (done: Function) => {
+            heatmap.dataSource = [
+                [1, 2, 3],
+                [4, 5, 6, 7],
+                [8, 9],
+            ];
+            heatmap.cellClick = function (args) {
+                expect(args.hasRightClicked).toBe(false);
+                done();
+            }
+            heatmap.refresh();
+            let element: Element = document.getElementById("container_HeatMapRect_1");
+            let region: ClientRect = element.getBoundingClientRect();
+            heatmap.heatMapMouseClick(<PointerEvent>trigger.onTouchStart(element, null, null, null, null, region.left + 10, region.top + 10));
+        });
 
         it('Check axis label tool tip', (done: Function) => {
             heatmap.dataSource = [

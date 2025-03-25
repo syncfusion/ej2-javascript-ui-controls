@@ -807,7 +807,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
 
     /**
      * Specifies the way to customize the selected values in the Dropdown Tree component based on application needs. If the **valueTemplate** property is set, the template content overrides the displayed item text.
-     * The property accepts [template string](https://ej2.syncfusion.com/documentation/common/template-engine/) or HTML element ID holding the content. The context for the valueTemplate comes from the data object passed to it.
+     * The property accepts [template string] (https://ej2.syncfusion.com/documentation/common/template-engine/) or HTML element ID holding the content. The context for the valueTemplate comes from the data object passed to it.
      *
      * @default null
      * @angularType string | object
@@ -2147,7 +2147,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     this.setProperties({ readonly: true }, true);
                     this.dataBind();
                 } else if (htmlAttr === 'style') {
-                    this.inputWrapper.setAttribute('style', this.htmlAttributes[`${htmlAttr}`]);
+                    this.inputWrapper.style.cssText = this.htmlAttributes[`${htmlAttr}`];
                 } else {
                     const defaultAttr: string[] = ['title', 'id', 'placeholder', 'aria-placeholder',
                         'role', 'autocorrect', 'autocomplete', 'autocapitalize', 'spellcheck', 'minlength', 'maxlength'];
@@ -2490,13 +2490,13 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     else {
                         const oldFocussedNode: HTMLElement = this.treeObj.element.querySelector('.e-node-focus');
                         focusedElement = this.treeObj.element.querySelector('li[tabindex="0"]:not(.e-disable)') ||
-                                         this.treeObj.element.querySelector('li:not(.e-disable)');
+                            this.treeObj.element.querySelector('li:not(.e-disable)');
                         this.removeFocus(focusedElement, oldFocussedNode);
                     }
                     this.updateFocus(focusedElement);
                 }
                 if (this.treeObj.checkedNodes.length > 0 && !this.isFilterRestore) {
-                    const nodes: NodeList = this.treeObj.element.querySelectorAll('li');
+                    const nodes: NodeList = this.treeObj.element.querySelectorAll('li:not(.e-disable)');
                     const checkedNodes: NodeList = this.treeObj.element.querySelectorAll('li[aria-checked=true]');
                     if ((checkedNodes.length === nodes.length) && this.checkBoxElement) {
                         const wrap: HTMLElement = closest((this.checkBoxElement as HTMLElement), '.' + CHECKBOXWRAP) as HTMLElement;
@@ -2955,7 +2955,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.ensurePlaceHolder();
         }
         if (this.showSelectAll && this.checkBoxElement) {
-            const nodes: NodeList = this.treeObj.element.querySelectorAll('li');
+            const nodes: NodeList = this.treeObj.element.querySelectorAll('li:not(.e-disable)');
             const checkedNodes: NodeList = this.treeObj.element.querySelectorAll('li[aria-checked=true]');
             const wrap: HTMLElement = closest((this.checkBoxElement as HTMLElement), '.' + CHECKBOXWRAP) as HTMLElement;
             if ((wrap && args.action === 'uncheck' && (args.isInteracted || checkedNodes.length === 0 ||
@@ -4075,7 +4075,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         if (eventArgs.cancel) {
             return;
         }
-
         this.inputWrapper.classList.remove(ICONANIMATION);
         if (this.popupEle) {
             addClass([this.popupEle], DDTHIDEICON);

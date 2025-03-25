@@ -980,8 +980,10 @@ export class MultiSelect extends DropDownBase implements IInput {
 
         if (!this.list.querySelector('.e-virtual-ddl')) {
             const virualElement: any = this.createElement('div', {
-                id: this.element.id + '_popup', className: 'e-virtual-ddl', styles: this.GetVirtualTrackHeight()
+                id: this.element.id + '_popup',
+                className: 'e-virtual-ddl'
             });
+            virualElement.style.cssText = this.GetVirtualTrackHeight();
             this.popupWrapper.querySelector('.e-dropdownbase').appendChild(virualElement);
         }
         else {
@@ -1708,15 +1710,18 @@ export class MultiSelect extends DropDownBase implements IInput {
                         this.UpdateSkeleton();
                         if ((isNoData || this.allowCustomValue) && !this.list.classList.contains(dropDownBaseClasses.noData)) {
                             if (!this.list.querySelector('.e-virtual-ddl-content')) {
-                                this.list.appendChild(this.createElement('div', {
-                                    className: 'e-virtual-ddl-content',
-                                    styles: this.getTransformValues()
-                                })).appendChild(this.list.querySelector('.e-list-parent'));
+                                const contentElement: HTMLElement = this.createElement('div', {
+                                    className: 'e-virtual-ddl-content'
+                                });
+                                contentElement.style.cssText = this.getTransformValues();
+                                this.list.appendChild(contentElement).appendChild(this.list.querySelector('.e-list-parent'));
                             }
                             if (!this.list.querySelector('.e-virtual-ddl')) {
                                 const virualElement: any = this.createElement('div', {
-                                    id: this.element.id + '_popup', className: 'e-virtual-ddl', styles: this.GetVirtualTrackHeight()
+                                    id: this.element.id + '_popup',
+                                    className: 'e-virtual-ddl'
                                 });
+                                virualElement.style.cssText = this.GetVirtualTrackHeight();
                                 document.getElementsByClassName('e-multi-select-list-wrapper')[0].querySelector('.e-dropdownbase').appendChild(virualElement);
                             }
                         }
@@ -1747,18 +1752,21 @@ export class MultiSelect extends DropDownBase implements IInput {
             if (this.enableVirtualization && (isNoData || this.allowCustomValue) &&
                 !this.list.classList.contains(dropDownBaseClasses.noData)) {
                 if (!this.list.querySelector('.e-virtual-ddl-content')) {
-                    this.list.appendChild(this.createElement('div', {
-                        className: 'e-virtual-ddl-content',
-                        styles: this.getTransformValues()
-                    })).appendChild(this.list.querySelector('.e-list-parent'));
+                    const contentElement: HTMLElement = this.createElement('div', {
+                        className: 'e-virtual-ddl-content'
+                    });
+                    contentElement.style.cssText = this.getTransformValues();
+                    this.list.appendChild(contentElement).appendChild(this.list.querySelector('.e-list-parent'));
                 }
                 if (this.mode !== 'CheckBox') {
                     this.totalItemCount = this.value && this.value.length ? this.totalItemCount - this.value.length : this.totalItemCount;
                 }
                 if (!this.list.querySelector('.e-virtual-ddl')) {
                     const virualElement: any = this.createElement('div', {
-                        id: this.element.id + '_popup', className: 'e-virtual-ddl', styles: this.GetVirtualTrackHeight()
+                        id: this.element.id + '_popup',
+                        className: 'e-virtual-ddl'
                     });
+                    virualElement.style.cssText = this.GetVirtualTrackHeight();
                     document.getElementsByClassName('e-multi-select-list-wrapper')[0].querySelector('.e-dropdownbase').appendChild(virualElement);
                 }
             }
@@ -2890,8 +2898,10 @@ export class MultiSelect extends DropDownBase implements IInput {
                         }
                         else if (!this.list.querySelector('.e-virtual-ddl') && this.skeletonCount > 0) {
                             const virualElement: any = this.createElement('div', {
-                                id: this.element.id + '_popup', className: 'e-virtual-ddl', styles: this.GetVirtualTrackHeight()
+                                id: this.element.id + '_popup',
+                                className: 'e-virtual-ddl'
                             });
+                            virualElement.style.cssText = this.GetVirtualTrackHeight();
                             this.popupWrapper.querySelector('.e-dropdownbase').appendChild(virualElement);
                         }
                     }
@@ -3723,10 +3733,11 @@ export class MultiSelect extends DropDownBase implements IInput {
                 }
                 if (this.enableVirtualization && !this.list.classList.contains(dropDownBaseClasses.noData)){
                     if (!this.list.querySelector('.e-virtual-ddl-content') && this.list.querySelector('.e-list-parent')){
-                        this.list.appendChild(this.createElement('div', {
-                            className: 'e-virtual-ddl-content',
-                            styles: this.getTransformValues()
-                        })).appendChild(this.list.querySelector('.e-list-parent'));
+                        const contentElement: HTMLElement = this.createElement('div', {
+                            className: 'e-virtual-ddl-content'
+                        });
+                        contentElement.style.cssText = this.getTransformValues();
+                        this.list.appendChild(contentElement).appendChild(this.list.querySelector('.e-list-parent'));
                     }
                     else if (this.list.querySelector('.e-virtual-ddl-content')){
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -3740,7 +3751,10 @@ export class MultiSelect extends DropDownBase implements IInput {
                     }
                     if (!this.list.querySelector('.e-virtual-ddl')){
                         const virualElement: any = this.createElement('div', {
-                            id: this.element.id + '_popup', className: 'e-virtual-ddl', styles: this.GetVirtualTrackHeight()});
+                            id: this.element.id + '_popup',
+                            className: 'e-virtual-ddl'
+                        });
+                        virualElement.style.cssText = this.GetVirtualTrackHeight();
                         this.popupWrapper.querySelector('.e-dropdownbase').appendChild(virualElement);
                     }
                     else{
@@ -3973,8 +3987,10 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         else if (!this.list.querySelector('.e-virtual-ddl') && this.skeletonCount > 0) {
             const virualElement: any = this.createElement('div', {
-                id: this.element.id + '_popup', className: 'e-virtual-ddl', styles: this.GetVirtualTrackHeight()
+                id: this.element.id + '_popup',
+                className: 'e-virtual-ddl'
             });
+            virualElement.style.cssText = this.GetVirtualTrackHeight();
             this.popupWrapper.querySelector('.e-dropdownbase').appendChild(virualElement);
         }
         this.listData = currentData;
@@ -4951,8 +4967,10 @@ export class MultiSelect extends DropDownBase implements IInput {
 
                             if (!this.list.querySelector('.e-virtual-ddl')) {
                                 const virualElement: HTMLElement = this.createElement('div', {
-                                    id: this.element.id + '_popup', className: 'e-virtual-ddl', styles: this.GetVirtualTrackHeight()
+                                    id: this.element.id + '_popup',
+                                    className: 'e-virtual-ddl'
                                 });
+                                virualElement.style.cssText = this.GetVirtualTrackHeight();
                                 this.popupWrapper.querySelector('.e-dropdownbase').appendChild(virualElement);
                             }
                             else {
@@ -6442,12 +6460,13 @@ export class MultiSelect extends DropDownBase implements IInput {
                 BOX_ELEMENT : '')
         });
         this.viewWrapper = this.createElement('span', {
-            className: DELIMITER_VIEW + ' ' + DELIMITER_WRAPPER, styles:
-                'display:none;'
+            className: DELIMITER_VIEW + ' ' + DELIMITER_WRAPPER
         });
+        this.viewWrapper.style.display = 'none';
         this.overAllClear = this.createElement('span', {
-            className: CLOSEICON_CLASS, styles: 'display:none;'
+            className: CLOSEICON_CLASS
         });
+        this.overAllClear.style.display = 'none';
         this.componentWrapper = this.createElement('div', { className: ELEMENT_WRAPPER }) as HTMLDivElement;
         this.overAllWrapper = this.createElement('div', { className: OVER_ALL_WRAPPER }) as HTMLDivElement;
         if (this.mode === 'CheckBox') {
@@ -6462,13 +6481,14 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.popupWrapper.setAttribute( 'aria-label', this.element.id );
         this.popupWrapper.setAttribute( 'role', 'dialog' );
         if (this.mode === 'Delimiter' || this.mode === 'CheckBox') {
-            this.delimiterWrapper = this.createElement('span', { className: DELIMITER_WRAPPER, styles: 'display:none' });
+            this.delimiterWrapper = this.createElement('span', { className: DELIMITER_WRAPPER });
+            this.delimiterWrapper.style.display = 'none';
             this.componentWrapper.appendChild(this.delimiterWrapper);
         } else {
             this.chipCollectionWrapper = this.createElement('span', {
-                className: CHIP_WRAPPER,
-                styles: 'display:none'
+                className: CHIP_WRAPPER
             });
+            this.chipCollectionWrapper.style.display = 'none';
             if (this.mode === 'Default') {
                 this.chipCollectionWrapper.setAttribute('id', getUniqueID('chip_default'));
             } else if (this.mode === 'Box') {

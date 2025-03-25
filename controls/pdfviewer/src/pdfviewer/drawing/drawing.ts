@@ -344,6 +344,9 @@ export class Drawing {
                 textele.margin.bottom = -7;
                 textele.setOffsetWithRespectToBounds(0, 0.57, null);
                 textele.relativeMode = 'Point';
+                if (obj.annotationAddMode === 'Existing Annotation' || obj.annotationAddMode === 'Imported Annotation') {
+                    textele.style.fontSize = this.fontSizeCalculation(obj, textele, obj.bounds.width - 10);
+                }
                 canvas.children.push(textele);
                 const pathContent1: PathElement = new PathElement();
                 pathContent1.id = randomId() + '_stamp';
@@ -887,7 +890,7 @@ export class Drawing {
      */
     public refreshCanvasDiagramLayer(diagramLayer?: HTMLCanvasElement, pageIndex?: number, objectId?: string): void {
         if (!diagramLayer) {
-            diagramLayer = (document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex) as HTMLCanvasElement);
+            diagramLayer = (this.pdfViewer.viewerBase.getAnnotationCanvas('_annotationCanvas_', pageIndex) as HTMLCanvasElement);
         }
         if (diagramLayer) {
             let zoom: number;
@@ -2273,6 +2276,7 @@ export class Drawing {
                 if (!(obj instanceof Selector) && obj.wrapper.visible && this.pdfViewer.annotationModule) {
                     let annotationSettings: any;
                     if (obj.annotationSettings) {
+                        annotationSettings = obj.annotationSettings;
                         if (!isNullOrUndefined(annotationSettings) && !isNullOrUndefined(annotationSettings.isLock)) {
                             annotationSettings.isLock = JSON.parse(annotationSettings.isLock);
                         }
@@ -2284,14 +2288,21 @@ export class Drawing {
                     if (annotationSettings && annotationSettings.isLock && this.pdfViewer.annotationModule.checkAllowedInteractions('Select', obj)) {
                         isLock = false;
                     }
-                    selectorModel.annotations.push(obj);
-                    const checkBorder: boolean = this.shownBorder();
-                    if (checkBorder) {
-                        this.initSelectorWrapper();
-                        selectorModel.wrapper.rotateAngle = selectorModel.rotateAngle = 0;
-                        selectorModel.wrapper.children.push(obj.wrapper);
-                        if (!preventUpdate) {
-                            this.renderSelector(obj.pageIndex, currentSelector, obj, true);
+                    const isSign: boolean = obj.shapeAnnotationType === 'Path' || obj.shapeAnnotationType === 'SignatureText'
+                        || obj.shapeAnnotationType === 'SignatureImage';
+                    let isReadOnly: boolean = false;
+                    this.pdfViewer.formFieldCollection.filter((field: any) => field.id === obj.id.split('_')[0])
+                        .forEach((field: any) => isReadOnly = field.isReadonly);
+                    if (!(isLock || (isReadOnly && isSign))) {
+                        selectorModel.annotations.push(obj);
+                        const checkBorder: boolean = this.shownBorder();
+                        if (checkBorder) {
+                            this.initSelectorWrapper();
+                            selectorModel.wrapper.rotateAngle = selectorModel.rotateAngle = 0;
+                            selectorModel.wrapper.children.push(obj.wrapper);
+                            if (!preventUpdate) {
+                                this.renderSelector(obj.pageIndex, currentSelector, obj, true);
+                            }
                         }
                     }
                 }
@@ -2366,7 +2377,7 @@ export class Drawing {
         }
         this.nodePropertyChange(obj, { bounds: { x: obj.wrapper.offsetX, y: obj.wrapper.offsetY } } as PdfAnnotationBaseModel);
         obj.wrapper.measureChildren = false;
-        const canvas: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + (obj as any).pageIndex);
+        const canvas: HTMLElement = this.pdfViewer.viewerBase.getAnnotationCanvas('_annotationCanvas_', (obj as any).pageIndex);
         this.pdfViewer.renderDrawing(canvas as HTMLCanvasElement, (obj as any).pageIndex);
     }
 
@@ -2950,7 +2961,7 @@ export class Drawing {
     }
 
     private fontSizeCalculation(actualObject: any, element: any, boundsWidth: number): number {
-        const canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + actualObject.pageIndex);
+        const canvas: HTMLCanvasElement = <HTMLCanvasElement>this.pdfViewer.viewerBase.getAnnotationCanvas('_annotationCanvas_', actualObject.pageIndex);
         const context: CanvasRenderingContext2D = canvas.getContext('2d');
         let textwidth: number = 0;
         let newsize: number = 0;
@@ -3117,7 +3128,7 @@ export class Drawing {
         tx = tx ? tx : 0;
         ty = ty ? ty : 0;
         if ((obj as any).shapeAnnotationType === 'FreeText' && ((obj as any).id.slice(0, 9) === 'free_text' || (obj as any).id.slice(0, 8) === 'freetext')) {
-            const canvas: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + (obj as any).pageIndex);
+            const canvas: HTMLElement = this.pdfViewer.viewerBase.getAnnotationCanvas('_annotationCanvas_', (obj as any).pageIndex);
             if (canvas) {
                 const bounds: Rect = obj.wrapper.bounds;
                 const width: number = canvas.clientWidth / this.pdfViewer.viewerBase.getZoomFactor();
@@ -3167,7 +3178,7 @@ export class Drawing {
                                     isStamp?: boolean, isSkip?: boolean): boolean {
         const selectorBounds: Rect = !nodeBounds ? this.pdfViewer.selectedItems.wrapper.bounds : undefined;
         const bounds: Rect = nodeBounds;
-        const canvas: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
+        const canvas: any = this.pdfViewer.viewerBase.getAnnotationCanvas('_annotationCanvas_', pageIndex);
         let heightDifference: number = 1;
         if (canvas) {
             const width: number = canvas.clientWidth / this.pdfViewer.viewerBase.getZoomFactor();

@@ -131,10 +131,9 @@ export class Render {
         if (columnIndex === this.parent.treeColumnIndex  && (args.requestType === 'add' || args.requestType
             === 'rowDragAndDrop' || args.requestType === 'delete' || isNullOrUndefined(args.cell.querySelector('.e-treecell')))) {
             const container: Element = createElement('div', { className: 'e-treecolumn-container' });
-            const emptyExpandIcon: HTMLElement = createElement('span', {
-                className: 'e-icons e-none',
-                styles: 'width: 10px; display: inline-block'
-            });
+            const emptyExpandIcon: HTMLElement = createElement('span', { className: 'e-icons e-none' });
+            emptyExpandIcon.style.width = '10px';
+            emptyExpandIcon.style.display = 'inline-block';
             for (let n: number = 0; n < pad; n++) {
                 totalIconsWidth += 10;
                 container.appendChild(emptyExpandIcon.cloneNode());
@@ -160,6 +159,13 @@ export class Render {
                         !this.parent.enableCollapseAll;
                 } else {
                     expand =  !(!data.expanded || !getExpandStatus(this.parent, data, this.parent.grid.getCurrentViewRecords()));
+                    // TicketsID 43483: While Modify Data Expand and Collapse Icon Behavior Changed
+                    if (this.parent.editSettings.mode === 'Cell' && !isRemoteData(this.parent)) {
+                        const selectedRow: ITreeData = this.parent.flatData.find((item: ITreeData) => item.uniqueID === data.uniqueID);
+                        if (!isNullOrUndefined(selectedRow)) {
+                            expand = data.expanded !== selectedRow.expanded ? selectedRow.expanded : data.expanded;
+                        }
+                    }
                 }
                 addClass([expandIcon], (expand ) ? 'e-treegridexpand' : 'e-treegridcollapse');
                 totalIconsWidth += 18;
@@ -265,7 +271,7 @@ export class Render {
         const templateFn: string = 'templateFn';
         const colindex: number = args.column.index;
         if (isNullOrUndefined(treeColumn.field)) {
-            args.cell.setAttribute('data-colindex', colindex + '');
+            args.cell.setAttribute('aria-colindex', (colindex + 1) + '');
         }
         if (treeColumn.field === args.column.field && !isNullOrUndefined(treeColumn.template)) {
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */

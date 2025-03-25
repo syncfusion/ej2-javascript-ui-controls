@@ -1,13 +1,13 @@
 import { IGrid, EJ2Intance, IFilterMUI, IFilterCreate } from '../base/interface';
 import { Column } from '../models/column';
 import { FilterSettings } from '../base/grid';
-import { AutoComplete } from '@syncfusion/ej2-dropdowns';
-import { DataManager, Query, Deferred, Predicate } from '@syncfusion/ej2-data';
+import { AutoComplete, CheckBoxSelection, MultiSelect, DropDownList } from '@syncfusion/ej2-dropdowns';
+import { DataManager, Query, Deferred, Predicate, DataUtil } from '@syncfusion/ej2-data';
 import { Browser, isNullOrUndefined, extend, getValue } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import { Filter } from '../actions/filter';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
-import { getZIndexCalcualtion, eventPromise } from '../base/util';
+import { getZIndexCalcualtion, eventPromise, toggleFilterUI } from '../base/util';
 import * as events from '../base/constant';
 import { FilterStateObj } from '../common/filter-interface';
 import * as literals from '../base/string-literals';
@@ -19,17 +19,22 @@ import { ReturnType } from '../base/type';
  *
  * @hidden
  */
+MultiSelect.Inject(CheckBoxSelection);
 
 export class StringFilterUI implements IFilterMUI {
 
     private parent: IGrid;
     protected serLocator: ServiceLocator;
     private instance: HTMLElement;
+    private multiSelectCheckBoxInstance: HTMLElement;
     private value: string;
     public actObj: AutoComplete;
+    private multiSelectObj: MultiSelect;
     private filterSettings: FilterSettings;
     private filter: Filter;
     private dialogObj: Dialog;
+    private dropdownOpen: Function;
+    private dropdownComplete: Function;
     private acOpen: Function;
     private acFocus: Function;
     private acComplete: Function;
@@ -45,14 +50,21 @@ export class StringFilterUI implements IFilterMUI {
     public create(args: IFilterCreate): void {
         this.instance = this.parent.createElement('input', { className: 'e-flmenu-input', id: 'strui-' + args.column.uid });
         args.target.appendChild(this.instance);
+        this.multiSelectCheckBoxInstance = this.parent.createElement('input', { className: 'multiselect-input', id: 'multiselectstrui-' + args.column.uid });
+        args.target.appendChild(this.multiSelectCheckBoxInstance);
         this.dialogObj = args.dialogObj;
         this.processDataOperation(args);
+        this.createMultiSelectDropDown(args);
+        toggleFilterUI(args.getOptrInstance.dropOptr.value as string, args.column.uid, args.column, args.column.type, args.dialogObj, args.getOptrInstance.dropOptr['previousValue'] as string);
     }
 
     private processDataOperation(args: IFilterCreate): void {
         if (args.column.isForeignColumn()) {
             (<Promise<Object>>this.parent.getDataModule().dataManager.executeQuery(this.parent.getDataModule().generateQuery(true)))
-                .then((result: ReturnType) => { this.getAutoCompleteOptions(args, result); });
+                .then((result: ReturnType) => {
+                    this.getAutoCompleteOptions(args, result);
+                    toggleFilterUI(args.getOptrInstance.dropOptr.value as string, args.column.uid, args.column, args.column.type, args.dialogObj, args.getOptrInstance.dropOptr['previousValue'] as string);
+                });
             return;
         }
         this.getAutoCompleteOptions(args);
@@ -129,24 +141,71 @@ export class StringFilterUI implements IFilterMUI {
         }
     }
 
-    public write(args: { column: Column, target: Element, parent: IGrid, filteredValue: number | string | Date | boolean }): void {
-        if (args.filteredValue !== '' && !isNullOrUndefined(args.filteredValue)) {
-            const struiObj: AutoComplete = (<EJ2Intance>document.querySelector('#strui-' + args.column.uid)).ej2_instances[0];
-            struiObj.value = args.filteredValue as string;
+    public write(args: { column: Column, target: Element, parent: IGrid,
+        filteredValue: number | string | Date | boolean | (string | number | boolean | Date)[] }): void {
+        const operatorDropdown: DropDownList = this.parent.filterModule.filterModule.getOperatorDropdown();
+        const stringObject: AutoComplete = this.getAutoCompleteInstance(args.column.uid);
+        const multiSelectObject: MultiSelect = this.getMultiSelectInstance(args.column.uid);
+        if (operatorDropdown.value === 'in' || operatorDropdown.value === 'notin') {
+            (multiSelectObject.value as (string | number | boolean | Date)[]) = Array.isArray(args.filteredValue) ? args.filteredValue : [];
+        } else {
+            if (args.filteredValue !== '' && !isNullOrUndefined(args.filteredValue) && !Array.isArray(args.filteredValue)) {
+                stringObject.value = args.filteredValue as string;
+            }
         }
     }
 
     public read(element: Element, column: Column, filterOptr: string, filterObj: Filter): void {
-        const actuiObj: AutoComplete = (<EJ2Intance>document.querySelector('#strui-' + column.uid)).ej2_instances[0];
-        if (Browser.isDevice) {
-            actuiObj.hidePopup();
-            actuiObj.focusOut();
+        if (filterOptr === 'in' || filterOptr === 'notin') {
+            const filterValue: string[] = this.getMultiSelectInstance(column.uid).value as string[];
+            filterObj.filterByColumn(column.field, filterOptr, filterValue, 'and', this.parent.filterSettings.enableCaseSensitivity);
+        } else {
+            const autoCompleteObject: AutoComplete = this.getAutoCompleteInstance(column.uid);
+            let filterValue: string | number | Date | boolean = autoCompleteObject.value as string | number | Date | boolean;
+            if (Browser.isDevice) {
+                autoCompleteObject.hidePopup();
+                autoCompleteObject.focusOut();
+            }
+            if (isNullOrUndefined(filterValue) || filterValue === '') {
+                filterValue = null;
+            }
+            filterObj.filterByColumn(column.field, filterOptr, filterValue, 'and', this.parent.filterSettings.enableCaseSensitivity);
         }
-        let filterValue: string | number | Date | boolean = actuiObj.value as string | number | Date | boolean;
-        if (isNullOrUndefined(filterValue) || filterValue === '') {
-            filterValue = null;
-        }
-        filterObj.filterByColumn(column.field, filterOptr, filterValue, 'and', this.parent.filterSettings.enableCaseSensitivity);
+    }
+
+    private getAutoCompleteInstance(uid: string): AutoComplete {
+        return (<EJ2Intance>document.querySelector(`#strui-${uid}`)).ej2_instances[0];
+    }
+
+    private getMultiSelectInstance(uid: string): MultiSelect {
+        return (<EJ2Intance>document.querySelector(`#multiselectstrui-${uid}`)).ej2_instances[0];
+    }
+
+    private createMultiSelectDropDown(args: IFilterCreate): void {
+        const isForeignColumn: boolean = args.column.isForeignColumn();
+        const dataSource: Object = isForeignColumn ? args.column.dataSource : this.parent.dataSource;
+        const fields: string = isForeignColumn ? args.column.foreignKeyValue : args.column.field;
+        this.multiSelectObj =  new MultiSelect(extend(
+            {
+                dataSource: dataSource instanceof DataManager ? dataSource : new DataManager(dataSource),
+                fields: { text: fields, value: fields },
+                mode: 'CheckBox',
+                showDropDownIcon: true,
+                popupHeight: '300px',
+                showSelectAll: true,
+                query: new Query().select(fields),
+                cssClass: this.parent.cssClass ? 'e-multiselect-flmenu' + ' ' + this.parent.cssClass : 'e-multiselect-flmenu',
+                locale: this.parent.locale,
+                enableRtl: this.parent.enableRtl
+            },
+            args.column.filter.params
+        ));
+        this.dialogObj = args.dialogObj;
+        this.dropdownOpen = this.openPopup.bind(this);
+        this.dropdownComplete = this.actionCompleteMultiCheckBox(fields);
+        this.multiSelectObj.addEventListener(literals['open'], this.dropdownOpen);
+        this.multiSelectObj.addEventListener(events.actionComplete, this.dropdownComplete);
+        this.multiSelectObj.appendTo(this.multiSelectCheckBoxInstance);
     }
 
     private openPopup(args: { popup: Popup }): void {
@@ -169,14 +228,26 @@ export class StringFilterUI implements IFilterMUI {
         };
     }
 
+    private actionCompleteMultiCheckBox(fields: string): Function {
+        return (e: { result: string[] }) => {
+            e.result = DataUtil.distinct(e.result, fields, true) as string[];
+        };
+    }
+
     public destroy(): void {
         this.parent.off(events.filterMenuClose, this.destroy);
         this.parent.off(events.destroy, this.destroy);
-        if (!this.actObj || this.actObj.isDestroyed) { return; }
-        this.actObj.removeEventListener(literals.focus, this.acFocus);
-        this.actObj.removeEventListener(literals['open'], this.acOpen);
-        this.actObj.removeEventListener(events.actionComplete, this.acComplete);
-        this.actObj.destroy();
+        if (this.actObj && !this.actObj.isDestroyed) {
+            this.actObj.removeEventListener(literals.focus, this.acFocus);
+            this.actObj.removeEventListener(literals['open'], this.acOpen);
+            this.actObj.removeEventListener(events.actionComplete, this.acComplete);
+            this.actObj.destroy();
+        }
+        if (this.multiSelectObj && !this.multiSelectObj.isDestroyed) {
+            this.multiSelectObj.removeEventListener(literals['open'], this.dropdownOpen);
+            this.multiSelectObj.removeEventListener(events.actionComplete, this.dropdownComplete);
+            this.multiSelectObj.destroy();
+        }
     }
 
 }

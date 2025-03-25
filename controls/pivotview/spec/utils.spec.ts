@@ -1,5 +1,6 @@
 import {
-    PdfCellRenderArgs, ToolbarArgs, RenameReportArgs, RemoveReportArgs, SaveReportArgs, FetchReportArgs, LoadReportArgs
+    PdfCellRenderArgs, ToolbarArgs, RenameReportArgs, RemoveReportArgs, SaveReportArgs, FetchReportArgs, LoadReportArgs,
+    NumberFormattingEventArgs
 } from '../src/common/base/interface';
 import { BeforeExportEventArgs } from '../src';
 import { isNullOrUndefined, addClass, removeClass } from '@syncfusion/ej2-base';
@@ -236,4 +237,8 @@ export function checkTreeNode(treeObj: TreeView, li: Element): void {
     removeClass(treeObj.element.querySelectorAll('li'), ['e-node-focus', 'e-active']);
     addClass([li], ['e-node-focus', 'e-active']);
     (treeObj as any).checkNode((li).getAttribute('data-uid'));
+}
+
+export function numberFormatting(args: NumberFormattingEventArgs): void {
+    args.cancel = true;
 }

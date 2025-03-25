@@ -162,6 +162,9 @@
   .e-multi-select-wrapper .e-multi-searcher {
     float: right;
   }
+  .e-multi-select-wrapper.e-delimiter .e-multi-searcher {
+    float: none;
+  }
 
   .e-multi-select-wrapper .e-clear-icon,
   .e-multi-select-wrapper .e-ddl-icon {

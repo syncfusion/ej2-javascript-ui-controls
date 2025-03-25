@@ -90,6 +90,7 @@ export class PdfExport {
 
     private exportWithData(pdfDoc: Object, resolve: Function, pdfExportProperties: PdfExportProperties, isMultipleExport: boolean): void {
         let data: IGanttData[] = [];
+        const updatedRecords: IGanttData[] = this.parent.getExpandedRecords(this.parent.updatedRecords);
         if (isNullOrUndefined(pdfExportProperties)) {
             pdfExportProperties = {};
         }
@@ -101,7 +102,7 @@ export class PdfExport {
                 this.helper.beforeSinglePageExport['cloneFlatData'] = extend([], this.parent.flatData, null, true);
             }
             else {
-                this.helper.beforeSinglePageExport['cloneFlatData'] = extend([], this.parent.updatedRecords, null, true);
+                this.helper.beforeSinglePageExport['cloneFlatData'] = extend([], updatedRecords, null, true);
             }
             this.helper.beforeSinglePageExport['cloneCurrentViewData'] = extend([], this.parent.currentViewData, null, true);
             data = this.helper.beforeSinglePageExport['cloneFlatData'];
@@ -115,7 +116,7 @@ export class PdfExport {
                 }
             }
             else {
-                data = this.parent.updatedRecords;
+                data = updatedRecords;
             }
         }
         this.initGantt();

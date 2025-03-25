@@ -202,9 +202,12 @@ export class DiagramEventHandler {
             offsetX = (e as PointerEvent).clientX;
             offsetY = (e as PointerEvent).clientY;
         }
+        offsetX = this.diagram.modifyClientOffset(offsetX);
+        offsetY = this.diagram.modifyClientOffset(offsetY);
         let position: Size = new Size();
         position = getRulerSize(this.diagram);
         const boundingRect: ClientRect = this.diagram.element.getBoundingClientRect();
+        this.diagram.modifyBounds(boundingRect);
         offsetX = offsetX + this.diagram.diagramCanvas.scrollLeft - boundingRect.left - position.width;
         offsetY = offsetY + this.diagram.diagramCanvas.scrollTop - boundingRect.top - position.height;
         offsetX /= this.diagram.scroller.transform.scale;
@@ -238,6 +241,7 @@ export class DiagramEventHandler {
         const container: HTMLElement = document.getElementById(element.id);
         if (container) {
             const bounds: ClientRect = container.getBoundingClientRect();
+            this.diagram.modifyBounds(bounds);
             this.diagram.scroller.setViewPortSize(bounds.width, bounds.height);
             let position: Size = new Size();
             position = getRulerSize(this.diagram);
@@ -1303,7 +1307,7 @@ export class DiagramEventHandler {
                     offset = this.currentPosition.x - swimlaneNode.wrapper.bounds.x;
                 } else {
                     offset = this.currentPosition.y - (swimlaneNode.wrapper.bounds.y +
-                        ((shape as SwimLane).hasHeader ? shape.header.height : 0));
+                             ((shape as SwimLane).hasHeader ? shape.header.height : 0));
                 }
                 const phases: PhaseModel = { id: randomId(), offset: offset, header: { annotation: {
                     content: actualShape.phases[0].header  === undefined ? 'Phase' : actualShape.phases[0].header.annotation.content,
@@ -1649,6 +1653,12 @@ export class DiagramEventHandler {
                                         this.diagram.removeFromAQuad(this.diagram.currentSymbol);
                                         this.diagram.removeObjectsFromLayer(this.diagram.nameTable[this.diagram.currentSymbol.id]);
                                         this.diagram.removeElements(this.diagram.currentSymbol);
+                                        const currentObj: (Node | Connector) = this.diagram.currentSymbol;
+                                        if (((currentObj) instanceof Node
+                                            && (currentObj.shape.type === 'Bpmn')
+                                            && (currentObj.shape as BpmnShapeModel).shape === 'TextAnnotation')) {
+                                            this.diagram.removeDependentConnector(currentObj);
+                                        }
                                         removeChildNodes(this.diagram.currentSymbol as Node, this.diagram);
                                         delete this.diagram.nameTable[this.diagram.currentSymbol.id];
                                         const sourceElement: HTMLElement = this.diagram.droppable[`${source}`];
@@ -2042,11 +2052,16 @@ export class DiagramEventHandler {
     // EJ2-66418 - set tooltip relativeMode as mouse
     // Calculating offset position for relativeMode Mouse
     private setTooltipOffset(mousePosition: PointModel): void {
-        const offset: PointModel = getTooltipOffset(this.diagram, mousePosition, this.hoverElement);
+        const point: PointModel = this.updatePointBasedOnScale(mousePosition);
+        const offset: PointModel = getTooltipOffset(this.diagram, point, this.hoverElement);
         this.diagram.tooltipObject.offsetX = offset.x;
         this.diagram.tooltipObject.offsetY = offset.y;
     }
-
+    private updatePointBasedOnScale(mousePosition: PointModel): PointModel {
+        const scale: number = this.diagram.scaleValue;
+        const point: PointModel = {x: mousePosition.x * scale, y: mousePosition.y * scale};
+        return point;
+    }
     private altKeyPressed(keyModifier: KeyModifiers): boolean {
         if (keyModifier & KeyModifiers.Alt) {
             return true;
@@ -2504,10 +2519,12 @@ export class DiagramEventHandler {
                     }
                 }
                 if (this.currentAction === 'Drag' && obj.container && obj.container.type === 'Canvas' && (obj as Node).parentId &&
-                    (this.diagram.getObject((obj as Node).parentId) as NodeModel).shape.type === 'SwimLane' && target && target !== obj &&
+                    (this.diagram.getObject((obj as Node).parentId) as NodeModel).shape.type === 'SwimLane' && target &&
                     (target as Node).container && (target as Node).container.type === 'Canvas' && (target as Node).isLane &&
                     (obj as Node).isLane && (target as Node).parentId === (obj as Node).parentId) {
-                    laneInterChanged(this.diagram, obj, (target as Node), this.currentPosition);
+                    if (target !== obj) {
+                        laneInterChanged(this.diagram, obj, (target as Node), this.currentPosition);
+                    }
                     history.isPreventHistory = true;
                 } else {
                     let parentNode: Node = this.diagram.nameTable[(obj as Node).parentId];

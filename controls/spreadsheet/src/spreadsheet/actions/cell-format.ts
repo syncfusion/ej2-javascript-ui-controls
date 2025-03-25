@@ -1,7 +1,7 @@
 import { Spreadsheet, ICellRenderer, clearViewer, getTextHeightWithBorder } from '../../spreadsheet/index';
-import { getExcludedColumnWidth, selectRange, getLineHeight, getBorderHeight, completeAction, CellRenderArgs } from '../common/index';
+import { getExcludedColumnWidth, selectRange, getLineHeight, getBorderHeight, completeAction, readonlyAlert, CellRenderArgs } from '../common/index';
 import { setRowEleHeight, setMaxHgt, getTextHeight, getMaxHgt, getLines } from '../common/index';
-import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, Workbook, clearFormulaDependentCells } from '../../workbook/index';
+import { CellFormatArgs, getRowHeight, applyCellFormat, CellStyleModel, Workbook, clearFormulaDependentCells, isReadOnlyCells, addListValidationDropdown } from '../../workbook/index';
 import { SheetModel, isHiddenRow, getCell, getRangeIndexes, getSheetIndex, activeCellChanged, clearCFRule } from '../../workbook/index';
 import { wrapEvent, getRangeAddress, ClearOptions, clear, activeCellMergedRange, cellValidation } from '../../workbook/index';
 import { CellStyleExtendedModel, CellModel, beginAction, isHeightCheckNeeded, CFArgs } from '../../workbook/index';
@@ -23,7 +23,7 @@ export class CellFormat {
             if (!this.checkHeight) {
                 this.checkHeight = true;
             }
-            this.updateRowHeight(args.rowIdx, args.colIdx, args.lastCell, args.onActionUpdate, args.outsideViewport);
+            this.updateRowHeight(args.rowIdx, args.colIdx, args.lastCell, args.onActionUpdate, args.outsideViewport, args.rowHeight);
             return;
         }
         const keys: string[] = Object.keys(args.style);
@@ -44,7 +44,9 @@ export class CellFormat {
                 Object.keys(args.style).forEach((key: string): void => { curStyle[`${key}`] = args.style[`${key}`]; });
                 if (curStyle.border !== undefined) {
                     Object.assign(cell.style, <CellStyleModel>{ borderRight: args.style.border, borderBottom: args.style.border });
-                    this.setLeftBorder(args.style.border, cell, args.rowIdx, args.colIdx, args.row, args.onActionUpdate, args.first, sheet);
+                    this.setLeftBorder(
+                        args.style.border, cell, args.rowIdx, args.colIdx,
+                        args.colIdx === this.parent.frozenColCount(sheet) ? args.hRow : args.row, args.onActionUpdate, args.first, sheet);
                     this.setTopBorder(
                         args.style.border, cell, args.rowIdx, args.colIdx, args.pRow, args.pHRow, args.onActionUpdate, args.first,
                         args.lastCell, args.manualUpdate, sheet, <CellRenderArgs>args);
@@ -58,7 +60,8 @@ export class CellFormat {
                 }
                 if (curStyle.borderLeft !== undefined) {
                     this.setLeftBorder(
-                        args.style.borderLeft, cell, args.rowIdx, args.colIdx, args.row, args.onActionUpdate, args.first, sheet);
+                        args.style.borderLeft, cell, args.rowIdx, args.colIdx,
+                        args.colIdx === this.parent.frozenColCount(sheet) ? args.hRow : args.row, args.onActionUpdate, args.first, sheet);
                     delete curStyle.borderLeft;
                 }
                 if (Object.keys(curStyle).length) {
@@ -76,15 +79,32 @@ export class CellFormat {
                         args.manualUpdate);
                 }
                 Object.assign(cell.style, args.style);
-                if (cell && cell.querySelector('.e-cf-databar') && args.style.verticalAlign) {
-                    (cell.querySelector('.e-databar-value') as HTMLElement).style.alignItems =
-                        args.style.verticalAlign === 'top' ? 'start' : args.style.verticalAlign === 'middle' ? 'center' :
-                            'end';
+                if (cell) {
+                    const dataBar: HTMLElement = cell.querySelector('.e-cf-databar') as HTMLElement;
+                    if (dataBar) {
+                        const dataBarValue: HTMLElement = dataBar.querySelector('.e-databar-value') as HTMLElement;
+                        if (dataBarValue) {
+                            dataBarValue.style.textDecoration = args.style.textDecoration;
+                            if (args.style.verticalAlign) {
+                                dataBarValue.style.alignItems = args.style.verticalAlign === 'top' ? 'start' :
+                                    args.style.verticalAlign === 'middle' ? 'center' : 'end';
+                            }
+                        }
+                    }
                 }
                 const CellElem: CellModel = getCell(args.rowIdx, args.colIdx, sheet); // Need to remove after adding span support to merge
                 if (CellElem && (CellElem.rowSpan || CellElem.colSpan) && cell.offsetHeight > 0) {
                     const height: number = getTextHeight(this.parent as Workbook, CellElem.style || this.parent.cellStyle);
                     if (height > cell.offsetHeight) { setRowEleHeight(this.parent, sheet, cell.offsetHeight, args.rowIdx); }
+                }
+                if (args.style.fontSize && cell) {
+                    const ddlCont: HTMLElement = cell.querySelector('.e-validation-list');
+                    if (ddlCont) {
+                        this.parent.notify(addListValidationDropdown, {
+                            ddlCont: ddlCont,
+                            rowIdx: args.rowIdx, colIdx: args.colIdx, updatePosition: true
+                        });
+                    }
                 }
             }
             const cellModel: CellModel = getCell(args.rowIdx, args.colIdx, sheet, null, true);
@@ -111,7 +131,7 @@ export class CellFormat {
                             (cell.children[0].querySelector('.e-databar-value') as HTMLElement).style.fontSize = args.style.fontSize;
                         }
                         if (!args.isFromAutoFillOption) {
-                            this.updateRowHeight(args.rowIdx, args.colIdx, args.lastCell, args.onActionUpdate);
+                            this.updateRowHeight(args.rowIdx, args.colIdx, args.lastCell, args.onActionUpdate, null, args.rowHeight);
                         }
                         if (cellModel.wrap && (args.style.fontSize || args.style.fontFamily)) {
                             cell.style.lineHeight = (parseFloat(
@@ -132,11 +152,11 @@ export class CellFormat {
                 args.style.color = cellStyleColor;
             }
         } else {
-            this.updateRowHeight(args.rowIdx, args.colIdx, true, args.onActionUpdate);
+            this.updateRowHeight(args.rowIdx, args.colIdx, true, args.onActionUpdate, null, args.rowHeight);
         }
     }
     private updateRowHeight(
-        rowIdx: number, colIdx: number, isLastCell: boolean, onActionUpdate: boolean, outsideViewport?: boolean): void {
+        rowIdx: number, colIdx: number, isLastCell: boolean, onActionUpdate: boolean, outsideViewport?: boolean, rHeight?: number): void {
         if (this.checkHeight) {
             const sheet: SheetModel = this.parent.getActiveSheet();
             const cell: CellModel = getCell(rowIdx, colIdx, sheet, null, true);
@@ -176,7 +196,7 @@ export class CellFormat {
                 }
                 if (isLastCell) {
                     this.checkHeight = false;
-                    const maxHgt: number = getMaxHgt(sheet, rowIdx);
+                    const maxHgt: number = rHeight ? rHeight : getMaxHgt(sheet, rowIdx);
                     const prevHgt: number = getRowHeight(sheet, rowIdx);
                     if (onActionUpdate ? maxHgt !== prevHgt : maxHgt > prevHgt) {
                         setRowEleHeight(this.parent, sheet, maxHgt, rowIdx, null, null, true, outsideViewport);
@@ -313,6 +333,13 @@ export class CellFormat {
             getSheetIndex(this.parent as Workbook, options.range.substring(0, options.range.lastIndexOf('!'))) :
             this.parent.activeSheetIndex;
         const rangeIdx: number[] = getSwapRange(getRangeIndexes(range));
+        const isRangeReadOnly: boolean = isReadOnlyCells(this.parent, rangeIdx);
+        if (isRangeReadOnly) {
+            if (args.isAction) {
+                this.parent.notify(readonlyAlert, null);
+            }
+            return;
+        }
         const sheet: SheetModel = this.parent.sheets[sheetIndex as number];
         let sRIdx: number = rangeIdx[0];
         const eRIdx: number = rangeIdx[2];
@@ -321,6 +348,7 @@ export class CellFormat {
         const overlayElements: HTMLCollection = this.parent.element.getElementsByClassName('e-ss-overlay-active');
         const isOverlay: boolean = overlayElements.length > 0;
         let clearCFArgs: CFArgs;
+        const isSelectAll: boolean = this.parent.element.getElementsByClassName('e-prev-highlight-bottom').length > 0;
         let eventArgs: { [key: string]: object | string | number } = { range: range, type: options.type, requestType: 'clear',
             sheetIndex: sheetIndex };
         const actionBegin: Function = (): void => {
@@ -334,24 +362,22 @@ export class CellFormat {
                 if (clearCFArgs) {
                     eventArgs.cfClearActionArgs = clearCFArgs.cfClearActionArgs;
                 }
-                this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clear' });
+                this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clear', isSelectAll: isSelectAll });
             }
         };
         const isClearAll: boolean = options.type === 'Clear All';
         if (isOverlay) {
-            if (overlayElements[0].classList.contains('e-datavisualization-chart')) {
-                if (options.type === 'Clear Contents' || isClearAll) {
-                    actionBegin();
-                    this.parent.notify(deleteChart, {
-                        id: overlayElements[0].id, sheetIdx: this.parent.activeSheetIndex + 1
-                    });
-                    actionComplete();
-                }
-            } else if (isClearAll) {
+            if (options.type === 'Clear Contents' || isClearAll) {
                 actionBegin();
-                this.parent.notify(deleteImage, {
-                    id: overlayElements[0].id, sheetIdx: this.parent.activeSheetIndex + 1
-                });
+                if (overlayElements[0].classList.contains('e-datavisualization-chart')) {
+                    this.parent.notify(deleteChart, {
+                        id: overlayElements[0].id, sheetIdx: this.parent.activeSheetIndex + 1, clearAction: true
+                    });
+                } else {
+                    this.parent.notify(deleteImage, {
+                        id: overlayElements[0].id, sheetIdx: this.parent.activeSheetIndex + 1, clearAction: true
+                    });
+                }
                 actionComplete();
             }
         } else {
@@ -396,7 +422,8 @@ export class CellFormat {
             }
             this.parent.notify(clear, { range: sheet.name + '!' + range, type: options.type });
             this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(
-                getSwapRange(getRangeIndexes(range)), false, false, false, false, isImported(this.parent), !isClearAll);
+                getSwapRange(getRangeIndexes(range)), false, false, false, options.type === 'Clear Hyperlinks' ? true : false, isImported(this.parent), !isClearAll,
+                null, null, null, isSelectAll);
             if (!args.isFromUpdateAction) {
                 this.parent.notify(selectRange, { address: range });
             }

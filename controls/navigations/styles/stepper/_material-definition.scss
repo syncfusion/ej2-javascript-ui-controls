@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $stepper-ol-padding: 0 !default;
 $stepper-step-radius: 9999px !default;
 $stepper-step-width: 32px !default;
@@ -40,7 +42,7 @@ $stepper-bigger-small-text-size: 14px !default;
 $step-selected-li-shadow: 0 0 0 2px $grey-white, 0 0 0 4px $primary, 0 0 0 8px $grey-white !default;
 $step-keyboard-selected-li-shadow: 0 0 0 2px $grey-white, 0 0 0 4px $base-font, 0 0 0 8px $grey-white !default;
 $step-valid-li-shadow: 0 0 0 2px $grey-white, 0 0 0 4px $msg-success-color-alt1, 0 0 0 8px $grey-white !default;
-$step-error-li-shadow: 0 0 0 2px $grey-white, 0 0 0 4px darken($error-font, 11%), 0 0 0 8px $grey-white !default;
+$step-error-li-shadow: 0 0 0 2px $grey-white, 0 0 0 4px color.adjust($error-font, $lightness: -11%), 0 0 0 8px $grey-white !default;
 $step-li-shadow: 0 0 0 8px $grey-white !default;
 $step-border-color: $grey-400 !default;
 $step-hover-text-color: $primary-300-font !default;
@@ -64,9 +66,9 @@ $step-error-icon-only-color: $error-font !default;
 $step-valid-completed-color: $primary-300-font !default;
 $step-valid-completed-bg-color: $msg-success-color-alt1 !default;
 $step-error-icon-color: $primary-300-font !default;
-$step-error-completed-color: darken($error-font, 11%) !default;
-$step-error-completed-bg-color: darken($error-font, 11%) !default;
+$step-error-completed-color: color.adjust($error-font, $lightness: -11%) !default;
+$step-error-completed-bg-color: color.adjust($error-font, $lightness: -11%) !default;
 $step-hover-color: $grey-500 !default;
 $step-active-color: $grey-600 !default;
-$step-selected-hover-color: darken($primary, 10%) !default;
-$step-selected-active-color: darken($primary, 15%) !default;
+$step-selected-hover-color: color.adjust($primary, $lightness: -10%) !default;
+$step-selected-active-color: color.adjust($primary, $lightness: -15%) !default;

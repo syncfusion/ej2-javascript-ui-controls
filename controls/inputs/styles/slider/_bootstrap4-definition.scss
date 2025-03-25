@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $slider-bg-color: $gray-800 !default;
 $slider-disabled-bg-color: $gray-500 !default;
 $slider-active-bg-color: $gray-500 !default;
@@ -127,8 +129,8 @@ $slider-tab-background: $primary !default;
 $slider-tab-border-color: $primary !default;
 $slider-tab-active-box-shadow: 0 0 0 1px $white, 0 0 0 3px rgba($primary, .25) !default;
 
-$slider-handle-active-bg-color: lighten($primary, 35%) !default;
-$slider-handle-active-border-color: lighten($primary, 35%) !default;
+$slider-handle-active-bg-color: color.adjust($primary, $lightness: 35%) !default;
+$slider-handle-active-border-color: color.adjust($primary, $lightness: 35%) !default;
 $slider-handle-active-box-shadow: 0 0 0 1px $white, 0 0 0 3px rgba($primary, .25) !default;
 
 $slider-button-hleft-bg-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAolBMVEUAAAD////////////////////////+/v7////+/v7////+/v7////+/v7////////+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7////+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7+/v7///+y6E2hAAAANXRSTlMABAgMEBQYHCAkKCwwNEBESExUWFxkaGx0fICDh4ubn6Orr7O3u7/Hy8/T19vf4+fr7/P3+0e6nekAAAEFSURBVHjalZXJVgJBEASjnXHAEUQURZBFFAfZt+H/f82jedCXVpyjD1mvs4q/aR4uP1QJR7YUf1tgmYl/amEZXIRHLF31X7GUJ/E/fOB8I/46w5Hm4h9LLGPx63ssPQ08wNI+i/+GpdiLv/xH4IX4+waWqQa+w9LXwE9YOrX4ExzxCqzE3xVY3oMVGGrgHpYH9UdYWlqBuQ9cbLUCOY5UaeCS4INbPMVO19A1wdBVIli0CXhG+uIZYsui7uDJ1/Li0MRTHuXFKouOakZ0VMPwqLqBUckfiWzuTU7wNnwmgtdnDPFyxy7ouQ3hBeW50RW4SMSXrOdFg/chfCg8V1/RcjR+PXbfOBx/sErjBl8AAAAASUVORK5CYII=');

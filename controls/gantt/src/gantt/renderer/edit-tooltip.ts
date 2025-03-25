@@ -218,24 +218,24 @@ export class EditTooltip {
             let duration: string;
             if (!isNullOrUndefined(editRecord) && !isNullOrUndefined(editRecord.startDate)) {
                 startDate = '<tr><td class = "e-gantt-tooltip-label">' + this.parent.localeObj.getConstant('startDate') +
-                    '</td><td style="padding: 2px;">:</td><td class = "e-gantt-tooltip-value">' +
+                    '</td><td class=' + cls.templatePadding + '>:</td><td class = "e-gantt-tooltip-value">' +
                     instance.formatDate(editRecord.startDate, { format: this.parent.getDateFormat() }) + '</td></tr>';
             }
             if (!isNullOrUndefined(editRecord) && !isNullOrUndefined(editRecord.endDate)) {
                 endDate = '<tr><td class = "e-gantt-tooltip-label">' + this.parent.localeObj.getConstant('endDate') +
-                    '</td><td style="padding: 2px;">:</td><td class = "e-gantt-tooltip-value">' +
+                    '</td><td class=' + cls.templatePadding + '>:</td><td class = "e-gantt-tooltip-value">' +
                     instance.formatDate(editRecord.endDate, { format: this.parent.getDateFormat() }) + '</td></tr>';
             }
             if (!isNullOrUndefined(editRecord) && !isNullOrUndefined(editRecord.duration)) {
                 duration = '<tr><td class = "e-gantt-tooltip-label">' + this.parent.localeObj.getConstant('duration') +
-                    '</td><td style="padding: 2px;">:</td><td class = "e-gantt-tooltip-value">' +
+                    '</td><td class=' + cls.templatePadding + '>:</td><td class = "e-gantt-tooltip-value">' +
                     this.parent.getDurationString(editRecord.duration, (editRecord as ITaskData).durationUnit) + '</td></tr>';
             }
             switch (this.taskbarEdit.taskBarEditAction) {
             case 'ProgressResizing':
             {
                 const progress: string = '<tr><td class = "e-gantt-tooltip-label">' + this.parent.localeObj.getConstant('progress') +
-                    '</td><td style="padding: 2px;">:</td><td class = "e-gantt-tooltip-value">' + (editRecord as ITaskData).progress + '</td></tr>';
+                    '</td><td class=' + cls.templatePadding + '>:</td><td class = "e-gantt-tooltip-value">' + (editRecord as ITaskData).progress + '</td></tr>';
                 tooltipString = '<table class = "e-gantt-tooltiptable"><tbody>' +
                     progress + '</tbody></table>';
                 break;
@@ -273,11 +273,12 @@ export class EditTooltip {
             {
                 tooltipString = this.parent.connectorLineModule.tooltipTable;
                 if (isNullOrUndefined(this.toolTipObj)) {
-                    this.parent.connectorLineModule.tooltipTable.innerHTML =
+                    this.parent.connectorLineModule.tooltipTable.innerHTML = '';
+                    this.parent.connectorLineModule.tooltipTable.appendChild(
                         this.parent.connectorLineModule.getConnectorLineTooltipInnerTd(
                             this.parent.editModule.taskbarEditModule.taskBarEditRecord.ganttProperties.taskName,
                             this.parent.editModule.taskbarEditModule.fromPredecessorText, '', ''
-                        );
+                        ));
                 }
                 break;
             }

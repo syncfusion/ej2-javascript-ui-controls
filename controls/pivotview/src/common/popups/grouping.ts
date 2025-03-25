@@ -55,7 +55,7 @@ export class Grouping implements IAction {
         let selectedCellsInfo: SelectedCellsInfo[] = [];
         this.parentElement = parentElement;
         this.isUpdate = false;
-        const colIndex: number = Number(target.getAttribute('data-colindex'));
+        const colIndex: number = parseInt(target.getAttribute('aria-colindex'), 10) - 1;
         const rowIndex: number = Number(target.getAttribute('index'));
         const cell: IAxisSet = (this.parent.engineModule.pivotValues[rowIndex as number][colIndex as number] as IAxisSet);
         const fieldName: string = cell.valueSort.axis.toString();
@@ -246,7 +246,7 @@ export class Grouping implements IAction {
         const selectedElements: NodeListOf<HTMLElement> = this.parent.element.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR + ',.' + cls.SELECTED_BGCOLOR);
         for (let i: number = 0; i < selectedElements.length; i++) {
             const element: HTMLElement = selectedElements[i as number];
-            const colIndex: number = Number(element.getAttribute('data-colindex'));
+            const colIndex: number = parseInt(element.getAttribute('aria-colindex'), 10) - 1;
             const rowIndex: number = Number(element.getAttribute('index'));
             const cell: IAxisSet = (this.parent.engineModule.pivotValues[rowIndex as number][colIndex as number] as IAxisSet);
             if (cell && (cell.axis === axis) && !(cell.type === 'grand sum' || cell.type === 'sum') &&

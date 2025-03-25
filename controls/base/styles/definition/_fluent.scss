@@ -1,14 +1,17 @@
+@use 'sass:color';
+@use 'sass:meta';
+@use 'sass:list';
 @import '../common/mixin.scss';
 
 $black: #000 !default;
 $white: #fff !default;
 
 @function shade-color($color, $percentage) {
-  @return mix($black, $color, $percentage);
+  @return color.mix($black, $color, $percentage);
 }
 
 @function tint-color($color, $percentage) {
-  @return mix($white, $color, $percentage);
+  @return color.mix($white, $color, $percentage);
 }
 
 $transparent: transparent;
@@ -67,10 +70,10 @@ $success-light: #dff6dd !default;
 $info-light: #e5f4fd !default;
 $warning-light: #fff4ce !default;
 $danger-light: #fed9cc !default;
-$success-dark: darken($success, 10%) !default;
-$info-dark: darken($info, 25%) !default;
-$warning-dark: darken($warning, 25%) !default;
-$danger-dark: darken($danger, 10%) !default;
+$success-dark: color.adjust($success, $lightness: -10%) !default;
+$info-dark: color.adjust($info, $lightness: -25%) !default;
+$warning-dark: color.adjust($warning, $lightness: -25%) !default;
+$danger-dark: color.adjust($danger, $lightness: -10%) !default;
 $success-light-alt: $success-light !default;
 $info-light-alt: $info-light !default;
 $warning-light-alt: $warning-light !default;
@@ -372,7 +375,7 @@ $msg-close-icon-color-alt2: $white !default;
 $msg-success-color: $gray160 !default;
 $msg-success-bg-color: $success-light !default;
 $msg-success-border-color: $success-light !default;
-$msg-success-color-alt1: darken($green20, 5%) !default;
+$msg-success-color-alt1: color.adjust($green20, $lightness: -5%) !default;
 $msg-success-bg-color-alt1: $transparent !default;
 $msg-success-border-color-alt1: $border-success !default;
 $msg-success-color-alt2: $white !default;
@@ -380,7 +383,7 @@ $msg-success-bg-color-alt2: $green20 !default;
 $msg-success-border-color-alt2: $green20 !default;
 
 $msg-success-icon-color: #107c10 !default;
-$msg-success-icon-color-alt1: darken($green20, 5%) !default;
+$msg-success-icon-color-alt1: color.adjust($green20, $lightness: -5%) !default;
 $msg-success-icon-color-alt2: $white !default;
 
 $msg-success-close-icon-color: $gray160 !default;
@@ -388,9 +391,9 @@ $msg-success-close-icon-color-alt1: $msg-color !default;
 $msg-success-close-icon-color-alt2: $white !default;
 
 $msg-danger-color: $gray160 !default;
-$msg-danger-bg-color: lighten($red10, 42%) !default;
-$msg-danger-border-color: lighten($red10, 42%) !default;
-$msg-danger-color-alt1: darken($red10, 5%) !default;
+$msg-danger-bg-color: color.adjust($red10, $lightness: 42%) !default;
+$msg-danger-border-color: color.adjust($red10, $lightness: 42%) !default;
+$msg-danger-color-alt1: color.adjust($red10, $lightness: -5%) !default;
 $msg-danger-bg-color-alt1: $transparent !default;
 $msg-danger-border-color-alt1: #a4262c !default;
 $msg-danger-color-alt2: $white !default;
@@ -398,7 +401,7 @@ $msg-danger-bg-color-alt2: $red10 !default;
 $msg-danger-border-color-alt2: $red10 !default;
 
 $msg-danger-icon-color: #a80000 !default;
-$msg-danger-icon-color-alt1: darken($red10, 5%) !default;
+$msg-danger-icon-color-alt1: color.adjust($red10, $lightness: -5%) !default;
 $msg-danger-icon-color-alt2: $white !default;
 
 $msg-danger-close-icon-color: $gray160 !default;
@@ -406,17 +409,17 @@ $msg-danger-close-icon-color-alt1: $msg-color !default;
 $msg-danger-close-icon-color-alt2: $white !default;
 
 $msg-warning-color: $gray160 !default;
-$msg-warning-bg-color: lighten($orangeyellow10, 51%) !default;
-$msg-warning-border-color: lighten($orangeyellow10, 51%) !default;
-$msg-warning-color-alt1: darken($orangeyellow10, 10%) !default;
+$msg-warning-bg-color: color.adjust($orangeyellow10, $lightness: 51%) !default;
+$msg-warning-border-color: color.adjust($orangeyellow10, $lightness: 51%) !default;
+$msg-warning-color-alt1: color.adjust($orangeyellow10, $lightness: -10%) !default;
 $msg-warning-bg-color-alt1: $transparent !default;
 $msg-warning-border-color-alt1: $orangeyellow10 !default;
 $msg-warning-color-alt2: $white !default;
-$msg-warning-bg-color-alt2: darken($orangeyellow10, 13%) !default;
-$msg-warning-border-color-alt2: darken($orangeyellow10, 13%) !default;
+$msg-warning-bg-color-alt2: color.adjust($orangeyellow10, $lightness: -13%) !default;
+$msg-warning-border-color-alt2: color.adjust($orangeyellow10, $lightness: -13%) !default;
 
 $msg-warning-icon-color: $gray120 !default;
-$msg-warning-icon-color-alt1: darken($orangeyellow10, 13%) !default;
+$msg-warning-icon-color-alt1: color.adjust($orangeyellow10, $lightness: -13%) !default;
 $msg-warning-icon-color-alt2: $white !default;
 
 $msg-warning-close-icon-color: $gray160 !default;
@@ -426,7 +429,7 @@ $msg-warning-close-icon-color-alt2: $white !default;
 $msg-info-color: $gray160 !default;
 $msg-info-bg-color: $info-light !default;
 $msg-info-border-color: $info-light !default;
-$msg-info-color-alt1: darken($cyan20, 5%) !default;
+$msg-info-color-alt1: color.adjust($cyan20, $lightness: -5%) !default;
 $msg-info-bg-color-alt1: $transparent !default;
 $msg-info-border-color-alt1: $cyan20 !default;
 $msg-info-color-alt2: $white !default;
@@ -434,7 +437,7 @@ $msg-info-bg-color-alt2: $cyan20 !default;
 $msg-info-border-color-alt2: $cyan20 !default;
 
 $msg-info-icon-color: $content-text-color-alt3 !default;
-$msg-info-icon-color-alt1: darken($cyan20, 5%) !default;
+$msg-info-icon-color-alt1: color.adjust($cyan20, $lightness: -5%) !default;
 $msg-info-icon-color-alt2: $white !default;
 
 $msg-info-close-icon-color: $gray160 !default;

@@ -362,7 +362,7 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
                 this.barcodeCanvas.setAttribute('height', String(this.element.offsetHeight));
                 break;
             case 'backgroundColor':
-                this.barcodeCanvas.setAttribute('style', 'background:' + newProp.backgroundColor);
+                this.barcodeCanvas.style.background = newProp.backgroundColor;
                 break;
             case 'mode':
                 this.initialize();

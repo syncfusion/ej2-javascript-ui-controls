@@ -297,7 +297,8 @@ export class HeaderRender implements IRenderer {
         if (this.getTable()) {
             remove(this.getTable());
         }
-        const table: Element = this.parent.createElement('table', { className: literals.table, attrs: { cellspacing: '0.25px', role: 'presentation' } });
+        const table: Element = this.parent.createElement('table', { className: literals.table, attrs: { role: 'presentation' } });
+        (table as HTMLElement).style.cssText = 'border-collapse: separate; border-spacing: .25px;';
         const findHeaderRow: { thead: Element, rows: Row<Column>[] } = this.createHeaderContent(tableName);
         const thead: Element = findHeaderRow.thead;
         const tbody: Element = this.parent.createElement( literals.tbody, { className: this.parent.frozenRows ||

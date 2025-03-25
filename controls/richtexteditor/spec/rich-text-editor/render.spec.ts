@@ -1,8 +1,9 @@
-import { createElement, detach, getUniqueID, extend } from '@syncfusion/ej2-base';
+import { createElement, detach, getUniqueID, extend, Browser } from '@syncfusion/ej2-base';
 import { RichTextEditor } from './../../src/rich-text-editor/base/rich-text-editor';
 import { RichTextEditorModel } from './../../src/rich-text-editor/base/rich-text-editor-model';
 import { HtmlEditor, MarkdownEditor, Toolbar, QuickToolbar, SlashMenu } from "../../src/rich-text-editor/index";
 import { Link, Image, Audio, Video, Table, PasteCleanup, Count, Resize, FileManager, FormatPainter, EmojiPicker, ImportExport } from "../../src/rich-text-editor/index";
+import { CustomUserAgentData } from '../../src/common/user-agent';
 
 RichTextEditor.Inject(HtmlEditor, MarkdownEditor, FormatPainter, Toolbar, QuickToolbar, Link, Image, Audio, Video, Table, PasteCleanup, Count, Resize, FileManager, EmojiPicker, SlashMenu, ImportExport);
 
@@ -18,6 +19,8 @@ export function renderRTE(options: RichTextEditorModel): RichTextEditor {
     extend(options, options, { saveInterval: 0 })
     let rteObj: RichTextEditor = new RichTextEditor(options);
     rteObj.appendTo(element);
+    (rteObj as any).userAgentData = new CustomUserAgentData(Browser.userAgent, true);
+    (rteObj.formatter.editorManager as any).userAgentData = new CustomUserAgentData(Browser.userAgent, true);
     if (rteObj.quickToolbarModule) {
         rteObj.quickToolbarModule.debounceTimeout = 0;
     }

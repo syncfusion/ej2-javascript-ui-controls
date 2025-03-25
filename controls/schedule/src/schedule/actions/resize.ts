@@ -312,6 +312,9 @@ export class Resize extends ActionBase {
             if (resizeEventArgs.cancel) {
                 return;
             }
+            if (this.parent.eventBase.checkOverlap(resizeEventArgs.data)) {
+                return;
+            }
             if (this.parent.isSpecificResourceEvents()) {
                 this.parent.crudModule.crudObj.sourceEvent =
                     [this.parent.resourceBase.lastResourceLevel[parseInt(resizeEventArgs.element.getAttribute('data-group-index'), 10)]];
@@ -432,7 +435,7 @@ export class Resize extends ActionBase {
                 resizeTime.setHours(eventEnd.getHours(), eventEnd.getMinutes(), eventEnd.getSeconds());
             }
         }
-        const isNotHourSlot: boolean = ['TimelineMonth', 'Year', 'Month', 'Week', 'Date'].indexOf(headerName) !== -1 ||
+        const isNotHourSlot: boolean = ['TimelineMonth', 'Year', 'Month', 'Week', 'WorkWeek', 'Date', 'Day'].indexOf(headerName) !== -1 ||
             !this.parent.activeViewOptions.timeScale.enable;
         if (isLeft) {
             if ((eventEnd.getTime() - resizeTime.getTime()) <= 0) {

@@ -138,7 +138,8 @@ export class FlowchartModel {
                 if (outEdges.length) {
                     if (internalNode.cell.isDecisionNode) {
                         const yesChild: InternalEdges = outEdges.find((e: InternalEdges) => e.target.cell.isYesChild);
-                        if (outEdges.indexOf(yesChild) !== 0) {
+                        const decisionNode: InternalEdges = outEdges.find((e: InternalEdges) => e.target.cell.isDecisionNode);
+                        if (outEdges.indexOf(decisionNode) === -1 && outEdges.indexOf(yesChild) !== 0) {
                             outEdges.reverse();
                         }
                         if (this.layout.yesBranchDirection === 'RightInFlow'

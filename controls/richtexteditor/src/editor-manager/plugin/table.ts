@@ -5,7 +5,6 @@ import { IHtmlItem, IHtmlSubCommands } from './../base/interface';
 import { InsertHtml } from './inserthtml';
 import { removeClassWithAttr } from '../../common/util';
 import * as EVENTS from '../../common/constant';
-import { NodeSelection } from '../../selection';
 
 /**
  * Link internal component
@@ -227,26 +226,6 @@ export class TableCommand {
         }
     }
 
-    private cellStyleCleanup(value: string): string {
-        const styles: string[] = value.split(';');
-        const newStyles: string[] = [];
-        const deniedFormats: string[] = ['background-color', 'vertical-align', 'text-align'];
-        for (let i: number = 0; i < styles.length; i++) {
-            const style: string = styles[i as number];
-            let isAllowed: boolean = true;
-            for (let j: number = 0; j < deniedFormats.length; j++) {
-                const deniedStyle: string = deniedFormats[j as number];
-                if (style.indexOf(deniedStyle) > -1) {
-                    isAllowed = false;
-                }
-            }
-            if (isAllowed) {
-                newStyles.push(style);
-            }
-        }
-        return newStyles.join(';');
-    }
-
     private insertColumn(e: IHtmlItem): void {
         let selectedCell: HTMLElement = e.item.selection.range.startContainer as HTMLElement;
         if (!(selectedCell.nodeName === 'TH' || selectedCell.nodeName === 'TD')) {
@@ -303,10 +282,10 @@ export class TableCommand {
 
     private setBGColor(args: IHtmlSubCommands): void {
         const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
-        // eslint-disable-next-line
-        const selection: NodeSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
-        // eslint-disable-next-line
-        const selectedCells = this.curTable.querySelectorAll('.e-cell-select');
+        const start: HTMLElement = range.startContainer.nodeType === 3 ?
+            range.startContainer.parentNode as HTMLElement : range.startContainer as HTMLElement;
+        this.curTable = start.closest('table') as HTMLTableElement;
+        const selectedCells: NodeListOf<HTMLElement> = this.curTable.querySelectorAll('.e-cell-select');
         for (let i: number = 0; i < selectedCells.length; i++) {
             (selectedCells[i as number] as HTMLElement).style.backgroundColor = args.value.toString();
         }
@@ -1091,6 +1070,10 @@ export class TableCommand {
     }
 
     private restoreRange(target: HTMLElement): void {
+        if (this.parent.userAgentData.isSafari()) {
+            this.parent.nodeSelection.Clear(this.parent.currentDocument);
+            return;
+        }
         if (this.parent.currentDocument.getSelection().rangeCount && (target.nodeName === 'TD' || target.nodeName === 'TH')) {
             this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, target, 0);
         }
@@ -1157,6 +1140,26 @@ export class TableCommand {
 
     public destroy(): void {
         this.removeEventListener();
+    }
+
+    private cellStyleCleanup(value: string): string {
+        const styles: string[] = value.split(';');
+        const newStyles: string[] = [];
+        const deniedFormats: string[] = ['background-color', 'vertical-align', 'text-align'];
+        for (let i: number = 0; i < styles.length; i++) {
+            const style: string = styles[i as number];
+            let isAllowed: boolean = true;
+            for (let j: number = 0; j < deniedFormats.length; j++) {
+                const deniedStyle: string = deniedFormats[j as number];
+                if (style.indexOf(deniedStyle) > -1) {
+                    isAllowed = false;
+                }
+            }
+            if (isAllowed) {
+                newStyles.push(style);
+            }
+        }
+        return newStyles.join(';');
     }
 }
 

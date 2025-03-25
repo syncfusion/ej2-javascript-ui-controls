@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 /*! calendar bootstrap theme variables */
 
 //month view
@@ -46,11 +48,11 @@ $calendar-icon-font-color: $gray-900 !default;
 $calendar-active-icon-color: $white !default;
 $calendar-title-hover-color: $gray-900 !default;
 $calendar-icon-hover-color: $gray-900 !default;
-$calendar-icon-hover-bg-color: darken($gray-100, 2%) !default;
+$calendar-icon-hover-bg-color: color.adjust($gray-100, $lightness: -2%) !default;
 $calendar-device-icon-hover-bg-color: none !default;
 $calendar-default-border-color: none !default;
 $calendar-icon-hover-border-color: $calendar-default-border-color !default;
-$calendar-active-state-icon-bg-color: darken($gray-600, 10%) !default;
+$calendar-active-state-icon-bg-color: color.adjust($gray-600, $lightness: -10%) !default;
 
 // common styles
 
@@ -94,8 +96,8 @@ $calendar-normal-today-button-height: 36px !default;
 
 //color
 $calendar-yeardecade-bg-color: none !default;
-$calendar-yeardecade-hover-bg: darken($gray-100, 2%) !default;
-$calendar-yeardecade-selected-hover-bg: darken($primary, 7.5%) !default;
+$calendar-yeardecade-hover-bg: color.adjust($gray-100, $lightness: -2%) !default;
+$calendar-yeardecade-selected-hover-bg: color.adjust($primary, $lightness: -7.5%) !default;
 
 //dimension
 $calendar-normal-year-decade-height: 53px !default;
@@ -152,12 +154,12 @@ $calendar-active-today-hover-font-color: $primary-font !default;
 $calendar-active-bg-color: $primary !default;
 $calendar-active-bg-box-shadow: inset 1px 0 $primary, inset 0 1px $primary, inset -1px 0 $primary, inset 0 -1px $primary !default;
 $calendar-active-bg-border-color: none !default;
-$calendar-active-hover-bg-color: darken($primary, 7.5%) !default;
-$calendar-hover-color: darken($gray-100, 2%) !default;
+$calendar-active-hover-bg-color: color.adjust($primary, $lightness: -7.5%) !default;
+$calendar-hover-color: color.adjust($gray-100, $lightness: -2%) !default;
 $calendar-text-color: $gray-900 !default;
 $calendar-hover-text: $calendar-text-color !default;
-$calendar-focus-bg-color: darken($gray-100, 2%) !default;
-$calendar-focused-today-bg-style: darken($gray-100, 2%) !default;
+$calendar-focus-bg-color: color.adjust($gray-100, $lightness: -2%) !default;
+$calendar-focused-today-bg-style: color.adjust($gray-100, $lightness: -2%) !default;
 $calendar-focused-today-box-shadow: inset 1px 0 $primary, inset 0 1px $primary, inset -1px 0 $primary, inset 0 -1px $primary !default;
 $calendar-focused-today-border-style: none !default;
 $calendar-focus-box-shadow: none !default;
@@ -172,7 +174,7 @@ $calendar-thead-padding: 0 0 6px !default;
 $calendar-date-font-size: 14px !default;
 $calendar-bigger-day-font-size: 15px !default;
 $calendar-link-font-weight-style: normal !default;
-$calendar-focused-date-bg-style: darken($gray-100, 2%) !default;
+$calendar-focused-date-bg-style: color.adjust($gray-100, $lightness: 2%) !default;
 $calendar-disable-font-weight-style: normal !default;
 $calendar-border-radius: 4px !default;
 
@@ -180,7 +182,7 @@ $calendar-border-radius: 4px !default;
 
 //today date
 $calendar-today-bg-style: $white !default;
-$calendar-today-bg-hover-color: darken($gray-100, 2%) !default;
+$calendar-today-bg-hover-color: color.adjust($gray-100, $lightness: 2%) !default;
 $calendar-today-box-shadow: inset 1px 0 $primary, inset 0 1px $primary, inset -1px 0 $primary, inset 0 -1px $primary !default;
 $calendar-today-border-color: none !default;
 $calendar-selected-border-color: none !default;

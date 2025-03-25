@@ -414,6 +414,10 @@
         @if $ddt-skin-name == 'bootstrap5' or  $ddt-skin-name == 'FluentUI' {
           line-height: 30px;
         }
+
+        &.e-input-value:not(.e-icon-hide) {
+          display: inline-grid;
+        }
       }
 
       &.e-total-count {
@@ -433,7 +437,7 @@
       }
 
       &.e-wrap-count {
-        @if $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'tailwind3' {
+        @if $ddt-skin-name != 'bootstrap5' and $ddt-skin-name != 'bootstrap5.3' and $ddt-skin-name != 'bootstrap5.3-dark' and $ddt-skin-name != 'tailwind3' {
           padding-top: $ddt-remains-count-padding-top;
         }
       }

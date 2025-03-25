@@ -340,6 +340,7 @@ export class ColumnMenu implements IAction {
             || (args.event.currentTarget && (args.event.currentTarget as Document).activeElement &&
                 parentsUntil((args.event.currentTarget as Document).activeElement as Element, 'e-filter-popup'))
             || (parentsUntil(args.event.target as Element, 'e-popup') && parentsUntil(args.event.target as Element, 'e-colmenu-popup'))
+            || (parentsUntil(args.event.target as Element, 'e-multiselect-flmenu'))
             || (parentsUntil(args.event.target as Element, 'e-popup-wrapper'))) && !Browser.isDevice) {
             args.cancel = true;
         } else if (args.event && args.event.target && (args.event.target as Element).classList.contains('e-filter-item') && (args.event as KeyboardEvent).key === 'Enter') {

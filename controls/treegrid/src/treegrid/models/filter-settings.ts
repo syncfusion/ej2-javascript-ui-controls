@@ -3,13 +3,13 @@ import { ICustomOptr, FilterBarMode, FilterType } from '@syncfusion/ej2-grids';
 import { FilterHierarchyMode } from '../enum';
 import { PredicateModel } from './filter-settings-model';
 
-
 /**
- * Represents the Tree Grid predicate for the filter column.
+ * Represents the filter configuration for a column in the TreeGrid.
  */
 export class Predicate extends ChildProperty<Predicate> {
+
     /**
-     * Defines the field name of the filter column in Tree Grid.
+     * Specifies the field name of the column to apply the filter on.
      *
      * @default ''
      */
@@ -17,57 +17,58 @@ export class Predicate extends ChildProperty<Predicate> {
     public field: string;
 
     /**
-     * Defines the operator to filter Tree Grid records. The available operators and its supported data types are:
+     * Specifies the operator used for filtering TreeGrid records. The available operators support a variety of data types
+     * and offer different filtering mechanisms. Details for each operator are provided below:
      * <table>
      * <tr>
      * <td colspan=1 rowspan=1>
      * Operator<br/></td><td colspan=1 rowspan=1>
      * Description<br/></td><td colspan=1 rowspan=1>
-     * Supported Types<br/></td></tr>
+     * Supported Data Types<br/></td></tr>
      * <tr>
      * <td colspan=1 rowspan=1>
      * startswith<br/></td><td colspan=1 rowspan=1>
-     * Checks whether the value begins with the specified value.<br/></td><td colspan=1 rowspan=1>
+     * Checks if the value starts with the specified input.<br/></td><td colspan=1 rowspan=1>
      * String<br/></td></tr>
      * <tr>
      * <td colspan=1 rowspan=1>
      * endswith<br/></td><td colspan=1 rowspan=1>
-     * Checks whether the value ends with the specified value.<br/><br/></td><td colspan=1 rowspan=1>
+     * Checks if the value ends with the specified input.<br/><br/></td><td colspan=1 rowspan=1>
      * <br/>String<br/></td></tr>
      * <tr>
      * <td colspan=1 rowspan=1>
      * contains<br/></td><td colspan=1 rowspan=1>
-     * Checks whether the value contains the specified value.<br/><br/></td><td colspan=1 rowspan=1>
+     * Checks if the value contains the specified input anywhere within it.<br/><br/></td><td colspan=1 rowspan=1>
      * <br/>String<br/></td></tr>
      * <tr>
      * <td colspan=1 rowspan=1>
      * equal<br/></td><td colspan=1 rowspan=1>
-     * Checks whether the value is equal to the specified value.<br/><br/></td><td colspan=1 rowspan=1>
+     * Checks if the value is exactly equal to the specified input.<br/><br/></td><td colspan=1 rowspan=1>
      * <br/>String | Number | Boolean | Date<br/></td></tr>
      * <tr>
      * <td colspan=1 rowspan=1>
      * notequal<br/></td><td colspan=1 rowspan=1>
-     * Checks for values that are not equal to the specified value.<br/><br/></td><td colspan=1 rowspan=1>
+     * Identifies values that are not equal to the specified input.<br/><br/></td><td colspan=1 rowspan=1>
      * <br/>String | Number | Boolean | Date<br/></td></tr>
      * <tr>
      * <td colspan=1 rowspan=1>
      * greaterthan<br/></td><td colspan=1 rowspan=1>
-     * Checks whether the value is greater than the specified value.<br/><br/></td><td colspan=1 rowspan=1>
+     * Verifies if the value is greater than the specified input.<br/><br/></td><td colspan=1 rowspan=1>
      * Number | Date<br/></td></tr>
      * <tr>
      * <td colspan=1 rowspan=1>
      * greaterthanorequal<br/></td><td colspan=1 rowspan=1>
-     * Checks whether the value is greater than or equal to the specified value.<br/><br/></td><td colspan=1 rowspan=1>
+     * Verifies if the value is greater than or equal to the specified input.<br/><br/></td><td colspan=1 rowspan=1>
      * <br/>Number | Date<br/></td></tr>
      * <tr>
      * <td colspan=1 rowspan=1>
      * lessthan<br/></td><td colspan=1 rowspan=1>
-     * Checks whether the value is less than the specified value.<br/><br/></td><td colspan=1 rowspan=1>
+     * Checks if the value is less than the specified input.<br/><br/></td><td colspan=1 rowspan=1>
      * <br/>Number | Date<br/></td></tr>
      * <tr>
      * <td colspan=1 rowspan=1>
      * lessthanorequal<br/></td><td colspan=1 rowspan=1>
-     * Checks whether the value is less than or equal to the specified value.<br/><br/></td><td colspan=1 rowspan=1>
+     * Checks if the value is less than or equal to the specified input.<br/><br/></td><td colspan=1 rowspan=1>
      * <br/>Number | Date<br/></td></tr>
      * </table>
      *
@@ -77,7 +78,7 @@ export class Predicate extends ChildProperty<Predicate> {
     public operator: string;
 
     /**
-     * Defines the value used to filter records in Tree Grid.
+     * Specifies the value to filter the column's data by.
      *
      * @default ''
      */
@@ -85,8 +86,7 @@ export class Predicate extends ChildProperty<Predicate> {
     public value: string | number | Date | boolean;
 
     /**
-     * If match case set to true, then filter records with exact match or else
-     * filter records with case insensitive(uppercase and lowercase letters treated as same) in Tree Grid.
+     * Applies case-sensitive filtering if set to `true`. When false, filtering is case-insensitive.
      *
      * @default null
      */
@@ -94,7 +94,7 @@ export class Predicate extends ChildProperty<Predicate> {
     public matchCase: boolean;
 
     /**
-     * If ignoreAccent is set to true, then filter ignores the diacritic characters or accents while filtering in Tree Grid.
+     * Ignores diacritic characters during filtering if set to `true`.
      *
      * @default false
      */
@@ -102,7 +102,7 @@ export class Predicate extends ChildProperty<Predicate> {
     public ignoreAccent: boolean;
 
     /**
-     * Defines relationship between one filter query and another by using AND or OR predicate.
+     * Defines the logical relationship between multiple filter conditions ('AND' / 'OR').
      *
      * @default null
      */
@@ -111,74 +111,76 @@ export class Predicate extends ChildProperty<Predicate> {
 
     /**
      * @hidden
-     * Defines the actual filter value for the filter column in Tree Grid.
+     * Holds the actual value used for filtering the column.
      */
     @Property({})
     public actualFilterValue: Object;
 
     /**
      * @hidden
-     * Defines the actual filter operator for the filter column in Tree Grid.
+     * Represents the actual filter operator applied to the column.
      */
     @Property({})
     public actualOperator: Object;
 
     /**
      * @hidden
-     * Defines the type of the filter column in Tree Grid.
+     * Defines the data type of the filter column.
      */
     @Property()
     public type: string;
 
     /**
      * @hidden
-     * Defines the predicate of filter column in Tree Grid.
+     * Represents the internal predicate condition for the filter column.
      */
     @Property()
     public ejpredicate: Object;
 
     /**
      * @hidden
-     * Defines the UID of filter column.
+     * Unique identifier for the filter column.
      */
     @Property()
     public uid: string;
 
     /**
      * @hidden
-     * Defines the foreignKey availability in filtered columns.
+     * Indicates whether the column is a foreign key in the filter set.
      */
     @Property()
     public isForeignKey: boolean;
-
 }
 
 /**
- * Configures the filtering behavior of the TreeGrid.
+ * Configures the filtering behavior of the TreeGrid, enabling complex data filtering capabilities.
  */
 export class FilterSettings extends ChildProperty<FilterSettings> {
+
     /**
-     * Specifies the columns to be filtered at initial rendering of the TreeGrid. You can also get the columns that were currently filtered.
+     * Specifies the initial filter configuration for TreeGrid columns or retrieves the current filter state.
      *
      * @default []
      */
     @Collection<PredicateModel[]>([], Predicate)
     public columns: PredicateModel[];
+
     /**
-     * Defines options for filtering type. The available options are
-     * * `Menu` - Specifies the filter type as menu.
-     * * `FilterBar` - Specifies the filter type as filterbar.
+     * Sets the filtering interface type. Options include:
+     * * `Menu`: Provides a menu for filtering options.
+     * * `FilterBar`: Allows direct input filtering in a bar at the top of each column.
+     * * `Excel` : Specifies the filter type as excel.
+     * * `CheckBox` : Specifies the filter type as check box.
      *
      * @default FilterBar
      */
     @Property('FilterBar')
     public type: FilterType;
+
     /**
-     * Defines the filter bar modes. The available options are,
-     * ```props
-     * *  OnEnter :- Initiates filter operation after Enter key is pressed.
-     * *  Immediate :- Initiates filter operation after a certain time interval. By default, time interval is 1500 ms.
-     * ```
+     * Determines the mode of the filter bar operation. Options include:
+     * * `OnEnter`: Filtering is triggered upon pressing the Enter key.
+     * * `Immediate`: Filtering occurs after a short delay automatically.
      *
      * @default Syncfusion.EJ2.Grids.FilterBarMode.OnEnter
      * @isEnumeration true
@@ -186,48 +188,45 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
      */
     @Property()
     public mode: FilterBarMode;
+
     /**
-     * Shows or hides the filtered status message on the pager.
+     * Shows or hides the status message related to filtering actions on the pager.
      *
      * @default true
      */
     @Property(true)
     public showFilterBarStatus: boolean;
+
     /**
-     * Defines the time delay (in milliseconds) in filtering records when the `Immediate` mode of filter bar is set.
+     * Determines the delay in milliseconds before filtering is triggered in `Immediate` mode.
      *
      * @default 1500
      */
     @Property(1500)
     public immediateModeDelay: number;
+
     /**
-     * The `operators` is used to override the default operators in filter menu. This should be defined by type wise
-     * (string, number, date and boolean). Based on the column type, this customize operator list will render in filter menu.
-     *
-     * > Check the `Filter Menu Operator` customization.
+     * Allows customization of the default operators offered in the filter menu by defining custom operators for string, number, date, and boolean types.
      *
      * @default null
      */
     @Property()
     public operators: ICustomOptr;
+
     /**
-     * If ignoreAccent set to true, then filter ignores the diacritic characters or accents while filtering.
-     *
-     * > Check the [`Diacritics`](../../treegrid/filtering/#diacritics/) filtering.
+     * If set to `true`, filtering ignores accent characters, making diacritic characters identical to their unaccented versions.
      *
      * @default false
      */
     @Property(false)
     public ignoreAccent: boolean;
+
     /**
-     *  Defines the filter hierarchy modes. The available options are,
-     * ```props
-     * *  Parent :- Shows the filtered record with parent record.
-     * *  Child :- Shows the filtered record with child record.
-     * *  Both :- Shows the filtered record with both parent and child record.
-     * *  None :- Shows only the filtered record.
-     * ```
-     * {% codeBlock src='treegrid/hierarchyMode/index.md' %}{% endcodeBlock %}
+     * Specifies how the hierarchy should be maintained during filtering:
+     * * `Parent`: Displays the filtered records along with their parent records.
+     * * `Child`: Displays the filtered records along with their child records.
+     * * `Both`: Displays the filtered records with both parent and child records.
+     * * `None`: Only displays the filtered records.
      *
      * @default Parent
      * @isEnumeration true

@@ -1,7 +1,7 @@
 import { WCharacterFormat } from '../format/character-format';
 import { DocumentHelper } from '../viewer';
 import { TextSizeInfo } from '../viewer/text-helper';
-import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, updateCSSText } from '@syncfusion/ej2-base';
 /**
  * Class which performs regular text measuring logic to find font height.
  */
@@ -54,9 +54,9 @@ export class Regular {
         }
         this.applyStyle(spanElement, characterFormat, fontToRender);
         const parentDiv: HTMLDivElement = document.createElement('div');
-        parentDiv.setAttribute('style', 'display:inline-block;position:absolute;');
+        parentDiv.style.cssText = 'display:inline-block;position:absolute;';
         const tempDiv: HTMLDivElement = document.createElement('div');
-        tempDiv.setAttribute('style', 'display:inline-block;width: 1px; height: 0px;vertical-align: baseline;');
+        tempDiv.style.cssText = 'display:inline-block;width: 1px; height: 0px;vertical-align: baseline;';
         parentDiv.appendChild(spanElement);
         parentDiv.appendChild(tempDiv);
         iframe.contentDocument.body.appendChild(parentDiv);
@@ -88,7 +88,7 @@ export class Regular {
             if (characterFormat.italic) {
                 style += 'font-style:italic;';
             }
-            spanElement.setAttribute('style', style);
+            updateCSSText(spanElement, style);
         }
     }
     /**

@@ -2571,16 +2571,19 @@ export class DropDownList extends DropDownBase implements IInput {
                         this.resetList(dataSource, fields, query);
                         if (isNoData && !this.list.classList.contains(dropDownBaseClasses.noData)) {
                             if (!this.list.querySelector('.e-virtual-ddl-content')) {
-                                this.list.appendChild(this.createElement('div', {
-                                    className: 'e-virtual-ddl-content',
-                                    styles: this.getTransformValues()
-                                })).appendChild(this.list.querySelector('.e-list-parent'));
+                                const virtualContentElement: HTMLElement = this.createElement('div', {
+                                    className: 'e-virtual-ddl-content'
+                                });
+                                virtualContentElement.style.cssText = this.getTransformValues();
+                                this.list.appendChild(virtualContentElement).appendChild(this.list.querySelector('.e-list-parent'));
                             }
                             if (!this.list.querySelector('.e-virtual-ddl')) {
-                                const virualElement: HTMLElement = this.createElement('div', {
-                                    id: this.element.id + '_popup', className: 'e-virtual-ddl', styles: this.GetVirtualTrackHeight()
+                                const virtualElement: HTMLElement = this.createElement('div', {
+                                    id: this.element.id + '_popup',
+                                    className: 'e-virtual-ddl'
                                 });
-                                this.list.parentElement.querySelector('.e-dropdownbase').appendChild(virualElement);
+                                virtualElement.style.cssText = this.GetVirtualTrackHeight();
+                                this.list.parentElement.querySelector('.e-dropdownbase').appendChild(virtualElement);
                             }
                         }
                     }
@@ -2609,16 +2612,19 @@ export class DropDownList extends DropDownBase implements IInput {
                 }
                 if (this.enableVirtualization && isNoData && !this.list.classList.contains(dropDownBaseClasses.noData)) {
                     if (!this.list.querySelector('.e-virtual-ddl-content')) {
-                        this.list.appendChild(this.createElement('div', {
-                            className: 'e-virtual-ddl-content',
-                            styles: this.getTransformValues()
-                        })).appendChild(this.list.querySelector('.e-list-parent'));
+                        const virtualContentElement: HTMLElement = this.createElement('div', {
+                            className: 'e-virtual-ddl-content'
+                        });
+                        virtualContentElement.style.cssText = this.getTransformValues();
+                        this.list.appendChild(virtualContentElement).appendChild(this.list.querySelector('.e-list-parent'));
                     }
                     if (!this.list.querySelector('.e-virtual-ddl')) {
-                        const virualElement: HTMLElement = this.createElement('div', {
-                            id: this.element.id + '_popup', className: 'e-virtual-ddl', styles: this.GetVirtualTrackHeight()
+                        const virtualElement: HTMLElement = this.createElement('div', {
+                            id: this.element.id + '_popup',
+                            className: 'e-virtual-ddl'
                         });
-                        this.list.parentElement.querySelector('.e-dropdownbase').appendChild(virualElement);
+                        virtualElement.style.cssText = this.GetVirtualTrackHeight();
+                        this.list.parentElement.querySelector('.e-dropdownbase').appendChild(virtualElement);
                     }
                 }
             }
@@ -3041,10 +3047,11 @@ export class DropDownList extends DropDownBase implements IInput {
                     this.skeletonCount = this.totalItemCount < (this.itemCount * 2) && ((!(this.dataSource instanceof DataManager)) ||
                         ((this.dataSource instanceof DataManager) && (this.totalItemCount <= this.itemCount))) ? 0 : this.skeletonCount;
                     if (!this.list.querySelector('.e-virtual-ddl-content')){
-                        this.list.appendChild(this.createElement('div', {
-                            className: 'e-virtual-ddl-content',
-                            styles: this.getTransformValues()
-                        })).appendChild(this.list.querySelector('.e-list-parent'));
+                        const virtualContentElement: HTMLElement = this.createElement('div', {
+                            className: 'e-virtual-ddl-content'
+                        });
+                        virtualContentElement.style.cssText = this.getTransformValues();
+                        this.list.appendChild(virtualContentElement).appendChild(this.list.querySelector('.e-list-parent'));
                     }
                     else{
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -3054,9 +3061,12 @@ export class DropDownList extends DropDownBase implements IInput {
                     this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
                     this.virtualItemCount = this.itemCount;
                     if (!this.list.querySelector('.e-virtual-ddl')){
-                        const virualElement: HTMLElement = this.createElement('div', {
-                            id: this.element.id + '_popup', className: 'e-virtual-ddl', styles: this.GetVirtualTrackHeight()});
-                        popupEle.querySelector('.e-dropdownbase').appendChild(virualElement);
+                        const virtualElement: HTMLElement = this.createElement('div', {
+                            id: this.element.id + '_popup',
+                            className: 'e-virtual-ddl'
+                        });
+                        virtualElement.style.cssText = this.GetVirtualTrackHeight();
+                        popupEle.querySelector('.e-dropdownbase').appendChild(virtualElement);
                     }
                     else{
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -3220,7 +3230,7 @@ export class DropDownList extends DropDownBase implements IInput {
                     // Add the resizer div to the popup
                     if (this.list && this.list.parentElement) {
                         this.list.parentElement.classList.add('e-resize');
-                        if (this.popupHeight.toString().toLowerCase() !== 'auto' && initialPopupHeight > parseInt(this.popupHeight.toString(), 10)) {
+                        if (this.popupHeight.toString().toLowerCase() !== 'auto' && initialPopupHeight >= (parseInt(this.popupHeight.toString(), 10) - 2)) {
                             this.list.parentElement.style.height = '100%';
                         }
                         this.list.parentElement.style.paddingBottom = (this.getModuleName() === 'dropdownlist' && this.allowFiltering && this.searchBoxHeight) ? (this.searchBoxHeight + resizePaddingBottom).toString() + 'px' : resizePaddingBottom.toString() + 'px';
@@ -3788,8 +3798,10 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         else if (!this.list.querySelector('.e-virtual-ddl') && this.list.parentElement) {
             const virualElement: HTMLElement = this.createElement('div', {
-                id: this.element.id + '_popup', className: 'e-virtual-ddl', styles: this.GetVirtualTrackHeight()
+                id: this.element.id + '_popup',
+                className: 'e-virtual-ddl'
             });
+            virualElement.style.cssText = this.GetVirtualTrackHeight();
             this.list.parentElement.querySelector('.e-dropdownbase').appendChild(virualElement);
         }
         if (this.getModuleName() !== 'autocomplete' && this.totalItemCount !== 0 && this.totalItemCount > (this.itemCount * 2)){

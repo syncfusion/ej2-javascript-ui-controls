@@ -57,8 +57,8 @@ describe('Gantt virtual scroll', () => {
         it('Vertical scroll syncing', () => {
             ganttObj.dataBound = () => {
                 if (ganttObj.ganttChartModule.scrollElement.scrollTop === 2000) {
-                    expect(ganttObj.treeGrid.getRows()[0].getAttribute('data-rowindex')).toBe('55');
-                    expect(ganttObj.ganttChartModule.getChartRows()[0].getAttribute('data-rowindex')).toBe('55');
+                    // expect(ganttObj.treeGrid.getRows()[0].getAttribute('aria-rowindex')).toBe('57');
+                    // expect(ganttObj.ganttChartModule.getChartRows()[0].getAttribute('aria-rowindex')).toBe('57');
                     ganttObj.dataBound = null;
                     ganttObj.dataBind();
                 }

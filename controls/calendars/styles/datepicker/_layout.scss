@@ -216,7 +216,9 @@
             font-size: $modal-tablet-font-size;
           }
           @if $skin-name == 'fluent2' {
-            left: $modal-header-left;
+            & {
+              left: $modal-header-left;
+            }
           }
         }
 

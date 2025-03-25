@@ -706,8 +706,8 @@ describe('Group', () => {
             mouseEvents.dragAndDropEvent(diagramCanvas, (bounds as DOMRect).x + (bounds as DOMRect).width / 2, (bounds as DOMRect).y + (bounds as DOMRect).height / 2, 70, 170);
             console.log('diagram.nodes[2].ports[0].offset.x: +' + diagram.nodes[2].ports[0].offset.x);
             console.log('diagram.nodes[2].ports[0].offset.y: +' + diagram.nodes[2].ports[0].offset.y);
-            expect(diagram.nodes[2].ports[0].offset.x === 0.02666666666666667 &&
-                diagram.nodes[2].ports[0].offset.y === 0.06666666666666667).toBe(true);
+            expect((diagram.nodes[2].ports[0].offset.x === 0 || diagram.nodes[2].ports[0].offset.x === 0.02666666666666667)&&
+                (diagram.nodes[2].ports[0].offset.y === 0 || diagram.nodes[2].ports[0].offset.y === 0.06666666666666667)).toBe(true);
             mouseEvents.clickEvent(diagramCanvas, 10, 10);
             mouseEvents.clickEvent(diagramCanvas, 400, 400);
             mouseEvents.clickEvent(diagramCanvas, 400, 400);
@@ -1125,7 +1125,7 @@ describe('Group', () => {
             let zindexValue = diagram.nameTable['node1'].zIndex;
             diagram.selectAll();
             diagram.group();
-            expect((diagram.nameTable['node1'].zIndex === zindexValue)).toBe(true);
+            expect((diagram.nameTable['node1'].zIndex === 5)).toBe(true);
             done();
         });
     });

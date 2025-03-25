@@ -1,9 +1,10 @@
 import { PageRenderer, FormFieldsBase, AnnotationRenderer, PdfRenderedFields, SignatureBase, BookmarkStyles, BookmarkDestination, BookmarkBase, AnnotBounds } from './index';
 import { Browser, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DataFormat, PdfAnnotationExportSettings, PdfBookmark, PdfBookmarkBase, PdfDocument, PdfPage, PdfRotationAngle, PdfTextStyle, PdfDocumentLinkAnnotation, PdfTextWebLinkAnnotation, PdfUriAnnotation, PdfDestination, PdfPermissionFlag, PdfFormFieldExportSettings, _bytesToString, _encode, PdfPageSettings, PdfSignatureField, PdfForm, PdfPageImportOptions, _decode } from '@syncfusion/ej2-pdf';
-import { PdfViewer, PdfViewerBase } from '../index';
+import { ExtractTextOption, PdfViewer, PdfViewerBase, SearchResultModel } from '../index';
+import { TextDataSettingsModel } from '../pdfviewer-model';
 import { Rect, Size } from '@syncfusion/ej2-drawings';
-import { TaskPriorityLevel } from '../base/pdfviewer-utlis';
+import { PdfViewerUtils, TaskPriorityLevel } from '../base/pdfviewer-utlis';
 
 /**
  * PdfRenderer
@@ -41,7 +42,10 @@ export class PdfRenderer {
     signatureBase: SignatureBase;
     annotationRenderer: AnnotationRenderer;
     private annotationDetailCollection: { [key: string]: Annotations; } = {};
-    private documentTextCollection: { [key: number]: PageTextData }[] = [];
+    /**
+     * @private
+     */
+    public documentTextCollection: { [key: number]: PageTextData }[] = [];
     pageSizes: { [key: string]: Size; } = {};
     private isCompletePageSizeNotReceieved: boolean = true;
     hashID: string;
@@ -50,6 +54,7 @@ export class PdfRenderer {
     private zoom: number = 1;
     private id: number = 0;
     private pageIndex: number = 0;
+    private textCollections: any = [];
     private scaleFactor: number = 1.5;
     private static IsLinuxOS: boolean = false;
     private static IsWindowsOS: boolean = false;
@@ -57,6 +62,10 @@ export class PdfRenderer {
     private securityList: string[] = ['Print', 'EditContent', 'CopyContent', 'EditAnnotations', 'FillFields', 'AccessibilityCopyContent', 'AssembleDocument', 'FullQualityPrint'];
     private _fallbackFontCollection: { [key: string]: any; } = {};
     private document: PdfDocument = null;
+    /**
+     * @private
+     */
+    public searchResults: any = {};
     /**
      * @private
      * @returns {void}
@@ -391,10 +400,9 @@ export class PdfRenderer {
     public getDocumentAsBase64(jsonObject: { [key: string]: string }): Uint8Array {
         this.loadedDocument = new PdfDocument(this.loadedByteArray, this.password);
         let clonedDocument: PdfDocument = null;
-        if ((Object.prototype.hasOwnProperty.call(jsonObject, 'digitalSignatureDocumentEdited') &&
-        !jsonObject.digitalSignatureDocumentEdited) ||
-        (Object.prototype.hasOwnProperty.call(jsonObject, 'isPdfEdited') && !jsonObject.isPdfEdited)) {
-            return this.loadedDocument.save();
+        if (Object.prototype.hasOwnProperty.call(jsonObject, 'digitalSignatureDocumentEdited') &&
+            !jsonObject.digitalSignatureDocumentEdited) {
+            return this.loadedByteArray;
         }
         else {
             const annotationRenderer: AnnotationRenderer = new AnnotationRenderer(this.pdfViewer, this.pdfViewerBase);
@@ -1329,8 +1337,8 @@ export class PdfRenderer {
         return new Promise((resolve: Function, reject: Function) => {
             if (!isNullOrUndefined(this.pdfViewerBase.pdfViewerRunner) && !isNullOrUndefined(this.loadedDocument)) {
                 size = !isNullOrUndefined(size) ? size : null;
-                this.pdfViewerBase.pdfViewerRunner.addTask({ pageIndex: pageIndex, message: 'extractImage', zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false, size: size }, TaskPriorityLevel.High);
-                this.pdfViewerBase.pdfViewerRunner.onMessage(function (event: any): void {
+                this.pdfViewerBase.pdfViewerRunner.addTask({ pageIndex: pageIndex, message: 'extractImage', zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false, size: size }, TaskPriorityLevel.Medium);
+                this.pdfViewerBase.pdfViewerRunner.onMessage('imageExtracted', function (event: any): void {
                     if (event.data.message === 'imageExtracted') {
                         const canvas: HTMLCanvasElement = document.createElement('canvas');
                         const { value, width, height } = event.data;
@@ -1370,10 +1378,10 @@ export class PdfRenderer {
                 const imageUrls: string[] = [];
                 const count: number = endIndex - startIndex + 1;
                 for (let i: number = startIndex; i <= endIndex; i++) {
-                    this.pdfViewerBase.pdfViewerRunner.addTask({ pageIndex: i, message: 'extractImage', zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false, size: size }, TaskPriorityLevel.High);
+                    this.pdfViewerBase.pdfViewerRunner.addTask({ pageIndex: i, message: 'extractImages', zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false, size: size }, TaskPriorityLevel.Medium);
                 }
-                this.pdfViewerBase.pdfViewerRunner.onMessage(function (event: any): void {
-                    if (event.data.message === 'imageExtracted') {
+                this.pdfViewerBase.pdfViewerRunner.onMessage('imagesExtracted', function (event: any): void {
+                    if (event.data.message === 'imagesExtracted') {
                         const canvas: HTMLCanvasElement = document.createElement('canvas');
                         const { value, width, height } = event.data;
                         canvas.width = width;
@@ -1397,41 +1405,25 @@ export class PdfRenderer {
         });
     }
 
-    public extractText(pageIndex: number, isLayout?: boolean): Promise<{ textDataCollection: TextData[], extractedText: string }> {
-        return new Promise((resolve: Function, reject: Function) => {
-            resolve(this.textExtraction(pageIndex, !isNullOrUndefined(isLayout) ? isLayout : true));
-        });
-    }
-
-    private textExtraction(pageIndex: number, isLayout: boolean, isRenderText?: boolean, jsonObject?: any,
-                           requestType?: string, annotationObject?: any): Promise<any> {
-        this.documentTextCollection = [];
-        return new Promise((resolve: Function, reject: Function) => {
-            if (!isNullOrUndefined(this.pdfViewerBase.pdfViewerRunner)) {
-                this.pdfViewerBase.pdfViewerRunner.addTask({ pageIndex: pageIndex, message: 'extractText', zoomFactor: this.pdfViewerBase.getZoomFactor(), isTextNeed: true, isRenderText: isRenderText, jsonObject: jsonObject, requestType: requestType, annotationObject: annotationObject }, TaskPriorityLevel.Low);
-            }
-            else {
-                resolve(null);
-            }
-        });
-    }
-
     /**
      * @param {any} event - event
+     * @param {Function} [resolve] - An optional resolve function to complete a Promise when extraction is complete.
+     * @param {number} [count] - An optional count of total expected results used for resolving multiple extractions.
+     * @param {any[]} [textCollections] - An optional array for accumulating text data results when processing in bulk.
      * @private
      * @returns {any} - any
      */
-    public textExtractionOnmessage(event: any): any {
-        let extractedText: string = '';
-        const textDataCollection: TextData[] = [];
-        if (event.data.message === 'textExtracted') {
+    public textExtractionOnmessage(event: any, resolve?: Function, count?: number): any {
+        let pageText: string = '';
+        const textData: TextData[] = [];
+        if ((event.data.message.indexOf('extractText') !== -1) || event.data.message === 'renderThumbnail' || event.data.message === 'renderPreviewTileImage') {
             const characterDetails: any = event.data.characterBounds;
             for (let i: number = 0; i < characterDetails.length; i++) {
                 if (!event.data.isLayout && (characterDetails[parseInt(i.toString(), 10)].Text as string).indexOf('\r') !== -1) {
-                    extractedText += '';
+                    pageText += '';
                 }
                 else {
-                    extractedText += characterDetails[parseInt(i.toString(), 10)].Text;
+                    pageText += characterDetails[parseInt(i.toString(), 10)].Text;
                 }
                 const cropBox: number[] = this.loadedDocument.getPage(event.data.pageIndex).cropBox;
                 const bound: AnnotBounds = new AnnotBounds(this.convertPixelToPoint(characterDetails[parseInt(i.toString(), 10)].X),
@@ -1439,45 +1431,219 @@ export class PdfRenderer {
                                                            cropBox[1]),
                                                            this.convertPixelToPoint(characterDetails[parseInt(i.toString(), 10)].Width),
                                                            this.convertPixelToPoint(characterDetails[parseInt(i.toString(), 10)].Height));
-                textDataCollection.push(new TextData(characterDetails[parseInt(i.toString(), 10)].Text, bound));
+                textData.push(new TextData(characterDetails[parseInt(i.toString(), 10)].Text, bound));
             }
-            let result: any = {};
-            if (event.data.isRenderText) {
-                result.extractedTextDetails = { textDataCollection: textDataCollection, extractedText: extractedText };
-                result.textBounds = event.data.textBounds;
-                result.textContent = event.data.textContent;
-                result.rotation = event.data.rotation;
-                result.pageText = event.data.pageText;
-                result.characterBounds = event.data.characterBounds;
-                result.isRenderText = event.data.isRenderText;
-                result.pageIndex = event.data.pageIndex;
-                result.jsonObject = event.data.jsonObject;
-                result.requestType = event.data.requestType;
-                result.annotationObject = event.data.annotationObject;
-            }
-            else {
-                result = { textDataCollection: textDataCollection, extractedText: extractedText,
-                    isRenderText: event.data.isRenderText, pageIndex: event.data.pageIndex,
-                    jsonObject: event.data.jsonObject, requestType: event.data.requestType, annotationObject: event.data.annotationObject };
-            }
-            const pageTextDataCollection: {[key: number]: PageTextData} = this.getPageTextDataCollection(result);
-            const documentTextCollection: any = this.getDocumentTextCollection(pageTextDataCollection);
-            if (!isNullOrUndefined(documentTextCollection)) {
-                if (documentTextCollection.requestType === 'pageTextRequest') {
-                    this.pdfViewerBase.pageTextRequestSuccess(documentTextCollection, documentTextCollection.pageIndex);
+            if (!event.data.isAPI) {
+                let result: any = {};
+                if (event.data.isRenderText) {
+                    result.extractedTextDetails = { textDataCollection: textData, extractedText: pageText };
+                    result.textBounds = event.data.textBounds;
+                    result.textContent = event.data.textContent;
+                    result.rotation = event.data.rotation;
+                    result.pageText = event.data.pageText;
+                    result.characterBounds = event.data.characterBounds;
+                    result.isRenderText = event.data.isRenderText;
+                    result.pageIndex = event.data.pageIndex;
+                    result.jsonObject = event.data.jsonObject;
+                    result.requestType = event.data.requestType;
+                    result.annotationObject = event.data.annotationObject;
+                    result.isNeedToRender = event.data.isNeedToRender;
                 }
-                else if (documentTextCollection.requestType === 'textRequest') {
-                    this.pdfViewerBase.textRequestSuccess(documentTextCollection, documentTextCollection.pageIndex,
-                                                          documentTextCollection.annotationObject);
+                else {
+                    result = { textDataCollection: textData, extractedText: pageText,
+                        isRenderText: event.data.isRenderText, pageIndex: event.data.pageIndex,
+                        jsonObject: event.data.jsonObject, requestType: event.data.requestType,
+                        annotationObject: event.data.annotationObject, isNeedToRender: event.data.isNeedToRender };
                 }
-                else if (documentTextCollection.requestType === 'pdfTextSearchRequest') {
-                    this.pdfViewer.textSearchModule.pdfTextSearchRequestSuccess(documentTextCollection,
-                                                                                documentTextCollection.pageStartIndex,
-                                                                                documentTextCollection.pageEndIndex);
+                const pageTextDataCollection: {[key: number]: PageTextData} = this.getPageTextDataCollection(result);
+                const documentTextCollection: any = this.getDocumentTextCollection(pageTextDataCollection);
+                if (!isNullOrUndefined(documentTextCollection)) {
+                    if (documentTextCollection.requestType === 'pageTextRequest') {
+                        this.pdfViewerBase.pageTextRequestSuccess(documentTextCollection, documentTextCollection.pageIndex);
+                    }
+                    else if (documentTextCollection.requestType === 'textRequest') {
+                        this.pdfViewerBase.textRequestSuccess(documentTextCollection, documentTextCollection.pageIndex,
+                                                              documentTextCollection.annotationObject);
+                    }
+                    else if (documentTextCollection.requestType === 'pdfTextSearchRequest') {
+                        this.pdfViewer.textSearchModule.pdfTextSearchRequestSuccess(documentTextCollection,
+                                                                                    documentTextCollection.pageStartIndex,
+                                                                                    documentTextCollection.pageEndIndex);
+                    }
+                }
+            } else {
+                if ((event.data.message.indexOf('extractText') !== -1)) {
+                    pageText = event.data.pageText;
+                    const result: any = () => {
+                        if (event.data.options === ExtractTextOption.BoundsOnly) {
+                            return { textData };
+                        }
+                        else if (event.data.options === ExtractTextOption.TextOnly) {
+                            return { pageText };
+                        }
+                        else {
+                            return { textData, pageText };
+                        }
+                    };
+                    this.textCollections.push(result());
+                    if (count === 1) {
+                        resolve(result());
+                        this.textCollections = [];
+                    }
+                    else if (this.textCollections.length === count) {
+                        resolve(this.textCollections);
+                        this.textCollections = [];
+                    }
                 }
             }
         }
     }
+
+    /**
+     * Extracts text data and additional details from a range of pages in the PDF document.
+     *
+     * This method performs text extraction on multiple pages defined by the start and end indices,
+     * and returns a promise that resolves to an object containing the extracted text data and page text.
+     *
+     * @param {number} startIndex - The index of the first page from which to start text extraction.
+     * @param {number} endIndex - The index of the last page up to which text extraction should be performed.
+     * @param {ExtractTextOption} options - Specifies options for text extraction, which may include bounds, text only, etc.
+     * @param {boolean} isLayout - Get the isLayout value.
+     * @private
+     * @returns {Promise<{ textData: TextDataSettingsModel[], pageText: string }>} - A promise that resolves with an object containing
+     * an array of text data models representing extracted content and the combined page text of the specified page range.
+     */
+    public extractsText(startIndex: number, endIndex: number, options: ExtractTextOption, isLayout: boolean):
+    Promise<{ textData: TextDataSettingsModel[], pageText: string }> {
+        return new Promise((resolve: Function, reject: Function) => {
+            resolve(this.textExtraction(startIndex, endIndex, options, true, isLayout));
+        });
+    }
+
+    private extractTextFromCharacterDetails(characterDetails: any[], cropBox: number[], isLayout: boolean, options?: ExtractTextOption,
+                                            documentPageText?: string): any {
+        let pageText: string = '';
+        const textData: TextData[] = [];
+        if (characterDetails.length > 0) {
+            for (const detail of characterDetails) {
+                const text: string = detail.Text;
+                if (options !== ExtractTextOption.BoundsOnly) {
+                    if (!isLayout && text.indexOf('\r') !== -1) {
+                        pageText += '';
+                    } else {
+                        pageText += text;
+                    }
+                }
+                if (options !== ExtractTextOption.TextOnly) {
+                    const bound: AnnotBounds = new AnnotBounds(
+                        this.convertPixelToPoint(detail.X),
+                        this.convertPixelToPoint(detail.Y + cropBox[1]),
+                        this.convertPixelToPoint(detail.Width),
+                        this.convertPixelToPoint(detail.Height)
+                    );
+                    textData.push(new TextData(text, bound));
+                }
+            }
+        }
+        if (documentPageText) {
+            pageText = documentPageText;
+        }
+        if (options === ExtractTextOption.BoundsOnly) {
+            return { textData };
+        }
+        else if (options === ExtractTextOption.TextOnly) {
+            return { pageText };
+        }
+        else {
+            return { textData, pageText };
+        }
+    }
+
+    private textExtraction(startIndex: number, endIndex: number, options: ExtractTextOption, isAPI: boolean, isLayout?: boolean,
+                           isRenderText?: boolean, jsonObject?: any, requestType?: string, annotationObject?: any):
+        Promise<{ textData: TextDataSettingsModel[]; pageText: string } | { pageText: string } | { textData: TextDataSettingsModel[] }> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const proxy: PdfRenderer = this;
+        const isSkipCharacterBounds: boolean = !isAPI ?
+            ((this.pdfViewer.extractTextOption === ExtractTextOption.None ||
+                this.pdfViewer.extractTextOption === ExtractTextOption.TextOnly) ? true : false) : false;
+        if (!isAPI) {
+            this.documentTextCollection = [];
+        }
+        return new Promise(function (resolve: Function, reject: Function): void {
+            if (isNullOrUndefined(proxy.pdfViewerBase.pdfViewerRunner)) {
+                resolve(null);
+                return;
+            }
+
+            endIndex = Math.min(endIndex, proxy.pdfViewer.pageCount - 1);
+            const count: number = endIndex - startIndex + 1;
+            const fetchTextCollection: any = (i: number) =>
+                proxy.pdfViewer.textSearch.documentTextCollection[parseInt(i.toString(), 10)]
+                    // eslint-disable-next-line max-len
+                    ? proxy.pdfViewer.textSearch.documentTextCollection[parseInt(i.toString(), 10)][parseInt(i.toString(), 10)]
+                    : null;
+            const processPage: any = (i: number, msg: string) => {
+                const documentTextCollection: any = fetchTextCollection(i);
+
+                if (isNullOrUndefined(documentTextCollection) || (!isNullOrUndefined(documentTextCollection) &&
+                    (((options === ExtractTextOption.BoundsOnly || options === ExtractTextOption.TextAndBounds) &&
+                        (!isNullOrUndefined(documentTextCollection.TextData) && documentTextCollection.TextData.length === 0) ||
+                        isNullOrUndefined(documentTextCollection.TextData))) || ((options === ExtractTextOption.TextOnly &&
+                            (!isNullOrUndefined(documentTextCollection.PageText) && documentTextCollection.PageText === '') ||
+                            (isNullOrUndefined(documentTextCollection.PageText)))))) {
+                    proxy.pdfViewerBase.pdfViewerRunner.addTask({
+                        pageIndex: i,
+                        message: msg,
+                        zoomFactor: proxy.pdfViewer.magnificationModule.zoomFactor,
+                        isTextNeed: true,
+                        isLayout: isLayout,
+                        isSkipCharacterBounds: isSkipCharacterBounds,
+                        options: options,
+                        isRenderText: isRenderText,
+                        jsonObject: jsonObject,
+                        requestType: requestType,
+                        annotationObject: annotationObject,
+                        isAPI: isAPI
+                    }, !isAPI ? TaskPriorityLevel.Low : TaskPriorityLevel.Medium);
+                    proxy.pdfViewerBase.pdfViewerRunner.onMessage(msg, (event: any) => {
+                        if ((event.data.message.indexOf('extractText') !== -1)) {
+                            proxy.textExtractionOnmessage(event, resolve, count);
+                        }
+                    });
+                } else {
+                    const cropBox: any = proxy.loadedDocument.getPage(i).cropBox;
+                    const result: any = proxy.extractTextFromCharacterDetails(documentTextCollection.TextData, cropBox,
+                                                                              isLayout, options, documentTextCollection.PageText);
+                    proxy.textCollections.push(result);
+                    if (count === 1) {
+                        resolve(result);
+                        proxy.textCollections = [];
+                    }
+                    else if (proxy.textCollections.length === count) {
+                        resolve(proxy.textCollections);
+                        proxy.textCollections = [];
+                    }
+                }
+            };
+            let msg: string = 'extractText';
+            if (isAPI) {
+                msg = 'extractText_' + PdfViewerUtils.createGUID();
+            }
+            if ((!isAPI && proxy.pdfViewer.extractTextOption !== ExtractTextOption.None) || isAPI) {
+                for (let i: number = startIndex; i <= endIndex; i++) {
+                    processPage(i, msg);
+                }
+            }
+        });
+    }
+
+    private getCharacterBounds(pageIndex: number): any {
+        const documentIndex: any =
+        this.pdfViewer.textSearchModule.documentTextCollection[parseInt(pageIndex.toString(), 10)][parseInt(pageIndex.toString(), 10)];
+        return documentIndex.textData || documentIndex.TextData;
+    }
+
 
     /**
      * @param {any} textData - It describes about the text data
@@ -1500,7 +1666,7 @@ export class PdfRenderer {
                 return ({ pageTextDataCollection: pageTextDataCollection, textBounds: textData.textBounds,
                     textContent: textData.textContent, rotation: textData.rotation, characterBounds: textData.characterBounds,
                     jsonObject: textData.jsonObject, requestType: textData.requestType, pageIndex: textData.pageIndex,
-                    annotationObject: textData.annotationObject });
+                    annotationObject: textData.annotationObject, isNeedToRender: textData.isNeedToRender });
             }
             else {
                 return (pageTextDataCollection);
@@ -1522,20 +1688,23 @@ export class PdfRenderer {
         const pageEndIndex: number = !isNullOrUndefined(value.jsonObject.pageEndIndex) ? value.jsonObject.pageEndIndex :
             value.jsonObject.pageIndex + 1;
         const pageCount: number = this.loadedDocument.pageCount;
+        const endNumber: number = !isNullOrUndefined(value.jsonObject.pageStartIndex) ? (pageEndIndex - pageStartIndex) : (pageCount);
         if (!isNullOrUndefined(value)) {
             this.documentTextCollection.push(value.pageTextDataCollection);
-            if (this.documentTextCollection.length === pageEndIndex - pageStartIndex) {
+            if (this.documentTextCollection.length === endNumber) {
                 return({ uniqueId : value.jsonObject.uniqueId,
                     documentTextCollection: this.documentTextCollection,
                     pageStartIndex: pageStartIndex,
-                    pageEndIndex: pageEndIndex,
+                    pageEndIndex: !isNullOrUndefined(value.jsonObject.pageEndIndex) ? pageEndIndex : pageCount,
                     textBounds: value.textBounds,
                     textContent: value.textContent,
                     rotation: value.rotation,
                     characterBounds: value.characterBounds,
                     requestType: value.requestType,
                     pageIndex: value.pageIndex,
-                    annotationObject: value.annotationObject
+                    annotationObject: value.annotationObject,
+                    isNeedToRender: value.isNeedToRender
+
                 });
             }
         }
@@ -1558,8 +1727,7 @@ export class PdfRenderer {
     private extractTextDetailsWithPageSize(pageIndex: number, isRenderText?: boolean, jsonObject?: any, requestType?: string,
                                            annotationObject?: any): void {
         const pageTextDataCollection: { [key: number]: PageTextData } = {};
-        this.textExtraction(pageIndex, true, isRenderText, jsonObject, requestType, annotationObject);
-
+        this.textExtraction(pageIndex, pageIndex, null, false, true, isRenderText, jsonObject, requestType, annotationObject);
     }
 
 
@@ -1574,8 +1742,12 @@ export class PdfRenderer {
         const pageStartIndex: number = !isNullOrUndefined(jsonObject.pageStartIndex) ? jsonObject.pageStartIndex : jsonObject.pageIndex;
         const pageEndIndex: number = !isNullOrUndefined(jsonObject.pageEndIndex) ? jsonObject.pageEndIndex : jsonObject.pageIndex + 1;
         const pageCount: number = this.loadedDocument.pageCount;
-        for (let pageIndex: number = pageStartIndex; pageIndex < pageEndIndex; pageIndex++) {
-            this.extractTextDetailsWithPageSize(pageIndex, true, jsonObject, requestType, annotationObject);
+        if (this.pdfViewer.extractTextOption !== ExtractTextOption.None) {
+            for (let pageIndex: number = pageStartIndex; pageIndex < pageEndIndex; pageIndex++) {
+                this.extractTextDetailsWithPageSize(pageIndex, true, jsonObject, requestType, annotationObject);
+            }
+        } else {
+            this.pdfViewer.fireTextExtractionCompleted([]);
         }
     }
 }

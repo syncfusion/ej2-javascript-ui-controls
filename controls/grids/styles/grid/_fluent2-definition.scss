@@ -343,7 +343,7 @@ $grid-group-clone-text-align: left !default;
 $grid-clone-padding: 4px 8px 2px !default;
 $grid-bigger-first-last-rowcell-padding: 20px !default;
 $grid-bigger-content-padding: 15px !default;
-$grid-bigger-group-line-height: round($grid-group-height*1.25) - 2 !default;
+$grid-bigger-group-line-height: math.round($grid-group-height*1.25) - 2 !default;
 $grid-bigger-content-right-padding: 12px !default;
 $grid-bigger-headercell-font-size: $text-base !default;
 $grid-bigger-content-font-size: $text-base !default;

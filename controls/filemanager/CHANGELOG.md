@@ -2,14 +2,13 @@
 
 ## [Unreleased]
 
-## 28.2.12 (2025-03-19)
+## 29.1.33 (2025-03-25)
 
 ### FileManager
 
 #### Bug Fixes
 
 - `#I696366` - Resolved the issue with copying and pasting a folder from the navigation pane to the layout pane in File Manager component.
-- `#I691585` - Resolved the selection doesn't persist issue when both virtualization and persistence are enabled.
 
 ## 28.2.9 (2025-03-04)
 
@@ -81,13 +80,6 @@
 #### Features
 
 - `#FB22569` - Provided chunk upload support in the File Manager, making it easier to upload large files or folders by breaking them into smaller chunks based on the specified `chunkSize` within [uploadSettings](https://ej2.syncfusion.com/documentation/api/file-manager/#uploadsettings) property.
-
-#### Bug Fixes
-
-- `#I659845` - The persistence issue with the sorting direction in the File Manager component details view has been resolved.
-- `#I654478` - Resolve the inconsistent path issue in File Manager component ID based service.
-- `#I658815` - The issue with the `ctrl` and `cmd` buttons for selecting multiple files in the macOS has been resolved.
-- `#I662195` - The issue with navigation pane not reflect the renamed item data in the macOS has been resolved.
 
 ## 27.2.5 (2024-12-03)
 

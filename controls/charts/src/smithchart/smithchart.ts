@@ -507,6 +507,37 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
         this.element.setAttribute('role', 'region');
         this.element.setAttribute('aria-label', this.title.description || this.title.text + '. Syncfusion interactive chart.');
         this.element.setAttribute('tabindex', '0');
+        (this.element as HTMLElement).style.outline = 'none';
+    }
+
+    /**
+     * Handles to set style for key event on the document.
+     *
+     * @param {target} target - element which currently focused.
+     * @returns {void}
+     * @private
+     */
+    private setNavigationStyle(target: string): void {
+        const currentElement: HTMLElement = document.getElementById(target);
+        if (currentElement) { currentElement.style.setProperty('outline', `1.5px solid ${this.themeStyle.tabColor}`); }
+    }
+
+    /**
+     * Handles to remove style for key event on the document.
+     *
+     * @returns {void}
+     * @private
+     */
+    private removeNavigationStyle(): void {
+        const currentElement: NodeList = document.querySelectorAll(`text[id*=_Smithchart_title], g[id*=_svg_Legend], g[id*=_svg_seriesCollection], path[id*=_Points], [id*=${this.element.id}]`);
+        if (currentElement) {
+            currentElement.forEach((element: Node) => {
+                if (element instanceof HTMLElement || element instanceof SVGElement) {
+                    element.style.setProperty('outline', 'none');
+                    element.style.setProperty('margin', '');
+                }
+            });
+        }
     }
     /**
      * To Initialize the control rendering.
@@ -517,19 +548,6 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
         /** Set theme */
         this.themeStyle = getThemeColor(this.theme);
         this.seriesColors = getSeriesColor(this.theme);
-        if (!(document.getElementById(this.element.id + 'Keyboard_smith_chart_focus'))) {
-            const style: HTMLStyleElement = document.createElement('style');
-            style.setAttribute('id', (<HTMLElement>this.element).id + 'Keyboard_smith_chart_focus');
-            style.innerText = '.e-smith-chart-focused:focus,' +
-                    'div[id*=container]:focus, text[id*=_Smithchart_title]:focus, path[id*=_Points]:focus, g[id*=_svg_seriesCollection]:focus, g[id*=_svg_Legend]:focus {outline: none } .e-smith-chart-focused:focus-visible,' +
-                    'div[id*=container]:focus-visible, text[id*=_Smithchart_title]:focus-visible, path[id*=_Points]:focus-visible, g[id*=_svg_seriesCollection]:focus-visible, g[id*=_svg_Legend]:focus-visible {outline: 1.5px ' + this.themeStyle.tabColor + ' solid}';
-            document.body.appendChild(style);
-        }
-        // let count: number = colors.length;
-        // for (let i: number = 0; i < this.series.length; i++) {
-
-        //     this.series[i].fill = this.series[i].fill ? this.series[i].fill : colors[i % count];
-        // }
     }
     protected render(): void {
         this.createChartSvg();
@@ -676,6 +694,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
                 this.series[seriesIndex as number].visibility = 'visible';
             }
         }
+        this.removeNavigationStyle();
     }
     /**
      * To unbind event handlers from smithchart.
@@ -694,6 +713,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
             this.smithchartOnResize
         );
     }
+
     public print(id?: string[] | string | Element): void {
         const exportChart: ExportUtils = new ExportUtils(this);
         exportChart.print(id);
@@ -725,6 +745,9 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
         if (actionKey !== '') {
             this.smithchartKeyboardNavigations(e, (e.target as HTMLElement).id, actionKey);
         }
+        if (e.code === 'Tab') {
+            this.removeNavigationStyle();
+        }
         return false;
     }
 
@@ -743,7 +766,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
         const titleElement: HTMLElement = getElement(this.element.id + '_Smithchart_title') as HTMLElement;
         const seriesElement: HTMLElement = getElement(this.element.id + '_svg' + '_seriesCollections') as HTMLElement;
         const legendElement: HTMLElement = getElement(this.element.id + 'legendItem_Group') as HTMLElement;
-
+        this.removeNavigationStyle();
         if (titleElement) { titleElement.setAttribute('class', 'e-smith-chart-focused'); }
         if (seriesElement && seriesElement.firstElementChild && seriesElement.firstElementChild.children[1].lastElementChild) {
             const firstChild: HTMLElement = seriesElement.firstElementChild.children[1].lastElementChild as HTMLElement;
@@ -797,6 +820,8 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
                 this.currentLegendIndex = this.getActualIndex(this.currentLegendIndex, legendElement.length);
                 const currentLegend: Element = legendElement[this.currentLegendIndex];
                 this.focusChild(currentLegend as HTMLElement);
+                this.removeNavigationStyle();
+                this.setNavigationStyle(currentLegend.id);
                 targetId = currentLegend.children[1].id;
             }
             else if (targetId.indexOf('_Series') > -1) {
@@ -825,6 +850,8 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
                     this.currentPointIndex + '_Marker' + this.currentPointIndex);
                 }
                 targetId = this.focusChild(currentPoint as HTMLElement);
+                this.removeNavigationStyle();
+                this.setNavigationStyle(targetId);
                 actionKey = this.series[this.currentSeriesIndex].tooltip.visible ? 'ArrowMove' : '';
             }
         }
@@ -835,6 +862,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
         if (actionKey !== '') {
             this.smithchartKeyboardNavigations(e, targetId, actionKey);
         }
+        if (e.code === 'Tab') { this.setNavigationStyle(targetId); }
         return false;
     }
 
@@ -862,6 +890,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
                 this.delayRedraw = true;
                 this.smithchartOnClick(e as Event);
                 this.focusChild(document.getElementById(targetId).parentElement);
+                this.setNavigationStyle(document.getElementById(targetId).parentElement.id);
             }
             break;
         case 'ESC':

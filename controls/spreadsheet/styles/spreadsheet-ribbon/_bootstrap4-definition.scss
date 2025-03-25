@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $spreadsheet-ribbon-skin: 'bootstrap4' !default;
 $spreadsheet-ribbon-border-color: $gray-300 !default;
 $spreadsheet-ribbon-border: 1px solid $spreadsheet-ribbon-border-color !default;
@@ -9,7 +11,7 @@ $spreadsheet-ribbon-comb-icon-color:  $gray-700 !default;
 $bigger-drop-icon-margin: 18.5px 5px 19.5px !default;
 $expand-icon-color: $gray-600 !default;
 $spreadsheet-ribbon-header-height: 41px !default;
-$spreadsheet-ribbon-focus-text-color: darken($primary, 15%) !default;
+$spreadsheet-ribbon-focus-text-color: color.adjust($primary, $lightness: -15%) !default;
 $spreadsheet-ribbon-focus-bg-color: #eee !default;
 $bigger-spreadsheet-ribbon-drop-icon-font-size: 12px !default;
 $spreadsheet-ribbon-content-tbar-border-color: transparent !default;

@@ -307,7 +307,7 @@ export class QuickPopups {
             okButton.setAttribute('aria-label', cancelButton.innerHTML);
         }
         this.quickDialogClass('Alert');
-        this.showQuickDialog('ValidationAlert', eventData);
+        this.showQuickDialog(type === 'overlapAlert' ? 'OverlapAlert' : 'ValidationAlert', eventData);
     }
 
     private showQuickDialog(popupType: PopupType, eventData?: Record<string, any> | Record<string, any>[]): void {
@@ -316,6 +316,9 @@ export class QuickPopups {
             type: popupType, cancel: false, element: this.quickDialog.element,
             data: extend({}, (eventData || this.parent.activeEventData.event), null, true) as Record<string, any>
         };
+        if (!this.parent.activeViewOptions.allowOverlap) {
+            eventProp.overlapEvents = this.parent.overlapAppointments;
+        }
         this.parent.trigger(event.popupOpen, eventProp, (popupArgs: PopupOpenEventArgs) => {
             if (!popupArgs.cancel) {
                 this.quickDialog.show();
@@ -1325,16 +1328,20 @@ export class QuickPopups {
 
     private documentClick(e: { event: Event }): void {
         const target: Element = e.event.target as Element;
-        const classNames: string = '.' + cls.POPUP_WRAPPER_CLASS + ',.' + cls.HEADER_CELLS_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS +
+        const isInsideDialog: boolean = !!closest(target, '.e-dialog');
+        let classNames: string = '.' + cls.POPUP_WRAPPER_CLASS + ',.' + cls.HEADER_CELLS_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS +
             ',.' + cls.WORK_CELLS_CLASS + ',.' + cls.APPOINTMENT_CLASS;
+        if (!isInsideDialog) {
+            classNames += ',.e-popup';
+        }
         const popupWrap: Element = this.parent.element.querySelector('.' + cls.POPUP_WRAPPER_CLASS);
         if ((popupWrap && popupWrap.childElementCount > 0 && !closest(target, classNames)) || !closest(target, classNames)) {
             this.quickPopupHide();
             this.parent.removeNewEventElement();
         }
-        const tar: Element = this.parent.element.querySelector('.' + cls.INLINE_SUBJECT_CLASS);
-        if (tar && tar !== target && this.parent.allowInline) {
-            this.parent.inlineModule.documentClick();
+        const tar: HTMLInputElement | null = this.parent.allowInline ? this.parent.inlineModule.getInlineElement() : null;
+        if (tar && tar !== target) {
+            this.parent.inlineModule.documentClick(tar);
         }
         if (closest(target, '.' + cls.APPOINTMENT_CLASS + ',.' + cls.HEADER_CELLS_CLASS)) {
             this.parent.removeNewEventElement();

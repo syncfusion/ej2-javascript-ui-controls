@@ -4,6 +4,7 @@ import { ImageElement } from '../core/elements/image-element';
 import { Container } from '../core/containers/container';
 import { PathElement } from '../core/elements/path-element';
 import { TextElement } from '../core/elements/text-element';
+import { DiagramElement } from '../core/elements/diagram-element';
 /**
  * IRenderer interface defines the base of the SVG and Canvas renderer.
  */

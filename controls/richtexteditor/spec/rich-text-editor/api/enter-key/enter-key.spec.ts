@@ -760,7 +760,7 @@ describe('Enter key support - When `BR` is configured', () => {
         const sel: void = new NodeSelection().setCursorPoint(
             document, nodetext, nodetext.textContent.length);
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML).toBe('RTE Content<br><br>');
+        expect(rteObj.inputElement.innerHTML).toBe('RTE Content<br>');
     });
 
     it('EJ2-58543 - Press enter at the end of the line twice to check the text node removed properly', function (): void {
@@ -770,7 +770,7 @@ describe('Enter key support - When `BR` is configured', () => {
         (<any>rteObj).keyDown(keyboardEventArgs);
         (<any>rteObj).keyDown(keyboardEventArgs);
         rteObj.formatter.saveData();
-        expect(rteObj.inputElement.childNodes.length === 5).toBe(true);
+        expect(rteObj.inputElement.childNodes.length === 4).toBe(true);
     });
 
     it('Press enter at the end of the line - Style Applied -', function (): void {
@@ -1418,7 +1418,7 @@ describe('When P configured - only image in the editor content', () => {
         const sel: void = new NodeSelection().setSelectionText(
             document, startNode, startNode, 1, 1);
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML).toBe('<p><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"></p><p> <br></p>');
+        expect(rteObj.inputElement.innerHTML).toBe('<p><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"></p><p><br></p>');
     });
 
     it('Press enter when cursor is placed before the image', function (): void {
@@ -1454,6 +1454,82 @@ describe('When P configured - only image in the editor content', () => {
         expect(rteObj.inputElement.innerHTML).toBe('<p><br></p><p><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"></p>');
     });
 
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('Bug 937059: Pressing Enter or Shift+Enter Removes Images in the Rich Text Editor', () => {
+    let rteObj: RichTextEditor;
+    let rteEle: HTMLElement;
+    let curDocument: Document;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px',
+            value: '<p><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"></p>'
+        });
+        rteEle = rteObj.element;
+        curDocument = rteObj.contentModule.getDocument();
+        done();
+    });
+    it('Press enter when cursor is after the image', function (): void {
+        const startNode: any = rteObj.inputElement.childNodes[0];
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode, startNode, 1, 1);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML).toBe('<p><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"></p><p><br></p>');
+    });
+    it('Press enter when cursor is before the image', function (): void {
+        rteObj.value = '<p><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"></p>';
+        rteObj.inputElement.innerHTML = '<p><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"></p>';
+        rteObj.dataBind();
+        const startNode: any = rteObj.inputElement.childNodes[0];
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode, startNode, 0, 0);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML).toBe('<p><br></p><p><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"></p>');
+    });
+    it('Press enter when cursor is at the image', function (): void {
+        rteObj.value = '<p><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"></p>';
+        rteObj.inputElement.innerHTML = '<p><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"></p>';
+        rteObj.dataBind();
+        const startNode: any = rteObj.inputElement.childNodes[0];
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode, startNode, 0, 1);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML).toBe('<p><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"></p><p><br></p>');
+    });
+    it('Press shift enter when cursor is after the image', function (): void {
+        rteObj.value = '<p><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"></p>';
+        rteObj.inputElement.innerHTML = '<p><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"></p>';
+        rteObj.dataBind();
+        const startNode: any = rteObj.inputElement.childNodes[0];
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode, startNode, 1, 1);
+        (<any>rteObj).keyDown(shiftkeyboarArgs);
+        expect(rteObj.inputElement.innerHTML).toBe('<p><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"></p><br><br>');
+    });
+    it('Press shift enter when cursor is before the image', function (): void {
+        rteObj.value = '<p><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"></p>';
+        rteObj.inputElement.innerHTML = '<p><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"></p>';
+        rteObj.dataBind();
+        const startNode: any = rteObj.inputElement.childNodes[0];
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode, startNode, 0, 0);
+        (<any>rteObj).keyDown(shiftkeyboarArgs);
+        expect(rteObj.inputElement.innerHTML).toBe('<p><br><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"></p>');
+    });
+    it('Press shift enter when cursor is at the image', function (): void {
+        rteObj.value = '<p><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"></p>';
+        rteObj.inputElement.innerHTML = '<p><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"></p>';
+        rteObj.dataBind();
+        const startNode: any = rteObj.inputElement.childNodes[0];
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode, startNode, 0, 1);
+        (<any>rteObj).keyDown(shiftkeyboarArgs);
+        expect(rteObj.inputElement.innerHTML).toBe('<br><p><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"></p>');
+    });
     afterAll(() => {
         destroy(rteObj);
     });

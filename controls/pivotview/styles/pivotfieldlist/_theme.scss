@@ -46,6 +46,16 @@
         background: $field-list-toggle-bg-color-dark !important;
       }
 
+      &.e-toggle-field-list.e-field-list-icon-left {
+        right: 0;
+        position: absolute;
+      }
+  
+      &.e-toggle-field-list.e-field-list-icon-right {
+        left: 0;
+        position: absolute;
+      }
+
       &.e-fieldlist-left {
         @if ($skin-name =='Material3') {
           left: 2px !important;

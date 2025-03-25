@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 //Mouse Mode
 $toast-icon-nrml-height: 24px !default;
 $toast-icon-nrml-width: 24px !default;
@@ -55,7 +57,7 @@ $toast-content-color: $grey-dark-font !default;
 
 // Flat Button Customization
 
-$toast-btn-flat-color: lighten($accent, 15%) !default;
+$toast-btn-flat-color: color.adjust($accent, $lightness: 15%) !default;
 $toast-btn-flat-bgcolor: transparent !default;
 $toast-btn-flat-border-color: transparent !default;
 $toast-btn-flat-box-shadow: none !default;

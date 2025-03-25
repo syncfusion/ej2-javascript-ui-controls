@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $listbox-font-family: $font-family !default;
 $listbox-text-color: rgba($gray-900, 1) !default;
 $listbox-text-disabled: $gray-600 !default;
@@ -9,7 +11,7 @@ $listbox-icon-back-margin: 0 !default;
 $listbox-rtl-icon-back-margin: 0 !default;
 $listbox-background: $content-bg !default;
 $listbox-line-color: rgba($black, .13) !default;
-$listbox-item-hover-bg: darken($gray-100, 5%) !default;
+$listbox-item-hover-bg: color.adjust($gray-100, $lightness: -5%) !default;
 $listbox-item-height: 40px !default;
 $listbox-item-line-height: 1.5 !default;
 $listbox-item-padding: 10px 16px 10px 16px !default;

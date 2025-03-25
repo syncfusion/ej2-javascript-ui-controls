@@ -1,4 +1,5 @@
 @use 'sass:math';
+@use 'sass:color';
 
 $pager-numericitem-border-radius: 0 !default;
 $pager-border-type: solid !default;
@@ -46,7 +47,7 @@ $pager-numeric-txt-bg-color: $gray-600 !default;
 $pager-padding: 8px !default;
 $pager-numeric-font-weight: bold !default;
 $pager-messagebar-padding-top: 12px !default;
-$pager-number-hover-bg-color: darken($gray-100, 2%) !default;
+$pager-number-hover-bg-color: color.adjust($gray-100, $lightness: -2%) !default;
 $pager-font-family: Helvertica !default;
 $pager-font-weight: bold !default;
 $pager-messagebar-padding-right: 0 !default;

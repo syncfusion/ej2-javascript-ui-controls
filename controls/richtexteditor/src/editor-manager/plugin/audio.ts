@@ -6,7 +6,7 @@ import { IHtmlItem } from './../base/interface';
 import { InsertHtml } from './inserthtml';
 import * as EVENTS from './../../common/constant';
 import { NodeSelection } from '../../selection';
-import { isSafari, scrollToCursor } from '../../common/util';
+import { scrollToCursor } from '../../common/util';
 
 /**
  * Audio internal component
@@ -84,7 +84,7 @@ export class AudioCommand {
         let wrapElement: HTMLElement;
         if (!isNOU(e.item.selectParent) && (e.item.selectParent[0] as HTMLElement).classList &&
         ((e.item.selectParent[0] as HTMLElement).classList.contains(classes.CLASS_CLICK_ELEM) ||
-        (e.item.selectParent[0] as HTMLElement).classList.contains(classes.CLASS_AUDIO_WRAP))) {
+        (e.item.selectParent[0] as HTMLElement).classList.contains(classes.CLASS_AUDIO_WRAP) || (e.item.selectParent[0] as HTMLElement).tagName === 'AUDIO')) {
             const audioEle: HTMLSourceElement = (e.item.selectParent[0] as HTMLElement).querySelector('source') as HTMLSourceElement;
             this.setStyle(audioEle, e);
             isReplaced = true;
@@ -103,21 +103,20 @@ export class AudioCommand {
             InsertHtml.Insert(this.parent.currentDocument, wrapElement, this.parent.editableElement);
             if (!isNOU(e.item.selection)) {
                 const range: Range = e.item.selection.getRange(this.parent.currentDocument);
+                const focusNode: Node = document.createTextNode(' ');
+                const node: Node = this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument)[0];
+                wrapElement.parentNode.insertBefore(focusNode, node.nextSibling);
                 const save: NodeSelection = e.item.selection.save(range, this.parent.currentDocument);
-            }
-            if (wrapElement.nextElementSibling === null) {
-                const insertElem: HTMLElement = createElement('br');
-                wrapElement.parentNode.insertBefore(insertElem, wrapElement.nextSibling);
             }
         }
         if (e.callBack && (isNOU(e.selector) || !isNOU(e.selector) && e.selector !== 'pasteCleanupModule')) {
             const selectedNode: Node = this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument)[0];
-            const audioElm: Element = (e.value === 'AudioReplace' || isReplaced) ? (e.item.selectParent[0] as Element).querySelector('audio')
+            const audioElm: Element = (e.value === 'AudioReplace' || isReplaced) ? (((e.item.selectParent[0] as Element).tagName.toLowerCase() === 'audio') ? e.item.selectParent[0] as Element : (e.item.selectParent[0] as Element).querySelector('audio'))
                 : (Browser.isIE ? (selectedNode as Element) : (selectedNode as Element).querySelector('audio'));
             audioElm.addEventListener('loadeddata', () => {
                 if (e.value !== 'AudioReplace' || !isReplaced) {
                     if (!isNOU(this.parent.currentDocument)) {
-                        if (isSafari()) {
+                        if (this.parent.userAgentData.isSafari()) {
                             scrollToCursor(this.parent.currentDocument, this.parent.editableElement as HTMLElement);
                         }
                         e.callBack({

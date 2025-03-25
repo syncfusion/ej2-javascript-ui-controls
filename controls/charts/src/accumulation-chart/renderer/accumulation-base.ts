@@ -324,6 +324,7 @@ export class AccumulationBase {
      */
     private setTranslate(index: number, sliceId: string, position: string, transform?: string): void {
         this.setElementTransform(sliceId + index, position);
+        this.setElementTransform(sliceId + index + '_polygon', position);
         if (this.accumulation.visibleSeries[0].dataLabel.visible) {
             sliceId = this.accumulation.element.id + '_datalabel_Series_0_';
             this.setElementTransform(sliceId + 'shape_' + index, position);

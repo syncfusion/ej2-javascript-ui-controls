@@ -554,6 +554,22 @@ describe('Chart Control', () => {
                 { x: new Date(2000, 9, 8), y: 85 } ];
             chart.appendTo('#chartContainer');
         });
+        it('Checking axis label with enabled wrap enabled transpose', (done: Function) => {
+            loaded = (args: Object): void => {
+                svg = document.getElementById('chartContainerAxisLabels0');
+                expect(svg.childNodes.length == 23).toBe(true);
+                let x: string = document.getElementById('chartContainer0_AxisLabel_1').getAttribute('x');
+                expect(x).toBe('41.5');
+                let y: string = document.getElementById('chartContainer0_AxisLabel_1').getAttribute('y');
+                expect(y).toBe('519');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.labelFormat= 'dd MMMM yyyy',
+            chart.primaryXAxis.enableWrap= true,
+            chart.isTransposed = true,
+            chart.appendTo('#chartContainer');
+        });
     });
     it('memory leak', () => {
         profile.sample();

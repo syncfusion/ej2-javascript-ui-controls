@@ -2,11 +2,11 @@
 
 # JavaScript Interactive Chat Control
 
-A package of JavaScript Interactive Chat control. It comes with a AI AssistView control to enables users to display AI-generated responses in a user-friendly interface and the Chat UI control which is lightweight conversational interface, for displaying chat messages between the users.
+A package of JavaScript Interactive Chat control. It comes with a AI AssistView control to enables users to display AI-generated responses in a user-friendly interface.
 
 ## What's Included in the JavaScript Interactive Chat Package
 
-The JavaScript Interactive Chat package includes the following controls.
+The JavaScript Interactive Chat package includes the following component.
 
 ### JavaScript AI AssistView
 
@@ -30,31 +30,8 @@ The [JavaScript AI AssistView](https://www.syncfusion.com/javascript-ui-controls
 * Custom views: Extensive customization options for creating personalized views in addition to the built-in assist view.
 * Customization: Allows customizing the default appearance, including prompts, responses, and more, to suit your needs.
 
-### JavaScript Chat UI
-
-The [JavaScript Chat UI](https://www.syncfusion.com/javascript-ui-controls/js-chat-ui?utm_source=npm&utm_medium=listing&utm_campaign=javascript-interactive-chat-npm) control is a lightweight, user-friendly conversational interface for displaying chat messages between users. It features messages with timestamps, avatar images with fallback text, typing indicators, and extensive customization options, making it ideal for building modern chat applications.
-
-<p align="center">
-  <a href="https://ej2.syncfusion.com/documentation/chat-ui/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-interactive-chat-npm">Getting Started</a> .
-  <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-interactive-chat-npm#/fluent2/chat-ui/default.html">Online demos</a> .
-  <a href="https://www.syncfusion.com/javascript-ui-controls/js-chat-ui?utm_source=npm&utm_medium=listing&utm_campaign=javascript-interactive-chat-npm">Learn more</a>
-</p>
-
-<p align="center">
-<img alt="JavaScript Chat UI Control" src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/javascript/javascript-chat-ui.png">
-</p>
-
-#### Key features
-
-* Message suggestions: Provides on-demand suggestions using customizable templates to enhance user interactions.
-* On-demand messages loading: Dynamically loads messages to optimize performance, especially for lengthy conversations.
-* Header toolbar: Allows adding toolbar items in the header with options for executing custom commands.
-* Timebreak: Automatically inserts time breaks between messages, enhancing readability by grouping conversations by date.
-* Typing indicator: Shows real-time typing activity of users with customizable indicator styles.
-* Customization: Allows users to customize the default appearance, including messages, the footer, and more, to suit their needs.
-
 ## Setup
-To install `interactive chat` and its dependent packages, use the following Command,
+To install `interactive chat` and its dependent packages, use the following command,
 
 ```sh
 npm install @syncfusion/ej2-interactive-chat
@@ -79,10 +56,10 @@ Product support is available through the following mediums.
 
 ## License and copyright
 
-> This is a commercial product and requires a paid license for possession or use. Syncfusion<sup>®</sup> licensed software, including this control, is subject to the terms and conditions of Syncfusion<sup>®</sup> [EULA](https://www.syncfusion.com/eula/es/). To acquire a license for 80+ [JavaScript UI controls](https://www.syncfusion.com/javascript-ui-controls), you can [purchase](https://www.syncfusion.com/sales/products) or [start a free 30-day trial](https://www.syncfusion.com/account/manage-trials/start-trials).
+> This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this control, is subject to the terms and conditions of Syncfusion's [EULA](https://www.syncfusion.com/eula/es/). To acquire a license for 80+ [JavaScript UI controls](https://www.syncfusion.com/javascript-ui-controls), you can [purchase](https://www.syncfusion.com/sales/products) or [start a free 30-day trial](https://www.syncfusion.com/account/manage-trials/start-trials).
 
 > A [free community license](https://www.syncfusion.com/products/communitylicense) is also available for companies and individuals whose organizations have less than $1 million USD in annual gross revenue and five or fewer developers.
 
 See [LICENSE FILE](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license?utm_source=npm&utm_medium=listing&utm_campaign=javascript-interactive-chat-npm) for more info.
 
-&copy; Copyright 2024 Syncfusion<sup>®</sup> Inc. All Rights Reserved. The Syncfusion<sup>®</sup> Essential Studio<sup>®</sup> license and copyright applies to this distribution.
+&copy; Copyright 2024 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

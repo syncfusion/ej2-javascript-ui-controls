@@ -1898,22 +1898,22 @@ describe('ListBox', () => {
     describe('ListBox Change Event Args', () => {
         let listObj: any;
         let elem: HTMLElement = createElement('input');
-
+    
         beforeAll(() => {
             document.body.appendChild(elem);
         });
-
+    
         afterEach(() => {
             listObj.destroy();
         });
-
+    
         it('should emit change event with value as string[]', () => {
             listObj = new ListBox({ dataSource: ['Java', 'JavaScript', 'Python'], value: ['Java'], selectionSettings: { showCheckbox: false } }, elem);
             let changeArgs: string[] | number[] | boolean[];
             listObj.change = (args: ListBoxChangeEventArgs) => {
                 changeArgs = args.value;
             };
-            let index = 1; // JavaScript
+            let index = 1;
             let li = listObj.getItems()[index];
             li.click();
             expect(Array.isArray(changeArgs)).toBe(true);

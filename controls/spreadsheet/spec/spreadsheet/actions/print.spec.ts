@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
-import { Spreadsheet } from '../../../src/spreadsheet/index';
+import { Spreadsheet, getDPRValue, CellStyleModel, getLines } from '../../../src/index';
 import { L10n } from '@syncfusion/ej2-base';
 import { getCell, ProtectSettingsModel, setRow } from "../../../src/index";
 
@@ -1001,6 +1001,51 @@ describe('Auto fill ->', () => {
             await wait(3000); // Wait for 3 seconds
             const spreadsheet: any = helper.getInstance();
             spreadsheet.print();
+        });
+        it('Checking the wrapText method output for different values with wrap and cell formats', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            const workbookStyle: CellStyleModel = spreadsheet.cellStyle;
+            let colWidth: number = getDPRValue(64 - 5, true); // Column width - (Border size and Padding space inside a cell).
+            let style: CellStyleModel = { textAlign: 'right' };
+            let displayLines: string[] = spreadsheet.printModule.wrapText('100.32 ---------- 201.01', colWidth, style, workbookStyle);
+            expect(JSON.stringify(displayLines)).toBe('["100.32 ---","------- ","201.01"]');
+            let lineCnt: number = getLines('100.32 ---------- 201.01', colWidth, style, workbookStyle);
+            expect(lineCnt).toBe(3);
+            expect(displayLines.length === lineCnt).toBeTruthy();
+            colWidth = getDPRValue(69 - 5, true);
+            style = { fontSize: '8pt', textAlign: 'right' };
+            displayLines = spreadsheet.printModule.wrapText('111200100.32 --------------- 802340.01', colWidth, style, workbookStyle);
+            expect(JSON.stringify(displayLines)).toBe('["111200100.32 ","--------------- ","802340.01"]');
+            lineCnt = getLines('111200100.32 --------------- 802340.01', colWidth, style, workbookStyle);
+            expect(lineCnt).toBe(3);
+            expect(displayLines.length === lineCnt).toBeTruthy();
+            displayLines = spreadsheet.printModule.wrapText('2021.1 --------------- 1.01', colWidth, style, workbookStyle);
+            expect(JSON.stringify(displayLines)).toBe('["2021.1 ---------","------ 1.01"]');
+            lineCnt = getLines('2021.1 --------------- 1.01', colWidth, style, workbookStyle);
+            expect(lineCnt).toBe(2);
+            expect(displayLines.length === lineCnt).toBeTruthy();
+            displayLines = spreadsheet.printModule.wrapText('1 --------------- 1.01', colWidth, style, workbookStyle);
+            expect(JSON.stringify(displayLines)).toBe('["1 --------------- ","1.01"]');
+            lineCnt = getLines('1 --------------- 1.01', colWidth, style, workbookStyle);
+            expect(lineCnt).toBe(2);
+            expect(displayLines.length === lineCnt).toBeTruthy();
+            displayLines = spreadsheet.printModule.wrapText('10.02 --------------- -', colWidth, style, workbookStyle);
+            expect(JSON.stringify(displayLines)).toBe('["10.02 ----------","----- -"]');
+            lineCnt = getLines('10.02 --------------- -', colWidth, style, workbookStyle);
+            expect(lineCnt).toBe(2);
+            expect(displayLines.length === lineCnt).toBeTruthy();
+            displayLines = spreadsheet.printModule.wrapText('- --------------- -', colWidth, style, workbookStyle);
+            expect(JSON.stringify(displayLines)).toBe('["- --------------- ","-"]');
+            lineCnt = getLines('- --------------- -', colWidth, style, workbookStyle);
+            expect(lineCnt).toBe(2);
+            expect(displayLines.length === lineCnt).toBeTruthy();
+            displayLines = spreadsheet.printModule.wrapText(
+                '111200100.32 ----------------- 434111200100.32 802340.01', colWidth, style, workbookStyle);
+            expect(JSON.stringify(displayLines)).toBe('["111200100.32 ","----------------- ","434111200100.",".32 802340.01"]');
+            lineCnt = getLines('111200100.32 ----------------- 434111200100.32 802340.01', colWidth, style, workbookStyle);
+            expect(lineCnt).toBe(5);
+            expect(displayLines.length).toBe(4);
+            done();
         });
 
         async function wait(ms: number): Promise<void> {

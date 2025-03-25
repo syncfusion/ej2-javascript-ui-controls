@@ -5,7 +5,7 @@ import { WorkbookModel } from './workbook-model';
 import { getWorkbookRequiredModules } from '../common/module';
 import { SheetModel, CellModel, ColumnModel, RowModel, getData, RangeModel, isHiddenRow, isHiddenCol, OpenSettingsModel } from './index';
 import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs, UndoRedoEventArgs } from '../../spreadsheet/common/interface';
-import { DefineName, CellStyle, updateRowColCount, getIndexesFromAddress, localeData, workbookLocale } from '../common/index';
+import { DefineName, CellStyle, updateRowColCount, getIndexesFromAddress, localeData, workbookLocale, getUpdatedRange } from '../common/index';
 import { BorderType, getSheetIndexFromAddress, CalculationMode } from '../common/index';
 import * as events from '../common/event';
 import { CellStyleModel, DefineNameModel, HyperlinkModel, insertModel, InsertDeleteModelArgs, getAddressInfo } from '../common/index';
@@ -24,7 +24,7 @@ import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, Wo
 import { WorkbookDataValidation, WorkbookMerge, addListValidationDropdown, checkColumnValidation } from '../index';
 import { ServiceLocator } from '../services/index';
 import { setLinkModel, setImage, setChart, setAutoFill, BeforeCellUpdateArgs, updateCell, isNumber } from '../common/index';
-import { deleteChart, formulaBarOperation } from '../../spreadsheet/common/event';
+import { deleteChart, finiteAlert, formulaBarOperation } from '../../spreadsheet/common/event';
 import { beginAction, WorkbookFindAndReplace, getRangeIndexes, workbookEditOperation, clearCFRule, CFArgs, setCFRule } from '../index';
 import { WorkbookConditionalFormat } from '../actions/conditional-formatting';
 import { AutoFillSettingsModel } from '../..';
@@ -526,7 +526,6 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * @hidden
-     * @deprecated
      */
     public dataValidationRange: string = '';
 
@@ -635,8 +634,10 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     public cellFormat(style: CellStyleModel, range?: string): void {
         const sheet: SheetModel = this.getActiveSheet();
-        range = range || sheet.selectedRange;
-        this.notify(setCellFormat, { style: style, range: range, refreshRibbon: range.indexOf(sheet.activeCell) > -1 ? true : false });
+        if (sheet && (!sheet.isProtected || sheet.protectSettings.formatCells)) {
+            range = range || sheet.selectedRange;
+            this.notify(setCellFormat, { style: style, range: range, refreshRibbon: range.indexOf(sheet.activeCell) > -1 ? true : false });
+        }
     }
 
     /**
@@ -859,6 +860,9 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void} - To insert sheets in to the spreadsheet.
      */
     public insertSheet(startSheet?: number | SheetModel[], endSheet?: number): void {
+        if (this.isProtected) {
+            return;
+        }
         this.notify(insertModel, <InsertDeleteModelArgs>{ model: this, start: startSheet, end: endSheet, modelType: 'Sheet' });
     }
 
@@ -878,6 +882,9 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void} - To delete rows, columns and sheets from the spreadsheet.
      */
     public delete(startIndex?: number, endIndex?: number, model?: ModelType, sheet?: number | string): void {
+        if (this.isProtected) {
+            return;
+        }
         startIndex = startIndex || 0; let sheetModel: SheetModel | WorkbookModel;
         endIndex = isNullOrUndefined(endIndex) ? startIndex : endIndex;
         if (!model || model === 'Sheet') {
@@ -905,6 +912,9 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void} - Used to move the sheets to the specified position in the list of sheets.
      */
     public moveSheet(position: number, sheetIndexes?: number[]): void {
+        if (this.isProtected) {
+            return;
+        }
         moveSheet(this, position, sheetIndexes);
     }
 
@@ -917,6 +927,9 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void} - Used to make a duplicate/copy of the sheet in the spreadsheet.
      */
     public duplicateSheet(sheetIndex?: number): void {
+        if (this.isProtected) {
+            return;
+        }
         duplicateSheet(this, sheetIndex);
     }
 
@@ -1435,11 +1448,14 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
                 rules.value2 = parseLocaleNumber([rules.value2], this)[0];
             }
         }
-        this.notify(events.cellValidation, { rules: rules, range: range || this.getActiveSheet().selectedRange });
+        this.notify(events.cellValidation, { rules: rules, range: range || getUpdatedRange(this.getActiveSheet()) });
     }
 
     public removeDataValidation(range?: string): void {
-        this.notify(events.cellValidation, { range: range || this.getActiveSheet().selectedRange, isRemoveValidation: true });
+        this.notify(events.cellValidation, {
+            range: range || getUpdatedRange(this.getActiveSheet()),
+            isRemoveValidation: true
+        });
     }
 
     public addInvalidHighlight(range?: string): void {
@@ -1468,8 +1484,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             range = getCellIndexes(sheet.activeCell);
             sheetIdx = this.activeSheetIndex;
         }
-        const cell: CellModel = getCell(range[0], range[1], sheet);
-        if ((cell && cell.validation) || checkColumnValidation(sheet.columns[range[1]], range[0], range[1])) {
+        const cell: CellModel = getCell(range[0], range[1], sheet, false, true);
+        if (cell.validation || checkColumnValidation(sheet.columns[range[1]], range[0], range[1])) {
             const value: string = cell.value ? cell.value : '';
             const validEventArgs: CheckCellValidArgs = { value, range, sheetIdx, td: null, isValid: true };
             this.notify(events.isValidation, validEventArgs);
@@ -1491,9 +1507,11 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             let cfValues: string[];
             if (conditionalFormat.type === 'Between') {
                 if (this.listSeparator !== ',' && conditionalFormat.value.includes(this.listSeparator)) {
-                    cfValues = conditionalFormat.value.split(this.listSeparator);
+                    const dateValues: string[] = conditionalFormat.value.split('"').filter((date: string) => date.trim() && date.trim() !== this.listSeparator);
+                    cfValues = dateValues.length > 1 ? dateValues : conditionalFormat.value.split(this.listSeparator);
                 } else {
-                    cfValues = conditionalFormat.value.split(',');
+                    const dateValues: string[] = conditionalFormat.value.split('"').filter((date: string) => date.trim() && date.trim() !== ',');
+                    cfValues = dateValues.length > 1 ? dateValues : conditionalFormat.value.split(',');
                 }
             } else {
                 cfValues = [conditionalFormat.value];
@@ -1542,13 +1560,14 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @param {UndoRedoEventArgs} cellInformation - It holds the undoRedoCollections.
      * @param {boolean} isRedo - It holds the undo redo information.
      * @param {boolean} isDependentUpdate - Specifies whether dependent cells should also be updated.
+     * @param {boolean} isFinite - Specifies scroll settings of the sheet is finite or not.
      * @param {boolean} isPublic - It holds whether updateCell public method is used.
      * @returns {void} - This method does not return a value.
      *
      * @hidden
      */
     public updateCellDetails(cell: CellModel, address?: string, cellInformation?: UndoRedoEventArgs, isRedo?: boolean,
-                             isDependentUpdate?: boolean, isPublic?: boolean): void {
+                             isDependentUpdate?: boolean, isFinite?: boolean, isPublic?: boolean): void {
         let range: number[];
         let sheetIdx: number;
         if (!address) {
@@ -1565,11 +1584,19 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             sheetIdx = this.activeSheetIndex;
         }
         const sheet: SheetModel = getSheet(this, sheetIdx);
+        if (isFinite && !(sheet.rowCount > range[0] && sheet.rowCount > range[2] &&
+            sheet.colCount > range[1] && sheet.colCount > range[3])) {
+            this.notify(finiteAlert, null);
+            return;
+        }
         updateCell(this, sheet, { cell: cell, rowIdx: range[0], colIdx: range[1], preventEvt: true });
         const val: string = isPublic ? cell.formula || (isNullOrUndefined(cell.value) ? null : cell.value) :
             isNullOrUndefined(cell.value) ? (cell.formula || null) : cell.value;
         const valChange: boolean = val !== null;
         const cellModel: CellModel = getCell(range[0], range[1], sheet, false, true);
+        if (cellInformation && cellInformation.format && isRedo) {
+            cellModel.format = cellInformation.format;
+        }
         if (valChange) {
             delete cellModel.formattedText;
             this.notify(workbookEditOperation, {

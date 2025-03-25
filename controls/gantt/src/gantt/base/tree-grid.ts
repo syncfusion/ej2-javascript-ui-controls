@@ -191,13 +191,16 @@ export class GanttTreeGrid {
         this.parent.treeGrid.actionComplete = this.treeActionComplete.bind(this);
         this.parent.treeGrid.created = this.created.bind(this);
         this.parent.treeGrid.actionFailure = this.actionFailure.bind(this);
-        this.parent.treeGrid.queryCellInfo = this.queryCellInfo.bind(this);
         this.parent.treeGrid.headerCellInfo = this.headerCellInfo.bind(this);
         this.parent.treeGrid.rowDataBound = this.rowDataBound.bind(this);
         this.parent.treeGrid.columnMenuOpen = this.columnMenuOpen.bind(this);
         this.parent.treeGrid.columnMenuClick = this.columnMenuClick.bind(this);
         this.parent.treeGrid.beforeDataBound = this.beforeDataBound.bind(this);
         this.parent.treeGrid.dataStateChange = this.dataStateChange.bind(this);
+        if (this.parent.queryCellInfo != null)
+        {
+            this.parent.treeGrid.queryCellInfo = this.queryCellInfo.bind(this);
+        }
     }
 
     private beforeDataBound(args: object): void {

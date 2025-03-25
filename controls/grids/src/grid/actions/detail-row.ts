@@ -1,6 +1,6 @@
 import { KeyboardEventArgs, removeClass, addClass, extend, L10n, EventHandler } from '@syncfusion/ej2-base';
 import { closest, classList, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { IGrid } from '../base/interface';
+import { DetailTemplateDetachArgs, IGrid, InfiniteScrollArgs, NotifyArgs } from '../base/interface';
 import { Grid } from '../base/grid';
 import { parents, getUid, appendChildren, isComplexField, getObject } from '../base/util';
 import * as events from '../base/constant';
@@ -12,6 +12,7 @@ import { Cell } from '../models/cell';
 import { Column } from '../models/column';
 import { CellType } from '../base/enum';
 import * as literals from '../base/string-literals';
+import { ContentRender } from '../renderer';
 
 /**
  * The `DetailRow` module is used to handle detail template and hierarchy Grid operations.
@@ -57,6 +58,8 @@ export class DetailRow {
         this.parent.on(events.columnVisibilityChanged, this.refreshColSpan, this);
         this.parent.on(events.destroy, this.destroyChildGrids, this);
         this.parent.on(events.destroyChildGrid, this.destroyChildGrids, this);
+        this.parent.on(events.destroy, this.detachDetailTemplate, this);
+        this.parent.on(events.detachDetailTemplate, this.detachDetailTemplate, this);
     }
 
     private clickHandler(e: MouseEvent): void {
@@ -143,6 +146,7 @@ export class DetailRow {
                     }
                 } else {
                     childGrid = new Grid(this.getGridModel(gObj, rowObj, gObj.printMode));
+                    childGrid.height = gObj.enableInfiniteScrolling && childGrid.height === 'auto' ? 300 : childGrid.height;
                     childGrid.root = gObj.root ? gObj.root : gObj;
                     this.childRefs.push(childGrid);
                     if (childGrid.query) {
@@ -195,7 +199,20 @@ export class DetailRow {
                 const rowElems: Element[] = gObj.getRows();
                 const rowObjs: Row<Column>[] = gObj.getRowsObject();
                 rowElems.splice(rowElems.indexOf(tr) + 1, 0, detailRow);
-                rowObjs.splice(rowObjs.indexOf(rowObj) + 1, 0, row);
+                if (gObj.enableInfiniteScrolling && gObj.infiniteScrollSettings.enableCache) {
+                    const infiniteCache: { [x: number]: Row<Column>[]; } = (gObj.contentModule as ContentRender)
+                        .infiniteCache as { [x: number]: Row<Column>[]; };
+                    const keys: string[] = Object.keys(infiniteCache);
+                    for (let i: number = 0; i < keys.length; i++) {
+                        const cacheIndex: number = infiniteCache[parseInt(keys[parseInt(i.toString(), 10)], 10)].indexOf(rowObj);
+                        if (cacheIndex !== -1) {
+                            infiniteCache[parseInt(keys[parseInt(i.toString(), 10)], 10)].splice(cacheIndex + 1, 0, row);
+                            break;
+                        }
+                    }
+                } else {
+                    rowObjs.splice(rowObjs.indexOf(rowObj) + 1, 0, row);
+                }
                 if (!isReactCompiler || !isReactChild) {
                     gObj.trigger(events.detailDataBound, { detailElement: detailCell, data: data, childGrid: childGrid });
                 }
@@ -220,7 +237,7 @@ export class DetailRow {
             }
             classList(target, ['e-detailrowcollapse'], ['e-detailrowexpand']);
             classList(target.firstElementChild, ['e-dtdiagonalright', 'e-icon-grightarrow'], ['e-dtdiagonaldown', 'e-icon-gdownarrow']);
-            if (parseInt(tr.getAttribute(literals.dataRowIndex), 10) === lastrowIdx && this.lastrowcell) {
+            if (parseInt(tr.getAttribute(literals.ariaRowIndex), 10) - 1 === lastrowIdx && this.lastrowcell) {
                 addClass(target.parentElement.querySelectorAll('td'), 'e-lastrowcell');
                 this.lastrowcell = false;
             }
@@ -289,6 +306,8 @@ export class DetailRow {
         this.parent.off(events.columnVisibilityChanged, this.refreshColSpan);
         this.parent.off(events.destroy, this.destroyChildGrids);
         this.parent.off(events.destroyChildGrid, this.destroyChildGrids);
+        this.parent.off(events.destroy, this.detachDetailTemplate);
+        this.parent.off(events.detachDetailTemplate, this.detachDetailTemplate);
     }
 
     private getTDfromIndex(index: number, className: string): Element {
@@ -415,7 +434,56 @@ export class DetailRow {
         }
     }
 
-    private destroyChildGrids(): void {
+    private destroyChildGrids(args?: NotifyArgs): void {
+        const gObj: IGrid = this.parent;
+        if (gObj.enableInfiniteScrolling && (gObj.childGrid || gObj.detailTemplate) && args.requestType === 'infiniteScroll'
+            && gObj.infiniteScrollSettings.enableCache) {
+            const cacheIndex: number = (args as InfiniteScrollArgs).direction === 'down'
+                ? (args as InfiniteScrollArgs).currentPage - gObj.infiniteScrollSettings.initialBlocks
+                : (args as InfiniteScrollArgs).currentPage + gObj.infiniteScrollSettings.initialBlocks;
+            const infiniteCache: Row<Column>[] = (gObj.contentModule as ContentRender)
+                .infiniteCache[parseInt(cacheIndex.toString(), 10)] as Row<Column>[];
+            const detailRows: Row<Column>[] = infiniteCache.filter((data: Row<Column>) => data.isDetailRow && data.parentUid);
+            if (gObj.childGrid) {
+                for (let i: number = 0; i < detailRows.length; i++) {
+                    const detailRow: Element = gObj.getContentTable()
+                        .querySelector('[data-uid="' + detailRows[parseInt(i.toString(), 10)].uid + '"]');
+                    const childGridElement: Element = detailRow.querySelector('.e-childgrid');
+                    const childGridIndex: number = this.childRefs.findIndex((grid: Grid) => grid.element.id === childGridElement.id);
+                    if (!this.childRefs[parseInt(childGridIndex.toString(), 10)].isDestroyed) {
+                        this.childRefs[parseInt(childGridIndex.toString(), 10)].destroy();
+                        this.childRefs.splice(childGridIndex, 1);
+                    }
+                    const detailRowIndex: number = infiniteCache.indexOf(detailRows[parseInt(i.toString(), 10)]);
+                    infiniteCache.splice(detailRowIndex, 1);
+                    infiniteCache[detailRowIndex - 1].childGrid = null;
+                    infiniteCache[detailRowIndex - 1].isExpand = false;
+                    detailRow.remove();
+                }
+            }
+            if (gObj.detailTemplate && detailRows.length) {
+                const args: DetailTemplateDetachArgs = [];
+                for (let i: number = 0; i < detailRows.length; i++) {
+                    args.push({
+                        detailRow: gObj.getContentTable().querySelector('[data-uid="' + detailRows[parseInt(i.toString(), 10)].uid + '"]'),
+                        detailRowObject: detailRows[parseInt(i.toString(), 10)],
+                        parentRowObject: infiniteCache.find((parent: Row<Column>) => detailRows[parseInt(i.toString(), 10)]
+                            .parentUid === parent.uid)
+                    });
+                }
+                this.parent.trigger(events.beforeDetailTemplateDetach, args, () => {
+                    for (let i: number = 0; i < detailRows.length; i++) {
+                        const detailRow: Element = gObj.getContentTable()
+                            .querySelector('[data-uid="' + detailRows[parseInt(i.toString(), 10)].uid + '"]');
+                        const detailRowIndex: number = infiniteCache.indexOf(detailRows[parseInt(i.toString(), 10)]);
+                        infiniteCache.splice(detailRowIndex, 1);
+                        infiniteCache[detailRowIndex - 1].isExpand = false;
+                        detailRow.remove();
+                    }
+                });
+            }
+            return;
+        }
         const rows: Row<Column>[] = this.parent.getRowsObject();
         for (let i: number = 0; i < rows.length; i++) {
             rows[parseInt(i.toString(), 10)].childGrid = null;
@@ -426,6 +494,29 @@ export class DetailRow {
             }
         }
         this.childRefs = [];
+    }
+
+    private detachDetailTemplate(): void {
+        const gObj: IGrid = this.parent;
+        if (gObj.detailTemplate) {
+            const rowsObject: Row<Column>[] = gObj.getRowsObject();
+            const detailRows: Row<Column>[] = rowsObject.filter((data: Row<Column>) => data.isDetailRow && data.parentUid);
+            if (detailRows.length) {
+                const args: DetailTemplateDetachArgs = [];
+                detailRows.map((data: Row<Column>) => {
+                    args.push({
+                        detailRow: gObj.getContentTable().querySelector('[data-uid="' + data.uid + '"]'),
+                        detailRowObject: data,
+                        parentRowObject: rowsObject.find((parent: Row<Column>) => data.parentUid === parent.uid)
+                    });
+                });
+                gObj.trigger(events.beforeDetailTemplateDetach, args, () => {
+                    detailRows.map((data: Row<Column>) => {
+                        gObj.getContentTable().querySelector('[data-uid="' + data.uid + '"]').remove();
+                    });
+                });
+            }
+        }
     }
 
     /**

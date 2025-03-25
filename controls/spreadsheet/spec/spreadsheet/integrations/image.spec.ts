@@ -199,6 +199,209 @@ describe('Image ->', () => {
             done();
         });
     });
+    describe('Clear All Actions', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet(
+                { sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply styles', (done: Function) => {
+            helper.invoke('selectRange', ['1:1']);
+            setTimeout((): void => {
+                helper.click('#' + helper.id + '_sorting');
+                helper.click('#spreadsheet_sorting-popup ul li:nth-child(5)');
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-btn')).not.toBeNull();
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
+                setTimeout((): void => {
+                    helper.invoke('selectRange', ['A1:U1']);
+                    helper.click('#' + helper.id + '_clear');
+                    helper.click('#spreadsheet_clear-popup ul li:nth-child(1)');
+                    expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-btn')).toBeNull();
+                    expect(helper.invoke('getCell', [0, 0]).textContent).toBe('');
+                    done();
+                });
+            });
+        });
+        it('Undo action', (done: Function) => {
+            helper.getElement('#' + helper.id + '_undo').click();
+            setTimeout((): void => {
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-btn')).not.toBeNull();
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
+                done();
+            });
+        });
+        it('Redo action', (done: Function) => {
+            helper.getElement('#' + helper.id + '_redo').click();
+            setTimeout((): void => {
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-btn')).toBeNull();
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('');
+                done();
+            });
+        });
+        it('Undo action-1', (done: Function) => {
+            helper.getElement('#' + helper.id + '_undo').click();
+            setTimeout((): void => {
+                expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-btn')).not.toBeNull();
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
+                helper.getElement('#' + helper.id + '_undo').click();
+                setTimeout((): void => {
+                    expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-btn')).toBeNull();
+                    expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
+                    helper.invoke('selectRange', ['A1']);
+                    done();
+                });
+            });
+        });
+        it('Insert and remove image', (done: Function) => {
+            helper.invoke('insertImage', [[{src:"https://www.w3schools.com/images/w3schools_green.jpg", width: 110, height: 70 }], 'A1']);
+            setTimeout(() => {
+                const image = helper.getInstance().sheets[0].rows[0].cells[0].image;
+                expect(image.length).toBe(1);
+                helper.getElement('#'+helper.id+'_clear').click();
+                helper.getElement('#'+helper.id+'_clear-popup li:nth-child(1)').click();
+                setTimeout(() => {
+                    expect(image.length).toBe(0);
+                    done();
+                });
+            });
+        });
+        it('Undo action-2', (done: Function) => {
+            helper.getElement('#' + helper.id + '_undo').click();
+            setTimeout((): void => {
+                const image = helper.getInstance().sheets[0].rows[0].cells[0].image;
+                expect(image.length).toBe(1);
+                done();
+            });
+        });
+        it('Redo action-1', (done: Function) => {
+            helper.getElement('#' + helper.id + '_redo').click();
+            setTimeout((): void => {
+                const image = helper.getInstance().sheets[0].rows[0].cells[0].image;
+                expect(image.length).toBe(0);
+                done();
+            });
+        });
+        it('Undo action-3', (done: Function) => {
+            helper.getElement('#' + helper.id + '_undo').click();
+            setTimeout((): void => {
+                const image = helper.getInstance().sheets[0].rows[0].cells[0].image;
+                expect(image.length).toBe(1);
+                done();
+            });
+        });
+        it('Insert chart with clear all option->', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Column', range: 'A2:C5' }]]);
+            const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            expect(chart).not.toBeNull();
+            setTimeout((): void => {
+                helper.switchRibbonTab(1);
+                helper.getElement('#' + helper.id + '_clear').click();
+                helper.click('#' + helper.id + '_clear-popup ul li:nth-child(1)');
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).toBeNull();
+                done();
+            });
+        });
+        it('Undo action-4', (done: Function) => {
+            helper.getElement('#' + helper.id + '_undo').click();
+            setTimeout((): void => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                done();
+            });
+        });
+        it('Redo action-2', (done: Function) => {
+            helper.switchRibbonTab(1);
+            helper.getElement('#' + helper.id + '_redo').click();
+            setTimeout((): void => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).toBeNull();
+                done();
+            });
+        });
+    });
+
+    describe('EJ2-931384->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Inserting image via public method after enabling readonly mode', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setRangeReadOnly(true, 'A1:H11', 0);
+            spreadsheet.insertImage([{ src: "https://www.w3schools.com/images/w3schools_green.jpg", width: 110, height: 70 }], 'D3');
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[2].cells[3].isReadOnly).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[2].cells[3].image).toBeUndefined();
+                done();
+            });
+        });
+        it('Inserting image through UI interaction enabling readonly mode', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.getInstance().spreadsheetImageModule.createImageElement({ options: { src: 'https://www.w3schools.com/images/w3schools_green.jpg' }, range: 'C3', isPublic: true, isAction: true });
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-readonly-alert-dlg.e-dialog');
+                expect(helper.getElement('.e-readonly-alert-dlg.e-dialog')).not.toBeNull();
+                helper.click('.e-readonly-alert-dlg .e-footer-content button:nth-child(1)');
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].rows[2].cells[2].isReadOnly).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[2].cells[2].image).toBeUndefined();
+                    done();
+                });
+            });
+        });
+        it('Inserting an image with specific height and width after disabling readonly mode', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setRangeReadOnly(false, 'A1:H11', 0);
+            helper.getInstance().spreadsheetImageModule.createImageElement({ options: { src: 'https://www.w3schools.com/images/w3schools_green.jpg', width: 300, height: 200 }, range: 'C3', isPublic: true, isAction: true });
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[2].cells[2].isReadOnly).toBeUndefined();
+                expect(spreadsheet.sheets[0].rows[2].cells[2].image[0].height).toBe(200);
+                expect(spreadsheet.sheets[0].rows[2].cells[2].image[0].width).toBe(300);
+                done();
+            });
+        });
+    });
+
+    describe('EJ2-914956', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Script error occurs while performing undo action after deleting a sheet with an inserted image', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('duplicateSheet', [0]);
+            setTimeout(() => {
+                expect(spreadsheet.activeSheetIndex).toBe(1);
+                expect(spreadsheet.sheets.length).toBe(2);
+                expect(spreadsheet.sheets[1].name).toBe('Sheet1 (2)');
+                helper.getInstance().spreadsheetImageModule.createImageElement({ options: { src: 'https://www.w3schools.com/images/w3schools_green.jpg', width: 75, height: 50 }, range: 'C3', isPublic: true, isAction: true });
+                expect(spreadsheet.sheets[1].rows[2].cells[2].image[0].src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
+                spreadsheet.delete(1, 1, 'Sheet');
+                setTimeout(() => {
+                    expect(spreadsheet.activeSheetIndex).toBe(0);
+                    expect(spreadsheet.sheets.length).toBe(1);
+                    expect(spreadsheet.sheets[0].name).toBe('Sheet1');
+                    helper.click('#spreadsheet_undo');
+                    expect(spreadsheet.activeSheetIndex).toBe(0);
+                    expect(spreadsheet.sheets.length).toBe(1);
+                    expect(spreadsheet.sheets[0].name).toBe('Sheet1');
+                    helper.click('#spreadsheet_redo');
+                    expect(spreadsheet.activeSheetIndex).toBe(0);
+                    expect(spreadsheet.sheets.length).toBe(1);
+                    expect(spreadsheet.sheets[0].name).toBe('Sheet1');
+                    done();
+                });
+            });
+        });
+    });
+
     describe('CR-Issues ->', () => {
         describe('EJ2-70875 ->', () => {
             beforeAll((done: Function) => {

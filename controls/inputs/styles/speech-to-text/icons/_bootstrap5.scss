@@ -1,0 +1,8 @@
+@include export-module('speechtotext-bootstrap5-icons') {
+  .e-listen-icon::before {
+    content: '\e91c';
+  }
+  .e-listen-stop::before {
+    content: '\e919';
+  }
+}

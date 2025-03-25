@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { getCell, getRowHeight, SheetModel, Spreadsheet } from '../../../src/index';
+import { getCell, getRowHeight, RowModel, SheetModel, Spreadsheet } from '../../../src/index';
 
 describe('Wrap ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -124,6 +124,14 @@ describe('Wrap ->', () => {
                     done();
                 });
             });
+        });
+
+        it('EJ2-931201 - Text wrap not applied properly for cell with value containing hyphen', (done: Function) => {
+            helper.invoke('updateCell', [{ value: '-----------------------------------------------' }, 'I12']);
+            helper.invoke('wrap', ['I12']);
+            expect(helper.getInstance().sheets[0].rows[11].cells[8].wrap).toBe(true);
+            expect(helper.getInstance().sheets[0].rows[11].height).toBe(74);
+            done();
         });
     });
     describe('CR-Issues ->', () => {
@@ -426,7 +434,7 @@ describe('Wrap ->', () => {
     describe('EJ2-60694->', () => {
         beforeEach((done: Function) => {
             helper.initializeSpreadsheet({
-                sheets: [{ ranges: [{ dataSource: defaultData }] }]
+                sheets: [{ ranges: [{ dataSource: defaultData }], columns: [{ index: 1, width: 100 }] }]
             }, done);
         });
         afterEach(() => {
@@ -445,6 +453,57 @@ describe('Wrap ->', () => {
                     done();
                 });
             });
+        });
+        it('EJ2-891312 - Cell height is not maintained properly after deleting rows', (done: Function) => {
+            expect(helper.getInstance().sheets[0].rows[3].height).toBe(undefined);
+            expect(helper.getInstance().sheets[0].rows[6].height).toBe(undefined);
+            helper.edit('A7', '100\n');
+            expect(helper.getInstance().sheets[0].rows[6].cells[0].value).toBe('100\n');
+            expect(helper.getInstance().sheets[0].rows[6].cells[0].wrap).toBe(true);
+            expect(helper.getInstance().sheets[0].rows[6].height).toBe(38);
+            helper.invoke('selectRange', ['A7']);
+            helper.openAndClickCMenuItem(6, 0, [7], true);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[3].height).toBe(undefined);
+                done();
+            });
+        });
+        it('EJ2- Alignment Issue on Wrap Cells.->', (done: Function) => {
+            helper.invoke('wrap', ['B2:B12']);
+            helper.invoke('selectRange', ['B1:B12']);
+            const rows: RowModel[] = helper.getInstance().sheets[0].rows;
+            expect(rows[0].height).toBeUndefined();
+            expect(rows[1].height).toBeUndefined();
+            expect(rows[5].height).toBeUndefined();
+            expect(rows[8].height).toBeUndefined();
+            expect(rows[10].height).toBeUndefined();
+            expect(rows[11].height).toBeUndefined();
+            helper.invoke('setRowHeight', [30, 8]);
+            expect(rows[8].height).toBe(30);
+            expect(rows[8].customHeight).toBeTruthy();
+            helper.getElement('#' + helper.id + '_number_format').click();
+            helper.getElement('#' + helper.id + '_LongDate').click();
+            expect(rows[0].height).toBeUndefined();
+            expect(rows[1].height).toBeDefined();
+            expect(rows[5].height).toBeDefined();
+            expect(rows[8].height).toBe(30);
+            expect(rows[10].height).toBeDefined();
+            expect(rows[11].height).toBeUndefined();
+            helper.click(`#${helper.id}_undo`);
+            expect(rows[0].height).toBeUndefined();
+            expect(rows[1].height).toBe(20);
+            expect(rows[5].height).toBe(20);
+            expect(rows[8].height).toBe(30);
+            expect(rows[10].height).toBe(20);
+            expect(rows[11].height).toBeUndefined();
+            helper.click(`#${helper.id}_redo`);
+            expect(rows[0].height).toBeUndefined();
+            expect(rows[1].height).not.toBe(20);
+            expect(rows[5].height).not.toBe(20);
+            expect(rows[8].height).toBe(30);
+            expect(rows[10].height).not.toBe(20);
+            expect(rows[11].height).toBeUndefined();
+            done();
         });
     });
     describe('EJ2-877806->', () => {
@@ -493,6 +552,45 @@ describe('Wrap ->', () => {
                 setTimeout(() => {
                     expect(helper.invoke('getCell', [0, 1]).classList).toContain('e-alt-unwrap');
                     done();
+                });
+            });
+        });
+    });
+
+    describe('EJ2-891476', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    rows: [{
+                        index: 4,
+                        cells: [{ index: 0, value: 'Flip Flops\nSyncfusion\nSyncfusion\nSyncfusion\nSyncfusion' }]
+                    }, { index: 5, cells: [{ index: 5, value: '300' }] }]
+                }],
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Selection misalignment issue occurs on unwrapping the cell with hyperlink', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.addHyperlink({ address: 'www.google.co.in' }, 'A5');
+            spreadsheet.selectRange('A5');
+            expect(helper.getElement('#' + spreadsheet.element.id + '_wrap').classList).toContain('e-active');
+            helper.click('#' + spreadsheet.element.id + '_wrap');
+            setTimeout(() => {
+                expect(helper.getElement('#' + spreadsheet.element.id + '_wrap').classList).not.toContain('e-active');
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].rows[4].height).toBe(20);
+                    expect(helper.invoke('getCell', [4, 0]).classList).toContain('e-alt-unwrap');
+                    expect(helper.invoke('getCell', [4, 0]).innerText).toBe('Flip Flops Syncfusion Syncfusion Syncfusion Syncfusion');
+                    expect(spreadsheet.sheets[0].rows[4].cells[0].hyperlink.address).toBe('http://www.google.co.in');
+                    helper.click('#' + spreadsheet.element.id + '_wrap');
+                    setTimeout(() => {
+                        expect(helper.getElement('#' + spreadsheet.element.id + '_wrap').classList).toContain('e-active');
+                        expect(helper.invoke('getCell', [4, 0]).classList).not.toContain('e-alt-unwrap');
+                        expect(helper.invoke('getCell', [4, 0]).innerText).toBe('Flip Flops\nSyncfusion\nSyncfusion\nSyncfusion\nSyncfusion');
+                        done();
+                    });
                 });
             });
         });

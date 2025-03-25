@@ -721,6 +721,10 @@ export class Kanban extends Component<HTMLElement> {
             this.keyboardModule.destroy();
             this.keyboardModule = null;
         }
+        if (this.virtualLayoutModule) {
+            this.virtualLayoutModule.destroy();
+            this.virtualLayoutModule = null;
+        }
         if (this.touchModule) {
             this.touchModule.destroy();
             this.touchModule = null;
@@ -728,10 +732,6 @@ export class Kanban extends Component<HTMLElement> {
         if (this.tooltipModule) {
             this.tooltipModule.destroy();
             this.tooltipModule = null;
-        }
-        if (this.virtualLayoutModule) {
-            this.virtualLayoutModule.destroy();
-            this.virtualLayoutModule = null;
         }
         this.dialogModule = null;
         this.actionModule = null;

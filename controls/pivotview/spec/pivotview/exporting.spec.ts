@@ -157,12 +157,13 @@ describe('PDF Export', () => {
             }, 1000);
         });
         it('Excel Export', (done: Function) => {
-            pivotGridObj.excelExport();
-            setTimeout(() => {
-                expect(1).toBe(1);
-                done();
-            }, 1000);
+                pivotGridObj.excelExport();
+                setTimeout(() => {
+                    expect(1).toBe(1);
+                    done();
+                }, 1000);
         });
+
         it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange);

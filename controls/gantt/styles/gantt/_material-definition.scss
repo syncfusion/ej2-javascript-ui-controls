@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $gantt-header-bg-color: $grey-white !default;
 $gantt-header-border-color: $grey-300 !default;
 $gantt-header-color: rgba(0, 0, 0, .54) !default;
@@ -43,7 +45,7 @@ $gantt-unscheduled-critical-taskbar-background: linear-gradient(to right, rgba(2
 $gantt-unscheduled-critical-taskbar-background-color: rgba(285,85,85, .2) !default;
 $gantt-unscheduled-milestone-top-border: rgba(51, 51, 51, .6) !default;
 $gantt-unscheduled-milestone-bottom-border: rgba(51, 51, 51, .6) !default;
-$gantt-child-task-bar: lighten($primary, 8%) !default;
+$gantt-child-task-bar: color.adjust($primary, $lightness: 8%) !default;
 $gantt-critical-child-task-bar: #F3D8DA !default;
 $gantt-child-progress-bar: $primary !default;
 $gantt-critical-child-progress-bar: #D13438 !default;
@@ -184,8 +186,8 @@ $gantt-dialog-border-radius: 0px !default;
 $event-marker-line-height: 1.4 !default;
 $gantt-inactive-parent: #8A8A8A !default;
 $gantt-inactive-child:#D5D5D5 !default;
-$gantt-connected-task: lighten($primary, 20%) !default;
-$gantt-active-parent-task: lighten(#000000, 10%) !default;
+$gantt-connected-task: color.adjust($primary, $lightness: 20%) !default;
+$gantt-active-parent-task: color.adjust(#000000, $lightness: 10%) !default;
 $gantt-uptail-border:  $grey-300 !default;
 $gantt-gridpopup-span: $grey-black !default;
 $gantt-active-parent-shadow: rgba($gantt-gridpopup-span, 0.5) !default;
@@ -211,7 +213,6 @@ $error-elem-color: $accent;
 $gantt-border-size: $border-size !default;
 $gantt-active-container-border: $grey-500 !default;
 $grid-active-container-border: 0 0 0 1px $grey-500 inset !default;
-$gantt-collapse-progress-width: 0px !important;
 $rangecontainer-border-color: #FC7A05;
 $gantt-range-container-arc-radius: 2px !default;
 $bigger-column-menu-size: 38px !default;

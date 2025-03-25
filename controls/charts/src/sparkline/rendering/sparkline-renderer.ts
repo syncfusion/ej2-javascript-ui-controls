@@ -252,6 +252,7 @@ export class SparklineRenderer {
         }
         pathOption.d = d;
         pathOption['aria-label'] = 'Line series with' + points.length + 'data points';
+        pathOption['tabindex'] = '0';
         drawPath(this.sparkline, pathOption, g);
         this.sparkline.svgObject.appendChild(g);
     }
@@ -321,6 +322,7 @@ export class SparklineRenderer {
                 element.setAttribute('role', 'img');
                 element.setAttribute('aria-label', spark.dataSource[i as number][spark.xName] + ' : ' + points[i as number].yVal);
                 element.setAttribute('tabindex', i === 0 ? '0' : '-1');
+                (element as HTMLElement).style.outline = 'none';
             }
             const diffRadian: number = edRad - stRad;
             const mid: { x: number, y: number } = {
@@ -457,6 +459,7 @@ export class SparklineRenderer {
                     element.setAttribute('role', 'img');
                     element.setAttribute('aria-label', spark.dataSource[i as number][spark.xName] + ' : ' + points[i as number].yVal);
                     element.setAttribute('tabindex', i === 0 ? '0' : '-1');
+                    (element as HTMLElement).style.outline = 'none';
                     group.appendChild(element);
                 }
             });
@@ -501,6 +504,7 @@ export class SparklineRenderer {
                 element.setAttribute('role', 'img');
                 element.setAttribute('aria-label', spark.dataSource[i as number][spark.xName] + ' : ' + points[i as number].yVal);
                 element.setAttribute('tabindex', i === 0 ? '0' : '-1');
+                (element as HTMLElement).style.outline = 'none';
             }
         }
         this.sparkline.svgObject.appendChild(group);
@@ -558,6 +562,7 @@ export class SparklineRenderer {
                     element.setAttribute('aria-label', spark.dataSource[i as number][spark.xName] + ' : ' + points[i as number].yVal);
                     if ((this.sparkline.type.indexOf('Line') > -1) || (this.sparkline.type.indexOf('Area') > -1)) {
                         element.setAttribute('tabindex', i === 0 ? '0' : '-1');
+                        (element as HTMLElement).style.outline = 'none';
                     }
                     group.appendChild(element);
                 }

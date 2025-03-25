@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // size variables
 $timepicker-skin-name: 'bootstrap5' !default;
 $timepicker-default-text-indent: 12px !default;
@@ -45,7 +47,7 @@ $timepicker-list-hover-border-color: none !default;
 $timepicker-list-bg-color: $flyout-bg-color !default;
 $timepicker-list-active-bg-color: $content-bg-color-selected !default;
 $timepicker-icon-active-bg-color: $secondary-bg-color-pressed;
-$timepicker-active-border-color: darken($gray-600, 10%) !default;
+$timepicker-active-border-color: color.adjust($gray-600, $lightness: -10%) !default;
 $timepicker-list-active-font-color: $flyout-text-color-pressed !default;
 $timepicker-list-active-icon-color: $content-text-color-selected !default;
 $timepicker-list-hover-bg-color: $flyout-bg-color-hover !default;

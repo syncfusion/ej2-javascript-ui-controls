@@ -4,7 +4,7 @@ import { Row } from '../models/row';
 import { Column } from '../models/column';
 import { Switch, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { extend } from '@syncfusion/ej2-base';
-import { isEditable, addRemoveActiveClasses, createEditElement, getObject, parentsUntil, isCellHaveWidth } from '../base/util';
+import { isEditable, addRemoveActiveClasses, createEditElement, getObject } from '../base/util';
 import * as literals from '../base/string-literals';
 import { EditCellBase } from './edit-cell-base';
 
@@ -48,8 +48,7 @@ export class ToggleEditCell extends EditCellBase implements IEditCell {
                 {
                     label: this.parent.editSettings.mode !== 'Dialog' ? ' ' : args.column.headerText,
                     checked: checkState,
-                    disabled: !isEditable(args.column, args.requestType, args.element) && isCellHaveWidth(parentsUntil(args.element, 'e-rowcell')),
-                    enableRtl: this.parent.enableRtl,
+                    disabled: !isEditable(args.column, args.requestType, args.element), enableRtl: this.parent.enableRtl,
                     change: this.switchModeChange.bind(this),
                     cssClass: this.parent.cssClass ? this.parent.cssClass : ''
                 },

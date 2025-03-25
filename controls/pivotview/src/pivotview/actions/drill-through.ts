@@ -66,7 +66,7 @@ export class DrillThrough {
         if (ele) {
             if (this.parent.pivotValues.length > 0 && this.parent.dataSourceSettings.values.length > 0 &&
                 (this.parent.allowDrillThrough || this.parent.editSettings.allowEditing) && ele.classList.contains('e-valuescontent')) {
-                const colIndex: number = Number(ele.getAttribute('data-colindex'));
+                const colIndex: number = parseInt(ele.getAttribute('aria-colindex'), 10) - 1;
                 const rowIndex: number = Number(ele.getAttribute('index'));
                 if (!isNullOrUndefined(this.parent.pivotValues[rowIndex as number]) &&
                     !isNullOrUndefined(this.parent.pivotValues[rowIndex as number][colIndex as number])) {

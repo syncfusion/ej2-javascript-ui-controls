@@ -649,6 +649,7 @@ export class RangeNavigator extends Component<HTMLElement> {
             this.allowServerDataBinding = true;
         });
         this.element.setAttribute('tabindex', '0');
+        (this.element as HTMLElement).style.outline = 'none';
         this.element.setAttribute('role', 'region');
         this.element.setAttribute('aria-label', 'Range navigator' + ' Syncfusion interactive chart.');
     }

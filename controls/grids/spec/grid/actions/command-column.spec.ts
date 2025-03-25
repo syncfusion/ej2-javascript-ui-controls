@@ -1000,9 +1000,9 @@ describe('Command Column ', () => {
             };
             (<any>gridObj).getContent().querySelector('.e-unboundcelldiv').children[1].click();       
         });
-        
+
         it('Check focus first cell', () => {
-            expect(gridObj.focusModule.currentInfo.element.getAttribute('data-colindex')).toBe('0');            
+            expect(parseInt(gridObj.focusModule.currentInfo.element.getAttribute('aria-colindex')) - 1).toBe(0);            
         });
 
         afterAll(function () {

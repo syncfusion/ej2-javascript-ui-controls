@@ -1,5 +1,5 @@
 import { IDataSet } from '../../src/base/engine';
-import { pivot_smalldata, pivot_dataset } from '../base/datasource.spec';
+import { pivot_smalldata } from '../base/datasource.spec';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { PivotView } from '../../src/pivotview/base/pivotview';
 import { createElement, EmitType, remove } from '@syncfusion/ej2-base';
@@ -7,10 +7,12 @@ import { GroupingBar } from '../../src/common/grouping-bar/grouping-bar';
 import * as util from '../utils.spec';
 import { PivotChart } from '../../src/pivotchart/index';
 import { FieldList } from '../../src/common/actions/field-list';
-import { ChartSeriesCreatedEventArgs } from '../../src/common/base/interface';
 import { IResizeEventArgs, Chart } from '@syncfusion/ej2-charts';
-import { GridSettings } from '../../src/pivotview/model/gridsettings';
 import { Toolbar } from '../../src/common/popups/toolbar';
+import { Grouping } from '../../src/common/popups/grouping';
+import { VirtualScroll } from '../../src/pivotview/actions';
+import { PDFExport } from '../../src/pivotview/actions/pdf-export';
+import { ExcelExport } from '../../src/pivotview/actions/excel-export';
 
 describe('Classic layout spec', () => {
     let pivotDatas: IDataSet[] = [
@@ -785,7 +787,7 @@ describe('Classic layout spec', () => {
                     document.body.appendChild(elem);
                 }
                 let dataBound: EmitType<Object> = () => { done(); };
-                PivotView.Inject(GroupingBar, FieldList, PivotChart);
+                PivotView.Inject(GroupingBar, FieldList, PivotChart, Grouping);
                 pivotGridObj = new PivotView({
                     dataSourceSettings: {
                         dataSource: pivot_smalldata as IDataSet[],
@@ -907,7 +909,7 @@ describe('Classic layout spec', () => {
                 done();
             }, 1000);
         });
-        it('expand all as true', function (done) {
+        it('expand all as true', function (done: Function) {
             pivotGridObj.dataSourceSettings = {
                 expandAll: true,
             };
@@ -915,7 +917,7 @@ describe('Classic layout spec', () => {
                 done();
             }, 1000);
         });
-        it('expand all as false', function (done) {
+        it('expand all as false', function (done: Function) {
             pivotGridObj.dataSourceSettings = {
                 dataSource: pivot_smalldata as IDataSet[],
                 expandAll: false,
@@ -942,7 +944,145 @@ describe('Classic layout spec', () => {
                 expect(true).toBeTruthy();
                 done();
             }, 1000);
-        })
+        });
+    });
+    describe('Hiding Sub-Totals in Chart', () => {
+        let originalTimeout: number;
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotView', styles: 'height:500px; width:100%' });
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
+            setTimeout(() => {
+                if (!document.getElementById(elem.id)) {
+                    document.body.appendChild(elem);
+                }
+                let dataBound: EmitType<Object> = () => { done(); };
+                PivotView.Inject(GroupingBar, FieldList, PivotChart, Toolbar);
+                pivotGridObj = new PivotView({
+                    dataSourceSettings: {
+                        dataSource: pivot_smalldata as IDataSet[],
+                        expandAll: true,
+                        enableSorting: true,
+                        columns: [{ name: 'Date' }, { name: 'Product' }],
+                        rows: [{ name: 'Country' }, { name: 'State' }],
+                        formatSettings: [{ name: 'Amount', format: 'C' }],
+                        values: [{ name: 'Amount' }, { name: 'Quantity' }], filters: [],
+                        allowValueFilter: false,
+                        allowLabelFilter: true,
+                        showSubTotals: false,
+                        showColumnSubTotals: false
+                    },
+                    dataBound: dataBound,
+                    height: 500,
+                    showGroupingBar: true,
+                    showFieldList: true,
+                    displayOption: { view: 'Chart' },
+                    chartSettings: {
+                        value: 'Amount', enableExport: true, chartSeries: { type: 'Column', animation: { enable: false } }, enableMultipleAxis: false,
+                    },
+                    gridSettings: {
+                        layout: 'Tabular'
+                    }
+                });
+                pivotGridObj.appendTo('#PivotView');
+            }, 1000);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 1000);
+        });
+        it('perform drill up operation', (done: Function) => {
+            expect(document.querySelectorAll('#PivotView_chart0_Axis_MultiLevelLabel_Level_1_Text_0')[0].textContent).toBe(' - Canada');
+            let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            let node: HTMLElement = document.getElementById('PivotView_chart0_Axis_MultiLevelLabel_Level_1_Text_0') as HTMLElement;
+            args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            node.dispatchEvent(args);
+            setTimeout(function () {
+                expect(document.querySelectorAll('#PivotView_chart0_Axis_MultiLevelLabel_Level_1_Text_0')[0].textContent).toBe(' + Canada');
+                done();
+            }, 3000);
+        });
+    });
+
+    describe('Exporting', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            if (!document.getElementById(elem.id)) {
+                document.body.appendChild(elem);
+            }
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(FieldList, Toolbar, PDFExport, ExcelExport, VirtualScroll);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_smalldata as IDataSet[],
+                    expandAll: true,
+                    columns: [{ name: 'Date' }, { name: 'Product' }],
+                    rows: [{ name: 'Country' }, { name: 'State' }],
+                    formatSettings: [{ name: 'Amount', format: 'C' }],
+                    values: [{ name: 'Amount' }, { name: 'Quantity' }], filters: [],
+                },
+                height: 800,
+                width: 800,
+                showToolbar: true,
+                allowExcelExport: true,
+                allowPdfExport: true,
+                enableVirtualization: true,
+                showFieldList: true,
+                saveReport: util.saveReport.bind(this),
+                fetchReport: util.fetchReport.bind(this),
+                loadReport: util.loadReport.bind(this),
+                removeReport: util.removeReport.bind(this),
+                renameReport: util.renameReport.bind(this),
+                newReport: util.newReport.bind(this),
+                toolbarRender: util.beforeToolbarRender.bind(this),
+                displayOption: { view: 'Both' },
+                dataBound: dataBound,
+                chartSettings: {
+                    value: 'Amount', enableExport: true, chartSeries: { type: 'Column', animation: { enable: false } }, enableMultipleAxis: false,
+                },
+                gridSettings: {
+                    layout: 'Tabular',
+                    columnWidth: 120, rowHeight: 36
+                },
+                toolbar: ['New', 'Save', 'SaveAs', 'Rename', 'Remove', 'Load',
+                    'Grid', 'Chart', 'MDX', 'Export', 'SubTotal', 'GrandTotal', 'ConditionalFormatting', 'FieldList'],
+                virtualScrollSettings: { allowSinglePage: false }
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 1000);
+        });
+        it('Export', (done: Function) => {
+            setTimeout(() => {
+                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
+                done();
+            }, 1000);
+        });
+        it('PDF Export', (done: Function) => {
+            setTimeout(() => {
+                (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
+                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
+                done();
+            }, 1000);
+        });
     });
 
     it('memory leak', () => {

@@ -2528,7 +2528,10 @@ describe('PivotView spec', () => {
           showGroupingBar: true,
           height: 500,
           width: 1000,
-          dataBound: dataBound
+          dataBound: dataBound,
+          load: () => {
+            pivotGridObj.resizedValue = 300;
+          },
         });
         pivotGridObj.appendTo("#PivotGrid");
       });

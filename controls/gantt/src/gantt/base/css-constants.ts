@@ -52,6 +52,7 @@ export const chartRow: string = 'e-chart-row';
 export const rowExpand: string = 'e-row-expand';
 export const rowCollapse: string = 'e-row-collapse';
 export const collapseParent: string   = 'e-collapse-parent';
+export const collapseMultiTaskBar: string = 'e-gantt-multi-taskbar';
 export const taskBarLeftResizer: string = 'e-taskbar-left-resizer';
 export const taskBarRightResizer: string = 'e-taskbar-right-resizer';
 export const childProgressResizer: string = 'e-child-progress-resizer';
@@ -80,6 +81,7 @@ export const leftResizeGripper: string = 'e-left-resize-gripper';
 export const rightResizeGripper: string = 'e-right-resize-gripper';
 export const progressResizeGripper: string = 'e-progress-resize-gripper';
 export const label: string = 'e-label';
+export const templatePadding: string = 'e-template-padding';
 //event Markers classes
 export const eventMarkersContainer: string = 'e-event-markers-container';
 export const eventMarkersChild: string = 'e-event-markers';

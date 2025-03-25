@@ -113,11 +113,11 @@ export class ColorPickerInput {
                         element: select('#' + this.parent.getID() + '_' + suffixID + '_BackgroundColor', tbElement),
                         target: (targetID)
                     } as IColorPickerModel;
-                    this.backgroundColorPicker = this.toolbarRenderer.renderColorPicker(options, 'backgroundcolor');
+                    this.backgroundColorPicker = this.toolbarRenderer.renderColorPicker(options, 'backgroundcolor', args.containerType);
                     this.backgroundColorDropDown = this.toolbarRenderer.renderColorPickerDropDown(
                         options,
                         'backgroundcolor',
-                        this.backgroundColorPicker, this.defaultColorPicker);
+                        this.backgroundColorPicker, this.defaultColorPicker, args.containerType);
                     break; }
                 }
             }

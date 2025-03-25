@@ -15,9 +15,56 @@
 
 @include export-module('pivotview-layout') {
   .e-pivotview {
+    &.sf-pivotview {
+      height: 100%;
+
+      &.e-pivot-gbar {
+        min-width: 400px;
+      }
+  
+      &:not(.e-pivot-gbar) {
+        min-width: 310px;
+      }
+    }
+
     &.e-dialog .e-dlg-header-content .e-btn.e-dlg-closeicon-btn {
       @if ($skin-name =='Material3') {
         padding: 0;
+      }
+    }
+
+    .e-pivot-view-port {
+      height: inherit;
+      display: flex;
+      flex-direction: column;
+
+      .e-pivot-table-view.e-table-chart-view {
+        order: 2;
+      }
+
+      .e-pivot-table-view:not(.e-table-chart-view) {
+        order: 1;
+      }
+
+      .e-pivot-chart-view {
+        height: inherit;
+
+        &.e-chart-table-view {
+          order: 2;
+        }
+
+        &:not(.e-chart-table-view) {
+          order: 1;
+        }
+
+        .e-pivotchart.e-pivot-accumulation-chart {
+          overflow: visible;
+        }
+
+        .e-pivotchart.e-pivot-normal-chart {
+          overflow: auto;
+          overflow-x: hidden;
+        }
       }
     }
 
@@ -363,6 +410,14 @@
 
         @if ($skin-name =='Material3') {
           border-top: $pivotpager-separator-border;
+        }
+
+        &.e-label-container-visible {
+          display: block;
+        }
+
+        &.e-label-container-hide {
+          display: none;
         }
 
         .e-editor-label {

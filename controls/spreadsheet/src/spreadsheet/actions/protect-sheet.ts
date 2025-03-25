@@ -1,10 +1,10 @@
-import { Spreadsheet, DialogBeforeOpenEventArgs, getUpdateUsingRaf } from '../index';
+import { Spreadsheet, DialogBeforeOpenEventArgs } from '../index';
 import { applyProtect, protectSheet, protectCellFormat, editAlert, enableFormulaInput, protectWorkbook, keyUp, unProtectSheetPassword, completeAction, setProtectWorkbook, removeWorkbookProtection } from '../common/event';
-import { unProtectWorkbook, getPassWord, importProtectWorkbook, hideAutoFillElement } from '../common/event';
+import { unProtectWorkbook, importProtectWorkbook, hideAutoFillElement } from '../common/event';
 import { clearCopy, protectSelection, clearUndoRedoCollection, focus, isLockedCells, toggleProtect } from '../common/index';
 import { Dialog } from '../services/dialog';
 import { ListView, SelectedCollection, SelectEventArgs } from '@syncfusion/ej2-lists';
-import { L10n, EventHandler, closest, getComponent, isNullOrUndefined, getInstance } from '@syncfusion/ej2-base';
+import { L10n, EventHandler, closest, isNullOrUndefined, getInstance } from '@syncfusion/ej2-base';
 import { locale, updateToggleItem, dialog } from '../common/index';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { ExtendedSheet, SheetModel } from '../../workbook';
@@ -12,15 +12,13 @@ import { CellModel, getSheet, protectsheetHandler, getRangeIndexes } from '../..
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { OpenOptions } from '../common/interface';
 import { Dialog as DialogComponent } from '@syncfusion/ej2-popups';
+
 /**
  * The `Protect-sheet` module is used to handle the Protecting functionalities in Spreadsheet.
  */
 export class ProtectSheet {
     private parent: Spreadsheet;
-    private dialog: Dialog;
-    private protectSheetDialog: DialogComponent;
     private optionList: ListView;
-    private password: string = '';
     /**
      * Constructor for protectSheet module in Spreadsheet.
      *
@@ -55,7 +53,6 @@ export class ProtectSheet {
         this.parent.on(keyUp, this.KeyUpHandler, this);
         this.parent.on(unProtectWorkbook, this.unProtectWorkbook, this);
         this.parent.on(unProtectSheetPassword, this.unProtectSheetPassword, this);
-        this.parent.on(getPassWord, this.getPassWord, this);
         this.parent.on(importProtectWorkbook, this.importProtectWorkbook, this);
         this.parent.on(setProtectWorkbook, this.protectWorkbookHandler, this);
         this.parent.on(removeWorkbookProtection, this.removeWorkbookProtection, this);
@@ -70,7 +67,6 @@ export class ProtectSheet {
             this.parent.off(keyUp, this.KeyUpHandler);
             this.parent.off(unProtectWorkbook, this.unProtectWorkbook);
             this.parent.off(unProtectSheetPassword, this.unProtectSheetPassword);
-            this.parent.off(getPassWord, this.getPassWord);
             this.parent.off(importProtectWorkbook, this.importProtectWorkbook);
             this.parent.off(setProtectWorkbook, this.protectWorkbookHandler);
             this.parent.off(removeWorkbookProtection, this.removeWorkbookProtection);
@@ -104,7 +100,6 @@ export class ProtectSheet {
             { text: l10n.getConstant('FormatColumns'), id: '4' },
             { text: l10n.getConstant('InsertLinks'), id: '5' }];
         this.optionList = new ListView({
-            width: '250px',
             dataSource: listData,
             showCheckBox: true,
             select: this.dialogOpen.bind(this)
@@ -132,8 +127,14 @@ export class ProtectSheet {
         const checkBoxElement: HTMLElement = this.parent.createElement(
             'input', { id: this.parent.element.id + '_protect_check', attrs: { type: 'checkbox' } });
 
-        this.dialog = this.parent.serviceLocator.getService('dialog');
-        this.dialog.show({
+        const protectSheetDlg: Dialog = this.parent.serviceLocator.getService('dialog');
+        const checkBoxClickHandler: Function = (): void => {
+            const ch: CheckBox = getInstance(document.getElementById(this.parent.element.id + '_protect_check'), CheckBox) as CheckBox;
+            (protectSheetDlg.dialogInstance.element.querySelector('.e-footer-content .e-btn.e-primary') as HTMLButtonElement).disabled =
+                !ch.checked;
+        };
+        let dlgCanceled: boolean;
+        protectSheetDlg.show({
             header: headerContent.outerHTML,
             content: dialogElem.outerHTML + checkBoxElement.outerHTML + protectHeaderCntent.outerHTML + listViewElement.outerHTML,
             showCloseIcon: true, isModal: true,
@@ -145,32 +146,31 @@ export class ProtectSheet {
                 };
                 this.parent.trigger('dialogBeforeOpen', dlgArgs);
                 if (dlgArgs.cancel) {
-                    args.cancel = true;
+                    dlgCanceled = args.cancel = true;
+                } else {
+                    focus(this.parent.element);
                 }
-                focus(this.parent.element);
             },
             beforeClose: (): void => {
-                EventHandler.remove(checkbox.element, 'click', this.checkBoxClickHandler);
+                if (!dlgCanceled) {
+                    EventHandler.remove(checkbox.element, 'click', checkBoxClickHandler);
+                }
             },
             buttons: [{
-                click: this.selectOption.bind(this, this.dialog, this),
+                click: this.selectOption.bind(this, protectSheetDlg),
                 buttonModel: { content: l10n.getConstant('Ok'), isPrimary: true }
             },
             {
-                click: (): void => this.dialog.hide(),
+                click: (): void => protectSheetDlg.hide(),
                 buttonModel: { content: l10n.getConstant('Cancel') }
             }]
         }, false);
-        this.protectSheetDialog = this.dialog.dialogInstance;
-        checkbox.appendTo('#' + this.parent.element.id + '_protect_check');
-        this.optionList.appendTo('#' + this.parent.element.id + '_option_list');
-        this.optionList.selectMultipleItems([{ id: '1' }, { id: '6'}]);
-        EventHandler.add(checkbox.element, 'click', this.checkBoxClickHandler, this);
-    }
-    private checkBoxClickHandler(): void {
-        const ch: CheckBox = getInstance(document.getElementById(this.parent.element.id + '_protect_check'), CheckBox) as CheckBox;
-        this.dialog.dialogInstance.element.getElementsByClassName('e-footer-content')[0].querySelector('button').disabled =
-            ch.checked ? false : true;
+        if (!dlgCanceled) {
+            checkbox.appendTo('#' + this.parent.element.id + '_protect_check');
+            this.optionList.appendTo('#' + this.parent.element.id + '_option_list');
+            this.optionList.selectMultipleItems([{ id: '1' }, { id: '6' }]);
+            EventHandler.add(checkbox.element, 'click', checkBoxClickHandler, this);
+        }
     }
     private dialogOpen(args: SelectEventArgs): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
@@ -182,60 +182,32 @@ export class ProtectSheet {
         }
     }
 
-    private selectOption(): void {
-        const actSheet: SheetModel = this.parent.getActiveSheet();
-        const pwd: HTMLElement = this.parent.element.querySelector('.e-sheet-password-dialog').
-            getElementsByClassName('e-sheet-password-content')[0].querySelector('.e-input');
-        if ((pwd as CellModel).value.length === 0) {
-            this.parent.setSheetPropertyOnMute(actSheet, 'isProtected', true);
-            this.parent.setSheetPropertyOnMute(actSheet, 'password', (pwd as CellModel).value);
-            this.updateProtectSheet((pwd as CellModel).value);
-            this.dialog.hide();
-            if (!actSheet.protectSettings.selectCells && !actSheet.protectSettings.selectUnLockedCells) {
+    private selectOption(protectSheetDlg: Dialog): void {
+        const pwdInput: HTMLInputElement = protectSheetDlg.dialogInstance.element.querySelector('.e-sheet-password-content .e-input');
+        const pwd: string = pwdInput.value;
+        if (pwd) {
+            this.reEnterSheetPassword(pwd);
+        } else {
+            const sheet: SheetModel = this.parent.getActiveSheet();
+            this.parent.setSheetPropertyOnMute(sheet, 'isProtected', true);
+            this.parent.setSheetPropertyOnMute(sheet, 'password', pwd);
+            this.updateProtectSheet(pwd);
+            protectSheetDlg.hide();
+            if (!sheet.protectSettings.selectCells && !sheet.protectSettings.selectUnLockedCells) {
                 this.parent.notify(hideAutoFillElement, null);
-            } else if (actSheet.protectSettings.selectUnLockedCells &&
-                        isLockedCells(this.parent, getRangeIndexes(actSheet.selectedRange))) {
+            } else if (sheet.protectSettings.selectUnLockedCells && isLockedCells(this.parent, getRangeIndexes(sheet.selectedRange))) {
                 this.parent.notify(hideAutoFillElement, null);
             }
-        } else {
-            this.reEnterSheetPassword();
         }
     }
 
-    private selectSheetPassword(): void {
-        const l10n: L10n = this.parent.serviceLocator.getService(locale);
+    private applySheetPwd(pwd: string): void {
         const actSheet: SheetModel = this.parent.getActiveSheet();
-        const pwd: HTMLElement = this.parent.element.querySelector('.e-sheet-password-dialog').
-            getElementsByClassName('e-sheet-password-content')[0].querySelector('.e-input');
-        const cnfrmPwd: HTMLElement = this.parent.element.querySelector('.e-reenterpwd-dialog').
-            getElementsByClassName('e-reenterpwd-content')[0].querySelector('.e-input');
-        const pwdSpan: HTMLElement = this.parent.createElement('span', {
-            className: 'e-reenterpwd-alert-span'
-        });
-        if ((pwd as CellModel).value === (cnfrmPwd as CellModel).value) {
-            this.parent.setSheetPropertyOnMute(actSheet, 'isProtected', true);
-            this.parent.setSheetPropertyOnMute(actSheet, 'password', (pwd as CellModel).value);
-            this.updateProtectSheet((pwd as CellModel).value);
-            this.dialog.hide();
-            if (this.protectSheetDialog) {
-                this.protectSheetDialog = null;
-            }
-            const sheetDlgPopup: HTMLElement = document.querySelector('.e-protect-dlg.e-dialog');
-            const sheetDlg: Dialog = getComponent(sheetDlgPopup, 'dialog');
-            sheetDlg.destroy();
-            if (!actSheet.protectSettings.selectCells && !actSheet.protectSettings.selectUnLockedCells) {
-                this.parent.notify(hideAutoFillElement, null);
-            }
-        }
-        else {
-            if ((pwd as CellModel).value === '') {
-                pwdSpan.textContent = l10n.getConstant('PasswordAlertMsg');
-            } else if ((cnfrmPwd as CellModel).value === '') {
-                pwdSpan.textContent = l10n.getConstant('ConfirmPasswordAlertMsg');
-            } else if ((pwd as CellModel).value !== (cnfrmPwd as CellModel).value) {
-                pwdSpan.textContent = l10n.getConstant('PasswordAlert');
-            }
-            (this.parent.element.querySelector('.e-reenterpwd-dlg').querySelector('.e-reenterpwd-dialog')).appendChild(pwdSpan);
+        this.parent.setSheetPropertyOnMute(actSheet, 'isProtected', true);
+        this.parent.setSheetPropertyOnMute(actSheet, 'password', pwd);
+        this.updateProtectSheet(pwd);
+        if (!actSheet.protectSettings.selectCells && !actSheet.protectSettings.selectUnLockedCells) {
+            this.parent.notify(hideAutoFillElement, null);
         }
     }
 
@@ -307,8 +279,8 @@ export class ProtectSheet {
 
     private editProtectedAlert(): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        this.dialog = this.parent.serviceLocator.getService('dialog');
-        this.dialog.show({
+        const protectedAlertDlg: Dialog = this.parent.serviceLocator.getService('dialog');
+        protectedAlertDlg.show({
             content: l10n.getConstant('EditAlert'),
             isModal: true,
             closeOnEscape: true,
@@ -324,10 +296,10 @@ export class ProtectSheet {
                 this.parent.trigger('dialogBeforeOpen', dlgArgs);
                 if (dlgArgs.cancel) {
                     args.cancel = true;
-                    getUpdateUsingRaf((): void => this.dialog.destroyDialog());
+                } else {
+                    protectedAlertDlg.dialogInstance.content = dlgArgs.content;
+                    focus(this.parent.element);
                 }
-                this.dialog.dialogInstance.content = dlgArgs.content;
-                focus(this.parent.element);
             },
             close: (): void => focus(this.parent.element)
         });
@@ -347,9 +319,10 @@ export class ProtectSheet {
                 this.parent.trigger('dialogBeforeOpen', dlgArgs);
                 if (dlgArgs.cancel) {
                     args.cancel = true;
+                } else {
+                    dialogInst.dialogInstance.content = this.passwordProtectContent(); dialogInst.dialogInstance.dataBind();
+                    focus(this.parent.element);
                 }
-                dialogInst.dialogInstance.content = this.passwordProtectContent(); dialogInst.dialogInstance.dataBind();
-                this.parent.element.focus();
             },
             buttons: [{
                 buttonModel: {
@@ -532,9 +505,10 @@ export class ProtectSheet {
                 this.parent.trigger('dialogBeforeOpen', dlgArgs);
                 if (dlgArgs.cancel) {
                     args.cancel = true;
+                } else {
+                    dialogInst.dialogInstance.content = this.unProtectPasswordContent(); dialogInst.dialogInstance.dataBind();
+                    focus(this.parent.element);
                 }
-                dialogInst.dialogInstance.content = this.unProtectPasswordContent(); dialogInst.dialogInstance.dataBind();
-                this.parent.element.focus();
             },
             buttons: [{
                 buttonModel: {
@@ -562,9 +536,10 @@ export class ProtectSheet {
                 this.parent.trigger('dialogBeforeOpen', dlgArgs);
                 if (dlgArgs.cancel) {
                     args.cancel = true;
+                } else {
+                    dialogInst.dialogInstance.content = this.unProtectSheetPasswordContent(); dialogInst.dialogInstance.dataBind();
+                    focus(this.parent.element);
                 }
-                dialogInst.dialogInstance.content = this.unProtectSheetPasswordContent(); dialogInst.dialogInstance.dataBind();
-                this.parent.element.focus();
             },
             buttons: [{
                 buttonModel: {
@@ -579,9 +554,11 @@ export class ProtectSheet {
         });
     }
 
-    private reEnterSheetPassword(): void {
+    private reEnterSheetPassword(pwd: string): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
+        const protectSheetDlgInst: DialogComponent = dialogInst.dialogInstance;
+        let dlgCancel: boolean; let pwdApplied: boolean;
         dialogInst.show({
             width: 323, isModal: true, showCloseIcon: true, cssClass: 'e-reenterpwd-dlg',
             header: l10n.getConstant('ConfirmPassword'),
@@ -592,15 +569,31 @@ export class ProtectSheet {
                 };
                 this.parent.trigger('dialogBeforeOpen', dlgArgs);
                 if (dlgArgs.cancel) {
-                    args.cancel = true;
+                    dlgCancel = args.cancel = true;
+                } else {
+                    const l10n: L10n = this.parent.serviceLocator.getService(locale);
+                    const dialogCont: HTMLElement = this.parent.createElement('div', { className: 'e-reenterpwd-dialog' });
+                    const pwdCont: HTMLElement = this.parent.createElement('div', { className: 'e-reenterpwd-content' });
+                    const textH: HTMLElement = this.parent.createElement('div', { className: 'e-header' });
+                    textH.innerText = l10n.getConstant('ReEnterPassword');
+                    const pwdInput: HTMLElement = this.parent.createElement(
+                        'input', { className: 'e-input e-text', attrs: { 'type': 'password' } });
+                    pwdCont.appendChild(pwdInput);
+                    pwdCont.insertBefore(textH, pwdInput);
+                    dialogCont.appendChild(pwdCont);
+                    dialogInst.dialogInstance.content = dialogCont;
+                    dialogInst.dialogInstance.dataBind();
+                    focus(this.parent.element.querySelector('.e-protect-dlg.e-dialog .e-footer-content .e-btn'));
                 }
-                dialogInst.dialogInstance.content = this.reEnterSheetPasswordContent(); dialogInst.dialogInstance.dataBind();
-                const focusEle: HTMLElement = this.parent.element.querySelector('.e-protect-dlg.e-dialog .e-footer-content .e-btn') ||
-                    this.parent.element;
-                focus(focusEle);
             },
             close: (): void => {
-                this.dialog.dialogInstance = this.protectSheetDialog;
+                dialogInst.dialogInstance = protectSheetDlgInst;
+                if (dlgCancel) {
+                    this.applySheetPwd(pwd);
+                    dialogInst.hide(true);
+                } else if (pwdApplied) {
+                    dialogInst.hide(true);
+                }
             },
             buttons: [{
                 buttonModel: {
@@ -608,7 +601,22 @@ export class ProtectSheet {
                 },
                 click: (): void => {
                     this.alertMessage();
-                    this.selectSheetPassword();
+                    const l10n: L10n = this.parent.serviceLocator.getService(locale);
+                    const cnfrmPwdInput: HTMLInputElement = this.parent.element.querySelector('.e-reenterpwd-dialog .e-reenterpwd-content .e-input');
+                    const cnfrmPwd: string = cnfrmPwdInput.value;
+                    if (pwd === cnfrmPwd) {
+                        this.applySheetPwd(pwd);
+                        pwdApplied = true;
+                        dialogInst.hide();
+                    } else {
+                        const pwdSpan: HTMLElement = this.parent.createElement('span', { className: 'e-reenterpwd-alert-span' });
+                        if (!cnfrmPwd) {
+                            pwdSpan.textContent = l10n.getConstant('ConfirmPasswordAlertMsg');
+                        } else {
+                            pwdSpan.textContent = l10n.getConstant('PasswordAlert');
+                        }
+                        (this.parent.element.querySelector('.e-reenterpwd-dlg').querySelector('.e-reenterpwd-dialog')).appendChild(pwdSpan);
+                    }
                 }
             }]
         });
@@ -625,19 +633,6 @@ export class ProtectSheet {
         pwdCont.insertBefore(textHeader, pwdInputElem);
         dlgElem.appendChild(pwdCont);
         return dlgElem;
-    }
-
-    private reEnterSheetPasswordContent(): HTMLElement {
-        const l10n: L10n = this.parent.serviceLocator.getService(locale);
-        const dialogElem: HTMLElement = this.parent.createElement('div', { className: 'e-reenterpwd-dialog' });
-        const pwdCont: HTMLElement = this.parent.createElement('div', { className: 'e-reenterpwd-content' });
-        const textH: HTMLElement = this.parent.createElement('div', { className: 'e-header' });
-        textH.innerText = l10n.getConstant('ReEnterPassword');
-        const pwdInput: HTMLElement = this.parent.createElement('input', { className: 'e-input e-text', attrs: { 'type': 'password' } });
-        pwdCont.appendChild(pwdInput);
-        pwdCont.insertBefore(textH, pwdInput);
-        dialogElem.appendChild(pwdCont);
-        return dialogElem;
     }
 
     private unProtectSheetPasswordContent(): HTMLElement {
@@ -717,9 +712,6 @@ export class ProtectSheet {
             this.parent.openModule.unProtectSheetIdx.push(sheetIdx);
         }
     }
-    private getPassWord(args: { [key: string]: string }): void {
-        args.passWord = this.password;
-    }
 
     private importProtectWorkbook(fileArgs: OpenOptions): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
@@ -735,10 +727,11 @@ export class ProtectSheet {
                 this.parent.trigger('dialogBeforeOpen', dlgArgs);
                 if (dlgArgs.cancel) {
                     args.cancel = true;
+                } else {
+                    dialogInst.dialogInstance.content = this.importProtectPasswordContent(fileArgs);
+                    dialogInst.dialogInstance.dataBind();
+                    focus(this.parent.element);
                 }
-                dialogInst.dialogInstance.content = this.importProtectPasswordContent(fileArgs);
-                dialogInst.dialogInstance.dataBind();
-                this.parent.element.focus();
             },
             buttons: [{
                 buttonModel: {

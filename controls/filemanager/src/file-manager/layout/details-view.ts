@@ -507,7 +507,7 @@ export class DetailsView {
     }
 
     private selectRecords(nodes: string[]): void {
-        const gridRecords: Object[] = this.gridObj.dataSource as Object[];
+        const gridRecords: Object[] = this.gridObj.getCurrentViewRecords();
         const sRecords: number[] = [];
         for (let i: number = 0, len: number = gridRecords.length; i < len; i++) {
             const node: string = this.parent.hasId ? getValue('id', gridRecords[i as number]) : getName(this.parent, gridRecords[i as number]);
@@ -641,6 +641,7 @@ export class DetailsView {
             if ((this as any).parent.isReact) {
                 this.gridObj.on('reactTemplateRender', this.reactTemplateRender, this);
             }
+            this.wireClickEvent(true);
         }
         this.emptyArgs = args;
     }
@@ -1045,24 +1046,24 @@ export class DetailsView {
                 if ((!this.isNameWidth && gridHeaderColNames[i as number].field === 'name') || gridHeaderColNames[i as number].field === 'filterPath') {
                     if (this.parent.breadcrumbbarModule.searchObj.element.value === '' && !this.parent.isFiltered) {
                         if (this.element.clientWidth <= 500) {
-                            gridHeaderColGroup.children[i as number].setAttribute('style', 'width: 120px');
-                            gridContentColGroup.children[i as number].setAttribute('style', 'width: 120px');
+                            (gridHeaderColGroup.children[i as number]as HTMLElement).style.width = '120px';
+                            (gridContentColGroup.children[i as number]as HTMLElement).style.width = '120px';
                         } else if (this.element.clientWidth > 500) {
-                            gridHeaderColGroup.children[i as number].setAttribute('style', 'width: auto');
-                            gridContentColGroup.children[i as number].setAttribute('style', 'width: auto');
+                            (gridHeaderColGroup.children[i as number] as HTMLElement).style.width = 'auto';
+                            (gridContentColGroup.children[i as number] as HTMLElement).style.width = 'auto';
                         }
                     } else {
                         if (this.element.clientWidth <= 680) {
                             if (gridHeaderColNames[i as number].field === 'name') {
-                                gridHeaderColGroup.children[i as number].setAttribute('style', 'width: 120px');
-                                gridContentColGroup.children[i as number].setAttribute('style', 'width: 120px');
+                                (gridHeaderColGroup.children[i as number]as HTMLElement).style.width = '120px';
+                                (gridContentColGroup.children[i as number]as HTMLElement).style.width = '120px';
                             } else {
-                                gridHeaderColGroup.children[i as number].setAttribute('style', 'width: 180px');
-                                gridContentColGroup.children[i as number].setAttribute('style', 'width: 180px');
+                                (gridHeaderColGroup.children[i as number]as HTMLElement).style.width = '180px';
+                                (gridContentColGroup.children[i as number]as HTMLElement).style.width = '180px';
                             }
                         } else if (this.element.clientWidth > 680) {
-                            gridHeaderColGroup.children[i as number].setAttribute('style', 'width: auto');
-                            gridContentColGroup.children[i as number].setAttribute('style', 'width: auto');
+                            (gridHeaderColGroup.children[i as number]as HTMLElement).style.width =  'auto';
+                            (gridContentColGroup.children[i as number]as HTMLElement).style.width = 'auto';
                         }
                     }
                 }
@@ -1399,7 +1400,7 @@ export class DetailsView {
 
     private getFocusedItemIndex(): number {
         return (!isNOU(this.getFocusedItem())) ?
-            parseInt(this.getFocusedItem().getAttribute('data-rowindex'), 10) : null;
+            parseInt(this.getFocusedItem().getAttribute('aria-rowindex'), 10) - 1 : null;
     }
 
     /* istanbul ignore next */

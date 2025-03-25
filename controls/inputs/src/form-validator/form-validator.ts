@@ -924,7 +924,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
             return regex.CREDITCARD.test(option.value);
         },
         number: (option: ValidArgs): boolean => {
-            return !isNaN(Number(option.value)) && option.value.indexOf(' ') === -1;
+            return !isNaN(Number(option.value)) && String(option.value).indexOf(' ') === -1;
         },
         digits: (option: ValidArgs): boolean => {
             return regex.DIGITS.test(option.value);

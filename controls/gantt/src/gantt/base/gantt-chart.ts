@@ -48,6 +48,7 @@ export class GanttChart {
     private currentToolbarIndex: number = -1;
     private initPinchDistance: number;
     private isPinching: boolean = false;
+    private preventScrollIntoView: boolean = false;
     constructor(parent: Gantt) {
         this.parent = parent;
         this.chartTimelineContainer = null;
@@ -204,20 +205,75 @@ export class GanttChart {
         }
         return ((recordIndex + 1) * this.parent.rowHeight);
     }
-    /*get height for range bar*/
-    private getRangeHeight(data: IGanttData): number {
-        if (!data.expanded && data.hasChildRecords) {
-            return (this.parent.rowHeight - Math.floor((this.parent.rowHeight - this.parent.chartRowsModule.taskBarHeight)));
+    // Recursively collects all child records in a hierarchy.
+    private getHierarchyChildRecords(records: IGanttData[]): IGanttData[] {
+        const hierarchyChildRecords: IGanttData[] = [];
+        for (const record of records) {
+            if (record.childRecords && record.childRecords.length > 0) {
+                hierarchyChildRecords.push(record); // Include the current record
+                this.collectHierarchyChildren(record.childRecords, hierarchyChildRecords);
+            }
         }
-        return (data.childRecords.length * this.parent.rowHeight) -
-            Math.floor((this.parent.rowHeight - this.parent.chartRowsModule.taskBarHeight));
+        return hierarchyChildRecords;
+    }
+    // Helper function to append children records to the list.
+    private collectHierarchyChildren(records: IGanttData[], accumulator: IGanttData[]): void {
+        for (const record of records) {
+            if (record.childRecords && record.childRecords.length > 0) {
+                accumulator.push(record);
+                this.collectHierarchyChildren(record.childRecords, accumulator);
+            }
+        }
+    }
+    // Get height for range bar, considering hierarchy child records.
+    private getRangeHeight(data: IGanttData): number {
+        const heightDifference: number = Math.floor(this.parent.rowHeight - this.parent.chartRowsModule.taskBarHeight);
+        if (!data.expanded && data.hasChildRecords) {
+            return this.calculateCollapsedRowHeight(heightDifference);
+        }
+        const hierarchyChildLength: number = this.calculateHierarchyChildLength(data);
+        return this.calculateExpandedRowHeight(data.childRecords.length, hierarchyChildLength, heightDifference);
+    }
+    // Calculates height when the row is collapsed.
+    private calculateCollapsedRowHeight(heightDifference: number): number {
+        return this.parent.rowHeight - heightDifference;
+    }
+    // Calculates the total length from hierarchy children.
+    private calculateHierarchyChildLength(data: IGanttData): number {
+        if (!data.childRecords || data.childRecords.length === 0) {
+            return 0;
+        }
+        const hierarchyChildRecords: IGanttData[] = this.getHierarchyChildRecords(data.childRecords);
+        let hierarchyChildDataLength: number = 0;
+        for (const item of hierarchyChildRecords) {
+            if (item.childRecords.length !== 0 && item.expanded) {
+                hierarchyChildDataLength += item.childRecords.length;
+            }
+        }
+        return hierarchyChildDataLength;
+    }
+    // Calculates height when the row is expanded and incorporates child records.
+    private calculateExpandedRowHeight(childLength: number, hierarchyChildLength: number, heightDifference: number): number {
+        return ((childLength + hierarchyChildLength) * this.parent.rowHeight) - heightDifference;
     }
     private renderRange(rangeCollection: IWorkTimelineRanges[], currentRecord: IGanttData): void {
         let topValue: number = 0;
-        const rowIndex: number = this.parent.currentViewData.indexOf(currentRecord);
+        let rowIndex: number = this.parent.currentViewData.indexOf(currentRecord);
         if (!this.parent.allowTaskbarOverlap && this.parent.enableMultiTaskbar) {
-            topValue = !currentRecord.expanded ? this.parent.getRowByIndex(rowIndex as number).offsetTop :
-                this.parent.getRowByIndex(rowIndex as number).offsetTop + this.parent.rowHeight;
+            // Handling overallocation lines for multiple hierarchy-level record collapse actions - Task:887301
+            const parentRecord: IGanttData = currentRecord.parentItem ? this.parent.getParentTask(currentRecord.parentItem) : null;
+            if (currentRecord.parentItem &&
+                parentRecord &&
+                !parentRecord.expanded &&
+                currentRecord.hasChildRecords &&
+                !currentRecord.expanded
+            ) {
+                topValue = this.parent.getRowByIndex(this.parent.getRootParent(currentRecord, 0).index).offsetTop;
+            }
+            else {
+                const rowOffset: number = this.parent.getRowByIndex(rowIndex as number).offsetTop;
+                topValue = !currentRecord.expanded ? rowOffset : rowOffset + this.parent.rowHeight;
+            }
         }
         else {
             topValue = this.getTopValue(currentRecord);
@@ -239,7 +295,10 @@ export class GanttChart {
         for (let i: number = 0; i < rangeCollection.length; i++) {
             let height: number;
             const node: NodeListOf<ChildNode> = this.parent.chartRowsModule.ganttChartTableBody.childNodes;
-            if (!this.parent.allowTaskbarOverlap && !currentRecord.expanded && this.parent.enableMultiTaskbar && !this.isCollapseAll) {
+            if (!this.parent.allowTaskbarOverlap && !currentRecord.expanded && this.parent.enableMultiTaskbar) {
+                // Render proper overallocation line height during collapseall actions - Task:872518
+                const parentRecord: IGanttData = this.parent.getRootParent(currentRecord, 0);
+                rowIndex = parentRecord.expanded ? rowIndex : this.parent.currentViewData.indexOf(parentRecord);
                 height = parseInt((node[rowIndex as number] as HTMLElement).style.height, 10) -
                          (this.parent.rowHeight - this.parent.chartRowsModule.taskBarHeight);
             }
@@ -1230,17 +1289,30 @@ export class GanttChart {
         EventHandler.add(this.parent.chartPane, mouseMove, this.ganttChartMove, this);
         EventHandler.add(this.parent.chartPane, 'wheel', this.onWheelZoom, this);
         if (this.parent.isAdaptive) {
+            // pointerdown event which is used to detect double click for both mobile mode
+            let tapTimeout: number;
+            EventHandler.add(this.parent.chartRowsModule.ganttChartTableBody, 'pointerdown', (event: PointerEvent) => {
+                if (tapTimeout) {
+                    clearTimeout(tapTimeout);
+                    tapTimeout = null;
+                    this.doubleClickHandler(event); // Trigger double-click action
+                } else {
+                    tapTimeout = setTimeout(() => {
+                        tapTimeout = null; // Reset after timeout
+                    }, 200); // Wait 300ms to detect second tap
+                }
+            }, this);
             EventHandler.add(this.parent.chartPane, click, this.ganttChartMouseClick, this);
             EventHandler.add(this.parent.chartPane, mouseUp, this.ganttChartMouseUp, this);
         }
         if (!this.parent.isAdaptive) {
+            EventHandler.add(this.parent.chartRowsModule.ganttChartTableBody, 'dblclick', this.doubleClickHandler, this);
             EventHandler.add(this.parent.element, mouseUp, this.documentMouseUp, this);
             EventHandler.add(document, mouseUp, this.mouseUp, this);
         }
         EventHandler.add(this.parent.element, 'mousemove', this.mouseMoveHandler, this);
         EventHandler.add(document.body, 'contextmenu', this.contextClick, this);
         EventHandler.add(document, 'mouseup', this.contextClick, this);
-        EventHandler.add(this.parent.chartRowsModule.ganttChartTableBody, 'dblclick', this.doubleClickHandler, this);
     }
 
     private unWireEvents(): void {
@@ -1334,17 +1406,17 @@ export class GanttChart {
         }        return item;
     }
     private updateElement(next: Element, currentColumn: ColumnModel, isTab: boolean, isInEditedState: boolean, row: IGanttData): Element {
-        if (this.parent.ganttColumns[next.getAttribute('data-colindex')].field === this.parent.taskFields.progress) {
+        if (this.parent.ganttColumns[parseInt(next.getAttribute('aria-colindex'), 10) - 1].field === this.parent.taskFields.progress) {
             let rowIndex: number = row.index;
             do {
                 if (row.hasChildRecords) {
                     next = this.getNextElement(next as Element, isTab, isInEditedState) as Element;
                 }
-                currentColumn = this.parent.ganttColumns[(next as Element).getAttribute('data-colindex')];
+                currentColumn = this.parent.ganttColumns[parseInt((next as Element).getAttribute('aria-colindex'), 10) - 1];
                 rowIndex = this.parent.treeGrid.getRows().indexOf(next.parentElement as HTMLTableRowElement);
             } while (!currentColumn.allowEditing);
             this.parent.treeGrid.saveCell();
-            this.parent.treeGrid.editCell(rowIndex, this.parent.ganttColumns[next.getAttribute('data-colindex')].field);
+            this.parent.treeGrid.editCell(rowIndex, this.parent.ganttColumns[parseInt(next.getAttribute('aria-colindex'), 10) - 1].field);
         }
         return next;
     }
@@ -1386,7 +1458,7 @@ export class GanttChart {
             nextElement = null;
         }
         if (nextElement && $target.classList.contains('e-headercell')) {
-            let colIndex: number = parseInt((nextElement as HTMLElement).getAttribute('data-colindex'), 10);
+            let colIndex: number = parseInt((nextElement as HTMLElement).getAttribute('aria-colindex'), 10) - 1;
             if (e.action === 'shiftTab') {
                 while (colIndex !== -1 && !this.parent.treeGrid.columns[colIndex as number]['visible']) {
                     colIndex = colIndex - 1;
@@ -1490,6 +1562,9 @@ export class GanttChart {
             return;
         }
         if (typeof nextElement !== 'string') {
+            if ($target.closest('.e-chart-row-cell') && nextElement.closest('.e-rowcell')) {
+                this.preventScrollIntoView = true;
+            }
             if ($target.classList.contains('e-rowcell') || $target.closest('.e-chart-row-cell') ||
                 $target.classList.contains('e-headercell') || $target.closest('.e-segmented-taskbar') ||
                 $target.classList.contains('e-timeline-header-container')) {
@@ -1504,7 +1579,7 @@ export class GanttChart {
                 if (isTab) {
                     if (this.parent.editSettings.allowNextRowEdit) {
                         const rowData: IGanttData = this.parent.currentViewData[this.focusedRowIndex];
-                        const columnName: string = this.parent.ganttColumns[nextElement.getAttribute('data-colindex')].field;
+                        const columnName: string = this.parent.ganttColumns[parseInt(nextElement.getAttribute('aria-colindex'), 10) - 1].field;
                         if (rowData.hasChildRecords) {
                             if (columnName === this.parent.taskFields.endDate || columnName ===
                                 this.parent.taskFields.duration || columnName === this.parent.taskFields.dependency ||
@@ -1532,13 +1607,13 @@ export class GanttChart {
                             const row: IGanttData = this.parent.currentViewData[($target.parentElement as any).rowIndex];
                             let next: Element = nextElement;
                             if (row.hasChildRecords &&
-                                (this.parent.ganttColumns[next.getAttribute('data-colindex')].field === this.parent.taskFields.progress ||
-                                !this.parent.ganttColumns[next.getAttribute('data-colindex')].allowEditing) &&
-                                this.parent.ganttColumns[next.getAttribute('data-colindex')].field !== this.parent.taskFields.id
+                                (this.parent.ganttColumns[parseInt(next.getAttribute('aria-colindex'), 10) - 1].field === this.parent.taskFields.progress ||
+                                !this.parent.ganttColumns[parseInt(next.getAttribute('aria-colindex'), 10) - 1].allowEditing) &&
+                                this.parent.ganttColumns[parseInt(next.getAttribute('aria-colindex'), 10) - 1].field !== this.parent.taskFields.id
                                 && $target.classList.contains('e-editedbatchcell')) {
                                 let currentColumn: ColumnModel;
                                 next = this.updateElement(next, currentColumn, isTab, isInEditedState, row);
-                                while (!this.parent.ganttColumns[next.getAttribute('data-colindex')].allowEditing) {
+                                while (!this.parent.ganttColumns[parseInt(next.getAttribute('aria-colindex'), 10) - 1].allowEditing) {
                                     next = this.getNextElement(next as Element, isTab, isInEditedState) as Element;
                                 }
                                 next = this.updateElement(next, currentColumn, isTab, isInEditedState, row);
@@ -1555,32 +1630,32 @@ export class GanttChart {
                         const row: IGanttData = this.parent.currentViewData[($target.parentElement as any).rowIndex];
                         let next: Element = nextElement;
                         if (row.hasChildRecords &&
-                            (this.parent.ganttColumns[next.getAttribute('data-colindex')].field === this.parent.taskFields.progress ||
-                            !this.parent.ganttColumns[next.getAttribute('data-colindex')].allowEditing) &&
-                            this.parent.ganttColumns[next.getAttribute('data-colindex')].field !== this.parent.taskFields.id
+                            (this.parent.ganttColumns[parseInt(next.getAttribute('aria-colindex'), 10) - 1].field === this.parent.taskFields.progress ||
+                            !this.parent.ganttColumns[parseInt(next.getAttribute('aria-colindex'), 10) - 1].allowEditing) &&
+                            this.parent.ganttColumns[parseInt(next.getAttribute('aria-colindex'), 10)  - 1].field !== this.parent.taskFields.id
                             && $target.classList.contains('e-editedbatchcell')) {
                             let currentColumn: ColumnModel;
                             next = this.updateElement(next, currentColumn, isTab, isInEditedState, row);
-                            while (!this.parent.ganttColumns[next.getAttribute('data-colindex')].allowEditing) {
+                            while (!this.parent.ganttColumns[parseInt(next.getAttribute('aria-colindex'), 10) - 1].allowEditing) {
                                 next = this.getNextElement(next as Element, isTab, isInEditedState) as Element;
                             }
                             next = this.updateElement(next, currentColumn, isTab, isInEditedState, row);
                         }
-                        else if (parseInt(next.parentElement.getAttribute('data-rowindex'), 10) !== 0 &&
-                        parseInt(next.getAttribute('data-colindex'), 10) === 0 &&
-                        this.parent.ganttColumns[next.getAttribute('data-colindex')].field === this.parent.taskFields.id &&
+                        else if (parseInt(next.parentElement.getAttribute('aria-rowindex'), 10) - 1 !== 0 &&
+                        parseInt(next.getAttribute('aria-colindex'), 10) - 1 === 0 &&
+                        this.parent.ganttColumns[parseInt(next.getAttribute('aria-colindex'), 10) - 1].field === this.parent.taskFields.id &&
                             $target.classList.contains('e-editedbatchcell')) {
                             /* eslint-disable-next-line */
                             const rowIndex: number = ($target.parentElement as any).rowIndex;
                             const rowElement: Element = this.getNextRowElement(rowIndex, isTab, true);
                             next = this.getChildElement(rowElement, isTab) as Element;
-                            const rowData: IGanttData = this.parent.flatData[parseInt(rowElement.getAttribute('data-rowindex'), 10)];
-                            if (rowData.hasChildRecords && (!this.parent.ganttColumns[next.getAttribute('data-colindex')].allowEditing ||
-                                                            this.parent.ganttColumns[next.getAttribute('data-colindex')].field ===
+                            const rowData: IGanttData = this.parent.flatData[parseInt(rowElement.getAttribute('aria-rowindex'), 10) - 1];
+                            if (rowData.hasChildRecords && (!this.parent.ganttColumns[parseInt(next.getAttribute('aria-colindex'), 10) - 1].allowEditing ||
+                                                            this.parent.ganttColumns[parseInt(next.getAttribute('aria-colindex'), 10) - 1].field ===
                                                             this.parent.taskFields.progress)) {
                                 let currentColumn: ColumnModel;
                                 next = this.updateElement(next, currentColumn, isTab, isInEditedState, rowData);
-                                while (!this.parent.ganttColumns[next.getAttribute('data-colindex')].allowEditing) {
+                                while (!this.parent.ganttColumns[parseInt(next.getAttribute('aria-colindex'), 10) - 1].allowEditing) {
                                     next = this.getNextElement(next as Element, isTab, isInEditedState) as Element;
                                 }
                                 next = this.updateElement(next, currentColumn, isTab, isInEditedState, rowData);
@@ -1854,6 +1929,13 @@ export class GanttChart {
             if (focus === 'add') {
                 element.setAttribute('tabIndex', '0');
                 addClass([element], ['e-focused', 'e-focus']);
+                if (!this.preventScrollIntoView) {
+                    element.scrollIntoView({
+                        block: 'nearest',  // Prevents excessive scrolling
+                        inline: 'nearest'  // Keeps horizontal position stable
+                    });
+                }
+                this.preventScrollIntoView = false;
                 element.focus();
             } else {
                 element.setAttribute('tabIndex', '-1');

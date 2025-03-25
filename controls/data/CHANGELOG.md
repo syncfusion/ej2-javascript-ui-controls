@@ -2,23 +2,16 @@
 
 ## [Unreleased]
 
-## 28.2.12 (2025-03-19)
-
-### Grid
-
-#### Bug Fixes
-
-- `#FB65738` - The issue where using the `greater than or equal to` operator to filter the value zero also filtered out `null` or `undefined` values has been resolved.
-
-## 28.2.11 (2025-03-11)
+## 29.1.33 (2025-03-25)
 
 ### DataManager
 
-#### Bug Fixes
+#### Features
 
-- `#I679119` - The issue with filtering the `Date` column by month or day value has been resolved.
-
-## 28.1.33 (2024-12-12)
+- `#I657081` - The `DataManager` now supports the `enableCache` property to skip requests for revisited pages, with the cache resetting on actions like sorting or filtering. Explore the demo [here](https://ej2.syncfusion.com/demos/#/tailwind3/grid/remote-data.html).
+- The `DataManager` now supports middle ware integration, enabling modifications to requests and responses for authentication, error handling, and data transformation.
+- `#FB57941` - Enhanced the filtering and searching functionality to ignore accents in the URL Adaptor when performing data actions.
+- `#FB62797` - Enhanced sorting and grouping performance for large datasets, reducing delays caused by client side processing.
 
 ### DataManager
 

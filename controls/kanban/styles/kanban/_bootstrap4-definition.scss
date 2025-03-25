@@ -1,5 +1,7 @@
+@use 'sass:color';
+
 /*! Kanban component's bootstrap4 theme definitions and variables */
-$kanban-column-bg-color: darken($gray-100, 2%) !default;
+$kanban-column-bg-color: color.adjust($gray-100, $lightness: -2%) !default;
 $kanban-border-color: $gray-300 !default;
 $kanban-default-font-color: $gray-900 !default;
 $kanban-content-font: $gray-800 !default;
@@ -17,7 +19,7 @@ $kanban-max-color:$msg-danger-bg-color !default;
 $kanban-header-border-color: $gray-300 !default;
 $kanban-mb-popup-container-box-shadow: 0 24px 38px 3px rgba(0, 0, 0, .14), 0 9px 46px 8px rgba(0, 0, 0, .12), 0 11px 15px -7px rgba(0, 0, 0, .2) !default;
 $kanban-icons-border-radius: 4px !default;
-$kanban-border-hover-color: darken($gray-600, 12.5%) !default;
+$kanban-border-hover-color: color.adjust($gray-600, $lightness: -12.5%) !default;
 $kanban-tags-bg-color: #eceaff !default;
 $kanban-tags-color: #3225c9 !default;
 
@@ -49,9 +51,9 @@ $kanban-swl-frozen-header-row-icon-padding: 6px !default;
 $kanban-swl-frozen-header-row-icon-font-size: 12px !default;
 $kanban-swl-frz-head-row-icon-hover-margin: 0 0 0 8px !default;
 $kanban-swl-frz-header-row-icon-hover-padding: 6px !default;
-$kanban-swl-frozen-header-row-icon-hover-bg-color: darken($gray-600, 7.5%) !default;
-$kanban-swl-frozen-header-row-icon-focus-bg-color: darken($gray-600, 7.5%) !default;
-$kanban-swl-frozen-header-row-icon-hover-border: 1px solid darken($gray-600, 12.5%) !default;
+$kanban-swl-frozen-header-row-icon-hover-bg-color: color.adjust($gray-600, $lightness: -7.5%) !default;
+$kanban-swl-frozen-header-row-icon-focus-bg-color: color.adjust($gray-600, $lightness: -7.5%) !default;
+$kanban-swl-frozen-header-row-icon-hover-border: 1px solid color.adjust($gray-600, $lightness: -12.5%) !default;
 $kanban-swl-frozen-header-row-icon-hover-box-shadow: none !default;
 $kanban-swl-frozen-header-row-icon-hover-color: $primary-font !default;
 $kanban-swl-frozen-header-row-icon-focus-box-shadow: none !default;
@@ -158,7 +160,7 @@ $kanban-multi-card-text-bg-color: $white !default;
 $kanban-target-drag-drop-clone-margin-bottom: 8px !default;
 $kanban-target-drag-drop-clone-bgr-margin-bottom: 8px !default;
 $kanban-target-drag-drop-clone-border-radius: 0 !default;
-$kanban-target-dragged-clone-bg-color: darken($gray-100, 2%) !default;
+$kanban-target-dragged-clone-bg-color: color.adjust($gray-100, $lightness: -2%) !default;
 $kanban-swl-row-height: 50px !default;
 $kanban-swl-row-header-padding: 0 !default;
 $kanban-swl-row-header-bgr-padding: $kanban-swl-row-header-padding !default;
@@ -170,12 +172,12 @@ $kanban-swl-header-icon-rtl-margin: 0 8px 0 0 !default;
 $kanban-swl-header-icon-padding: 6px !default;
 $kanban-swl-header-icon-font-size: 12px !default;
 $kanban-swl-header-icon-bgr-font-size: 12px !default;
-$kanban-swl-header-icon-hover-border: 1px solid darken($gray-600, 12.5%) !default;
+$kanban-swl-header-icon-hover-border: 1px solid color.adjust($gray-600, $lightness: -12.5%) !default;
 $kanban-swl-header-icon-hover-color: $primary-font !default;
 $kanban-swl-header-icon-hover-margin: 0 0 0 8px !default;
 $kanban-swl-header-icon-hover-padding: 6px !default;
 $kanban-swl-header-icon-hover-font-size: 12px !default;
-$kanban-swl-header-icon-hover-background: darken($gray-600, 7.5%) !default;
+$kanban-swl-header-icon-hover-background: color.adjust($gray-600, $lightness: -7.5%) !default;
 $kanban-swl-header-icon-hover-border-radius: $kanban-icons-border-radius !default;
 $kanban-swl-header-icon-hover-box-shadow: none !default;
 $kanban-swl-header-text-line-height: 20px;
@@ -215,9 +217,9 @@ $kanban-dialog-text-area-focus-shadow: none !default;
 $kanban-header-text-color: $gray-900 !default;
 $kanban-header-item-count-color: $gray-900 !default;
 $kanban-header-limits-color: inherit !default;
-$kanban-col-expand-collapse-bg-color: darken($gray-600, 7.5%);
+$kanban-col-expand-collapse-bg-color: color.adjust($gray-600, $lightness: -7.5%);
 $kanban-col-expand-collapse-color: $primary-font;
-$kanban-col-expand-collapse-border: 1px solid darken($gray-600, 12.5%);
+$kanban-col-expand-collapse-border: 1px solid color.adjust($gray-600, $lightness: -12.5%);
 $kanban-col-expand-collapse-box-shadow: none;
 
 //Color End

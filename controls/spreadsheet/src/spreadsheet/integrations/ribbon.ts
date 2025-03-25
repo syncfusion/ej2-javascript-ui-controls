@@ -1,6 +1,6 @@
 import { Ribbon as RibbonComponent, RibbonItemModel, ExpandCollapseEventArgs } from '../../ribbon/index';
 import { Spreadsheet } from '../base/index';
-import { ribbon, MenuSelectEventArgs, beforeRibbonCreate, removeDataValidation, clearViewer, initiateFilterUI, updateSortCollection, isReadOnlyCells, readonlyAlert, removeElements } from '../common/index';
+import { ribbon, MenuSelectEventArgs, beforeRibbonCreate, removeDataValidation, clearViewer, initiateFilterUI, readonlyAlert, removeElements, isLockedCells, showAggregate } from '../common/index';
 import { initiateDataValidation, invalidData, setUndoRedo, renderCFDlg, focus, freeze, toggleProtect } from '../common/index';
 import { dialog, reapplyFilter, enableFileMenuItems, protectCellFormat, protectWorkbook } from '../common/index';
 import { DialogBeforeOpenEventArgs, insertChart, chartDesignTab, unProtectWorkbook } from '../common/index';
@@ -19,7 +19,7 @@ import { SheetModel, getCellIndexes, CellModel, getFormatFromType, getTypeFromFo
 import { DropDownButton, OpenCloseMenuEventArgs, SplitButton, ClickEventArgs as BtnClickEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { calculatePosition, OffsetPosition } from '@syncfusion/ej2-popups';
-import { SortCollectionModel, applyNumberFormatting, getDataRange, getFormattedCellObject, getRangeIndexes, getSwapRange, isLocked, setMerge, unMerge, workbookFormulaOperation } from '../../workbook/common/index';
+import { SortCollectionModel, applyNumberFormatting, getDataRange, getFormattedCellObject, getRangeIndexes, getSwapRange, isLocked, isReadOnlyCells, mergedRange, setMerge, unMerge, updateSortCollection, workbookFormulaOperation } from '../../workbook/common/index';
 import { activeCellChanged, textDecorationUpdate, BeforeCellFormatArgs, isNumber, MergeArgs, exportDialog } from '../../workbook/common/index';
 import { SortOrder, NumberFormatType, SetCellFormatArgs, CFArgs, clearCFRule, NumberFormatArgs } from '../../workbook/common/index';
 import { getCell, FontFamily, VerticalAlign, TextAlign, CellStyleModel, setCellFormat, selectionComplete } from '../../workbook/index';
@@ -595,6 +595,9 @@ export class Ribbon {
                     const cellIndex: number[] = getCellIndexes(sheet.activeCell);
                     this.refreshTextAlign(sheet, getCell(cellIndex[0], cellIndex[1], sheet, false, true), type, cellIndex);
                     this.numFormatDDB.element.setAttribute('aria-label', type);
+                    if (this.parent.showAggregate) {
+                        this.parent.notify(showAggregate, {});
+                    }
                 }
             },
             open: (args: OpenCloseMenuEventArgs): void => this.numDDBOpen(args),
@@ -1046,7 +1049,7 @@ export class Ribbon {
                         const chart: HTMLElement = overlay.querySelector('.e-chart');
                         if (chart) {
                             const chartObj: { series: { type: string }[] } = getComponent(chart, 'chart');
-                            if (chartObj.series[0].type.includes('Line')) {
+                            if (chartObj.series[0] && chartObj.series[0].type.includes('Line')) {
                                 const updateTextNode: Function = (listIcon: HTMLElement, key: string): void => {
                                     if (listIcon) {
                                         const dlList: HTMLElement = listIcon.parentElement;
@@ -1738,15 +1741,32 @@ export class Ribbon {
 
     private unMerge(args?: { range: string }): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
-        const indexes: number[] = getRangeIndexes(sheet.selectedRange);
-        if (isReadOnlyCells(this.parent, getSwapRange(indexes))) {
+        const indexes: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
+        if (isReadOnlyCells(this.parent, indexes)) {
             this.parent.notify(readonlyAlert, null);
             return;
         }
         this.parent.showSpinner();
         const selectedRange: string = sheet.selectedRange;
-        this.parent.notify(setMerge, <MergeArgs>{ merge: false, range: args ? (args.range || selectedRange) : selectedRange,
-            isAction: true, refreshRibbon: true, type: 'All' });
+        const mergeCollection: number[][] = [];
+        for (let i: number = indexes[0]; i <= indexes[2]; i++) {
+            for (let j: number = indexes[1]; j <= indexes[3]; j++) {
+                const cell: CellModel = getCell(i, j, sheet);
+                if (cell && (cell.rowSpan > 1 || cell.colSpan > 1)) {
+                    const mergeArgs: MergeArgs = { range: [i, j, i, j] };
+                    this.parent.notify(mergedRange, mergeArgs);
+                    mergeCollection.push(mergeArgs.range as number[]);
+                }
+            }
+        }
+        const mergeObj: MergeArgs = {
+            merge: false, range: args ? (args.range || selectedRange) : selectedRange,
+            isAction: true, refreshRibbon: true, type: 'All'
+        };
+        if (mergeCollection.length > 0) {
+            mergeObj.mergeCollection = mergeCollection;
+        }
+        this.parent.notify(setMerge, mergeObj);
         this.toggleActiveState(false);
         this.parent.hideSpinner();
     }
@@ -1940,7 +1960,8 @@ export class Ribbon {
             },
             beforeItemRender: (args: MenuEventArgs): void => {
                 const sheet: SheetModel = this.parent.getActiveSheet();
-                if (sheet.isProtected && sheet.protectSettings.formatCells && args.item.id !== id + '_Clear Formats') {
+                const indexes: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
+                if (sheet.isProtected && sheet.protectSettings.formatCells && args.item.id !== id + '_Clear Formats' && (args.item.id === id + '_Clear Hyperlinks' || isLockedCells(this.parent, indexes))) {
                     args.element.classList.add('e-disabled');
                     args.element.setAttribute('aria-disabled', 'true');
                 }
@@ -2106,6 +2127,7 @@ export class Ribbon {
         dialogBtn.innerText = l10n.getConstant('Apply');
         const sampleDiv: HTMLElement = this.parent.createElement('div', { className: 'e-custom-sample' });
         sampleDiv.innerText = l10n.getConstant('CustomFormatTypeList') + ':';
+        const inputButtondiv: HTMLElement = this.parent.createElement('div', { className: 'e-input-button' });
         const inputElem: HTMLInputElement = this.parent.createElement(
             'input', {className: 'e-input e-dialog-input', attrs: { 'type': 'text', 'name': 'input', 'spellcheck': 'false',
                 'placeholder': l10n.getConstant('CustomFormatPlaceholder') }});
@@ -2121,11 +2143,20 @@ export class Ribbon {
                 }
             }
         });
-        dialogCont.appendChild(inputElem);
-        dialogCont.appendChild(dialogBtn);
+        inputButtondiv.appendChild(inputElem);
+        inputButtondiv.appendChild(dialogBtn);
+        dialogCont.appendChild(inputButtondiv);
         dialogCont.appendChild(sampleDiv);
         dialogCont.appendChild(listviewCont);
         listview.appendTo(listviewCont);
+        if (localizedFormats[4] !== defaultFormats[4]) {
+            const listItems: HTMLCollectionOf<Element> = listview.element.getElementsByClassName('e-list-text');
+            for (let idx: number = 0, len: number = listItems.length; idx < len; idx++) {
+                if (listItems[idx as number].textContent !== localizedFormats[idx as number]) {
+                    listItems[idx as number].textContent = localizedFormats[idx as number];
+                }
+            }
+        }
         const applyBtnClickHandler: () => void = () => {
             const format: string = inputElem.value;
             const formatIdx: number = localizedFormats.indexOf(format);
@@ -2143,6 +2174,9 @@ export class Ribbon {
                     localizedFormatAction, <LocalizedFormatActionArgs>{ action: 'addToCustomFormats', format, defaultFormat });
             }
             customFormatDialog.hide();
+            if (this.parent.showAggregate) {
+                this.parent.notify(showAggregate, {});
+            }
         };
         dialogBtn.addEventListener('click', applyBtnClickHandler);
         const inputChangeHandler: () => void = () => {
@@ -2169,22 +2203,18 @@ export class Ribbon {
                 this.parent.trigger('dialogBeforeOpen', dlgArgs);
                 if (dlgArgs.cancel) {
                     beforeOpenArgs.cancel = true;
-                    getUpdateUsingRaf((): void => {
-                        customFormatDialog.hide(true);
-                        focus(this.parent.element);
-                    });
                 } else {
+                    const sheet: SheetModel = this.parent.getActiveSheet();
+                    const actCell: number[] = getCellIndexes(sheet.activeCell);
+                    const cell: CellModel = getCell(actCell[0], actCell[1], sheet);
+                    if (cell && cell.format) {
+                        const formatIdx: number = defaultFormats.indexOf(cell.format);
+                        listview.selectItem(listview.element.getElementsByClassName('e-list-item')[formatIdx as number]);
+                    }
                     focus(this.parent.element);
                 }
             }
         });
-        const sheet: SheetModel = this.parent.getActiveSheet();
-        const actCell: number[] = getCellIndexes(sheet.activeCell);
-        const cell: CellModel = getCell(actCell[0], actCell[1], sheet);
-        if (cell && cell.format) {
-            const formatIdx: number = defaultFormats.indexOf(cell.format);
-            listview.selectItem(listview.element.getElementsByClassName('e-list-item')[formatIdx as number]);
-        }
     }
 
     private tBarDdbBeforeOpen(element: HTMLElement, items: MenuItemModel[], targetLabel?: string, separatorCount: number = 0): void {
@@ -2244,13 +2274,13 @@ export class Ribbon {
         if (isNullOrUndefined(activeTab)) { activeTab = this.ribbon.selectedTab; }
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const sheet: SheetModel = this.parent.getActiveSheet();
+        const cellIndexes: number[] = getCellIndexes(sheet.activeCell);
         switch (this.ribbon.items[activeTab as number].header.text) {
         case l10n.getConstant('Home'):
-            this.refreshHomeTabContent(getCellIndexes(sheet.activeCell));
+            this.refreshHomeTabContent(cellIndexes);
             break;
         case l10n.getConstant('Insert'): {
             if (sheet.isProtected) {
-                const cellIndexes: number[] = getCellIndexes(sheet.activeCell);
                 if (sheet.protectSettings.insertLink &&
                     !isLocked(getCell(cellIndexes[0], cellIndexes[1], sheet), getColumn(sheet, cellIndexes[1]))) {
                     this.enableToolbarItems([{
@@ -2267,7 +2297,19 @@ export class Ribbon {
             break;
         }
         case l10n.getConstant('Formulas'):
-            // Third tab functionality comes here
+            if (sheet.isProtected) {
+                if (!isLocked(getCell(cellIndexes[0], cellIndexes[1], sheet), getColumn(sheet, cellIndexes[1]))) {
+                    this.enableToolbarItems([{
+                        tab: l10n.getConstant('Formulas'),
+                        items: [`${this.parent.element.id}_insert_function`], enable: true
+                    }]);
+                } else {
+                    this.enableToolbarItems([{
+                        tab: l10n.getConstant('Formulas'),
+                        items: [`${this.parent.element.id}_insert_function`], enable: false
+                    }]);
+                }
+            }
             break;
         case l10n.getConstant('Data'):
             this.refreshDataTabContent(activeTab);

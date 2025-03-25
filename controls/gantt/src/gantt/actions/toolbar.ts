@@ -257,7 +257,11 @@ export class Toolbar {
 
     private getItem(itemObject: ItemModel): ItemModel {
         const item: ItemModel = this.predefinedItems[itemObject.text];
-        return item ? extend(item, item, itemObject) : itemObject;
+        const currentItem: ItemModel =  item ? extend(item, item, itemObject) : itemObject;
+        if (!currentItem.align) {
+            currentItem.align = this.parent.isAdaptive ? 'Right' : 'Left';
+        }
+        return currentItem;
     }
 
     private getItemObject(itemName: string): ItemModel {

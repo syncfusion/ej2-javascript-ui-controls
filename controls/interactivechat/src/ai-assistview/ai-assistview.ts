@@ -255,6 +255,34 @@ export interface PromptChangedEventArgs extends BaseEventArgs {
     element?: HTMLElement
 }
 
+export interface StopRespondingEventArgs extends BaseEventArgs {
+    /**
+     * Specifies the event object associated with the stop responding action.
+     * Represents the underlying event that triggered the action.
+     *
+     * @type {Event}
+     * @default null
+     */
+    event?: Event
+    /**
+     * Specifies the prompt text associated with the request.
+     * Represents the input prompt for which the response was being generated.
+     *
+     * @type {string}
+     * @default ''
+     *
+     */
+    prompt?: string
+    /**
+     * Specifies the index of the prompt in the prompt list.
+     * Represents the position of the prompt in the stored collection.
+     *
+     * @type {number}
+     * @default -1
+     */
+    dataIndex?: number
+}
+
 /**
  * The `AIAssistView` component is designed to enhance user interaction by integrating AI driven assistance features.
  * It provides a seamless interface for incorporating suggestions & AI responses.
@@ -538,6 +566,15 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
     @Event()
     public promptChanged: EmitType<PromptChangedEventArgs>;
 
+    /**
+     * Triggers when the 'Stop Responding' button is clicked while a prompt request is in progress.
+     * This event allows users to handle stopping the response generation and update the UI accordingly.
+     *
+     * @event stopRespondingClick
+     */
+    @Event()
+    public stopRespondingClick: EmitType<StopRespondingEventArgs>;
+
     /* Private variables */
     private l10n: L10n;
     private stopRespondingContent: HTMLElement;
@@ -566,6 +603,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
     private outputContentBodyEle: HTMLElement;
     private preTagElements: { preTag: HTMLPreElement; handler: Function }[] = [];
     private isResponseRequested : boolean;
+    private lastStreamPrompt: string;
 
     /**
      * Constructor for creating the component
@@ -619,7 +657,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         this.setDimension(this.element, this.width, this.height);
         this.renderViews();
         this.renderToolbar();
-        this.updateTextAreaObject();
+        this.updateTextAreaObject(this.textareaObj);
         this.wireEvents();
     }
 
@@ -663,7 +701,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
                     this.isAssistView = true;
                 }
                 else if (this.views[parseInt(index.toString(), 10)].type.toLocaleLowerCase() === 'custom') {
-                    customViewTemplate = this.createElement('div', { attrs: { class: 'e-customview-content-section-' + customViewCount + ' e-custom-view' }});
+                    customViewTemplate = this.createElement('div', { className: 'e-customview-content-section-' + customViewCount + ' e-custom-view' });
                     this.getContextObject('customViewTemplate', customViewTemplate, -1, index);
                     this.displayContents.push(customViewTemplate);
                     this.toolbarItems.push({
@@ -833,8 +871,8 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
 
     private renderStopResponding(): void {
         this.stopResponding = this.createElement('div', { attrs: { class: 'e-stop-response', tabIndex: '0', 'aria-label': 'Stop Responding', role: 'button' } });
-        const stopRespondingIcon: HTMLElement = this.createElement('span', { attrs: { class: 'e-icons e-assist-stop' } });
-        this.stopRespondingContent = this.createElement('span', { attrs: { class: 'e-stop-response-text' } });
+        const stopRespondingIcon: HTMLElement = this.createElement('span', { className: 'e-icons e-assist-stop' });
+        this.stopRespondingContent = this.createElement('span', { className: 'e-stop-response-text' });
         this.l10n = new L10n('aiassistview', { stopResponseText: 'Stop Responding' }, this.locale);
         this.updateStopRespondingTitle();
         this.appendChildren(this.stopResponding, stopRespondingIcon, this.stopRespondingContent);
@@ -878,7 +916,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
 
     private renderAssistViewFooter(): void {
         this.textareaObj = this.renderFooterContent(this.footerTemplate, this.footer, this.prompt,
-                                                    this.promptPlaceholder, this.showClearButton, this.getRowCount(''), 'e-assist-textarea');
+                                                    this.promptPlaceholder, this.showClearButton, 'e-assist-textarea');
         const sendIconClass: string = 'e-assist-send e-icons disabled';
         if (!this.footerTemplate) { this.sendIcon = this.renderSendIcon(sendIconClass, this.footer); }
         if (this.textareaObj) {
@@ -893,7 +931,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         this.prompt = args.value;
         this.isProtectedOnChange = prevOnChange;
         this.activateSendIcon(args.value.length);
-        this.updateTextAreaObject();
+        this.updateTextAreaObject(this.textareaObj);
         const eventArgs: PromptChangedEventArgs = {
             value: args.value,
             previousValue: args.previousValue,
@@ -901,18 +939,6 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
             element: this.textareaObj.element
         };
         this.trigger('promptChanged', eventArgs);
-    }
-
-    private updateTextAreaObject(): void {
-        if (isNOU(this.textareaObj)) { return; }
-        const textarea: HTMLElement = this.textareaObj.element;
-        textarea.style.height = 'auto';
-        textarea.style.height = textarea.scrollHeight + 'px';
-    }
-
-    private getRowCount(textValue: string): number {
-        const lines: number = textValue.split('\n').length;
-        return (lines < 10 ? (lines >= 1 ? lines : 1) : 10);
     }
 
     private activateSendIcon(value: number): void {
@@ -929,21 +955,19 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
     }
 
     private wireEvents(): void {
-        this.wireFooterEvents(this.sendIcon, this.footer, this.footerTemplate);
+        this.wireFooterEvents(this.sendIcon, this.footer, this.footerTemplate, this.textareaObj);
         if (this.stopResponding) {
             EventHandler.add(this.stopResponding, 'click', this.respondingStopper, this);
             EventHandler.add(this.stopResponding, 'keydown', this.stopResponseKeyHandler, this);
         }
-        EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.updateTextAreaObject, this);
     }
 
     private unWireEvents(): void {
-        this.unWireFooterEvents(this.sendIcon, this.footer, this.footerTemplate);
+        this.unWireFooterEvents(this.sendIcon, this.footer, this.footerTemplate, this.textareaObj);
         if (this.stopResponding) {
             EventHandler.remove(this.stopResponding, 'click', this.respondingStopper);
             EventHandler.remove(this.stopResponding, 'keydown', this.stopResponseKeyHandler);
         }
-        EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.updateTextAreaObject);
         this.detachCodeCopyEventHandler();
     }
 
@@ -965,19 +989,30 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
                 }
                 break;
             case 'stopresponse':
-                this.respondingStopper();
+                this.respondingStopper(event);
                 break;
             }
         }
     }
 
-    private respondingStopper(): void {
+    private respondingStopper(event: KeyboardEvent | MouseEvent): void {
         this.isOutputRenderingStop = true;
         this.isResponseRequested = false;
+        this.lastStreamPrompt = '';
         if (this.outputElement.hasChildNodes) {
-            this.outputElement.removeChild(this.skeletonContainer);
+            const skeletonElement: HTMLElement = this.element.querySelector('.e-loading-body');
+            if (skeletonElement) {
+                this.outputElement.removeChild(this.skeletonContainer);
+            }
         }
         this.stopResponding.classList.remove('e-btn-active');
+        const promptIndex: number = this.prompts ? this.prompts.length - 1 : -1;
+        const eventArgs: StopRespondingEventArgs = {
+            event: event,
+            prompt: promptIndex >= 0 ? this.prompts[parseInt(promptIndex.toString(), 10)].prompt : '',
+            dataIndex: this.prompts ? this.prompts.length - 1 : -1
+        };
+        this.trigger('stopRespondingClick', eventArgs);
     }
 
     private onSuggestionClick(e: Event): void {
@@ -994,6 +1029,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
             return;
         }
         this.isResponseRequested = true;
+        this.lastStreamPrompt = '';
         if (this.suggestionsElement) { this.suggestionsElement.hidden = true; }
         this.isOutputRenderingStop = false;
         this.stopResponding.classList.add('e-btn-active');
@@ -1011,17 +1047,16 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
             this.prompt = this.textareaObj.value = '';
             this.textareaObj.dataBind();
             this.isProtectedOnChange = prevOnChange;
-            this.updateTextAreaObject();
+            this.updateTextAreaObject(this.textareaObj);
             this.activateSendIcon(this.textareaObj.value.length);
         }
         this.trigger('promptRequest', eventArgs);
         if (this.contentWrapper) { this.scrollToBottom(); }
     }
-
     private addPrompt(): void {
         const prevOnChange: boolean = this.isProtectedOnChange;
         this.isProtectedOnChange = true;
-        this.prompts = [...this.prompts, { prompt: this.prompt, response: null, isResponseHelpful: null }];
+        this.prompts = [...this.prompts, { prompt: this.prompt, response: '', isResponseHelpful: null }];
         this.isProtectedOnChange = prevOnChange;
     }
 
@@ -1063,24 +1098,30 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         this.skeletonContainer.hidden = false;
     }
 
-    private renderOutputContainer(promptText?: string, outputText?: string, index?: number, isMethodCall?: boolean): void {
+    private renderOutputContainer(
+        promptText?: string,
+        outputText?: string,
+        index?: number,
+        isMethodCall?: boolean,
+        isFinalUpdate?: boolean
+    ): void {
         const outputContainer: HTMLElement = this.createElement('div', { attrs: { id: `e-response-item_${index}`, class: `e-output-container ${this.responseItemTemplate ? 'e-response-item-template' : ''}` } });
-        this.renderOutput(outputContainer, promptText, outputText, isMethodCall, index);
+        this.renderOutput(outputContainer, promptText, outputText, isMethodCall, index, isFinalUpdate);
         if (promptText) {
             this.outputElement.append(this.outputSuggestionEle);
         }
         this.outputElement.append(outputContainer);
-        if (this.stopResponding) { this.stopResponding.classList.remove('e-btn-active'); }
+        if (this.stopResponding && isFinalUpdate) { this.stopResponding.classList.remove('e-btn-active'); }
         if (!this.isOutputRenderingStop && !this.content.contains(this.suggestionsElement) && this.suggestionsElement) {
             this.content.append(this.suggestionsElement);
         }
     }
 
     private renderOutput(outputContainer: HTMLElement, promptText?: string, outputText?: string,
-                         isMethodCall?: boolean, index?: number): void {
-        const promptIcon: HTMLElement = this.createElement('span', { attrs: {
-            class: 'e-output-icon e-icons ' + (this.responseIconCss || (this.isAssistView && this.views[0].iconCss) || 'e-assistview-icon' ) } });
-        const aiOutputEle: HTMLElement = this.createElement('div', { attrs: { class: 'e-output' } });
+                         isMethodCall?: boolean, index?: number, isFinalUpdate?: boolean): void {
+        const promptIcon: HTMLElement = this.createElement('span', {
+            className: 'e-output-icon e-icons ' + (this.responseIconCss || (this.isAssistView && this.views[0].iconCss) || 'e-assistview-icon' ) });
+        const aiOutputEle: HTMLElement = this.createElement('div', { className: 'e-output' });
         if (!this.aiAssistViewRendered || isMethodCall) {
             if (!isNOU(promptText)) {
                 this.outputSuggestionEle = this.createElement('div', { attrs: { id: `e-prompt-item_${index}`, class: `e-prompt-container ${this.promptItemTemplate ? 'e-prompt-item-template' : ''}` } });
@@ -1093,12 +1134,12 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
                 this.getContextObject('responseItemTemplate', aiOutputEle, index);
                 if (this.outputElement.querySelector('.e-skeleton')) { this.outputElement.removeChild(this.skeletonContainer); }
                 if (this.contentFooterEle) { this.contentFooterEle.classList.remove('e-assist-toolbar-active'); }
-                this.renderOutputToolbarItems(index);
+                this.renderOutputToolbarItems(index, isFinalUpdate);
                 aiOutputEle.append(this.contentFooterEle);
                 outputContainer.append(aiOutputEle);
             }
             else {
-                this.renderOutputTextContainer(lastPrompt.response, aiOutputEle, index);
+                this.renderOutputTextContainer(lastPrompt.response, aiOutputEle, index, false, isFinalUpdate);
                 outputContainer.append(promptIcon, aiOutputEle);
             }
         }
@@ -1110,7 +1151,13 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         }
     }
 
-    private renderOutputTextContainer(response: string, aiOutputEle: HTMLElement, index?: number, isMethodCall?: boolean): void {
+    private renderOutputTextContainer(
+        response: string,
+        aiOutputEle: HTMLElement,
+        index?: number,
+        isMethodCall?: boolean,
+        isFinalUpdate?: boolean
+    ): void {
         if (this.contentFooterEle) { this.contentFooterEle.classList.remove('e-assist-toolbar-active'); }
         this.outputContentBodyEle = this.createElement('div', { attrs: { class: 'e-content-body', tabindex: '0' } });
         if (!isMethodCall) {
@@ -1124,7 +1171,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
                 EventHandler.add(copyIcon, 'click', this.preTagElements[this.preTagElements.length - 1].handler);
             });
         }
-        this.renderOutputToolbarItems(index);
+        this.renderOutputToolbarItems(index, isFinalUpdate);
         this.appendChildren(aiOutputEle, this.outputContentBodyEle, this.contentFooterEle);
     }
 
@@ -1141,13 +1188,13 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         };
     }
 
-    private renderOutputToolbarItems(index?: number): void {
-        this.contentFooterEle = this.createElement('div', { attrs: { class: 'e-content-footer e-assist-toolbar-active' } });
+    private renderOutputToolbarItems(index?: number, isFinalUpdate?: boolean): void {
+        this.contentFooterEle = this.createElement('div', { className: 'e-content-footer e-assist-toolbar-active' });
         const footerContent: HTMLElement = this.createElement('div');
         this.renderResponseToolbar(index);
         if (this.aiAssistViewRendered) {
             if (this.outputElement.querySelector('.e-skeleton')) { this.outputElement.removeChild(this.skeletonContainer); }
-            if (this.suggestionsElement) { this.suggestionsElement.hidden = false; }
+            if (isFinalUpdate && this.suggestionsElement) { this.suggestionsElement.hidden = false; }
         }
         this.responseToolbarEle.appendTo(footerContent);
         this.responseToolbarEle.element.setAttribute('aria-label', `response-toolbar-${index}`);
@@ -1277,11 +1324,11 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
     }
     private renderPrompt(promptText?: string, promptIndex?: number): void {
         const outputPrompt: HTMLElement = this.createElement('div', { attrs: { class: 'e-prompt-text', tabindex: '0' } });
-        const promptContent: HTMLElement = this.createElement('div', { attrs: { class: 'e-prompt-content' } });
-        const promptToolbarContainer: HTMLElement = this.createElement('div', { attrs: { class: 'e-prompt-toolbar' } });
+        const promptContent: HTMLElement = this.createElement('div', { className: 'e-prompt-content' });
+        const promptToolbarContainer: HTMLElement = this.createElement('div', { className: 'e-prompt-toolbar' });
         const promptToolbar: HTMLElement = this.createElement('div');
-        const userIcon: HTMLElement = this.createElement('span', { attrs: { class: this.promptIconCss ? 'e-prompt-icon e-icons '
-        + this.promptIconCss : '' } });
+        const userIcon: HTMLElement = this.createElement('span', { className: this.promptIconCss ? 'e-prompt-icon e-icons '
+        + this.promptIconCss : '' });
         if (this.promptItemTemplate) {
             this.getContextObject('promptItemTemplate', this.outputSuggestionEle, promptIndex);
         }
@@ -1372,18 +1419,18 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
     }
 
     private renderSkeleton(): void {
-        this.skeletonContainer = this.createElement('div', { attrs: { class: 'e-output-container' } });
-        const outputViewWrapper: HTMLElement = this.createElement('div', { attrs: { class: 'e-output', style : 'width: 70%;' } });
-        const skeletonIconEle: HTMLElement = this.createElement('span', { attrs: { class: 'e-output-icon e-skeleton e-skeleton-text e-shimmer-wave' } });
-        const skeletonBodyEle: HTMLElement = this.createElement('div', { attrs: { class: 'e-loading-body' } });
-        const skeletonFooterEle: HTMLElement = this.createElement('div', { attrs: { class: 'e-loading-footer' } });
+        this.skeletonContainer = this.createElement('div', { className: 'e-output-container' });
+        const outputViewWrapper: HTMLElement = this.createElement('div', {  className: 'e-output', styles : 'width: 70%;'});
+        const skeletonIconEle: HTMLElement = this.createElement('span', { className: 'e-output-icon e-skeleton e-skeleton-text e-shimmer-wave' });
+        const skeletonBodyEle: HTMLElement = this.createElement('div', { className: 'e-loading-body' });
+        const skeletonFooterEle: HTMLElement = this.createElement('div', { className: 'e-loading-footer' });
         const [skeletonLine1, skeletonLine2, skeletonLine3] = [
-            this.createElement('div', { attrs: { class: 'e-skeleton e-skeleton-text e-shimmer-wave', style: 'width: 100%; height: 15px;'} }),
-            this.createElement('div', { attrs: { class: 'e-skeleton e-skeleton-text e-shimmer-wave', style: 'width: 75%; height: 15px;'} }),
-            this.createElement('div', { attrs: { class: 'e-skeleton e-skeleton-text e-shimmer-wave', style: 'width: 50%; height: 15px;'} })
+            this.createElement('div', { className: 'e-skeleton e-skeleton-text e-shimmer-wave' , styles: 'width: 100%; height: 15px;' }),
+            this.createElement('div', { className: 'e-skeleton e-skeleton-text e-shimmer-wave' , styles: 'width: 75%; height: 15px;' }),
+            this.createElement('div', { className: 'e-skeleton e-skeleton-text e-shimmer-wave' , styles: 'width: 50%; height: 15px;' })
         ];
         const [footerSkeleton] = [
-            this.createElement('div', { attrs: { class: 'e-skeleton e-skeleton-text e-shimmer-wave', style: 'width: 100%; height: 30px;'} })
+            this.createElement('div', { className: 'e-skeleton e-skeleton-text e-shimmer-wave', styles: 'width: 100%; height: 30px;' })
         ];
         this.appendChildren(skeletonBodyEle, skeletonLine1, skeletonLine2, skeletonLine3);
         skeletonFooterEle.append(footerSkeleton);
@@ -1398,7 +1445,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
             this.isProtectedOnChange = true;
             this.textareaObj.value = this.prompt = this.prompts[parseInt(promptIndex.toString(), 10)].prompt;
             this.textareaObj.dataBind();
-            this.updateTextAreaObject();
+            this.updateTextAreaObject(this.textareaObj);
             this.textareaObj.focusIn();
             this.isProtectedOnChange = prevOnChange;
             this.activateSendIcon(this.prompt.length);
@@ -1435,6 +1482,16 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
         this.toolbar.items = this.toolbarItems;
     }
 
+    private updateResponse(response: string, index: number, isFinalUpdate: boolean, responseItem: HTMLDivElement | null): void {
+        if (!this.responseItemTemplate && responseItem) {
+            const outputContentBodyEle: HTMLDivElement = responseItem.querySelector('.e-content-body');
+            if (outputContentBodyEle) { outputContentBodyEle.innerHTML = response; }
+            if (isFinalUpdate && this.suggestionsElement) { this.suggestionsElement.hidden = false; }
+        }
+        else {
+            this.renderOutputContainer(undefined, response, index, false, isFinalUpdate);
+        }
+    }
     public destroy(): void {
         super.destroy();
         this.unWireEvents();
@@ -1506,41 +1563,54 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
     }
 
     /**
-     * Adds a response to the last prompt or appends a new Prompt data in the AIAssistView component.
+     * Adds a response to the last prompt or appends a new prompt data in the AIAssistView component.
      *
-     * @param {string | Object} promptData - The response to be added. Can be a string representing the response or an object containing both the prompt and the response.
+     * @param {string | Object} outputResponse - The response to be added. Can be a string representing the response or an object containing both the prompt and the response.
      * - If `outputResponse` is a string, it updates the response for the last prompt in the prompts collection.
-     * - If `outputResponse` is an Object, it can either update the response of an existing prompt if the prompt matches or append a new Prompt data.
+     * - If `outputResponse` is an object, it can either update the response of an existing prompt if the prompt matches or append a new prompt data.
+     * @param {boolean} isFinalUpdate - Indicates whether this response is the final one, to hide the stop response button.
      * @returns {void}
      */
-    public addPromptResponse(promptData: string | Object): void {
+    public addPromptResponse(
+        outputResponse: string | Object,
+        isFinalUpdate: boolean = true
+    ): void {
         const prevOnChange: boolean = this.isProtectedOnChange;
         this.isProtectedOnChange = true;
         if (!this.isOutputRenderingStop) {
-            if (typeof promptData === 'string') {
+            const responseItem: HTMLDivElement = this.element.querySelector(`#e-response-item_${this.prompts.length - 1}`);
+            let lastPrompt: PromptModel = this.prompts[this.prompts.length - 1];
+            if (typeof outputResponse === 'string') {
                 if (!this.isResponseRequested) {
                     this.prompts = [...this.prompts, { prompt: null, response: null, isResponseHelpful: null}];
+                    lastPrompt = this.prompts[this.prompts.length - 1];
                 }
-                this.prompts[this.prompts.length - 1].response = promptData;
-                this.renderOutputContainer(undefined, promptData as string, this.prompts.length - 1, false);
+                lastPrompt.response = outputResponse;
+                this.updateResponse(lastPrompt.response, this.prompts.length - 1, isFinalUpdate, responseItem);
             }
-            if (typeof promptData === 'object') {
+            if (typeof outputResponse === 'object') {
                 const tPrompt: { prompt: string, response: string, isResponseHelpful: boolean } = {
-                    prompt: (<{ prompt: string }>promptData).prompt,
-                    response: (<{ response: string }>promptData).response,
-                    isResponseHelpful: isNOU((<{ isResponseHelpful: boolean }>promptData).isResponseHelpful) ? null :
-                        (<{ isResponseHelpful: boolean }>promptData).isResponseHelpful
+                    prompt: (<{ prompt: string }>outputResponse).prompt,
+                    response: (<{ response: string }>outputResponse).response,
+                    isResponseHelpful: isNOU((<{ isResponseHelpful: boolean }>outputResponse).isResponseHelpful) ? null :
+                        (<{ isResponseHelpful: boolean }>outputResponse).isResponseHelpful
                 };
-                if (this.prompt === tPrompt.prompt) {
-                    this.prompts[this.prompts.length - 1].response = tPrompt.response;
-                    this.prompts[this.prompts.length - 1].isResponseHelpful = tPrompt.isResponseHelpful;
-                    this.renderOutputContainer(undefined, tPrompt.response, this.prompts.length - 1, false);
+                if (this.prompt === tPrompt.prompt || this.lastStreamPrompt === tPrompt.prompt) {
+                    lastPrompt.response = tPrompt.response;
+                    lastPrompt.isResponseHelpful = tPrompt.isResponseHelpful;
+                    this.updateResponse(lastPrompt.response, this.prompts.length - 1, isFinalUpdate, responseItem);
                 } else {
                     this.prompts = [...this.prompts, tPrompt];
-                    this.renderOutputContainer(tPrompt.prompt, tPrompt.response, this.prompts.length - 1, true);
+                    this.renderOutputContainer(tPrompt.prompt, tPrompt.response, this.prompts.length - 1, true, isFinalUpdate);
+                }
+                if (!isFinalUpdate) {
+                    this.lastStreamPrompt = tPrompt.prompt;
                 }
             }
-            this.isResponseRequested = false;
+            if (isFinalUpdate && this.stopResponding) {
+                this.stopResponding.classList.remove('e-btn-active');
+            }
+            this.isResponseRequested = !isFinalUpdate;
         }
         this.isProtectedOnChange = prevOnChange;
     }
@@ -1631,7 +1701,7 @@ export class AIAssistView extends InterActiveChatBase implements INotifyProperty
                 if (!this.footerTemplate) {
                     this.textareaObj.value = this.prompt;
                     this.textareaObj.dataBind();
-                    this.updateTextAreaObject();
+                    this.updateTextAreaObject(this.textareaObj);
                 }
                 break;
             case 'locale':

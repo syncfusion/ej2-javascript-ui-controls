@@ -1,4 +1,5 @@
 @use 'sass:math';
+@use 'sass:color';
 
 $pager-numericitem-border-radius: 4px !default;
 $pager-border-type: $border-type !default;
@@ -131,8 +132,8 @@ $pager-bigger-tripledot-font-size: $pager-tripledot-font-size !default;
 $pager-focus-bg-color: $grey-light !default;
 $pager-focus-tripledot-padding: $pager-tripledot-padding !default;
 $pager-focus-tripledot-line-height: 1 !default;
-$pager-focus-active-box-shadow: 0 0 0 1px lighten($brand-primary, 10%) inset !default;
-$pager-focus-shadow: 0 0 0 1px lighten($brand-primary, 10%) inset !default;
+$pager-focus-active-box-shadow: 0 0 0 1px color.adjust($brand-primary, $lightness: 10%) inset !default;
+$pager-focus-shadow: 0 0 0 1px color.adjust($brand-primary, $lightness: 10%) inset !default;
 $pager-bigger-adaptive-pagermsgbar-margin-top: 2px !default;
 $pager-bigger-adaptive-dropdown-margin: -1px 2px 0 4px !default;
 $pager-bigger-adaptive-dropdown-min-width: 77px !default;

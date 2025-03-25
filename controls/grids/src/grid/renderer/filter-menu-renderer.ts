@@ -330,7 +330,7 @@ export class FilterMenuRenderer {
 
 
     private writeMethod(col: Column, dlgContentEle: Element): void {
-        let flValue: string | number | Date | boolean;
+        let flValue: string | number | Date | boolean | (string | number | boolean | Date)[];
         const target: Element = dlgContentEle.querySelector('.e-flmenu-valinput');
         const instanceofFilterUI: NumberFilterUI | StringFilterUI | DateFilterUI =
             new this.colTypes[col.type](this.parent, this.serviceLocator, this.parent.filterSettings);
@@ -421,6 +421,10 @@ export class FilterMenuRenderer {
      */
     public getFilterUIInfo(): FilterUI {
         return { field: this.col.field, operator: this.flMuiObj.getFlOperator()};
+    }
+
+    public getOperatorDropdown(): DropDownList {
+        return this.flMuiObj.dropOptr;
     }
 
     public renderCheckBoxMenu(): HTMLElement {

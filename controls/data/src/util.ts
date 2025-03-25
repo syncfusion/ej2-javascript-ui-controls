@@ -192,7 +192,7 @@ export class DataUtil {
     public static fnAscending(x: string | number, y: string | number)
         : number {
         if (isNullOrUndefined(x) && isNullOrUndefined(y)) {
-            return -1;
+            return 0;
         }
         if (y === null || y === undefined) {
             return -1;
@@ -215,7 +215,7 @@ export class DataUtil {
     public static fnDescending(x: string | number, y: string | number)
         : number {
         if (isNullOrUndefined(x) && isNullOrUndefined(y)) {
-            return -1;
+            return 0;
         }
         if (y === null || y === undefined) {
             return 1;
@@ -549,12 +549,12 @@ export class DataUtil {
             return undefined;
         }
         if (nameSpace.indexOf('.') === -1) {
-            const lowerCaseNameSpace: string = nameSpace.charAt(0).toLowerCase() + nameSpace.slice(1);
-            const upperCaseNameSpace: string = nameSpace.charAt(0).toUpperCase() + nameSpace.slice(1);
             if (!isNullOrUndefined(from[nameSpace])) {
                 return from[nameSpace];
             }
             else {
+                const lowerCaseNameSpace: string = nameSpace.charAt(0).toLowerCase() + nameSpace.slice(1);
+                const upperCaseNameSpace: string = nameSpace.charAt(0).toUpperCase() + nameSpace.slice(1);
                 if (!isNullOrUndefined(from[lowerCaseNameSpace])) {
                     return from[lowerCaseNameSpace];
                 } else if (!isNullOrUndefined(from[upperCaseNameSpace])) {
@@ -611,32 +611,32 @@ export class DataUtil {
     /**
      * Sort the given data based on the field and comparer.
      *
-     * @param  {Object[]} ds - Defines the input data.
+     * @param  {Object[]} dataSource - Defines the input data.
      * @param  {string} field - Defines the field to be sorted.
      * @param  {Function} comparer - Defines the comparer function used to sort the records.
      */
-    public static sort(ds: Object[], field: string, comparer: Function): Object[] {
-        if (ds.length <= 1) {
-            return ds;
+    public static sort(dataSource: Object[], field: string, comparer: Function): Object[] {
+        if (dataSource.length <= 1) {
+            return dataSource;
         }
-
-        const middle: number = parseInt((ds.length / 2).toString(), 10);
-
-        let left: Object[] = ds.slice(0, middle);
-        let right: Object[] = ds.slice(middle);
-
-        left = this.sort(left, field, comparer);
-        right = this.sort(right, field, comparer);
-
-        return this.merge(left, right, field, comparer);
+        return dataSource.slice()
+            .sort((a: Object, b: Object) => (<Function>comparer)(this.getVal([a], 0, field), this.getVal([b], 0, field), a, b));
     }
-    public static ignoreDiacritics(value: string | number | boolean): string | Object {
+    public static ignoreDiacritics(value: string | number | Date | boolean): string | Object {
         if (typeof value !== 'string') {
             return value;
         }
         const result: string[] = value.split('');
         const newValue: string[] = result.map((temp: string) => temp in DataUtil.diacritics ? DataUtil.diacritics[temp] : temp);
         return newValue.join('');
+    }
+    public static ignoreDiacriticsForArrays(valueArray: Array<string | number | Date>): Array<string | number> {
+        if (!Array.isArray(valueArray)) {
+            return [];
+        }
+        return valueArray.map(item => {
+            return DataUtil.ignoreDiacritics(item) as string | number;
+        });
     }
 
     private static merge(left: Object[], right: Object[], fieldName: string, comparer: Function): Object[] {
@@ -1887,6 +1887,54 @@ export class DataUtil {
             const fn: string = DataUtil.fnOperators[operator];
             if (fn) { return fn; }
             return DataUtil.fnOperators.processSymbols(operator);
+        },
+        /**
+         * Checks if the specified value exists in the given array, with optional case and accent insensitivity.
+         *
+         * @param {string | number} actual - The value to check.
+         * @param {Array<string | number>} expectedArray - The array to search within.
+         * @param {boolean} [ignoreCase] - Whether to perform a case-insensitive comparison.
+         * @param {boolean} [ignoreAccent] - Whether to ignore accents/diacritics.
+         * @returns {boolean} `true` if the value is found, otherwise `false`.
+         */
+        in: (actual: string | number | Date, expectedArray: Array<string | number | Date>, ignoreCase?: boolean, ignoreAccent?: boolean): boolean => {
+            if (ignoreAccent) {
+                actual = <string>DataUtil.ignoreDiacritics(actual);
+                expectedArray = <Array<string | number | Date>>DataUtil.ignoreDiacriticsForArrays(expectedArray);
+            }
+            if (ignoreCase) {
+                return !isNullOrUndefined(actual) && expectedArray && expectedArray.length > 0 && expectedArray
+                    .map(item => DataUtil.toLowerCase(item)).indexOf(DataUtil.toLowerCase(actual)) > -1;
+            }
+            if (actual instanceof Date) {
+                return !isNullOrUndefined(actual) && expectedArray && expectedArray.length > 0 && Array.isArray(expectedArray) &&
+                    expectedArray.some(item => item instanceof Date && (item as Date).getTime() === (actual as Date).getTime());
+            }
+            return !isNullOrUndefined(actual) && expectedArray && expectedArray.length > 0 && expectedArray.indexOf(actual) > -1;
+        },
+        /**
+         * Checks if the specified value is not present in the given array, with optional case and accent insensitivity.
+         *
+         * @param {string | number} actual - The value to check.
+         * @param {Array<string | number>} expectedArray - The array to search within.
+         * @param {boolean} [ignoreCase] - Whether to perform a case-insensitive comparison.
+         * @param {boolean} [ignoreAccent] - Whether to ignore accents/diacritics.
+         * @returns {boolean} `true` if the value is not found, otherwise `false`.
+         */
+        notin: (actual: string | number | Date, expectedArray: Array<string | number | Date>, ignoreCase?: boolean, ignoreAccent?: boolean): boolean => {
+            if (ignoreAccent) {
+                actual = <string>DataUtil.ignoreDiacritics(actual);
+                expectedArray = <Array<string | number>>DataUtil.ignoreDiacriticsForArrays(expectedArray);
+            }
+            if (ignoreCase) {
+                return !isNullOrUndefined(actual) && expectedArray && expectedArray.length > 0 && expectedArray
+                    .map(item => DataUtil.toLowerCase(item)).indexOf(DataUtil.toLowerCase(actual)) === -1;
+            }
+            if (actual instanceof Date) {
+                return !isNullOrUndefined(actual) && expectedArray && expectedArray.length > 0 && Array.isArray(expectedArray) &&
+                    expectedArray.every(item => !(item instanceof Date) || (item as Date).getTime() !== (actual as Date).getTime());
+            }
+            return !isNullOrUndefined(actual) && expectedArray && expectedArray.length > 0 && expectedArray.indexOf(actual) === -1;
         }
     };
 
@@ -2484,6 +2532,8 @@ export interface Operators {
     doesnotendwith?: Function;
     processSymbols?: Function;
     processOperator?: Function;
+    in?: Function;
+    notin?: Function;
 }
 
 /**

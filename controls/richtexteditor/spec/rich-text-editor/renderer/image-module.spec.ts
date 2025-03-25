@@ -189,14 +189,13 @@ describe('Image Module', () => {
             done();
         });
         afterAll(() => {
-            Browser.userAgent = defaultUA;
             destroy(rteObj);
+            Browser.userAgent = defaultUA;
         });
         it('mobile UI', () => {
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             expect(rteObj.element.lastElementChild.classList.contains('e-dlg-container')).toBe(false);
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-            Browser.userAgent = defaultUA;
         });
     });
 
@@ -732,7 +731,6 @@ client side. Customer easy to edit the contents and get the HTML content for
                 dispatchEvent((rteObj.element.querySelector('.testNode') as HTMLElement), 'mouseup');
                 setTimeout(() => {
                     expect(rteObj.contentModule.getEditPanel().getAttribute('contenteditable') === 'false').toBe(true);
-                    Browser.userAgent = defaultUA;
                     done();
                 }, 100);
             }, 100);
@@ -831,6 +829,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
         afterAll(() => {
             destroy(rteObj);
+            Browser.userAgent = currentBrowserUA;
         });
         it('Inserting image and applying heading in IE11', () => {
             expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
@@ -952,6 +951,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
         afterAll(() => {
             destroy(rteObj);
+            detach(document.querySelector('.e-imginline'));
         });
         it('image dialog', (done: Function) => {
             expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
@@ -2211,34 +2211,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 200);
         });
     });
-    describe('942010 - Image Link Is Lost When Dragging and Dropping the Image in the Editor', () => {
-        let rteObj: RichTextEditor;
-        beforeAll((done: Function) => {
-            rteObj = renderRTE({
-                insertImageSettings: {
-                    resize: false
-                },
-                value: `<div><p>First p node-0</p><a href="https://ej2.syncfusion.com/home/" target="_blank" aria-label="Open in new window"></a></div>`,
-            });
-            done();
-        });
-        afterAll((done: Function) => {
-            destroy(rteObj);
-            done();
-        });
-        it("Image Link Is Lost When Dragging and Dropping the Image in the Editor", function () {
-            let image: HTMLElement = createElement("IMG");
-            image.classList.add('e-rte-drag-image');
-            image.setAttribute('src', 'https://www.google.co.in/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
-            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "image/png" });
-            rteObj.inputElement.querySelector('a').appendChild(image);
-            let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
-            rteObj.focusIn();
-            (rteObj.imageModule as any).insertDragImage(event);
-            expect(rteObj.inputElement.querySelectorAll('img').length === 1).toBe(true);
-            expect(rteObj.inputElement.querySelector('img').parentElement.tagName === 'A').toBe(true);
-        });
-    });
+
     describe('EJ2-53661- Image is not deleted when press backspace and delete button', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -4716,6 +4689,34 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect(document.querySelectorAll('li')[1].innerHTML === "Break");
         });
     });
+    describe('942010 - Image Link Is Lost When Dragging and Dropping the Image in the Editor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                insertImageSettings: {
+                    resize: false
+                },
+                value: `<div><p>First p node-0</p><a href="https://ej2.syncfusion.com/home/" target="_blank" aria-label="Open in new window"></a></div>`,
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it("Image Link Is Lost When Dragging and Dropping the Image in the Editor", function () {
+            let image: HTMLElement = createElement("IMG");
+            image.classList.add('e-rte-drag-image');
+            image.setAttribute('src', 'https://www.google.co.in/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
+            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "image/png" });
+            rteObj.inputElement.querySelector('a').appendChild(image);
+            let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            rteObj.focusIn();
+            (rteObj.imageModule as any).insertDragImage(event);
+            expect(rteObj.inputElement.querySelectorAll('img').length === 1).toBe(true);
+            expect(rteObj.inputElement.querySelector('img').parentElement.tagName === 'A').toBe(true);
+        });
+    });
     describe('EJ2-53661- Image is not deleted when press backspace and delete button', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -6047,6 +6048,38 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
+    describe("945310: Image Selection Removed After Updating Alternate Text, Cursor Moves to Editor", () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                value: `<p><b>Description:</b></p><p><img class='e-rte-image e-imgcenter' id="image" alt="Logo" src="https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png" style="width: 300px;">`
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('Dynamically modify the quick toolbar position in the beforeQuickToolbarOpen event.', (done) => {
+            let image: HTMLElement = rteObj.element.querySelector("#image");
+            setCursorPoint(image, 0);
+            dispatchEvent(image, 'mousedown');
+            image.click();
+            dispatchEvent(image, 'mouseup');
+            setTimeout(() => {
+                const imageBtn: HTMLElement = document.getElementById(controlId + "_quick_AltText");
+                imageBtn.parentElement.click();
+                const altBtn: HTMLElement = document.querySelector('.e-update-alt');
+                altBtn.click();
+                const range: any = new NodeSelection().getRange(document);
+                expect(range.startContainer.querySelector('img')).not.toBe(null);
+                done();
+            }, 100);
+        });
+    });
+
     describe('874686 - Image Size pop up has more empty space at below before update buttom. Can reduce the size of pop up.', () => {
         let rteObj: RichTextEditor;
         let controlId: string;
@@ -6174,67 +6207,6 @@ client side. Customer easy to edit the contents and get the HTML content for
                 });
         });
     });
-
-    describe('926553 - Image Overlaps the List After Changing Alignment to Left',()=>{
-        let rteEle: HTMLElement;
-        let rteObj: RichTextEditor;
-        let innerHTML1: string = `<p>Rich Text Editor allows inserting images from online sources as well as the local computers where you want to insert the image in your content.</p>
-                        <li><img alt="Logo" class='e-rte-image' src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;"/></li><li>Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</li>`;
-        beforeAll(() => {
-            rteObj = renderRTE({
-                toolbarSettings: {
-                    items: ['Image']
-                },
-                value: innerHTML1
-            });
-            rteEle = rteObj.element;
-        });
-        afterAll(() => {
-            destroy(rteObj);
-        });
-        it('926553 - Image Overlaps the List After Changing Alignment to Left',(done:Function)=>{
-            expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
-            let target:HTMLElement=rteObj.element.querySelector('.e-rte-image');
-            dispatchEvent(target,'mousedown');
-            target.click();
-            dispatchEvent(target,'mouseup');
-            var eventArgs={pageX:50,pageY:300,target:target};
-            (<any>rteObj).imageModule.editAreaClickHandler({ args: eventArgs });
-            (<any>rteObj).imageModule.imgEle = rteObj.contentModule.getEditPanel().querySelector('.e-rte-image');
-            setTimeout(() => {
-                let mouseEventArgs = {
-                    item: { command: 'Images', subCommand: 'JustifyLeft' }
-                };
-                (<any>rteObj).imageModule.alignmentSelect(mouseEventArgs);
-                let img: HTMLElement = rteObj.element.querySelector('.e-rte-image') as HTMLElement;
-                expect(img.classList.contains('e-imgleft')).toBe(true);
-                expect((img.parentElement.nextElementSibling as HTMLElement).style.clear=='left').toBe(true);
-                done();
-            },200);
-        });
-        it('926553 - Image Overlaps the List After Changing Alignment to Right',(done:Function)=>{
-            expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
-            let target:HTMLElement=rteObj.element.querySelector('.e-rte-image');
-            dispatchEvent(target,'mousedown');
-            target.click();
-            dispatchEvent(target,'mouseup');
-            var eventArgs={pageX:50,pageY:300,target:target};
-            (<any>rteObj).imageModule.editAreaClickHandler({ args: eventArgs });
-            (<any>rteObj).imageModule.imgEle = rteObj.contentModule.getEditPanel().querySelector('.e-rte-image');
-            setTimeout(() => {
-                let mouseEventArgs = {
-                    item: { command: 'Images', subCommand: 'JustifyRight' }
-                };
-                (<any>rteObj).imageModule.alignmentSelect(mouseEventArgs);
-                let img: HTMLElement = rteObj.element.querySelector('.e-rte-image') as HTMLElement;
-                expect(img.classList.contains('e-imgright')).toBe(true);
-                expect((img.parentElement.nextElementSibling as HTMLElement).style.clear=='right').toBe(true);
-                done();
-            },200);
-        });
-
-    });
-    
     describe('924317 -Both oroiginal and the replaced image displayed while replacing the image && Incorrect display style after applying the break style to the image ',function(){
         let rteObj: RichTextEditor;
         let controlId: string;
@@ -6348,57 +6320,163 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect((<any>rteObj).imageModule.dialogObj.element.querySelector('.e-input.e-img-link').classList.contains('e-error')).toBe(false); 
         });
         });
-    describe('942858 -EnableAutoUrl does not apply for the links added with inserted image in the RichTextEditor ',function(){
-        let rteObj: RichTextEditor;
+        describe('942858 -EnableAutoUrl does not apply for the links added with inserted image in the RichTextEditor ',function(){
+            let rteObj: RichTextEditor;
+            let controlId: string;
+            beforeAll(() => {
+                rteObj = renderRTE({
+                    enableAutoUrl: true,
+                    toolbarSettings: {
+                        items: ['Image']
+                    },
+                    iframeSettings: {
+                        enable: true
+                    }
+                });
+                controlId = rteObj.element.id;
+            });
+            afterAll((done:Function) => { 
+                setTimeout(() => {
+                destroy(rteObj);
+                done();
+            }, 2000);
+            });
+            it(" insert image  and add link value to it", () => {
+                let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Image');
+                item.click();
+                setTimeout(() => {
+                    let iframeBody: HTMLElement = (document.querySelector('iframe') as HTMLIFrameElement).contentWindow.document.body as HTMLElement;
+                    let dialogEle: any = rteObj.element.querySelector('.e-dialog');
+                    (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+                    (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+                    expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
+                    (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
+                    let trg = (iframeBody.querySelector('.e-rte-image') as HTMLElement);
+                    expect(!isNullOrUndefined(trg)).toBe(true);
+                    expect(iframeBody.querySelectorAll('img').length).toBe(1);
+                    expect((iframeBody.querySelector('img') as HTMLImageElement).src).toBe('https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png');
+                    (iframeBody.querySelector('img') as HTMLImageElement).style.width = '100px';
+                    (iframeBody.querySelector('img') as HTMLImageElement).style.height = '100px';
+                    (rteObj.contentModule.getPanel() as HTMLElement).focus();
+                    dispatchEvent((rteObj.contentModule.getEditPanel() as HTMLElement), 'mousedown');
+                    dispatchEvent((iframeBody.querySelector('img') as HTMLElement), 'mouseup');
+                    setTimeout(() => {
+                        let imageBtn: HTMLElement = document.getElementById(controlId + "_quick_InsertLink");
+                        imageBtn.parentElement.click();
+                        let dialog: HTMLElement = document.getElementById(controlId + "_image");
+                        let urlInput: HTMLInputElement = dialog.querySelector(".e-input.e-img-link");
+                        urlInput.value = "defaultimage";
+                        let insertButton: HTMLElement = dialog.querySelector('.e-update-link.e-primary');
+                        insertButton.click();
+                        expect((iframeBody.querySelector('a').getAttribute('href') === 'defaultimage')).toBe(true);
+                }, 200);
+            }, 200);
+            });
+        });
+
+    describe('944693 - Image Alignment Dropdown Displays Incorrect Selection After Changing Alignment ', () => {
+        let rteEle: HTMLElement;
         let controlId: string;
+        let rteObj: RichTextEditor;
+        let innerHTML: string = `<ul> <li style="cursor: auto;"><img src="https://services.syncfusion.com/js/production/RichTextEditor/Screenshot 2024-12-03 115549.png" class="e-rte-image e-imginline" alt="Screenshot 2024-12-03 115549" width="262" height="31" style="min-width: 0px; max-width: 1106px; min-height: 0px; width: 262px; height: 31px;" /> Basic features include headings, block quotes, <img id="target-img" src="https://services.syncfusion.com/js/production/RichTextEditor/Screenshot 2024-12-05 130431.png" class="e-rte-image e-imginline" alt="Screenshot 2024-12-05 130431" width="180" height="38" style="min-width: 0px; max-width: 1106px; min-height: 0px; width: 180px; height: 38px;" /> numbered lists, bullet lists, and support to insert images, tables, audio, and video.</li></ul>`;
         beforeAll(() => {
             rteObj = renderRTE({
-                enableAutoUrl: true,
+                height: 400,
                 toolbarSettings: {
-                    items: ['Image']
+                    items: ['Image', 'Bold']
+                },
+                value: innerHTML,
+            });
+            rteEle = rteObj.element,
+            controlId = rteObj.element.id;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Apply align right and check the e-active class addition ', (done: Function) => {
+            let target: HTMLElement = (<HTMLElement>rteEle.querySelectorAll(".e-content")[0].firstChild).querySelector('#target-img');
+            let args: any = {
+                preventDefault: function () { },
+                originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') },
+                item: {},
+            };
+            let range: any = new NodeSelection().getRange(document);
+            let save: any = new NodeSelection().save(range, document);
+            let evnArg: any = { args, self: (<any>rteObj).imageModule, selection: save, selectNode: [target], link: null, target: '' };
+            evnArg.item = { command: 'Images', subCommand: 'JustifyRight' };
+            evnArg.e = args;
+            (<any>rteObj).imageModule.alignmentSelect(evnArg);
+            evnArg.args.item = { command: 'Images', subCommand: 'JustifyRight' };
+            (<any>rteObj).imageModule.alignImage(evnArg, 'JustifyRight');
+            expect((rteEle.querySelectorAll(".e-content")[0].firstChild as HTMLElement).querySelector('#target-img').classList.contains('e-imgright')).toBe(true);
+            setTimeout(function () {
+                setCursorPoint(target, 0);
+                dispatchEvent(target, 'mousedown');
+                target.click();
+                dispatchEvent(target, 'mouseup');
+                setTimeout(function () {
+                    var imageQTBarEle = document.querySelector('.e-rte-quick-popup');
+                    (imageQTBarEle.querySelector("[title='Align']") as HTMLElement).click();
+                    (imageQTBarEle.querySelector('.e-icon-right') as HTMLElement).click();
+                    expect((document.getElementById(controlId + '_quick_Align-popup').firstChild.childNodes[2] as HTMLElement).classList.contains('e-active')).toBe(true);
+                    done();
+                }, 100);
+            }, 100);
+        });
+    });
+
+    describe('944693 - Image Alignment Dropdown Displays Incorrect Selection After Changing Alignment - Iframe ', () => {
+        let rteEle: HTMLElement;
+        let controlId: string;
+        let rteObj: RichTextEditor;
+        let innerHTML: string = `<ul> <li style="cursor: auto;"><img src="https://services.syncfusion.com/js/production/RichTextEditor/Screenshot 2024-12-03 115549.png" class="e-rte-image e-imginline" alt="Screenshot 2024-12-03 115549" width="262" height="31" style="min-width: 0px; max-width: 1106px; min-height: 0px; width: 262px; height: 31px;" /> Basic features include headings, block quotes, <img id="target-img" src="https://services.syncfusion.com/js/production/RichTextEditor/Screenshot 2024-12-05 130431.png" class="e-rte-image e-imginline" alt="Screenshot 2024-12-05 130431" width="180" height="38" style="min-width: 0px; max-width: 1106px; min-height: 0px; width: 180px; height: 38px;" /> numbered lists, bullet lists, and support to insert images, tables, audio, and video.</li></ul>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
                 },
                 iframeSettings: {
                     enable: true
-                }
+                },
+                value: innerHTML,
             });
+            rteEle = rteObj.element,
             controlId = rteObj.element.id;
         });
-        afterAll((done:Function) => { 
-            setTimeout(() => {
+        afterAll(() => {
             destroy(rteObj);
-            done();
-        }, 2000);
         });
-        it(" insert image  and add link value to it", () => {
-            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Image');
-            item.click();
-            setTimeout(() => {
-                let iframeBody: HTMLElement = (document.querySelector('iframe') as HTMLIFrameElement).contentWindow.document.body as HTMLElement;
-                let dialogEle: any = rteObj.element.querySelector('.e-dialog');
-                (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
-                (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
-                expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
-                (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
-                let trg = (iframeBody.querySelector('.e-rte-image') as HTMLElement);
-                expect(!isNullOrUndefined(trg)).toBe(true);
-                expect(iframeBody.querySelectorAll('img').length).toBe(1);
-                expect((iframeBody.querySelector('img') as HTMLImageElement).src).toBe('https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png');
-                (iframeBody.querySelector('img') as HTMLImageElement).style.width = '100px';
-                (iframeBody.querySelector('img') as HTMLImageElement).style.height = '100px';
-                (rteObj.contentModule.getPanel() as HTMLElement).focus();
-                dispatchEvent((rteObj.contentModule.getEditPanel() as HTMLElement), 'mousedown');
-                dispatchEvent((iframeBody.querySelector('img') as HTMLElement), 'mouseup');
-                setTimeout(() => {
-                    let imageBtn: HTMLElement = document.getElementById(controlId + "_quick_InsertLink");
-                    imageBtn.parentElement.click();
-                    let dialog: HTMLElement = document.getElementById(controlId + "_image");
-                    let urlInput: HTMLInputElement = dialog.querySelector(".e-input.e-img-link");
-                    urlInput.value = "defaultimage";
-                    let insertButton: HTMLElement = dialog.querySelector('.e-update-link.e-primary');
-                    insertButton.click();
-                    expect((iframeBody.querySelector('a').getAttribute('href') === 'defaultimage')).toBe(true);
-            }, 200);
-        }, 200);
+        it('Apply align right and check the e-active class addition ', (done: Function) => {
+            let iframeBody = (document.querySelector('iframe')).contentWindow.document.body;
+            let target: HTMLElement = (iframeBody.firstChild as HTMLElement).querySelector('#target-img');
+            let args = {
+                preventDefault: function () { },
+                originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') },
+                item: {},
+            };
+            let range = new NodeSelection().getRange(document);
+            let save = new NodeSelection().save(range, document);
+            let evnArg: any = { args, self: (<any>rteObj).imageModule, selection: save, selectNode: [target], link: null, target: '' };
+            evnArg.item = { command: 'Images', subCommand: 'JustifyRight' };
+            evnArg.e = args;
+            (<any>rteObj).imageModule.alignmentSelect(evnArg);
+            evnArg.args.item = { command: 'Images', subCommand: 'JustifyRight' };
+            (<any>rteObj).imageModule.alignImage(evnArg, 'JustifyRight');
+            setTimeout(function () {
+                expect((iframeBody.firstChild as HTMLElement).querySelector('#target-img').classList.contains('e-imgright')).toBe(true);
+                setCursorPoint(target, 0);
+                dispatchEvent(target, 'mousedown');
+                target.click();
+                dispatchEvent(target, 'mouseup');
+                setTimeout(function () {
+                    var imageQTBarEle = document.querySelector('.e-rte-quick-popup');
+                    (imageQTBarEle.querySelector("[title='Align']") as HTMLElement).click();
+                    (imageQTBarEle.querySelector('.e-icon-right') as HTMLElement).click();
+                    expect((document.getElementById(controlId + '_quick_Align-popup').firstChild.childNodes[2] as HTMLElement).classList.contains('e-active')).toBe(true);
+                    done();
+                }, 100);
+            }, 100);
         });
     });
 });

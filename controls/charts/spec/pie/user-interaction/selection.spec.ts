@@ -87,7 +87,7 @@ describe('Accumulation Chart Control', () => {
                 trigger.clickEvent(element);
                 element = document.getElementById('pie_Series_0_Point_6');
                 trigger.clickEvent(element);
-                expect(document.getElementsByClassName(selection + '0'+'_point_6').length === 3).toBe(true);
+                expect(document.getElementsByClassName(selection + '0'+'_point_6').length === 4).toBe(true);
                 done();
             };
             accumulation.selectionMode = 'Point';
@@ -99,7 +99,7 @@ describe('Accumulation Chart Control', () => {
                 trigger.clickEvent(element);
                 element = document.getElementById('pie_Series_0_Point_6');
                 trigger.clickEvent(element);
-                expect((document.getElementsByClassName(selection + '0'+'_point_6').length + document.getElementsByClassName(selection + '0'+'_point_3').length) === 5).toBe(true);
+                expect((document.getElementsByClassName(selection + '0'+'_point_6').length + document.getElementsByClassName(selection + '0'+'_point_3').length) === 7).toBe(true);
                 done();
             };
             accumulation.selectionMode = 'Point';
@@ -130,14 +130,14 @@ describe('Accumulation Chart Control', () => {
                     element = document.getElementById('pie_Series_0_Point_' + i);
                     trigger.clickEvent(element);
                     selected = document.getElementsByClassName(selection + 0+'_point_'+i);
-                    expect(selected.length === 3).toBe(true);
+                    expect(selected.length === 4).toBe(true);
                 }
                 selectedLength = selected.length;
                 for (i = accumulation.visibleSeries[0].points.length - 1, j = 1; i > 0; i-- , j++) {
                     element = document.getElementById('pie_Series_0_Point_' + i);
                     trigger.clickEvent(element);
                     selected = document.getElementsByClassName(selection + 0+'_point_'+i);
-                    expect(selected.length === selectedLength - 3).toBe(true);
+                    expect(selected.length === selectedLength - 4).toBe(true);
                 }
                 done();
             };
@@ -148,7 +148,7 @@ describe('Accumulation Chart Control', () => {
         });
         it('Doughnut - Selected DataIndexes checking', (done: Function) => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
-                expect(document.getElementsByClassName(selection + '0'+'_point_2').length === 2).toBe(true);
+                expect(document.getElementsByClassName(selection + '0'+'_point_2').length === 3).toBe(true);
                 done();
             };
             accumulation.selectionMode = 'Point';
@@ -161,7 +161,7 @@ describe('Accumulation Chart Control', () => {
                 accumulation.loaded = null;
                 element = document.getElementById('pie_chart_legend_shape_1');
                 trigger.clickEvent(element);
-                expect(document.getElementsByClassName(selection + '0'+'_point_1').length === 2).toBe(true);
+                expect(document.getElementsByClassName(selection + '0'+'_point_1').length === 3).toBe(true);
                 trigger.clickEvent(element);
                 expect(document.getElementsByClassName(selection + '0'+'_point_1').length === 0).toBe(true);
                 done();
@@ -187,7 +187,7 @@ describe('Accumulation Chart Control', () => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 element = document.getElementById('pie_datalabel_Series_0_text_0');
                 trigger.clickEvent(element);
-                expect(document.getElementsByClassName(selection + '0'+'_point_0').length === 2).toBe(true);
+                expect(document.getElementsByClassName(selection + '0'+'_point_0').length === 3).toBe(true);
                 done();
             };
             accumulation.selectionMode = 'Point';
@@ -215,7 +215,7 @@ describe('Accumulation Chart Control', () => {
                 trigger.clickEvent(element);
                 element = document.getElementById('pie_Series_0_Point_6');
                 trigger.clickEvent(element);
-                expect(document.getElementsByClassName(selection + '0'+'_point_6').length === 3).toBe(true);
+                expect(document.getElementsByClassName(selection + '0'+'_point_6').length === 4).toBe(true);
                 done();
             };
             accumulation.series[0].innerRadius = '0%';
@@ -230,7 +230,7 @@ describe('Accumulation Chart Control', () => {
                 trigger.clickEvent(element);
                 element = document.getElementById('pie_Series_0_Point_' + 6);
                 trigger.clickEvent(element);
-                expect((document.getElementsByClassName(selection + '0'+'_point_6').length + document.getElementsByClassName(selection + '0'+'_point_3').length) === 5).toBe(true);
+                expect((document.getElementsByClassName(selection + '0'+'_point_6').length + document.getElementsByClassName(selection + '0'+'_point_3').length) === 7).toBe(true);
                 done();
             };
             accumulation.selectionMode = 'Point';
@@ -261,14 +261,14 @@ describe('Accumulation Chart Control', () => {
                     element = document.getElementById('pie_Series_0_Point_' + i);
                     trigger.clickEvent(element);
                     selected = document.getElementsByClassName(selection + 0+'_point_'+i);
-                    expect(selected.length === 3).toBe(true);
+                    expect(selected.length === 4).toBe(true);
                 }
                 selectedLength = selected.length;
                 for (i = accumulation.visibleSeries[0].points.length - 1, j = 1; i > 0; i-- , j++) {
                     element = document.getElementById('pie_Series_0_Point_' + i);
                     trigger.clickEvent(element);
                     selected = document.getElementsByClassName(selection + 0+'_point_'+i);
-                    expect(selected.length === selectedLength - 3).toBe(true);
+                    expect(selected.length === selectedLength - 4).toBe(true);
                 }
                 done();
             };
@@ -279,7 +279,7 @@ describe('Accumulation Chart Control', () => {
         });
         it('Pie - Selected DataIndexes checking', (done: Function) => {
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
-                expect(document.getElementsByClassName(selection + '0'+'_point_2').length === 2).toBe(true);
+                expect(document.getElementsByClassName(selection + '0'+'_point_2').length === 3).toBe(true);
                 done();
             };
             accumulation.selectionMode = 'Point';
@@ -292,7 +292,7 @@ describe('Accumulation Chart Control', () => {
                 accumulation.loaded = null;
                 element = document.getElementById('pie_chart_legend_text_1');
                 trigger.clickEvent(element);
-                expect(document.getElementsByClassName(selection + '0'+'_point_1').length === 2).toBe(true);
+                expect(document.getElementsByClassName(selection + '0'+'_point_1').length === 3).toBe(true);
                 trigger.clickEvent(element);
                 expect(document.getElementsByClassName(selection + '0'+'_point_1').length === 0).toBe(true);
                 done();
@@ -349,7 +349,7 @@ describe('Accumulation Chart Control', () => {
                 accumulation.loaded = null;
                 element = document.getElementById('pie_Series_0_Point_4');
                 trigger.clickEvent(element);
-                expect(document.getElementsByClassName(selection + '0'+'_point_4').length === 2).toBe(true);
+                expect(document.getElementsByClassName(selection + '0'+'_point_4').length === 3).toBe(true);
                 element = document.getElementById('pie_chart_legend_shape_4');
                 trigger.clickEvent(element);
                 expect(element.getAttribute('class') === selection + '0'+'_point_4').toBe(true);

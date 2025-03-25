@@ -3,11 +3,11 @@ import { SortDirection } from '@syncfusion/ej2-grids';
 import { SortDescriptorModel } from './sort-settings-model';
 
 /**
- * Represents the field name and direction of sort column.
+ * Represents the field name and direction of a sort column in the TreeGrid.
  */
 export class SortDescriptor extends ChildProperty<SortDescriptor> {
     /**
-     * Defines the field name of sort column.
+     * Specifies the field name of the column to be sorted.
      *
      * @default ''
      */
@@ -15,7 +15,9 @@ export class SortDescriptor extends ChildProperty<SortDescriptor> {
     public field: string;
 
     /**
-     * Defines the direction of sort column.
+     * Specifies the direction of sorting for the column. The available options are:
+     * * `Ascending`: Sorts the column in ascending order.
+     * * `Descending`: Sorts the column in descending order.
      *
      * @default ''
      * @isEnumeration true
@@ -23,16 +25,15 @@ export class SortDescriptor extends ChildProperty<SortDescriptor> {
      */
     @Property()
     public direction: SortDirection;
-
 }
 
 /**
- * Configures the sorting behavior of TreeGrid.
+ * Configures the sorting behavior of the TreeGrid.
  */
 export class SortSettings extends ChildProperty<SortSettings> {
     /**
-     * Specifies the columns to sort at initial rendering of TreeGrid.
-     * Also user can get current sorted columns.
+     * Specifies the columns to be sorted at initial rendering of the TreeGrid.
+     * This property can also be used to get or modify the currently sorted columns at runtime.
      *
      * @default []
      */
@@ -40,7 +41,8 @@ export class SortSettings extends ChildProperty<SortSettings> {
     public columns: SortDescriptorModel[];
 
     /**
-     * If `allowUnsort` set to false the user can not get the TreeGrid in unsorted state by clicking the sorted column header.
+     * If set to false, the user cannot reset the TreeGrid to an unsorted state by clicking on the sorted column header.
+     * When true, clicking an already sorted column header will toggle the sort direction or remove sorting.
      *
      * @default true
      */

@@ -15,6 +15,37 @@
       .e-tbar-btn {
         background: $assist-view-bg-color;
       }
+      .e-toolbar-item:not(.e-custom-view-header),
+      .e-toolbar-item:not(.e-assist-view-header) {
+        .e-tbar-btn {
+          &:focus {
+            @if ($skin-name == 'fluent2' or $skin-name == 'tailwind3') {
+              box-shadow: none;
+            }
+            &:not(:focus-visible) {
+              .e-icons {
+                @if ($skin-name == 'fluent2') {
+                  color: $toolbar-icon-color;
+                }
+                @if ($skin-name == 'tailwind3') {
+                  color: $secondary-text-color-hover;
+                }
+              }
+            }
+          }
+          &:focus-visible {
+            @if ($skin-name == 'fluent2' or $skin-name == 'tailwind3') {
+              background: $content-bg-color-alt1;
+            }
+            @if ($skin-name == 'fluent2') {
+              box-shadow: $keyboard-focus;
+            }
+            @if ($skin-name == 'tailwind3') {
+              box-shadow: $shadow-focus-ring2;
+            }
+          }
+        }
+      }
       .e-toolbar-item.e-active::after {
         background-color: $assist-header-border-bottom-color;
       }

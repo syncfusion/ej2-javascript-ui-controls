@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 /*! FileManager's fabric theme wise override definitions and variables */
 $fm-skin-name: 'fabric' !default;
 $fe-bc-font-size: 14px !default;
@@ -27,7 +29,7 @@ $fe-ah-bg-color: $theme-lighter !default;
 $fe-focus-border-color: $neutral-lighter !default;
 $fe-bc-color: $neutral-secondary !default;
 $fe-bc-link-color: $theme-primary !default;
-$fe-bc-hover-bg-color: darken($theme-primary, 10%) !default;
+$fe-bc-hover-bg-color: color.adjust($theme-primary, $lightness: -10%) !default;
 $fe-bc-hover-font-color: $theme-primary-font !default;
 $fe-grid-header-bg-color: $neutral-lighter-alt !default;
 $fe-grid-type-color: $neutral-secondary-alt !default;

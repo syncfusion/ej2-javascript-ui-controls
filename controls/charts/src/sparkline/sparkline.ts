@@ -496,6 +496,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         (tooltipDiv as HTMLElement).style.position = 'relative';
         this.element.appendChild(tooltipDiv);
         this.element.setAttribute('tabindex', '0');
+        (this.element as HTMLElement).style.outline = 'none';
         this.element.style.display = 'block';
         this.element.style.position = 'relative';
     }
@@ -594,14 +595,6 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     private setTheme(): void {
         /** Set theme */
         this.sparkTheme = getThemeColor(this.theme);
-        if (!(document.getElementById(this.element.id + 'Keyboard_sparkline_focus'))) {
-            const style: HTMLStyleElement = document.createElement('style');
-            style.setAttribute('id', (<HTMLElement>this.element).id + 'Keyboard_sparkline_focus');
-            style.innerText = '.e-sparkline-focused:focus,' +
-                'div[id*=container]:focus, path[id*=_sparkline_]:focus, circle[id*=_sparkline_]:focus {outline: none } .e-sparkline-focused:focus-visible,' +
-                'div[id*=container]:focus-visible, path[id*=_sparkline_]:focus-visible, circle[id*=_sparkline_]:focus-visible {outline: 1.5px ' + this.sparkTheme.tabColor + ' solid}';
-            document.body.appendChild(style);
-        }
     }
 
     /**
@@ -663,6 +656,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
 
         new Touch(this.element);
     }
+
     /**
      * Sparkline resize event.
      *
@@ -746,6 +740,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
             };
             this.trigger(pointArgs.name, pointArgs);
         }
+        this.removeNavigationStyle();
         return false;
     }
     /**
@@ -810,6 +805,9 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         if (actionKey !== '') {
             this.sparklineKeyboardNavigations(e, (e.target as HTMLElement).id, actionKey);
         }
+        if (e.code === 'Tab' || e.code === 'Enter' || e.code.indexOf('Arrow') > -1) {
+            this.removeNavigationStyle();
+        }
         return false;
     }
 
@@ -826,6 +824,12 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         let groupElement: HTMLElement;
         const targetElement: HTMLElement = e.target as HTMLElement;
         const seriesElement: HTMLElement = getElement(this.element.id + '_sparkline_g') as HTMLElement;
+        const seriesChildElement: HTMLElement = getElement(this.element.id + '_sparkline_line') as HTMLElement;
+        this.removeNavigationStyle();
+        this.setNavigationStyle(targetId);
+        if (seriesChildElement) {
+            seriesChildElement.removeAttribute('tabindex');
+        }
         if (seriesElement && seriesElement.firstElementChild) {
             const firstChild: HTMLElement = seriesElement.firstElementChild as HTMLElement;
             let className: string = firstChild.getAttribute('class');
@@ -887,6 +891,36 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
             this.sparklineKeyboardNavigations(e, targetId, actionKey);
         }
         return false;
+    }
+
+    /**
+     * Handles to set style for key event on the document.
+     *
+     * @param {target} target - element which currently focused.
+     * @returns {void}
+     * @private
+     */
+    private setNavigationStyle(target: string): void {
+        const currentElement: HTMLElement = document.getElementById(target);
+        if (currentElement) { currentElement.style.setProperty('outline', `1.5px solid ${this.sparkTheme.tabColor}`); }
+    }
+
+    /**
+     * Handles to remove style for key event on the document.
+     *
+     * @returns {void}
+     * @private
+     */
+    private removeNavigationStyle(): void {
+        const currentElement: NodeList = document.querySelectorAll(`path[id*=_sparkline_], [id*=${this.element.id}]`);
+        if (currentElement) {
+            currentElement.forEach((element: Node) => {
+                if (element instanceof HTMLElement || element instanceof SVGElement) {
+                    element.style.setProperty('outline', 'none');
+                    element.style.setProperty('margin', '');
+                }
+            });
+        }
     }
 
     private sparklineKeyboardNavigations(e: KeyboardEvent, targetId: string, actionKey: string): void {

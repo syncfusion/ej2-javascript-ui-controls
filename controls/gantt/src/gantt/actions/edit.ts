@@ -18,6 +18,7 @@ import { MultiSelect, CheckBoxSelection, DropDownList } from '@syncfusion/ej2-dr
 import { ConnectorLineEdit } from './connector-line-edit';
 import { ITreeData, TreeGrid, Edit as TreeGridEdit } from '@syncfusion/ej2-treegrid';
 import { CriticalPath, UndoRedo } from '..';
+import { ITaskSegment, TaskType } from '../base/common';
 
 
 /**
@@ -518,36 +519,38 @@ export class Edit {
         const scheduleFieldNames: string[] = [];
         let isScheduleValueUpdated: boolean = false;
         for (const key of Object.keys(data)) {
-            if ([tasks.startDate, tasks.endDate, tasks.duration].indexOf(key) !== -1) {
+            if (tasks.startDate === key || tasks.endDate === key || tasks.duration === key) {
                 if (isNullOrUndefined(data[`${key}`]) && !ganttObj.allowUnscheduledTasks) {
                     continue;
                 }
+                const ganttProps : ITaskData = ganttData.ganttProperties;
+                const isDurationKey : boolean = tasks.duration === key;
                 if (isFromDialog) {
-                    if (tasks.duration === key) {
-                        ganttObj.dataOperation.updateDurationValue(data[key as string], ganttData.ganttProperties);
-                        if (ganttData.ganttProperties.duration > 0 && ganttData.ganttProperties.isMilestone) {
-                            this.parent.setRecordValue('isMilestone', false, ganttData.ganttProperties, true);
+                    if (isDurationKey) {
+                        ganttObj.dataOperation.updateDurationValue(data[key as string], ganttProps);
+                        if (ganttProps.duration > 0 && ganttProps.isMilestone) {
+                            this.parent.setRecordValue('isMilestone', false, ganttProps, true);
                         }
-                        ganttObj.dataOperation.updateMappingData(ganttData, ganttPropByMapping[key as string]);
                     } else {
                         let tempDate: Date = typeof data[key as string] === 'string' ? new Date(data[key as string] as string) : data[key as string];
-                        if (key === tasks.endDate && isNullOrUndefined(ganttData.ganttProperties.startDate) && (isNullOrUndefined(data[tasks.duration]) || data[tasks.duration] === '' || Number.isNaN(data[tasks.duration]))) {
-                            tempDate = ganttData.ganttProperties.endDate;
+                        if (key === tasks.endDate && isNullOrUndefined(ganttProps.startDate) && (isNullOrUndefined(data[tasks.duration]) || data[tasks.duration] === '' || Number.isNaN(data[tasks.duration]))) {
+                            tempDate = this.parent.editModule.dialogModule['isFromEditDialog'] ? ganttData.ganttProperties.endDate : data[tasks.endDate];
                         }
-                        ganttObj.setRecordValue(ganttPropByMapping[key as string], tempDate, ganttData.ganttProperties, true);
+                        ganttObj.setRecordValue(ganttPropByMapping[key as string], tempDate, ganttProps, true);
                         if (ganttData[tasks.startDate] && !(ganttData[tasks.startDate] instanceof Date)) {
                             ganttData[tasks.startDate] = new Date(ganttData[tasks.startDate]);
                         }
                         if (ganttData[tasks.endDate] && !(ganttData[tasks.endDate] instanceof Date)) {
                             ganttData[tasks.endDate] = new Date(ganttData[tasks.endDate]);
                         }
-                        ganttObj.dataOperation.updateMappingData(ganttData, ganttPropByMapping[key as string]);
                     }
+                    ganttObj.dataOperation.updateMappingData(ganttData, ganttPropByMapping[key as string]);
                 } else {
                     scheduleFieldNames.push(key);
                     isScheduleValueUpdated = true;
                 }
-            } else if (tasks.resourceInfo === key) {
+            }
+            else if (tasks.resourceInfo === key) {
                 const resourceData: Object[] = ganttObj.dataOperation.setResourceInfo(data);
                 if (this.parent.viewType === 'ResourceView') {
                     if (JSON.stringify(resourceData) !== JSON.stringify(ganttData.ganttProperties.resourceInfo)) {
@@ -562,9 +565,11 @@ export class Edit {
                     ganttData.ganttProperties.resourceInfo = resourceData;
                 }
                 ganttObj.dataOperation.updateMappingData(ganttData, 'resourceInfo');
-            } else if (tasks.dependency === key) {
+            }
+            else if (tasks.dependency === key) {
                 //..
-            } else if ([tasks.progress, tasks.notes, tasks.durationUnit, tasks.expandState,
+            }
+            else if ([tasks.progress, tasks.notes, tasks.durationUnit, tasks.expandState,
                 tasks.milestone, tasks.name, tasks.baselineStartDate,
                 tasks.baselineEndDate, tasks.id, tasks.segments, tasks.cssClass].indexOf(key) !== -1) {
                 const column: ColumnModel = ganttObj.columnByField[key as string];
@@ -574,13 +579,17 @@ export class Edit {
                     value = ganttObj.dataOperation.getDateFromFormat(value);
                 }
                 let ganttPropKey: string = ganttPropByMapping[key as string];
-                if (key === tasks.id) {
+                switch (key) {
+                case tasks.id:
                     ganttPropKey = 'taskId';
-                } else if (key === tasks.name) {
+                    break;
+                case tasks.name:
                     ganttPropKey = 'taskName';
-                }else if (key === tasks.cssClass) {
+                    break;
+                case tasks.cssClass:
                     ganttPropKey = 'cssClass';
-                }else if (key === tasks.milestone) {
+                    break;
+                case tasks.milestone:
                     ganttPropKey = 'isMilestone';
                     if (!isNullOrUndefined(tasks.duration)) {
                         const ganttProp: ITaskData = ganttData.ganttProperties;
@@ -594,40 +603,44 @@ export class Edit {
                         ganttObj.setRecordValue('duration', durationValue, ganttProp, true);
                         ganttObj.setRecordValue('taskData.' + tasks.duration, durationValue, ganttData);
                     }
-                }else if ((key === tasks.segments) && (!isNullOrUndefined(ganttData.ganttProperties.segments))) {
-                    ganttPropKey = 'segments';
-                    /* eslint-disable-next-line */
-                    if (data && !isNullOrUndefined(data[tasks.segments]) && data[tasks.segments].length > 0
-                        && data['ganttProperties'] && data['ganttProperties'].segments) {
-                        if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed']) {
-                            ganttData.ganttProperties.segments = data['ganttProperties'].segments;
-                        }
-                        let totDuration: number = 0;
-                        for (let i: number = 0; i < ganttData.ganttProperties.segments.length; i++) {
-                            totDuration = totDuration + ganttData.ganttProperties.segments[i as number].duration;
-                        }
-                        const sdate: Date = ganttData.ganttProperties.startDate;
+                    break;
+                case tasks.segments:
+                    if (ganttData.ganttProperties.segments) {
+                        ganttPropKey = 'segments';
                         /* eslint-disable-next-line */
-                        const edate: Date = this.parent.dataOperation.getEndDate(sdate, totDuration, ganttData.ganttProperties.durationUnit, ganttData.ganttProperties, false);
-                        ganttObj.setRecordValue('endDate', ganttObj.dataOperation.getDateFromFormat(edate), ganttData.ganttProperties, true);
+                        if (data && !isNullOrUndefined(data[tasks.segments]) && data[tasks.segments].length > 0
+                            && data['ganttProperties'] && data['ganttProperties'].segments) {
+                            if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed']) {
+                                ganttData.ganttProperties.segments = data['ganttProperties'].segments;
+                            }
+                            const totDuration: number = ganttData.ganttProperties.segments.reduce(
+                                (acc: number, segment: ITaskSegment) => acc + segment.duration, 0);
+                            const sdate: Date = ganttData.ganttProperties.startDate;
+                            /* eslint-disable-next-line */
+                            const edate: Date = this.parent.dataOperation.getEndDate(sdate, totDuration,
+                                                                                     ganttData.ganttProperties.durationUnit,
+                                                                                     ganttData.ganttProperties, false);
+                            ganttObj.setRecordValue('endDate', ganttObj.dataOperation.getDateFromFormat(edate), ganttData.ganttProperties, true);
+                        }
                     }
+                    break;
                 }
                 if (!isNullOrUndefined(ganttPropKey)) {
                     const seg: Object[] = [];
                     if (ganttPropKey === 'segments' && value && value.length > 0 && !isNullOrUndefined(ganttData.ganttProperties.segments)) {
                         for (let i: number = 0; i < value.length; i++) {
                             const segment: Object = {};
-                            if (value[i as number][this.parent.taskFields.startDate]) {
-                                segment['startDate'] = value[i as number][this.parent.taskFields.startDate];
+                            if (value[i as number][tasks.startDate]) {
+                                segment['startDate'] = value[i as number][tasks.startDate];
                             }
-                            if (value[i as number][this.parent.taskFields.endDate]) {
-                                segment['endDate'] = value[i as number][this.parent.taskFields.endDate];
+                            if (value[i as number][tasks.endDate]) {
+                                segment['endDate'] = value[i as number][tasks.endDate];
                             }
-                            if (value[i as number][this.parent.taskFields.duration]) {
-                                segment['duration'] = parseFloat(value[i as number][this.parent.taskFields.duration]);
+                            if (value[i as number][tasks.duration]) {
+                                segment['duration'] = parseFloat(value[i as number][tasks.duration]);
                             }
-                            if (value[i as number][this.parent.taskFields.id]) {
-                                segment['id'] = value[i as number][this.parent.taskFields.id];
+                            if (value[i as number][tasks.id]) {
+                                segment['id'] = value[i as number][tasks.id];
                             }
                             seg.push(segment);
                         }
@@ -641,34 +654,35 @@ export class Edit {
                 }
                 if ((key === tasks.baselineStartDate || key === tasks.baselineEndDate) &&
                     (ganttData.ganttProperties.baselineStartDate && ganttData.ganttProperties.baselineEndDate)) {
+                    const ganttProps : ITaskData = ganttData.ganttProperties;
                     ganttObj.setRecordValue('baselineStartDate', ganttObj.dataOperation.checkBaselineStartDate(
-                        ganttData.ganttProperties.baselineStartDate, ganttData.ganttProperties), ganttData.ganttProperties, true);
-                    const dayEndTime: number = this.parent['getCurrentDayEndTime'](ganttData.ganttProperties.baselineEndDate);
-                    if (ganttData.ganttProperties.baselineEndDate && ganttData.ganttProperties.baselineEndDate.getHours() === 0 &&
+                        ganttProps.baselineStartDate, ganttProps), ganttProps, true);
+                    const dayEndTime: number = this.parent['getCurrentDayEndTime'](ganttProps.baselineEndDate);
+                    if (ganttProps.baselineEndDate && ganttProps.baselineEndDate.getHours() === 0 &&
                     dayEndTime !== 86400) {
-                        ganttObj.dataOperation.setTime(dayEndTime, ganttData.ganttProperties.baselineEndDate);
+                        ganttObj.dataOperation.setTime(dayEndTime, ganttProps.baselineEndDate);
                     }
-                    if ((ganttData.ganttProperties.baselineStartDate && ganttData.ganttProperties.baselineEndDate &&
-                        (ganttData.ganttProperties.baselineStartDate.getTime() > ganttData.ganttProperties.baselineEndDate.getTime())) ||
-                        ((!isNullOrUndefined(ganttData.ganttProperties.baselineStartDate) &&
-                        !isNullOrUndefined(ganttData.ganttProperties.startDate) &&
-                        (ganttData.ganttProperties.baselineStartDate.getTime() === ganttData.ganttProperties.startDate.getTime()))
-                        && (!isNullOrUndefined(ganttData.ganttProperties.baselineEndDate) &&
-                        !isNullOrUndefined(ganttData.ganttProperties.endDate) &&
-                        (ganttData.ganttProperties.baselineEndDate.toLocaleDateString() ===
-                        ganttData.ganttProperties.endDate.toLocaleDateString())) &&
-                        ganttData.ganttProperties.isMilestone)) {
-                        ganttData.ganttProperties.baselineEndDate = ganttData.ganttProperties.baselineStartDate;
+                    if ((ganttProps.baselineStartDate && ganttProps.baselineEndDate &&
+                        (ganttProps.baselineStartDate.getTime() > ganttProps.baselineEndDate.getTime())) ||
+                        ((!isNullOrUndefined(ganttProps.baselineStartDate) &&
+                        !isNullOrUndefined(ganttProps.startDate) &&
+                        (ganttProps.baselineStartDate.getTime() === ganttProps.startDate.getTime()))
+                        && (!isNullOrUndefined(ganttProps.baselineEndDate) &&
+                        !isNullOrUndefined(ganttProps.endDate) &&
+                        (ganttProps.baselineEndDate.toLocaleDateString() ===
+                        ganttProps.endDate.toLocaleDateString())) &&
+                        ganttProps.isMilestone)) {
+                        ganttProps.baselineEndDate = ganttProps.baselineStartDate;
                     }
-                    ganttObj.setRecordValue('baselineEndDate', ganttObj.dataOperation.checkBaselineEndDate(ganttData.ganttProperties.baselineEndDate), ganttData.ganttProperties, true);
+                    ganttObj.setRecordValue('baselineEndDate', ganttObj.dataOperation.checkBaselineEndDate(ganttProps.baselineEndDate), ganttProps, true);
                     ganttObj.setRecordValue(
                         'baselineLeft', ganttObj.dataOperation.calculateBaselineLeft(
-                            ganttData.ganttProperties),
-                        ganttData.ganttProperties, true);
+                            ganttProps),
+                        ganttProps, true);
                     ganttObj.setRecordValue(
                         'baselineWidth', ganttObj.dataOperation.calculateBaselineWidth(
-                            ganttData.ganttProperties),
-                        ganttData.ganttProperties, true);
+                            ganttProps),
+                        ganttProps, true);
                     if (ganttData[tasks.baselineStartDate] && !(ganttData[tasks.baselineStartDate] instanceof Date)) {
                         ganttData[tasks.baselineStartDate] = new Date(ganttData[tasks.baselineStartDate]);
                     }
@@ -679,13 +693,15 @@ export class Edit {
                 ganttObj.setRecordValue('taskData.' + key, value, ganttData);
                 /* eslint-disable-next-line */
                 if (key === tasks.segments && data && !isNullOrUndefined(data[tasks.segments]) && data[tasks.segments].length > 0) {
-                    if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'] && data['ganttProperties'] && data['ganttProperties'].segments) {
+                    if (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'] && data['ganttProperties']
+                        && data['ganttProperties'].segments) {
                         ganttData.ganttProperties.segments = data['ganttProperties'].segments;
                     }
                     ganttObj.dataOperation.setSegmentsInfo(ganttData, true);
                 }
                 ganttObj.setRecordValue(key, value, ganttData);
-            } else if (tasks.indicators === key) {
+            }
+            else if (tasks.indicators === key) {
                 const value: Object[] = data[key as string];
                 ganttObj.setRecordValue('indicators', value, ganttData.ganttProperties, true);
                 ganttObj.setRecordValue('taskData.' + key, value, ganttData);
@@ -696,8 +712,10 @@ export class Edit {
                 this.parent.dataOperation.updateMappingData(ganttData, 'duration');
                 this.parent.dataOperation.updateMappingData(ganttData, 'endDate');
             } else if (key === tasks.type) {
-                ganttObj.setRecordValue('taskType', data[key as string], ganttData.ganttProperties, true);
-                //this.parent.dataOperation.updateMappingData(ganttData, 'taskType');
+                const value: string = data[key as string];
+                ganttObj.setRecordValue('taskType', value, ganttData.ganttProperties, true);
+                ganttObj.setRecordValue(key, value, ganttData);
+                ganttObj.setRecordValue('taskData.' + key, value, ganttData);
             } else if (ganttObj.customColumns.indexOf(key) !== -1) {
                 const column: ColumnModel = ganttObj.columnByField[key as string];
                 /* eslint-disable-next-line */
@@ -729,7 +747,7 @@ export class Edit {
      */
     public updateResourceRelatedFields(currentData: IGanttData, column: string): void {
         const ganttProp: ITaskData = currentData.ganttProperties;
-        const previousdata: object  = this.parent.previousRecords;
+        const previousdata: object = this.parent.previousRecords;
         const taskType: string = ganttProp.taskType ? ganttProp.taskType : this.parent.taskType;
         let isEffectDriven: boolean;
         const isAutoSchedule: boolean = ganttProp.isAutoSchedule;
@@ -748,7 +766,8 @@ export class Edit {
                 }
                 if (resources.length === 0) {
                     return;
-                } else if (isAutoSchedule && resources.length) {
+                }
+                else if (isAutoSchedule && resources.length) {
                     if (column === 'resource' || column === 'work') {
                         this.parent.dataOperation.updateDurationWithWork(currentData);
                     }
@@ -922,7 +941,7 @@ export class Edit {
      * @private
      */
     public updateGanttProperties(data: IGanttData, updateData: IGanttData): void {
-        const skipProperty: string[] = ['taskId', 'uniqueID', 'rowUniqueID', 'parentId'];
+        const skipProperty: string[] = ['taskId', 'uniqueID', 'rowUniqueID', 'parentId', 'predecessor'];
         Object.keys(data.ganttProperties).forEach((property: string) => {
             if (skipProperty.indexOf(property) === -1) {
                 updateData.ganttProperties[property as string] = data.ganttProperties[property as string];
@@ -1177,7 +1196,7 @@ export class Edit {
             this.parent.setRecordValue('taskData.StartDate', ganttProp.autoStartDate, data, true);
             this.parent.setRecordValue('taskData.EndDate', ganttProp.autoEndDate, data, true);
             this.parent.setRecordValue('width', this.parent.dataOperation.calculateWidth(data, true), ganttProp, true);
-            this.parent.setRecordValue('left', this.parent.dataOperation.calculateLeft(ganttProp, true), ganttProp, true);
+            this.parent.setRecordValue('left', this.parent.dataOperation.calculateLeft(ganttProp, data, true), ganttProp, true);
             this.parent.setRecordValue(
                 'progressWidth',
                 this.parent.dataOperation.getProgressWidth(ganttProp.width, ganttProp.progress),
@@ -1376,7 +1395,7 @@ export class Edit {
             }
             const ganttProps: ITaskData = eventArg.data['ganttProperties'];
             const { startDate, endDate, segments, durationUnit, isAutoSchedule, isMilestone } = ganttProps;
-            if (startDate && endDate && !segments) {
+            if (startDate && endDate && !segments && !this.parent.dataOperation['isDurationValueUpdated']) {
                 const duration: number = this.parent.dateValidationModule.getDuration(
                     startDate,
                     endDate,
@@ -1625,7 +1644,11 @@ export class Edit {
             eventArgs.data = args.data;
             eventArgs.modifiedRecords = this.parent.editedRecords;
             eventArgs.modifiedTaskData = getTaskData(this.parent.editedRecords, null, null, this.parent);
-            this.updateRowIndex();
+            // Prevent currentviewdata index update action while allowTaskbarDragAndDrop is enabled- issue-942005
+            if (!this.parent.allowTaskbarDragAndDrop && this.parent.rowDragAndDropModule &&
+                this.parent.rowDragAndDropModule['dropPosition'] !== 'middleSegment') {
+                this.updateRowIndex();
+            }
             if (!isNullOrUndefined(args.action)) {
                 setValue('action', args.action, eventArgs);
             }
@@ -1783,7 +1806,7 @@ export class Edit {
     private addNewRecord(updateRecord: IGanttData, parentRecord: IGanttData): void {
         let cAddedRecord: IGanttData = null;
         cAddedRecord = extend({}, {}, updateRecord, true);
-        this.parent.setRecordValue('uniqueID', getUid(this.parent.element.id + '_data_'), cAddedRecord);
+        this.parent.setRecordValue('uniqueID', this.parent.dataOperation['getGanttUid'](this.parent.element.id + '_data_'), cAddedRecord);
         this.parent.setRecordValue('uniqueID', cAddedRecord.uniqueID, cAddedRecord.ganttProperties, true);
         const uniqueId: string = cAddedRecord.uniqueID.replace(this.parent.element.id + '_data_', '');
         this.parent.setRecordValue('rowUniqueID', uniqueId, cAddedRecord);
@@ -2783,6 +2806,7 @@ export class Edit {
         } else {
             this.parent.hideSpinner();
         }
+        this.parent.treeGrid.closeEdit();
     }
 
     /**
@@ -3333,6 +3357,7 @@ export class Edit {
             this.parent.modifiedRecords.push(args.data as IGanttData);
             this.refreshRecordInImmutableMode();
         }
+        this.parent.treeGrid.closeEdit();
     }
 
     private refreshRecordInImmutableMode(data? : object, dragged? : boolean): void {

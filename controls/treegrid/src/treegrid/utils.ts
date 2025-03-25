@@ -11,7 +11,7 @@ import { ITreeData } from './base/interface';
  * @param {TreeGrid} parent - Tree Grid instance
  * @returns {boolean} - Specifies whether remote data binding
  */
-export function isRemoteData(parent: TreeGrid | IGrid) : boolean {
+export function isRemoteData(parent: TreeGrid) : boolean {
     if (parent.dataSource instanceof DataManager) {
         const adaptor: AdaptorOptions = parent.dataSource.adaptor;
         return (adaptor instanceof ODataAdaptor ||

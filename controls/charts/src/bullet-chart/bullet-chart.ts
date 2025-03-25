@@ -646,14 +646,6 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
             this.valueFill = !(this.valueFill) ? (this.theme === 'Material3Dark' ? '#938F99' : this.theme === 'Bootstrap5Dark' ? '#343A40' : '#79747E') : this.valueFill;
             this.targetColor = (this.targetColor === '#191919') ? (this.theme === 'Material3Dark' ? '#938F99' : this.theme === 'Bootstrap5Dark' ? '#343A40' : '#79747E') : this.targetColor;
         }
-        if (!(document.getElementById(this.element.id + 'Keyboard_bullet_chart_focus'))) {
-            const style: HTMLStyleElement = document.createElement('style');
-            style.setAttribute('id', (<HTMLElement>this.element).id + 'Keyboard_bullet_chart_focus');
-            style.innerText = '.e-bullet-chart-focused:focus,' +
-                'text[id*=_BulletChartTitle]:focus, text[id*=_BulletChartSubTitle]:focus, rect[id*=_svg_FeatureMeasure_]:focus, g[id*=_chart_legend_g_]:focus {outline: none } .e-bullet-chart-focused:focus-visible,' +
-                'text[id*=_BulletChartTitle]:focus-visible, text[id*=_BulletChartSubTitle]:focus-visible, rect[id*=_svg_FeatureMeasure_]:focus-visible, g[id*=_chart_legend_g_]:focus-visible {outline: 1.5px ' + this.themeStyle.tabColor + ' solid}';
-            document.body.appendChild(style);
-        }
     }
 
     private findRange(): void {
@@ -1145,6 +1137,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
             if (element) {
                 element.setAttribute('aria-label', this.title + '. Syncfusion interactive chart.');
                 element.setAttribute('tabindex', '0');
+                (element as HTMLElement).style.outline = 'none';
                 element.setAttribute('role', 'img');
             }
             if (this.subtitle) {
@@ -1316,6 +1309,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         if (element) {
             element.setAttribute('aria-label', this.subtitle);
             element.setAttribute('tabindex', '0');
+            (element as HTMLElement).style.outline = 'none';
             element.setAttribute('role', 'img');
         }
     }
@@ -1367,6 +1361,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         EventHandler.remove(this.element, cancelEvent, this.bulletMouseLeave);
         EventHandler.remove(this.element, 'click', this.bulletChartOnMouseClick);
         EventHandler.remove(this.element, 'keyup', this.chartKeyUp);
+        EventHandler.remove(this.element, 'keydown', this.chartKeyDown);
 
         window.removeEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
@@ -1388,6 +1383,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         EventHandler.add(this.element, Browser.touchStartEvent, this.bulletMouseDown, this);
         EventHandler.add(this.element, 'click', this.bulletChartOnMouseClick, this);
         EventHandler.add(this.element, 'keyup', this.chartKeyUp, this);
+        EventHandler.add(this.element, 'keydown', this.chartKeyDown, this);
         this.resizeBound = this.bulletResize.bind(this);
         window.addEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
@@ -1395,6 +1391,19 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         );
         /** Apply the style for chart */
         this.setStyle(<HTMLElement>this.element);
+    }
+
+    /**
+     * Handles the keyboard onkeydown on bullet chart.
+     *
+     * @param {KeyboardEvent} e - The keyboard event.
+     * @returns {void} - returns nothing
+     * @private
+     */
+    public chartKeyDown(e: KeyboardEvent): void {
+        if (e.code === 'Tab') {
+            this.removeNavigationStyle();
+        }
     }
 
     private setStyle(element: HTMLElement): void {
@@ -1514,6 +1523,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
                 this.bulletTooltipModule._displayTooltip(e, targetClass, targetId, this.mouseX, this.mouseY);
             }
         }
+        this.removeNavigationStyle();
     }
 
     /**
@@ -1527,6 +1537,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         const element: Element = <Element>e.target;
         this.trigger(bulletChartMouseClick, { target: element.id, x: this.mouseX, y: this.mouseY });
         this.notify('click', e);
+        this.removeNavigationStyle();
         return false;
     }
     /**
@@ -1572,6 +1583,8 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         let groupElement: HTMLElement;
         const targetElement: HTMLElement = e.target as HTMLElement;
         const legendElement: HTMLElement = getElement(this.element.id + '_chart_legend_translate_g') as HTMLElement;
+        this.removeNavigationStyle();
+        if (e.code === 'Tab') { this.setNavigationStyle(targetId); }
         if (legendElement) {
             const firstChild: HTMLElement = legendElement.firstElementChild as HTMLElement;
             let className: string = firstChild.getAttribute('class');
@@ -1602,10 +1615,41 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
                 this.currentLegendIndex = this.getActualIndex(this.currentLegendIndex, legendElement.length);
                 const currentLegend: Element = legendElement[this.currentLegendIndex];
                 this.focusChild(currentLegend as HTMLElement);
+                this.removeNavigationStyle();
+                this.setNavigationStyle(currentLegend.id);
                 targetId = currentLegend.children[1].id;
             }
         }
         return false;
+    }
+
+    /**
+     * Handles to set style for key event on the document.
+     *
+     * @param {target} target - element which currently focused.
+     * @returns {void}
+     * @private
+     */
+    private setNavigationStyle(target: string): void {
+        const currentElement: HTMLElement = document.getElementById(target);
+        if (currentElement) { currentElement.style.setProperty('outline', `1.5px solid ${this.themeStyle.tabColor}`); }
+    }
+
+    /**
+     * Handles to remove style for key event on the document.
+     *
+     * @returns {void}
+     * @private
+     */
+    private removeNavigationStyle(): void {
+        const currentElement: NodeList = document.querySelectorAll(`[id*=${this.element.id}], [id*=_ChartBorder], text[id*=_title], text[id*=_BulletChartTitle] ,g[id*=_chart_legend]`);
+        if (currentElement) {
+            currentElement.forEach((element: Node) => {
+                if (element instanceof HTMLElement || element instanceof SVGElement) {
+                    element.style.setProperty('outline', 'none');
+                }
+            });
+        }
     }
 
     /**

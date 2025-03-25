@@ -251,7 +251,7 @@ export class Selection {
                 this.parent.editModule.isAdded = false;
             }
         }
-        const selectedRow: HTMLElement = ganttRow.filter((e: HTMLElement) => parseInt(e.getAttribute('data-rowindex'), 10) === index)[0];
+        const selectedRow: HTMLElement = ganttRow.filter((e: HTMLElement) => parseInt(e.getAttribute('aria-rowindex'), 10) - 1 === index)[0];
         let condition: boolean;
         if (index === -1 || (isNullOrUndefined(selectedRow) && !this.parent.enableVirtualization) || this.parent.selectionSettings.mode === 'Cell') {
             return;
@@ -376,7 +376,7 @@ export class Selection {
         this.isSelectionFromChart = fromChart;
         if (fromChart) {
             const selectedRow: Element = closest((e.target as Element), 'tr.e-chart-row');
-            const rIndex: number = parseInt(selectedRow.getAttribute('data-rowindex'), 10);
+            const rIndex: number = parseInt(selectedRow.getAttribute('aria-rowindex'), 10) - 1;
             const isToggle: boolean = this.parent.selectionSettings.enableToggle;
             if (this.parent.selectionSettings.type === 'Single' || (!this.isMultiCtrlRequest && !this.isMultiShiftRequest)) {
                 if (this.parent.selectionSettings.persistSelection) {
@@ -436,7 +436,7 @@ export class Selection {
         const ganttRow: HTMLElement[] = [].slice.call(this.parent.ganttChartModule.chartBodyContent.querySelector('tbody').children);
         for (let i: number = 0; i < records.length; i++) {
             const selectedRow: HTMLElement = ganttRow.filter((e: HTMLElement) =>
-                parseInt(e.getAttribute('data-rowindex'), 10) === records[parseInt(i.toString(), 10)])[0];
+                parseInt(e.getAttribute('aria-rowindex'), 10) - 1 === records[parseInt(i.toString(), 10)])[0];
             if (!isNullOrUndefined(selectedRow)) {
                 let persist: boolean = false;
                 const index: number = this.getSelectedRowIndexes().indexOf(records[parseInt(i.toString(), 10)]);

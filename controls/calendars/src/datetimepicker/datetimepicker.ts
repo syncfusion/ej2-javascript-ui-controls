@@ -1115,10 +1115,12 @@ export class DateTimePicker extends DatePicker {
             }
         } else {
             if (!this.readonly) {
-                this.dateTimeWrapper = createElement('div', {
+                const dateTimeWrapperElement: HTMLElement = createElement('div', {
                     className: ROOT + ' ' + POPUP,
-                    attrs: { 'id': this.element.id + '_timepopup', 'style': 'visibility:hidden ; display:block' }
+                    attrs: { 'id': this.element.id + '_timepopup' }
                 });
+                dateTimeWrapperElement.style.cssText = 'visibility: hidden; display: block;';
+                this.dateTimeWrapper = dateTimeWrapperElement;
                 if (!isNullOrUndefined(this.cssClass)) {
                     this.dateTimeWrapper.className += ' ' + this.cssClass;
                 }

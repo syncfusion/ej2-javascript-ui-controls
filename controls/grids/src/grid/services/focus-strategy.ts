@@ -117,7 +117,7 @@ export class FocusStrategy {
             && (e.target as Element).nextElementSibling.classList.contains('e-rowcell')) ? true : false;
         if ((this.parent.isEdit || e && (!e.relatedTarget || closest(<HTMLElement>e.relatedTarget, '.e-grid') || closest(<HTMLElement>e.relatedTarget, '.e-grid-popup'))
             && !(this.parent.element.classList.contains('e-childgrid') && !this.parent.element.matches(':focus-within')))
-            && !(!isGantt && isNullOrUndefined(e.relatedTarget) && parseInt((e.target as Element).getAttribute('data-colindex'), 10) === 0
+            && !(!isGantt && isNullOrUndefined(e.relatedTarget) && parseInt((e.target as Element).getAttribute('aria-colindex'), 10) - 1 === 0
             && parseInt((e.target as Element).getAttribute('index'), 10) === 0) && !(!isGantt && isNullOrUndefined(e.relatedTarget)
             && !closest(document.activeElement, '.e-grid') && !isNullOrUndefined(e['sourceCapabilities']))) { return; }
         this.removeFocus(); this.skipFocus = true; this.currentInfo.skipAction = false;
@@ -219,7 +219,7 @@ export class FocusStrategy {
     }
 
     protected onKeyPress(e: KeyboardEventArgs): void {
-        if (this.parent.editSettings.mode === 'Batch') {
+        if (this.content && this.content.target) {
             this.content.target = null;
         }
         if (this.parent.allowPaging) {
@@ -275,7 +275,9 @@ export class FocusStrategy {
             this.handleFilterNavigation(e, '.e-excelfilter .e-menu-item:not(.e-disabled)', '.e-excelfilter .e-footer-content button:nth-child(2)');
         }
         if (this.parent.filterSettings.type === 'CheckBox') {
-            this.handleFilterNavigation(e, '.e-searchinput.e-input', '.e-checkboxfilter .e-footer-content button:nth-child(2)');
+            const focusedColumn: Column = this.parent.getColumnByUid(this.focusedColumnUid);
+            const focusTarget: string = focusedColumn && focusedColumn.filter && focusedColumn.filter.hideSearchbox ? '.e-chk-hidden' : '.e-searchinput.e-input';
+            this.handleFilterNavigation(e, focusTarget, '.e-checkboxfilter .e-footer-content button:nth-child(2)');
         }
         if (this.parent.filterSettings.type === 'Menu') {
             this.handleFilterNavigation(e, '.e-flmenu .e-input-group.e-popup-flmenu', '.e-flmenu .e-footer-content button:nth-child(2)');
@@ -572,7 +574,7 @@ export class FocusStrategy {
     private isValidBatchEditCell(cellIndex: number[]): boolean {
         const cell: Element = this.active.getTable().rows[cellIndex[0]].cells[cellIndex[1]];
         const tr: Element = closest(cell, 'tr');
-        const cellColIndex: number = parseInt(cell.getAttribute('data-colindex'), 10);
+        const cellColIndex: number = parseInt(cell.getAttribute('aria-colindex'), 10) - 1;
         const cellCol: Column = this.parent.getColumns()[parseInt(cellColIndex.toString(), 10)];
         if (this.active.matrix.matrix[cellIndex[0]][cellIndex[1]] === 1
             && (!tr.classList.contains('e-row') || (tr.classList.contains('e-insertedrow') || !cellCol.isPrimaryKey) && cellCol.allowEditing)) {
@@ -618,7 +620,7 @@ export class FocusStrategy {
         if (this.active.matrix.matrix[lastContentCellIndex[0]][lastContentCellIndex[1]] === 0) {
             lastContentCellIndex = findCellIndex(this.active.matrix.matrix, lastContentCellIndex, false);
         }
-        const lastCell: Element = getValue(`${lastContentCellIndex[0]}.cells.${lastContentCellIndex[1]}`, this.active.getTable().rows);
+        const lastCell: Element = getValue(`${lastContentCellIndex[0]}.cells.${lastContentCellIndex[1]}`, this.active.matrix.getRowsFromIndex(lastContentCellIndex[0], this.active));
         if (lastCell && lastCell.getBoundingClientRect().width === 0) {
             lastContentCellIndex = this.active.matrix.nextVisibleCellFocus(
                 lastContentCellIndex[0],
@@ -1345,6 +1347,10 @@ export class Matrix {
         const maxRow: number = rowMatrix.length - 1;
         const isTab: boolean = action === 'tab';
         const isShiftTab: boolean = action === 'shiftTab';
+        const skipAction: boolean = action === 'enter' || action === 'shiftEnter' || action === 'downArrow' || action === 'upArrow';
+        if (skipAction) {
+            return [rowIndex, columnIndex];
+        }
         while (cell && cell.getBoundingClientRect().width === 0) {
             if ((isTab && rowIndex === maxRow && columnIndex === rowMatrix[parseInt(rowIndex.toString(), 10)].lastIndexOf(1)) ||
                 (isShiftTab && rowIndex === 0 && columnIndex === rowMatrix[parseInt(rowIndex.toString(), 10)].indexOf(1))) {
@@ -1721,7 +1727,7 @@ export class ContentFocus implements IFocus {
             parentsUntil(document.activeElement, 'e-addedrow') : document.activeElement.parentElement;
         if ((this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableCache)
             && !isNullOrUndefined(row) && row.classList.contains(literals.row)) {
-            const rowIndex: number = parseInt(row.getAttribute(literals.dataRowIndex), 10);
+            const rowIndex: number = parseInt(row.getAttribute(literals.ariaRowIndex), 10) - 1;
             isHeaderFocus = rowIndex > 0;
         }
         const info: SwapInfo = {
@@ -1760,8 +1766,8 @@ export class ContentFocus implements IFocus {
         const isSelectable: boolean = isData || (e && e.action !== 'enter' && (info.element.classList.contains('e-detailrowcollapse')
             || info.element.classList.contains('e-detailrowexpand')));
         // eslint-disable-next-line
-        let [rowIndex, cellIndex]: number[] = [Math.min(parseInt(info.element.parentElement.getAttribute(literals.dataRowIndex), 10), rIndex),
-            Math.min(parseInt(info.element.getAttribute(literals.dataColIndex), 10), cIndex)];
+        let [rowIndex, cellIndex]: number[] = [Math.min(parseInt(info.element.parentElement.getAttribute(literals.ariaRowIndex), 10) - 1, rIndex),
+            Math.min(parseInt(info.element.getAttribute(literals.ariaColIndex), 10) - 1, cIndex)];
         if (this.parent.allowGrouping && this.parent.groupSettings.enableLazyLoading && isData) {
             rowIndex = this.parent.getDataRows().indexOf(info.element.parentElement);
         }

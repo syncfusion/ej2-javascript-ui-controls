@@ -1,4 +1,4 @@
-import { KeyboardEventArgs, L10n, closest, addClass, select } from '@syncfusion/ej2-base';
+import { KeyboardEventArgs, L10n, closest, addClass, select, updateCSSText } from '@syncfusion/ej2-base';
 import { extend, getValue } from '@syncfusion/ej2-base';
 import { remove } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -174,7 +174,7 @@ export class Edit implements IAction {
         }
         this.parent.element.classList.add('e-editing');
         if (!gObj.getSelectedRows().length || isNullOrUndefined(this.parent.getRowByIndex(
-            parseInt(this.parent.getSelectedRows()[0].getAttribute('data-rowindex'), 10)))) {
+            parseInt(this.parent.getSelectedRows()[0].getAttribute('aria-rowindex'), 10) - 1))) {
             if (!tr) {
                 this.showDialog('EditOperationAlert', this.alertDObj);
                 return;
@@ -183,14 +183,14 @@ export class Edit implements IAction {
             tr = gObj.getSelectedRows()[0] as HTMLTableRowElement;
         }
         if (this.parent.enableVirtualization && this.parent.editSettings.mode === 'Normal') {
-            const idx: number = parseInt(tr.getAttribute('data-rowindex'), 10);
+            const idx: number = parseInt(tr.getAttribute('aria-rowindex'), 10) - 1;
             tr = this.parent.getRowByIndex(idx) as HTMLTableRowElement;
         }
         const lastTr: HTMLTableRowElement = gObj.getContent().querySelector('tr:last-child') as HTMLTableRowElement;
         const hdrTbody: Element = gObj.getHeaderContent().querySelector('tbody');
         if (gObj.frozenRows && isNullOrUndefined(lastTr) && hdrTbody && hdrTbody.querySelector('tr:last-child')) {
             this.isLastRow = tr.rowIndex === parseInt((gObj.getHeaderContent().querySelector(
-                'tbody').querySelector('tr:last-child') as HTMLTableRowElement).getAttribute('data-rowindex'), 10);
+                'tbody').querySelector('tr:last-child') as HTMLTableRowElement).getAttribute('aria-rowindex'), 10) - 1;
         } else if (lastTr) {
             this.isLastRow = tr.rowIndex === lastTr.rowIndex;
         }
@@ -622,7 +622,7 @@ export class Edit implements IAction {
             this.parent.isEdit = this.parent.editSettings.showAddNewRow ? true : false;
         }
         if (e.requestType === 'batchsave') {
-            this.parent.focusModule.restoreFocus({ requestType: e.requestType });
+            this.parent.focusModule.restoreFocus({ requestType: 'save' });
         }
         this.refreshToolbar();
     }
@@ -750,7 +750,7 @@ export class Edit implements IAction {
             const editRow: Element = this.parent.element.querySelector('.' + literals.editedRow);
             const addRow: Element = this.parent.element.querySelector('.' + literals.addedRow);
             if (editRow && this.parent.frozenRows && e.requestType === 'virtualscroll'
-                && parseInt(parentsUntil(editRow, literals.row).getAttribute(literals.dataRowIndex), 10) < this.parent.frozenRows) {
+                && parseInt(parentsUntil(editRow, literals.row).getAttribute(literals.ariaRowIndex), 10) - 1 < this.parent.frozenRows) {
                 return;
             }
             const restrictedRequestTypes: string[] = ['filterAfterOpen', 'filterBeforeOpen', 'filterchoicerequest', 'filterSearchBegin', 'save', 'infiniteScroll', 'virtualscroll'];
@@ -1117,7 +1117,7 @@ export class Edit implements IAction {
         let table: Element;
         if (gObj.editSettings.mode !== 'Dialog') {
             isFrozenHdr = (gObj.frozenRows && closest(inputElement, '.' + literals.row) && gObj.frozenRows
-                > (parseInt(closest(inputElement, '.' + literals.row).getAttribute(literals.dataRowIndex), 10) || 0));
+                > (parseInt(closest(inputElement, '.' + literals.row).getAttribute(literals.ariaRowIndex), 10) - 1 || 0));
             table = this.parent.isFrozenGrid() ? gObj.element : isFrozenHdr || (gObj.editSettings.showAddNewRow &&
                 (gObj.enableVirtualization || gObj.enableInfiniteScrolling)) ? gObj.getHeaderTable() : gObj.getContentTable();
         } else {
@@ -1180,8 +1180,8 @@ export class Edit implements IAction {
         let rows: Element[] = [].slice.call(this.parent.getContent().getElementsByClassName(literals.row));
         if (this.parent.editSettings.mode === 'Batch') {
             rows = [].slice.call(this.parent.getContent().querySelectorAll('.e-row:not(.e-hiddenrow)'));
-            if (viewPortRowCount > 1 && rows.length > viewPortRowCount
-                && rows[rows.length - 1].getAttribute(literals.dataRowIndex) === row.getAttribute(literals.dataRowIndex)) {
+            if (viewPortRowCount > 1 && rows.length > viewPortRowCount && parseInt(rows[rows.length - 1].
+                getAttribute(literals.ariaRowIndex), 10) - 1 === parseInt(row.getAttribute(literals.ariaRowIndex), 10) - 1) {
                 isBatchModeLastRow = true;
             }
         }
@@ -1191,8 +1191,8 @@ export class Edit implements IAction {
                     '.e-row:not(.e-hiddenrow)';
                 const fHearderRows: HTMLCollection = [].slice.call(
                     this.parent.getHeaderTable().querySelector(literals.tbody).querySelectorAll(headerRows));
-                isFHdr = fHearderRows.length > (parseInt(row.getAttribute(literals.dataRowIndex), 10) || 0);
-                isFHdrLastRow = isFHdr && parseInt(row.getAttribute(literals.dataRowIndex), 10) === fHearderRows.length - 1;
+                isFHdr = fHearderRows.length > (parseInt(row.getAttribute(literals.ariaRowIndex), 10) - 1 || 0);
+                isFHdrLastRow = isFHdr && parseInt(row.getAttribute(literals.ariaRowIndex), 10) - 1 === fHearderRows.length - 1;
                 const insertRow: Element[] = [].slice.call(
                     this.parent.getHeaderTable().querySelector(literals.tbody).querySelectorAll('.e-row:not(.e-hiddenrow)'));
                 if (insertRow.length === 1 && (insertRow[0].classList.contains('e-addedrow') || insertRow[0].classList.contains('e-insertedrow'))) {
@@ -1216,12 +1216,13 @@ export class Edit implements IAction {
         const inputClient: ClientRect = input ? input.getBoundingClientRect() : element.parentElement.getBoundingClientRect();
         const div: HTMLElement = this.parent.createElement('div', {
             className: 'e-tooltip-wrap e-lib e-control e-popup e-griderror',
-            id: name + '_Error',
-            styles: 'display:' + display + ';top:' +
-                ((isFHdr ? inputClient.top + inputClient.height : inputClient.bottom - client.top) + table.scrollTop + 9) + 'px;left:' +
-                (inputClient.left - left + table.scrollLeft + inputClient.width / 2) + 'px;' +
-                'max-width:' + inputClient.width + 'px;text-align:center;'
+            id: name + '_Error'
         });
+        const divStyles: string = 'display:' + display + ';top:' +
+            ((isFHdr ? inputClient.top + inputClient.height : inputClient.bottom - client.top) + table.scrollTop + 9) + 'px;left:' +
+            (inputClient.left - left + table.scrollLeft + inputClient.width / 2) + 'px;' +
+            'max-width:' + inputClient.width + 'px;text-align:center;';
+        updateCSSText(div, divStyles);
         if (this.parent.cssClass) {
             div.classList.add(this.parent.cssClass);
         }

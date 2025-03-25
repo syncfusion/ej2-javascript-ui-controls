@@ -24,7 +24,7 @@
     .e-dlg-content {
       overflow: visible;
       padding: 0;
-      @if $theme-name == 'Material3-dark' or $theme-name == 'tailwind3-dark' or $theme-name == 'fluent-dark' {
+      @if $theme-name == 'Material3-dark' or $theme-name == 'tailwind3-dark' or $theme-name == 'fluent-dark'{
         background: unset;
       }
     }

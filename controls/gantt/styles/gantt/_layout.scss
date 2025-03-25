@@ -238,7 +238,13 @@
       .e-grid {
         border-width: 0;
       }
-
+      .e-grid .e-row .e-input-group {
+        margin-top: 0 !important; /* stylelint-disable-line declaration-no-important */
+        margin-bottom: 0 !important; /* stylelint-disable-line declaration-no-important */
+        @if ($skin-name == 'Material3' or $skin-name == 'Material3-dark') {
+          line-height: 100% !important; /* stylelint-disable-line declaration-no-important */
+        }
+      }
       .e-gantt-temp-header {
         border-bottom-style: solid;
         border-bottom-width: 1px;
@@ -328,10 +334,12 @@
 
         .e-nonworking-day-container {
           position: absolute;
+          height: 100%;
         }
 
         .e-event-markers-container {
           position: absolute;
+          height: 100%;
         }
 
         .e-holiday-container {
@@ -368,14 +376,15 @@
         box-sizing: border-box;
         margin: 0;
         padding: 0;
+        display: block;
       }
 
       .e-timeline-header-table-body {
         border-collapse: collapse;
         box-sizing: border-box;
-        display: inline-block;
         transform: scale(1);
         white-space: nowrap;
+        display: block;
       }
 
       .e-timeline-header-table-body > tr {
@@ -458,6 +467,7 @@
         @if $skin-name == 'tailwind' or $skin-name == 'tailwind-dark' {
           line-height: normal;
         }
+        display: table-row;
       }
 
       .e-line-container-cell {
@@ -556,12 +566,17 @@
         display: inline-block;
         width: 100%;
       }
-
+      .e-gantt-parent-milestone {
+        position: absolute;
+        transform: rotate(45deg);
+      }
       .e-gantt-milestone{
         @if $skin-name =='Material3'{
           border: 1px;
           border-style: solid;
         }
+        position: absolute;
+        transform: rotate(45deg);
       }
 
       .e-manualparent-main-container {
@@ -620,6 +635,8 @@
       .e-gantt-parent-progressbar-inner-div {
         box-sizing: border-box;
         text-align: right;
+        border-style: solid;
+        height: 100%;
       }
 
       .e-chart-scroll-container,
@@ -627,8 +644,15 @@
         user-select: none;
       }
 
+      .e-chart-scroll-container {
+        position: relative;
+        height: 100%;
+      }
+
       .e-chart-rows-container {
         line-height: initial;
+        position: relative;
+        overflow: hidden;
       }
 
       .e-masked-tbody {
@@ -784,6 +808,7 @@
       .e-baseline-gantt-milestone-container {
         position: absolute;
         z-index: 2;
+        transform: rotate(45deg);
         @if $skin-name =='Material3'{
           border: 2px;
           border-color: $gantt-baseline-color;
@@ -805,6 +830,7 @@
       .e-task-table {
         overflow: hidden;
         border-collapse: separate;
+        position: absolute;
       }
 
       .e-left-resize-gripper,
@@ -817,12 +843,13 @@
       .e-holiday {
         display: inline-block;
         position: absolute;
-
+        height: 100%;
         .e-span {
           position: absolute;
           transform: rotate(-90deg);
           white-space: nowrap;
           width: 0;
+          top: calc(100% - 50%);
         }
       }
 
@@ -830,10 +857,12 @@
         display: inline-block;
         position: absolute;
         z-index: 0;
+        height: 100%;
       }
 
       .e-rangecontainer {
-
+        position: absolute;
+        
         .e-leftarc {
           border-bottom-left-radius: $gantt-range-container-arc-radius;
           border-top-left-radius: $gantt-range-container-arc-radius;
@@ -852,7 +881,7 @@
         position: absolute;
         width: 1px;
         z-index: 4;
-
+        height: 100%;
         .e-span-label {
           border-radius: 3px;
           font-weight: 500;
@@ -901,6 +930,7 @@
 
       .e-connector-line-container {
         z-index: 5;
+        pointer-events: stroke;
       }
 
       .e-connector-line-z-index {
@@ -1351,5 +1381,8 @@
     height: 100%;
     position: absolute;
     z-index: 1;
+  }
+  .e-template-padding {
+    padding: 2px;
   }
 }

@@ -385,5 +385,6 @@ export const gridProperty: string[] = ['grid', 'grd'];
 export const columnCountProperty: string[] = ['columnCount', 'colc'];
 export const isAfterTableMarkProperty: string[] = ['isAfterTableMark', 'atm'];
 export const incrementalOps: string[] = ['iOps'];
+export const hiddenProperty: string[] = ['hidden', 'hdn'];
 export const editingPointsProperty: string[] = ['editingpoints', 'ep'];
 

@@ -940,6 +940,20 @@ describe('Chart Control', () => {
             chartObj.theme = 'Fluent2HighContrast'
             chartObj.refresh();
         });
+        it('Checking Zoom with Tailwind3Dark', (done: Function) => {
+            loaded = (args: Object): void => {
+                chartObj.loaded = null;
+                targetElement = document.getElementById('container_Zooming_Zoom');
+                trigger.mousedownEvent(targetElement, 0, 0, 5, 5);
+                expect(targetElement !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.theme = 'Tailwind3Dark';
+            chartObj.zoomSettings.showToolbar = true;
+            chartObj.zoomSettings.toolbarItems = ['Zoom'];
+            chartObj.refresh();
+        });
     });
 
     describe('Checking zoomIn and zoomOut', () => {

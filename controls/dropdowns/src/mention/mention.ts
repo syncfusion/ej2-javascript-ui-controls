@@ -149,6 +149,15 @@ export class Mention extends DropDownBase {
     public ignoreCase: boolean;
 
     /**
+     * Specifies whether a space is required before the mention character to trigger the suggestion list.
+     * When set to false, the suggestion list will be triggered even without a space before the mention character.
+     *
+     * @default true
+     */
+    @Property(true)
+    public requireLeadingSpace: boolean;
+
+    /**
      * Specifies whether to highlight the searched characters on suggestion list items.
      *
      * @default false
@@ -414,6 +423,9 @@ export class Mention extends DropDownBase {
                 break;
             case 'showMentionChar':
                 this.showMentionChar = newProp.showMentionChar;
+                break;
+            case 'requireLeadingSpace':
+                this.requireLeadingSpace = newProp.requireLeadingSpace;
                 break;
             case 'cssClass': this.updateCssClass(newProp.cssClass, oldProp.cssClass); break;
             }
@@ -701,7 +713,18 @@ export class Mention extends DropDownBase {
             rangetextContent = this.range.startContainer.textContent.split('');
         }
         const currentRange: string = this.getTextRange();
-        const lastWordRange: string = this.getLastLetter(currentRange);
+        // eslint-disable-next-line security/detect-non-literal-regexp
+        const mentionRegex: RegExp = new RegExp(this.mentionChar.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s');
+        const isValid: boolean = currentRange && mentionRegex.test(currentRange) ? false : true;
+        let lastWordRange: string = this.getLastLetter(currentRange);
+        const previousChar: string = currentRange ? currentRange.charAt(Math.max(0, currentRange.indexOf(this.mentionChar) - 1)) : '';
+        if (isValid && this.allowSpaces && currentRange && (currentRange as any).includes(this.mentionChar) && (currentRange as any).split(this.mentionChar).pop() !== ''
+         && (!this.requireLeadingSpace || (this.requireLeadingSpace && (previousChar === ' ' || (currentRange as any).indexOf(this.mentionChar) === 0)))) {
+            lastWordRange = this.mentionChar + (currentRange as any).split(this.mentionChar).pop();
+        }
+        if (!this.requireLeadingSpace && lastWordRange && (lastWordRange as any).includes(this.mentionChar)) {
+            lastWordRange = this.mentionChar + lastWordRange.split(this.mentionChar).pop();
+        }
         const lastTwoLetters: string = this.mentionChar.toString() + this.mentionChar.toString();
         // eslint-disable-next-line security/detect-non-literal-regexp
         const Regex: RegExp = new RegExp(this.mentionChar.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g');
@@ -711,18 +734,18 @@ export class Mention extends DropDownBase {
             this.hidePopup();
             return;
         }
-        if ((!currentRange || !lastWordRange) || e.code === 'Enter' || e.keyCode === 27 ||
+        if (((!currentRange || !lastWordRange) || (!(lastWordRange as any).includes(this.mentionChar) && !this.requireLeadingSpace)) || e.code === 'Enter' || e.keyCode === 27 ||
             (lastWordRange.match(Regex) && lastWordRange.match(Regex).length > 1) ||
             (this.isContentEditable(this.inputElement) && this.range.startContainer &&
             (this.range.startContainer as HTMLElement).previousElementSibling && (this.range.startContainer as HTMLElement).previousElementSibling.tagName !== 'BR' && this.range.startContainer.textContent.split('').length > 0 &&
             (rangetextContent.length === 1 || rangetextContent[rangetextContent.length - 2].indexOf('') === -1 ||
             this.range.startContainer.nodeType === 1))) {
-            if (this.isPopupOpen && this.allowSpaces && currentRange && currentRange.trim() !== '' && charRegex.test(currentRange) && currentRange.indexOf(this.mentionChar) !== -1
+            if (isValid && this.isPopupOpen && this.allowSpaces && currentRange && currentRange.trim() !== '' && charRegex.test(currentRange) && currentRange.indexOf(this.mentionChar) !== -1
                 && !this.isMatchedText() && (currentRange.length > 1 && currentRange.replace(/\u00A0/g, ' ').charAt(currentRange.length - 2) !== ' ') &&
                 (this.list && this.list.querySelectorAll('ul').length > 0) && e.code !== 'Enter') {
                 this.queryString = currentRange.substring(currentRange.lastIndexOf(this.mentionChar) + 1).replace('\u00a0', ' ');
                 this.searchLists(e);
-            } else if (this.isPopupOpen && (!this.allowSpaces || !lastWordRange) && (e.code !== 'ArrowDown' && e.code !== 'ArrowUp')) {
+            } else if (!this.requireLeadingSpace || this.isPopupOpen && (!this.allowSpaces || !lastWordRange) && (e.code !== 'ArrowDown' && e.code !== 'ArrowUp')) {
                 this.hidePopup();
                 this.lineBreak = true;
             }
@@ -732,7 +755,9 @@ export class Mention extends DropDownBase {
             return;
         }
         if ((lastWordRange as any).includes(this.mentionChar)) {
-            this.queryString = lastWordRange.replace(this.mentionChar, '');
+            this.queryString = !this.requireLeadingSpace
+                ? lastWordRange.substring(lastWordRange.lastIndexOf(this.mentionChar) + 1).trim()
+                : lastWordRange.replace(this.mentionChar, '');
         }
         if (this.mentionChar.charCodeAt(0) === lastWordRange.charCodeAt(0) &&
             this.queryString !== '' && e.keyCode !== 38 && e.keyCode !== 40 && !this.lineBreak) {
@@ -745,9 +770,10 @@ export class Mention extends DropDownBase {
                     this.showPopup();
                 }
             }
-        } else if (lastWordRange.indexOf(this.mentionChar) === 0 && !this.isPopupOpen && e.keyCode !== 8 && (!this.popupObj ||
-            (isNullOrUndefined(this.target) && !document.body.contains(this.popupObj.element) ||
-            !isNullOrUndefined(this.target) && document.body.contains(this.popupObj.element)))) {
+        } else if ((!this.requireLeadingSpace ? (lastWordRange as any).includes(this.mentionChar)
+            : lastWordRange.indexOf(this.mentionChar) === 0) && !this.isPopupOpen && e.keyCode !== 8 &&
+            (!this.popupObj || ((isNullOrUndefined(this.target) && !document.body.contains(this.popupObj.element)) ||
+            (!isNullOrUndefined(this.target) && document.body.contains(this.popupObj.element))))) {
             if (this.initRemoteRender && this.list && this.list.classList.contains('e-nodata')) {
                 this.searchLists(e);
             }

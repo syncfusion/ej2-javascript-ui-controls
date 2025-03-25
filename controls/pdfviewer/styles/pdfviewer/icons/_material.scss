@@ -517,4 +517,14 @@
     opacity: $pv-eye-icon-opacity;
     padding: $pv-eye-icon-padding;
   }
+
+  .e-pv-button-icon::before {
+    content: '\e9e2';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-drag-and-drop-icon::before {
+    content: '\e726';
+    font-family: 'e-icons';
+  }
 }

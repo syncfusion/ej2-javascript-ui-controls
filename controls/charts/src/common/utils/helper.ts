@@ -26,6 +26,7 @@ import { Chart3DAxis } from '../../chart3d/axis/axis';
 import { Chart3DPoint, Chart3DSeries} from '../../chart3d/series/chart-series';
 import { CircularChart3D } from '../../circularchart3d';
 import { VisibleRangeModel } from '../model/interface';
+import { ScrollBar } from '../scrollbar/scrollbar';
 
 /**
  * Function to sort the dataSource, by default it sort the data in ascending order.
@@ -92,6 +93,56 @@ export function getVisiblePoints(series: Series | Chart3DSeries): Points[] {
         }
     }
     return tempPoints;
+}
+
+/**
+ * Calculates the offset for positioning a scrollbar on a chart axis.
+ *
+ * @param {ScrollBar} scrollbar - The scrollbar object to position.
+ * @param {boolean} isHorizontalAxis - Indicates whether the axis is horizontal.
+ * @returns {number} An object containing the calculated top and left offsets for the scrollbar.
+ */
+export function calculateScrollbarOffset(scrollbar: ScrollBar, isHorizontalAxis: boolean): number {
+    const scrollbarPadding: number = 5;
+    const chart: Chart = scrollbar.component;
+    let titleHeight: number = 0;
+    let subTitleHeight: number = 0;
+    const titlePadding: number = chart.titleStyle.position === 'Top' || (chart.titleStyle.position === 'Bottom' && !chart.legendSettings.visible) ? 15 : 5;
+    if (chart.title) {
+        titleHeight = (measureText(chart.title, chart.titleStyle, chart.themeStyle.chartTitleFont).height *
+        chart.titleCollection.length) + titlePadding;
+        if (chart.subTitle) {
+            subTitleHeight = (measureText(chart.subTitle, chart.subTitleStyle, chart.themeStyle.chartSubTitleFont).height *
+            chart.subTitleCollection.length);
+        }
+    }
+    let scrollbarOffsetValue: number;
+
+    if (isHorizontalAxis) {
+        if (scrollbar.axis.scrollbarSettings.position === 'Top') {
+            scrollbarOffsetValue = chart.margin.top + scrollbarPadding + ((scrollbar.height + scrollbarPadding) * chart.scrollBarModule.topScrollBarCount) + (chart.titleStyle.position === 'Top' ? titleHeight
+                + chart.titleStyle.border.width : 0) + (chart.subTitleStyle.position === 'Top' ? chart.subTitleStyle.border.width + subTitleHeight : 0);
+            chart.scrollBarModule.topScrollBarCount++;
+        }
+        else if (scrollbar.axis.scrollbarSettings.position === 'Bottom') {
+            scrollbarOffsetValue = chart.availableSize.height - (((scrollbar.height + scrollbarPadding) * chart.scrollBarModule.bottomScrollBarCount) + scrollbar.height + chart.margin.bottom + scrollbarPadding + (chart.titleStyle.position === 'Bottom' ? titleHeight
+                + chart.titleStyle.border.width : 0) + (chart.subTitleStyle.position === 'Bottom' ? chart.subTitleStyle.border.width + subTitleHeight : 0));
+            chart.scrollBarModule.bottomScrollBarCount++;
+        }
+    }
+    else {
+        if (scrollbar.axis.scrollbarSettings.position === 'Right') {
+            scrollbarOffsetValue = chart.availableSize.width - (((scrollbar.height + scrollbarPadding) * chart.scrollBarModule.rightScrollBarCount) + scrollbar.height + scrollbarPadding + chart.margin.right + (chart.titleStyle.position === 'Right' ? titleHeight
+                + chart.titleStyle.border.width : 0) + (chart.subTitleStyle.position === 'Right' ? chart.subTitleStyle.border.width + subTitleHeight : 0));
+            chart.scrollBarModule.rightScrollBarCount++;
+        }
+        else if (scrollbar.axis.scrollbarSettings.position === 'Left') {
+            scrollbarOffsetValue = chart.margin.left + scrollbarPadding + ((scrollbar.height + scrollbarPadding) * chart.scrollBarModule.leftScrollBarCount) + (chart.titleStyle.position === 'Left' ? titleHeight
+                + chart.titleStyle.border.width : 0) + (chart.subTitleStyle.position === 'Left' ? chart.subTitleStyle.border.width + subTitleHeight : 0);
+            chart.scrollBarModule.leftScrollBarCount++;
+        }
+    }
+    return scrollbarOffsetValue;
 }
 
 /**
@@ -346,6 +397,7 @@ export function subArraySum(values: Object[], first: number, last: number, index
             }
         }
     } else {
+
         for (let i: number = (first + 1); i < last; i++) {
             if (!isNullOrUndefined(values[i as number][series.yName]) && !isNullOrUndefined(series.sumIndexes) &&
                 series.sumIndexes.indexOf(i) === -1) {
@@ -588,7 +640,10 @@ export function TransformToVisible(x: number, y: number, xAxis: Axis, yAxis: Axi
  */
 export function indexFinder(id: string, isPoint: boolean = false): Index {
     let ids: string[] = ['NaN', 'NaN'];
-    if (id.indexOf('_Point_') > -1) {
+    if (id.indexOf('_polygon') > -1) {
+        ids = ['NaN', 'NaN'];
+    }
+    else if (id.indexOf('_Point_') > -1) {
         ids = id.split('_Series_')[1].split('_Point_');
     } else if (id.indexOf('_shape_') > -1 && (!isPoint || (isPoint && id.indexOf('_legend_') === -1))) {
         ids = id.split('_shape_');
@@ -596,6 +651,18 @@ export function indexFinder(id: string, isPoint: boolean = false): Index {
     } else if (id.indexOf('_text_') > -1 && (!isPoint || (isPoint && id.indexOf('_legend_') === -1))) {
         ids = id.split('_text_');
         ids[0] = '0';
+    }
+    else if (id.indexOf('_datalabel_') > -1) {
+        ids = id.split('_datalabel_')[1].split('_g_');
+        ids[0] = ids[0].replace('Series_', '');
+    }
+    else if (id.indexOf('TextGroup') > -1) {
+        ids = id.split('TextGroup');
+        ids[0] = ids[1];
+    }
+    else if (id.indexOf('ShapeGroup') > -1) {
+        ids = id.split('ShapeGroup');
+        ids[0] = ids[1];
     }
     return new Index(parseInt(ids[0], 10), parseInt(ids[1], 10));
 }
@@ -701,7 +768,7 @@ export function createTooltip(id: string, text: string, top: number, left: numbe
         document.body.appendChild(tooltip);
     } else {
         tooltip.setAttribute('innerHTML', '&nbsp;' + text + '&nbsp;');
-        tooltip.setAttribute('styles', style);
+        (tooltip as HTMLElement).style.cssText = style;
     }
 }
 /**
@@ -1082,6 +1149,7 @@ export function markerAnimate(
     element: Element, delay: number, duration: number, series: Series | AccumulationSeries,
     pointIndex: number, point: ChartLocation, isLabel: boolean
 ): void {
+    const isAccumulation: boolean = (series as AccumulationSeries).accumulation ? true : false;
     (<HTMLElement>element).style.visibility = 'hidden';
     const transform: string = element.getAttribute('transform');
     new Animation({}).animate(<HTMLElement>element, {
@@ -1091,13 +1159,38 @@ export function markerAnimate(
             if (args.timeStamp > args.delay) {
                 args.element.style.visibility = 'visible';
             }
+            if (isAccumulation ? args.element.id.indexOf('_datalabel_Series_') > -1 : (args.element.parentElement.parentElement.id.indexOf('DataLabel') > -1
+                && !((series as Series).chart.stackLabels.visible && element.getAttribute('data-collide')))) {
+                args.element.style.visibility = 'visible';
+                const dataLabelOpacity: number = isAccumulation ? (series as AccumulationSeries).opacity
+                    : (series as Series).marker.dataLabel.opacity;
+                const calculatedOpacity: number = (args.timeStamp / 500) * (dataLabelOpacity);
+                if (isAccumulation) {
+                    element.setAttribute('opacity', Math.min(calculatedOpacity, dataLabelOpacity).toString());
+                } else {
+                    (series as Series).textElement.setAttribute('opacity', Math.min(calculatedOpacity, dataLabelOpacity).toString());
+                    (series as Series).shapeElement.setAttribute('opacity', Math.min(calculatedOpacity, dataLabelOpacity).toString());
+                }
+            }
         },
         end: () => {
             const annotations: HTMLElement = <HTMLElement>document.getElementById((series as Series).chart.element.id + '_Annotation_Collections');
             if (annotations && series.type !== 'Line') {
                 annotations.style.visibility = 'visible';
             }
-            (<HTMLElement>element).style.visibility = '';
+            if (element.parentElement.parentElement.id.indexOf('DataLabel') > -1 || element.id.indexOf('_datalabel_Series_') > -1) {
+                if (isAccumulation) {
+                    element.setAttribute('opacity', ((series as AccumulationSeries).opacity).toString());
+                } else {
+                    (series as Series).textElement.setAttribute('opacity', ((series as Series).marker.dataLabel.opacity).toString());
+                    (series as Series).shapeElement.setAttribute('opacity', ((series as Series).marker.dataLabel.opacity).toString());
+                }
+
+            }
+
+            if (!((series as Series).chart.stackLabels.visible && element.getAttribute('data-collide'))) {
+                (<HTMLElement>element).style.visibility = '';
+            }
             element.setAttribute('transform', transform ? transform : '');
             if ((series.type === 'Scatter' || series.type === 'Bubble') && !isLabel && (pointIndex === series.points.length - 1)) {
                 series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
@@ -2690,7 +2783,7 @@ export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator 
         if (range.disableRangeSelector) {
             height = periodHeight;
         }
-        if ((chart as RangeNavigator).stockChart && (chart as RangeNavigator).stockChart.chart.axisCollections[1].labelPosition === 'Outside') {
+        if ((chart as RangeNavigator).stockChart && (chart as RangeNavigator).stockChart.chart && (chart as RangeNavigator).stockChart.chart.axisCollections[1].labelPosition === 'Outside') {
             const padding: number = (chart as RangeNavigator).stockChart.chart.axisCollections[1].labelPadding +
                 (chart as RangeNavigator).stockChart.chart.axisCollections[1].lineStyle.width * 0.5;
             chart.width = ((chart as RangeNavigator).stockChart.availableSize.width -
@@ -2718,7 +2811,7 @@ export function createSvg(chart: Chart | AccumulationChart | RangeNavigator | Ch
     calculateSize(chart);
     if ((chart as Chart).stockChart && chart.getModuleName() === 'chart') {
         chart.svgObject = (chart as Chart).stockChart.chartObject;
-    } else if ((chart as RangeNavigator).stockChart && chart.getModuleName() === 'rangeNavigator') {
+    } else if ((chart as RangeNavigator).stockChart && chart.getModuleName() === 'rangeNavigator' && (chart as RangeNavigator).stockChart.selectorObject) {
         chart.svgObject = (chart as RangeNavigator).stockChart.selectorObject;
     } else {
         if ((chart as Chart).enableCanvas) {
@@ -2795,37 +2888,54 @@ export function titlePositionX(rect: Rect, titleStyle: FontModel): number {
  * @param {boolean} [wrapAnyWhere=false] - Indicates whether the text can be wrapped at any position.
  * @param {boolean} [clip=false] - Specifies whether text exceeding the maximum width should be clipped.
  * @param {FontModel} [themeFontStyle] - The font style used as the base for the text wrapping operation.
+ * @param {number} [maximumLabelHeight] - The total height available for the wrapped text.
  * @returns {string[]} An array of strings representing the wrapped lines of text.
  */
-export function textWrap(currentLabel: string, maximumWidth: number, font: FontModel, isRtlEnabled : boolean, wrapAnyWhere ?: boolean,
-                         clip ?: boolean, themeFontStyle?: FontModel): string[] {
+export function textWrap(currentLabel: string, maximumWidth: number, font: FontModel, isRtlEnabled: boolean, wrapAnyWhere?: boolean,
+                         clip?: boolean, themeFontStyle?: FontModel, maximumLabelHeight?: number): string[] {
     if (wrapAnyWhere) {
         return (textWrapAnyWhere(currentLabel, maximumWidth, font, themeFontStyle));
     }
-    else {
-        const textCollection: string[] = currentLabel.split(' ');
-        let label: string = '';
-        const labelCollection: string[] = [];
-        let text: string;
-        for (let i: number = 0, len: number = textCollection.length; i < len; i++) {
-            text = textCollection[i as number];
-            if (measureText(label.concat(label === '' ? '' : ' ' + text), font, themeFontStyle).width < maximumWidth) {
-                label = label.concat((label === '' ? '' : ' ') + text);
-            } else {
-                if (label !== '') {
-                    labelCollection.push(clip ? label : textTrim(maximumWidth, label, font, isRtlEnabled, themeFontStyle));
-                    label = text;
-                } else {
-                    labelCollection.push(clip ? text : textTrim(maximumWidth, text, font, isRtlEnabled, themeFontStyle));
-                    text = '';
+    const textCollection: string[] = currentLabel.split(' ');
+    let label: string = '';
+    const labelCollection: string[] = [];
+    let text: string;
+    const lineHeight: number = measureText('chartMeasureText', font, themeFontStyle).height;
+    let textHeight: number = 0;
+    for (let i: number = 0, len: number = textCollection.length; i < len; i++) {
+        text = textCollection[i as number];
+        if (measureText(label.concat(label === '' ? '' : ' ' + text), font, themeFontStyle).width < maximumWidth) {
+            label = label.concat((label === '' ? '' : ' ') + text);
+        }
+        else {
+            if (label !== '') {
+                textHeight += lineHeight;
+                if (maximumLabelHeight && textHeight > maximumLabelHeight) {
+                    labelCollection[labelCollection.length - 1] += '...';
+                    return labelCollection;
                 }
-            }
-            if (label && i === len - 1) {
                 labelCollection.push(clip ? label : textTrim(maximumWidth, label, font, isRtlEnabled, themeFontStyle));
+                label = text;
+            }
+            else {
+                textHeight += lineHeight;
+                if (maximumLabelHeight && textHeight > maximumLabelHeight) {
+                    labelCollection[labelCollection.length - 1] += '...';
+                    return labelCollection;
+                }
+                labelCollection.push(clip ? text : textTrim(maximumWidth, text, font, isRtlEnabled, themeFontStyle));
             }
         }
-        return labelCollection;
+        if (label && i === len - 1) {
+            textHeight += lineHeight;
+            if (maximumLabelHeight && textHeight > maximumLabelHeight) {
+                labelCollection[labelCollection.length - 1] += '...';
+                return labelCollection;
+            }
+            labelCollection.push(clip ? label : textTrim(maximumWidth, label, font, isRtlEnabled, themeFontStyle));
+        }
     }
+    return labelCollection;
 }
 /**
  * Wraps the input text into multiple lines, allowing wrapping at any position.

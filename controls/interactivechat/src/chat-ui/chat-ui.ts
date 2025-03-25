@@ -513,8 +513,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     private indicatorWrapper: HTMLElement;
     private isEmptyChatTemplateRendered: boolean;
     private startIndex: number;
-    private batchSize: number = 100;
-    private initialLoadSize: number = 100;
+    private multiplier: number = 3;
     private toolbar: Toolbar;
     private isScrollAtBottom: boolean;
     /**
@@ -583,6 +582,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             this.renderBannerView(this.emptyChatTemplate, this.messageWrapper, 'emptyChatTemplate');
             this.isEmptyChatTemplateRendered =  isNOU(this.messageWrapper.querySelector('.e-empty-chat-template')) ? false : true;
         }
+        this.updateTextAreaObject(this.textareaObj);
         this.wireEvents();
         this.renderTypingIndicator();
         this.updateScrollPosition(false, 0);
@@ -617,7 +617,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
 
     private renderChatHeaderToolbar(headerContainer: HTMLElement): void {
         if (!isNOU(this.headerToolbar) && this.headerToolbar.items.length > 0) {
-            const toolbarEle: HTMLElement = this.createElement('div', {attrs: {class: 'e-chat-toolbar'}});
+            const toolbarEle: HTMLElement = this.createElement('div', { className: 'e-chat-toolbar' });
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
             const pushToolbar: ItemModel[] = this.headerToolbar.items.map((item: any) => ({
                 type: item.type,
@@ -683,12 +683,26 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     }
 
     private renderChatContentElement(): void{
-        this.messageWrapper = this.createElement('div', {className: 'e-message-wrapper'});
+        this.messageWrapper = this.createElement('div', {className: 'e-message-wrapper', attrs: { 'tabindex': '0' }});
         this.viewWrapper.prepend(this.messageWrapper);
-        this.renderMessageGroup(this.messageWrapper);
-        this.content = this.createElement('div', {attrs: {class: 'e-typing-suggestions'} });
+        this.content = this.createElement('div', { className: 'e-typing-suggestions' });
         this.viewWrapper.append(this.content);
         this.renderScrollDown();
+        this.setChatMsgId();
+        this.renderMessageGroup(this.messageWrapper);
+    }
+    private setChatMsgId(): void {
+        if (this.messages && this.messages.length > 0 ) {
+            const prevOnChange: boolean = this.isProtectedOnChange;
+            this.isProtectedOnChange = true;
+            this.messages = this.messages.map((msg: MessageModel, index: number) => {
+                return {
+                    ...msg,
+                    id: msg.id || `${this.element.id}-message-${index + 1}`
+                };
+            });
+            this.isProtectedOnChange = prevOnChange;
+        }
     }
     private renderScrollDown(): void {
         const scrollDownButton: HTMLButtonElement = this.createElement('button', {id: 'scrollDownButton'} );
@@ -701,16 +715,39 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         this.downArrowIcon.appendTo(scrollDownButton);
     }
 
+    private loadBatch(): void {
+        for (let i: number = this.startIndex - 1; i >= 0; i--) {
+            const currIndex: number = i; // To pass the actual index of the reversed item.
+            const prevIndex: number = i === this.messages.length - 1 ? -1 : currIndex + 1;
+            this.updateMessageTimeFormats(this.messages[parseInt(i.toString(), 10)], currIndex);
+            const currentMessageDate: Date = this.getMessageDate(currIndex);
+            currentMessageDate.setHours(0, 0, 0, 0);
+            if (Math.min(currIndex, prevIndex) >= 0 ) {
+                const lastMessageDate: Date = this.getMessageDate(prevIndex);
+                lastMessageDate.setHours(0, 0, 0, 0);
+                if (currentMessageDate.getTime() === lastMessageDate.getTime()) {
+                    const prevTimeBreak: HTMLDivElement = this.messageWrapper.querySelectorAll('.e-timebreak')[0] as HTMLDivElement;
+                    if (prevTimeBreak) {
+                        prevTimeBreak.remove();
+                    }
+                }
+            }
+            this.renderGroup(this.messageWrapper, this.messages[parseInt(i.toString(), 10)], true , currIndex, prevIndex);
+            if (this.showTimeBreak) { this.messageWrapper.prepend(this.createTimebreakElement(currentMessageDate)); }
+            const viewportHeight: number = window.innerHeight;
+            const loadHeight: number = viewportHeight * this.multiplier;
+            this.startIndex = i;
+            if (this.messageWrapper.scrollHeight > loadHeight) {
+                break;
+            }
+        }
+    }
     private renderMessageGroup(chatContentWrapper: HTMLElement): void {
         if (this.loadOnDemand) {
+            if (this.messages && this.messages.length <= 0) { return; }
             createSpinner({target: this.messageWrapper});
-            this.startIndex = Math.max(0, this.messages.length - this.initialLoadSize);
-            const initialMessages: MessageModel[] = this.messages.slice(this.startIndex);
-            initialMessages.forEach((msg: MessageModel, i: number) => {
-                const currIndex: number = this.startIndex + i;
-                const prevIndex: number = i === 0 ? -1 : currIndex - 1;
-                this.renderGroup(chatContentWrapper, msg, false, currIndex, prevIndex);
-            });
+            this.startIndex = this.messages.length;
+            this.loadBatch();
         }
         else {
             this.messages.forEach((msg: MessageModel, i: number) => {
@@ -722,6 +759,12 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         return loadOldChat ?
             chatContentWrapper.firstElementChild.classList.contains('e-timebreak') :
             chatContentWrapper.lastElementChild.classList.contains('e-timebreak');
+    }
+    private getLastUser(prevIndex: number): string {
+        if (prevIndex >= 0) {
+            return this.messages[parseInt(prevIndex.toString(), 10)].author.id;
+        }
+        return '';
     }
     private renderGroup(chatContentWrapper: HTMLElement, msg: MessageModel, loadOldChat: boolean, index: number, prevIndex: number): void {
         let messageGroup: HTMLDivElement | null;
@@ -768,12 +811,6 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             }
         }
     }
-    private getLastUser(prevIndex: number): string {
-        if (prevIndex >= 0) {
-            return this.messages[parseInt(prevIndex.toString(), 10)].author.id;
-        }
-        return '';
-    }
     private isTimeVaries(index: number, prevIndex: number): boolean {
         const currentMessageDate: Date = this.getMessageDate(index);
         currentMessageDate.setHours(0, 0, 0, 0);
@@ -783,8 +820,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     }
     private loadLeftGroupOnDemand(msg: MessageModel, loadOldChat: boolean, index: number, messageGroup: HTMLDivElement): void {
         // To check if the previous author is the same as the current author. If not, create a group header.
-        const isAnyMsgPresent: boolean = this.messages[index - 1] ? true : false;
-        const prevAuthorId: string = isAnyMsgPresent ? this.messages[index - 1].author.id : '';
+        const isAnyMsgPresent: boolean = this.messages[parseInt((index - 1).toString(), 10)] ? true : false;
+        const prevAuthorId: string = isAnyMsgPresent ? this.messages[parseInt((index - 1).toString(), 10)].author.id : '';
         const shouldCreateHeader: boolean = prevAuthorId !== msg.author.id ? true : false;
         if (shouldCreateHeader || this.isTimeVaries(index, index - 1)) {
             this.addGroupItems(msg, messageGroup, true, false, index, loadOldChat);
@@ -848,6 +885,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         }
     }
     private getFormattedTime(timeStamp: Date, timeStampFormat: string): string{
+        timeStamp = typeof timeStamp === 'string' ? new Date(timeStamp) : timeStamp;
         return this.intl.formatDate(timeStamp, { format: this.getFormat(timeStampFormat) });
     }
     private getFormat(timeStampFormat: string): string {
@@ -857,7 +895,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     }
     private addGroupItems(msg: MessageModel, messageGroup: HTMLDivElement, isUserTimeStampRendered: boolean,
                           showStatus: boolean, index: number, loadOldChat: boolean): void {
-        const messageItem : HTMLDivElement = this.createElement('div', { className: 'e-message-item'});
+        const messageItem : HTMLDivElement = this.createElement('div', { className: 'e-message-item', id: `${msg.id}`});
         const messageStatusWrapper : HTMLDivElement = this.createElement('div', {className: 'e-status-wrapper'});
         const timeSpan : HTMLDivElement = this.getTimeStampElement(msg.timeStamp ? msg.timeStamp : new Date(), msg.timeStampFormat, index);
         const textElement : HTMLDivElement = this.createElement('div', {
@@ -928,29 +966,8 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         showSpinner(this.messageWrapper);
         setTimeout(() => {
             hideSpinner(this.messageWrapper);
-            const endIndex: number = this.startIndex; // To slice up to the previously rendered message items.
-            this.startIndex = Math.max(0, this.startIndex - this.batchSize);
-            const nextBatchMessages: MessageModel[] = this.messages.slice(this.startIndex, endIndex);
-            nextBatchMessages.reverse().forEach((msg: MessageModel, i: number) => {
-                const currIndex: number = (endIndex - i) - 1; // To pass the actual index of the reversed item.
-                const prevIndex: number = currIndex + 1;
-                this.updateMessageTimeFormats(msg, currIndex);
-                const currentMessageDate: Date = this.getMessageDate(currIndex);
-                currentMessageDate.setHours(0, 0, 0, 0);
-                const lastMessageDate: Date = this.getMessageDate(prevIndex);
-                lastMessageDate.setHours(0, 0, 0, 0);
-                if (currIndex >= 0) {
-                    if (currentMessageDate.getTime() === lastMessageDate.getTime()) {
-                        const prevTimeBreak: HTMLDivElement = this.messageWrapper.querySelectorAll('.e-timebreak')[0] as HTMLDivElement;
-                        if (prevTimeBreak) {
-                            prevTimeBreak.remove();
-                        }
-                    }
-                }
-                this.renderGroup(this.messageWrapper, msg, true , currIndex, prevIndex);
-                this.messageWrapper.prepend(this.createTimebreakElement(currentMessageDate));
-                this.messageWrapper.scrollTop = this.messageWrapper.scrollHeight - currentScrollOffset;
-            });
+            this.loadBatch();
+            this.messageWrapper.scrollTop = this.messageWrapper.scrollHeight - currentScrollOffset;
         }, 1000);
     }
     private updateMessageTimeFormats(msg: MessageModel, index: number): void {
@@ -990,7 +1007,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
 
     private renderChatFooter(): void {
         this.textareaObj = this.renderFooterContent(this.footerTemplate, this.footer, '',
-                                                    this.placeholder, false, this.getRowCount(''), 'e-chat-textarea');
+                                                    this.placeholder, false, 'e-chat-textarea');
         const sendIconClass: string = 'e-chat-send e-icons disabled';
         if (!this.footerTemplate) { this.sendIcon = this.renderSendIcon(sendIconClass, this.footer); }
         if (this.textareaObj) {
@@ -1004,7 +1021,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     private handleInput(args: InputEventArgs): void {
         this.triggerUserTyping(args.event, args.value);
         this.activateSendIcon(args.value.length);
-        this.updateTextAreaObject(args.value);
+        this.updateTextAreaObject(this.textareaObj);
     }
     private triggerUserTyping(event: Event, value: string): void {
         const eventArgs: TypingEventArgs = {
@@ -1082,16 +1099,6 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         this.isProtectedOnChange = prevOnChange;
         this.renderTypingIndicator();
     }
-    private updateTextAreaObject(textValue: string): void {
-        const rowCount: number = this.getRowCount(textValue);
-        this.textareaObj.rows = rowCount;
-        this.textareaObj.cssClass = (rowCount >= 10) ? 'show-scrollbar' : 'hide-scrollbar';
-    }
-
-    private getRowCount(textValue: string): number {
-        const lines: number = textValue.split('\n').length;
-        return (lines < 10 ? (lines >= 1 ? lines : 1) : 10);
-    }
 
     private activateSendIcon(value: number): void {
         this.sendIcon.classList.toggle('disabled', value === 0);
@@ -1122,6 +1129,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
     }
     private renderUpdatedMessage(): void {
         this.messageWrapper.innerHTML = '';
+        this.setChatMsgId();
         this.renderMessageGroup(this.messageWrapper);
     }
     private onSendIconClick(event: KeyboardEvent | Event): void {
@@ -1129,12 +1137,14 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             return;
         }
         let newMessageObj: MessageModel = {
-            id: getUniqueID('e-message-'),
+            id: `${this.element.id}-message-${this.messages.length + 1}`,
             author: this.user,
             text: this.textareaObj.value
         };
         const prevOnChange: boolean = this.isProtectedOnChange;
         this.textareaObj.value = '';
+        this.textareaObj.dataBind();
+        this.updateTextAreaObject(this.textareaObj);
         this.activateSendIcon(this.textareaObj.value.length);
         const eventArgs: MessageSendEventArgs = {
             cancel: false,
@@ -1200,7 +1210,6 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             case 'footer':
                 event.preventDefault();
                 this.onSendIconClick(event);
-                this.updateTextAreaObject(this.textareaObj.value);
                 break;
             case 'scrollBottom':
                 this.scrollToBottom();
@@ -1225,6 +1234,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             }
         }
         if (this.loadOnDemand && this.messageWrapper.scrollTop === 0) {
+            this.multiplier += this.multiplier;
             this.loadMoreMessages();
         }
         this.isScrollAtBottom = atBottom;
@@ -1266,14 +1276,46 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         this.scrollToBottom();
         this.toggleClassName(this.messageWrapper, true, 'scroll');
     }
+    private updateMessageItem(message: MessageModel, msgId: string): void {
+        if (message.author || message.timeStamp || this.messageTemplate) {
+            this.renderUpdatedMessage();
+            return;
+        }
+
+        const messageItem: HTMLDivElement = this.messageWrapper.querySelector(`#${msgId}`);
+        if (!messageItem) {
+            return;
+        }
+        if (message.id) {
+            messageItem.id = message.id;
+        }
+        const textElement: HTMLDivElement = messageItem.querySelector('.e-text') as HTMLDivElement;
+        if (textElement && message.text) {
+            textElement.innerHTML = message.text;
+        }
+        if (message.status) {
+            const statusTextElement: HTMLDivElement = messageItem.querySelector('.e-status-text') as HTMLDivElement;
+            if (statusTextElement && message.status.text) {
+                statusTextElement.innerHTML = message.status.text;
+            }
+            const statusIconElement: HTMLSpanElement = messageItem.querySelector('.e-status-icon') as HTMLSpanElement;
+            if (statusIconElement && message.status.iconCss) {
+                const iconCss: string = message.status.iconCss;
+                statusIconElement.className = `e-status-icon ${iconCss}`;
+                if (message.status.tooltip) {
+                    statusIconElement.title = message.status.tooltip;
+                }
+            }
+        }
+    }
     private wireEvents(): void {
-        this.wireFooterEvents(this.sendIcon, this.footer, this.footerTemplate);
+        this.wireFooterEvents(this.sendIcon, this.footer, this.footerTemplate, this.textareaObj);
         EventHandler.add(this.messageWrapper, 'scroll', this.handleScroll, this);
         EventHandler.add(this.downArrowIcon.element, 'click', this.scrollBtnClick, this);
         EventHandler.add(this.downArrowIcon.element, 'keydown', this.scrollBottomKeyHandler, this);
     }
     private unwireEvents(): void {
-        this.unWireFooterEvents(this.sendIcon, this.footer, this.footerTemplate);
+        this.unWireFooterEvents(this.sendIcon, this.footer, this.footerTemplate, this.textareaObj);
         EventHandler.remove(this.messageWrapper, 'scroll', this.handleScroll);
         EventHandler.remove(this.downArrowIcon.element, 'click', this.scrollBtnClick);
         EventHandler.remove(this.downArrowIcon.element, 'keydown', this.scrollBottomKeyHandler);
@@ -1322,7 +1364,7 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         this.isProtectedOnChange = true;
         if (typeof message === 'string') {
             const newMessageObj: MessageModel = {
-                id: getUniqueID('e-message-'),
+                id: `${this.element.id}-message-${this.messages.length + 1}`,
                 author: this.user,
                 text: message,
                 timeStamp: new Date(),
@@ -1332,8 +1374,12 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
             this.renderNewMessage(newMessageObj, (this.messages.length - 1));
         }
         else {
-            this.messages = [...this.messages, message];
-            this.renderNewMessage(message, (this.messages.length - 1));
+            const newMessageObj: MessageModel = {
+                ...message,
+                id: message.id || `${this.element.id}-message-${this.messages.length + 1}`
+            };
+            this.messages = [...this.messages, newMessageObj];
+            this.renderNewMessage(newMessageObj, (this.messages.length - 1));
         }
         // To prevent the issue where scrolling does not move to the bottom in the `messageTemplate` case on Angular and React platforms.
         this.updateScrollPosition(true, 5);
@@ -1356,8 +1402,40 @@ export class ChatUI extends InterActiveChatBase implements INotifyPropertyChange
         this.messages = this.messages.map((messageItem: MessageModel) =>
             messageItem.id === msgId ? { ...messageItem, ...message } : messageItem
         );
-        this.renderUpdatedMessage();
+        this.updateMessageItem(message, msgId);
         this.isProtectedOnChange = prevOnChange;
+    }
+
+    /**
+     * Scrolls to a specific message in the Chat UI component based on the provided message ID.
+     * Locates the message with the specified ID and scrolls it to the view.
+     *
+     * @function scrollToMessage
+     * @param {string} messageId - The unique identifier of the message to navigate to the corresponding message rendered in the chat UI.
+     * @returns {void}.
+     */
+    public scrollToMessage(messageId: string): void {
+        const messageElement: HTMLElement = this.messageWrapper.querySelector(`#${messageId}`);
+        if (!messageElement) {
+            return;
+        }
+        messageElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+
+    /**
+     * Sets focus for the input textarea in the Chat UI component.
+     * Ensures that user input is directed to the chat input field.
+     *
+     * @function focus
+     * @returns {void}.
+     */
+    public focus(): void {
+        if (this.textareaObj) {
+            this.textareaObj.focusIn();
+        }
     }
 
     public destroy(): void {

@@ -792,6 +792,15 @@ export class StockSeries extends ChildProperty<StockSeries> {
      */
     @Property(0)
     public columnSpacing: number;
+
+    /**
+     * Enables or disables the display of tooltips for the nearest data point to the cursor for series.
+     *
+     * @default true
+     */
+    @Property(true)
+    public showNearestTooltip: boolean;
+
     /** @private */
     public localData: Object = undefined;
     /** @private */

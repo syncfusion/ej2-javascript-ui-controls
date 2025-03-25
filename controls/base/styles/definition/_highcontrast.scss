@@ -1,3 +1,6 @@
+@use 'sass:color';
+@use 'sass:meta';
+@use 'sass:list';
 @import '../common/mixin.scss';
 
 $selection-bg: #ffd939 !default;

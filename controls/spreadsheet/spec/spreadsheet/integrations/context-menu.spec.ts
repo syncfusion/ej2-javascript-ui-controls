@@ -713,4 +713,48 @@ describe('Spreadsheet context menu module ->', () => {
             });
         });
     });
+
+    describe('EJ2-931381', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Checking Add Note Option after enabling readonly mode for cells', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setRangeReadOnly(true, 'A1:H11', 0);
+            const td: HTMLTableCellElement = helper.invoke('getCell', [1, 1]);
+            const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(() => {
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(9)').classList).toContain('e-disabled');
+                done();
+            });
+        });
+        it('Checking Add Note Option after enabling readonly mode for a row', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setRangeReadOnly(true, '11:14', 0);
+            const td: HTMLTableCellElement = helper.invoke('getCell', [11, 0]);
+            const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(() => {
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(9)').classList).toContain('e-disabled');
+                done();
+            });
+        });
+        it('Checking Add Note Option after enabling readonly option for a column', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setRangeReadOnly(true, 'I:I', 0);
+            const td: HTMLTableCellElement = helper.invoke('getCell', [0, 8]);
+            const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(() => {
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(9)').classList).toContain('e-disabled');
+                done();
+            });
+        });
+    });
 });

@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 29.1.33 (2025-03-25)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I700161` - Now, pressing Backspace at the start of a line in content pasted from a Google document works properly.
+
+- `#694114` - Now, the Rich Text Editor works properly when creating tables inside lists.
+
+- `#696076` - Now, the Rich Text Editor works properly when using the select all with enter key functionality in Firefox.
+
+- `#I698253` - Now, the page remains responsive when removing inline code in the RichTextEditor.
+
+- `#I693061` - Now, the `characterCount` property works properly in the Rich Text Editor without creating excessive right margin space.
+
+- `#I699202` - Now, the placeholder in the Rich Text Editor works properly and disappears when inserting text using voice input.
+
 ## 28.2.11 (2025-03-11)
 
 ### RichTextEditor

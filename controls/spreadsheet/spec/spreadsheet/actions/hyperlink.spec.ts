@@ -580,8 +580,7 @@ describe('Hyperlink ->', () => {
             helper.invoke('selectRange', ['H1']);
             helper.getElementFromSpreadsheet('#' + helper.id + '_hyperlink').click();
             setTimeout(() => {
-                var dialog = helper.getElement('.e-hyperlink-dlg.e-dialog');
-                expect(!!dialog).toBeTruthy();
+                expect(helper.getElement('.e-hyperlink-dlg.e-dialog')).toBeNull();
                 done();
             }, 20);
         });
@@ -594,8 +593,7 @@ describe('Hyperlink ->', () => {
             helper.invoke('selectRange', ['B1']);
             helper.getElementFromSpreadsheet('#' + helper.id + '_hyperlink').click();
             setTimeout(() => {
-                var dialog = helper.getElement('.e-edithyperlink-dlg.e-dialog');
-                expect(!!dialog).toBeTruthy();
+                expect(helper.getElement('.e-edithyperlink-dlg.e-dialog')).toBeNull();
                 done();
             }, 20);
         });
@@ -1193,6 +1191,61 @@ describe('Hyperlink ->', () => {
                 expect(spreadsheet.sheets[0].rows[4].cells[7].hyperlink.address).toBe('http://www.google.com');
                 expect(td.querySelector('.e-hyperlink')).toBe(null);
                 expect(spreadsheet.sheets[0].rows[4].cells[7].style.textDecoration).toBe('underline');
+            });
+        });
+
+        describe('Undo redo hyperlink ranges ->', () => {
+            let spreadsheet: Spreadsheet;
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Insert hyperlink', (done: Function) => {
+                helper.invoke('selectRange', ['J2:M5']);
+                helper.switchRibbonTab(2);
+                helper.getElementFromSpreadsheet('#' + helper.id + '_hyperlink').click();
+                setTimeout(() => {
+                    helper.getElements('.e-hyperlink-dlg .e-webpage input')[0].value = 'Hello';
+                    helper.getElements('.e-hyperlink-dlg .e-webpage input')[1].value = 'www.google.com';
+                    helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
+                    helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+                    helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
+                    done();
+                });
+            });
+            it('Undo action', () => {
+                spreadsheet = helper.getInstance();
+                helper.switchRibbonTab(1);
+                helper.getElement('#' + helper.id + '_undo').click();
+                expect(spreadsheet.sheets[0].rows[3].cells[10].hyperlink).toBe(undefined);
+            });
+            it('Select cell', () => {
+                helper.invoke('selectRange', ['P6']);
+            });
+            it('Redo action', () => {
+                helper.getElement('#' + helper.id + '_redo').click();
+                expect(spreadsheet.sheets[0].rows[1].cells[9].value).toBe('Hello');
+                expect((spreadsheet.sheets[0].rows[3].cells[10].hyperlink as HyperlinkModel).address).toBe('http://www.google.com');
+            });
+            it('EJ2-946552 - Hyperlink text is displayed twice inside the cell', (done: Function) => {
+                helper.edit('H10', '55\n');
+                const cell: CellModel = helper.getInstance().sheets[0].rows[9].cells[7];
+                expect(cell.value).toEqual('55\n');
+                expect(cell.wrap).toEqual(true);
+                helper.invoke('insertHyperlink', [{ address: 'www.google.com' }, 'H10']);
+                expect((cell.hyperlink as HyperlinkModel).address).toEqual('http://www.google.com');
+                helper.openAndClickCMenuItem(0, 0, [11]);
+                setTimeout(() => {
+                    helper.getElements('.e-edithyperlink-dlg .e-webpage input')[1].value = 'www.syncfusion.com';
+                    helper.setAnimationToNone('.e-edithyperlink-dlg.e-dialog');
+                    helper.click('.e-edithyperlink-dlg .e-footer-content button:nth-child(1)');
+                    expect((cell.hyperlink as HyperlinkModel).address).toEqual('http://www.syncfusion.com');
+                    const td: HTMLElement = helper.invoke('getCell', [9, 7]).children[0];
+                    expect(td.textContent).toBe('55');
+                    done();
+                });
             });
         });
 

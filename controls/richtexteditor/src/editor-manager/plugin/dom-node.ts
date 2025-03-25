@@ -1033,4 +1033,10 @@ export class DOMNode {
             collectionNodes.push(wrapperElement);
         }
     }
+    public getImmediateBlockNode(node: Node): Node {
+        while (node && CONSTANT.BLOCK_TAGS.indexOf(node.nodeName.toLocaleLowerCase()) < 0) {
+            node = node.parentNode;
+        }
+        return node;
+    }
 }

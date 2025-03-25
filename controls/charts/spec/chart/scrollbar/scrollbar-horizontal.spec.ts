@@ -4,7 +4,7 @@
 
 import { createElement, EventHandler, Browser } from '@syncfusion/ej2-base';
 import { EmitType } from '@syncfusion/ej2-base';
-import { Chart, MultiLevelLabel, Crosshair, DateTime, Zoom } from '../../../src/chart/index';
+import { Chart, MultiLevelLabel, Crosshair, DateTime, Zoom, Legend } from '../../../src/chart/index';
 import { LineSeries } from '../../../src/chart/series/line-series';
 import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
 import { ScrollBar } from '../../../src/common/scrollbar/scrollbar';
@@ -14,7 +14,7 @@ import { profile, inMB, getMemoryProfile } from '../../common.spec';
 import { chartData } from '../series/spline-area-series.spec';
 
 
-Chart.Inject(LineSeries, ScrollBar, MultiLevelLabel, Crosshair, DateTime, Zoom);
+Chart.Inject(LineSeries, ScrollBar, MultiLevelLabel, Crosshair, DateTime, Zoom, Legend);
 let prevent: Function = (): void => {
     //Prevent Function
 };
@@ -1029,6 +1029,41 @@ describe('Scrollbar Chart ', () => {
             chartObj.theme = 'FluentDark';
             chartObj.refresh();
         });
+
+        it('Scrollbar position Right and Top', (done: Function) => {
+            loaded = (args: Object): void => {
+                let xScrollBar: HTMLElement = document.getElementById('container_scrollBar_svgprimaryXAxis');
+                let yScrollBar: HTMLElement = document.getElementById('container_scrollBar_svgprimaryYAxis');
+                expect(xScrollBar).not.toBeNull();
+                expect(yScrollBar).not.toBeNull();
+                expect(xScrollBar.style.top).toBe('48px');
+                expect(xScrollBar.style.left).toBe('10px');
+                let currentTarget: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
+                chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 300, 390)));
+                chartObj.axisCollections[0].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 450, 390)));
+                currentTarget = document.getElementById('container_scrollBarThumb_primaryYAxis');
+                chartObj.axisCollections[1].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 75, 220)));
+                chartObj.axisCollections[1].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 75, 275)));
+                done();
+            };
+            chartObj.primaryXAxis.opposedPosition = true;
+            chartObj.primaryYAxis.opposedPosition = true;
+            chartObj.primaryYAxis.scrollbarSettings.position = 'Right';
+            chartObj.primaryXAxis.scrollbarSettings.position = 'Top';
+            chartObj.primaryXAxis.zoomFactor = 0.5;
+            chartObj.primaryXAxis.zoomPosition = 0.2;
+            chartObj.primaryYAxis.zoomFactor = 0.5;
+            chartObj.primaryYAxis.zoomPosition = 0.2;
+            chartObj.series[0].name = 'Series 1';
+            chartObj.legendSettings = { visible: true, position: 'Top' };
+            chartObj.primaryXAxis.title = '';
+            chartObj.primaryYAxis.title = '';
+            chartObj.primaryYAxis.labelFormat = '';
+            chartObj.primaryYAxis.labelFormat = '';
+            chartObj.zoomSettings.mode = 'XY';
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
      });
 
     describe('Scrollbar Animation', () => {
@@ -1219,6 +1254,206 @@ describe('Scrollbar Chart ', () => {
                 done();
             });
         });
+    describe('Scrollbar with different positions', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: HTMLElement;
+
+        beforeAll((): void => {
+            element = createElement('div', { id: 'container' });
+            document.body.appendChild(element);
+            chartObj = new Chart({
+                primaryXAxis: {
+                    title: 'PrimaryXAxis',
+                    valueType: 'Double',
+                    zoomFactor: 0.5,
+                    zoomPosition: 0.2,
+                    scrollbarSettings: {
+                        position: 'Bottom'
+                    }
+                },
+                primaryYAxis: {
+                    title: 'PrimaryYAxis',
+                    zoomFactor: 0.5,
+                    zoomPosition: 0.2,
+                    scrollbarSettings: {
+                        position: 'Left'
+                    }
+                },
+                series: [{
+                    dataSource: [{ x: 10, y: 46 }, { x: 20, y: 27 }, { x: 30, y: 26 }, { x: 40, y: 16 }, { x: 50, y: 31 }],
+                    xName: 'x', yName: 'y', marker: { visible: true }, type: 'Line', name:'Chart'
+                }],
+                title: 'Chart Title',
+                legendSettings: { visible: true, position: 'Left' },
+                width: '800',
+                height: '500',
+                zoomSettings: { enableSelectionZooming: true, enableScrollbar: true, mode: 'XY' }
+            });
+            chartObj.appendTo('#container');
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            element.remove();
+        });
+
+        it('Scrollbar position Left', (done: Function) => {
+            loaded = (args: Object): void => {
+                let xScrollBar: HTMLElement = document.getElementById('container_scrollBar_svgprimaryXAxis');
+                let yScrollBar: HTMLElement = document.getElementById('container_scrollBar_svgprimaryYAxis');
+                expect(xScrollBar).not.toBeNull();
+                expect(yScrollBar).not.toBeNull();
+                expect(yScrollBar.style.top).toBe('43.75px');
+                expect(yScrollBar.style.left).toBe('15px');
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+
+        it('Scrollbar position Bottom', (done: Function) => {
+            loaded = (args: Object): void => {
+                let xScrollBar: HTMLElement = document.getElementById('container_scrollBar_svgprimaryXAxis');
+                let yScrollBar: HTMLElement = document.getElementById('container_scrollBar_svgprimaryYAxis');
+                expect(xScrollBar).not.toBeNull();
+                expect(yScrollBar).not.toBeNull();
+                expect(xScrollBar.style.top).toBe('469px');
+                expect(xScrollBar.style.left).toBe('79.5px');
+                done();
+            };
+            
+            chartObj.legendSettings.position = 'Bottom';
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+
+        it('Scrollbar position Right', (done: Function) => {
+            chartObj.primaryYAxis.scrollbarSettings.position = 'Right';
+            chartObj.legendSettings.position = 'Right';
+
+            loaded = (args: Object): void => {
+                let xScrollBar: HTMLElement = document.getElementById('container_scrollBar_svgprimaryXAxis');
+                let yScrollBar: HTMLElement = document.getElementById('container_scrollBar_svgprimaryYAxis');
+                expect(xScrollBar).not.toBeNull();
+                expect(yScrollBar).not.toBeNull();
+                expect(yScrollBar.style.top).toBe('43.75px');
+                expect(yScrollBar.style.left).toBe('769px');
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+
+        it('Scrollbar position Top', (done: Function) => {
+            chartObj.primaryXAxis.scrollbarSettings.position = 'Top';
+            chartObj.legendSettings.position = 'Top';
+
+            loaded = (args: Object): void => {
+                let xScrollBar: HTMLElement = document.getElementById('container_scrollBar_svgprimaryXAxis');
+                let yScrollBar: HTMLElement = document.getElementById('container_scrollBar_svgprimaryYAxis');
+                expect(xScrollBar).not.toBeNull();
+                expect(yScrollBar).not.toBeNull();
+                expect(xScrollBar.style.top).toBe('48px');
+                expect(xScrollBar.style.left).toBe('53.5px');
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+
+        it('Scrollbar position PlaceNextToAxisLine', (done: Function) => {
+            chartObj.primaryXAxis.scrollbarSettings.position = 'PlaceNextToAxisLine';
+            chartObj.primaryYAxis.scrollbarSettings.position = 'PlaceNextToAxisLine';
+
+            loaded = (args: Object): void => {
+                let xScrollBar: HTMLElement = document.getElementById('container_scrollBar_svgprimaryXAxis');
+                let yScrollBar: HTMLElement = document.getElementById('container_scrollBar_svgprimaryYAxis');
+                expect(xScrollBar).not.toBeNull();
+                expect(yScrollBar).not.toBeNull();
+                expect(xScrollBar.style.top).toBe('428px');
+                expect(yScrollBar.style.left).toBe('53.5px');
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+
+        it('Scrollbar position Left in opposed position', (done: Function) => {
+            loaded = (args: Object): void => {
+                let xScrollBar: HTMLElement = document.getElementById('container_scrollBar_svgprimaryXAxis');
+                let yScrollBar: HTMLElement = document.getElementById('container_scrollBar_svgprimaryYAxis');
+                expect(xScrollBar).not.toBeNull();
+                expect(yScrollBar).not.toBeNull();
+                expect(yScrollBar.style.top).toBe('106.25px');
+                expect(yScrollBar.style.left).toBe('15px');
+                done();
+            };
+            chartObj.primaryYAxis.scrollbarSettings.position = 'Left';
+            chartObj.legendSettings.visible = false;
+            chartObj.primaryXAxis.opposedPosition = true;
+            chartObj.primaryYAxis.opposedPosition = true;
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+
+        it('Scrollbar position Bottom in opposed position', (done: Function) => {
+            loaded = (args: Object): void => {
+                let xScrollBar: HTMLElement = document.getElementById('container_scrollBar_svgprimaryXAxis');
+                let yScrollBar: HTMLElement = document.getElementById('container_scrollBar_svgprimaryYAxis');
+                expect(xScrollBar).not.toBeNull();
+                expect(yScrollBar).not.toBeNull();
+                expect(xScrollBar.style.top).toBe('469px');
+                expect(xScrollBar.style.left).toBe('36px');
+                done();
+            };
+            chartObj.primaryXAxis.opposedPosition = true;
+            chartObj.primaryYAxis.opposedPosition = true;
+            chartObj.primaryXAxis.scrollbarSettings.position = 'Bottom';
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+
+        it('Scrollbar position Right in opposed position', (done: Function) => {
+            loaded = (args: Object): void => {
+                let xScrollBar: HTMLElement = document.getElementById('container_scrollBar_svgprimaryXAxis');
+                let yScrollBar: HTMLElement = document.getElementById('container_scrollBar_svgprimaryYAxis');
+                expect(xScrollBar).not.toBeNull();
+                expect(yScrollBar).not.toBeNull();
+                expect(yScrollBar.style.top).toBe('90.25px');
+                expect(yScrollBar.style.left).toBe('769px');
+                done();
+            };
+            chartObj.primaryYAxis.scrollbarSettings.position = 'Right';
+            chartObj.primaryXAxis.opposedPosition = true;
+            chartObj.primaryYAxis.opposedPosition = true;
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+
+        it('Scrollbar position Top in opposed position', (done: Function) => {
+            loaded = (args: Object): void => {
+                let xScrollBar: HTMLElement = document.getElementById('container_scrollBar_svgprimaryXAxis');
+                let yScrollBar: HTMLElement = document.getElementById('container_scrollBar_svgprimaryYAxis');
+                expect(xScrollBar).not.toBeNull();
+                expect(yScrollBar).not.toBeNull();
+                expect(xScrollBar.style.top).toBe('48px');
+                expect(xScrollBar.style.left).toBe('10px');
+                let currentTarget: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
+                chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 300, 390)));
+                chartObj.axisCollections[0].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 450, 390)));
+                currentTarget = document.getElementById('container_scrollBarThumb_primaryYAxis');
+                chartObj.axisCollections[1].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 75, 220)));
+                chartObj.axisCollections[1].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 75, 275)));
+                done();
+            };
+            chartObj.primaryXAxis.scrollbarSettings.position = 'Top';
+            chartObj.primaryXAxis.opposedPosition = true;
+            chartObj.primaryYAxis.opposedPosition = true;
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+    });
 
 describe('Inversed Scrollbar ', function () {
             let chartObj: Chart;
@@ -1363,6 +1598,41 @@ describe('Inversed Scrollbar ', function () {
                  done();
             };
             chartObj.enableRtl = true;
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+
+        it('Scrollbar position Bottom', (done: Function) => {
+            loaded = (args: Object): void => {
+                let xScrollBar: HTMLElement = document.getElementById('container_scrollBar_svgprimaryXAxis');
+                let yScrollBar: HTMLElement = document.getElementById('container_scrollBar_svgprimaryYAxis');
+                expect(xScrollBar).not.toBeNull();
+                expect(yScrollBar).not.toBeNull();
+                expect(xScrollBar.style.top).toBe('425px');
+                expect(yScrollBar.style.left).toBe('15px');
+                let currentTarget: Element = document.getElementById('container_scrollBarThumb_primaryXAxis');
+                chartObj.axisCollections[0].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 300, 390)));
+                chartObj.axisCollections[0].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 450, 390)));
+                currentTarget = document.getElementById('container_scrollBarThumb_primaryYAxis');
+                chartObj.axisCollections[1].zoomingScrollBar.scrollMouseDown(<PointerEvent>(trigger.onTouchStart(currentTarget, 0, 0, 0, 0, 75, 220)));
+                chartObj.axisCollections[1].zoomingScrollBar.scrollMouseMove(<PointerEvent>(trigger.onTouchMove(currentTarget, 0, 0, 0, 0, 75, 275)));
+                done();
+            };
+            chartObj.primaryXAxis.opposedPosition = true;
+            chartObj.primaryYAxis.opposedPosition = true;
+            chartObj.primaryYAxis.scrollbarSettings.position = 'Left';
+            chartObj.primaryXAxis.scrollbarSettings.position = 'Bottom';
+            chartObj.primaryXAxis.zoomFactor = 0.5;
+            chartObj.primaryXAxis.zoomPosition= 0.2;
+            chartObj.primaryYAxis.zoomFactor = 0.5;
+            chartObj.primaryYAxis.zoomPosition= 0.2;
+            chartObj.series[0].name = 'Series 1';
+            chartObj.legendSettings ={visible: true, position: 'Left'};
+            chartObj.primaryXAxis.title = '';
+            chartObj.primaryYAxis.title = '';
+            chartObj.primaryYAxis.labelFormat = '';
+            chartObj.primaryYAxis.labelFormat = '';
+            chartObj.zoomSettings.mode = 'XY';
             chartObj.loaded = loaded;
             chartObj.refresh();
         });

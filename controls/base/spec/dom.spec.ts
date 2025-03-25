@@ -3,6 +3,7 @@
  */
 import * as Dom from '../src/dom';
 import { EventHandler } from '../src/event-handler';
+import { updateCSSText } from '../src/dom';
 
 let ele: HTMLElement;
 let eleAr: HTMLElement[] = [];
@@ -345,5 +346,40 @@ describe('Dom', () => {
             matchelement.remove();
         });
 
+    });
+    describe('updateCSSText', () => {
+        let element: HTMLElement;
+
+        beforeEach(() => {
+            element = document.createElement('div');
+        });
+
+        it('should add new styles to an element with no existing styles', () => {
+            updateCSSText(element, 'display: block; visibility: hidden;');
+            expect(element.style.cssText).toBe('display: block; visibility: hidden;');
+        });
+
+        it('should merge new styles with existing styles', () => {
+            element.style.cssText = 'color: red; font-size: 14px;';
+            updateCSSText(element, 'display: block; visibility: hidden;');
+            expect(element.style.cssText).toBe('color: red; font-size: 14px; display: block; visibility: hidden;');
+        });
+
+        it('should overwrite existing styles with new styles', () => {
+            element.style.cssText = 'color: red; font-size: 14px;';
+            updateCSSText(element, 'color: blue; display: block;');
+            expect(element.style.cssText).toBe('color: blue; font-size: 14px; display: block;');
+        });
+
+        it('should handle empty new styles', () => {
+            element.style.cssText = 'color: red; font-size: 14px;';
+            updateCSSText(element, '');
+            expect(element.style.cssText).toBe('color: red; font-size: 14px;');
+        });
+
+        it('should handle empty existing styles', () => {
+            updateCSSText(element, 'color: blue; display: block;');
+            expect(element.style.cssText).toBe('color: blue; display: block;');
+        });
     });
 });

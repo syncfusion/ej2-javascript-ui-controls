@@ -715,7 +715,7 @@ export class AccumulationDataLabel extends AccumulationBase {
      * @returns {ChartLocation} - Get label location.
      */
     private getLabelLocation(point: AccPoints, position: AccumulationLabelPosition | string = 'Outside'): ChartLocation {
-        if (this.accumulation.type !== 'Pie') {
+        if (this.accumulation.type !== 'Pie' && this.accumulation.series[0].funnelMode !== 'Trapezoidal') {
             position = position === 'OutsideLeft' ? 'OutsideLeft' : point.labelPosition || position;
             const location: ChartLocation = {
                 x: point.symbolLocation.x,
@@ -730,6 +730,15 @@ export class AccumulationDataLabel extends AccumulationBase {
                 break;
             case 'OutsideLeft':
                 location.x -= point.labelOffset.x;
+            }
+            return location;
+        } else if (this.accumulation.series[0].funnelMode === 'Trapezoidal' && this.accumulation.type === 'Funnel') {
+            const location: ChartLocation = {
+                x: point.symbolLocation.x,
+                y: point.symbolLocation.y
+            };
+            if (position === 'Outside') {
+                location.x = point.labelOffset.x;
             }
             return location;
         } else {
@@ -887,6 +896,7 @@ export class AccumulationDataLabel extends AccumulationBase {
         for (const point of modifiedPoints) {
             if (!isNullOrUndefined(point.argsData) && !isNullOrUndefined(point.y)) {
                 this.finalizeDatalabels(point, modifiedPoints, dataLabel);
+                const pointElement: Element = document.getElementById(this.accumulation.element.id + '_Series_0_Point_' + point.index);
                 const id: string = this.accumulation.element.id + '_datalabel_Series_' + 0 + '_';
                 const datalabelGroup: Element = this.accumulation.renderer.createGroup({ id: id + 'g_' + point.index });
                 datalabelGroup.setAttribute('aria-hidden', 'true');
@@ -940,6 +950,15 @@ export class AccumulationDataLabel extends AccumulationBase {
                             null, null, null, null, true, this.accumulation.themeStyle.datalabelFont
                         );
                         element = null;
+                    }
+                    if (pointElement && this.accumulation.highlightMode !== 'None') {
+                        datalabelGroup.setAttribute('class', pointElement.getAttribute('class') ? pointElement.getAttribute('class') : '');
+                        for (let i: number = 0; i < datalabelGroup.children.length; i++) {
+                            const existing: HTMLElement = document.getElementById(datalabelGroup.children[i as number].id);
+                            if (existing) {
+                                (datalabelGroup.children[i as number] as HTMLElement).style.opacity = existing.style.opacity;
+                            }
+                        }
                     }
                     if (this.accumulation.accumulationLegendModule && this.accumulation.legendSettings.visible && !this.accumulation.redraw && (dataLabel.position === 'Outside'
                         || this.accumulation.enableSmartLabels)) {

@@ -1,0 +1,8 @@
+@include export-module('speechtotext-bootstrap-dark-icons') {
+  .e-listen-icon::before {
+    content: '\e171';
+  }
+  .e-listen-stop::before {
+    content: '\e16e';
+  }
+}

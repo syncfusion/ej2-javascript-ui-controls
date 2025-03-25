@@ -2,23 +2,7 @@
 
 ## [Unreleased]
 
-## 28.2.12 (2025-03-19)
-
-### ListView
-
-#### Bug Fixes
-
-- `#I678111` -  Handled the enableHtmlSanitizer property functionality for single level list items in the ListView component.
-
-## 28.1.37 (2024-12-31)
-
-### ListBox
-
-#### Bug Fixes
-
-- `#I667040` - Issue with "previous and current index are not return proper values in `listbox` while drag and drop event" has been resolved.
-
-## 28.1.33 (2024-12-12)
+## 29.1.33 (2025-03-25)
 
 ### ListView
 

@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $datepicker-icon-color: $white !default;
 $datepicker-active-icon-color: $white !default;
 $datepicker-popup-box-shadow: none !default;
@@ -17,8 +19,8 @@ $datepicker-overlay: rgba($black, .5) !default;
 $datepicker-icon-normal-margin: 0 !default;
 $datepicker-icon-bigger-margin: 0 !default;
 $datepicker-icon-hover-color: $gray-900 !default;
-$datepicker-icon-active-bg-color: darken($gray-600, 10%) !default;
-$datepicker-active-border-color: darken($gray-600, 10%) !default;
+$datepicker-icon-active-bg-color: color.adjust($gray-600, $lightness: -10%) !default;
+$datepicker-active-border-color: color.adjust($gray-600, $lightness: -10%) !default;
 $datepicker-icon-border-radius: 0 !default;
 $datepicker-box-sizing: border-box !default;
 $datepicker-othermonth-row: table-row !default;

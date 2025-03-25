@@ -11,6 +11,7 @@ import {
     PortVisibility, ConnectorConstraints, NodeConstraints, Shapes, UmlActivityFlows, BpmnFlows, DiagramAction,
     UmlActivityShapes, PortConstraints, DiagramConstraints, DiagramTools, Transform, EventState, ChangeType, BlazorAction,
     ControlPointsVisibility, DiagramEvent,
+    FlipMode,
     ElementAction
 } from './../enum/enum';
 import { FlowShapes, SelectorConstraints, ThumbsConstraints, FlipDirection, DistributeOptions } from './../enum/enum';
@@ -864,8 +865,10 @@ function offsetPoint(
     mousePosition: PointModel, bound: PointModel, diagram: Diagram, isMouseBased: boolean, x: number, y: number): PointModel {
     const point: PointModel = {};
     const scale: number = diagram.scroller.transform.scale;
-    const horizontalOffset: number = diagram.scroller.horizontalOffset;
-    const verticalOffset: number = diagram.scroller.verticalOffset;
+    let horizontalOffset: number = diagram.scroller.horizontalOffset;
+    let verticalOffset: number = diagram.scroller.verticalOffset;
+    horizontalOffset = diagram.modifyClientOffset(horizontalOffset, true);
+    verticalOffset = diagram.modifyClientOffset(verticalOffset, true);
     point.x = (isMouseBased ? mousePosition.x : bound.x) * scale + horizontalOffset - x;
     point.y = (isMouseBased ? mousePosition.y : bound.y) * scale + verticalOffset - y;
     return point;

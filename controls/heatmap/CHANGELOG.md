@@ -2,15 +2,7 @@
 
 ## [Unreleased]
 
-## 28.1.33 (2024-12-12)
-
-### HeatMap
-
-#### New features
-
-- `#I647940`, `#I637795` - Unsafe HTML codes in the HeatMap control can now be sanitized by setting the `enableHtmlSanitizer` property to **true**.
-
-## 27.1.48 (2024-09-18)
+## 29.1.33 (2025-03-25)
 
 ### HeatMap
 

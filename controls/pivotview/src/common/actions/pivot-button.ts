@@ -273,7 +273,7 @@ export class PivotButton implements IAction {
                                     locale: this.parent.locale,
                                     value: !parent.chartSettings.enableMultipleAxis ?
                                         parent.pivotChartModule.currentMeasure : valueData[0].value,
-                                    width: 200,
+                                    width: this.parent.isAdaptive ? 150 : 200,
                                     fields: { value: 'value', text: 'text' },
                                     cssClass: cls.GROUP_CHART_VALUE_DROPDOWN + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
                                     change: (args: ChangeEventArgs) => {

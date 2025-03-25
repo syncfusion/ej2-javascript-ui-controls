@@ -81,44 +81,44 @@ describe(' - selection', () => {
                 done();
             }, 2000);
         });
-        it('Canada.Alberta mouse click', function (done) {
-            setTimeout(function () {
+        it('Canada.Alberta mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
                 document.querySelector('[aria-colindex="1"][index="2"]').dispatchEvent(click);
                 done();
             }, 2000);
         });
-        it('Canada * FY 2005 value cell mouse click', function (done) {
-            setTimeout(function () {
+        it('Canada * FY 2005 value cell mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
                 document.querySelector('[aria-colindex="1"][index="1"]').dispatchEvent(click);
                 done();
             }, 2000);
         });
-        it('FY 2005 keyboard shift + mouse click', function (done) {
-            setTimeout(function () {
+        it('FY 2005 keyboard shift + mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
                 expect(document.querySelector('[aria-colindex="1"][index="2"]').textContent).toBe('Alberta');
                 document.querySelector('[aria-colindex="1"][index="1"]').dispatchEvent(shiftClick);
                 done();
             }, 2000);
         });
-        it('FY 2006 keyboard shift + mouse click', function (done) {
-            setTimeout(function () {
+        it('FY 2006 keyboard shift + mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo.length).toBe(31);
                 document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(shiftClick);
                 done();
             }, 2000);
         });
-        it('FY 2006 keyboard shift + mouse click', function (done) {
-            setTimeout(function () {
+        it('FY 2006 keyboard shift + mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo.length).toBe(0);
                 document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(shiftClick);
                 done();
             }, 2000);
         });
-        it('save selected cells + header refresh + apply selection on selected cells _ used in window resize', function (done) {
-            setTimeout(function () {
+        it('save selected cells + header refresh + apply selection on selected cells _ used in window resize', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo.length).toBe(31);
                 (pivotGridObj as any).getSelectedCellsPos();
                 pivotGridObj.grid.headerModule.refreshUI();
@@ -126,17 +126,15 @@ describe(' - selection', () => {
                 done();
             }, 2000);
         });
-        it('Canada.Alberta keyboard ctrl + mouse click', function (done) {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(function () {
+        it('Canada.Alberta keyboard ctrl + mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
                 document.querySelector('[aria-colindex="1"][index="2"]').dispatchEvent(ctrlClick);
                 done();
             }, 2000);
         });
-        it('Column multi click', function (done) {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(function () {
+        it('Column multi click', (done: Function) => {
+            setTimeout(() => {
                 pivotGridObj.gridSettings.selectionSettings.mode = 'Column';
                 pivotGridObj.gridSettings.selectionSettings.type = 'Multiple';
                 expect(args.selectedCellsInfo.length).toBe(31);
@@ -151,44 +149,44 @@ describe(' - selection', () => {
                 done();
             }, 2000);
         });
-        it('FY 2006 mouse click', function (done) {
-            setTimeout(function () {
+        it('FY 2006 mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo.length).toBe(0);
                 document.querySelector('[aria-colindex="3"][index="0"]').dispatchEvent(click);
                 done();
             }, 2000);
         });
-        it('Canada.Alberta click', function (done) {
-            setTimeout(function () {
+        it('Canada.Alberta click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
                 document.querySelector('[aria-colindex="1"][index="2"]').dispatchEvent(click);
                 done();
             }, 2000);
         });
-        it('Canada * FY 2005 value cell mouse click', function (done) {
-            setTimeout(function () {
+        it('Canada * FY 2005 value cell mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
                 document.querySelector('[aria-colindex="2"][index="1"]').dispatchEvent(click);
                 done();
             }, 2000);
         });
-        it('FY 2005 keyboard shift + mouse click', function (done) {
-            setTimeout(function () {
+        it('FY 2005 keyboard shift + mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
                 expect(document.querySelector('[aria-colindex="1"][index="2"]').textContent).toBe('Alberta');
                 document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(shiftClick);
                 done();
             }, 2000);
         });
-        it('FY 2006 keyboard shift + mouse click', function (done) {
-            setTimeout(function () {
+        it('FY 2006 keyboard shift + mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo.length).toBe(0);
                 document.querySelector('[aria-colindex="3"][index="0"]').dispatchEvent(shiftClick);
                 done();
             }, 2000);
         });
-        it('Canada.Alberta keyboard ctrl + mouse click', function (done) {
-            setTimeout(function () {
+        it('Canada.Alberta keyboard ctrl + mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
                 document.querySelector('[aria-colindex="1"][index="2"]').dispatchEvent(ctrlClick);
                 done();
@@ -260,51 +258,50 @@ describe(' - selection', () => {
                 done();
             }, 2000);
         });
-        it('FY 2006 mouse click', function (done) {
-            setTimeout(function () {
+        it('FY 2006 mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
                 document.querySelector('[aria-colindex="3"][index="0"]').dispatchEvent(click);
                 done();
             }, 2000);
         });
-        it('Canada.Alberta mouse click', function (done) {
-            setTimeout(function () {
+        it('Canada.Alberta mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
                 document.querySelector('[aria-colindex="1"][index="2"]').dispatchEvent(click);
                 done();
             }, 2000);
         });
-        it('Canada * FY 2005 value cell mouse click', function (done) {
-            setTimeout(function () {
+        it('Canada * FY 2005 value cell mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('');
                 document.querySelector('[aria-colindex="2"][index="1"]').dispatchEvent(click);
                 done();
             }, 2000);
         });
-        it('FY 2005 keyboard shift + mouse click', function (done) {
-            setTimeout(function () {
+        it('FY 2005 keyboard shift + mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('');
                 expect(document.querySelector('[aria-colindex="1"][index="2"]').textContent).toBe('Alberta');
                 document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(shiftClick);
                 done();
             }, 2000);
         });
-        it('FY 2006 keyboard shift + mouse click', function (done) {
-            setTimeout(function () {
+        it('FY 2006 keyboard shift + mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo.length).toBe(31);
                 document.querySelector('[aria-colindex="3"][index="0"]').dispatchEvent(shiftClick);
                 done();
             }, 2000);
         });
-        it('Canada.Alberta keyboard ctrl + mouse click', function (done) {
-            setTimeout(function () {
+        it('Canada.Alberta keyboard ctrl + mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo.length).toBe(31);
                 done();
             }, 2000);
         });
-        it('Both multi click', function (done) {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(function () {
+        it('Both multi click', (done: Function) => {
+            setTimeout(() => {
                 pivotGridObj.gridSettings.selectionSettings.type = 'Multiple';
                 expect(args.selectedCellsInfo.length).toBe(31);
                 done();
@@ -317,42 +314,42 @@ describe(' - selection', () => {
                 done();
             }, 2000);
         });
-        it('FY 2006 mouse click', function (done) {
-            setTimeout(function () {
+        it('FY 2006 mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
                 document.querySelector('[aria-colindex="3"][index="0"]').dispatchEvent(click);
                 done();
             }, 2000);
         });
-        it('Canada.Alberta mouse click', function (done) {
-            setTimeout(function () {
+        it('Canada.Alberta mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
                 document.querySelector('[aria-colindex="1"][index="2"]').dispatchEvent(click);
                 done();
             }, 2000);
         });
-        it('Canada * FY 2007 value cell mouse click', function (done) {
-            setTimeout(function () {
+        it('Canada * FY 2007 value cell mouse click', (done: Function) => {
+            setTimeout(() => {
                 document.querySelector('[aria-colindex="4"][index="1"]').dispatchEvent(click);
                 done();
             }, 2000);
         });
-        it('FY 2005 keyboard shift + mouse click', function (done) {
-            setTimeout(function () {
+        it('FY 2005 keyboard shift + mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(document.querySelector('[aria-colindex="1"][index="2"]').textContent).toBe('Alberta');
                 document.querySelector('[aria-colindex="1"][index="1"]').dispatchEvent(shiftClick);
                 done();
             }, 2000);
         });
-        it('FY 2006 keyboard shift + mouse click', function (done) {
-            setTimeout(function () {
+        it('FY 2006 keyboard shift + mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[0].value).toBe('Canada');
                 document.querySelector('[aria-colindex="3"][index="0"]').dispatchEvent(shiftClick);
                 done();
             }, 2000);
         });
-        it('FY 2007 keyboard ctrl + mouse click', function (done) {
-            setTimeout(function () {
+        it('FY 2007 keyboard ctrl + mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
                 expect(args.selectedCellsInfo[1].columnHeaders).toBe('');
                 document.querySelector('[aria-colindex="4"][index="0"]').dispatchEvent(ctrlClick);
@@ -414,121 +411,121 @@ describe(' - selection', () => {
                 done();
             }, 2000);
         });
-        it('-> FY 2006 using keyboard right arrow', function (done) {
-            setTimeout(function () {
+        it('-> FY 2006 using keyboard right arrow', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
                 (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'rightArrow', target: document.querySelector('[aria-colindex="2"][index="0"]'), preventDefault: (): void => { /** Null */ } });
                 done();
             }, 2000);
         });
-        it('FY 2005 keyboard shift + mouse click', function (done) {
-            setTimeout(function () {
+        it('FY 2005 keyboard shift + mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
                 (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'shiftLeft', shiftKey: true, target: document.querySelector('[aria-colindex="3"][index="0"]'), preventDefault: (): void => { /** Null */ } });
                 done();
             }, 2000);
         });
-        it('Canada.Alberta * FY 2006 value cell mouse click', function (done) {
-            setTimeout(function () {
+        it('Canada.Alberta * FY 2006 value cell mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[1].columnHeaders).toBe('FY 2006');
                 document.querySelector('[aria-colindex="3"][index="2"]').dispatchEvent(click);
                 done();
             }, 2000);
         });
-        it('-> FY 2006 using keyboard up arrow', function (done) {
-            setTimeout(function () {
+        it('-> FY 2006 using keyboard up arrow', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
                 (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'upArrow', target: document.querySelector('[aria-colindex="3"][index="0"]'), preventDefault: (): void => { /** Null */ } });
                 done();
             }, 2000);
         });
-        it('-> Canada.Alberta * FY 2006 value cell using keyboard down arrow', function (done) {
-            setTimeout(function () {
+        it('-> Canada.Alberta * FY 2006 value cell using keyboard down arrow', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
                 (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'downArrow', target: document.querySelector('[aria-colindex="3"][index="0"]'), preventDefault: (): void => { /** Null */ } });
                 done();
             }, 2000);
         });
-        it('-> FY 2006 using keyboard shift + keyboard up arrow', function (done) {
-            setTimeout(function () {
+        it('-> FY 2006 using keyboard shift + keyboard up arrow', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
                 (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'shiftUp', shiftKey: true, target: document.querySelector('[aria-colindex="3"][index="0"]'), preventDefault: (): void => { /** Null */ } });
                 done();
             }, 2000);
         });
-        it('-> Canada.Alberta * FY 2006 value cell using keyboard shift + keyboard down arrow', function (done) {
-            setTimeout(function () {
+        it('-> Canada.Alberta * FY 2006 value cell using keyboard shift + keyboard down arrow', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
                 (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'shiftDown', shiftKey: true, target: document.querySelector('[aria-colindex="3"][index="0"]'), preventDefault: (): void => { /** Null */ } });
                 done();
             }, 2000);
         });
-        it('keyboard escape', function (done) {
-            setTimeout(function () {
+        it('keyboard escape', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
                 (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'escape', target: document.querySelector('[aria-colindex="3"][index="0"]'), preventDefault: (): void => { /** Null */ } });
                 done();
             }, 2000);
         });
-        it('Report change - Add Quantity in values', function (done) {
-            setTimeout(function () {
+        it('Report change - Add Quantity in values', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo.length).toBe(0);
                 pivotGridObj.dataSourceSettings.values = [{ name: 'Amount' }, { name: 'Quantity' }];
                 done();
             }, 2000);
         });
-        it('FY 2005.Amount mouse click', function (done) {
-            setTimeout(function () {
+        it('FY 2005.Amount mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo.length).toBe(0);
                 document.querySelector('[aria-colindex="2"][index="1"]').dispatchEvent(click);
                 done();
             }, 2000);
         });
-        it('-> FY 2005 using keyboard up arrow', function (done) {
-            setTimeout(function () {
+        it('-> FY 2005 using keyboard up arrow', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo.length).toBe(31);
                 (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'upArrow', target: document.querySelector('[aria-colindex="2"][index="1"]'), preventDefault: (): void => { /** Null */ } });
                 pivotGridObj.grid.selectionSettings.mode = 'Both';
                 done();
             }, 2000);
         });
-        it('Canada mouse click', function (done) {
-            setTimeout(function () {
+        it('Canada mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo.length).toBe(63);
                 document.querySelector('[aria-colindex="1"][index="2"]').dispatchEvent(click);
                 done();
             }, 2000);
         });
-        it('-> 0th cell using keyboard up arrow', function (done) {
-            setTimeout(function () {
+        it('-> 0th cell using keyboard up arrow', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo.length).toBeGreaterThan(0);
                 (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'upArrow', target: document.querySelector('[aria-colindex="1"][index="2"]'), preventDefault: (): void => { /** Null */ } });
                 done();
             }, 2000);
         });
-        it('-> out of the pivot gris using keyboard left arrow', function (done) {
-            setTimeout(function () {
+        it('-> out of the pivot gris using keyboard left arrow', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo.length).toBeGreaterThan(0);
                 (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'leftArrow', target: document.querySelector('[aria-colindex="1"][index="2"]'), preventDefault: (): void => { /** Null */ } });
                 done();
             }, 2000);
         });
-        it('Canada.Alberta mouse click', function (done) {
-            setTimeout(function () {
+        it('Canada.Alberta mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo.length).toBeGreaterThan(0);
                 document.querySelector('[aria-colindex="1"][index="3"]').dispatchEvent(click);
                 done();
             }, 2000);
         });
-        it('-> Canada.Alberta * FY 2005.Amount value cell using keyboard right arrow', function (done) {
-            setTimeout(function () {
+        it('-> Canada.Alberta * FY 2005.Amount value cell using keyboard right arrow', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo.length).toBeGreaterThan(0);
                 (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'rightArrow', target: document.querySelector('[aria-colindex="1"][index="3"]'), preventDefault: (): void => { /** Null */ } });
                 done();
             }, 2000);
         });
-        it('-> Canada.Alberta using keyboard left arrow', function (done) {
-            setTimeout(function () {
+        it('-> Canada.Alberta using keyboard left arrow', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo.length).toBeGreaterThan(0);
                 (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'leftArrow', target: document.querySelector('[aria-colindex="2"][index="3"]'), preventDefault: (): void => { /** Null */ } });
                 pivotGridObj.renderModule.updateGridSettings();
@@ -605,8 +602,8 @@ describe(' - selection', () => {
                 done();
             }, 2000);
         });
-        it('FY 2006 mouse click + adaptive mode + Both + Multiple -> configured', function (done) {
-            setTimeout(function () {
+        it('FY 2006 mouse click + adaptive mode + Both + Multiple -> configured', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('');
                 pivotGridObj.setProperties({ gridSettings: { selectionSettings: { mode: 'Both' } } });
                 pivotGridObj.gridSettings.selectionSettings.type = 'Multiple';
@@ -637,16 +634,16 @@ describe(' - selection', () => {
                 done();
             }, 2000);
         });
-        it('FY 2005 mouse click', function (done) {
-            setTimeout(function () {
+        it('FY 2005 mouse click', (done: Function) => {
+            setTimeout(() => {
                 expect(args.selectedCellsInfo.length).toBe(0);
                 document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(click);
                 pivotGridObj.gridSettings.selectionSettings.mode = 'Cell';
                 done();
             }, 2000);
         });
-        it('Alberta mouse click + Cell + Desktop mode -> configured', function (done) {
-            setTimeout(function () {
+        it('Alberta mouse click + Cell + Desktop mode -> configured', (done: Function) => {
+            setTimeout(() => {
                 expect(document.querySelector('[aria-colindex="1"][index="2"]').textContent).toBe('Alberta');
                 document.querySelector('[aria-colindex="1"][index="2"]').dispatchEvent(click);
                 pivotGridObj.gridSettings = {

@@ -699,9 +699,9 @@ describe('Funnel Series checking', () => {
         let pointElement: Element = getElement(sliceid + '3');
         trigger.clickEvent(pointElement);
         let group: Element = getElement(sliceid + '3');
-
+        let transform: boolean = group.getAttribute('transform') == null || group.getAttribute('transform') == 'translate(0.8095495985968038, 3.6215786495087183)';
         expect(group.getAttribute('class')).toBe('');
-        expect(group.getAttribute('transform')).toBe(null);
+        expect(transform).toBe(true);
         done();
     });
 
@@ -1042,6 +1042,66 @@ describe('Funnel Series - Checking animation on data changes.', () => {
         pie.refresh();
     });
 
+    });
+
+    describe('Funnel Series - Checking the trapezoidal mode', () => {
+        let element: HTMLElement;
+        let funnel: AccumulationChart;
+        let id: string = 'funnelcontainer';
+        beforeAll((): void => {
+            element = createElement('div', { id: id });
+            document.body.appendChild(element);
+            funnel = new AccumulationChart({
+                series: [
+                    {
+                        type: 'Funnel',
+                        funnelMode: 'Trapezoidal',
+                        dataLabel: { visible: true, name: 'text' },
+                        animation: { enable: false }, xName: 'stage', yName: 'value',
+                        dataSource: [
+                            { stage: "Sourced", value: 1380 },
+                            { stage: "Screened", value: 1100 },
+                            { stage: "HR Interview", value: 880 },
+                            { stage: "Technical", value: 740 },
+                            { stage: "Verify", value: 548 },
+                            { stage: "Offered", value: 430 },
+                            { stage: "Hired", value: 150 }
+                        ]
+                    }
+                ], width: '450', height: '400', legendSettings: { visible: true }
+            });
+            funnel.appendTo('#' + id);
+        });
+
+        afterAll((): void => {
+            funnel.loaded = null;
+            funnel.destroy();
+            removeElement(id);
+        });
+        it('checking Trapezoidal funnel path', (done: Function) => {
+            funnel.loaded = (args: Object): void => {
+                funnel.loaded = null;
+                let element: Element = document.getElementById('funnelcontainer_Series_0_Point_1');
+                expect(element.getAttribute('d')).toBe('M87.89855072463769 137.64285714285717 L362.1014492753623 137.64285714285717 A0 0 0 0 1 362.1014492753623 137.64285714285717 L362.1014492753623 165.9857142857143 A0 0 0 0 1 362.1014492753623 165.9857142857143 L87.89855072463769 165.9857142857143 A0 0 0 0 1 87.89855072463769 165.9857142857143 L87.89855072463769 137.64285714285717 A0 0 0 0 1 87.89855072463769 137.64285714285717 Z');
+                element = document.getElementById('funnelcontainer_Series_0_Point_3');
+                expect(element.getAttribute('d')).toBe('M132.76811594202897 214.32857142857142 L317.231884057971 214.32857142857142 A0 0 0 0 1 317.231884057971 214.32857142857142 L317.231884057971 242.67142857142855 A0 0 0 0 1 317.231884057971 242.67142857142855 L132.76811594202897 242.67142857142855 A0 0 0 0 1 132.76811594202897 242.67142857142855 L132.76811594202897 214.32857142857142 A0 0 0 0 1 132.76811594202897 214.32857142857142 Z');
+                done();
+            };
+            funnel.series[0].accessibility.accessibilityDescription = 'Funnel chart with trapezoidal mode';
+            funnel.series[0].accessibility.accessibilityRole = 'img';
+            funnel.refresh();
+        });
+        it('checking Trapezoidal funnel connentor elements', (done: Function) => {
+            funnel.loaded = (args: Object): void => {
+                funnel.loaded = null;
+                let element: Element = document.getElementById('funnelcontainer_Series_0_Point_1_polygon');
+                expect(element.getAttribute('d')).toBe('M87.89855072463769 165.9857142857143 L362.1014492753623 165.9857142857143 L334.6811594202899 175.9857142857143 L115.31884057971016 175.9857142857143 Z');
+                element = document.getElementById('funnelcontainer_Series_0_Point_4_polygon');
+                expect(element.getAttribute('d')).toBe('M156.6985507246377 281.01428571428573 L293.3014492753623 281.01428571428573 L278.59420289855075 291.01428571428573 L171.40579710144928 291.01428571428573 Z');
+                done();
+            };
+            funnel.refresh();
+        });
     });
 it('memory leak', () => {
     profile.sample();

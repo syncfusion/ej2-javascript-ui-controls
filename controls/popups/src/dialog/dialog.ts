@@ -2159,6 +2159,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 }
             });
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this as any).isReact) {
             this.renderReactTemplates();
         }

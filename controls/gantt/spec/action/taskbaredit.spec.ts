@@ -3,7 +3,7 @@
  */
 import { Gantt, ITaskbarEditedEventArgs, Edit, RowDD, ContextMenu } from '../../src/index';
 import { DataManager } from '@syncfusion/ej2-data';
-import { baselineData, scheduleModeData, splitTasksData, editingData, scheduleModeData1, dragSelfReferenceData, multiTaskbarData, resources, projectData, resourcesData, resourceCollection, multiResources, predecessorOffSetValidation, customCRData, customCrIssue, crDialogEditData, projectSplitTask, MT887459, MT877459, predecessorMT877459, parentPredecessorMT877459, parentMT877459, sengmentData, sengmentCollection, cR893051, dateFormateData, editingResources3, normalResourceData, CR929550 } from '../base/data-source.spec';
+import { baselineData, scheduleModeData, splitTasksData, editingData, scheduleModeData1, dragSelfReferenceData, multiTaskbarData, resources, projectData, resourcesData, resourceCollection, multiResources, predecessorOffSetValidation, customCRData, customCrIssue, crDialogEditData, projectSplitTask, MT887459, MT877459, predecessorMT877459, parentPredecessorMT877459, parentMT877459, sengmentData, sengmentCollection, cR893051, dateFormateData, editingResources3, normalResourceData, CR929550, MT915273, segmentResourcesData, SegmentResourceCollection, projectNewData1 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { falseLine } from '../../src/gantt/base/css-constants';
@@ -8192,7 +8192,7 @@ describe('Unschedule task offset', () => {
             }, done);
     });
     beforeEach((done: Function) => {
-        setTimeout(done, 1000);
+        setTimeout(done, 500);
     });
     it('Moving Taskbar date formate', () => {
         ganttObj.tooltipSettings.editing = '<div>game</div>';
@@ -8205,66 +8205,6 @@ describe('Unschedule task offset', () => {
         args['element'] = dragElement;
         args['target'] =  dragElement;
         ganttObj.editModule.taskbarEditModule['editTooltip']['updateTooltipPosition'](args);
-    });
-    afterAll(() => {
-        if (ganttObj) {
-            destroyGantt(ganttObj);
-        }
-    });
-});
-describe('Coverage test case', () => {
-    Gantt.Inject(Edit);
-    let ganttObj: Gantt;
-    beforeAll((done: Function) => {
-        ganttObj = createGantt(
-            {
-                dataSource: [{ TaskID: 2, TaskName: 'Task 2', EndDate: new Date('04/02/2019') },
-                    { TaskID: 3, TaskName: 'task 3', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 , Predecessor:'2'}
-                ],
-                allowSorting: true,
-                taskFields: {
-                    id: 'TaskID',
-                    name: 'TaskName',
-                    startDate: 'StartDate',
-                    endDate: 'EndDate',
-                    duration: 'Duration',
-                    progress: 'Progress',
-                    dependency: 'Predecessor',
-                    child: 'subtasks',
-                    notes: 'info',
-                },
-                editSettings: {
-                    allowAdding: true,
-                    allowEditing: true,
-                    allowDeleting: true,
-                    allowTaskbarEditing: true,
-                    showDeleteConfirmDialog: true
-                },
-                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
-                    'PrevTimeSpan', 'NextTimeSpan'],
-                allowSelection: true,
-                gridLines: "Both",
-                showColumnMenu: false,
-                dateFormat: 'dd MMM, y',
-                highlightWeekends: true,
-                labelSettings: {
-                    leftLabel: 'TaskName',
-                    taskLabel: 'Progress'
-                },
-                height: '550px',
-                allowUnscheduledTasks: true,
-            }, done);
-    });
-    it('Calling getPointerPosition', () => {
-        const dummyEvent: any = {
-            pageX: 100,
-            pageY: 150,
-            clientX: 50,
-            clientY: 75
-        };
-        const position = ganttObj.tooltipModule['getPointorPosition'](dummyEvent);
-        expect(position.x).toBe(100);
-        expect(position.y).toBe(150);
     });
     afterAll(() => {
         if (ganttObj) {
@@ -8331,6 +8271,7 @@ describe('CR:929550-Console error occurred while taskbar drag with null duration
                     }
                 }
             },
+
             queryCellInfo: function (args) {
                 if (
                     args.data.hasChildRecords &&
@@ -8345,6 +8286,7 @@ describe('CR:929550-Console error occurred while taskbar drag with null duration
                     }
                 }
             },
+
             height: '550px',
             allowUnscheduledTasks: true,
             projectStartDate: new Date('03/25/2019'),
@@ -8363,6 +8305,1213 @@ describe('CR:929550-Console error occurred while taskbar drag with null duration
         triggerMouseEvent(dragElement, 'mousemove', 100, 0);
         triggerMouseEvent(dragElement, 'mouseup');
         expect(ganttObj.currentViewData[1].ganttProperties.duration).toBe(null);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('MT:923718-Maximum call stack size exceeded error occurs in Resource view sample in Javascript platform', () => {
+    let ganttObj: Gantt;
+    let newData1: Object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Project initiation',
+            StartDate: new Date('03/29/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+                    Progress: 30, work: 10, resources: [{ resourceId: 1, resourceUnit: 50 }]
+                }
+            ]
+        }
+    ];
+    let resourceCollection: Object[] = [
+        { resourceId: 1, resourceName: 'Martin Tamer', resourceGroup: 'Planning Team' }
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: newData1,
+            resources: resourceCollection,
+            viewType: 'ResourceView',
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                work: 'work',
+                dependency: 'Predecessor',
+                resourceInfo: 'resources',
+                child: 'subtasks',
+            },
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName',
+                unit: 'resourceUnit',
+                group: 'resourceGroup'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+            allowSelection: true,
+            highlightWeekends: true,
+            treeColumnIndex: 1,
+            projectStartDate: new Date('03/28/2019'),
+            projectEndDate: new Date('05/18/2019')
+        }, done);
+    });
+     beforeEach((done) => {
+        setTimeout(done, 500);
+        ganttObj.openAddDialog();
+    });
+    it('Adding task to existing resource', () => {
+        let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+        tab.selectedItem = 2;
+        tab.dataBind();
+        let checkbox: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
+        triggerMouseEvent(checkbox, 'click');
+        let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
+        triggerMouseEvent(saveRecord, 'click');
+        expect(ganttObj.currentViewData.length).toBe(3);
+        expect(ganttObj.currentViewData[2].ganttProperties.rowUniqueID).toBe('2');
+        expect(ganttObj.currentViewData[2].ganttProperties.uniqueID).toBe(ganttObj.element.id +'_data_2');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('MT:915273-OverAllocation container does not render properly in project view', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt ({
+            dataSource: MT915273,
+            allowReordering: true,
+            showOverAllocation: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'TaskID', headerText: 'Task ID' },
+                { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                { field: 'CustomColumn', headerText: 'CustomColumn' }
+            ],
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+            allowSelection: true,
+            splitterSettings: {
+                position: "50%",
+            },
+            showColumnMenu: true,
+            highlightWeekends: true,
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskID',
+                rightLabel: 'Task Name: ${taskData.TaskName}',
+                taskLabel: '${Progress}%'
+            },
+            allowResizing: true,
+            taskbarHeight: 20,
+            rowHeight: 40,
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('04/05/2019'),
+            projectEndDate: new Date('05/30/2019')
+        }, done);
+    });
+    it('Checking rangerContainer height with Hierarchy ChildRecords', () => {
+        const rangeContainer: any = ganttObj.element.querySelectorAll('.e-rangecontainer')[0].childNodes[0].childNodes;
+        if (rangeContainer) {
+            expect(rangeContainer[0].style.height).toBe('221px');
+            expect(rangeContainer[1].style.height).toBe('221px');
+        }
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Querytaskbar info on split task resource view', () => {
+    Gantt.Inject(Edit);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: segmentResourcesData,
+                resources: SegmentResourceCollection,
+                viewType: 'ResourceView',
+                showOverAllocation: true,
+                enableContextMenu: true,
+                allowSorting: true,
+                allowReordering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    resourceInfo: 'resources',
+                    segments: 'Segments',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                queryTaskbarInfo:function (args) {
+                    if (args.data.ganttProperties.taskId === 2) {
+                        if (parseInt(args.taskbarElement.dataset.segmentIndex) === 0) {
+                            args.taskbarBgColor = 'red'
+                            args.progressBarBgColor = 'pink'
+                        } else if (parseInt(args.taskbarElement.dataset.segmentIndex) === 1) {
+                            args.taskbarBgColor = 'blue'
+                            args.progressBarBgColor = 'purple'
+                        }
+                    }
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
+                    { text: 'Show/Hide Overallocation', tooltipText: 'Show/Hide Overallocation', id: 'showhidebar' }, 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                labelSettings: {
+                    rightLabel: 'resources',
+                    taskLabel: 'Progress'
+                },
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                readOnly: false,
+                allowRowDragAndDrop: true,
+                allowResizing: true,
+                allowFiltering: true,
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+    });
+    it('Checking customization made in queryTaskBarInfo', () => {
+        expect((ganttObj.getRowByID(1).querySelector('.e-segment-first') as HTMLElement).style.backgroundColor).toBe('red');
+        expect((ganttObj.getRowByID(1).querySelector('.e-segment-last') as HTMLElement).style.backgroundColor).toBe('blue');
+        expect((ganttObj.getRowByID(1).querySelector('.e-gantt-child-progressbar') as HTMLElement).style.backgroundColor).toBe('pink');
+    });
+    it('Changing progress and checking color', () => {
+        let data = {
+            TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 10,
+            Progress: 80, work: 10, resources: [{ resourceId: 1, resourceUnit: 100 },{ resourceId: 2, resourceUnit: 100 }],Segments: [
+                { StartDate: new Date('03/29/2019'), Duration: 2 },
+                { StartDate: new Date('04/05/2019'), Duration: 5 },
+
+            ]
+        }
+        ganttObj.updateRecordByID(data);
+        expect((ganttObj.getRowByID(1).querySelector('.e-segment-last').querySelector('.e-gantt-child-progressbar') as HTMLElement).style.backgroundColor).toBe('purple');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Checking if multiple resource assignment change correctly', () => {
+    Gantt.Inject(Edit);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: segmentResourcesData,
+                resources: SegmentResourceCollection,
+                viewType: 'ResourceView',
+                showOverAllocation: true,
+                enableContextMenu: true,
+                allowSorting: true,
+                allowReordering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    resourceInfo: 'resources',
+                    segments: 'Segments',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
+                    { text: 'Show/Hide Overallocation', tooltipText: 'Show/Hide Overallocation', id: 'showhidebar' }, 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                labelSettings: {
+                    rightLabel: 'resources',
+                    taskLabel: 'Progress'
+                },
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                readOnly: false,
+                allowRowDragAndDrop: true,
+                allowResizing: true,
+                allowFiltering: true,
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+    });
+    it('Changing Progress', () => {
+        let data = {
+            TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 10,
+            Progress: 80, work: 10, resources: [{ resourceId: 1, resourceUnit: 100 },{ resourceId: 2, resourceUnit: 100 }],Segments: [
+                { StartDate: new Date('03/29/2019'), Duration: 2 },
+                { StartDate: new Date('04/05/2019'), Duration: 5 },
+
+            ]
+        }
+        ganttObj.updateRecordByID(data);
+        expect(ganttObj.flatData[1].ganttProperties.progress).toBe(80);
+        expect(ganttObj.flatData[4].ganttProperties.progress).toBe(80);
+    });
+    it('Merging Task', () => {
+        ganttObj.mergeTask(2,[{ 'firstSegmentIndex': 0, 'secondSegmentIndex': 1 }]);
+        expect(ganttObj.flatData[1].ganttProperties.segments === null).toBe(true);
+        expect(ganttObj.flatData[4].ganttProperties.segments === null).toBe(true);
+    });
+    it('Split task', () => {
+        ganttObj.splitTask(2, new Date('04/02/2019'));
+        expect(ganttObj.flatData[1].ganttProperties.segments.length > 1).toBe(true);
+        expect(ganttObj.flatData[4].ganttProperties.segments.length > 1).toBe(true);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Checking if work mapping provide correct duration', () => {
+    Gantt.Inject(Edit);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: segmentResourcesData,
+                resources: SegmentResourceCollection,
+                viewType: 'ResourceView',
+                showOverAllocation: true,
+                enableContextMenu: true,
+                allowSorting: true,
+                allowReordering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    work: 'work',
+                    resourceInfo: 'resources',
+                    segments: 'Segments',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
+                    { text: 'Show/Hide Overallocation', tooltipText: 'Show/Hide Overallocation', id: 'showhidebar' }, 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                labelSettings: {
+                    rightLabel: 'resources',
+                    taskLabel: 'Progress'
+                },
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                readOnly: false,
+                allowRowDragAndDrop: true,
+                allowResizing: true,
+                allowFiltering: true,
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+    });
+    it('Checking Duration and segments for shared task', () => {
+        expect(ganttObj.flatData[1].ganttProperties.segments).toBe(null);
+        expect(ganttObj.flatData[4].ganttProperties.segments).toBe(null);
+        expect(ganttObj.flatData[4].ganttProperties.duration).toBe(0.63);
+        expect(ganttObj.flatData[4].ganttProperties.duration).toBe(0.63);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Deleting segments in dialog', () => {
+    Gantt.Inject(Edit);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: segmentResourcesData,
+                resources: SegmentResourceCollection,
+                viewType: 'ResourceView',
+                showOverAllocation: true,
+                enableContextMenu: true,
+                allowSorting: true,
+                allowReordering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    resourceInfo: 'resources',
+                    segments: 'Segments',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
+                    { text: 'Show/Hide Overallocation', tooltipText: 'Show/Hide Overallocation', id: 'showhidebar' }, 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                labelSettings: {
+                    rightLabel: 'resources',
+                    taskLabel: 'Progress'
+                },
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                readOnly: false,
+                allowRowDragAndDrop: true,
+                allowResizing: true,
+                allowFiltering: true,
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+    });
+    it('Checking segments', () => {
+        expect(ganttObj.flatData[1].ganttProperties.segments.length).toBe(2);
+        ganttObj.openEditDialog(1);
+        let selectSegment: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_Tab > div.e-tab-header.e-control.e-toolbar.e-lib.e-keyboard > div > div:nth-child(4)') as HTMLElement;
+        triggerMouseEvent(selectSegment, 'click');
+        let selectRow: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'SegmentsTabContainer_content_table > tbody > tr:nth-child(1)') as HTMLElement;
+        triggerMouseEvent(selectRow, 'click');
+        let deleteSegment: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'SegmentsTabContainer_delete > span.e-tbar-btn-text') as HTMLElement;
+        triggerMouseEvent(deleteSegment, 'click');
+        triggerMouseEvent(deleteSegment, 'click');
+        let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
+        triggerMouseEvent(saveRecord, 'click');
+        expect(ganttObj.flatData[1].ganttProperties.segments).toBe(null);
+        expect(ganttObj.flatData[4].ganttProperties.segments).toBe(null);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Adding additional resource to split task', () => {
+    Gantt.Inject(Edit);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: segmentResourcesData,
+                resources: SegmentResourceCollection,
+                viewType: 'ResourceView',
+                showOverAllocation: true,
+                enableContextMenu: true,
+                allowSorting: true,
+                allowReordering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    resourceInfo: 'resources',
+                    segments: 'Segments',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
+                    { text: 'Show/Hide Overallocation', tooltipText: 'Show/Hide Overallocation', id: 'showhidebar' }, 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                labelSettings: {
+                    rightLabel: 'resources',
+                    taskLabel: 'Progress'
+                },
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                readOnly: false,
+                allowRowDragAndDrop: true,
+                allowResizing: true,
+                allowFiltering: true,
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+    });
+    beforeEach((done: Function) => {
+        ganttObj.openEditDialog(1);
+        setTimeout(done, 500);
+    });
+    it('Checking segments', () => {
+        ganttObj.actionComplete = function (args: any): void {
+            if (args.requestType === "save") {
+                expect(ganttObj.flatData[8].childRecords[2].ganttProperties.segments.length).toBe(2);
+            }
+        };
+        let selectResourceTab: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_Tab > div.e-tab-header.e-control.e-toolbar.e-lib.e-keyboard > div > div:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(selectResourceTab, 'click');
+        let checkbox: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(3) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
+        triggerMouseEvent(checkbox, 'click');
+        let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button') as HTMLElement;
+        triggerMouseEvent(saveRecord, 'click');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Adding new segment task in resource view', () => {
+    Gantt.Inject(Edit);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: segmentResourcesData,
+                resources: SegmentResourceCollection,
+                viewType: 'ResourceView',
+                showOverAllocation: true,
+                enableContextMenu: true,
+                allowSorting: true,
+                allowReordering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    resourceInfo: 'resources',
+                    segments: 'Segments',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
+                    { text: 'Show/Hide Overallocation', tooltipText: 'Show/Hide Overallocation', id: 'showhidebar' }, 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                labelSettings: {
+                    rightLabel: 'resources',
+                    taskLabel: 'Progress'
+                },
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                readOnly: false,
+                allowRowDragAndDrop: true,
+                allowResizing: true,
+                allowFiltering: true,
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+    });
+    it('Checking segment after adding', () => {
+        let record = {
+            TaskID: 20, TaskName: 'Newly added task', StartDate: new Date('03/29/2019'), Duration: 10,
+            Progress: 10, work: 10, resources: [{ resourceId: 1, resourceUnit: 100 },{ resourceId: 2, resourceUnit: 100 }],Segments: [
+                { StartDate: new Date('03/29/2019'), Duration: 2 },
+                { StartDate: new Date('04/05/2019'), Duration: 5 },
+
+            ]
+        };
+        ganttObj.editModule.addRecord(record, 'Below', 2);
+        expect(ganttObj.flatData[3].ganttProperties.taskName).toBe('Newly added task');
+        expect(ganttObj.flatData[9].ganttProperties.taskName).toBe('Newly added task')
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Checking if dependency update for shared task', () => {
+    Gantt.Inject(Edit);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: segmentResourcesData,
+                resources: SegmentResourceCollection,
+                viewType: 'ResourceView',
+                enableMultiTaskbar: true,
+                showOverAllocation: true,
+                enableContextMenu: true,
+                allowSorting: true,
+                allowReordering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    resourceInfo: 'resources',
+                    segments: 'Segments',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
+                    { text: 'Show/Hide Overallocation', tooltipText: 'Show/Hide Overallocation', id: 'showhidebar' }, 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                labelSettings: {
+                    rightLabel: 'resources',
+                    taskLabel: 'Progress'
+                },
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                readOnly: false,
+                allowRowDragAndDrop: true,
+                allowResizing: true,
+                allowFiltering: true,
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019'),
+                collapseAllParentTasks: true,
+                allowTaskbarOverlap :false
+            }, done);
+    });
+    it('Moving task and checking dependency', () => {
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1)  > td > .e-collapse-parent > .e-taskbar-main-container') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', 80, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
+        expect(ganttObj.flatData[4].ganttProperties.predecessorsName).toBe(null)
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Task:932388-Provide support to enable Progress Editing in Collapsed State with Multi Taskbar Property Enabled', () => {
+    Gantt.Inject(Edit);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+        {
+            dataSource: projectNewData1,
+            allowSorting: true,
+            allowTaskbarOverlap: false,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency:'Predecessor',
+                child: 'subtasks'
+            },
+            enableMultiTaskbar: true,
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+            'PrevTimeSpan', 'NextTimeSpan'],
+            allowSelection: true,
+            gridLines: "Both",
+            showColumnMenu: false,
+            highlightWeekends: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019')
+        }, done);
+    });
+    it('Checking progress resize icon while task in collapsed state', () => {
+        let collapseallToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_collapseall') as HTMLElement;
+        triggerMouseEvent(collapseallToolbar, 'click');
+        let collapsedTaskbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container') as HTMLElement;
+        let progressResizer = collapsedTaskbar.childNodes[3] as HTMLElement;
+        if (progressResizer) {
+            expect(progressResizer.classList.contains('e-child-progress-resizer')).toBe(true);
+        }
+    });
+    it('Checking progress width while task in collapsed state', () => {
+        let collapseallToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_collapseall') as HTMLElement;
+        triggerMouseEvent(collapseallToolbar, 'click');
+        let collapsedTaskbarProgess: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar > div.e-gantt-child-progressbar-inner-div.e-gantt-child-progressbar') as HTMLElement;
+        if (collapsedTaskbarProgess) {
+            expect(collapsedTaskbarProgess.style.width).toBe('29.7px');
+        }
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Task:932388-Provide support to enable Progress Editing in Collapsed State with Multi Taskbar Property Enabled(With queryTaskbarInfo)', () => {
+    Gantt.Inject(Edit);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+        {
+            dataSource: projectNewData1,
+            allowSorting: true,
+            allowTaskbarOverlap: false,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency:'Predecessor',
+                child: 'subtasks'
+            },
+            queryTaskbarInfo: function (args: any) {
+                if (args.data.TaskID == 1) {
+                    args.taskbarBgColor = '#539ed6';
+                    args.milestoneColor = '#539ed6';
+                    args.progressBarBgColor = "red";
+                } else if (args.data.TaskID == 2) {
+                    args.taskbarBgColor = '#ff826b';
+                    args.milestoneColor = '#ff826b';
+                    args.progressBarBgColor = "brown";
+                } else if (args.data.TaskID == 3) {
+                    args.taskbarBgColor = '#ef6fbb';
+                    args.milestoneColor = '#ef6fbb';
+                    args.progressBarBgColor = "lightgreen";
+                }else if (args.data.TaskID == 4) {
+                    args.taskbarBgColor = '#87b972';
+                    args.milestoneColor = '#87b972';
+                    args.progressBarBgColor = "purple";
+                }
+            },
+            enableMultiTaskbar: true,
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+            'PrevTimeSpan', 'NextTimeSpan'],
+            allowSelection: true,
+            gridLines: "Both",
+            showColumnMenu: false,
+            highlightWeekends: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019')
+        }, done);
+    });
+    it('Checking progress resize icon while task in collapsed state with queryTaskbarInfo', () => {
+        let collapseallToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_collapseall') as HTMLElement;
+        triggerMouseEvent(collapseallToolbar, 'click');
+        let collapsedTaskbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container') as HTMLElement;
+        let progressResizer = collapsedTaskbar.childNodes[3] as HTMLElement;
+        if (progressResizer) {
+            expect(progressResizer.classList.contains('e-child-progress-resizer')).toBe(true);
+        }
+    });
+    it('Checking progress width while task in collapsed state with queryTaskbarInfo', () => {
+        let collapseallToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_collapseall') as HTMLElement;
+        triggerMouseEvent(collapseallToolbar, 'click');
+        let collapsedTaskbarProgess: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar > div.e-gantt-child-progressbar-inner-div.e-gantt-child-progressbar') as HTMLElement;
+        if (collapsedTaskbarProgess) {
+            expect(collapsedTaskbarProgess.style.width).toBe('29.7px');
+        }
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Overallocation in split task', () => {
+    Gantt.Inject(Edit);
+    let ganttObj: Gantt;
+    let resourceLocal: Object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Project initiation',
+            StartDate: new Date('03/29/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 10,
+                    Progress: 10, work: 10, resources: [{ resourceId: 1, resourceUnit: 100 }, { resourceId: 2, resourceUnit: 100 }], Segments: [
+                        { StartDate: new Date('03/29/2019'), Duration: 2 },
+                        { StartDate: new Date('04/05/2019'), Duration: 5 },
+
+                    ]
+                },
+                {
+                    TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('03/29/2019'), Duration: 4,
+                    resources: [{ resourceId: 1, resourceUnit: 75 }], Predecessor: 2, Progress: 30, work: 10,
+                },
+            ]
+        }
+    ];
+    let collectionLocal: Object[] = [
+        { resourceId: 1, resourceName: 'Martin Tamer', resourceGroup: 'Planning Team' },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: resourceLocal,
+                resources: collectionLocal,
+                viewType: 'ResourceView',
+                showOverAllocation: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    resourceInfo: 'resources',
+                    segments: 'Segments',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'Progress' },
+                    { field: 'StartDate' },
+                    { field: 'EndDate' },
+                    { field: 'Duration' },
+                ],
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                height: '550px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+    });
+    it('Checking left value', () => {
+        expect((ganttObj.chartPane.querySelectorAll('.e-rightarc')[1] as HTMLElement).style.left).toBe('160px')
     });
     afterAll(() => {
         if (ganttObj) {
@@ -8423,7 +9572,7 @@ describe('Content menu split task  -', () => {
                     { field: 'TaskID', width: 60 },
                     { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
                     { field: 'StartDate' },
-                    
+
                 ],
                 allowSelection: true,
                 allowRowDragAndDrop: true,
@@ -8469,7 +9618,7 @@ describe('Content menu split task  -', () => {
         triggerMouseEvent(dragElement, 'mousemove', 250, 0);
         triggerMouseEvent(dragElement, 'mouseup');
         expect(ganttObj.currentViewData[0].ganttProperties.segments.length).toBe(2);
-        expect(ganttObj.currentViewData[1].ganttProperties.segments.length).toBe(2);
+        expect(ganttObj.currentViewData[1].ganttProperties.segments.length).toBe(2)
     });
     afterAll(() => {
         if (ganttObj) {

@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 /* stylelint-disable */
 $ddt-skin-name: 'bootstrap4' !default;
 $ddt-box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 0px rgba(0, 0, 0, 0.14), 0 3px 14px 0px rgba(0, 0, 0, 0.12) !default;
@@ -55,7 +57,7 @@ $ddt-popup-background-color: $content-popup-bg !default;
 $ddt-popup-border-color: rgba($black, .15) !default;
 $ddt-chip-close: $white !default;
 $ddt-chip-font-color: $white !default;
-$ddt-chip-hover-bg-color: darken($gray-600, 7.5%) !default;
+$ddt-chip-hover-bg-color: color.adjust($gray-600, $lightness: -7.5%) !default;
 $ddt-chip-hover-font-color: $white !default;
 $ddt-readonly-input-bg-color: $white !default;
 $ddt-nodata-font-color: $gray-900 !default;
@@ -77,7 +79,7 @@ $ddt-overflow-count-padding-top: 4px !default;
 $ddt-delim-padding: 4px 8px 0 8px !default;
 $ddt-delim-bigger-padding: 6px 12px 0 12px !default;
 $ddt-remains-count-padding-top: 4px !default;
-$ddt-item-hover-bg: darken($gray-100,2%) !default;
+$ddt-item-hover-bg: color.adjust($gray-100, $lightness: -2%) !default;
 $ddt-select-all-font-size: 14px !default;
 $ddt-big-select-all-font-size: 16px !default;
 $ddt-select-all-checkbox-bottom: 1px !default;

@@ -276,7 +276,7 @@ export class Formats {
     private applyFormats(e: IHtmlSubCommands): void {
         const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         const tableCursor: ImageOrTableCursor = this.parent.nodeSelection.processedTableImageCursor(range);
-        if (tableCursor.start || tableCursor.end) {
+        if ((tableCursor.start || tableCursor.end) && e.subCommand.toLowerCase() !== 'blockquote') {
             if (tableCursor.startName === 'TABLE' || tableCursor.endName === 'TABLE') {
                 const tableNode: Node = tableCursor.start ? tableCursor.startNode : tableCursor.endNode;
                 this.applyTableSidesFormat(e, tableCursor.start, tableNode as HTMLTableElement);
@@ -362,6 +362,7 @@ export class Formats {
                 isPartiallySelected = true;
             }
         }
+        let isToggleBlockquote: boolean = false;
         for (let i: number = 0; i < formatsNodes.length; i++) {
             let parentNode: Element;
             let replaceHTML: string;
@@ -396,7 +397,7 @@ export class Formats {
                 e.subCommand.toLowerCase() === 'blockquote' && !isNOU(closest(formatsNodes[i as number], 'li'));
             const ensureNode: Element = parentNode.tagName === 'TABLE' ?
                 (!isNOU(closest((formatsNodes[i as number]), 'blockquote')) ? closest((formatsNodes[i as number]), 'blockquote') : parentNode) : parentNode;
-            const isToggleBlockquote: boolean = (e.subCommand.toLowerCase() === ensureNode.tagName.toLowerCase())
+            isToggleBlockquote = (e.subCommand.toLowerCase() === ensureNode.tagName.toLowerCase())
                 && e.subCommand.toLowerCase() === 'blockquote';
             let replaceTag: string;
             const startNode: Node = this.getNode(formatsNodes[i as number]);
@@ -480,6 +481,19 @@ export class Formats {
         }
         if (isSelectAll) {
             this.parent.nodeSelection.setSelectionText(this.parent.currentDocument, startNode, endNode, 0, endNode.textContent.length);
+        } else if (tableCursor.start && e.subCommand.toLowerCase() === 'blockquote') {
+            const focusNode: Node = save.range.startContainer.childNodes[isToggleBlockquote ?
+                (save.range.startOffset - 1) : save.range.startOffset];
+            if (isToggleBlockquote) {
+                const focusNodeParent: HTMLElement = focusNode.parentElement;
+                const focusIndex: number = Array.prototype.indexOf.call(focusNodeParent.childNodes, focusNode);
+                this.parent.nodeSelection.setSelectionText(
+                    this.parent.currentDocument, focusNodeParent,
+                    focusNodeParent, focusIndex, focusIndex
+                );
+            } else {
+                this.parent.nodeSelection.setSelectionText(this.parent.currentDocument, focusNode, focusNode, 0, 0);
+            }
         } else {
             save.restore();
         }

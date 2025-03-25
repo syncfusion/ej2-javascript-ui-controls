@@ -1,10 +1,12 @@
+@use 'sass:color';
+
 $border-type: solid !default;
 $border-size: 1px !default;
 $schedule-skin: $skin-name !default;
 $schedule-header-bg-color: $content-bg !default;
 $schedule-header-border-color: $gray-300 !default;
 $schedule-header-font-color: $gray-900 !default;
-$schedule-header-hover-color: darken($gray-600, 7.5%) !default;
+$schedule-header-hover-color: color.adjust($gray-600, $lightness: -7.5%) !default;
 $schedule-content-bg-color: $content-bg !default;
 $schedule-content-border-color: $gray-300 !default;
 $schedule-primary-content-font-color: $gray-900 !default;
@@ -16,7 +18,7 @@ $schedule-current-date-bg-color: $primary !default;
 $schedule-disable-dates-color: rgba($black, .08) !default;
 $schedule-disable-font-color: $primary-font !default;
 $schedule-workhour-bg-color: $content-bg !default;
-$schedule-hover-bg-color: darken($gray-100, 2%) !default;
+$schedule-hover-bg-color: color.adjust($gray-100, $lightness: -2%) !default;
 $schedule-resource-focus-bg-color: $schedule-hover-bg-color !default;
 $schedule-hover-font-color: $gray-900 !default;
 $schedule-active-color: $primary-font !default;
@@ -56,7 +58,7 @@ $schedule-month-date-header-cell-text-transform: none !default;
 $schedule-appointment-details-padding: 4px 8px 0 !default;
 $schedule-appointment-bg-color: $primary !default;
 $schedule-appointment-font-color: $primary-font !default;
-$schedule-appointment-border-color: lighten($schedule-appointment-bg-color, 40%) !default;
+$schedule-appointment-border-color: color.adjust($schedule-appointment-bg-color, $lightness: 40%) !default;
 $schedule-appointment-border-radius: 4px !default;
 $schedule-appointment-selected-border: 1px solid rgba($black, .5) !default;
 $schedule-appointment-active-border-color: #333 !default;
@@ -125,7 +127,7 @@ $schedule-tbar-default-bg: $gray-100 !default;
 $schedule-tbar-separator-border: $gray-300 !default;
 $schedule-tbar-border-nav: 1px !default;
 $schedule-tbar-border-nav-type: solid !default;
-$schedule-tbar-hover-bg: darken($gray-600, 10%) !default;
+$schedule-tbar-hover-bg: color.adjust($gray-600, $lightness: -10%) !default;
 $schedule-tbar-hover-font: $primary-font !default;
 $schedule-tbar-nav-bgr-width: 32px !default;
 $schedule-tbar-bgr-item-size: 34px !default;
@@ -262,6 +264,8 @@ $schedule-header-icon-wrapper-bg-color: $schedule-content-bg-color !default;
 $schedule-bgr-date-time-icon-padding-right: 10px !default;
 $schedule-bgr-more-event-close-icon-padding: unset !default;
 $schedule-bgr-tbar-btn-text-font-size: $schedule-header-nrml-font-size !default;
+$schedule-calendar-width: 300px !default;
+$schedule-bgr-calendar-width: 345px !default;
 
 @mixin tbar-btn-animation {
   content: '';
@@ -270,4 +274,4 @@ $schedule-bgr-tbar-btn-text-font-size: $schedule-header-nrml-font-size !default;
   content: '';
 }
 
-$schedule-tbar-border-hover-color: darken($gray-600, 12.5%) !default;
+$schedule-tbar-border-hover-color: color.adjust($gray-600, $lightness: -12.5%) !default;

@@ -2335,7 +2335,8 @@ export class Legend {
         const pagingElement: HTMLElement = document.getElementById(this.maps.element.id + '_Legend_Paging_Group');
         if (pagingElement) {
             for (let i: number = 0; i < pagingElement.childElementCount; i++) {
-                EventHandler.remove((pagingElement.childNodes[i as number] as HTMLElement), Browser.touchStartEvent, this.changeNextPage);
+                EventHandler.remove((pagingElement.childNodes[i as number] as HTMLElement), Browser.touchStartEvent,
+                                    this.changeNextPage);
             }
         }
     }
@@ -2456,7 +2457,9 @@ export class Legend {
         this.defsElement = null;
         this.legendElement = [];
         this.oldShapeElement = null;
-        this.removeEventListener();
-        this.maps = null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (!(this.maps as any).refreshing) {
+            this.maps = null;
+        }
     }
 }

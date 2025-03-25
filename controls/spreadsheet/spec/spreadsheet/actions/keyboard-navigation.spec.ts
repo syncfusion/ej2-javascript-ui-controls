@@ -561,6 +561,25 @@ describe('Spreadsheet cell navigation module ->', () => {
             expect(document.activeElement.getAttribute('ARIA-label')).toBe('Text Color #000000');
             done();
         });
+        it('Testing keyboard navigation after hiding toolbar items in ribbon tab ->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.hideToolbarItems('Home', [0, 1, 2, 3]);
+            helper.triggerKeyNativeEvent(18, false, false, null, 'keydown', true);
+            expect(document.activeElement.querySelector('.e-tab-text').textContent).toBe('Home');
+            helper.triggerKeyNativeEvent(9, false, false, null, 'keydown', false, document.activeElement);
+            expect(document.activeElement.id).toBe(`${helper.id}_copy`);
+            done();
+        });
+        it('Shift + Tab navigation after hiding toolbar items in ribbon tab', (done: Function) => {
+            helper.triggerKeyNativeEvent(18, false, false, null, 'keydown', true);
+            helper.triggerKeyNativeEvent(18, false, false, null, 'keydown', true);
+            expect(document.activeElement.querySelector('.e-tab-text').textContent).toBe('Home');
+            helper.triggerKeyNativeEvent(9, false, true, null, 'keydown', false, document.activeElement);
+            expect(document.activeElement.classList.contains('e-drop-icon')).toBeTruthy();
+            helper.triggerKeyNativeEvent(9, false, true, null, 'keydown', false, document.activeElement);
+            expect(document.activeElement.id).toBe(`${helper.id}_copy`);
+            done();
+        });
     });
 
     describe('Keyboard Navigation with Locked and Unlocked cells ->', () => {
@@ -857,7 +876,6 @@ describe('Spreadsheet cell navigation module ->', () => {
             });
         });
     });
-
     describe('CR-Issues ->', () => {
         describe('F164825, EJ2-850507 ->', () => {
             beforeAll((done: Function) => {

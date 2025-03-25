@@ -92,6 +92,9 @@ export class TextHelper {
         const textSizeInfo: TextSizeInfo = {
             'Width': width, 'Height': textHelper.Height, 'BaselineOffset': textHelper.BaselineOffset
         };
+        if (characterFormat.hidden) {
+            return textSizeInfo;
+        }
         return this.paragraphMarkInfo[`${format}`] = textSizeInfo;
     }
     public getTextSize(elementBox: TextElementBox, characterFormat: WCharacterFormat): number {
@@ -122,10 +125,20 @@ export class TextHelper {
         // Predefined static structure `[FontName];[FontSize];bold;italic` to maintain as key in the collection
         const key: string = this.getFormatText(characterFormat, fontToRender);
         if (!isNullOrUndefined(this.documentHelper.heightInfoCollection[`${key}`])) {
+            if (characterFormat.hidden) {
+                const heightInfo: any = { ...this.documentHelper.heightInfoCollection[`${key}`] };
+                if (heightInfo.Height) {
+                    heightInfo.Height = 0;
+                }
+                return heightInfo;
+            }
             return this.documentHelper.heightInfoCollection[`${key}`];
         }
         const sizeInfo: TextSizeInfo = this.documentHelper.owner.textMeasureHelper.getHeightInternal(characterFormat, fontToRender);
-        this.documentHelper.heightInfoCollection[`${key}`] = sizeInfo;
+        this.documentHelper.heightInfoCollection[`${key}`] = { ...sizeInfo };
+        if (characterFormat.hidden) {
+            sizeInfo.Height = 0;
+        }
         return sizeInfo;
     }
     public getFormatText(characterFormat: WCharacterFormat, fontToRender?: string): string {
@@ -152,6 +165,9 @@ export class TextHelper {
         return this.getWidth(HelperMethods.trimEnd(text), characterFormat, scriptType);
     }
     public getWidth(text: string, characterFormat: WCharacterFormat, scriptType?: FontScriptType): number {
+        if (characterFormat.hidden) {
+            return 0;
+        }
         if (text.match('\v')) {
             text.replace('\v', this.lineBreakMark);
         }
@@ -205,6 +221,9 @@ export class TextHelper {
         };
     }
     public updateTextSize(elementBox: ListTextElementBox, paragraph: ParagraphWidget): void {
+        if (elementBox.characterFormat.hidden && paragraph.height === 0) {
+            return;
+        }
         const format: WCharacterFormat = new WCharacterFormat(undefined);
         const listCharacterFormat: WCharacterFormat = elementBox.listLevel.characterFormat;
         const breakCharacterFormat: WCharacterFormat = paragraph.characterFormat;

@@ -1410,7 +1410,31 @@ describe('Datepicker', () => {
             datepicker = new DatePicker();
             datepicker.appendTo(inputElement);
         });
-
+        it('inputFormats testing', () => {
+            debugger;
+            datepicker = new DatePicker({ value: new Date('5/5/2017'), format: 'M/d/yyyy', inputFormats: ["MM/dd/yyyy", "yyyy-MM-dd", "dd-MM-yy"], });
+            datepicker.appendTo('#date');
+            datepicker.element.value = '2025-11-23';
+            datepicker.inputBlurHandler();
+            expect(datepicker.value.valueOf()).toBe(new Date('11/23/2025').valueOf());
+            expect(datepicker.element.value).toBe('11/23/2025');
+        });
+        it('inputFormats testing with dynamicupdate', () => {
+            debugger;
+            datepicker = new DatePicker({ value: new Date('5/5/2017'), format: 'M/d/yyyy', inputFormats: ["MM/dd/yyyy", "yyyy-MM-dd", "dd-MM-yy"], });
+            datepicker.appendTo('#date');
+            datepicker.element.value = '2025-11-23';
+            datepicker.inputBlurHandler();
+            expect(datepicker.value.valueOf()).toBe(new Date('11/23/2025').valueOf());
+            expect(datepicker.element.value).toBe('11/23/2025');
+            datepicker.inputFormats = ["MM-dd-yyyy", "yyyy/MM/dd", "dd/MM/yy"];
+            datepicker.dataBind();
+            datepicker.element.value = '2025/11/23';
+            datepicker.inputBlurHandler();
+            expect(datepicker.value.valueOf()).toBe(new Date('11/23/2025').valueOf());
+            expect(datepicker.element.value).toBe('11/23/2025');
+            
+        });
     });
     // angular tag testing
     describe('Angular tag testing ', () => {

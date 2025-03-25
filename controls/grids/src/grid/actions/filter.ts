@@ -3,7 +3,7 @@ import { getActualPropFromColl, isActionPrevent, getColumnByForeignKeyValue } fr
 import { remove, matches } from '@syncfusion/ej2-base';
 import { DataUtil, Predicate, Query, DataManager } from '@syncfusion/ej2-data';
 import { FilterSettings } from '../base/grid';
-import { IGrid, IAction, NotifyArgs, IFilterOperator, IValueFormatter, FilterUI, EJ2Intance } from '../base/interface';
+import { IGrid, IAction, NotifyArgs, IFilterOperator, IValueFormatter, FilterUI, EJ2Intance, CustomOperators } from '../base/interface';
 import * as events from '../base/constant';
 import { CellType, ResponsiveDialogAction } from '../base/enum';
 import { PredicateModel } from '../base/grid-model';
@@ -59,7 +59,7 @@ export class Filter implements IAction {
         isresetFocus: boolean, getFilterUIInfo: Function, clearCustomFilter: Function,
         closeResponsiveDialog: Function, applyCustomFilter: Function, renderCheckBoxMenu?: Function,
         afterRenderFilterUI?: Function, checkBoxBase: CheckBoxFilterBase, excelFilterBase: ExcelFilterBase,
-        isDialogOpen?: boolean
+        isDialogOpen?: boolean, getOperatorDropdown?: Function
     };
     /** @hidden */
     public filterOperators: IFilterOperator = {
@@ -69,7 +69,7 @@ export class Filter implements IAction {
     };
     private fltrDlgDetails: { field?: string, isOpen?: boolean } = { field: '', isOpen: false };
 
-    public customOperators: Object;
+    public customOperators: CustomOperators;
     /** @hidden */
     public skipNumberInput: string[] = ['=', ' ', '!'];
     public skipStringInput: string[] = ['>', '<', '='];
@@ -312,34 +312,44 @@ export class Filter implements IAction {
             this.parent.getColumnByField(this.fieldName);
         this.filterObjIndex =  this.getFilteredColsIndexByField(col);
         this.prevFilterObject = this.filterSettings.columns[this.filterObjIndex];
-        const arrayVal: (string | number | Date | boolean)[] = Array.isArray(this.value) ? this.value : [this.value];
+        let arrayVal: (string | number | Date | boolean)[] = Array.isArray(this.value) && this.value.length ? this.value : [this.value];
         const moduleName : string = (this.parent.dataSource as DataManager).adaptor && (<{ getModuleName?: Function }>(
             this.parent.dataSource as DataManager).adaptor).getModuleName ? (<{ getModuleName?: Function }>(
                 this.parent.dataSource as DataManager).adaptor).getModuleName() : undefined;
         for (let i: number = 0, len: number = arrayVal.length; i < len; i++) {
             const field: string = col.isForeignColumn() ? col.foreignKeyValue : this.fieldName;
             const isMenuNotEqual: boolean = this.operator === 'notequal';
-            this.currentFilterObject = {
-                field: field, uid: col.uid, isForeignKey: col.isForeignColumn(), operator: this.operator,
-                value: arrayVal[parseInt(i.toString(), 10)], predicate: this.predicate,
-                matchCase: this.matchCase, ignoreAccent: this.ignoreAccent, actualFilterValue: {}, actualOperator: {}
-            };
+            if (this.operator === 'in' || this.operator === 'notin') {
+                if (this.parent.getDataModule().isRemote() && (col.type === 'date' || col.type === 'dateonly' || col.type === 'datetime')){
+                    arrayVal = DataUtil.parse.arrayReplacer(arrayVal);
+                }
+                this.currentFilterObject = {
+                    field: field, uid: col.uid, isForeignKey: col.isForeignColumn(), operator: this.operator,
+                    value: arrayVal, predicate: this.predicate,
+                    matchCase: this.matchCase, ignoreAccent: this.ignoreAccent, actualFilterValue: {}, actualOperator: {}
+                };
+                len = 0;
+            } else {
+                this.currentFilterObject = {
+                    field: field, uid: col.uid, isForeignKey: col.isForeignColumn(), operator: this.operator,
+                    value: arrayVal[parseInt(i.toString(), 10)], predicate: this.predicate,
+                    matchCase: this.matchCase, ignoreAccent: this.ignoreAccent, actualFilterValue: {}, actualOperator: {}
+                };
+            }
             const index: number = this.getFilteredColsIndexByField(col);
-            if (index > -1 && !Array.isArray(this.value)) {
+            if (index > -1 && (!Array.isArray(this.value) || (Array.isArray(this.value) && (this.operator === 'in' || this.operator === 'notin')))) {
                 this.filterSettings.columns[parseInt(index.toString(), 10)] = this.currentFilterObject;
             } else {
                 this.filterSettings.columns.push(this.currentFilterObject);
             }
+            if (!this.column.isForeignColumn() && (this.prevFilterObject && (isNullOrUndefined(this.prevFilterObject.value)
+                || this.prevFilterObject.value === '') && (this.prevFilterObject.operator === 'equal'
+                || this.prevFilterObject.operator === 'notequal')) && (moduleName !== 'ODataAdaptor' && moduleName !== 'ODataV4Adaptor')) {
+                this.handleExistingFilterCleanup(field);
+            }
             if (!this.column.isForeignColumn() && isNullOrUndefined(this.value) && (this.operator === 'equal' ||
                 this.operator === 'notequal') && (moduleName !== 'ODataAdaptor' && moduleName !== 'ODataV4Adaptor')) {
-                for (let i: number = 0; i < this.filterSettings.columns.length; i++) {
-                    if (this.filterSettings.columns[`${i}`].field === field &&
-                        (this.filterSettings.columns[`${i}`].operator === 'equal' || this.filterSettings.columns[`${i}`].operator === 'notequal')
-                            && isNullOrUndefined(this.filterSettings.columns[`${i}`].value)) {
-                        this.filterSettings.columns.splice(i, 1);
-                        i = i - 1;
-                    }
-                }
+                this.handleExistingFilterCleanup(field);
                 if (col.type === 'string') {
                     this.filterSettings.columns.push({
                         field: field, ignoreAccent: this.ignoreAccent, matchCase: this.matchCase,
@@ -359,6 +369,18 @@ export class Filter implements IAction {
         // eslint-disable-next-line no-self-assign
         this.filterSettings.columns = this.filterSettings.columns;
         this.parent.dataBind();
+    }
+
+    private handleExistingFilterCleanup(field: string): void {
+        for (let i: number = 0; i < this.filterSettings.columns.length; i++) {
+            if (this.filterSettings.columns[`${i}`].field === field &&
+                (this.filterSettings.columns[`${i}`].operator === 'equal' ||
+                this.filterSettings.columns[`${i}`].operator === 'notequal') &&
+                isNullOrUndefined(this.filterSettings.columns[`${i}`].value)) {
+                this.filterSettings.columns.splice(i, 1);
+                i = i - 1;
+            }
+        }
     }
 
     private getFilteredColsIndexByField(col: Column): number {
@@ -706,7 +728,8 @@ export class Filter implements IAction {
         if (this.filterSettings.type === 'FilterBar') {
             for (let i: number = 0; i < this.filterSettings.columns.length; i++) {
                 this.column = this.parent.grabColumnByUidFromAllCols(this.filterSettings.columns[parseInt(i.toString(), 10)].uid);
-                let filterValue: string | number | Date | boolean = this.filterSettings.columns[parseInt(i.toString(), 10)].value;
+                let filterValue: string | number | Date | boolean | (string | number | boolean | Date)[] =
+                    this.filterSettings.columns[parseInt(i.toString(), 10)].value;
                 filterValue = !isNullOrUndefined(filterValue) && filterValue.toString();
                 if (!isNullOrUndefined(this.column.format)) {
                     this.applyColumnFormat(filterValue);
@@ -824,7 +847,8 @@ export class Filter implements IAction {
         return false;
     }
 
-    private checkDateColumnValue(colDate: string | number | boolean | Date, filterDate: string | number | boolean | Date): boolean {
+    private checkDateColumnValue(colDate: string | number | boolean | Date | (string | number | boolean | Date)[],
+                                 filterDate: string | number | boolean | Date | (string | number | boolean | Date)[]): boolean {
         if (isNullOrUndefined(colDate) && isNullOrUndefined(filterDate)) {
             return true;
         }  else if (colDate instanceof Date && filterDate instanceof Date) {
@@ -1011,6 +1035,7 @@ export class Filter implements IAction {
                 this.parent.isColumnMenuFilterClosing = true;
             }
             this.filterModule.closeDialog();
+            gObj.notify(events.restoreFocus, {});
             if (!this.parent.showColumnMenu) {
                 gObj.notify(events.restoreFocus, {});
             }
@@ -1246,7 +1271,7 @@ export class Filter implements IAction {
     }
 
     private getLocalizedCustomOperators(): void {
-        const numOptr: Object[] = [
+        const numOptr: { value: string; text: string }[] = [
             { value: 'equal', text: this.l10n.getConstant('Equal') },
             { value: 'greaterthan', text: this.l10n.getConstant('GreaterThan') },
             { value: 'greaterthanorequal', text: this.l10n.getConstant('GreaterThanOrEqual') },
@@ -1273,17 +1298,58 @@ export class Filter implements IAction {
 
             numberOperator: numOptr,
 
-            dateOperator: numOptr,
+            dateOperator: [
+                { value: 'equal', text: this.l10n.getConstant('Equal') },
+                { value: 'greaterthan', text: this.l10n.getConstant('GreaterThan') },
+                { value: 'greaterthanorequal', text: this.l10n.getConstant('GreaterThanOrEqual') },
+                { value: 'lessthan', text: this.l10n.getConstant('LessThan') },
+                { value: 'lessthanorequal', text: this.l10n.getConstant('LessThanOrEqual') },
+                { value: 'notequal', text: this.l10n.getConstant('NotEqual') },
+                { value: 'isnull', text: this.l10n.getConstant('IsNull') },
+                { value: 'isnotnull', text: this.l10n.getConstant('NotNull') }
+            ],
 
-            datetimeOperator: numOptr,
+            datetimeOperator: [
+                { value: 'equal', text: this.l10n.getConstant('Equal') },
+                { value: 'greaterthan', text: this.l10n.getConstant('GreaterThan') },
+                { value: 'greaterthanorequal', text: this.l10n.getConstant('GreaterThanOrEqual') },
+                { value: 'lessthan', text: this.l10n.getConstant('LessThan') },
+                { value: 'lessthanorequal', text: this.l10n.getConstant('LessThanOrEqual') },
+                { value: 'notequal', text: this.l10n.getConstant('NotEqual') },
+                { value: 'isnull', text: this.l10n.getConstant('IsNull') },
+                { value: 'isnotnull', text: this.l10n.getConstant('NotNull') }
+            ],
 
-            dateonlyOperator: numOptr,
+            dateonlyOperator: [
+                { value: 'equal', text: this.l10n.getConstant('Equal') },
+                { value: 'greaterthan', text: this.l10n.getConstant('GreaterThan') },
+                { value: 'greaterthanorequal', text: this.l10n.getConstant('GreaterThanOrEqual') },
+                { value: 'lessthan', text: this.l10n.getConstant('LessThan') },
+                { value: 'lessthanorequal', text: this.l10n.getConstant('LessThanOrEqual') },
+                { value: 'notequal', text: this.l10n.getConstant('NotEqual') },
+                { value: 'isnull', text: this.l10n.getConstant('IsNull') },
+                { value: 'isnotnull', text: this.l10n.getConstant('NotNull') }
+            ],
 
             booleanOperator: [
                 { value: 'equal', text: this.l10n.getConstant('Equal') },
                 { value: 'notequal', text: this.l10n.getConstant('NotEqual') }
             ]
         };
+        if (this.filterSettings.type === 'Menu') {
+            this.customOperators.stringOperator.push(
+                { value: 'in', text: this.l10n.getConstant('In') },
+                { value: 'notin', text: this.l10n.getConstant('NotIn') }
+            );
+            this.customOperators.booleanOperator.push(
+                { value: 'in', text: this.l10n.getConstant('In') },
+                { value: 'notin', text: this.l10n.getConstant('NotIn') }
+            );
+            this.customOperators.numberOperator.push(
+                { value: 'in', text: this.l10n.getConstant('In') },
+                { value: 'notin', text: this.l10n.getConstant('NotIn') }
+            );
+        }
     }
 
     /**
@@ -1356,9 +1422,10 @@ export class Filter implements IAction {
             const dialog: Element = parentsUntil(this.parent.element, 'e-dialog');
             let hasDialog: boolean = false;
             const popupEle: Element = parentsUntil(target, 'e-popup');
+            const filterPopup: Element = document.getElementById(this.parent.element.id + '_e-popup');
             const hasDialogClosed: Element = this.parent.element.classList.contains('e-device') ?
-                document.querySelector('.e-filter-popup') : document.getElementById(this.parent.element.id + '_e-popup') ?
-                    document.getElementById(this.parent.element.id + '_e-popup').querySelector('.e-filter-popup') : this.parent.element.querySelector('.e-filter-popup');
+                document.querySelector('.e-filter-popup') : filterPopup && filterPopup.querySelector('.e-filter-popup') ?
+                    filterPopup.querySelector('.e-filter-popup') : this.parent.element.querySelector('.e-filter-popup');
             if (dialog && popupEle) {
                 hasDialog = dialog.id === popupEle.id;
             }
@@ -1447,8 +1514,8 @@ export class Filter implements IAction {
     }
 
     private refreshFilterIcon(
-        fieldName: string, operator: string, value: string | number | Date | boolean, type?: string, predicate?: string,
-        matchCase?: boolean, ignoreAccent?: boolean, uid?: string
+        fieldName: string, operator: string, value: string | number | Date | boolean | (string | number | boolean | Date)[],
+        type?: string, predicate?: string, matchCase?: boolean, ignoreAccent?: boolean, uid?: string
     ): void {
         const obj: Object = {
             field: fieldName,

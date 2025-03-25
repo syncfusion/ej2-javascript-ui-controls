@@ -3,7 +3,7 @@ import { Diagram } from '../../diagram';
 import { ConnectorModel } from '../connector-model';
 import { NodeModel, TextModel } from '../node-model';
 import { PointModel } from '../../primitives/point-model';
-import { EventState, ChangeType, State, DiagramAction, HistoryChangeAction, KeyModifiers, MouseButtons } from '../../enum/enum';
+import { EventState, ChangeType, State, DiagramAction, HistoryChangeAction, KeyModifiers, MouseButtons, LayoutType, LayoutState } from '../../enum/enum';
 import { SelectorModel } from '../../objects/node-model';
 import { DiagramModel } from '../../diagram-model';
 import { Connector } from '../../objects/connector';
@@ -19,6 +19,7 @@ import { ShapeAnnotationModel, PathAnnotationModel } from '../annotation-model';
 import { PaletteModel } from '../../../symbol-palette';
 import { NodeFixedUserHandleModel, ConnectorFixedUserHandleModel } from '../fixed-user-handle-model';
 import { DropInfo } from '@syncfusion/ej2-base';
+import { AnnotationModel } from '../annotation-model';
 
 /**
  * IElement interface defines the base of the diagram objects (node/connector)
@@ -43,9 +44,9 @@ export interface IDataLoadedEventArgs {
  */
 export interface ISelectionChangeEventArgs {
     /** returns the collection of nodes and connectors that must be removed from selection list */
-    oldValue: (NodeModel | ConnectorModel)[];
+    oldValue: (NodeModel | ConnectorModel | AnnotationModel)[];
     /** returns the collection of nodes and connectors that must be added to selection list  */
-    newValue: (NodeModel | ConnectorModel)[];
+    newValue: (NodeModel | ConnectorModel | AnnotationModel)[];
     /**
      Triggers before and after adding the selection to the object
      */
@@ -56,6 +57,15 @@ export interface ISelectionChangeEventArgs {
     type: ChangeType;
     /** returns whether or not to cancel the selection change event  */
     cancel: boolean;
+}
+/**
+ * ILayoutUpdatedEventArgs notifies when the layout rendering state changes.
+ */
+export interface ILayoutUpdatedEventArgs {
+    /** returns whether the layout rendering has started or completed. */
+    state: LayoutState;
+    /** returns the type of layout being rendered. */
+    type: LayoutType;
 }
 /**
  * IBlazorSelectionChangeEventArgs notifies when the node/connector are select in Blazor

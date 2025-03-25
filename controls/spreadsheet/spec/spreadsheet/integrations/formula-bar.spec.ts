@@ -58,7 +58,7 @@ describe('Spreadsheet formula bar module ->', () => {
                 helper.triggerMouseAction('mousedown', null, nameBoxElem, nameBoxElem);
                 nameBoxElem.click();
                 setTimeout(() => {
-                    helper.click('#spreadsheet_name_box_popup .e-active');
+                    helper.click('#spreadsheet_name_box_popup li:nth-child(1)');
                     expect(helper.getInstance().sheets[0].selectedRange).toEqual('A1:A1');
                     done();
                 }, 20);
@@ -429,6 +429,42 @@ describe('Spreadsheet formula bar module ->', () => {
                     expect(spreadsheet.getActiveSheet().selectedRange).toBe('A1:A1');
                     done();
                 });
+            });
+        });
+        it('Testing namebox options after undoing a defined name selection', (done: Function) => {
+            helper.invoke('selectRange', ['E2:E6'])
+            const nameBox: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('#' + helper.id + '_name_box');
+            nameBox.click();
+            nameBox.value = 'sync';
+            helper.triggerKeyEvent('keydown', 13, null, false, false, nameBox);
+            nameBox.classList.remove('e-name-editing');
+            const definedNames: DefineNameModel[] = helper.getInstance().definedNames;
+            expect(definedNames.length).toBe(2);
+            expect(definedNames[1].name).toBe('sync');
+            helper.invoke('selectRange', ['A5']);
+            const nameBoxElem: HTMLElement = helper.getElementFromSpreadsheet('.e-name-box .e-ddl-icon');
+            helper.triggerMouseAction('mousedown', null, nameBoxElem, nameBoxElem);
+            nameBoxElem.click();
+            setTimeout(() => {
+                helper.click('#spreadsheet_name_box_popup li:nth-child(2)');
+                expect(nameBox.value).toBe("sync");
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(nameBox.value).toBe("E2");
+                    expect(definedNames.length).toBe(1);
+                    done();
+                });
+            });
+        });
+        it('Testing namebox options after performing redo on defined name selection', (done: Function) => {
+            const nameBox: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('#' + helper.id + '_name_box');
+            const definedNames: DefineNameModel[] = helper.getInstance().definedNames;
+            expect(nameBox.value).toBe("E2");
+            helper.click('#spreadsheet_redo');
+            setTimeout(() => {
+                expect(nameBox.value).toBe("sync");
+                expect(definedNames.length).toBe(2);
+                done();
             });
         });
     });

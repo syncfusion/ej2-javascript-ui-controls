@@ -6,9 +6,9 @@ import { CellModel, getSheetName, getSheet, SheetModel, checkIsFormula, Workbook
 import { updateSelectedRange, getSheetNameFromAddress, getSheetIndex, DefineNameModel, isLocked, getColumn } from '../../workbook/index';
 import { ComboBox, DropDownList, SelectEventArgs as DdlSelectArgs } from '@syncfusion/ej2-dropdowns';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
-import { rippleEffect, L10n, EventHandler, detach, Internationalization, isNullOrUndefined, select } from '@syncfusion/ej2-base';
+import { rippleEffect, L10n, EventHandler, detach, Internationalization, isNullOrUndefined, select, getComponent } from '@syncfusion/ej2-base';
 import { isUndefined, getNumericObject, initializeCSPTemplate } from '@syncfusion/ej2-base';
-import { editOperation, formulaBarOperation, keyDown, keyUp, formulaOperation, editAlert, editValue, renderInsertDlg, readonlyAlert } from '../common/event';
+import { editOperation, formulaBarOperation, keyDown, keyUp, formulaOperation, editAlert, editValue, renderInsertDlg, readonlyAlert, addressHandle } from '../common/event';
 import { intToDate, isNumber } from '../../workbook/common/math';
 import { Dialog } from '../services/dialog';
 import { SelectEventArgs, ListView } from '@syncfusion/ej2-lists';
@@ -180,11 +180,16 @@ export class FormulaBar {
                 range = left + ':' + right;
             }
             if (sheetIdx === this.parent.activeSheetIndex) {
-                this.parent.selectRange(range);
+                if (!this.parent.isEdit) {
+                    this.parent.selectRange(range);
+                }
+                this.parent.notify(addressHandle, { range: range, isSelect: false, isMouseDown: false, isNameBoxSelect: true });
                 focus(this.parent.element);
             } else {
                 updateSelectedRange(this.parent as Workbook, range, sheet);
                 this.parent.activeSheetIndex = sheetIdx;
+                this.parent.notify(addressHandle, { range: range, isSelect: false, isMouseDown: false, isNameBoxSelect: true });
+                focus(this.parent.element);
             }
         }
     }
@@ -324,6 +329,30 @@ export class FormulaBar {
             element.disabled = true;
         } else { element.disabled = false; }
     }
+
+    private updateNameBoxValue(definedName: DefineNameModel, isRemove?: boolean): void {
+        const id: string = this.parent.element.id;
+        const comboBoxInstance: ComboBox = getComponent(this.parent.element.querySelector(`#${id}_name_box`) as HTMLElement, 'combobox') as ComboBox;
+        const activeSheet: SheetModel = this.parent.getActiveSheet();
+        if (isRemove) {
+            if (comboBoxInstance.text === definedName.name) {
+                comboBoxInstance.value = activeSheet.activeCell;
+                comboBoxInstance.dataBind();
+            }
+        }
+        else {
+            const refRangeArr: string[] = definedName.refersTo.split('!');
+            if (refRangeArr.length === 2 && definedName.refersTo.startsWith('=')) {
+                const refSheetName: string = refRangeArr[0].split('=')[1].replace(/'/g, '');
+                const referredRange: string = definedName.refersTo.split('!')[1];
+                if (refSheetName === activeSheet.name && referredRange === activeSheet.selectedRange) {
+                    comboBoxInstance.value = definedName.name;
+                    comboBoxInstance.dataBind();
+                }
+            }
+        }
+    }
+
     private formulaBarScrollEdit(): void {
         const index: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
         const viewportIndexes: number[] = getCellIndexes(this.parent.getActiveSheet().topLeftCell);
@@ -436,6 +465,7 @@ export class FormulaBar {
                     actionComplete: this.updateFormulaList.bind(this),
                     select: this.listSelected.bind(this), width: '285px', height: '200px'
                 });
+                let isCancelled: boolean;
                 this.dialog = this.parent.serviceLocator.getService(dialog) as Dialog;
                 this.dialog.show({
                     header: headerContent.outerHTML,
@@ -448,9 +478,11 @@ export class FormulaBar {
                             dialogName: 'InsertFunctionDialog', element: args.element, target: args.target, cancel: args.cancel };
                         this.parent.trigger('dialogBeforeOpen', dlgArgs);
                         if (dlgArgs.cancel) {
-                            args.cancel = true;
+                            this.dialog.dialogInstance.setProperties({ beforeClose: undefined }, true);
+                            isCancelled = args.cancel = true;
+                        } else {
+                            focus(this.parent.element);
                         }
-                        focus(this.parent.element);
                     },
                     open: this.dialogOpen.bind(this), beforeClose: this.dialogBeforeClose.bind(this), close: this.dialogClose.bind(this),
                     buttons: [
@@ -464,9 +496,13 @@ export class FormulaBar {
                             buttonModel: { content: l10n.getConstant('Ok'), isPrimary: true }
                         }]
                 });
-                this.categoryList.appendTo('#' + this.parent.element.id + '_formula_category');
-                this.formulaList.appendTo('#' + this.parent.element.id + '_formula_list');
-                EventHandler.add(this.formulaList.element, 'dblclick', this.formulaClickHandler, this);
+                if (isCancelled) {
+                    this.categoryList = this.formulaList = null;
+                } else {
+                    this.categoryList.appendTo('#' + this.parent.element.id + '_formula_category');
+                    this.formulaList.appendTo('#' + this.parent.element.id + '_formula_list');
+                    EventHandler.add(this.formulaList.element, 'dblclick', this.formulaClickHandler, this);
+                }
             }
         }
     }
@@ -653,7 +689,10 @@ export class FormulaBar {
         }
     }
 
-    private editOperationHandler(args: { action: string, element?: HTMLTextAreaElement, value?: string, cell?: CellModel }): void {
+    private editOperationHandler(args: {
+        action: string, element?: HTMLTextAreaElement, value?: string, cell?: CellModel,
+        definedName: DefineNameModel, isRemove?: boolean
+    }): void {
         switch (args.action) {
         case 'refreshFormulabar':
             if (args.cell) {
@@ -661,6 +700,9 @@ export class FormulaBar {
             } else {
                 this.getFormulaBar().value = isUndefined(args.value) ? '' : args.value;
             }
+            break;
+        case 'setNameBoxValue':
+            this.updateNameBoxValue(args.definedName, args.isRemove);
             break;
         case 'getElement':
             args.element = this.getFormulaBar();

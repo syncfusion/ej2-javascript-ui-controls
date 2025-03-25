@@ -949,7 +949,7 @@ describe('Excel Filter =>', () => {
                         actionComplete = (args?: any): void => {
                             if (flag) {
                                 flag = false;
-                                expect(document.activeElement.getAttribute('data-colindex')).toBe('4');
+                                expect(parseInt(document.activeElement.getAttribute('aria-colindex'), 10) - 1).toBe(4);
                                 done();
                             }
                             done();
@@ -1667,7 +1667,6 @@ describe('EJ2: 916181 => All template is not rendering in React when using the C
     });
 });
 
-
 describe('EJ2: 937540 => On-Demand Excel Filter Dialog in Grouped Grid with Existing Filters Does Not Show All Distinct Values => ', () => {
     let gridObj: Grid;
     beforeAll((done: Function) => {
@@ -1714,4 +1713,3 @@ describe('EJ2: 937540 => On-Demand Excel Filter Dialog in Grouped Grid with Exis
         gridObj = null;
     });
 });
-

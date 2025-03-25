@@ -227,12 +227,12 @@ describe('Template column check after Re-Ordering', () => {
   it('Check the template', (done: Function) => {
     actionComplete = (args?: Object): void => {
       if (args['requestType'] == 'reorder'){
-         expect(gridObj.getRows()[0].cells[1].classList.contains('e-templatecell')).toBe(true);
-      }
-     done();
+        expect(gridObj.getRows()[0].cells[1].classList.contains('e-templatecell')).toBe(true);
+     }
+    done();
     }
     gridObj.grid.actionComplete = actionComplete;
-    gridObj.reorderColumns('taskName', 'taskID')
+    gridObj.reorderColumns('taskName', 'taskID');
   });
   afterAll(() => {
     destroy(gridObj);

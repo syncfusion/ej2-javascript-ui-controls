@@ -2,74 +2,19 @@
 
 ## [Unreleased]
 
-## 28.2.12 (2025-03-19)
+## 29.1.33 (2025-03-25)
 
 ### Pivot Table
 
 #### Bug fixes
 
-- `#I694587` - The cell border will now be applied correctly to empty cells in the exported Excel document.
-- `#I696261` - Localization will now be applied correctly to the Grand Total legend text in the Pivot Chart.
+- `#F196192` - The 'Hiding Subtotals' option will now work correctly in the pivot table when it is rendered with a static field list.
+- This release enhances the usability and stability of the Pivot Table by addressing issues in the following modules: Column Customization, Pivot Chart, Drill-Through, Exporting, Grouping, Calculated Field, Value Sorting, and Virtual Scrolling.
 
-## 28.2.7 (2025-02-25)
+#### Features
 
-### Pivot Table
-
-#### Bug fixes
-
-- `#I689404` - Now we can apply number grouping to decimal values in the pivot table.
-- `#682045`, `#682045` - Date field members will now be correctly localized when using the Pivot Table with the server-side engine across different cultures.
-
-## 28.2.6 (2025-02-18)
-
-### Pivot Table
-
-#### Bug Fixes
-
-- `#I683197` - The Drillthrough popup will now display the date field with the correct formatting in the pivot table.
-- `#I675848` - The pivot table scrollbar will now be displayed correctly during the initial rendering, even when its width is not explicitly specified.
-
-## 28.2.4 (2025-02-04)
-
-### Pivot Table
-
-#### Bug Fixes
-
-- `#I681520` - The percentage symbol is now included in the axis labels for the StackingBar100, StackingColumn100, StackingArea100, and StackingLine100 chart types.
-
-## 28.1.41 (2025-01-21)
-
-### Pivot Table
-
-#### Bug fixes
-
-- `#I657448` - Double-clicking the 'No records to display' cell for drill-through in an empty pivot table will no longer trigger an error.
-- `#I679703` - The Y-axis title can now be customized for the Pivot Chart when using the 'Combined' multiple axis mode.
-
-## 28.1.38 (2025-01-07)
-
-### Pivot Table
-
-#### Bug fixes
-
-- When the 'defer layout update' option is enabled, the 'actionComplete' event will now be triggered with the correct action name in the pivot table.
-
-## 28.1.37 (2024-12-31)
-
-### Pivot Table
-
-#### Bug fixes
-
-- `#I660802` - The autofit option will now be applied correctly to the pivot table cells without any extra space.
-
-## 28.1.36
-
-### Pivot Table
-
-#### Bug fixes
-
-- `#I664290` - The server-side Excel export option will now work properly when using the server-side engine in the pivot table.
-- `#I662951` - Applied number formatting will now be properly retained in the exported Excel file when exporting the pivot table using grid export.
+- The classic (tabular) layout option is now compatible with the following features: 'Grouping', 'Hiding Subtotals', and 'Exporting'.
+- The pivot table now includes the option to set a minimum width for the component, similar to the minimum height property.
 
 ## 28.1.33 (2024-12-12)
 

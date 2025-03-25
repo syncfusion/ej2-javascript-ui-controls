@@ -53,7 +53,7 @@ export class NormalEdit {
                 && parentsUntil(target, literals.headerContent) && !parentsUntil(target, 'e-columnheader')))
                 && !parentsUntil(target, 'e-unboundcelldiv')) {
             this.rowIndex = parentsUntil(target, literals.rowCell)
-                ? parseInt(target.parentElement.getAttribute(literals.dataRowIndex), 10) : -1;
+                ? parseInt(target.parentElement.getAttribute(literals.ariaRowIndex), 10) - 1 : -1;
             if (gObj.isEdit) {
                 gObj.editModule.endEdit();
             }
@@ -89,17 +89,18 @@ export class NormalEdit {
                 requestType: 'save',
                 type: events.actionComplete
             }));
-            this.parent.notify(events.closeEdit, {requestType: 'save', action: e[`${action}`]});
+            this.parent.notify(events.closeEdit, { requestType: 'save', action: e[`${action}`] });
             break;
         case 'delete':
             this.parent.trigger(events.actionComplete, extend(e, {
                 requestType: 'delete',
                 type: events.actionComplete
             }));
-            if (!this.parent.isCheckBoxSelection) {
+            if (!this.parent.isCheckBoxSelection && !(this.parent.enableInfiniteScrolling
+                && (this.parent.childGrid || this.parent.detailTemplate))) {
                 this.parent.selectRow(this.editRowIndex);
             }
-            this.parent.notify(events.closeEdit, {requestType: 'delete', action: e[`${action}`]});
+            this.parent.notify(events.closeEdit, { requestType: 'delete', action: e[`${action}`] });
             break;
         }
     }
@@ -120,9 +121,9 @@ export class NormalEdit {
 
     protected startEdit(tr: Element): void {
         const gObj: IGrid = this.parent;
-        this.rowIndex = this.editRowIndex = parseInt(tr.getAttribute(literals.dataRowIndex), 10);
+        this.rowIndex = this.editRowIndex = parseInt(tr.getAttribute(literals.ariaRowIndex), 10) - 1;
         if (gObj.enableVirtualization || gObj.enableColumnVirtualization || gObj.enableInfiniteScrolling) {
-            const selector: string = '.e-row[data-rowindex="' + this.rowIndex + '"]';
+            const selector: string = '.e-row[aria-rowindex="' + (this.rowIndex + 1) + '"]';
             const virtualRow: Element = this.parent.element.querySelector(selector);
             if (!virtualRow) {
                 return;
@@ -264,7 +265,7 @@ export class NormalEdit {
         gObj.showSpinner();
         if (gObj.enableInfiniteScrolling) {
             this.uid = (args.row as Element).getAttribute('data-uid');
-            const index: number =  parseInt((args.row as Element).getAttribute('data-rowindex'), 10);
+            const index: number =  parseInt((args.row as Element).getAttribute('aria-rowindex'), 10) - 1;
             this.parent.notify(events.refreshInfiniteEditrowindex, { index: index });
         }
         gObj.notify(events.updateData, args);
@@ -461,7 +462,7 @@ export class NormalEdit {
                 this.parent.selectRow(this.rowIndex > -1 ? this.rowIndex : this.editRowIndex);
             }
         }
-        this.parent.notify(events.closeEdit, {requestType: args.requestType, action: args.action});
+        this.parent.notify(events.closeEdit, { requestType: args.requestType, action: args.action });
         if (this.parent.aggregates.length && this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length
             && ((this.parent as Grid).groupModule.getGroupAggregateTemplates(true).length
             || (this.parent as Grid).groupModule.getGroupAggregateTemplates(false).length)) {
@@ -528,7 +529,7 @@ export class NormalEdit {
             if (this.needRefresh()) {
                 row.refresh(rowObj, this.parent.getColumns() as Column[], true);
             }
-            const tr: Element[] = [].slice.call(this.parent.element.querySelectorAll('[data-rowindex="' + rowObj.index + '"]'));
+            const tr: Element[] = [].slice.call(this.parent.element.querySelectorAll('[aria-rowindex="' + (rowObj.index + 1) + '"]'));
             for (let i: number = 0; i < tr.length; i++) {
                 addFixedColumnBorder(tr[parseInt(i.toString(), 10)]);
                 if (this.parent.enableColumnVirtualization &&
@@ -541,7 +542,7 @@ export class NormalEdit {
                             leftrightCells[parseInt(j.toString(), 10)].style.left = (
                                 (<{ valueX?: number }>cols[parseInt(j.toString(), 10)]).valueX - this.parent.translateX) + 'px';
                         } else if (leftrightCells[parseInt(j.toString(), 10)].classList.contains('e-rightfreeze')) {
-                            const idx: number = parseInt(leftrightCells[parseInt(j.toString(), 10)].getAttribute('data-colindex'), 10);
+                            const idx: number = parseInt(leftrightCells[parseInt(j.toString(), 10)].getAttribute('aria-colindex'), 10) - 1;
                             leftrightCells[parseInt(j.toString(), 10)].style.right = (
                                 ((<{ valueX?: number }>cols[parseInt(idx.toString(), 10)]).valueX + this.parent.translateX)) + 'px';
                         } else {
@@ -774,5 +775,5 @@ interface EditArgs {
     type?: string;
     promise?: Promise<Object>;
     row?: Element;
-    action?: string
+    action?: string;
 }

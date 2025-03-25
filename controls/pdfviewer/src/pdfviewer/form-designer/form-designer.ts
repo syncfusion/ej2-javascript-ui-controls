@@ -868,7 +868,7 @@ export class FormDesigner {
      */
     public updateCanvas(pageNumber: number, canvas?: HTMLElement): void {
         if (isNullOrUndefined(canvas)) {
-            canvas = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
+            canvas = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', pageNumber);
             const zoom: number = this.pdfViewerBase.getZoomFactor();
             const ratio: number = this.pdfViewerBase.getZoomRatio(zoom);
             if (canvas) {
@@ -1562,11 +1562,13 @@ export class FormDesigner {
         const fieldText: string = signatureField.signatureIndicatorSettings ? signatureField.signatureIndicatorSettings.text : null;
         if (signatureField.formFieldAnnotationType === 'InitialField') {
             spanElement.id = 'initialIcon_' + signatureField.pageIndex + '_' + this.setFormFieldIdIndex();
+            spanElement.style.fontFamily = 'Helvetica';
             this.setIndicatorText(spanElement, fieldText, this.pdfViewer.initialFieldSettings.initialIndicatorSettings.text, 'Initial');
         } else {
             spanElement.style.height = '';
             spanElement.style.width = '';
             spanElement.id = 'signIcon_' + signatureField.pageIndex + '_' + this.setFormFieldIdIndex();
+            spanElement.style.fontFamily = 'Helvetica';
             this.setIndicatorText(spanElement, fieldText, this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings.text, 'Sign');
         }
         spanElement.style.overflow = 'hidden';
@@ -2001,7 +2003,7 @@ export class FormDesigner {
         if (!isNullOrUndefined(drawingObject.tooltip) && drawingObject.tooltip !== '') {
             if (formFieldAnnotationType === 'RadioButton')
             {this.setToolTip(drawingObject.tooltip, labelElement); }
-            else if (formFieldAnnotationType === 'Textbox') {
+            else if (formFieldAnnotationType === 'Textbox' || formFieldAnnotationType === 'PasswordField') {
                 this.setToolTip(drawingObject.tooltip, element.firstElementChild);
             }
             else if (formFieldAnnotationType === 'Checkbox') {
@@ -4517,7 +4519,7 @@ export class FormDesigner {
     public downloadFormDesigner(): string {
         const data: string = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         if (data || (this.pdfViewer.formDesignerModule && this.pdfViewer.formFieldCollections.length > 0)) {
-            const formFieldsData: any =  !isNullOrUndefined(data) ? JSON.parse(data) : [];
+            const formFieldsData: any = !isNullOrUndefined(data) ? JSON.parse(data) : [];
             // Get Formfields present in non rendered pages
             if (formFieldsData && formFieldsData.length !== this.pdfViewer.formFieldCollections.length) {
                 const formFieldNotContains: FormFieldModel[] = this.pdfViewer.formFieldCollections.filter(
@@ -4879,7 +4881,7 @@ export class FormDesigner {
      * @returns {void}
      */
     public resizeAnnotations(width: number, height: number, pageNumber: number): void {
-        const canvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
+        const canvas: HTMLElement = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', pageNumber);
         if (canvas) {
             canvas.style.width = width + 'px';
             canvas.style.height = height + 'px';
@@ -6204,7 +6206,7 @@ export class FormDesigner {
         if (oldValue === 'hidden') {
             this.pdfViewer.add(annotation);
             selectedItem.wrapper.children.push(annotation.wrapper);
-            const canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + selectedItem.pageIndex);
+            const canvass: any = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', selectedItem.pageIndex);
             this.pdfViewer.renderDrawing(canvass as any, selectedItem.pageIndex);
         }
         this.pdfViewer.renderDrawing();

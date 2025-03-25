@@ -402,16 +402,16 @@ export class ContextMenu {
             let rowIndex: number = -1;
             if (args.gridRow) {
                 // eslint-disable-next-line
-                rowIndex = parseInt(args.gridRow.getAttribute('data-rowindex'), 0);
+                rowIndex = parseInt(args.gridRow.getAttribute('aria-rowindex'), 0) - 1;
             } else if (args.chartRow) {
                 // eslint-disable-next-line
-                rowIndex = parseInt(args.chartRow.getAttribute('data-rowindex'), 0);
+                rowIndex = parseInt(args.chartRow.getAttribute('aria-rowindex'), 0) - 1;
             }
             if (this.parent.selectionModule && this.parent.allowSelection && !args.parentItem && !isNullOrUndefined(args.chartRow)) {
                 this.parent.selectionModule.selectRow(rowIndex);
             }
             if (!args.parentItem) {
-                this.rowData = this.parent.updatedRecords[parseInt(rowIndex.toString(), 10)];
+                this.rowData = this.parent.ganttChartModule.getRecordByTarget((args['event'] as PointerEvent));
             }
             for (const item of args.items) {
                 // let target: EventTarget = target;
@@ -580,8 +580,8 @@ export class ContextMenu {
                     isBottomTierHour = this.parent.timelineSettings.bottomTier.unit === 'Hour';
                 }
                 if (this.parent.readOnly || !taskbarElement || isNullOrUndefined(taskSettings.segments) ||
-                    this.parent.currentViewData[parseInt(rowIndex.toString(), 10)].hasChildRecords ||
-                    (this.parent.currentViewData[parseInt(rowIndex.toString(), 10)].ganttProperties.duration < 2
+                    this.parent.flatData[Number(rowIndex)].hasChildRecords ||
+                    (this.parent.flatData[Number(rowIndex)].ganttProperties.duration < 2
                      && !(isBottomTierMinute || isBottomTierHour))) {
                     this.updateItemVisibility(item.text);
                 }

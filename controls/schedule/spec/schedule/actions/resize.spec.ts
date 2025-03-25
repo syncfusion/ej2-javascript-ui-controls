@@ -1602,6 +1602,75 @@ xdescribe('Timeline view events resizing', () => {
         });
     });
 
+    describe('Resize does not work properly in timeline scale', () => {
+        let schObj: Schedule;
+        const appointmentData = [{
+            Id: 1,
+            Subject: 'Conference',
+            StartTime: new Date(2018, 6, 1, 0, 0),
+            EndTime: new Date(2018, 6, 1, 2, 24),
+            IsAllDay: false
+        }];
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                width: '500px', height: '500px',
+                selectedDate: new Date(2018, 6, 5),
+                timeScale: {
+                    enable: true,
+                    interval: 720,
+                    slotCount: 5
+                },
+                currentView: 'TimelineWeek',
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth']
+            };
+            schObj = util.createSchedule(schOptions, appointmentData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('right resizing', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                expect(resizeElement.offsetWidth).toEqual(100);
+                done();
+            };
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            expect(resizeElement.offsetWidth).toEqual(50);
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+            triggerMouseEvent(resizeHandler, 'mousedown');
+            triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            expect(cloneElement).toBeTruthy();
+            expect(cloneElement.offsetWidth).toEqual(100);
+            triggerMouseEvent(resizeHandler, 'mousemove', 25, 0);
+            triggerMouseEvent(resizeHandler, 'mousemove', 50, 0);
+            triggerMouseEvent(resizeHandler, 'mousemove', 50, 0);
+            triggerMouseEvent(resizeHandler, 'mouseup');
+            done();
+        });
+
+        it('right resizing from one day to two days', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                expect(resizeElement.offsetWidth).toBeGreaterThan(initialWidth);
+                expect(resizeElement.offsetWidth).toBe(300);
+                done();
+            };
+            const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+            const initialWidth: number = resizeElement.offsetWidth;
+            const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+            triggerMouseEvent(resizeHandler, 'mousedown');
+            const dayWidth: number = (schObj.element.querySelector('.e-work-cells') as HTMLElement).offsetWidth;
+            triggerMouseEvent(resizeHandler, 'mousemove', dayWidth, 0);
+            triggerMouseEvent(resizeHandler, 'mousemove', dayWidth + 150, 0);
+            const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+            expect(cloneElement).toBeTruthy();
+            expect(cloneElement.offsetWidth).toBeGreaterThan(initialWidth);
+            triggerMouseEvent(resizeHandler, 'mouseup');
+        });
+    });
+
     describe('events resizing', () => {
         let schObj: Schedule;
         const EventData: Record<string, any>[] = [

@@ -99,6 +99,8 @@ export class SlashMenu {
                             '${/if}' +
                         '${/if}' ,
             beforeOpen: () => {
+                // Add notification to prevent zero-width space removal in html-editor keyUp event
+                this.parent.notify(events.slashMenuOpening, {});
                 this.savedSelection = this.savedSelection.save(this.savedSelection.getRange(this.currentDocument), this.currentDocument);
             },
             filtering: () => {
@@ -147,7 +149,17 @@ export class SlashMenu {
                     case 'Link':
                         this.mention.hidePopup();
                         setTimeout(() => {
-                            this.parent.showDialog(itemModel.subCommand as DialogType);
+                            if (itemModel.subCommand === DialogType.InsertLink) {
+                                this.parent.notify(events.showLinkDialog, {});
+                            } else if (itemModel.subCommand === DialogType.InsertImage) {
+                                this.parent.notify(events.showImageDialog, selectEventArgs);
+                            } else if (itemModel.subCommand === DialogType.InsertAudio) {
+                                this.parent.notify(events.showAudioDialog, selectEventArgs);
+                            } else if (itemModel.subCommand === DialogType.InsertVideo) {
+                                this.parent.notify(events.showVideoDialog, selectEventArgs);
+                            } else if (itemModel.subCommand === DialogType.InsertTable) {
+                                this.parent.notify(events.showTableDialog, {});
+                            }
                         }, 100);
                         break;
                     case 'Emojipicker':

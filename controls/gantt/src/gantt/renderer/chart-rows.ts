@@ -40,6 +40,8 @@ export class ChartRows extends DateProcessor {
     private refreshedTr: Element[] = [];
     private refreshedData: IGanttData[] = [];
     private isUpdated: boolean = true;
+    private tagRegex: RegExp = /<\/?(\w+)([^>]*?)(\/?)>/g;
+    private attributeRegex: RegExp = /([\w-]+)\s*=\s*"([^"]*)"/g;
     private taskBaselineTemplateNode: NodeList = null;
     constructor(ganttObj?: Gantt) {
         super(ganttObj);
@@ -528,6 +530,9 @@ export class ChartRows extends DateProcessor {
         this.parent.dataOperation.updateMappingData(data, 'segments');
         this.parent.dataOperation.updateWidthLeft(data);
         this.parent.dataOperation.updateParentItems(data);
+        if (data.ganttProperties.sharedTaskUniqueIds && data.ganttProperties.sharedTaskUniqueIds.length > 1) {
+            this.parent.editModule['updateSharedTask'](data);
+        }
         if (this.parent.predecessorModule && this.parent.taskFields.dependency) {
             this.parent.predecessorModule.updatedRecordsDateByPredecessor();
             this.parent.connectorLineModule.removePreviousConnectorLines(this.parent.flatData);
@@ -756,6 +761,9 @@ export class ChartRows extends DateProcessor {
                     startDate.setDate(startDate.getDate() + 1);
                 }
                 segmentEndDate = new Date(endDate.getTime());
+                if (segmentEndDate < startDate) {
+                    segmentEndDate.setDate(segmentEndDate.getDate() + 1);
+                }
                 if (this.isOnHolidayOrWeekEnd(segmentEndDate, true)) {
                     do {
                         segmentEndDate.setDate(segmentEndDate.getDate() + 1);
@@ -1006,10 +1014,10 @@ export class ChartRows extends DateProcessor {
                             (data.ganttProperties.duration || data.hasChildRecords)) || data.ganttProperties.duration ? '<div class="e-gantt-manualparenttaskbar-left" style=' +
                             (this.parent.enableRtl ? 'margin-right:0px;' : '') + '"height:' + ((taskbarHeight / 5) + 8) + 'px;border-left-width:' + taskbarHeight / 5 +
                             'px; border-bottom:' + taskbarHeight / 5 + 'px solid transparent;"></div>' +
-                            '<div class="e-gantt-manualparenttaskbar-right" style=' + (this.parent.enableRtl ? 'margin-right:-8px;' : '') +
+                            '<div class="e-gantt-manualparenttaskbar-right" style="' + (this.parent.enableRtl ? 'margin-right:-8px;' : '') +
                             (this.parent.enableRtl ? 'right:' : 'left:') + (data.ganttProperties.width - Math.floor(((taskbarHeight / 5) + 8) / 5)) + 'px;height:' +
                             ((taskbarHeight / 5) + 8) + 'px;border-right-width:' + taskbarHeight / 5 + 'px;border-bottom:' +
-                            taskbarHeight / 5 + 'px solid transparent;>' + '</div></div>' : '');
+                            taskbarHeight / 5 + 'px solid transparent;">' + '</div></div>' : '');
         const template: string = '<div class="' + cls.manualParentMainContainer + '"' +
                             'style=' + (this.parent.enableRtl ? 'right:' : 'left:') + (data.ganttProperties.left - data.ganttProperties.autoLeft) + 'px;' +
                             'width:' + data.ganttProperties.width + 'px;' +
@@ -1165,11 +1173,27 @@ export class ChartRows extends DateProcessor {
                 activecls = '';
             }
         }
-        table.innerHTML = '<tr class="' + this.getRowClassName(this.templateData) + ' ' + cls.chartRow + ' ' + (activecls) + '"' +
-        'style="display:' + this.getExpandDisplayProp(this.templateData) + ';height:' +
-        this.parent.rowHeight + 'px;">' +
-            '<td class="' + cls.chartRowCell + ' ' + className
-            + '"style="width:' + this.parent.timelineModule.totalTimelineWidth + 'px;"></td></tr>';
+        let tbody: HTMLTableSectionElement = table.querySelector('tbody');
+        if (!tbody) {
+            tbody = document.createElement('tbody');
+            table.appendChild(tbody);
+        }
+        const tableRow: HTMLTableRowElement = document.createElement('tr');
+        tableRow.classList.add(this.getRowClassName(this.templateData), cls.chartRow);
+        if (activecls) {
+            tableRow.classList.add(activecls);
+        }
+        tableRow.style.display = this.getExpandDisplayProp(this.templateData);
+        tableRow.style.height = `${this.parent.rowHeight}px`;
+        const tableCell: HTMLTableCellElement = document.createElement('td');
+        if (className) {
+            tableCell.classList.add(cls.chartRowCell, className);
+        } else {
+            tableCell.classList.add(cls.chartRowCell);
+        }
+        tableCell.style.width = `${this.parent.timelineModule.totalTimelineWidth}px`;
+        tableRow.appendChild(tableCell);
+        tbody.appendChild(tableRow);
         return table.childNodes;
     }
 
@@ -1204,9 +1228,85 @@ export class ChartRows extends DateProcessor {
     }
 
     private createDivElement(template: string): NodeList {
-        const div: Element = createElement('div');
-        div.innerHTML = template;
+        const div: HTMLElement = document.createElement('div');
+        const elements: HTMLElement[] = this.parseTemplate(template);
+        elements.forEach((element: HTMLElement) => div.appendChild(element));
         return div.childNodes;
+    }
+
+    // Parses the HTML string into an array of HTMLElement objects.
+    private parseTemplate(htmlString: string): HTMLElement[] {
+        const elementTree: any[] = this.parseHtmlStringToElementTree(htmlString);
+        return elementTree.map((element: any) => this.constructElementFromNode(element));
+    }
+
+    // Parses the HTML string into a tree of elements using a regular expression.
+    private parseHtmlStringToElementTree(html: string): any[] {
+        const result: any[] = [];
+        const stack: any[] = [];
+        let match: RegExpExecArray | null;
+        let lastIndex: number = 0;
+        /* eslint-disable-next-line */
+        while ((match = this.tagRegex.exec(html)) !== null) {
+            const [fullMatch, tagName, attributeString = ''] = match;
+            const innerText: string = html.substring(lastIndex, match.index).trim();
+            lastIndex = this.tagRegex.lastIndex;
+            const element: any = { tagName, attributes: attributeString, children: [] };
+            if (fullMatch.startsWith('</')) {
+                if (stack.length > 0 && innerText) {
+                    stack[stack.length - 1].value = innerText;
+                }
+                stack.pop();
+            } else {
+                if (!fullMatch.endsWith('/>')) {
+                    if (stack.length > 0) {
+                        stack[stack.length - 1].children.push(element);
+                    } else {
+                        result.push(element);
+                    }
+                    stack.push(element);
+                }
+            }
+        }
+        return result;
+    }
+
+    // Constructs an HTMLElement from the given node object by setting its attributes and recursively adding children.
+    private constructElementFromNode(node: any): HTMLElement {
+        const element: HTMLElement = document.createElement(node.tagName);
+        if (node.value) {
+            element.textContent = node.value;
+        }
+        this.setAttributes(element, node.attributes);
+        node.children.forEach((childNode: any) => {
+            const childElement: HTMLElement = this.constructElementFromNode(childNode);
+            element.appendChild(childElement);
+        });
+        return element;
+    }
+    // Sets the attributes of an element based on the parsed attribute string.
+    private setAttributes(element: HTMLElement, attributesString: string): void {
+        let match: RegExpExecArray | null;
+        function fixStyleQuotes(htmlString: string): string {
+            return htmlString.replace(/style=([^"'\s][^ >]*)/g, 'style="$1"');
+        }
+        attributesString = fixStyleQuotes(attributesString);
+        /* eslint-disable-next-line */
+        while ((match = this.attributeRegex.exec(attributesString)) !== null) {
+            const [, key, value] = match;
+            if (key === 'class') {
+                element.className = value;
+            } else if (key === 'style') {
+                element.style.cssText = this.cleanStyleString(value);
+            } else {
+                element.setAttribute(key, value);
+            }
+        }
+    }
+
+    // Cleans and formats the style string to ensure proper CSS syntax.
+    private cleanStyleString(style: string): string {
+        return style.split(';').map((s: string) => s.trim()).filter(Boolean).join('; ');
     }
 
     private isTemplate(template: string): boolean {
@@ -1607,7 +1707,7 @@ export class ChartRows extends DateProcessor {
                 } else {
                     this.ganttChartTableBody.appendChild(oldRowElements[oldIndex as number]);
                 }
-                this.ganttChartTableBody.querySelectorAll('tr')[index as number].setAttribute('data-rowindex', index.toString());
+                this.ganttChartTableBody.querySelectorAll('tr')[index as number].setAttribute('aria-rowindex', (index + 1).toString());
             }
         }  else {
             const dupChartBody: Element = createElement('tbody', {
@@ -1630,7 +1730,7 @@ export class ChartRows extends DateProcessor {
                 }
                 // To maintain selection when virtualization is enabled
                 if (this.parent.selectionModule && this.parent.allowSelection) {
-                    this.parent.selectionModule.maintainSelectedRecords(parseInt((tRow as Element).getAttribute('data-rowindex'), 10));
+                    this.parent.selectionModule.maintainSelectedRecords(parseInt((tRow as Element).getAttribute('aria-rowindex'), 10) - 1);
                 }
             }
             /* eslint-disable-next-line */
@@ -1825,10 +1925,10 @@ export class ChartRows extends DateProcessor {
                 }
             })[0];
             (tRow as Element).setAttribute('data-rowindex', data['index'].toString());
+            (tRow as Element).setAttribute('aria-rowindex', (data['index'] + 1).toString());
         } else {
             index = visualData.indexOf(tempTemplateData);
             (tRow as Element).setAttribute('aria-rowindex', (index + 1).toString());
-            (tRow as Element).setAttribute('data-rowindex', index.toString());
         }
     }
     /**
@@ -2409,12 +2509,18 @@ export class ChartRows extends DateProcessor {
                 }
             }
             this.parent.renderTemplates();
-            if (data.hasChildRecords && this.parent.showOverAllocation && this.parent.allowTaskbarOverlap) {
+            if (
+                this.parent.showOverAllocation &&
+                this.parent.allowTaskbarOverlap &&
+                (data.hasChildRecords || (data.parentItem && this.parent.editedRecords.every((record: IGanttData) =>
+                    record.ganttProperties.taskId.toString() !== data.parentItem.taskId.toString())))
+            ) {
                 if (isValidateRange) {
                     this.parent.ganttChartModule.renderRangeContainer(this.parent.currentViewData);
                 } else {
-                    this.parent.dataOperation.updateOverlappingValues(data);
-                    this.parent.ganttChartModule.renderRangeContainer([data as IGanttData]);
+                    const targetData: IGanttData = data.hasChildRecords ? data : this.parent.getRecordByID(data.parentItem.taskId);
+                    this.parent.dataOperation.updateOverlappingValues(targetData);
+                    this.parent.ganttChartModule.renderRangeContainer([targetData]);
                 }
             }
             const segmentLength: number = !isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length;
@@ -2427,6 +2533,20 @@ export class ChartRows extends DateProcessor {
                 }
             } else {
                 this.triggerQueryTaskbarInfoByIndex(tr as Element, data);
+                if (this.parent.enableMultiTaskbar && data.parentItem && this.parent.queryTaskbarInfo &&
+                    !(this.parent.getParentTask(data.parentItem).expanded)) {
+                    // Retrieve the parent item index:
+                    const parentIndex: number = data.parentItem.index;
+                    let parentTask: IGanttData;
+                    if (isUndoRedo) {
+                        parentTask = this.parent.previousFlatData[parentIndex as number];
+                    }
+                    else {
+                        parentTask = this.parent.currentViewData[parentIndex as number];
+                    }
+                    // Trigger taskbar info query for the parent element:
+                    this.triggerQueryTaskbarInfoByIndex(this.ganttChartTableBody.querySelectorAll('tr')[parentIndex as number] as Element, parentTask);
+                }
             }
             const dataId: number | string = this.parent.viewType === 'ProjectView' ? data.ganttProperties.taskId : data.ganttProperties.rowUniqueID;
             if (!this.parent.ganttChartModule.isExpandAll && !this.parent.ganttChartModule.isCollapseAll) {
@@ -2442,7 +2562,7 @@ export class ChartRows extends DateProcessor {
             const nextEditableElement: HTMLElement = this.parent.ganttChartModule.tempNextElement;
             if (this.parent.ganttChartModule.isEditableElement && nextEditableElement) {
                 this.parent.treeGrid.grid.focusModule.focus();
-                addClass([this.parent.treeGrid.getRows()[(tr as HTMLElement).getAttribute('data-rowindex')].children[this.parent.ganttChartModule.childrenIndex]], 'e-focused');
+                addClass([this.parent.treeGrid.getRows()[parseInt((tr as HTMLElement).getAttribute('aria-rowindex'), 10) - 1].children[this.parent.ganttChartModule.childrenIndex]], 'e-focused');
                 this.parent.ganttChartModule.tempNextElement = null;
             }
             const row: Row<Column> = this.parent.treeGrid.grid.getRowObjectFromUID(

@@ -498,7 +498,7 @@ export class Gantt extends Component<HTMLElement>
      * Specifies whether to update offset value on a task for all the predecessor edit actions.
      *
      * @default true
-     * @deprecated This method is deprecated. Use `updateOffsetOnTaskbarEdit` this property instead.
+     * @deprecated This method is deprecated from Vol 2 2024 release. Use `updateOffsetOnTaskbarEdit` this property instead.
      * @aspIgnore
      */
     @Property(true)
@@ -829,7 +829,6 @@ export class Gantt extends Component<HTMLElement>
      * To show notes column cell values inside the cell or in tooltip.
      *
      * @default false
-     * @deprecated
      */
     @Property(false)
     public showInlineNotes: boolean;
@@ -1280,7 +1279,6 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Triggers before Gantt data is exported to Excel file.
      *
-     * @deprecated
      * @event beforeExcelExport
      */
     @Event()
@@ -1288,7 +1286,6 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Triggers after Gantt data is exported to Excel file.
      *
-     * @deprecated
      * @event excelExportComplete
      */
     @Event()
@@ -1297,7 +1294,6 @@ export class Gantt extends Component<HTMLElement>
      * Triggers before exporting each cell to Excel file.
      * You can also customize the Excel cells.
      *
-     * @deprecated
      * @event excelQueryCellInfo
      */
     @Event()
@@ -1307,7 +1303,6 @@ export class Gantt extends Component<HTMLElement>
      * Triggers before exporting each header cell to Excel file.
      * You can also customize the Excel cells.
      *
-     * @deprecated
      * @event excelHeaderQueryCellInfo
      */
     @Event()
@@ -1316,7 +1311,6 @@ export class Gantt extends Component<HTMLElement>
      * Triggers when row elements are dragged (moved) continuously.
      *
      * @event rowDrag
-     * @deprecated
      */
     @Event()
     public rowDrag: EmitType<RowDragEventArgs>;
@@ -1324,7 +1318,6 @@ export class Gantt extends Component<HTMLElement>
      * Triggers when row element’s drag(move) starts.
      *
      * @event rowDragStart
-     * @deprecated
      */
     @Event()
     public rowDragStart: EmitType<RowDragEventArgs>;
@@ -1476,7 +1469,6 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Triggers when column resize starts.
      *
-     * @deprecated
      * @event resizeStart
      */
     @Event()
@@ -1485,7 +1477,6 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Triggers on column resizing.
      *
-     * @deprecated
      * @event resizing
      */
     @Event()
@@ -1494,7 +1485,6 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Triggers when column resize ends.
      *
-     * @deprecated
      * @event resizeStop
      */
     @Event()
@@ -1527,7 +1517,6 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Triggers when column header element drag (move) starts.
      *
-     * @deprecated
      * @event columnDragStart
      */
     @Event()
@@ -1536,7 +1525,6 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Triggers when column header element is dragged (moved) continuously.
      *
-     * @deprecated
      * @event columnDrag
      */
     @Event()
@@ -1545,7 +1533,6 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Triggers when a column header element is dropped on the target column.
      *
-     * @deprecated
      * @event columnDrop
      */
     @Event()
@@ -1578,7 +1565,6 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Triggers before deselecting the selected row.
      *
-     * @deprecated
      * @event rowDeselecting
      */
     @Event()
@@ -1612,7 +1598,6 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Triggers before the selected cell is deselecting.
      *
-     * @deprecated
      * @event cellDeselecting
      */
     @Event()
@@ -1621,7 +1606,6 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Triggers when a particular selected cell is deselected.
      *
-     * @deprecated
      * @event cellDeselected
      */
     @Event()
@@ -1654,7 +1638,6 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Triggers before column menu opens.
      *
-     * @deprecated
      * @event columnMenuOpen
      */
     @Event()
@@ -1698,7 +1681,6 @@ export class Gantt extends Component<HTMLElement>
     /**
      * This event will be triggered when click on taskbar element.
      *
-     * @deprecated
      * @event onTaskbarClick
      */
     @Event()
@@ -1707,7 +1689,6 @@ export class Gantt extends Component<HTMLElement>
     /**
      * This event will be triggered when double click on record.
      *
-     * @deprecated
      * @event recordDoubleClick
      */
     @Event()
@@ -1716,7 +1697,6 @@ export class Gantt extends Component<HTMLElement>
     /**
      * This event will be triggered when mouse move on Gantt.
      *
-     * @deprecated
      * @event onMouseMove
      */
     @Event()
@@ -1726,7 +1706,6 @@ export class Gantt extends Component<HTMLElement>
      * Triggers before Gantt data is exported to PDF document.
      *
      * @event beforePdfExport
-     * @deprecated
      */
     @Event()
     public beforePdfExport: EmitType<Object>;
@@ -1734,7 +1713,6 @@ export class Gantt extends Component<HTMLElement>
      * Triggers after TreeGrid data is exported to PDF document.
      *
      * @event pdfExportComplete
-     * @deprecated
      */
     @Event()
     public pdfExportComplete: EmitType<Object>;
@@ -1742,7 +1720,6 @@ export class Gantt extends Component<HTMLElement>
      * Triggers before exporting each cell to PDF document. You can also customize the PDF cells.
      *
      * @event pdfQueryCellInfo
-     * @deprecated
      */
     @Event()
     public pdfQueryCellInfo: EmitType<PdfQueryCellInfoEventArgs>;
@@ -1750,7 +1727,6 @@ export class Gantt extends Component<HTMLElement>
      * Triggers before exporting each taskbar to PDF document. You can also customize the taskbar.
      *
      * @event pdfQueryTaskbarInfo
-     * @deprecated
      */
     @Event()
     public pdfQueryTaskbarInfo: EmitType<Object>;
@@ -1758,7 +1734,6 @@ export class Gantt extends Component<HTMLElement>
      * Triggers before exporting each cell to PDF document. You can also customize the PDF cells.
      *
      * @event pdfQueryTimelineCellInfo
-     * @deprecated
      */
     @Event()
     public pdfQueryTimelineCellInfo: EmitType<PdfQueryTimelineCellInfoEventArgs>;
@@ -1766,7 +1741,6 @@ export class Gantt extends Component<HTMLElement>
      * Triggers before exporting each header cell to PDF document. You can also customize the PDF cells.
      *
      * @event pdfColumnHeaderQueryCellInfo
-     * @deprecated
      */
     @Event()
     public pdfColumnHeaderQueryCellInfo: EmitType<PdfColumnHeaderQueryCellInfoEventArgs>;
@@ -2134,6 +2108,7 @@ export class Gantt extends Component<HTMLElement>
     public isInDst(date: Date): boolean {
         return date.getTimezoneOffset() < this.getDefaultTZOffset();
     }
+
     /**
      * Method to map resource fields.
      *
@@ -2387,19 +2362,21 @@ export class Gantt extends Component<HTMLElement>
             if (ganttContent) {
                 const content: Element = ganttContent;
                 this.renderBackGround(content);
-                if (this.element.querySelectorAll('.' + cls.timelineHeaderTableContainer).length !== 0) {
-                    this.singleTier = this.timelineModule.isSingleTier ? 1 : 2;
-                    for (let i: number = 0; i < this.singleTier; i++) {
-                        this.element.querySelectorAll('.' + cls.timelineHeaderTableContainer)[parseInt(i.toString(), 10)]['style'].visibility = 'hidden';
+                if (this.ganttChartModule.scrollObject['isSetScrollLeft']) {
+                    if (this.element.querySelectorAll('.' + cls.timelineHeaderTableContainer).length !== 0) {
+                        this.singleTier = this.timelineModule.isSingleTier ? 1 : 2;
+                        for (let i: number = 0; i < this.singleTier; i++) {
+                            this.element.querySelectorAll('.' + cls.timelineHeaderTableContainer)[parseInt(i.toString(), 10)]['style'].visibility = 'hidden';
+                        }
+                    }
+                    if (this.singleTier === 0) {
+                        this.singleTier = 2;
                     }
                 }
-                if (this.singleTier === 0) {
-                    this.singleTier = 2;
-                }
-                this.element.getElementsByClassName(cls.chartBodyContent)[0]['style'].visibility  = 'hidden';
+                this.element.getElementsByClassName(cls.chartBodyContent)[0]['style'].visibility = 'hidden';
                 this.contentMaskTable = this.contentMaskTable = this.createMaskTable(content);
             }
-            if (ganttHeader) {
+            if (ganttHeader && this.ganttChartModule.scrollObject['isSetScrollLeft']) {
                 this.element.querySelector('.' + cls.timelineHeaderContainer)['style'].position = 'static';
                 const content: Element = ganttHeader;
                 this.renderHeaderBackground(content);
@@ -2726,16 +2703,24 @@ export class Gantt extends Component<HTMLElement>
             this.dataOperation.calculateProjectDates();
             this.timelineModule.validateTimelineProp();
         }
+        const flatData: IGanttData[] = this.flatData;
+        const flatDataCollection: Map<string, IGanttData> = new Map();
+        if (flatData != null)
+        {
+            for (const record of flatData) {
+                flatDataCollection.set(record.ganttProperties.rowUniqueID.toString(), record);
+            }
+        }
         if (this.allowParentDependency) {
-            this.predecessorModule.updateParentPredecessor();
+            this.predecessorModule.updateParentPredecessor(flatDataCollection);
         }
         if (this.predecessorModule && this.taskFields.dependency) {
             this.predecessorModule['parentIds'] = [];
             this.predecessorModule['parentRecord'] = [];
-            this.predecessorModule.updatePredecessors();
+            this.predecessorModule.updatePredecessors(flatDataCollection);
             if (this.isInPredecessorValidation && this.enableValidation && this.autoCalculateDateScheduling &&
                 !(this.isLoad && !this.treeGrid.loadChildOnDemand && this.taskFields.hasChildMapping)) {
-                this.predecessorModule.updatedRecordsDateByPredecessor();
+                this.predecessorModule.updatedRecordsDateByPredecessor(flatDataCollection);
             }
         }
         if (this.enableValidation) {
@@ -2972,7 +2957,7 @@ export class Gantt extends Component<HTMLElement>
                 this.expandedRecords = expandedRecords;
                 let height: number;
                 const chartRow: Element = (!isNullOrUndefined(this.ganttChartModule) &&
-                     !isNullOrUndefined(this.ganttChartModule.getChartRows())) ? this.ganttChartModule.getChartRows()[0] : null;
+                      !isNullOrUndefined(this.ganttChartModule.getChartRows())) ? this.ganttChartModule.getChartRows()[0] : null;
                 if (!isNullOrUndefined(chartRow) && (chartRow as HTMLElement).offsetHeight > 0) {
                     height = (chartRow as HTMLElement).offsetHeight;
                 } else {
@@ -3013,7 +2998,6 @@ export class Gantt extends Component<HTMLElement>
      *
      * @param {IGanttData[]} records - Defines record collection.
      * @returns {IGanttData[]} .
-     * @deprecated
      */
     public getExpandedRecords(records: IGanttData[]): IGanttData[] {
         if (isNullOrUndefined(records)) {
@@ -3786,6 +3770,7 @@ export class Gantt extends Component<HTMLElement>
         this.element.innerHTML = '';
         this.isTreeGridRendered = false;
         this.resetTemplates();
+        this.dataOperation['uid'] = null;
     }
     /**
      * Method to get taskbarHeight.
@@ -4117,7 +4102,9 @@ export class Gantt extends Component<HTMLElement>
             });
             containerDiv.appendChild(divElement);
         }
-        this.chartVerticalLineContainer.innerHTML = containerDiv.innerHTML;
+        while (containerDiv.firstChild) {
+            this.chartVerticalLineContainer.appendChild(containerDiv.firstChild);
+        }
     }
 
     /**
@@ -5259,8 +5246,9 @@ export class Gantt extends Component<HTMLElement>
             }
         } else if (!isNullOrUndefined(index)) {
             chartRow = this.getRowByIndex(index);
-            rowIndex = getValue('rowIndex', chartRow);
-            record = this.currentViewData[rowIndex as number];
+            const isFromKeyboardAction : boolean = this.focusModule['isFromKeyboardAction'];
+            rowIndex = isFromKeyboardAction ? getValue('rowIndex', chartRow) : index;
+            record = isFromKeyboardAction ? this.currentViewData[rowIndex as number] : this.flatData[rowIndex as number];
         }
         const gridRow: Node = this.treeGrid.getRows()[rowIndex as number];
         return { data: record, gridRow: gridRow, chartRow: chartRow, cancel: false };

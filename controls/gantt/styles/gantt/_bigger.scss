@@ -203,6 +203,34 @@
           padding: 19px 16px !important; /* stylelint-disable-line declaration-no-important */
         }
       }
+
+      .e-grid.e-gridhover {
+        .e-row:not(.e-disable-gridhover):not(.e-editedrow):hover {
+          .e-rowcell,
+          .e-rowdragdrop {
+            &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd) {
+              @include gantt-hover-bg-check;
+            }
+          }
+        }
+        
+        & .e-row:not(.e-disable-gridhover):not(.e-editedrow):hover {
+          .e-rowcell.e-leftfreeze,
+          .e-rowcell.e-rightfreeze,
+          .e-rowcell.e-unfreeze,
+          .e-rowdragdrop.e-leftfreeze,
+          .e-rowdragdrop.e-rightfreeze,
+          .e-rowdragdrop.e-unfreeze {
+            &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd) {
+              @include gantt-hover-frozen-bg-check;
+            }
+          }
+        }
+        
+        &:not(.e-rowdrag) .e-row:not(.e-disable-gridhover):not(.e-editedrow):hover .e-rowcell:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd) {
+          @include gantt-hover-important;
+        }
+      }
     }
 
     .e-gantt-dialog .e-tab .e-tab-header {

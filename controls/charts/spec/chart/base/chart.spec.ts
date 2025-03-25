@@ -1611,6 +1611,7 @@ describe('Chart Control', () => {
         let ele2: HTMLElement;
         let loaded: EmitType<ILoadedEventArgs>;
         let element: Element;
+        let trigger: MouseEvents = new MouseEvents();
         beforeAll((): void => {
             ele = createElement('div', {   id: 'container',
             styles: 'transform: scale(1.5)' });
@@ -1644,6 +1645,32 @@ describe('Chart Control', () => {
                 done();
             };
             chart.loaded = loaded;
+            chart.appendTo('#element');
+        });
+        it('Checking keyboard navigatin without tooltip', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('element_ChartTitle');
+                trigger.keyboardEvent('keyup', element, 'Tab', 'Tab');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.series[0].type = 'Column';
+            chart.tooltip.enable = false;
+            chart.highlightMode = 'None';
+            chart.appendTo('#element');
+        });
+        it('Checking keyboard navigating on keydown without tooltip', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('element_ChartTitle');
+                trigger.keyboardEvent('keydown', element, 'Tab', 'Tab');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.series[0].type = 'Column';
+            chart.tooltip.enable = false;
+            chart.highlightMode = 'None';
             chart.appendTo('#element');
         });
     });

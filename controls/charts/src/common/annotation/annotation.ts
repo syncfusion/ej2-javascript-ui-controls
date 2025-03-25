@@ -248,6 +248,7 @@ export class AnnotationBase {
                 argsData.content.setAttribute('aria-label', annotation.accessibility.accessibilityDescription ? annotation.accessibility.accessibilityDescription : 'Annotation');
                 argsData.content.setAttribute('role', annotation.accessibility.accessibilityRole ? annotation.accessibility.accessibilityRole : 'img');
                 argsData.content.setAttribute('tabindex', annotation.accessibility.focusable ? String(annotation.accessibility.tabIndex) : '-1');
+                if (annotation.accessibility.focusable) { (argsData.content as HTMLElement).style.outline = 'none'; }
             }
             else {
                 argsData.content.setAttribute('aria-label', this.annotation.description || 'Annotation');

@@ -206,6 +206,12 @@ export class WCharacterFormat {
     public set complexScript(value: boolean) {
         this.setPropertyValue('complexScript', value);
     }
+    public get hidden(): boolean {
+        return this.getPropertyValue('hidden') as boolean;
+    }
+    public set hidden(value: boolean) {
+        this.setPropertyValue('hidden', value);
+    }
     public get fontFamilyFarEast(): string {
         return this.getPropertyValue('fontFamilyFarEast') as string;
     }
@@ -404,6 +410,7 @@ export class WCharacterFormat {
         this.addUniqueCharacterFormat('complexScript', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('characterSpacing', property, propValue, uniqueCharFormatTemp);
         this.addUniqueCharacterFormat('scaling', property, propValue, uniqueCharFormatTemp);
+        this.addUniqueCharacterFormat('hidden', property, propValue, uniqueCharFormatTemp);
         this.uniqueCharacterFormat = WCharacterFormat.uniqueCharacterFormats.addUniqueFormat(uniqueCharFormatTemp, WCharacterFormat.uniqueFormatType);
     }
 
@@ -486,6 +493,9 @@ export class WCharacterFormat {
         case 'complexScript':
             value = false;
             break;
+        case 'hidden':
+            value = false;
+            break;
         case 'fontFamilyFarEast':
         case 'fontFamilyAscii':
         case 'fontFamilyNonFarEast':
@@ -526,7 +536,8 @@ export class WCharacterFormat {
             && this.fontFamilyFarEast === format.fontFamilyFarEast
             && this.characterSpacing === format.characterSpacing
             && this.scaling === format.scaling
-            && this.fontFamilyNonFarEast === format.fontFamilyNonFarEast);
+            && this.fontFamilyNonFarEast === format.fontFamilyNonFarEast
+            && this.hidden === format.hidden);
     }
     public isSameFormat(format: WCharacterFormat): boolean {
         return this.baseCharStyle === format.baseCharStyle &&

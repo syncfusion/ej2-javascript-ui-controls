@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $schedule-skin: $skin-name !default;
 $schedule-header-bg-color: $bg-base-0 !default;
 $schedule-header-border-color: $border-default !default;
@@ -51,7 +53,7 @@ $schedule-month-date-header-cell-text-align: left !default;
 $schedule-month-date-header-cell-text-transform: none !default;
 $schedule-timezone-enable-nrml-height: 60px !default;
 $schedule-timezone-enable-bgr-height: 70px !default;
-$schedule-appointment-bg-color: lighten($success-bg, 5%) !default;
+$schedule-appointment-bg-color: color.adjust($success-bg, $lightness: 5%) !default;
 $schedule-appointment-details-padding: 0 4px !default;
 $schedule-appointment-font-color: $invert-font !default;
 $schedule-appointment-active-border-color: $selection-bg !default;
@@ -161,7 +163,7 @@ $schedule-popup-icon-hover-bg-color: $hover-bg !default;
 $schedule-popup-content-icon-color: $schedule-primary-content-font-color !default;
 $schedule-event-popup-content-padding: 0 18px 16px 26px !default;
 $schedule-event-popup-fields-padding: 12px !default;
-$schedule-popup-title-color: rgba($color: lighten($success-bg, 5%), $alpha: .3) !default;
+$schedule-popup-title-color: rgba($color: color.adjust($success-bg, $lightness: 5%), $alpha: .3) !default;
 $schedule-popup-btn-border: $border-size $border-type $content-font !default;
 $schedule-alert-dialog-border: none !default;
 $schedule-btn-txt-bgr-padding: 5px 12px !default;
@@ -259,6 +261,8 @@ $schedule-following-events-dlg-padding: 2% !default;
 $schedule-bgr-date-time-icon-padding-right: 13px !default;
 $schedule-bgr-more-event-close-icon-padding: unset !default;
 $schedule-bgr-tbar-btn-text-font-size: $schedule-header-nrml-font-size !default;
+$schedule-calendar-width: 300px !default;
+$schedule-bgr-calendar-width: 350px !default;
 
 @mixin tbar-btn-animation {
   content: '';

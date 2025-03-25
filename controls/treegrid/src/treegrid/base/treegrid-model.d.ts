@@ -7,27 +7,28 @@ import {ComponentModel} from '@syncfusion/ej2-base';
 export interface TreeGridModel extends ComponentModel{
 
     /**
-     * Gets or sets the number of frozen rows.
+     * Specifies the number of rows that should remain visible and fixed at the top of the TreeGrid during scrolling.
+     *
+     * This feature helps improve readability in data-heavy grids by keeping the header rows or key rows visible.
      *
      * @default 0
      */
     frozenRows?: number;
 
     /**
-     * Gets or sets the number of frozen columns.
+     * Specifies the number of columns that should remain visible and fixed on the left side of the TreeGrid during horizontal scrolling.
+     *
+     * This feature ensures key columns, such as identifiers, stay visible while users scroll through data.
      *
      * @default 0
      */
     frozenColumns?: number;
 
     /**
-     *  Defines the mode of clip. The available modes are,
-     * ```props
-     * * Clip :- Truncates the cell content when it overflows its area.
-     * * Ellipsis :- Displays ellipsis when the cell content overflows its area.
-     * * EllipsisWithTooltip :- Displays ellipsis when the cell content overflows its area,
-     * ```
-     * also it will display the tooltip while hover on ellipsis is applied.
+     * Defines the options for printing the TreeGrid.
+     * The available print modes are:
+     * * `AllPages`: Prints all pages of the TreeGrid.
+     * * `CurrentPage`: Prints only the current page of the TreeGrid.
      *
      * @default Syncfusion.EJ2.Grids.ClipMode.Ellipsis
      * @aspType Syncfusion.EJ2.Grids.ClipMode
@@ -83,7 +84,10 @@ export interface TreeGridModel extends ComponentModel{
     parentIdMapping?: string;
 
     /**
-     * Specifies whether to load all the rows in collapsed state when the TreeGrid is rendered for the first time.
+     * Specifies whether to load all rows in a collapsed state when the TreeGrid is initially rendered.
+     *
+     * This setting is particularly useful when dealing with large datasets, as it helps enhance loading performance by
+     * reducing initial data rendering.
      *
      * @default false
      */
@@ -97,7 +101,10 @@ export interface TreeGridModel extends ComponentModel{
     expandStateMapping?: string;
 
     /**
-     * If `allowRowDragAndDrop` is set to true, you can drag and drop treegrid rows at another treegrid.
+     * If `allowRowDragAndDrop` is set to true, row reordering functionality is enabled, allowing rows to be dragged
+     * and dropped within the TreeGrid or across TreeGrids.
+     *
+     * This feature enables users to reorganize data dynamically via drag-and-drop operations.
      *
      * @default false
      */
@@ -114,7 +121,7 @@ export interface TreeGridModel extends ComponentModel{
     dataSource?: Object | DataManager;
 
     /**
-     * Defines the external [`Query`](https://ej2.syncfusion.com/documentation/data/api-query.html)
+     * Defines the external [Query](https://ej2.syncfusion.com/documentation/data/api-query.html)
      * that will be executed along with data processing.
      *
      * @default null
@@ -127,11 +134,10 @@ export interface TreeGridModel extends ComponentModel{
     cloneQuery?: Query;
 
     /**
-     * Defines the print modes. The available print modes are
-     * ```props
-     * * AllPages :- Prints all pages of the TreeGrid.
-     * * CurrentPage :- Prints the current page of the TreeGrid.
-     * ```
+     * Defines the options for printing the TreeGrid.
+     * The available print modes are:
+     * * `AllPages`: Prints all pages of the TreeGrid.
+     * * `CurrentPage`: Prints only the current page of the TreeGrid.
      *
      * @default Syncfusion.EJ2.Grids.PrintMode.AllPages
      * @isEnumeration true
@@ -224,7 +230,7 @@ export interface TreeGridModel extends ComponentModel{
     /**
      * If `showColumnMenu` set to true, then it will enable the column menu options in each columns.
      *
-     * > Check the [`Column menu`](../../treegrid/columns/#column-menu/) for its configuration.
+     * > Check the [Column menu](../../treegrid/columns/#column-menu/) for its configuration.
      *
      * @default false
      */
@@ -261,7 +267,7 @@ export interface TreeGridModel extends ComponentModel{
 
     /**
      * Configures the TreeGrid aggregate rows.
-     * > Check the [`Aggregates`](../../treegrid/aggregates/aggregates) for its configuration.
+     * > Check the [Aggregates](../../treegrid/aggregates/aggregates) for its configuration.
      *
      * @default []
      */
@@ -336,14 +342,13 @@ export interface TreeGridModel extends ComponentModel{
     toolbarTemplate?: string | Function;
 
     /**
-     * Defines the mode of TreeGrid lines. The available modes are,
-     * ```props
-     * * Both :- Displays both horizontal and vertical TreeGrid lines.
-     * * None :- No TreeGrid lines are displayed.
-     * * Horizontal :- Displays the horizontal TreeGrid lines only.
-     * * Vertical :- Displays the vertical TreeGrid lines only.
-     * * Default :- Displays TreeGrid lines based on the theme.
-     * ```
+     * Defines how TreeGrid content lines are displayed, determining the visibility of vertical and horizontal lines.
+     *
+     * * `Both`: Displays both horizontal and vertical grid lines.
+     * * `None`: Hides both horizontal and vertical grid lines.
+     * * `Horizontal`: Displays only horizontal grid lines.
+     * * `Vertical`: Displays only vertical grid lines.
+     * * `Default`: Adjusts line visibility based on the theme.
      *
      * @default Syncfusion.EJ2.Grids.GridLine.Default
      * @isEnumeration true
@@ -396,7 +401,7 @@ export interface TreeGridModel extends ComponentModel{
      * or HTML element ID.
      * > * The row template must be a table row.
      *
-     * > Check the [`Row Template`](../../treegrid/row) customization.
+     * > Check the [Row Template](../../treegrid/row) customization.
      *
      * @aspType string
      */
@@ -424,7 +429,7 @@ export interface TreeGridModel extends ComponentModel{
 
     /**
      * If `enableAltRow` is set to true, the TreeGrid will render with `e-altrow` CSS class to the alternative tr elements.   
-     * > Check the [`AltRow`](../../treegrid/row/#styling-alternate-rows/) to customize the styles of alternative rows.
+     * > Check the [AltRow](../../treegrid/row/#styling-alternate-rows/) to customize the styles of alternative rows.
      *
      * @default true 
      */
@@ -515,47 +520,86 @@ export interface TreeGridModel extends ComponentModel{
     enableVirtualization?: boolean;
 
     /**
-     * If `enableColumnVirtualization` set to true, then the Tree Grid will render only the columns visible within the view-port
-     * and load subsequent columns on horizontal scrolling. This helps to load large dataset of columns in Tree Grid.
+     * Enables column virtualization in the TreeGrid. When set to `true`, only columns visible within the viewport are rendered.
+     * Additional columns are loaded as you horizontally scroll. This is beneficial for rendering large datasets efficiently.
      *
      * @default false
      */
     enableColumnVirtualization?: boolean;
 
     /**
-     * Specifies whether to display or remove the untrusted HTML values in the TreeGrid component.
-     * If `enableHtmlSanitizer` is set to true, then it will sanitize any suspected untrusted strings and scripts before rendering them.
+     * Determines whether to sanitize untrusted HTML content in the TreeGrid. If `true`, potentially harmful HTML strings
+     * and scripts are sanitized before rendering to protect against XSS attacks.
      *
      * @default false
      */
     enableHtmlSanitizer?: boolean;
 
     /**
-     * If `enableInfiniteScrolling` set to true, then the data will be loaded in TreeGrid when the scrollbar reaches the end.
-     * This helps to load large dataset in TreeGrid.
+     * Enables infinite scrolling in the TreeGrid. When set to `true`, additional data is loaded as the scrollbar
+     * reaches the end. Useful for handling large datasets.
      *
      * @default false
-     * @deprecated
      */
     enableInfiniteScrolling?: boolean;
 
     /**
-     * Configures the infinite scroll settings.
+     * Configures settings for infinite scrolling.
      *
      * @default { enableCache: false, maxBlocks: 5, initialBlocks: 5 }
-     * @deprecated
      */
     infiniteScrollSettings?: InfiniteScrollSettingsModel;
 
     /**
-     * `columnQueryMode`provides options to retrieves data from the data source.Their types are
-     * * `All`: It retrieves whole data source.
-     * * `Schema`: retrieves data for all the defined columns in TreeGrid from the data source.
-     * * `ExcludeHidden`: retrieves data only for visible columns of TreeGrid from the data Source.
+     * Specifies how data is retrieved from the data source for the TreeGrid.
+     * The available modes are:
+     * * `All`: Retrieve the entire data source.
+     * * `Schema`: Retrieve data only for defined columns.
+     * * `ExcludeHidden`: Retrieve data only for visible columns in the TreeGrid.
      *
      * @default All
      */
     columnQueryMode?: ColumnQueryModeType;
+
+    /**
+     * If `allowSelection` is set to true, selection of (highlight row) TreeGrid records by clicking is allowed.
+     *
+     * @default true
+     */
+    allowSelection?: boolean;
+
+    /**
+     * Specifies the index of the row to be selected upon initial rendering.
+     * Also retrieves the index of the currently selected row.
+     *
+     * @default -1
+     */
+    selectedRowIndex?: number;
+
+    /**
+     * Configures the selection behavior.
+     *
+     * @default {mode: 'Row', cellSelectionMode: 'Flow', type: 'Single'}
+     */
+    selectionSettings?: SelectionSettingsModel;
+
+    /**
+     * Enables exporting the TreeGrid to an Excel file if set to true.
+     *
+     * > Check the [ExcelExport](../../treegrid/excel-export/) documentation for more details.
+     *
+     * @default false
+     */
+    allowExcelExport?: boolean;
+
+    /**
+     * Enables exporting the TreeGrid to a PDF file if set to true.
+     *
+     * > Check the [PdfExport](../../treegrid/pdf-export/) documentation for more details.
+     *
+     * @default false
+     */
+    allowPdfExport?: boolean;
 
     /**
      * Triggers when the component is created.
@@ -565,132 +609,141 @@ export interface TreeGridModel extends ComponentModel{
     created?: EmitType<Object>;
 
     /**
-     * This event allows customization of TreeGrid properties before rendering.
+     * Allows customization of TreeGrid properties before rendering.
      *
      * @event load
      */
     load?: EmitType<Object>;
 
     /**
-     * Triggers while expanding the TreeGrid record
+     * Triggers while a TreeGrid record is expanding.
      *
      * @event expanding
      */
     expanding?: EmitType<RowExpandingEventArgs>;
 
     /**
-     * Triggers after the record is expanded
+     * Triggers after a TreeGrid record is expanded.
      *
      * @event expanded
      */
     expanded?: EmitType<RowExpandedEventArgs>;
 
     /**
-     * Triggers while collapsing the TreeGrid record
+     * Triggers while a TreeGrid record is collapsing.
      *
      * @event collapsing
      */
     collapsing?: EmitType<RowCollapsingEventArgs>;
 
     /**
-     * Triggers after the record is collapsed.
+     * Triggers after a TreeGrid record is collapsed.
      *
      * @event collapsed
      */
     collapsed?: EmitType<RowCollapsedEventArgs>;
 
     /**
-     * Triggers when cell is saved.
+     * Triggers when a cell is being saved.
      *
      * @event cellSave
      */
     cellSave?: EmitType<CellSaveArgs>;
 
     /**
-     * Triggers when cell is saved.
+     * Triggers after a cell is saved.
      *
      * @event cellSaved
      */
     cellSaved?: EmitType<CellSaveArgs>;
 
     /**
-   * Triggers when TreeGrid actions such as sorting, filtering, paging etc., starts.
-   * @event actionBegin
-   */
+     * Triggers when TreeGrid actions like sorting, filtering, paging, etc., start.
+     *
+     * @event actionBegin
+     */
     actionBegin?: EmitType<PageEventArgs | FilterEventArgs | SortEventArgs | SearchEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs>;
 
     /**
-   * Triggers when TreeGrid actions such as sorting, filtering, paging etc. are completed.
-   * @event actionComplete
-   */
-
-    actionComplete?: EmitType<PageEventArgs | FilterEventArgs | SortEventArgs| SearchEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs>;
+     * Triggers when TreeGrid actions like sorting, filtering, paging, etc., are completed.
+     *
+     * @event actionComplete
+     */
+    actionComplete?: EmitType<PageEventArgs | FilterEventArgs | SortEventArgs | SearchEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs>;
 
     /**
-   * Triggers before the record is to be edit.
-   * @event beginEdit
-   */
+     * Triggers before a record is edited.
+     *
+     * @event beginEdit
+     */
     beginEdit?: EmitType<BeginEditArgs>;
 
     /**
-   * Triggers when records are added in batch mode.
-   * @event batchAdd
-   */
+     * Triggers when records are added in batch mode.
+     *
+     * @event batchAdd
+     */
     batchAdd?: EmitType<BatchAddArgs>;
 
     /**
-   * Triggers when records are deleted in batch mode.
-   * @event batchDelete
-   */
+     * Triggers when records are deleted in batch mode.
+     *
+     * @event batchDelete
+     */
     batchDelete?: EmitType<BatchDeleteArgs>;
 
     /**
-   * Triggers before records are added in batch mode.
-   * @event batchCancel
-   */
+     * Triggers before records are cancelled in batch mode.
+     *
+     * @event batchCancel
+     */
     batchCancel?: EmitType<BatchCancelArgs>;
 
     /**
-   * Triggers before records are added in batch mode.
-   * @event beforeBatchAdd
-   */
+     * Triggers before records are added in batch mode.
+     *
+     * @event beforeBatchAdd
+     */
     beforeBatchAdd?: EmitType<BeforeBatchAddArgs>;
 
     /**
-   * Triggers before records are deleted in batch mode.
-   * @event beforeBatchDelete
-   */
+     * Triggers before records are deleted in batch mode.
+     *
+     * @event beforeBatchDelete
+     */
     beforeBatchDelete?: EmitType<BeforeBatchDeleteArgs>;
 
     /**
-   * Triggers before records are saved in batch mode.
-   * @event beforeBatchSave
-   */
+     * Triggers before records are saved in batch mode.
+     *
+     * @event beforeBatchSave
+     */
     beforeBatchSave?: EmitType<BeforeBatchSaveArgs>;
 
     /**
-   * Triggers when the cell is being edited.
-   * @event cellEdit
-   */
+     * Triggers when a cell is being edited.
+     *
+     * @event cellEdit
+     */
     cellEdit?: EmitType<CellEditArgs>;
 
     /**
-     * Triggers when any TreeGrid action failed to achieve the desired results.
+     * Triggers when any TreeGrid action fails to achieve the desired results.
      *
      * @event actionFailure
      */
     actionFailure?: EmitType<FailureEventArgs>;
 
     /**
-     * Triggers when data source is populated in the TreeGrid.
+     * Triggers when the data source is populated in the TreeGrid.
      *
      * @event dataBound
      */
     dataBound?: EmitType<Object>;
 
     /**
-     * Triggers when the TreeGrid data is added, deleted and updated.
-     * Invoke the done method from the argument to start render after edit operation.
+     * Triggers when data in the TreeGrid is added, deleted, or updated.
+     * Invoke the done method from the argument to start rendering after an edit operation.
      *
      * @event dataSourceChanged
      * @deprecated
@@ -698,8 +751,8 @@ export interface TreeGridModel extends ComponentModel{
     dataSourceChanged?: EmitType<DataSourceChangedEventArgs>;
 
     /**
-     * Triggers when the TreeGrid actions such as Sorting, Paging etc., are done.
-     * In this event,the current view data and total record count should be assigned to the `dataSource` based on the action performed.
+     * Triggers when TreeGrid actions such as sorting, paging, etc., are completed.
+     * The current view data and total record count should be assigned to the dataSource based on the action performed.
      *
      * @event dataStateChange
      * @deprecated
@@ -707,7 +760,7 @@ export interface TreeGridModel extends ComponentModel{
     dataStateChange?: EmitType<DataStateChangeEventArgs>;
 
     /**
-     * Triggers when record is double clicked.
+     * Triggers when a record is double-clicked.
      *
      * @event recordDoubleClick
      */
@@ -715,15 +768,14 @@ export interface TreeGridModel extends ComponentModel{
 
     /**
      * Triggered every time a request is made to access row information, element, or data.
-     * This will be triggered before the row element is appended to the TreeGrid element.
+     * This event is triggered before the row element is appended to the TreeGrid element.
      *
      * @event rowDataBound
      */
     rowDataBound?: EmitType<RowDataBoundEventArgs>;
 
     /**
-     * Triggers after detail row expands.
-     * > This event triggers at initial expand.
+     * Triggers after a detail row expands. This event triggers initially during the first expand.
      *
      * @event detailDataBound
      */
@@ -731,53 +783,46 @@ export interface TreeGridModel extends ComponentModel{
 
     /**
      * Triggered every time a request is made to access cell information, element, or data.
-     * This will be triggered before the cell element is appended to the TreeGrid element.
+     * This event is triggered before the cell element is appended to the TreeGrid element.
      *
      * @event queryCellInfo
      */
     queryCellInfo?: EmitType<QueryCellInfoEventArgs>;
 
     /**
-     * If `allowSelection` is set to true, it allows selection of (highlight row) TreeGrid records by clicking it.
+     * Triggers before row selection occurs.
      *
-     * @default true
+     * @event rowSelecting
      */
-    allowSelection?: boolean;
-
-    /**
-     * Triggers before row selection occurs.
-     *
-     * @event rowSelecting
-     */
     rowSelecting?: EmitType<RowSelectingEventArgs>;
 
     /**
-     * Triggers after a row is selected.
+     * Triggers after a row is selected.
      *
-     * @event rowSelected
-     */
+     * @event rowSelected
+     */
     rowSelected?: EmitType<RowSelectEventArgs>;
 
     /**
-     * Triggers before deselecting the selected row.
+     * Triggers before the selected row is deselected.
      *
-     * @event rowSelected
+     * @event rowDeselecting
      * @deprecated
-     */
+     */
     rowDeselecting?: EmitType<RowDeselectEventArgs>;
 
     /**
-     * Triggers when a selected row is deselected.
+     * Triggers when a selected row is deselected.
      *
-     * @event rowDeselected
-     */
+     * @event rowDeselected
+     */
     rowDeselected?: EmitType<RowDeselectEventArgs>;
 
     /**
-     * Triggered for stacked header.
+     * Triggered for accessing header information.
      *
-     * @event headerCellInfo
-     */
+     * @event headerCellInfo
+     */
     headerCellInfo?: EmitType<HeaderCellInfoEventArgs>;
 
     /**
@@ -788,7 +833,7 @@ export interface TreeGridModel extends ComponentModel{
     cellSelecting?: EmitType<CellSelectingEventArgs>;
 
     /**
-     * Triggers before column menu opens.
+     * Triggers before the column menu opens.
      *
      * @event columnMenuOpen
      * @deprecated
@@ -796,29 +841,29 @@ export interface TreeGridModel extends ComponentModel{
     columnMenuOpen?: EmitType<ColumnMenuOpenEventArgs>;
 
     /**
-     * Triggers when click on column menu.
+     * Triggers when there is a click on the column menu.
      *
      * @event columnMenuClick
      */
     columnMenuClick?: EmitType<MenuEventArgs>;
 
     /**
-     * Triggers after a cell is selected.
+     * Triggers after a cell is selected.
      *
-     * @event cellSelected
-     */
+     * @event cellSelected
+     */
     cellSelected?: EmitType<CellSelectEventArgs>;
 
     /**
-     * Triggers before the selected cell is deselecting.
+     * Triggers before a selected cell is deselected.
      *
-     * @event cellDeselecting
+     * @event cellDeselecting
      * @deprecated
-     */
+     */
     cellDeselecting?: EmitType<CellDeselectEventArgs>;
 
     /**
-     * Triggers when a particular selected cell is deselected.
+     * Triggers when a selected cell is deselected.
      *
      * @event cellDeselected
      * @deprecated
@@ -826,7 +871,7 @@ export interface TreeGridModel extends ComponentModel{
     cellDeselected?: EmitType<CellDeselectEventArgs>;
 
     /**
-     * Triggers when column resize starts.
+     * Triggers when column resizing starts.
      *
      * @event resizeStart
      * @deprecated
@@ -834,242 +879,184 @@ export interface TreeGridModel extends ComponentModel{
     resizeStart?: EmitType<ResizeArgs>;
 
     /**
-     * Triggers on column resizing.
+     * Triggers during column resizing.
      *
      * @event resizing
-     * @deprecated
      */
     resizing?: EmitType<ResizeArgs>;
 
     /**
-     * Triggers when column resize ends.
+     * Triggers when column resizing ends.
      *
      * @event resizeStop
-     * @deprecated
      */
     resizeStop?: EmitType<ResizeArgs>;
 
     /**
-     * Triggers when column header element drag (move) starts.
+     * Triggers when column header dragging begins.
      *
      * @event columnDragStart
-     * @deprecated
      */
     columnDragStart?: EmitType<ColumnDragEventArgs>;
 
     /**
-     * Triggers when column header element is dragged (moved) continuously.
+     * Triggers continuously while the column header is being dragged.
      *
      * @event columnDrag
-     * @deprecated
      */
     columnDrag?: EmitType<ColumnDragEventArgs>;
 
     /**
-     * Triggers when a column header element is dropped on the target column.
+     * Triggers when a column header is dropped onto the target column.
      *
      * @event columnDrop
-     * @deprecated
      */
     columnDrop?: EmitType<ColumnDragEventArgs>;
 
     /**
-     * Triggers when the check box state change in checkbox column.
+     * Triggers when the state of a checkbox changes in a checkbox column.
      *
      * @event checkboxChange
-     * @deprecated
      */
     checkboxChange?: EmitType<CheckBoxChangeEventArgs>;
 
     /**
-     * Triggers after print action is completed.
+     * Triggers after the print action has been completed.
      *
      * @event printComplete
-     * @deprecated
      */
     printComplete?: EmitType<PrintEventArgs>;
 
     /**
-     * Triggers before the print action starts.
+     * Triggers before the print action begins.
      *
      * @event beforePrint
-     * @deprecated
      */
     beforePrint?: EmitType<PrintEventArgs>;
 
     /**
-     * Triggers when toolbar item is clicked.
+     * Triggers when a toolbar item is clicked.
      *
      * @event toolbarClick
      */
     toolbarClick?: EmitType<ClickEventArgs>;
 
     /**
-     * Triggers before data is bound to Tree Grid.
+     * Triggers before data is bound to the TreeGrid.
      *
      * @event beforeDataBound
      */
     beforeDataBound?: EmitType<BeforeDataBoundArgs>;
 
     /**
-     * Triggers before context menu opens.
+     * Triggers before the context menu opens.
      *
      * @event contextMenuOpen
-     * @deprecated
      */
     contextMenuOpen?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
-     * Triggers when click on context menu.
+     * Triggers when an item in the context menu is clicked.
      *
      * @event contextMenuClick
      */
     contextMenuClick?: EmitType<MenuEventArgs>;
 
     /**
-     * Triggers before TreeGrid copy action.
+     * Triggers before the TreeGrid copy action is initiated.
      *
      * @event beforeCopy
-     * @deprecated
      */
     beforeCopy?: EmitType<BeforeCopyEventArgs>;
 
     /**
-     * Triggers before TreeGrid paste action.
+     * Triggers before the TreeGrid paste action is initiated.
      *
      * @event beforePaste
-     * @deprecated
      */
     beforePaste?: EmitType<BeforePasteEventArgs>;
 
     /**
-     * Triggers when row elements are dragged (moved) continuously.
+     * Triggers continuously while row elements are being dragged.
      *
      * @event rowDrag
-     * @deprecated
      */
     rowDrag?: EmitType<RowDragEventArgs>;
 
     /**
-     * Triggers when row element’s drag(move) starts.
+     * Triggers when row element dragging starts.
      *
      * @event rowDragStart
-     * @deprecated
      */
     rowDragStart?: EmitType<RowDragEventArgs>;
 
     /**
-     * Triggers when row element’s before drag(move).
+     * Triggers just before the row element dragging begins.
      *
      * @event rowDragStartHelper
-     * @deprecated
      */
     rowDragStartHelper?: EmitType<RowDragEventArgs>;
 
     /**
-     * Triggers when row elements are dropped on the target row.
+     * Triggers when a row element is dropped onto the target row.
      *
      * @event rowDrop
-     * @deprecated
      */
     rowDrop?: EmitType<RowDragEventArgs>;
 
     /**
-     * The `selectedRowIndex` allows you to select a row at initial rendering.
-     * You can also get the currently selected row index.
+     * Triggers before each cell is exported to a PDF document, allowing customization of cells.
      *
-     * @default -1
+     * @event pdfQueryCellInfo
      */
-    selectedRowIndex?: number;
-
-    /**
-     * Configures the selection settings.
-     *
-     * @default {mode: 'Row', cellSelectionMode: 'Flow', type: 'Single'}
-     */
-    selectionSettings?: SelectionSettingsModel;
-
-    /**
-     * If `allowExcelExport` set to true, then it will allow the user to export treegrid to Excel file.
-     *
-     * > Check the [`ExcelExport`](../../treegrid/excel-export/) to configure exporting document.
-     *
-     * @default false
-     */
-    allowExcelExport?: boolean;
-
-    /**
-     * If `allowPdfExport` set to true, then it will allow the user to export treegrid to Pdf file.
-     *
-     * > Check the [`Pdfexport`](../../treegrid/pdf-export/) to configure the exporting document.
-     *
-     * @default false
-     */
-    allowPdfExport?: boolean;
-
-    /**
-     * Triggers before exporting each cell to PDF document.
-     * You can also customize the PDF cells.
-     *
-     * @event pdfQueryCellInfo
-     * @deprecated
-     */
     pdfQueryCellInfo?: EmitType<PdfQueryCellInfoEventArgs>;
 
     /**
-     * Triggers before exporting each header cell to PDF document.
-     * You can also customize the PDF cells.
+     * Triggers before each header cell is exported to a PDF document, allowing customization of cells.
      *
      * @event pdfHeaderQueryCellInfo
-     * @deprecated
      */
     pdfHeaderQueryCellInfo?: EmitType<PdfHeaderQueryCellInfoEventArgs>;
 
     /**
-     * Triggers before exporting each cell to Excel file.
-     * You can also customize the Excel cells.
+     * Triggers before each cell is exported to an Excel file, allowing customization of cells.
      *
      * @event excelQueryCellInfo
-     * @deprecated
      */
     excelQueryCellInfo?: EmitType<ExcelQueryCellInfoEventArgs>;
 
     /**
-     * Triggers before exporting each header cell to Excel file.
-     * You can also customize the Excel cells.
+     * Triggers before each header cell is exported to an Excel file, allowing customization of cells.
      *
      * @event excelHeaderQueryCellInfo
-     * @deprecated
      */
     excelHeaderQueryCellInfo?: EmitType<ExcelHeaderQueryCellInfoEventArgs>;
 
     /**
-     * Triggers before TreeGrid data is exported to Excel file.
+     * Triggers before TreeGrid data is exported to an Excel file.
      *
      * @event beforeExcelExport
      */
     beforeExcelExport?: EmitType<Object>;
 
     /**
-     * Triggers after TreeGrid data is exported to Excel file.
+     * Triggers after TreeGrid data is exported to an Excel file.
      *
      * @event excelExportComplete
-     * @deprecated
      */
     excelExportComplete?: EmitType<ExcelExportCompleteArgs>;
 
     /**
-     * Triggers before TreeGrid data is exported to PDF document.
+     * Triggers before TreeGrid data is exported to a PDF document.
      *
      * @event beforePdfExport
      */
     beforePdfExport?: EmitType<Object>;
 
     /**
-     * Triggers after TreeGrid data is exported to PDF document.
+     * Triggers after TreeGrid data is exported to a PDF document.
      *
      * @event pdfExportComplete
-     * @deprecated
      */
     pdfExportComplete?: EmitType<PdfExportCompleteArgs>;
 

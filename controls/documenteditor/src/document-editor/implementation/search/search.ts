@@ -499,11 +499,11 @@ export class Search {
     //#region Get find result view
     /**
      * @private
-     * @param {string} result - Specified the result.
+     * @param {HTMLElement} result - Specified the result.
      * @returns {void}
      */
-    public addSearchResultItems(result: string): void {
-        if (isNullOrUndefined(result) || result === '') {
+    public addSearchResultItems(result: HTMLElement): void {
+        if (isNullOrUndefined(result)) {
             return;
         }
         if (isNullOrUndefined(this.owner.findResultsList)) {
@@ -600,18 +600,39 @@ export class Search {
             }
             lastIndex = suffixtext.lastIndexOf(' ');
             suffixtext = suffixtext === '\v' ? suffixtext = '' : suffixtext;
-            let headerFooterString: string = '';
-            let listElement: string = '';
+            let headerFooterString: HTMLSpanElement;
             let containerWidget: BodyWidget = result.start.paragraph.containerWidget as BodyWidget;
             let type: string = containerWidget instanceof HeaderFooterWidget ? containerWidget.headerFooterType : '';
             if (type.indexOf('Header') != -1) {
-                headerFooterString = '<span class="e-de-header-footer-list">' + 'Header' + ': ' + '</span>';
+                headerFooterString = document.createElement('span');
+                headerFooterString.classList.add('e-de-header-footer-list');
+                headerFooterString.textContent = 'Header: ';
             } else if (type.indexOf('Footer') != -1) {
-            listElement = '<li tabindex=0 class="e-de-search-result-item e-de-op-search-txt">' + headerFooterString + prefix + '<span class="e-de-op-search-word" style="pointer-events:none">' + result.text + '</span>' + suffixtext + '</li>';
-            headerFooterString = '<span class="e-de-header-footer-list">' + 'Footer' + ': ' + '</span>';
+                headerFooterString = document.createElement('span');
+                headerFooterString.classList.add('e-de-header-footer-list');
+                headerFooterString.textContent = 'Footer: ';
             }
 
-            listElement = '<li tabindex=0 class="e-de-search-result-item e-de-op-search-txt">' + headerFooterString + prefix + '<span class="e-de-op-search-word" style="pointer-events:none">' + result.text + '</span>' + suffixtext + '</li>';
+            let listElement: HTMLElement = document.createElement('li');
+            listElement.setAttribute('tabindex', '0');
+            listElement.classList.add('e-de-search-result-item', 'e-de-op-search-txt');
+            if (headerFooterString) {
+                listElement.appendChild(headerFooterString);
+            }
+            if (prefix) {
+                let prefixNode = document.createTextNode(prefix);
+                listElement.appendChild(prefixNode);
+            }
+            let resultSpan = document.createElement('span');
+            resultSpan.classList.add('e-de-op-search-word');
+            resultSpan.style.pointerEvents = 'none';
+            resultSpan.textContent = result.text;
+            listElement.appendChild(resultSpan);
+            if (suffixtext) {
+                let suffixNode = document.createTextNode(suffixtext);
+                listElement.appendChild(suffixNode);
+            }
+
             
             this.addSearchResultItems(listElement);
         }

@@ -2,12 +2,12 @@
  * Open properties.
  */
 import { Spreadsheet } from '../base/index';
-import { getColIdxFromClientX, createImageElement, deleteImage, refreshImagePosition, completeAction } from '../common/event';
+import { getColIdxFromClientX, createImageElement, deleteImage, refreshImagePosition, completeAction, readonlyAlert } from '../common/event';
 import { insertImage, refreshImgCellObj, getRowIdxFromClientY } from '../common/event';
 import { Overlay, Dialog } from '../services/index';
-import { OpenOptions, overlay, dialog, BeforeImageData, BeforeImageRefreshData, addDPRValue } from '../common/index';
+import { overlay, dialog, BeforeImageData, BeforeImageRefreshData, addDPRValue } from '../common/index';
 import { L10n, isUndefined, getUniqueID, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { ImageModel, CellModel, getCell, setCell, getSheetIndex, getRowsHeight, getColumnsWidth, Workbook, beginAction, getCellAddress, getSheet } from '../../workbook/index';
+import { ImageModel, CellModel, getCell, setCell, getSheetIndex, getRowsHeight, getColumnsWidth, Workbook, beginAction, getCellAddress, getSheet, isReadOnlyCells } from '../../workbook/index';
 import { getRangeIndexes, SheetModel, setImage } from '../../workbook/index';
 
 export class SpreadsheetImage {
@@ -55,7 +55,7 @@ export class SpreadsheetImage {
         const file: File = (<HTMLInputElement>args.target).files[0];
         if (!file) { return; }
         if (file.type.includes('image')) {
-            this.insertImage(<OpenOptions>{ file: file });
+            this.insertImage({ file: file, isAction: true });
         } else {
             (this.parent.serviceLocator.getService(dialog) as Dialog).show(
                 { content: (this.parent.serviceLocator.getService('spreadsheetLocale') as L10n).getConstant('UnsupportedFile'),
@@ -80,9 +80,9 @@ export class SpreadsheetImage {
         }
     }
     /* eslint-disable */
-    private insertImage(args: OpenOptions, range?: string): void {
+    private insertImage(args: { file: File, isAction?: boolean }, range?: string): void {
         this.binaryStringVal(args).then(
-            src => this.createImageElement({ options: { src: src as string }, range: range, isPublic: true })
+            src => this.createImageElement({ options: { src: src as string }, range: range, isPublic: true, isAction: args.isAction })
         );
     }
     private binaryStringVal(args: any): Promise<string | ArrayBuffer> {
@@ -96,7 +96,7 @@ export class SpreadsheetImage {
     /* eslint-enable */
     private createImageElement(args: {
         options: { src: string, id?: string, height?: number, width?: number, top?: number, left?: number }, range?: string,
-        isPublic?: boolean, isUndoRedo?: boolean
+        isPublic?: boolean, isUndoRedo?: boolean, isAction?: boolean
     }): void {
         const lastIndex: number = args.range ? args.range.lastIndexOf('!') : 0;
         const range: string = args.range ? (lastIndex > 0) ? args.range.substring(lastIndex + 1) : args.range
@@ -106,8 +106,15 @@ export class SpreadsheetImage {
         const overlayObj: Overlay = this.parent.serviceLocator.getService(overlay) as Overlay;
         const id: string = args.options.id ? args.options.id : getUniqueID(this.parent.element.id + '_overlay_picture_');
         const indexes: number[] = getRangeIndexes(range);
-        const sheet: SheetModel = isUndefined(sheetIndex) ? this.parent.getActiveSheet() : this.parent.sheets[sheetIndex as number];
-        if (this.parent.element.querySelector(`#${id}`)) {
+        const sheet: SheetModel = isUndefined(sheetIndex) && !args.isUndoRedo ? this.parent.getActiveSheet() :
+            this.parent.sheets[sheetIndex as number];
+        if (!sheet || this.parent.element.querySelector(`#${id}`)) {
+            return;
+        }
+        if (args.isPublic && isReadOnlyCells(this.parent, indexes)) {
+            if (args.isAction) {
+                this.parent.notify(readonlyAlert, null);
+            }
             return;
         }
         let eventArgs: BeforeImageData = { requestType: 'beforeInsertImage', range: sheet.name + '!' + range, imageData: args.options.src,
@@ -116,7 +123,7 @@ export class SpreadsheetImage {
             this.parent.notify('actionBegin', { eventArgs: eventArgs, action: 'beforeInsertImage' });
         }
         if (eventArgs.cancel) { return; }
-        const overlayProps: { element: HTMLElement, top: number, left: number } = overlayObj.insertOverlayElement(id, range, sheetIndex);
+        let overlayProps: { element: HTMLElement, top: number, left: number } = overlayObj.insertOverlayElement(id, range, sheetIndex);
         overlayProps.element.style.backgroundImage = 'url(\'' + args.options.src + '\')';
         if (args.options.height || args.options.left) {
             overlayProps.element.style.height = args.options.height + 'px'; overlayProps.element.style.width = args.options.width + 'px';
@@ -132,15 +139,27 @@ export class SpreadsheetImage {
         }
         const imgData: ImageModel = {
             src: args.options.src, id: id, height: parseFloat(overlayProps.element.style.height.replace('px', '')),
-            width: parseFloat(overlayProps.element.style.width.replace('px', '')), top: sheet.frozenRows || sheet.frozenColumns ?
-                (indexes[0] ? getRowsHeight(sheet, 0, indexes[0] - 1) : 0) : (isNullOrUndefined(args.options.top) ?
-                    overlayProps.top : args.options.top), left: sheet.frozenRows || sheet.frozenColumns ?
-                (indexes[1] ? getColumnsWidth(sheet, 0, indexes[1] - 1) : 0) : (isNullOrUndefined(args.options.left) ?
-                    overlayProps.left : args.options.left)
+            width: parseFloat(overlayProps.element.style.width.replace('px', '')),
+            top: sheet.frozenRows || sheet.frozenColumns ? (indexes[0] ? getRowsHeight(sheet, 0, indexes[0] - 1) : 0) : overlayProps.top,
+            left: sheet.frozenRows || sheet.frozenColumns ? (indexes[1] ? getColumnsWidth(sheet, 0, indexes[1] - 1) : 0) : overlayProps.left
         };
         this.parent.setUsedRange(indexes[0], indexes[1]);
-        if (args.isPublic || args.isUndoRedo) {
-            this.parent.notify(setImage, { options: [imgData], range: sheet.name + '!' + range });
+        let isPositionChanged: boolean = false;
+        const isElementRemoved: boolean = false;
+        if (!args.isPublic && !args.isUndoRedo && (imgData.top !== args.options.top || imgData.left !== args.options.left)) {
+            args.options.top = imgData.top;
+            args.options.left = imgData.left;
+            isPositionChanged = true;
+        }
+        const setImageEventArgs: any = {
+            options: [imgData], range: sheet.name + '!' + range, isPositionChanged: isPositionChanged, isElementRemoved
+        };
+        if (args.isPublic || args.isUndoRedo || isPositionChanged) {
+            this.parent.notify(setImage, setImageEventArgs);
+        }
+        if (isPositionChanged && setImageEventArgs.isElementRemoved) {
+            overlayProps = overlayObj.insertOverlayElement(id, range, sheetIndex);
+            overlayProps.element.style.backgroundImage = 'url(\'' + args.options.src + '\')';
         }
         const currCell: CellModel = getCell(indexes[0], indexes[1], sheet);
         if (!currCell.image[currCell.image.length - 1].id) {
@@ -229,7 +248,7 @@ export class SpreadsheetImage {
     public deleteImage(
         args: {
             id: string, range?: string, preventEventTrigger?: boolean, sheet?: SheetModel,
-            rowIdx?: number, colIdx?: number, isUndoRedo?: boolean
+            rowIdx?: number, colIdx?: number, isUndoRedo?: boolean, clearAction?: boolean
         }): void {
         let sheet: SheetModel = args.sheet || this.parent.getActiveSheet();
         const pictureElements: HTMLElement = document.getElementById(args.id);
@@ -274,20 +293,22 @@ export class SpreadsheetImage {
             rowIdx = index[0]; colIdx = index[1];
             sheet = this.parent.sheets[sheetIndex as number];
         }
-        const cellObj: CellModel = getCell(rowIdx, colIdx, sheet);
-        const prevCellImg: ImageModel[] = (cellObj && cellObj.image) ? cellObj.image : [];
-        const imgLength: number = prevCellImg.length;
         let image: ImageModel = {};
-        for (let i: number = imgLength - 1; i >= 0; i--) {
-            if (prevCellImg[i as number].id === args.id) {
-                image = prevCellImg.splice(i, 1)[0];
+        if (sheet) {
+            const cellObj: CellModel = getCell(rowIdx, colIdx, sheet);
+            const prevCellImg: ImageModel[] = (cellObj && cellObj.image) ? cellObj.image : [];
+            const imgLength: number = prevCellImg.length;
+            for (let i: number = imgLength - 1; i >= 0; i--) {
+                if (prevCellImg[i as number].id === args.id) {
+                    image = prevCellImg.splice(i, 1)[0];
+                }
             }
+            setCell(rowIdx, colIdx, sheet, { image: prevCellImg }, true);
         }
-        setCell(rowIdx, colIdx, sheet, { image: prevCellImg }, true);
         if (!args.preventEventTrigger) {
             this.parent.notify(
                 completeAction,
-                { action: 'deleteImage', eventArgs: { address: address, id: image.id, imageData: image.src, imageWidth: image.width, imageHeight: image.height, cancel: false }, preventAction: args.isUndoRedo });
+                { action: 'deleteImage', eventArgs: { address: address, id: image.id, imageData: image.src, imageWidth: image.width, imageHeight: image.height, cancel: false }, preventAction: args.isUndoRedo, isClearAction: args.clearAction });
         }
     }
 

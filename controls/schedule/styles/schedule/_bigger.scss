@@ -161,7 +161,7 @@
     }
 
     .e-year-view .e-calendar-wrapper .e-month-calendar.e-calendar {
-      min-width: 306px;
+      min-width: $schedule-bgr-calendar-width;
     }
   }
 
@@ -176,7 +176,7 @@
   }
 
   .e-bigger .e-dialog.e-quick-dialog.e-following-events-dialog {
-    width: 502px;
+    width: 520px;
   }
 
   .e-bigger .e-dialog.e-quick-dialog {
@@ -206,17 +206,6 @@
       .e-dlg-content {
         padding-bottom: 12px;
         position: relative;
-      }
-
-      .e-event-cancel,
-      .e-event-delete {
-        border: $schedule-popup-btn-border;
-        box-shadow: none;
-      }
-
-      .e-footer-content .e-btn.e-event-delete {
-        float: left;
-        margin-left: 0;
       }
 
       .e-subject-container,
@@ -323,10 +312,6 @@
         .e-end-time-zone-container {
           padding-left: 0;
           padding-right: 12px;
-        }
-
-        .e-event-delete {
-          float: right;
         }
       }
     }

@@ -208,6 +208,7 @@ export class SeriesRender {
         });
         if (!smithchart.series[seriesindex as number].marker.visible) {
             gsEle.setAttribute('tabindex', seriesindex === 0 ? '0' : '');
+            (gsEle as HTMLElement).style.outline = 'none';
         }
         gsEle.setAttribute('visibility', smithchart.series[seriesindex as number].visibility);
         gsEle.setAttribute('role', 'region');

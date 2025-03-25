@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 @include export-module('color-picker-theme') {
   .e-container {
     @if $skin-name == 'Material3' {
@@ -139,7 +141,7 @@
         @if $skin-name == 'bootstrap4' {
           background-color: $cpicker-handler-tooltip-color;
           border-color: $gray-700;
-          $color-rgba: rgba(mix(lighten($cpicker-handler-tooltip-color, 50%), $gray-700, 15%), .5);
+          $color-rgba: rgba(color.mix(color.adjust($cpicker-handler-tooltip-color, $lightness: 50%), $gray-700, 15%), .5);
           box-shadow: 0 0 0 .2rem $color-rgba;
           color: $gray-700;
         }
@@ -154,7 +156,7 @@
       &:active {
         @if $skin-name == 'bootstrap4' {
           background-color: $gray-600;
-          $color-rgba: rgba(mix(lighten($cpicker-handler-tooltip-color, 50%), $gray-700, 15%), .5);
+          $color-rgba: rgba(color.mix(color.adjust($cpicker-handler-tooltip-color, $lightness: 50%), $gray-700, 15%), .5);
           box-shadow: 0 0 0 .2rem $color-rgba;
           color: $cpicker-handler-tooltip-color;
         }

@@ -201,3 +201,5 @@ export const SHOW_ADD_FOCUS: string = 'e-show-add-focus';
 export const FROZEN_SWIMLANE_ROW_CLASS: string = 'e-frozen-swimlane-row';
 /** @private */
 export const FROZEN_ROW_CLASS: string = 'e-frozen-row';
+/** @private */
+export const TOOLBAR_SWIMLANE_ITEM_COUNT_CLASS: string = 'e-toolbar-swimlane-item-count';

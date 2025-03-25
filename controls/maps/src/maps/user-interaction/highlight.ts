@@ -32,8 +32,9 @@ export class Highlight {
      * To unbind events for highlight module.
      *
      * @returns {void}
+     * @private
      */
-    private removeEventListener(): void {
+    public removeEventListener(): void {
         if (this.maps.isDestroyed) {
             return;
         }
@@ -263,7 +264,9 @@ export class Highlight {
      */
     public destroy(): void {
         this.highlightSettings = null;
-        this.removeEventListener();
-        this.maps = null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (!(this.maps as any).refreshing) {
+            this.maps = null;
+        }
     }
 }

@@ -2,15 +2,7 @@
 
 ## [Unreleased]
 
-## 28.2.12 (2025-03-19)
-
-### Badge
-
-#### Bug Fixes
-
-- `I679114` - Resolved the styles issue for the secondary type Badge component in the material theme.
-
-## 28.1.33 (2024-12-12)
+## 29.1.33 (2025-03-25)
 
 ### Message
 

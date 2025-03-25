@@ -414,6 +414,9 @@ export class DragAndDrop extends ActionBase {
             if (dragEventArgs.cancel) {
                 return;
             }
+            if (this.parent.eventBase.checkOverlap(dragEventArgs.data)) {
+                return;
+            }
             if (this.parent.isSpecificResourceEvents()) {
                 this.parent.crudModule.crudObj.isCrudAction = true;
                 this.parent.crudModule.crudObj.sourceEvent =

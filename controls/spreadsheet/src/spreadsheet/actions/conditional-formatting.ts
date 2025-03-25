@@ -1,8 +1,8 @@
 import { ConditionalFormatEventArgs, Spreadsheet, DialogBeforeOpenEventArgs, getUpdateUsingRaf } from '../index';
-import { renderCFDlg, locale, dialog, focus, removeElements, isReadOnlyCells, readonlyAlert } from '../common/index';
+import { renderCFDlg, locale, dialog, focus, removeElements, readonlyAlert } from '../common/index';
 import { CellModel, SheetModel, getCell, isHiddenRow, isHiddenCol, getRowHeight, skipDefaultValue } from '../../workbook/base/index';
 import { getRangeIndexes, checkDateFormat, applyCF, isNumber, getCellIndexes, parseLocaleNumber } from '../../workbook/index';
-import { CellFormatArgs, isDateTime, dateToInt, CellStyleModel, applyCellFormat, clearCF, getSwapRange } from '../../workbook/common/index';
+import { CellFormatArgs, isDateTime, dateToInt, CellStyleModel, applyCellFormat, clearCF, getSwapRange, isReadOnlyCells } from '../../workbook/common/index';
 import { setCFRule, getCellAddress, DateFormatCheckArgs, CFArgs, checkRange, getViewportIndexes } from '../../workbook/common/index';
 import { extend, isNullOrUndefined, L10n, removeClass } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
@@ -105,10 +105,6 @@ export class ConditionalFormatting {
                 this.parent.trigger('dialogBeforeOpen', dlgArgs);
                 if (dlgArgs.cancel) {
                     beforeOpenArgs.cancel = true;
-                    getUpdateUsingRaf((): void => {
-                        dialogInst.hide(true);
-                        focus(this.parent.element);
-                    });
                 } else {
                     dialogInst.dialogInstance.content = this.cfDlgContent(args.action);
                     dialogInst.dialogInstance.dataBind();
@@ -546,9 +542,22 @@ export class ConditionalFormatting {
     }
 
     private updateCF(args: ApplyCFArgs, sheet: SheetModel, cf: ConditionalFormat, updatedCFCellRef: { [key: string]: boolean }): void {
-        let value1: string; let value2: string;
+        let value1: string; let value2: string = '';
+        let isLongDate: boolean = false;
         if (cf.value) {
-            const valueArr: string[] = cf.value.split(',').filter((value: string) => !!value.trim());
+            let dateValues: string[] = [];
+            let valueArr: string[] = [];
+            if (cf.type === 'Between') {
+                dateValues = cf.value.split('"').filter((date: string) => date.trim() && date.trim() !== ',');
+                if (dateValues.length > 1) {
+                    valueArr = dateValues;
+                    isLongDate = true;
+                } else {
+                    valueArr = cf.value.split(',').filter((value: string) => !!value.trim());
+                }
+            } else {
+                valueArr = [cf.value];
+            }
             if (valueArr.length > 1) {
                 if (valueArr[0].split('(').length > 1) {
                     let valueStr: string = '';
@@ -598,7 +607,8 @@ export class ConditionalFormatting {
             || isColorScale || isAverage || isTopBottom || isIconSets)) {
             this.updateResult(cf, sheet, isDataBar, isColorScale, isAverage, isTopBottom, isIconSets, value1);
         }
-        const updateCF: Function = (rIdx: number, cIdx: number, cell: CellModel, td: HTMLElement, currentRowHeight?: number): void => {
+        const updateCF: Function = (rIdx: number, cIdx: number, cell: CellModel, td: HTMLElement, currentRowHeight?: number,
+                                    isLongDate?: boolean): void => {
             const cellVal: string = cell && !isNullOrUndefined(cell.value) ? cell.value.toString() : '';
             let isApply: boolean; let dateEventArgs: DateFormatCheckArgs;
             let isValueCFRule: boolean = true;
@@ -609,10 +619,10 @@ export class ConditionalFormatting {
                 isApply = this.isGreaterThanLessThan(cf, cellVal, value1, cellType);
                 break;
             case 'Between':
-                isApply = isNumber(cellVal) && cellType !== 'Text' && this.isBetWeen(cf, cellVal, value1, value2);
+                isApply = isNumber(cellVal) && cellType !== 'Text' && this.isBetWeen(cf, cellVal, value1, value2, isLongDate);
                 break;
             case 'EqualTo':
-                isApply = isNumber(cellVal) && cellType !== 'Text' && this.isEqualTo(cf, cellVal, value1);
+                isApply = this.isEqualTo(cf, cellVal, value1);
                 break;
             case 'ContainsText':
                 isApply = cellVal && value1 && this.isContainsText(cellVal, value1);
@@ -625,7 +635,7 @@ export class ConditionalFormatting {
                 isApply = cellVal === dateEventArgs.updatedVal;
                 break;
             case 'Unique':
-                isApply = (<string[]>cf.result).indexOf(cellVal.toLowerCase()) === -1;
+                isApply = cellVal !== '' && (<string[]>cf.result).indexOf(cellVal.toLowerCase()) === -1;
                 break;
             case 'Duplicate':
                 isApply = (<string[]>cf.result).indexOf(cellVal.toLowerCase()) > -1;
@@ -747,19 +757,20 @@ export class ConditionalFormatting {
             }
         };
         if (args.ele) {
-            updateCF(args.indexes[0], args.indexes[1], args.cell, args.ele, args.resizedRowHeight);
+            updateCF(args.indexes[0], args.indexes[1], args.cell, args.ele, args.resizedRowHeight, isLongDate);
         } else {
             const rangeArr: string[] = cf.range.split(',');
             const frozenRow: number = this.parent.frozenRowCount(sheet); const frozenCol: number = this.parent.frozenColCount(sheet);
             const topLeftIdx: number[] = getCellIndexes(sheet.topLeftCell);
             for (let i: number = 0; i < rangeArr.length; i++) {
-                this.updateRange(sheet, getRangeIndexes(rangeArr[i as number]), frozenRow, frozenCol, topLeftIdx, updateCF);
+                this.updateRange(sheet, getRangeIndexes(rangeArr[i as number]), frozenRow, frozenCol, topLeftIdx, updateCF, isLongDate);
             }
         }
     }
 
     private updateRange(
-        sheet: SheetModel, rangeIdx: number[], frozenRow: number, frozenCol: number, topLeftIdx: number[], invokeFn: Function): void {
+        sheet: SheetModel, rangeIdx: number[], frozenRow: number, frozenCol: number, topLeftIdx: number[], invokeFn: Function,
+        isLongDate?: boolean): void {
         rangeIdx[0] = rangeIdx[0] < frozenRow ? (rangeIdx[0] < topLeftIdx[0] ? topLeftIdx[0] : rangeIdx[0]) :
             (rangeIdx[0] < this.parent.viewport.topIndex + frozenRow ? this.parent.viewport.topIndex + frozenRow : rangeIdx[0]);
         rangeIdx[1] = rangeIdx[1] < frozenCol ? (rangeIdx[1] < topLeftIdx[1] ? topLeftIdx[1] : rangeIdx[1]) :
@@ -785,7 +796,7 @@ export class ConditionalFormatting {
                 }
                 td = this.parent.getCell(rowIdx, colIdx);
                 if (td) {
-                    invokeFn(rowIdx, colIdx, getCell(rowIdx, colIdx, sheet), td);
+                    invokeFn(rowIdx, colIdx, getCell(rowIdx, colIdx, sheet), td, undefined, isLongDate);
                 }
             }
         }
@@ -793,11 +804,16 @@ export class ConditionalFormatting {
 
     private applyIconSet(val: string, cf: ConditionalFormat, cellEle: HTMLElement, cfIcon: HTMLElement, cellType: string): boolean {
         const iconSetExist: boolean = cellEle.classList.contains('e-iconset');
+        const wrapText: HTMLElement = cellEle.querySelector('.e-wrap-content');
         if (iconSetExist) {
             cellEle.classList.remove('e-iconset');
             const iconSpan: Element = cellEle.querySelector('.e-iconsetspan');
             if (iconSpan) {
-                cellEle.removeChild(iconSpan);
+                if (wrapText) {
+                    wrapText.removeChild(iconSpan);
+                } else {
+                    cellEle.removeChild(iconSpan);
+                }
             }
         }
         const value: number = isNumber(val) ? parseFloat(val) : NaN;
@@ -831,7 +847,17 @@ export class ConditionalFormatting {
                     iconList[2].trim() : value >= percent1 ? iconList[3].trim() : iconList[4].trim());
         }
         cfIcon.classList.add(currentSymbol);
-        cellEle.insertBefore(cfIcon, cellEle.childNodes[0]);
+        const dataBar: HTMLElement = cellEle.querySelector('.e-cf-databar');
+        if (dataBar) {
+            cfIcon.style.height = dataBar.style.height;
+            cfIcon.classList.add(cellEle.style.verticalAlign === 'top' ? 'e-cf-icon-top' : cellEle.style.verticalAlign === 'middle' ?
+                'e-cf-icon-middle' : 'e-cf-icon-end');
+        }
+        if (wrapText) {
+            wrapText.insertBefore(cfIcon, wrapText.firstChild);
+        } else {
+            cellEle.insertBefore(cfIcon, cellEle.childNodes[0]);
+        }
         cellEle.classList.add('e-iconset');
         return true;
     }
@@ -896,8 +922,27 @@ export class ConditionalFormatting {
             const dataBar: Element = td.getElementsByClassName('e-cf-databar')[0];
             if (dataBar) {
                 const textContent: string = dataBar.getElementsByClassName('e-databar-value')[0].textContent;
-                td.removeChild(dataBar);
-                td.innerText = textContent;
+                const hyperlink: Element = td.querySelector('.e-hyperlink');
+                const noteIndicator: HTMLElement = td.querySelector('.e-addNoteIndicator');
+                const wrapText: HTMLElement = td.querySelector('.e-wrap-content');
+                if (wrapText) {
+                    wrapText.textContent = '';
+                    if (hyperlink) {
+                        wrapText.appendChild(hyperlink);
+                    } else {
+                        wrapText.innerText = textContent;
+                    }
+                } else {
+                    td.removeChild(dataBar);
+                    if (hyperlink) {
+                        td.appendChild(hyperlink);
+                    } else {
+                        td.innerText = textContent;
+                    }
+                }
+                if (noteIndicator) {
+                    td.appendChild(noteIndicator);
+                }
             }
             return;
         }
@@ -914,8 +959,21 @@ export class ConditionalFormatting {
         const rightSpan: HTMLElement = this.parent.createElement('span', { id: 'spreadsheet-rightspan', className: 'e-databar' });
         const dataSpan: HTMLElement = this.parent.createElement('span', { id: 'spreadsheet-dataspan', className: 'e-databar-value' });
         const iconSetSpan: HTMLElement = td.querySelector('.e-iconsetspan');
+        const noteIndicator: HTMLElement = td.querySelector('.e-addNoteIndicator');
+        const wrapText: HTMLElement = td.querySelector('.e-wrap-content');
         const rowHeight: number = currentRowHeight ? currentRowHeight : getRowHeight(sheet, rIdx, true);
+        const currencySpan: HTMLElement = td.querySelector('#' + this.parent.element.id + '_currency');
         databar.style.height = rowHeight - 1 + 'px';
+        if (iconSetSpan) {
+            iconSetSpan.style.height = rowHeight - 1 + 'px';
+            iconSetSpan.classList.add(td.style.verticalAlign === 'top' ? 'e-cf-icon-top' : td.style.verticalAlign === 'middle' ?
+                'e-cf-icon-middle' : 'e-cf-icon-end');
+        }
+        if (currencySpan) {
+            currencySpan.style.alignItems = td.style.verticalAlign === 'top' ? 'start' : td.style.verticalAlign === 'middle' ?
+                'center' : 'end';
+            currencySpan.classList.add('e-cf-currency');
+        }
         let cfColor: string = cf.type[0];
         if (cfColor === 'L') {
             cfColor += 'B';
@@ -952,6 +1010,7 @@ export class ConditionalFormatting {
         dataSpan.style.fontSize = td.style.fontSize || '11pt';
         dataSpan.style.alignItems = td.style.verticalAlign === 'top' ? 'start' : td.style.verticalAlign === 'middle' ?
             'center' : 'end';
+        dataSpan.style.textDecoration = td.style.textDecoration;
         const curEle: HTMLElement = td.querySelector(`#${this.parent.element.id}_currency`);
         if (curEle) {
             databar.appendChild(curEle);
@@ -960,19 +1019,32 @@ export class ConditionalFormatting {
         if (hyperlink) {
             dataSpan.appendChild(hyperlink);
         } else {
-            dataSpan.innerText = td.textContent;
-            if (td.textContent === '') {
-                dataSpan.appendChild(document.createTextNode(td.textContent));
+            const dataContent: string = td.querySelector('.e-validation-list') ? td.innerText : td.textContent;
+            dataSpan.innerText = dataContent;
+            if (dataContent === '') {
+                dataSpan.appendChild(document.createTextNode(dataContent));
             }
         }
         databar.appendChild(leftSpan);
         databar.appendChild(rightSpan);
         databar.appendChild(dataSpan);
         td.textContent = '';
-        if (iconSetSpan) {
-            td.insertBefore(iconSetSpan, td.firstElementChild);
+        if (wrapText) {
+            wrapText.textContent = '';
+            if (iconSetSpan) {
+                wrapText.appendChild(iconSetSpan);
+            }
+            wrapText.appendChild(databar);
+            td.appendChild(wrapText);
+        } else {
+            if (iconSetSpan) {
+                td.insertBefore(iconSetSpan, td.firstElementChild);
+            }
+            td.appendChild(databar);
         }
-        td.appendChild(databar);
+        if (noteIndicator) {
+            td.appendChild(noteIndicator);
+        }
     }
 
     private getColor(cfColor: string): string[] {
@@ -1059,9 +1131,11 @@ export class ConditionalFormatting {
         return false;
     }
 
-    private isBetWeen(cf: ConditionalFormatModel, value: string, input1: string, input2: string): boolean {
-        const txtRegx: RegExp = new RegExp(/[^.-a-zA-Z 0-9]+/g);
-        input1 = input1.replace(txtRegx, ''); input2 = input2.replace(txtRegx, '');
+    private isBetWeen(cf: ConditionalFormatModel, value: string, input1: string, input2: string, isLongDate?: boolean): boolean {
+        if (!isLongDate) {
+            const txtRegx: RegExp = new RegExp(/[^.-a-zA-Z 0-9]+/g);
+            input1 = input1.replace(txtRegx, ''); input2 = input2.replace(txtRegx, '');
+        }
         if (isNumber(input1)) {
             let firstVal: number = parseFloat(input1); let secondVal: number = parseFloat(input2);
             if (firstVal > secondVal) {
@@ -1088,8 +1162,13 @@ export class ConditionalFormatting {
 
     private isEqualTo(cf: ConditionalFormatModel, value: string, input: string): boolean {
         if (isNumber(input)) {
+            if (value === '') {
+                return parseFloat(input) === 0;
+            }
             const txtRegx: RegExp = new RegExp(/[^.-a-zA-Z 0-9]+/g);
             return parseFloat(value) === parseFloat(input.replace(txtRegx, ''));
+        } else if (!value || !input) {
+            return false;
         } else {
             const dateTimeArgs: DateFormatCheckArgs = { value: input, cell: {}, updatedVal: '' };
             this.parent.notify(checkDateFormat, dateTimeArgs);

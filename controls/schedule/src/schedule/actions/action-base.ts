@@ -105,7 +105,9 @@ export class ActionBase {
 
     public calculateIntervalTime(date: Date): Date {
         let dateInMS: number = util.resetTime(date).getTime();
+        const startHour: Date = this.parent.activeView.getStartHour();
         const intervalInMS: number = util.MS_PER_MINUTE * this.actionObj.interval;
+        dateInMS += (startHour.getHours() * 60 + startHour.getMinutes()) * util.MS_PER_MINUTE + startHour.getSeconds() * 1000;
         dateInMS = dateInMS + Math.floor((date.getTime() - dateInMS) / intervalInMS) * intervalInMS;
         return new Date(dateInMS);
     }
@@ -216,7 +218,8 @@ export class ActionBase {
     }
 
     public createCloneElement(element: HTMLElement): HTMLElement {
-        const cloneWrapper: HTMLElement = createElement('div', { innerHTML: element.outerHTML });
+        const cloneWrapper: HTMLElement = document.createElement('div');
+        cloneWrapper.appendChild(element.cloneNode(true));
         const cloneElement: HTMLElement = cloneWrapper.children[0] as HTMLElement;
         const cloneClassLists: string[] = [cls.CLONE_ELEMENT_CLASS];
         cloneClassLists.push((this.actionObj.action === 'drag') ? cls.DRAG_CLONE_CLASS : cls.RESIZE_CLONE_CLASS);

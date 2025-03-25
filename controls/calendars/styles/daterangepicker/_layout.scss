@@ -448,11 +448,13 @@
 .e-daterangepick-mob-popup-wrap {
     #{if( &, '&', '*')} .e-daterangepicker.e-popup.e-popup-expand {      
       #{if(&, '&', '*')} .e-date-range-container {
-            min-height: $modal-range-portrait-calendar-min-height;
-            min-width: $modal-range-portrait-calendar-min-width;
-            height: $modal-range-portrait-calendar-height;
-            width: $modal-range-portrait-calendar-width;
-
+            & {
+              min-height: $modal-range-portrait-calendar-min-height;
+              min-width: $modal-range-portrait-calendar-min-width;
+              height: $modal-range-portrait-calendar-height;
+              width: $modal-range-portrait-calendar-width;
+            }
+            
             #{if(&, '&', '*')} .e-range-header {
               height: $modal-range-portrait-header-height;
               padding: $modal-range-portrait-header-padding;
@@ -486,11 +488,13 @@
                 min-height: $modal-range-landscape-calendar-height;
                 height: $modal-range-landscape-calendar-height;
               }
-              min-width: $modal-range-portrait-calendar-min-width;
-              width: $modal-range-portrait-calendar-width;
-              padding: $modal-range-calendar-padding;
-              overflow: $modal-range-calendar-overflow;
-
+              & {
+                min-width: $modal-range-portrait-calendar-min-width;
+                width: $modal-range-portrait-calendar-width;
+                padding: $modal-range-calendar-padding;
+                overflow: $modal-range-calendar-overflow;
+              }
+              
               #{if(&, '&', '*')} .e-header.e-month,
               #{if(&, '&', '*')} .e-header.e-year,
               #{if(&, '&', '*')} .e-header.e-decade {

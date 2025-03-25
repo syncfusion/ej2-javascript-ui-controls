@@ -243,7 +243,7 @@ $schedule-val-error-bg-color: $danger-light !default;
 $schedule-block-appointment-bg-color: $holiday-bg-color !default;
 $schedule-block-appointment-font-color: $content-text-color !default;
 $schedule-resource-color-margin-top: 10px !default;
-$schedule-bigger-resource-color-margin-top: 10px !default;
+$schedule-bigger-resource-color-margin-top: 12px !default;
 $schedule-resource-color-size: 14px !default;
 $schedule-bigger-resource-color-size: 16px !default;
 $schedule-resource-tree-text-content-padding: 0 0 0 12px !default;
@@ -264,6 +264,8 @@ $schedule-header-icon-wrapper-bg-color: $schedule-content-bg-color !default;
 $schedule-bgr-date-time-icon-padding-right: 12px !default;
 $schedule-bgr-more-event-close-icon-padding: 1px !default;
 $schedule-bgr-tbar-btn-text-font-size: $schedule-header-bgr-font-size !default;
+$schedule-calendar-width: 295px !default;
+$schedule-bgr-calendar-width: 345px !default;
 
 @mixin tbar-btn-animation {
   content: '';

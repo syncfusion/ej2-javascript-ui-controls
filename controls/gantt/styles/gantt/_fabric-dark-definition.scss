@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $gantt-header-bg-color: $neutral-white !default;
 $gantt-header-border-color: $neutral-light !default;
 $gantt-header-color: $neutral-light-font !default;
@@ -36,7 +38,7 @@ $gantt-label-size: 13px !default;
 $gantt-header-border-spacing: 0 !default;
 $gantt-line-container-cell-border-color: $neutral-light !default;
 /* stylelint-disable */
-$gantt-unscheduled-taskbar-background: linear-gradient(to right, rgba(darken($theme-primary, 10%), 0.2), darken($theme-primary, 10%) 30%, darken($theme-primary, 10%) 70%, darken($theme-primary, 10%) 70%, rgba(darken($theme-primary, 10%), 0.2) 100%) !default;
+$gantt-unscheduled-taskbar-background: linear-gradient(to right, rgba(color.adjust($theme-primary, $lightness: -10%), 0.2), color.adjust($theme-primary, $lightness: -10%) 30%, color.adjust($theme-primary, $lightness: -10%) 70%, color.adjust($theme-primary, $lightness: -10%) 70%, rgba(color.adjust($theme-primary, $lightness: -10%), 0.2) 100%) !default;
 $gantt-unscheduled-critical-taskbar-background: linear-gradient(to right, rgba(285,85,85, 0.2), #d13438 30%, #d13438 70%, #d13438 70%, rgba(285,85,85, 0.2) 100%) !default;
 $gantt-unscheduled-milestone-top-border: $neutral-secondary !default;
 $gantt-unscheduled-critical-taskbar-background-color: rgba(285,85,85, .2) !default;
@@ -183,8 +185,8 @@ $gantt-dialog-border-radius: 0px !default;
 $event-marker-line-height: 1.2 !default;
 $gantt-inactive-parent: #8A8A8A !default;
 $gantt-inactive-child: #D5D5D5 !default;
-$gantt-connected-task: lighten($theme-primary, 20%) !default;
-$gantt-active-parent-task: lighten(#000000, 10%) !default;
+$gantt-connected-task: color.adjust($theme-primary, $lightness: 20%) !default;
+$gantt-active-parent-task: color.adjust(#000000, $lightness: 10%) !default;
 $gantt-uptail-border:  #e0e0e0 !default;
 $gantt-gridpopup-span: $theme-light-font !default;
 $gantt-active-parent-shadow: rgba($gantt-gridpopup-span, 0.5) !default;
@@ -209,7 +211,6 @@ $error-elem-color: #e3165b;
 $gantt-border-size: $border-size !default;
 $gantt-active-container-border: $neutral-secondary !default;
 $grid-active-container-border: 0 0 0 1px $neutral-secondary inset !default;
-$gantt-collapse-progress-width: 0px !important;
 $rangecontainer-border-color: #FC7A05;
 $gantt-range-container-arc-radius: 0px !default;
 $gantt-active-background-color: #a9a9a9;

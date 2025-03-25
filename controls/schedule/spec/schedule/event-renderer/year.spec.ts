@@ -1448,6 +1448,80 @@ describe('Year and TimelineYear View Event Render Module', () => {
         });
     });
 
+    describe('Schedule Year view', () => {
+        let schObj: Schedule;
+      
+        beforeAll((done: DoneFn) => {
+          const moreIndicatorData: Record<string, any>[] = [
+            {
+                Id: 1,
+                Subject: 'Event 1',
+                StartTime: new Date(2023, 0, 1, 0, 0),
+                EndTime: new Date(2023, 0, 1, 6, 0),
+                IsAllDay: true
+            },
+            {
+                Id: 2,
+                Subject: 'Event 2',
+                StartTime: new Date(2023, 0, 1, 0, 0),
+                EndTime: new Date(2023, 0, 1, 4, 0),
+                IsAllDay: true
+            },
+            {
+                Id: 3,
+                Subject: 'Event 3',
+                StartTime: new Date(2023, 0, 1, 0, 0),
+                EndTime: new Date(2023, 0, 1, 3, 0),
+                IsAllDay: true
+            },
+            {
+                Id: 4,
+                Subject: 'Event 4',
+                StartTime: new Date(2023, 0, 1, 0, 0),
+                EndTime: new Date(2023, 0, 1, 7, 0),
+                IsAllDay: true
+            }
+          ];
+          
+          const model: ScheduleModel = {
+            selectedDate: new Date(2023, 10, 6),
+            views: [{ option: 'Year' }]
+          };
+          
+          schObj = util.createSchedule(model, moreIndicatorData, done);
+        });
+      
+        afterAll(() => {
+          util.destroy(schObj);
+        });
+      
+        it('more popup appointments rendering and counts after deleting one appointment', () => {
+            expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-close')).toEqual(true);
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells:not(.e-other-month)'), 'click');
+            expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-close')).toEqual(false);
+            expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-open')).toEqual(true);
+            let moreEvent: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper .e-more-appointment-wrapper') as HTMLElement;
+            let moreAppointmentList: Element[] = [].slice.call(moreEvent.querySelectorAll('.e-appointment'));
+            expect(moreAppointmentList.length).toEqual(4);
+            const deleteAppointment: HTMLElement = moreAppointmentList[0] as HTMLElement;
+            deleteAppointment.click();
+            (schObj.element.querySelector('.e-delete-icon') as HTMLElement).click();
+            schObj.dataBound = () => {
+                setTimeout(() => {
+                    const moreEvent = schObj.element.querySelector('.e-more-popup-wrapper .e-more-appointment-wrapper') as HTMLElement;
+                    if (moreEvent) {
+                        const moreAppointmentList = [].slice.call(moreEvent.querySelectorAll('.e-appointment'));
+                        expect(moreAppointmentList.length).toEqual(3);
+                        (schObj.element.querySelector('.e-more-popup-close') as HTMLElement).click();
+                    }
+                }, 100);
+            };
+            util.triggerMouseEvent(schObj.element.querySelector('.e-more-event-close'), 'click');
+            expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-open')).toEqual(false);
+            expect(schObj.element.querySelector('.e-more-popup-wrapper').classList.contains('e-popup-close')).toEqual(true);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

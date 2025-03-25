@@ -1,14 +1,17 @@
+@use 'sass:color';
+@use 'sass:meta';
+@use 'sass:list';
 @import '../common/mixin.scss';
 
 $black: #000 !default;
 $white: #fff !default;
 
 @function shade-color($color, $percentage) {
-  @return mix($black, $color, $percentage);
+  @return color.mix($black, $color, $percentage);
 }
 
 @function tint-color($color, $percentage) {
-  @return mix($white, $color, $percentage);
+  @return color.mix($white, $color, $percentage);
 }
 
 $transparent: transparent;
@@ -47,15 +50,16 @@ $danger-light: tint-color($danger, 80%) !default;
 $primary-text-color: $white !default;
 $primary-light: tint-color($primary, 50%) !default;
 $primary-lighter: tint-color($primary, 90%) !default;
-$success-dark: darken($success, 10%) !default;
-$info-dark: darken($info, 25%) !default;
-$warning-dark: darken($warning, 25%) !default;
-$danger-dark: darken($danger, 10%) !default;
+$success-dark: color.adjust($success, $lightness: -10%) !default;
+$info-dark: color.adjust($info, $lightness: -25%) !default;
+$warning-dark: color.adjust($warning, $lightness: -25%) !default;
+$danger-dark: color.adjust($danger, $lightness: -10%) !default;
 $success-light-alt: tint-color($success, 80%) !default;
 $info-light-alt: tint-color($info, 80%) !default;
 $warning-light-alt: tint-color($warning, 80%) !default;
 $danger-light-alt: tint-color($danger, 80%) !default;
 
+$badge-primary-bg-color-darken: color.adjust($primary, $lightness: -10%);
 $content-bg-color: $white !default;
 $content-bg-color-alt1: $gray-100 !default;
 $content-bg-color-alt2: $gray-200 !default;
@@ -73,9 +77,9 @@ $flyout-bg-color-hover: $gray-200 !default;
 $flyout-bg-color-pressed: $primary !default;
 $flyout-bg-color-focus: $gray-200 !default;
 $overlay-bg-color: rgba($black, .5) !default;
-$table-bg-color-hover: darken($content-bg-color-alt1, 3%) !default;
+$table-bg-color-hover: color.adjust($content-bg-color-alt1, $lightness: -3%) !default;
 $table-bg-color-pressed: $gray-300 !default;
-$table-bg-color-selected: darken($content-bg-color-alt1, 6%) !default;
+$table-bg-color-selected: color.adjust($content-bg-color-alt1, $lightness: -6%) !default;
 
 $colorpicker-gradient-1: #f00 !default;
 $colorpicker-gradient-2: #ff0 !default;

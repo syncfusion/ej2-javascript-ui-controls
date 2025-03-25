@@ -540,7 +540,7 @@ export class UndoRedo {
     /**
      * removeChildFromLane method \
      *
-     * @returns { void } .\
+     * @returns { void } undo method .\
      * @param {Diagram} diagram - provide the diagram value.
      * @param {NodeModel} parentNode - provide the lane obj.
      * @param {Node} actualObject - provide the node value.
@@ -571,6 +571,7 @@ export class UndoRedo {
         }
 
     }
+
 
     private recordStackPositionChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
         const entryObject: StackEntryObject = ((isRedo) ? entry.redoObject : entry.undoObject) as StackEntryObject;

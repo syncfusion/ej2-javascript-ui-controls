@@ -34,8 +34,9 @@ export class Selection {
      * For removing events from selection module.
      *
      * @returns {void}
+     * @private
      */
-    private removeEventListener(): void {
+    public removeEventListener(): void {
         if (this.maps.isDestroyed) {
             return;
         }
@@ -333,7 +334,9 @@ export class Selection {
      */
     public destroy(): void {
         this.selectionsettings = null;
-        this.removeEventListener();
-        this.maps = null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (!(this.maps as any).refreshing) {
+            this.maps = null;
+        }
     }
 }

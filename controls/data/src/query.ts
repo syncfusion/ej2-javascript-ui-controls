@@ -531,7 +531,7 @@ export class Predicate {
     /** @hidden */
     public operator: string;
     /** @hidden */
-    public value: string | number | Date | boolean | Predicate | Predicate[] | null;
+    public value: string | number | Date | boolean | Predicate | Predicate[] | (string | number | boolean | Date)[] | null;
     /** @hidden */
     public condition: string;
     /** @hidden */
@@ -546,21 +546,21 @@ export class Predicate {
     public predicates: Predicate[];
     /** @hidden */
     public comparer: Function;
-    [x: string]: string | number | Date | boolean | Predicate | Predicate[] | Function | null;
+    [x: string]: string | number | Date | boolean | Predicate | Predicate[] | Function | (string | number | boolean | Date)[] | null;
 
     /**
      * Constructor for Predicate class.
      *
      * @param {string|Predicate} field
      * @param {string} operator
-     * @param {string|number|boolean|Predicate|Predicate[]} value
+     * @param {string | number | Date | boolean | Predicate | Predicate[] | (string | number | boolean | Date)[] | null} value
      * @param {boolean=false} ignoreCase
      * @param ignoreAccent
      * @param {boolean} matchCase
      * @hidden
      */
     constructor(
-        field: string | Predicate, operator: string, value: string | number | Date | boolean | Predicate | Predicate[] | null,
+        field: string | Predicate, operator: string, value: string | number | Date | boolean | Predicate | Predicate[] | (string | number | boolean | Date)[] | null,
         ignoreCase: boolean = false, ignoreAccent?: boolean, matchCase?: boolean) {
         if (typeof field === 'string') {
             this.field = field;
@@ -839,7 +839,7 @@ export interface QueryOptions {
     name?: string | string[];
     filter?: Object;
     key?: string;
-    value?: string | number | Date | boolean | Predicate | Predicate[];
+    value?: string | number | Date | boolean | Predicate | Predicate[] | (string | number | boolean | Date)[];
     isComplex?: boolean;
     predicates?: Predicate[];
     condition?: string;

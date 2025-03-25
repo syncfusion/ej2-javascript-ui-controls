@@ -548,7 +548,7 @@ export class Resize implements IAction {
                 const uid: string = node.getAttribute('e-mappinguid');
                 column = this.parent.getColumnByUid(uid);
             } else {
-                const index: number = parseInt(node.getAttribute('data-colindex'), 10);
+                const index: number = parseInt(node.getAttribute('aria-colindex'), 10) - 1;
                 column = cols[parseInt(index.toString(), 10)];
             }
             let width: number = 0;
@@ -622,10 +622,10 @@ export class Resize implements IAction {
                 if (freezeRefresh || (columns[parseInt(i.toString(), 10)].index > this.column.index)) {
                     let elements: HTMLTableCellElement[] = [];
                     if (this.parent.frozenRows) {
-                        elements = [].slice.call(this.parent.getHeaderContent().querySelectorAll('td[data-colindex="' + i + '"]')).concat(
-                            [].slice.call(this.parent.getContent().querySelectorAll('td[data-colindex="' + i + '"]')));
+                        elements = [].slice.call(this.parent.getHeaderContent().querySelectorAll('td[aria-colindex="' + (i + 1) + '"]')).concat(
+                            [].slice.call(this.parent.getContent().querySelectorAll('td[aria-colindex="' + (i + 1) + '"]')));
                     } else {
-                        elements = [].slice.call(this.parent.getContent().querySelectorAll('td[data-colindex="' + i + '"]'));
+                        elements = [].slice.call(this.parent.getContent().querySelectorAll('td[aria-colindex="' + (i + 1) + '"]'));
                     }
                     elements.filter((cell: HTMLTableCellElement) => {
                         applyStickyLeftRightPosition(cell, width - translateX, this.parent.enableRtl, 'Left');
@@ -650,10 +650,10 @@ export class Resize implements IAction {
             for (let i: number = columns.length - 1; i >= columns.length - columnsRight.length; i--) {
                 let elements: HTMLTableCellElement[] = [];
                 if (this.parent.frozenRows) {
-                    elements = [].slice.call(this.parent.getHeaderContent().querySelectorAll('td[data-colindex="' + i + '"]')).concat(
-                        [].slice.call(this.parent.getContent().querySelectorAll('td[data-colindex="' + i + '"]')));
+                    elements = [].slice.call(this.parent.getHeaderContent().querySelectorAll('td[aria-colindex="' + (i + 1) + '"]')).concat(
+                        [].slice.call(this.parent.getContent().querySelectorAll('td[aria-colindex="' + (i + 1) + '"]')));
                 } else {
-                    elements = [].slice.call(this.parent.getContent().querySelectorAll('td[data-colindex="' + i + '"]'));
+                    elements = [].slice.call(this.parent.getContent().querySelectorAll('td[aria-colindex="' + (i + 1) + '"]'));
                 }
                 elements.filter((cell: HTMLTableCellElement) => {
                     let colSpanwidth: number = 0;

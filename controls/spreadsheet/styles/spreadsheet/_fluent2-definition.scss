@@ -190,7 +190,7 @@ $find-popup-box-shadow: none !default;
 $find-dlg-alert-span-font-size: $text-xs !default;
 $bigger-find-dlg-btn-font-size: $text-xs !default;
 $find-dlg-header-font-weight: $font-weight-normal !default;
-$find-dlg-exactmatchcheckbox-padding: 12px 5px 12px !default;
+$find-dlg-exactmatchcheckbox-padding: 12px 0 !default;
 $find-dlg-header-padding-top: 12px !default;
 $find-dialog-header-padding-bottom: 4px !default;
 
@@ -248,7 +248,6 @@ $mac-scrollbar-background: rgba(0, 0, 0, .5) !default;
 //Custom Format
 $custom-listview-color: $border-light;
 $custom-format-dlg-input-margin-right: 12px !default;
-$custom-format-dlg-input-width: 80% !default;
 $custom-format-dlg-sample-margin: 16px 0 4px !default;
 $expand-icon-color: $icon-color !default;
 

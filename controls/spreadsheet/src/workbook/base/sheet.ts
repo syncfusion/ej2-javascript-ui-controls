@@ -4,7 +4,7 @@ import { RangeModel, SheetModel, UsedRangeModel } from './sheet-model';
 import { RowModel } from './row-model';
 import { ColumnModel } from './column-model';
 import { processIdx } from './data';
-import { SheetState, ProtectSettingsModel, ConditionalFormat, ConditionalFormatModel, ExtendedRange, getCellIndexes, moveOrDuplicateSheet, workbookFormulaOperation, duplicateSheetFilterHandler, ExtendedSheet, moveSheetHandler } from '../common/index';
+import { SheetState, ProtectSettingsModel, ConditionalFormat, ConditionalFormatModel, ExtendedRange, getCellIndexes, moveOrDuplicateSheet, workbookFormulaOperation, duplicateSheetFilterHandler, ExtendedSheet, moveSheetHandler, updateSortCollection } from '../common/index';
 import { ProtectSettings, getCellAddress } from '../common/index';
 import { isUndefined, ChildProperty, Property, Complex, Collection, extend } from '@syncfusion/ej2-base';
 import { WorkbookModel } from './workbook-model';
@@ -688,6 +688,7 @@ export function duplicateSheet(context: Workbook, sheetIndex?: number, action?: 
             }
         }
         context.notify(duplicateSheetFilterHandler, {sheetIndex: sheetIndex, newSheetIndex: sheetIndex + 1});
+        context.notify(updateSortCollection, { isDuplicate: true, curSheetIndex: sheetIndex, newSheetIndex: sheetIndex + 1});
         context.createSheet(sheetIndex + 1, [sheet]);
         context.notify(
             workbookFormulaOperation, { action: 'addSheet', sheetName: 'Sheet' + sheet.id, visibleName: sheet.name, sheetId: sheet.id });

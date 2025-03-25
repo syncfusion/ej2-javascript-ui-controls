@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $tab-skin: 'FluentUI' !default;
 $tab-big-vertical-scroll-nav-top-bottom: 23px !default;
 $tab-big-vertical-nav-arrow-size: 24px !default;
@@ -431,8 +433,8 @@ $tab-even-active-item-bottom-border-color: 0 !default;
 $tab-fill-focused-active-wrap-focus-color: $content-bg-color-alt5 !default;
 $tab-alt-active-wrap-hover-close-color: $primary !default;
 $tab-alt-pop-wrap-hover-color: $content-text-color-alt2 !default;
-$tab-alt-wrap-hover-color: darken($content-text-color-alt2, 15%) !default;
-$tab-item-wrap-hover-bg-color: darken($primary, 10%) !default;
+$tab-alt-wrap-hover-color: color.adjust($content-text-color-alt2, $lightness: -15%) !default;
+$tab-item-wrap-hover-bg-color: color.adjust($primary, $lightness: -10%) !default;
 $tab-bg-item-wrap-hover-bg-color: $tab-item-wrap-hover-bg-color !default;
 $tab-nav-active-box-shadow: inset 0 0 0 3px rgba($content-text-color-alt2, .5) !default;
 $tab-nav-focus-border-color: $content-text-color-alt2 !default;

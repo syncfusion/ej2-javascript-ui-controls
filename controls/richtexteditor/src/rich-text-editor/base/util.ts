@@ -214,11 +214,11 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                             e.parent.fontFamily.default;
                         const name: string = (isNOU(result) ? fontNameContent : result) === 'Default' ? self.serviceLocator.getService<L10n>('rteLocale').getConstant('fontName')
                             : (isNOU(result) ? fontNameContent : result);
-                        dropDown.fontNameDropDown.content = ('<span style="display: inline-flex;' +
+                        const htmlValue: string = ('<span style="display: inline-flex;' +
                             'width:' + e.parent.fontFamily.width + '" >' +
                             '<span class="e-rte-dropdown-btn-text' + (isNOU(e.parent.cssClass) ? '' : ' ' + e.parent.cssClass) + '">'
                             + name + '</span></span>');
-                        dropDown.fontNameDropDown.dataBind();
+                        updateDropdownContent(dropDown.fontNameDropDown, htmlValue);
                         break; }
                     case 'fontsize': {
                         if (isNOU(dropDown.fontSizeDropDown) ||
@@ -230,11 +230,11 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                             e.parent.fontSize.default;
                         const fontSizeToolbarText: string = getDropDownValue(fontSizeItems, (value === '' ? fontSizeContent.replace(/\s/g, '') : value), (fontSizeItems.length > 0 && fontSizeItems[0] && fontSizeContent.replace(/\s/g, '') === fontSizeItems[0].text && value === '') ? 'text' : 'value', 'text');
                         result = value === 'empty' ? '' : (fontSizeToolbarText === 'Default') ? self.serviceLocator.getService<L10n>('rteLocale').getConstant('fontSize') : fontSizeToolbarText;
-                        dropDown.fontSizeDropDown.content = ('<span style="display: inline-flex;' +
+                        const htmlValue: string = ('<span style="display: inline-flex;' +
                             'width:' + e.parent.fontSize.width + '" >' +
                             '<span class="e-rte-dropdown-btn-text' + (isNOU(e.parent.cssClass) ? '' : ' ' + e.parent.cssClass) + '">'
                             + getFormattedFontSize(result) + '</span></span>');
-                        dropDown.fontSizeDropDown.dataBind();
+                        updateDropdownContent(dropDown.fontSizeDropDown, htmlValue);
                         break; }
                     case 'bulletFormatList':
                     case 'numberFormatList': {
@@ -260,6 +260,26 @@ export function getCollection(items: string | string[]): string[] {
         return items;
     } else {
         return [items];
+    }
+}
+
+/**
+ * @param {any} dropDown - The dropdown button instance.
+ * @param {string} htmlString - The HTML content to update.
+ * @returns {void}
+ * @hidden
+ */
+export function updateDropdownContent(dropDown: any, htmlString: string): void {
+    const styleMatch: RegExpMatchArray | null = htmlString.match(/style="([^"]*)"/);
+    let styleValue: string = '';
+    if (styleMatch) {
+        styleValue = styleMatch[1];
+    }
+    const updatedHtml: string = htmlString.replace(/ style="([^"]*)"/, '');
+    dropDown.content = updatedHtml;
+    dropDown.dataBind();
+    if (dropDown.element.firstChild) {
+        (dropDown.element.firstChild as HTMLElement).style.cssText = styleValue;
     }
 }
 
@@ -589,7 +609,7 @@ export function parseHelper(value: string): string {
         });
         if (!isNOU(style) && style.trim() !== '') {
             style = style.replace(/;;+/g, ';');
-            span.setAttribute('style', style);
+            span.style.cssText = style;
         }
         span.innerHTML = font.innerHTML;
         if (!isNOU(font.parentNode)) {

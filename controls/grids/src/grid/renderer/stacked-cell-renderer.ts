@@ -55,7 +55,10 @@ export class StackedHeaderCellRenderer extends CellRenderer implements ICellRend
         }
 
         if (!isNullOrUndefined(cell.column.textAlign)) {
-            (div as HTMLElement).style.textAlign = cell.column.textAlign;
+            const alignmentClassMap: { [key in string]?: string } = { right: 'e-rightalign', left: 'e-leftalign', center: 'e-centeralign', justify: 'e-justifyalign' };
+            if (alignmentClassMap[cell.column.textAlign.toLowerCase()]) {
+                node.classList.add(alignmentClassMap[cell.column.textAlign.toLowerCase()]);
+            }
         }
 
         if (cell.column.customAttributes) {

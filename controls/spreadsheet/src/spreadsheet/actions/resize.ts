@@ -1,11 +1,11 @@
 import { getDPRValue, hideAutoFillElement, hideAutoFillOptions, positionAutoFillElement, Spreadsheet } from '../index';
 import { closest, detach, EventHandler, initializeCSPTemplate, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Tooltip } from '@syncfusion/ej2-popups';
-import { colWidthChanged, rowHeightChanged, contentLoaded, getFilterRange, getTextWidth, getExcludedColumnWidth } from '../common/index';
+import { colWidthChanged, rowHeightChanged, contentLoaded, getFilterRange, getTextWidth, getExcludedColumnWidth, readonlyAlert } from '../common/index';
 import { setResize, autoFit, HideShowEventArgs, completeAction, setAutoFit, refreshFilterCellsOnResize } from '../common/index';
-import { setRowHeight, isHiddenRow, SheetModel, getRowHeight, getColumnWidth, setColumn, isHiddenCol, getSheet } from '../../workbook/base/index';
+import { setRowHeight, isHiddenRow, SheetModel, getRowHeight, getColumnWidth, setColumn, isHiddenCol, getSheet, ColumnModel, RowModel, getRow } from '../../workbook/base/index';
 import { getColumn, setRow, getCell, CellModel } from '../../workbook/base/index';
-import { getRangeIndexes, getSwapRange, CellStyleModel, getCellIndexes, setMerge, MergeArgs, isRowSelected, beginAction } from '../../workbook/common/index';
+import { getRangeIndexes, getSwapRange, CellStyleModel, getCellIndexes, setMerge, MergeArgs, isRowSelected, beginAction, isReadOnlyCells } from '../../workbook/common/index';
 import { getFormattedCellObject, hideShow, NumberFormatArgs } from '../../workbook/common/index';
 import { propertyChange } from '../common/index';
 
@@ -165,7 +165,11 @@ export class Resize {
             return;
         }
         this.trgtEle = <HTMLElement>e.target;
-        this.updateTarget(e, this.trgtEle);
+        const skipUnhideRowCol: boolean = this.updateTarget(e, this.trgtEle);
+        if (skipUnhideRowCol) {
+            this.parent.notify(readonlyAlert, null);
+            return;
+        }
         if (this.trgtEle.classList.contains('e-colresize')) {
             const colIndx: number = parseInt(this.trgtEle.getAttribute('aria-colindex'), 10) - 1;
             const prevWidth: string = `${getColumnWidth(this.parent.getActiveSheet(), colIndx)}px`;
@@ -183,7 +187,7 @@ export class Resize {
     }
 
     private setTarget(e: MouseEvent): void {
-        if (!closest(e.target as Element, '.e-header-cell') || (e.target as Element).className.includes('e-filter-icon')) {
+        if (this.parent.isEdit || !closest(e.target as Element, '.e-header-cell') || (e.target as Element).className.includes('e-filter-icon')) {
             return;
         }
         const trgt: HTMLElement = <HTMLElement>e.target;
@@ -256,7 +260,7 @@ export class Resize {
             this.parent.getSelectAllContent().querySelector('tbody').lastElementChild : null);
     }
 
-    private updateTarget(e: MouseEvent, trgt: HTMLElement): void {
+    private updateTarget(e: MouseEvent, trgt: HTMLElement): boolean {
         if (closest(trgt, '.e-header-row')) {
             const offsetX: number = this.parent.enableRtl ? (trgt.offsetWidth - e.offsetX) : e.offsetX;
             if ((trgt.offsetWidth < 10 && offsetX < Math.ceil((trgt.offsetWidth - 2) / 2)) || (offsetX < 5 &&
@@ -267,7 +271,13 @@ export class Resize {
                 if (prevSibling && !isHiddenCol(sheet, prevIdx)) {
                     this.trgtEle = prevSibling as HTMLElement;
                 } else {
-                    if (prevIdx > -1) { this.trgtEle.classList.add('e-unhide-column'); }
+                    if (prevIdx > -1) {
+                        const colModel: ColumnModel = getColumn(sheet, prevIdx);
+                        if (colModel.isReadOnly || isReadOnlyCells(this.parent, [0, prevIdx, sheet.rowCount - 1, prevIdx])) {
+                            return true;
+                        }
+                        this.trgtEle.classList.add('e-unhide-column');
+                    }
                 }
             }
         } else {
@@ -278,6 +288,10 @@ export class Resize {
                 const prevSibling: Element = this.getRowPrevSibling(trgt);
                 if (prevSibling || isHiddenRow(sheet, prevIdx)) {
                     if (e.type === 'dblclick' && isHiddenRow(sheet, prevIdx)) {
+                        const rowModel: RowModel = getRow(sheet, prevIdx);
+                        if (rowModel.isReadOnly || isReadOnlyCells(this.parent, [prevIdx, 0, prevIdx, sheet.colCount - 1])) {
+                            return true;
+                        }
                         const selectRange: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
                         let eventArgs: HideShowEventArgs;
                         if (prevIdx <= selectRange[2] && prevIdx > selectRange[0] && isRowSelected(sheet, selectRange)) {
@@ -294,6 +308,7 @@ export class Resize {
                 }
             }
         }
+        return false;
     }
 
     private setAutoFitHandler(args: { idx: number, isCol: boolean, sheetIdx?: number }): void {
@@ -638,7 +653,11 @@ export class Resize {
         if (threshold < 0 && eleHeight < -(threshold)) {
             threshold = -eleHeight;
         }
-        this.resizeStart(rowIdx, viewportIdx, rowHeight, false, false, prevData);
+        let customHeight: boolean;
+        if (sheet.rows[rowIdx as number] && sheet.rows[rowIdx as number].customHeight) {
+            customHeight = true;
+        }
+        this.resizeStart(rowIdx, viewportIdx, rowHeight, false, false, prevData, customHeight);
         setRow(sheet, rowIdx, { height: parseInt(rowHeight, 10) > 0 ? parseInt(rowHeight, 10) : 0, customHeight: true });
         this.parent.notify(rowHeightChanged, { threshold, rowIdx: rowIdx, isCustomHgt: true });
     }
@@ -752,7 +771,9 @@ export class Resize {
         }
     }
 
-    private resizeStart(idx: number, viewportIdx: number, value: string, isCol?: boolean, isFit?: boolean, prevData?: string): void {
+    private resizeStart(
+        idx: number, viewportIdx: number, value: string, isCol?: boolean, isFit?: boolean, prevData?: string,
+        isCustomHeight?: boolean): void {
         setResize(idx, viewportIdx, value, isCol, this.parent);
         const action: string = isFit ? 'resizeToFit' : 'resize';
         let eventArgs: object;
@@ -761,7 +782,8 @@ export class Resize {
             eventArgs = { index: idx, width: value, isCol: isCol, sheetIndex: this.parent.activeSheetIndex, oldWidth: prevData };
             isAction = prevData !== value;
         } else {
-            eventArgs = { index: idx, height: value, isCol: isCol, sheetIndex: this.parent.activeSheetIndex, oldHeight: prevData };
+            eventArgs = { index: idx, height: value, isCol: isCol, sheetIndex: this.parent.activeSheetIndex, oldHeight: prevData,
+                isPrevCustomHeight: isCustomHeight };
             isAction = prevData !== value;
         }
         if (isAction) {

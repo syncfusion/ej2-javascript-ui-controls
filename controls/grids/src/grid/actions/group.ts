@@ -1,6 +1,6 @@
 import { MouseEventArgs, Draggable, Droppable, L10n, DropEventArgs, KeyboardEventArgs, EventHandler } from '@syncfusion/ej2-base';
 import { createElement, closest, remove, classList, addClass, removeClass, BlazorDragEventArgs } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, updateCSSText } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { GroupSettingsModel, SortDescriptorModel } from '../base/grid-model';
 import { parentsUntil, isActionPrevent, isGroupAdaptive, updatecloneRow, getComplexFieldID, getParsedFieldID, isComplexField, findCellIndex, resetRowIndex } from '../base/util';
@@ -54,7 +54,7 @@ export class Group implements IAction {
     private groupGenerator: GroupModelGenerator;
     private visualElement: HTMLElement = createElement('div', {
         className: 'e-cloneproperties e-dragclone e-gdclone',
-        styles: 'line-height:23px', attrs: { action: 'grouping' }
+        attrs: { action: 'grouping' }
     });
     private helper: Function = (e: { sender: MouseEvent }) => {
         const gObj: IGrid = this.parent;
@@ -66,8 +66,8 @@ export class Group implements IAction {
         }
         this.column = gObj.getColumnByField(element.firstElementChild.getAttribute('ej-mappingname'));
         this.visualElement.textContent = element.textContent;
-        this.visualElement.style.width = element.offsetWidth + 2 + 'px';
-        this.visualElement.style.height = element.offsetHeight + 2 + 'px';
+        updateCSSText(this.visualElement, `width: ${element.offsetWidth + 2}px;
+            height: ${element.offsetHeight + 2}px; line-height: 23px;`);
         this.visualElement.setAttribute('e-mappinguid', this.column.uid);
         gObj.element.appendChild(this.visualElement);
         return this.visualElement;
@@ -706,7 +706,6 @@ export class Group implements IAction {
         updatecloneRow(gObj);
         this.parent.notify(events.refreshVirtualMaxPage, {});
         query = gObj.getDataModule().generateQuery(false);
-        query.queries = gObj.getDataModule().aggregateQuery(gObj.getQuery().clone()).queries;
         const args: NotifyArgs = { requestType: 'virtualscroll', rowObject: rObj };
         if (gObj.contentModule) {
             args.virtualInfo = (<{ prevInfo?: object }>gObj.contentModule).prevInfo;
@@ -1022,14 +1021,14 @@ export class Group implements IAction {
                 ('e-' + direction.toLowerCase() + ' e-icon-' + direction.toLowerCase()), innerHTML: '&nbsp;',
                 attrs: { tabindex: '-1', 'aria-label': this.l10n.getConstant('GroupedSortIcon') + column.headerText, role: 'button' }
             }));
-        childDiv.appendChild(this.parent.createElement(
+        const ungroupButton: HTMLElement = this.parent.createElement(
             'span', {
                 className: 'e-ungroupbutton e-icons e-icon-hide', innerHTML: '&nbsp;',
                 attrs: { title: this.l10n.getConstant('UnGroup'),
-                    tabindex: '-1', 'aria-label': this.l10n.getConstant('UnGroupIcon') + column.headerText, role: 'button' },
-                styles: this.groupSettings.showUngroupButton ? '' : 'display:none'
-            }));
-
+                    tabindex: '-1', 'aria-label': this.l10n.getConstant('UnGroupIcon') + column.headerText, role: 'button' }
+            });
+        updateCSSText(ungroupButton, this.groupSettings.showUngroupButton ? '' : 'display: none;');
+        childDiv.appendChild(ungroupButton);
         groupedColumn.appendChild(childDiv);
         if (this.groupSettings.allowReordering) {
             animator.appendChild(groupedColumn);
@@ -1071,11 +1070,12 @@ export class Group implements IAction {
     }
 
     private createSeparator(): Element {
-        return this.parent.createElement('span', {
+        const separator: HTMLElement = this.parent.createElement('span', {
             className: 'e-nextgroup e-icons e-icon-next', innerHTML: '&nbsp;',
-            attrs: { tabindex: '-1', 'aria-label': this.l10n.getConstant('GroupSeperator') },
-            styles: this.groupSettings.showUngroupButton ? '' : 'display:none'
+            attrs: { tabindex: '-1', 'aria-label': this.l10n.getConstant('GroupSeperator') }
         });
+        updateCSSText(separator, this.groupSettings.showUngroupButton ? '' : 'display: none;');
+        return separator;
     }
 
     private refreshToggleBtn(isRemove?: boolean): void {
@@ -1270,7 +1270,6 @@ export class Group implements IAction {
         const gObj: IGrid = this.parent;
         let header: Element;
         const cols: SortDescriptorModel[] = gObj.sortSettings.columns;
-        const gCols: string[] = gObj.groupSettings.columns;
         const fieldNames: string[] = this.parent.getColumns().map((c: Column) => c.field);
         this.refreshToggleBtn();
         for (let i: number = 0, len: number = cols.length; i < len; i++) {

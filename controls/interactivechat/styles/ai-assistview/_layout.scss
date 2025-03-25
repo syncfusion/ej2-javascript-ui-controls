@@ -293,6 +293,9 @@
       textarea::-webkit-scrollbar {
         width: 4px;
       }
+      .hide-scrollbar textarea {
+        scrollbar-width: none;
+      }
       &:has(.e-rtl):not(.e-footer-template) .e-assist-send {
         right: unset;
         left: 20px;
@@ -320,6 +323,8 @@
         .e-textarea {
           @if $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' {
             padding: 4px 8px 4px 12px;
+            box-sizing: border-box;
+            min-height: 30px;
           }
         }
       }

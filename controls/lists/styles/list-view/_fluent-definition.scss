@@ -55,7 +55,7 @@ $listview-rtl-checkbox-right-margin: -2px 8px 0 0 !default;
 //ListView In-built template variables
 $listview-template-touch-font-size: $text-base !default;
 $listview-template-padding: 10px 16px !default;
-$listview-template-touch-padding: 12px 16px !default;
+$listview-template-touch-padding: 10px 16px 10px 68px !default;
 $listview-template-avatar-padding-right: 16px !default;
 $listview-template-avatar-padding-left: 68px !default;
 $listview-template-avatar-rightposition-padding-right: 68px !default;
@@ -81,7 +81,7 @@ $listview-template-multiline-header-padding: 0 !default;
 $listview-template-multiline-content-padding: 2px 0 0 0 !default;
 $listview-template-multiline-header-font-size: $text-sm !default;
 $listview-template-multiline-padding: 6px 4px !default;
-$listview-template-multiline-touch-padding: 8px 4px !default;
+$listview-template-multiline-touch-padding: 6px 16px 6px 68px !default;
 $listview-template-multiline-content-font-size: $text-xs !default;
 $listview-template-multiline-avatar-top: 0 !default;
 $listview-touch-template-padding: 12px 16px !default;

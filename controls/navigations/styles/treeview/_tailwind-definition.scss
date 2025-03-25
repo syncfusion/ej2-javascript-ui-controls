@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 /*! TreeView's tailwind theme wise override definitions and variables */
 /* stylelint-disable */
 $treeview-font-size: $text-sm !default;
@@ -106,7 +108,7 @@ $treeview-item-hover-bg: $content-bg-color-hover !default;
 $treeview-icon-hover-color: $icon-color-hover !default;
 $treeview-text-hover-color: $content-text-color-hover !default;
 $treeview-item-hover-border-color: $content-bg-color-hover !default;
-$treeview-item-active-hover-bg: darken($content-bg-color-hover, 10%) !default;
+$treeview-item-active-hover-bg: color.adjust($content-bg-color-hover, $lightness: -10%) !default;
 $treeview-icon-active-hover-color: $treeview-icon-hover-color !default;
 $treeview-text-active-hover-color: $treeview-text-hover-color !default;
 $treeview-item-active-hover-border-color: $treeview-item-hover-border-color !default;

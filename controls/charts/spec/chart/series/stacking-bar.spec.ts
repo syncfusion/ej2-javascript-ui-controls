@@ -1183,6 +1183,68 @@ describe('Chart Control', () => {
             chartObj.isTransposed = true;
             chartObj.refresh();
         });
+        it('Checking StackLabels', (done: Function) => {
+            loaded = (args: Object): void => {
+                const stackLabel: HTMLElement = document.getElementById('Stackingbarcontainer_StackLabel_3');
+                const stackLabelRect: HTMLElement = document.getElementById('StackingbarcontainerStackLabel_TextShape_1');
+                expect(stackLabel !== null).toBe(true);
+                expect(stackLabel.innerHTML).toBe('50');
+                expect(stackLabel.getAttribute('x') === '470' || stackLabel.getAttribute('x') === '432.4').toBe(true);
+                expect(stackLabel.getAttribute('y')).toBe('28.80769230769229');
+                expect(stackLabel.getAttribute('transform') === 'rotate(0, 470, 28.80769230769229)' || stackLabel.getAttribute('transform') === 'rotate(0, 432.4, 106.32142857142857)').toBe(true);
+                expect(stackLabelRect !== null).toBe(true);
+                expect(stackLabelRect.getAttribute('x') === '170' || stackLabelRect.getAttribute('x') === '154.8').toBe(true);
+                expect(stackLabelRect.getAttribute('y') === '80.2019230769231' || stackLabelRect.getAttribute('y') === '219.91071428571425').toBe(true);
+                expect(stackLabelRect.getAttribute('transform') === 'rotate(0, 181, 100.2019230769231)' || stackLabelRect.getAttribute('transform') === 'rotate(0, 165.8, 238.91071428571425)').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series = [
+                {
+                    dataSource: [{ x: 1, y: 10 }, { x: 2, y: null },
+                    { x: 3, y: 15 }, { x: 4, y: 25 }, { x: 5, y: -30 }, { x: 6, y: 20 }],
+                    xName: 'x', yName: 'y', emptyPointSettings: { mode: 'Average' },
+                    type: 'StackingBar', animation: { enable: false },
+                    marker: { visible: true, dataLabel: { visible: true } },
+                    name: 'Column1'
+                },
+                {
+                    dataSource: [{ x: 1, y: 10 }, { x: 2, y: null },
+                    { x: 3, y: 15 }, { x: 4, y: 25 }, { x: 5, y: -30 }, { x: 6, y: 20 }],
+                    xName: 'x', yName: 'y', emptyPointSettings: { mode: 'Average' },
+                    type: 'StackingBar', animation: { enable: false },
+                    marker: { visible: true, dataLabel: { visible: true } },
+                    name: 'Column2'
+                }
+            ];
+            chartObj.primaryYAxis.isInversed = false;
+            chartObj.stackLabels.visible = true;
+            chartObj.stackLabels.border = { width: 1, color: 'black' };
+            chartObj.refresh();
+        });
+        it('Checking StackLabels with inversed axis', (done: Function) => {
+            loaded = (args: Object): void => {
+                const stackLabel: HTMLElement = document.getElementById('Stackingbarcontainer_StackLabel_3');
+                const stackLabelRect: HTMLElement = document.getElementById('StackingbarcontainerStackLabel_TextShape_1');
+                expect(stackLabel !== null).toBe(true);
+                expect(stackLabel.innerHTML).toBe('50S');
+                expect(stackLabel.getAttribute('x')).toBe('88.34615384615381');
+                expect(stackLabel.getAttribute('y')).toBe('169.9375');
+                expect(stackLabel.getAttribute('transform')).toBe('rotate(0, 88.34615384615381, 169.9375)');
+                expect(stackLabelRect !== null).toBe(true);
+                expect(stackLabelRect.getAttribute('x')).toBe('214.71153846153848');
+                expect(stackLabelRect.getAttribute('y')).toBe('273.6875');
+                expect(stackLabelRect.getAttribute('transform')).toBe('rotate(0, 229.21153846153848, 293.6875)');
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.stackLabels.font.textAlignment = 'Far'
+            chartObj.stackLabels.visible = true;
+            chartObj.isTransposed = false;
+            chartObj.primaryYAxis.isInversed = true;
+            chartObj.stackLabels.format = '{value}S';
+            chartObj.refresh();
+        });
         
     });
     it('memory leak', () => {

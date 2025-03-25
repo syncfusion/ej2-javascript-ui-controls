@@ -20,10 +20,11 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { InfiniteScroll } from '../../../src/grid/actions/infinite-scroll';
 import { RowSelectEventArgs, NotifyArgs } from '../../../src/grid/base/interface';
 import { select } from '@syncfusion/ej2-base';
-import { infiniteGroupData, filterData } from '../../../spec/grid/base/datasource.spec';
+import { infiniteGroupData, filterData, employeeData } from '../../../spec/grid/base/datasource.spec';
 import { CommandColumn } from '../../../src/grid/actions/command-column';
+import { DetailRow } from '../../../src/grid/actions/detail-row';
 
-Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, InfiniteScroll, Toolbar, CommandColumn, Aggregate, Freeze, VirtualScroll);
+Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, InfiniteScroll, Toolbar, CommandColumn, Aggregate, Freeze, VirtualScroll, DetailRow);
 
 let virtualData: Object[] = [];
 function virtualdataSource() {
@@ -121,7 +122,7 @@ describe('Infinite scroll normal mode => ', () => {
     });
     it('initial render', () => {
         expect(gridObj.getRows().length).toBe(150);
-        expect(parseInt(gridObj.getRows()[0].getAttribute('data-rowindex'), 10)).toBe(0);
+        expect(parseInt(gridObj.getRows()[0].getAttribute('aria-rowindex'), 10) - 1).toBe(0);
         expect(gridObj.getCurrentViewRecords().length).toBe(150);
         expect(gridObj.infiniteScrollSettings.enableCache).toBeFalsy();
         expect(gridObj.infiniteScrollSettings.initialBlocks).toBe(3);
@@ -135,7 +136,7 @@ describe('Infinite scroll normal mode => ', () => {
     });
     it('scroll bottom', () => {
         //expect(gridObj.getCurrentViewRecords().length).toBe(200);
-        expect(parseInt(gridObj.getRows()[150].getAttribute('data-rowindex'), 10)).toBe(150);
+        expect(parseInt(gridObj.getRows()[150].getAttribute('aria-rowindex'), 10) - 1).toBe(150);
         expect(gridObj.getRows().length).toBe(200);
         expect(Object.keys((gridObj.infiniteScrollModule as any).infiniteCurrentViewData).length).toBe(gridObj.infiniteScrollSettings.initialBlocks + 1);
     });
@@ -200,13 +201,13 @@ describe('Infinite scroll cache mode basic scroll => ', () => {
         expect((gridObj.infiniteScrollModule as any).infiniteCache[4]).toBeUndefined();
         expect((gridObj.infiniteScrollModule as any).infiniteCache[3]).toBeDefined();
         expect(gridObj.getCurrentViewRecords().length).toBe(visibleRowsCount);
-        expect(gridObj.getRows()[0].getAttribute('data-rowindex')).toBe("0");
+        expect(parseInt(gridObj.getRows()[0].getAttribute('aria-rowindex').toString(), 10) - 1).toBe(0);
         expect(rowElements.length).toBe(visibleRowsCount);
         expect(rows.length).toBe(visibleRowsCount);
     });
     it('select row', function (done) {
         let rowSelected = function (args: any) {
-            expect(gridObj.getSelectedRows()[0].getAttribute('data-rowindex')).toBe('1');
+            expect(parseInt(gridObj.getSelectedRows()[0].getAttribute('aria-rowindex').toString(), 10) - 1).toBe(1);
             done();
         }
         gridObj.rowSelected = rowSelected;
@@ -224,10 +225,10 @@ describe('Infinite scroll cache mode basic scroll => ', () => {
         expect((gridObj.infiniteScrollModule as any).infiniteCache).not.toBe({});
         expect((gridObj.infiniteScrollModule as any).infiniteCache[4]).toBeDefined();
         expect(gridObj.getCurrentViewRecords().length).toBe(visibleRowsCount);
-        expect(rowElements[0].getAttribute('data-rowindex')).toBe("50");
+        expect(parseInt(rowElements[0].getAttribute('aria-rowindex').toString(), 10) - 1).toBe(50);
         expect(rowElements.length).toBe(visibleRowsCount);
         expect(rows.length).toBe(totalRowsCount);
-        expect(gridObj.getSelectedRows()[0].getAttribute('data-rowindex')).toBe('1');
+        expect(parseInt(gridObj.getSelectedRows()[0].getAttribute('aria-rowindex').toString(), 10) - 1).toBe(1);
         expect(gridObj.getRowByIndex(150)).toBe(gridObj.getRows()[100]);
         expect(gridObj.getRowByIndex(1)).toBeUndefined();
     });
@@ -236,7 +237,7 @@ describe('Infinite scroll cache mode basic scroll => ', () => {
             let visibleRowsCount: number = gridObj.infiniteScrollSettings.initialBlocks * gridObj.pageSettings.pageSize;
             expect((gridObj.infiniteScrollModule as any).infiniteCache).not.toBe({});
             expect((gridObj.infiniteScrollModule as any).infiniteCache[4]).toBeDefined();
-            expect(gridObj.getSelectedRows()[0].getAttribute('data-rowindex')).toBe('1');
+            expect(parseInt(gridObj.getSelectedRows()[0].getAttribute('aria-rowindex').toString(), 10) - 1).toBe(1);
             expect(gridObj.getRows()[1].getAttribute('aria-selected')).toBe('true');
             expect(gridObj.getRowByIndex(1)).toBe(gridObj.getRows()[1]);
             expect(gridObj.getRowByIndex(visibleRowsCount)).toBeUndefined();
@@ -411,7 +412,7 @@ describe('Infinite scroll cache mode grouping => ', () => {
         gridObj.on('append-infinite-content', function () {
             expect(gridObj.getRowByIndex(1)).toBeUndefined();
             expect(gridObj.getRowByIndex(150)).toBe(gridObj.getRows()[100]);
-            expect(gridObj.getRows()[0].getAttribute('data-rowindex')).toBe('50');
+            expect(parseInt(gridObj.getRows()[0].getAttribute('aria-rowindex').toString(), 10) - 1).toBe(50);
         });
         setTimeout(done, 400);
     });
@@ -462,8 +463,8 @@ describe('Infinite scroll cache mode scroll settings property check => ', () => 
         let rowElements: Element[] = gridObj.getRows();
         let value: number = (initialRowsCount + gridObj.pageSettings.pageSize) - 1;
         expect(rowElements.length).toBe(initialRowsCount + gridObj.pageSettings.pageSize);
-        expect(rowElements[0].getAttribute('data-rowindex')).toBe('0');
-        expect(parseInt(rowElements[rowElements.length - 1].getAttribute('data-rowindex'))).toBe(value);
+        expect(parseInt(rowElements[0].getAttribute('aria-rowindex').toString(), 10) - 1).toBe(0);
+        expect(parseInt(rowElements[rowElements.length - 1].getAttribute('aria-rowindex')) - 1).toBe(value);
         expect((gridObj.infiniteScrollModule as any).infiniteCache[6]).toBeDefined();
         expect((gridObj.infiniteScrollModule as any).infiniteCache[7]).toBeUndefined();
     });
@@ -474,7 +475,7 @@ describe('Infinite scroll cache mode scroll settings property check => ', () => 
     it('Ensure rows count after second scroll', function () {
         let initialRowsCount: number = gridObj.infiniteScrollSettings.maxBlocks * gridObj.pageSettings.pageSize;
         let rowElements: Element[] = gridObj.getRows();
-        expect(rowElements[rowElements.length - 1].getAttribute('data-rowindex')).toBe('349');
+        expect(parseInt(rowElements[rowElements.length - 1].getAttribute('aria-rowindex')) - 1).toBe(349);
         expect((gridObj.infiniteScrollModule as any).infiniteCache[7]).toBeDefined();
     });
     afterAll(() => {
@@ -518,8 +519,8 @@ describe('Infinite scroll cache mode scroll settings property check => ', () => 
             let rowElements: Element[] = gridObj.getRows();
             let value: number = (initialRowsCount + gridObj.pageSettings.pageSize) - 1;
             expect(rowElements.length).toBe(initialRowsCount);
-            expect(parseInt(rowElements[0].getAttribute('data-rowindex'))).toBe(gridObj.pageSettings.pageSize);
-            expect(parseInt(rowElements[rowElements.length - 1].getAttribute('data-rowindex'))).toBe((value));
+            expect(parseInt(rowElements[0].getAttribute('aria-rowindex')) - 1).toBe(gridObj.pageSettings.pageSize);
+            expect(parseInt(rowElements[rowElements.length - 1].getAttribute('aria-rowindex')) - 1).toBe((value));
         });
         afterAll(() => {
             destroy(gridObj);
@@ -659,7 +660,7 @@ describe('Infinite scroll cache mode with frozen columns => ', () => {
         let visibleRowsCount: number = gridObj.infiniteScrollSettings.initialBlocks * gridObj.pageSettings.pageSize;
         expect(gridObj.getRows().length).toBe(visibleRowsCount);
         expect((gridObj as any).contentModule.rowElements.length).toBe(visibleRowsCount);
-        expect(gridObj.getRows()[0].getAttribute('data-rowindex')).toBe(gridObj.pageSettings.pageSize.toString());
+        expect(parseInt(gridObj.getRows()[0].getAttribute('aria-rowindex')) - 1).toBe(gridObj.pageSettings.pageSize);
         // EJ2-850288 - Performance Improvement -  Dynamically changing grid height with infinite scrolling
         expect((gridObj as any).infiniteScrollModule.infiniteCache[2].length).toBeTruthy();
     });
@@ -753,9 +754,9 @@ describe('Infinite scroll cache mode with frozen rows => ', () => {
         expect((gridObj as any).contentModule.rowElements.length).toBe(visibleRowsCount);
         // expect((gridObj as any).infiniteScrollModule.infiniteCache[1][0].length).toBe(gridObj.pageSettings.pageSize);
         // expect((gridObj as any).infiniteScrollModule.infiniteCache[1][1].length).toBe(gridObj.pageSettings.pageSize);
-        expect(contentRows[0].getAttribute('data-rowindex')).toBe(gridObj.frozenRows.toString());
-        expect(contentRows[contentRows.length - 1].getAttribute('data-rowindex')).toBe((visibleRowsCount - 1).toString());
-        expect(hdrRows[0].getAttribute('data-rowindex')).toBe('0');
+        expect(parseInt(contentRows[0].getAttribute('aria-rowindex')) - 1).toBe(gridObj.frozenRows);
+        expect(contentRows[contentRows.length - 1].getAttribute('aria-rowindex')).toBe(visibleRowsCount.toString());
+        expect(parseInt(hdrRows[0].getAttribute('aria-rowindex')) - 1).toBe(0);
     });
 
     it('scroll to bottom', function (done) {
@@ -771,10 +772,10 @@ describe('Infinite scroll cache mode with frozen rows => ', () => {
         expect(hdrRows.length).toBe(gridObj.frozenRows);
         expect(gridObj.getRows().length).toBe(visibleRowsCount + gridObj.frozenRows);
         expect((gridObj as any).contentModule.rowElements.length).toBe(visibleRowsCount + gridObj.frozenRows);
-        expect(contentRows[0].getAttribute('data-rowindex')).toBe(gridObj.pageSettings.pageSize.toString());
+        expect(parseInt(contentRows[0].getAttribute('aria-rowindex')) - 1).toBe(gridObj.pageSettings.pageSize);
         // expect((gridObj as any).infiniteScrollModule.infiniteCache[4][0].length).toBe(gridObj.pageSettings.pageSize);
         // expect((gridObj as any).infiniteScrollModule.infiniteCache[4][1].length).toBe(gridObj.pageSettings.pageSize);
-        expect(contentRows[contentRows.length - 1].getAttribute('data-rowindex')).toBe(((visibleRowsCount + gridObj.pageSettings.pageSize) - 1).toString());
+        expect(contentRows[contentRows.length - 1].getAttribute('aria-rowindex')).toBe((visibleRowsCount + gridObj.pageSettings.pageSize).toString());
     });
 
     afterAll(() => {
@@ -1000,7 +1001,7 @@ describe('Infinite scroll normal mode with edit feature teating => ', () => {
                 expect(gridObj.isEdit).toBeFalsy();
                 expect(gridObj.dataSource[199][(gridObj.columns[0] as Column).field]).not.toBe(data1);
                 expect(gridObj.dataSource[199][(gridObj.columns[0] as Column).field]).toBe(data1 - 1);
-                expect((gridObj.element.querySelector('.e-row')as any).getAttribute('data-rowindex')).toBe('0');
+                expect(parseInt((gridObj.element.querySelector('.e-row')as any).getAttribute('aria-rowindex')) - 1).toBe(0);
                 gridObj.actionComplete = null;
                 done();
             }
@@ -1068,7 +1069,7 @@ describe('Infinite scroll normal mode with edit feature teating => ', () => {
             if (args.requestType === 'delete') {
                 expect((gridObj.dataSource as any).length).toBe(dataLength - 1);
                 expect((gridObj.element.querySelectorAll('.e-row') as any).length).toBe(rowsCount);
-                expect((gridObj.element.querySelectorAll('.e-row')[rowIndex] as any).getAttribute('data-rowindex')).toBe(rowIndex.toString());
+                expect((gridObj.element.querySelectorAll('.e-row')[rowIndex] as any).getAttribute('aria-rowindex')).toBe((rowIndex + 1).toString());
                 expect(gridObj.dataSource[rowIndex][(gridObj.columns[0] as Column).field]).toBe(data1 + 1);
                 expect(gridObj.dataSource[199][(gridObj.columns[0] as Column).field]).toBe(data2 + 1);
                 expect(gridObj.getContent().firstElementChild.scrollTop).toBe(scrollTop);
@@ -1591,13 +1592,13 @@ describe('Infinite scroll with grouping collapse testing => ', () => {
             if (triggerCount === 2) {
                 expect(gridObj.getContent().querySelectorAll('.e-groupcaption').length).toBe(2);
                 expect(gridObj.getContent().querySelectorAll('.e-summaryrow').length).toBe(1);
-                const skip: number = parseInt(gridObj.getRows()[gridObj.getRows().length - 1].getAttribute('data-rowindex'), 10);
+                const skip: number = parseInt(gridObj.getRows()[gridObj.getRows().length - 1].getAttribute('aria-rowindex'), 10) - 1;
                 expect(skip).toBe(nextCount);
                 gridObj.dataBound = undefined;
                 done();
             } else {
                 const caption: any = gridObj.getRowsObject()[0];
-                const skip: number = parseInt(gridObj.getRows()[gridObj.getRows().length - 1].getAttribute('data-rowindex'), 10) + 1;
+                const skip: number = parseInt(gridObj.getRows()[gridObj.getRows().length - 1].getAttribute('aria-rowindex'), 10);
                 const size: number = gridObj.pageSettings.pageSize;
                 expect(skip).toBe(caption.data.count);
                 expect((gridObj.infiniteScrollModule as any).groupCaptionAction).toBe('refresh');
@@ -1622,7 +1623,7 @@ describe('Infinite scroll with grouping collapse testing => ', () => {
 
     it('Complex caption collapse =>', (done: Function) => {
         const dataBound = () => {
-            const skip: number = parseInt(gridObj.getRows()[gridObj.getRows().length - 1].getAttribute('data-rowindex'), 10) + 1;
+            const skip: number = parseInt(gridObj.getRows()[gridObj.getRows().length - 1].getAttribute('aria-rowindex'), 10);
             expect(skip).toBe(gridObj.pageSettings.pageSize * (gridObj.infiniteScrollSettings.initialBlocks * 2));
             gridObj.dataBound = undefined;
             done();
@@ -2341,6 +2342,135 @@ describe('EJ2-907977 - Focus is lost when enableColumnVirtualization is enabled 
         gridObj.getContent().firstElementChild.scrollLeft = 1200;
         setTimeout(done, 200);
     });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Infinite Scroll with enableCache: hierarchical grid', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                height: 300,
+                enableInfiniteScrolling: true,
+                infiniteScrollSettings: { enableCache: true },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 75 },
+                    { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 75 },
+                    { field: 'ShipCity', headerText: 'Ship City', textAlign: 'Left', width: 100 },
+                ],
+                childGrid: {
+                    dataSource: employeeData,
+                    queryString: 'EmployeeID',
+                    allowPaging: true,
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 75 },
+                        { field: 'FirstName', headerText: 'First Name', textAlign: 'Left', width: 100 },
+                        { field: 'Title', headerText: 'Title', textAlign: 'Left', width: 120 },
+                    ]
+                }
+            }, done);
+    });
+
+    it('Expand second child grid', (done: Function) => {
+        (gridObj.getContentTable().querySelectorAll('.e-detailrowcollapse')[1] as HTMLElement).click();
+        setTimeout(done, 500);
+    });
+
+    it('Scroll to bottom', (done: Function) => {
+        gridObj.dataBound = () => {
+            setTimeout(done, 500);
+        };
+        expect(gridObj.getContentTable().querySelector('.e-detailrow')).not.toBeNull;
+        expect(gridObj.getContentTable().querySelector('.e-detailrow').getAttribute('data-uid')).toBe(gridObj.getRowsObject()[2].uid);
+        gridObj.getContent().firstElementChild.scrollTop = 5500;
+    });
+
+    it('Expand last child grid', (done: Function) => {
+        expect(gridObj.getContentTable().querySelector('.e-detailrow')).toBeNull;
+        const detailrowcollapse = gridObj.getContentTable().querySelectorAll('.e-detailrowcollapse');
+        (detailrowcollapse[detailrowcollapse.length - 1] as HTMLElement).click();
+        setTimeout(done, 500);
+    });
+
+    it('Scroll to top', (done: Function) => {
+        gridObj.dataBound = () => {
+            setTimeout(done, 500);
+        };
+        expect(gridObj.getContentTable().querySelector('.e-detailrow')).not.toBeNull;
+        expect(gridObj.getContentTable().querySelector('.e-detailrow').getAttribute('data-uid'))
+            .toBe(gridObj.getRowsObject()[gridObj.getRowsObject().length - 1].uid);
+        gridObj.getContent().firstElementChild.scrollTop = 0;
+    });
+
+    it('Check detail row', (done: Function) => {
+        expect(gridObj.getContentTable().querySelector('.e-detailrow')).toBeNull;
+        setTimeout(done, 500);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Infinite Scroll with enableCache: detail template', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                height: 300,
+                enableInfiniteScrolling: true,
+                infiniteScrollSettings: { enableCache: true },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 75 },
+                    { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 75 },
+                    { field: 'ShipCity', headerText: 'Ship City', textAlign: 'Left', width: 100 },
+                ],
+                detailTemplate : '<h2>Detail Template</h2>',
+            }, done);
+    });
+
+    it('Expand second detailTemplate', (done: Function) => {
+        (gridObj.getContentTable().querySelectorAll('.e-detailrowcollapse')[1] as HTMLElement).click();
+        setTimeout(done, 500);
+    });
+
+    it('Scroll to bottom', (done: Function) => {
+        gridObj.dataBound = () => {
+            setTimeout(done, 500);
+        };
+        expect(gridObj.getContentTable().querySelector('.e-detailrow')).not.toBeNull;
+        expect(gridObj.getContentTable().querySelector('.e-detailrow').getAttribute('data-uid')).toBe(gridObj.getRowsObject()[2].uid);
+        gridObj.getContent().firstElementChild.scrollTop = 5500;
+    });
+
+    it('Expand last detailTemplate', (done: Function) => {
+        expect(gridObj.getContentTable().querySelector('.e-detailrow')).toBeNull;
+        const detailrowcollapse = gridObj.getContentTable().querySelectorAll('.e-detailrowcollapse');
+        (detailrowcollapse[detailrowcollapse.length - 1] as HTMLElement).click();
+        setTimeout(done, 500);
+    });
+
+    it('Scroll to top', (done: Function) => {
+        gridObj.dataBound = () => {
+            setTimeout(done, 500);
+        };
+        expect(gridObj.getContentTable().querySelector('.e-detailrow')).not.toBeNull;
+        expect(gridObj.getContentTable().querySelector('.e-detailrow').getAttribute('data-uid'))
+            .toBe(gridObj.getRowsObject()[gridObj.getRowsObject().length - 1].uid);
+        gridObj.getContent().firstElementChild.scrollTop = 0;
+    });
+
+    it('Check detail row', (done: Function) => {
+        expect(gridObj.getContentTable().querySelector('.e-detailrow')).toBeNull;
+        setTimeout(done, 500);
+    });
+
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;

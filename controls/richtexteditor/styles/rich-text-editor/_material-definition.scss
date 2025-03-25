@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $rte-border-size: 1px !default;
 $rte-2px-border-size: 2px !default;
 $rte-border-type: solid !default;
@@ -76,7 +78,7 @@ $rte-tb-active-font-color: $grey-black !default;
 $rte-tb-item-active-border: 0 !default;
 $rte-expand-tb-border-bottom: $rte-border-size $rte-border-type rgb(250, 250, 250) !default;
 $rte-color-picker-active-bg: inherit !default;
-$rte-drop-btn-active-bg: mix($rte-btn-color, $grey-50, 32%) !default;
+$rte-drop-btn-active-bg: color.mix($rte-btn-color, $grey-50, 32%) !default;
 $rte-drop-btn-active-color: $grey-black !default;
 $rte-drop-btn-active-border-color: inherit !default;
 $rte-split-btn-active-hover-font-color: $grey-black !default;

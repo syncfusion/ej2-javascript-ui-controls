@@ -95,4 +95,18 @@ export interface RecurrenceEditorModel extends ComponentModel{
      */
     change?: EmitType<RecurrenceEditorChangeEventArgs>;
 
+    /**
+     * Triggers when the component is created.
+     *
+     * @event 'created'
+     */
+    created?: EmitType<Object>;
+
+    /**
+     * Triggers when the component is destroyed.
+     *
+     * @event 'destroyed'
+     */
+    destroyed?: EmitType<Object>;
+
 }

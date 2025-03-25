@@ -5,6 +5,7 @@ import { Browser, isNullOrUndefined, closest, detach, createElement } from '@syn
 import { RichTextEditor, QuickToolbar, IRenderer, DialogType } from './../../../src/index';
 import { NodeSelection } from './../../../src/selection/index';
 import { renderRTE, destroy, setCursorPoint, dispatchEvent, androidUA, iPhoneUA, currentBrowserUA } from "./../render.spec";
+import { DELETE_EVENT_INIT } from '../../constant.spec';
 
 function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
     return rteObj.quickToolbarModule;
@@ -496,7 +497,7 @@ describe('Audio Module', () => {
             }, 200);
         });
      });
-
+     
      describe('Audio deleting when press backspace button', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -2547,15 +2548,54 @@ describe('Audio Module', () => {
         });
     });
 
+    describe(' 923367- IFrame: Both Replaced and Original Audio Files Displayed After Replacing Web URL Audio File with an existing browsed audio file - ', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                value: `<p><span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span><br></p>`,
+                iframeSettings: {
+                    enable: true
+                },
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it(' Test - Replace the audio ', (done) => {
+            let iframeBody: HTMLElement = (document.querySelector('iframe') as HTMLIFrameElement).contentWindow.document.body as HTMLElement;
+            let audio: HTMLElement = iframeBody.querySelector(".e-audio-wrap");
+            setCursorPoint(audio, 0);
+            dispatchEvent(audio, 'mousedown');
+            audio.click();
+            dispatchEvent(audio, 'mouseup');
+            setTimeout(() => {
+                let audioBtn: HTMLElement = document.getElementById(controlId + "_quick_AudioReplace");
+                audioBtn.parentElement.click();
+                let audioFile = "http://commondatastorage.googleapis.com/codeskulptor-assets/week7-button.m4a";
+                let dialog: HTMLElement = document.getElementById(controlId + "_audio");
+                let urlInput: HTMLInputElement = dialog.querySelector('.e-audio-url');
+                urlInput.value = audioFile;
+                let insertButton: HTMLElement = dialog.querySelector('.e-insertAudio.e-primary');
+                urlInput.dispatchEvent(new Event("input"));
+                insertButton.click();
+                let updateAudio: HTMLSourceElement = iframeBody.querySelector(".e-audio-wrap source");
+                expect((iframeBody.querySelectorAll('audio').length)).toBe(1);
+                expect(updateAudio.src === audioFile).toBe(true);
+                done();
+            }, 200);
+        });
+    });
+
     describe('939661: Audio progress bar event is not unbinding after playback in Safari', () => {
         let editor: RichTextEditor;
         const defaultUA: string = navigator.userAgent;
         const safari: string = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15";
         beforeAll(() => {
-            Object.defineProperty(navigator, 'userAgent', {
-                value: safari,
-                configurable: true
-            });
+            Browser.userAgent = safari;
             editor = renderRTE({
                 value: `<p><audio controls>
                             <source src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Audio.wav" type="audio/mp3" />
@@ -2565,10 +2605,7 @@ describe('Audio Module', () => {
         });
         afterAll(() => {
             destroy(editor);
-            Object.defineProperty(navigator, 'userAgent', {
-                value: defaultUA,
-                configurable: true
-            });
+            Browser.userAgent = defaultUA;
         });
 
         it('Should not call the prevent default for the click of the audio SAFARI.', (done: Function) => {
@@ -2587,6 +2624,35 @@ describe('Audio Module', () => {
             }, 100);
         });
     });
-
+  
+    describe('Bug-934076- Audio is not deleted when press delete button', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let innerHTML1: string = `<ul><li>Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert im<span class="e-audio-wrap" contenteditable="false" title="horse.mp3"><span class="e-clickElem"><audio class="e-rte-audio e-audio-inline" controls=""><source src="/base/spec/content/audio/RTE-Audio.mp3" type="audio/mp3"></audio></span></span>ages, tables, audio, and video.</li><li>Inline styles include bold, italic, underline, strikethrough, hyperlinks, and more.</li></ul>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Audio', 'Bold']
+                },
+                value: innerHTML1
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Audio delete action checking using delete key', (done: Function) => {
+            let node: any = (rteObj as any).inputElement.childNodes[0].childNodes[0].childNodes[0];
+            setCursorPoint(node, 101);
+            const deleteKeyDownEvent: KeyboardEvent =  new KeyboardEvent('keydown', DELETE_EVENT_INIT);
+            rteObj.inputElement.dispatchEvent(deleteKeyDownEvent);
+            setTimeout(() => {
+                expect((<any>rteObj).inputElement.querySelector('.e-audio-wrap')).toBe(null);
+                expect((<any>rteObj).inputElement.childNodes[0].childNodes[0].childElementCount === 0).toBe(true);
+                done();
+            }, 200);
+        });
+     });
  });
  

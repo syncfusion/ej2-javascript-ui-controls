@@ -6,7 +6,8 @@ import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, productData, filterData, ScrollingData } from '../util/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { CellModel, getModel, SheetModel, RowModel, BeforeCellUpdateArgs, getRangeIndexes, getCell, ImageModel, Workbook, getSheetIndex, getSheetNameCount, getSelectedRange, duplicateSheet, getRangeAddress, processIdx } from '../../../src/workbook/index';
-import { getRowHeight, DataSourceChangedEventArgs } from '../../../src/index';
+import { getRowHeight, DataSourceChangedEventArgs, DialogBeforeOpenEventArgs, focus } from '../../../src/index';
+import { Dialog } from './../../../src//spreadsheet/services/dialog';
 import { EmitType, setCurrencyCode, L10n, createElement } from '@syncfusion/ej2-base';
 import { PredicateModel } from '@syncfusion/ej2-grids';
 import { WorkbookHelper } from '../../workbook/util/workbookhelper.spec';
@@ -1660,6 +1661,68 @@ describe('Spreadsheet base module ->', () => {
         });
     });
 
+    describe('Dialog cancel testing ->', () => {
+        let dialogName: string; let spreadsheet: Spreadsheet; let dlgEle: HTMLElement; let dlgObj: Dialog; let sheet: SheetModel;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                dialogBeforeOpen: (args: DialogBeforeOpenEventArgs): void => {
+                    args.cancel = args.dialogName === dialogName;
+                },
+                created: (): void => {
+                    spreadsheet = helper.getInstance();
+                    sheet = spreadsheet.sheets[0];
+                    dlgObj = spreadsheet.serviceLocator.getService('dialog');
+                }
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Protect dialog testing', (done: Function) => {
+            dialogName = 'ProtectSheetDialog';
+            helper.switchRibbonTab(4);
+            helper.click('#' + helper.id + '_protect');
+            expect(helper.getElementFromSpreadsheet('.e-dialog.e-protect-dlg')).toBeNull();
+            expect(dlgObj.dialogInstance).toBeNull();
+            expect(document.activeElement).toBe(spreadsheet.element);
+            dialogName = 'ProtectWorkbook';
+            helper.click('#' + helper.id + '_protectworkbook');
+            expect(helper.getElementFromSpreadsheet('.e-dialog.e-protectworkbook-dlg')).toBeNull();
+            expect(dlgObj.dialogInstance).toBeNull();
+            expect(document.activeElement).toBe(spreadsheet.element);
+            done();
+        });
+        it('Password re-enter dialog testing', (done: Function) => {
+            dialogName = '';
+            helper.click('#' + helper.id + '_protect');
+            dlgEle = helper.getElementFromSpreadsheet('.e-dialog.e-protect-dlg');
+            expect(dlgEle).not.toBeNull();
+            setTimeout((): void => {
+                expect(dlgEle.classList.contains('e-popup-open')).toBeTruthy();
+                const pwdInput: HTMLInputElement = dlgEle.querySelector('.e-sheet-password-content .e-input');
+                pwdInput.value = 'test';
+                (dlgEle.querySelector('.e-footer-content .e-btn.e-primary') as HTMLButtonElement).click();
+                dlgEle = helper.getElementFromSpreadsheet('.e-dialog.e-reenterpwd-dlg');
+                expect(dlgEle).not.toBeNull();
+                setTimeout((): void => {
+                    expect(dlgEle.classList.contains('e-popup-open')).toBeTruthy();
+                    dlgObj.hide(true);
+                    dialogName = 'Re-enterPassword';
+                    dlgEle = helper.getElementFromSpreadsheet('.e-dialog.e-protect-dlg');
+                    (dlgEle.querySelector('.e-footer-content .e-btn.e-primary') as HTMLButtonElement).click();
+                    expect(helper.getElementFromSpreadsheet('.e-dialog.e-reenterpwd-dlg')).toBeNull();
+                    expect(helper.getElementFromSpreadsheet('.e-dialog.e-protect-dlg')).toBeNull();
+                    expect(dlgObj.dialogInstance).toBeNull();
+                    expect(document.activeElement).toBe(spreadsheet.element);
+                    expect(sheet.isProtected).toBeTruthy();
+                    expect(sheet.password).toBe('test');
+                    done();
+                }, 30);
+            }, 30);
+        });
+    });
+
     describe('EJ2-882379 -> Update row height calculations with standard height property ->', () => {
         beforeEach((done: Function) => {
             helper.initializeSpreadsheet({
@@ -1978,19 +2041,21 @@ describe('Spreadsheet base module ->', () => {
             });
         });
         describe('F163837 ->', () => {
-            beforeEach((done: Function) => {
+            beforeAll((done: Function) => {
                 setCurrencyCode('EUR');
                 helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: '7', format: '$#,##0.00' }] }] }] }, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
                 setCurrencyCode('USD');
             });
             it('Speadsheet globalization - setCurrencyCode conflict with component language', (done: Function) => {
-                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('€7.00');
-                helper.getElement('#' + helper.id + '_number_format').click();
-                expect(helper.getElement('#' + helper.id + '_Currency .e-numformat-preview-text').textContent).toBe('€7.00');
-                done();
+                setTimeout((): void => {
+                    expect(helper.invoke('getCell', [0, 0]).textContent).toBe('€7.00');
+                    helper.getElement('#' + helper.id + '_number_format').click();
+                    expect(helper.getElement('#' + helper.id + '_Currency .e-numformat-preview-text').textContent).toBe('€7.00');
+                    done();
+                }, 50);
             });
         });
         describe('fb24579 ->', () => {
@@ -2747,12 +2812,12 @@ describe('Spreadsheet base module ->', () => {
                 },20);
             });
         });
-    
+
         describe('EJ2-936024 ->', () => {
             beforeAll((done: Function) => {
                 let rowModel: Object[] = [];
-                for (let i: number = 1; i < 100; i++) {
-                    rowModel[i as number] = { hidden: true };
+                for (let i = 1; i < 100; i++) {
+                    rowModel[i] = { hidden: true };
                 }
                 helper.initializeSpreadsheet({ sheets: [{ rows: rowModel , ranges: [{ dataSource: defaultData }], rowCount: 200, colCount: 200, frozenRows: 1 }], scrollSettings: { enableVirtualization: true, isFinite: true } }, done);
             });
@@ -2765,19 +2830,27 @@ describe('Spreadsheet base module ->', () => {
                 expect(spreadsheet.sheets[0].rows[23].hidden).toBeTruthy();
                 expect(spreadsheet.sheets[0].rows[92].hidden).toBeTruthy();
                 expect(spreadsheet.sheets[0].rows[99].hidden).toBeTruthy();
-                helper.invoke('getScrollElement').scrollLeft = 3392;
-                spreadsheet.notify(onContentScroll, { scrollTop: 0, scrollLeft: 3392 });
+                spreadsheet.goTo('Sheet1!BB1');
                 setTimeout((): void => {
-                    expect(spreadsheet.sheets[0].paneTopLeftCell).toBe('BB101');
+                    expect(spreadsheet.sheets[0].paneTopLeftCell).toBe('BB103');
                     expect(spreadsheet.sheets[0].topLeftCell).toBe('BB1');
-                    helper.invoke('getMainContent').parentElement.scrollTop = 980;
-                    spreadsheet.notify(onContentScroll, { scrollTop: 980, scrollLeft: 3392 });
+                    let col: HTMLTableRowElement = helper.invoke('getColHeaderTable').rows[0];
+                    expect(col.firstElementChild.getAttribute('aria-colindex')).toBe('39');
+                    expect(col.firstElementChild.textContent).toBe('AM');
+                    expect(col.lastElementChild.getAttribute('aria-colindex')).toBe('81');
+                    expect(col.lastElementChild.textContent).toBe('CC');
+                    spreadsheet.goTo('Sheet1!BB150');
                     setTimeout((): void => {
                         expect(spreadsheet.sheets[0].paneTopLeftCell).toBe('BB150');
                         expect(spreadsheet.sheets[0].topLeftCell).toBe('BB1');
+                        col = helper.invoke('getColHeaderTable').rows[0];
+                        expect(col.firstElementChild.getAttribute('aria-colindex')).toBe('39');
+                        expect(col.firstElementChild.textContent).toBe('AM');
+                        expect(col.lastElementChild.getAttribute('aria-colindex')).toBe('81');
+                        expect(col.lastElementChild.textContent).toBe('CC');
                         done();
-                    });
-                });
+                    }, 20);
+                }, 20);
             });
         });
     });
@@ -3853,6 +3926,27 @@ describe('Spreadsheet base module ->', () => {
         //     promise = spreadsheet.sort();
         //     done();
         // });
+
+        it('addToolbarItems method without index argument', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.addToolbarItems('Home', [{ type: 'Separator' }, { text: 'Custom', tooltipText: 'Custom Btn' }]);
+            expect(spreadsheet.activeSheetIndex).toEqual(0);
+            done();
+        });
+
+        it('hideRibbonTabs method with hiding all the ribbon items', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.hideRibbonTabs(['Home','Insert','Formulas','Data','View']);
+            expect(spreadsheet.activeSheetIndex).toEqual(0);
+            done();
+        });
+
+        it('hideRibbonTabs method with unhiding all the ribbon items', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.hideRibbonTabs(['Home','Insert','Formulas','Data','View'], false);
+            expect(spreadsheet.activeSheetIndex).toEqual(0);
+            done();
+        }); 
     });
     describe('Workbook Public methods ->', () => {
         beforeAll((done: Function) => {
@@ -3986,20 +4080,28 @@ describe('Spreadsheet base module ->', () => {
             helper.invoke('destroy');
         });
         it('Change RTL mode with allowImage property as false.', (done: Function) => {
-            const spreadsheet: Spreadsheet = helper.getInstance();
-            helper.invoke('insertChart', [[{ type: 'Column', range: 'D1:E5' }]]);
-            helper.invoke('insertChart', [[{ type: 'Pie', range: 'D1:E5' }]]);
-            spreadsheet.enableRtl = true;
-            expect(spreadsheet.activeSheetIndex).toEqual(0);
-            done();
+            setTimeout((): void => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('insertChart', [[{ type: 'Column', range: 'D1:E5' }]]);
+                helper.invoke('insertChart', [[{ type: 'Pie', range: 'D1:E5' }]]);
+                spreadsheet.enableRtl = true;
+                setTimeout((): void => {
+                    expect(spreadsheet.activeSheetIndex).toEqual(0);
+                    done();
+                }, 20);
+            }, 30);
         });
         it('Change currencyCode Property.', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             setCurrencyCode('EUR');
-            expect(spreadsheet.activeSheetIndex).toEqual(0);
-            setCurrencyCode('USD');
-            expect(spreadsheet.activeSheetIndex).toEqual(0);
-            done();
+            setTimeout((): void => {
+                expect(spreadsheet.activeSheetIndex).toEqual(0);
+                setCurrencyCode('USD');
+                setTimeout((): void => {
+                    expect(spreadsheet.activeSheetIndex).toEqual(0);
+                    done();
+                });
+            });
         });
     });
     describe('Insert delete method with template. ->', () => {

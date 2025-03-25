@@ -7,7 +7,7 @@ import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Border, Font, Animation, EmptyPointSettings, Connector, Accessibility } from '../../common/model/base';
 import { Rect, Size, PathOption, measureText } from '@syncfusion/ej2-svg-base';
 import { ChartLocation, stringToNumber, appendChildElement, subtractRect } from '../../common/utils/helper';
-import { AccumulationType, AccumulationLabelPosition, PyramidModes } from '../model/enum';
+import { AccumulationType, AccumulationLabelPosition, PyramidModes, FunnelModes } from '../model/enum';
 import { IAccSeriesRenderEventArgs, IAccPointRenderEventArgs, IAccTextRenderEventArgs } from '../model/pie-interface';
 import { LegendShape, SelectionPattern } from '../../common/utils/enum';
 import { AccumulationDataLabelSettingsModel } from '../model/acc-base-model';
@@ -724,6 +724,17 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public pyramidMode: PyramidModes;
 
     /**
+     * Defines the rendering mode for the funnel chart.
+     * Available options are:
+     * * Standard - Displays a funnel shape that narrows down to a point.
+     * * Trapezoid - Displays a funnel shape with parallel sides near the top.
+     *
+     * @default 'Standard'
+     */
+    @Property('Standard')
+    public funnelMode: FunnelModes;
+
+    /**
      * Sets the opacity of the series, with a value between 0 and 1 where 0 is fully transparent and 1 is fully opaque.
      *
      * @default 1.
@@ -1048,6 +1059,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         const pointId: string = accumulation.element.id + '_Series_' + this.index + '_Point_';
         let option: PathOption;
         let patternFill: string;
+        const options: PathOption[] = []; const visiblePoints: AccPoints[] = [];
         const patterns: SelectionPattern[] = ['Chessboard', 'Dots', 'DiagonalForward', 'Crosshatch', 'Pacman', 'DiagonalBackward', 'Grid', 'Turquoise', 'Star', 'Triangle', 'Circle', 'Tile', 'HorizontalDash', 'VerticalDash', 'Rectangle', 'Box', 'VerticalStripe', 'HorizontalStripe', 'Bubble'];
         for (const point of this.points) {
             point.percentage = (+(point.y / this.sumOfPoints * 100).toFixed(2));
@@ -1067,10 +1079,22 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
                 pointId + point.index, patternFill, argsData.border.width || 1, argsData.border.color || point.color, this.opacity,
                 argsData.series.dashArray, ''
             );
-            accumulation[(firstToLowerCase(this.type) + 'SeriesModule')].
-                renderPoint(point, this, accumulation, option, seriesGroup, redraw, previouRadius, previousCenter, pointAnimation);
+            if (this.funnelMode === 'Trapezoidal' && this.type === 'Funnel') {
+                options.push(option);
+                if (point.visible) {
+                    visiblePoints.push(point);
+                }
+            } else {
+                accumulation[(firstToLowerCase(this.type) + 'SeriesModule')].
+                    renderPoint(point, this, accumulation, option, seriesGroup, redraw, previouRadius, previousCenter, pointAnimation);
+            }
         }
-        appendChildElement(false, accumulation.getSeriesElement(), seriesGroup, redraw);
+        if (this.funnelMode === 'Trapezoidal' && this.type === 'Funnel') {
+            accumulation[(firstToLowerCase(this.type) + 'SeriesModule')].
+                renderTrapezoidalFunnel(this, visiblePoints, accumulation, options, seriesGroup, redraw);
+        } else {
+            appendChildElement(false, accumulation.getSeriesElement(), seriesGroup, redraw);
+        }
     }
     /**
      * Method render the datalabel elements for accumulation chart.

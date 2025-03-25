@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 /*! Form fabric theme wise override definitions and variables */
 // form field styles
 $field-label-color: $neutral-primary !default;
@@ -26,8 +28,8 @@ $form-group-title-border-height: 1px !default;
 $form-group-title-border-bottom-style: 1px solid $group-title-border-color !default;
 
 //tooltip styles
-$form-tooltip-background-color: lighten($error-font, 25%) !default;
-$form-tooltip-color: darken($error-bg, 15%) !default;
+$form-tooltip-background-color: color.adjust($error-font, $lightness: 25%) !default;
+$form-tooltip-color: color.adjust($error-bg, $lightness: -15%) !default;
 $form-validation-message-font-size: 14px;
 
 // form common styles

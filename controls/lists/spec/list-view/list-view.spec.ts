@@ -4058,7 +4058,6 @@ describe('ListView select event cancellation test cases', () => {
         ele.remove();
     });
 });
-
 describe('ListBase - createList with enableHtmlSanitizer', () => {
     let listObj: ListView;
     let ele: HTMLElement;

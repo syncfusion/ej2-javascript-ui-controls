@@ -174,7 +174,7 @@
 
     .e-list-text {
       line-height: $treeview-big-text-height;
-      @if $skin-name != 'bootstrap4' {
+      @if $skin-name != 'bootstrap4' or $skin-name != 'tailwind3' {
         min-height: $treeview-big-text-height;
       }
       @else if $skin-name == 'bootstrap4' {
@@ -182,6 +182,7 @@
       }
       @if $skin-name == 'tailwind3' {
         padding: $treeview-big-text-padding;
+        min-height: $treeview-big-item-height;
       }
 
       .e-input-group {
@@ -393,6 +394,9 @@
       .e-icon-expandable {
         @if $skin-name == 'bootstrap4' {
           padding: $treeview-big-drag-icon-padding;
+        }
+        @else if $skin-name == 'bootstrap5.3' {
+          padding: $treeview-drag-icon-padding;
         }
       }
 

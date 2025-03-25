@@ -5,8 +5,8 @@ import * as cls from '../../common/base/css-constant';
 import { IAction, NumberFormattingEventArgs, PivotActionInfo } from '../base/interface';
 import * as events from '../../common/base/constant';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
-import { FormatSettingsModel } from '../../model/datasourcesettings-model';
-import { IFormatSettings } from '../../base/engine';
+import { CalculatedFieldSettingsModel, FormatSettingsModel } from '../../model/datasourcesettings-model';
+import { FieldItemInfo, IFormatSettings } from '../../base/engine';
 import { PivotUtil } from '../../base/util';
 
 /**
@@ -430,6 +430,18 @@ export class NumberFormatting implements IAction {
         };
         this.parent.trigger(events.numberFormatting, eventArgs, (observedArgs: NumberFormattingEventArgs) => {
             if (!observedArgs.cancel) {
+                if (this.parent.dataType === 'olap') {
+                    for (let i: number = 0; i < observedArgs.formatSettings.length; i++) {
+                        const fieldInfo: FieldItemInfo =
+                            PivotUtil.getFieldInfo(observedArgs.formatSettings[i as number].name, this.parent);
+                        this.parent.dataSourceSettings.calculatedFieldSettings.forEach(
+                            (calculatedField: CalculatedFieldSettingsModel) => {
+                                if (calculatedField.name === fieldInfo.fieldName) {
+                                    calculatedField.formatString = observedArgs.formatSettings[i as number].format;
+                                }
+                            });
+                    }
+                }
                 this.parent.setProperties({ dataSourceSettings: { formatSettings: observedArgs.formatSettings } }, true);
                 const actionInfo: PivotActionInfo = {
                     numberFormattingInfo: this.parent.dataSourceSettings.formatSettings as IFormatSettings[]

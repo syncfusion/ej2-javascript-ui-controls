@@ -378,7 +378,7 @@ describe('RowEdit in Frozen Rows and columns', () => {
     it('Record double click', () => {
         gridObj3.actionComplete = (args?: any): void => {
             if (gridObj3.element.getElementsByClassName('e-headercontent')[0].getElementsByClassName('e-editedrow').length > 0) {
-                expect(<any>(gridObj3.element.getElementsByClassName('e-headercontent')[0].getElementsByClassName('e-editedrow')[0].getAttribute('data-rowindex'))).toBe(2);
+                expect(<any>(parseInt(gridObj3.element.getElementsByClassName('e-headercontent')[0].getElementsByClassName('e-editedrow')[0].getAttribute('aria-rowindex'))) - 1).toBe(2);
             }
         };
         const event: MouseEvent = new MouseEvent('dblclick', {
@@ -465,6 +465,37 @@ describe('Bug 851412: script error throws on editing and focus out on a record',
         select('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm', gridObj.element).querySelectorAll('button')[0].click();
         gridObj.grid.actionComplete = actionComplete;
     });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('TreeGrid - isFrozenGrid coverage', () => {
+    let gridObj: TreeGrid;
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid({
+            dataSource: sampleData,
+            height: 317,
+            childMapping: 'subtasks',
+            allowSelection: false,
+            frozenRows: 2,
+            frozenColumns: 1,
+            treeColumnIndex: 1,
+            columns: [
+                { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 60, textAlign: 'Right' },
+                { field: 'taskName', headerText: 'Task Name', width: 150, textAlign: 'Left' },
+                { field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' }
+            ]
+        }, done);
+    });
+
+    it('is Frozen grid enabled is true', (done: Function) => {
+        var isFrozen = (gridObj as any).isFrozenGrid();
+        expect(isFrozen).toBe(true);
+        done();
+    });
+
     afterAll(() => {
         destroy(gridObj);
     });

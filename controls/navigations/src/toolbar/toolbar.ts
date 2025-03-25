@@ -1130,8 +1130,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         else if (itemWidth > eleWidth - navEleWidth) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }

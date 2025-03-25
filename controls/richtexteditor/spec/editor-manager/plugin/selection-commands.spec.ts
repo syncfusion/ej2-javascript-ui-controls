@@ -1455,6 +1455,33 @@ describe('EJ2-46956: Applying background color to multiple span element does not
     });
 });
 
+describe('EJ2-946344: Apply the table cell background color only by clicking on the Quick Toolbar and do not apply when clicking the main toolbar', () => {
+    let rteObj: any;
+    let domSelection: NodeSelection = new NodeSelection();
+    it(' Apply the background color to text of the table when clicking on main toolbar', () => {
+        rteObj = renderRTE({
+            value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td style="width: 33.3333%;" class="">dfbfdb</td><td style="width: 33.3333%;" class="">dfbdfb</td><td style="width: 33.3333%;" class="">dfbfdb</td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>`,
+            toolbarSettings: {
+                items: ['BackgroundColor']
+            }
+        });
+        let rteEle = rteObj.element;
+        let td: Node = rteObj.element.querySelectorAll('td')[1];
+        const range: Range = document.createRange();
+        range.setStart(td.childNodes[0], 1);
+        range.setEnd(td.childNodes[0], 1);
+        domSelection.setRange(document, range);
+        let backgroundColorPicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item .e-dropdown-btn")[0];
+        backgroundColorPicker.click();
+        const colorElement: HTMLElement = document.querySelector('[aria-label="#ffff00ff"]');
+        colorElement.click();
+        expect(rteObj.inputElement.innerHTML).toBe('<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td style="width: 33.3333%;" class="">dfbfdb</td><td style="width: 33.3333%;" class=""><span style="background-color: rgb(255, 255, 0);">dfbdfb</span></td><td style="width: 33.3333%;" class="">dfbfdb</td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><p><br></p>');
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+});
+
 describe('Background Color Apply and Remove - Auto Span Creation in List Item', function () {
     let rteObj: any;
     let domSelection = new NodeSelection();
@@ -2059,7 +2086,7 @@ describe("921530: Font Color Not Updating Correctly on Certain Text.", () => {
     });
     it('parse font tag into span tag', () => {
         const value: string = rteObj.htmlEditorModule.sanitizeHelper(`<span><font color="#0070c0">Sample4</font></span>`); 
-        expect(value).toEqual(`<span><span style="color:#0070c0;">Sample4</span></span>`);
+        expect(value).toEqual(`<span><span style="color: rgb(0, 112, 192);">Sample4</span></span>`);
     });
     it('Apply font family for the list while have multiple span', () => {
         let node1: Node = document.querySelector('ol');
@@ -2332,32 +2359,19 @@ describe('938238 - MAC - Safari - Selection not maintaiend when bold format reve
     let defaultVendor: string = navigator.vendor;
     let safari: string = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15";
     let safariVendor: string = "Apple Computer, Inc.";
-    beforeEach((done: Function) => {
-        Object.defineProperty(navigator, 'userAgent', {
-            value: safari,
-            configurable: true
-        });
-        Object.defineProperty(navigator, 'vendor', {
-            value: safariVendor,
-            configurable: true
-        });
+    beforeAll(() => {
+        Browser.userAgent = safari;
         rteObj = renderRTE({
             value: `<p><strong class="startNode">The</strong> Rich <span style="text-decoration: underline;" class="endNode">Text</span> Editor</p>`,
             toolbarSettings: {
                 items: ['FontSize']
             }
         });
-        done();
     });
-
-    afterEach((done: DoneFn) => {
+    
+    afterAll(() => {
         destroy(rteObj);
         Browser.userAgent = defaultUA;
-        Object.defineProperty(navigator, 'vendor', {
-            value: defaultVendor,
-            configurable: true
-        });
-        done();
     });
     it('Safari - Testing selection is restored when bold format is reverted', (done) => {
         const range: Range = document.createRange();
@@ -2375,18 +2389,9 @@ describe('939682: Console error occurs when applying bold (Ctrl+B) on a selected
     let rteObj: any;
     let domSelection: NodeSelection = new NodeSelection();
     let defaultUA: string = navigator.userAgent;
-    let defaultVendor: string = navigator.vendor;
     let safari: string = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15";
-    let safariVendor: string = "Apple Computer, Inc.";
     beforeAll(() => {
-        Object.defineProperty(navigator, 'userAgent', {
-            value: safari,
-            configurable: true
-        });
-        Object.defineProperty(navigator, 'vendor', {
-            value: safariVendor,
-            configurable: true
-        });
+        Browser.userAgent = safari;
         rteObj = renderRTE({
             value: `<p><img alt="Sky with <br><p style=" font-size:="" 16px;="" font-style:="" normal;="" font-weight:="" 400;="" text-align:="" start;="" text-indent:="" 0px;="" text-transform:="" none;="" white-space:="" text-decoration:="" margin:="" 0.5em="" 0px="" 1em;="" color:="" rgb(32,="" 33,="" 34);="" font-family:="" sans-serif;"="" class="e-rte-image e-imginline">In 1986, Midland re-organised its British and Irish operations, and as part of this process it separated its Northern Bank branches in the Republic of Ireland and transferred into a newly formed company called<span class="Apple-converted-space">&nbsp;</span><a href="https://en.wikipedia.org/wiki/Northern_Bank_(Ireland)_Limited" class="mw-redirect" title="Northern Bank (Ireland) Limited" style="text-decoration: none; color: var(--color-visited,#6a60b0); background: none; border-radius: 2px;">Northern Bank (Ireland) Limited</a>.<sup id="cite_ref-Freitag_4-1" class="reference" style="line-height: 1; white-space: nowrap; font-weight: normal; font-style: normal; font-size: 12.8px;"><a href="https://en.wikipedia.org/wiki/Danske_Bank_(Northern_Ireland)#cite_note-Freitag-4" style="text-decoration: none; color: var(--color-visited,#6a60b0); background: none; border-radius: 2px;"><span class="cite-bracket">[</span>4<span class="cite-bracket">]</span></a></sup></p><div class="mw-heading mw-heading3" style="font-style: normal; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; text-decoration: none; color: var(--color-emphasized,#101418); font-weight: bold; margin: 0.25em 0px; padding-top: 0.5em; padding-bottom: 0px; display: flow-root; font-size: 1.2em; line-height: 1.6; font-family: sans-serif;"><h3 id="Acquisition_by_National_Australia_Bank" style="color: inherit; font-weight: bold; margin: 0px 0px 0.25em; padding: 0px; display: inline; font-size: inherit; border: 0px; font-style: inherit; line-height: 1.6; font-family: inherit;">Acquisition by National Australia Ban</h3></div>`,
             toolbarSettings: {
@@ -2396,14 +2401,7 @@ describe('939682: Console error occurs when applying bold (Ctrl+B) on a selected
     });
     afterAll(() => {
         destroy(rteObj);
-        Object.defineProperty(navigator, 'userAgent', {
-            value: defaultUA,
-            configurable: true
-        });
-        Object.defineProperty(navigator, 'vendor', {
-            value: defaultVendor,
-            configurable: true
-        });
+        Browser.userAgent = defaultUA;
     });
     it('should apply bold format without console errors', (done) => {
         const range: Range = document.createRange();
@@ -2416,6 +2414,29 @@ describe('939682: Console error occurs when applying bold (Ctrl+B) on a selected
         domSelection.setRange(document, range);
         SelectionCommands.applyFormat(document, 'bold', rteObj.element.querySelector('.e-content'), 'P');
         expect(rteObj.element.querySelector('strong')).not.toBeNull();
+        done();
+    });
+});
+
+describe('943013: Script Error Occurs After Pasting a Web URL in a Bold Formatted List and Removing Bold Formatting', () => {
+    let rteObj: any;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            value: `<ul><li style="font-weight: bold;"><strong class="startNode">Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.<br><a class="e-rte-anchor" href="https://npmci.syncfusion.com/development/demos/#/tailwind3/rich-text-editor/tools.html" title="https://npmci.syncfusion.com/development/demos/#/tailwind3/rich-text-editor/tools.html" target="_blank" aria-label="Open in new window">https://npmci.syncfusion.com/development/demos/#/tailwind3/rich-text-editor/tools.html </a><br></strong></li><li><strong>Inline styles include </strong><b>bold</b><strong>, </strong><em><strong>italic</strong></em><strong>, </strong><span style="text-decoration: underline"><strong>underline</strong></span><strong>, </strong><span style="text-decoration: line-through"><strong>strikethrough</strong></span><strong>, </strong><a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" title="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" aria-label="Open in new window"><strong>hyperlinks</strong></a><strong class="endNode">, 😀 and more.</strong></li></ul>`,
+            toolbarSettings: {
+                items: ['Bold']
+            }
+        });
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('Script Error Occurs After Pasting a Web URL in a Bold Formatted List and Removing Bold Formatting', (done) => {
+        let startNode = rteObj.inputElement.querySelector('.startNode');
+        let endNode = rteObj.inputElement.querySelector('.endNode');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode.childNodes[0], endNode.childNodes[0], 0, 14);
+        SelectionCommands.applyFormat(document, 'bold', rteObj.element.querySelector('.e-content'), 'P');
+        expect(rteObj.element.querySelectorAll('strong').length === 0).toBe(true);
         done();
     });
 });
@@ -2463,6 +2484,39 @@ describe('942951: IndexSizeError Shown in Console After Applying Bold Format to 
         domSelection.setRange(document, range);
         SelectionCommands.applyFormat(document, 'bold', rteObj.element.querySelector('.e-content'), 'P');
         expect(h1Element.querySelector('strong')).not.toBeNull();
+        done();
+    });
+});
+describe('943182 - Font Weight Normal added to the List item.', () => {
+    let rteObj: any;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            value: `<ol><li style="font-weight: bold;"><strong>RichTextEditor</strong></li></ol>`,
+            toolbarSettings: {
+                items: ['Bold', 'Italic', 'Underline']
+            }
+        });
+    });
+    afterAll((done) => {
+        destroy(rteObj);
+        done();
+    });
+    it('Should revert the font weight and italic style from the LI element when applied to the list element.', (done) => {
+        var element = rteObj.inputElement.querySelector('OL li').childNodes[0];
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, element.childNodes[0], element.childNodes[0], 0, element.childNodes[0].length);
+        expect(rteObj.inputElement.querySelector('OL LI').style.fontWeight === 'bold').toBe(true);
+        rteObj.element.querySelector('#' + rteObj.getID() + '_toolbar_Bold').click();
+        expect(rteObj.inputElement.querySelector('OL LI').style.fontWeight === '').toBe(true);
+        rteObj.value = `<ol><li style="font-weight: bold; font-style: italic;"><strong><em>RichTextEditor</em></strong></li></ol>`;
+        rteObj.dataBind();
+        element = rteObj.inputElement.querySelector('OL li').childNodes[0];
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, element.childNodes[0].childNodes[0], element.childNodes[0].childNodes[0], 4, 8);
+        expect(rteObj.inputElement.querySelector('OL LI').style.fontWeight === 'bold').toBe(true);
+        rteObj.element.querySelector('#' + rteObj.getID() + '_toolbar_Bold').click();
+        expect(rteObj.inputElement.querySelector('OL LI').style.fontWeight === '').toBe(true);
+        expect(rteObj.inputElement.querySelector('OL LI').style.fontStyle === 'italic').toBe(true);
+        rteObj.element.querySelector('#' + rteObj.getID() + '_toolbar_Italic').click();
+        expect(rteObj.inputElement.querySelector('OL LI').style.fontStyle === '').toBe(true);
         done();
     });
 });

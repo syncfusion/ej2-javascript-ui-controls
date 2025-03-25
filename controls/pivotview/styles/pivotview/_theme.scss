@@ -30,6 +30,10 @@
     .e-columnsheader {
       /* stylelint-disable */
       padding-right: 0 !important;
+    }
+
+    .e-group-rows .e-pivot-button {
+      display: none !important;
       /* stylelint-enable */
     }
   }
@@ -249,6 +253,10 @@
       div span.e-value-sort-icon {
         @if ($skin-name == 'Material3') {
           padding: 0 !important;
+        }
+
+        &.e-value-sort-icon-left {
+          float: left;
         }
       }
     }
@@ -521,11 +529,19 @@
         display: flex;
       }
 
+      .e-axis-row.e-axis-row-hide {
+        display: none;
+      }
+
       .e-left-axis-fields {
         border: $pivotgrid-border-size $pivotgrid-border-type $pivotgrid-default-border-color;
         border-bottom-width: 0;
         border-right-width: 0;
         min-width: 250px;
+
+        &.e-static-server-rendering {
+          width: 250px;
+        }
       }
 
       /* stylelint-disable */
@@ -978,12 +994,7 @@
     /* stylelint-disable */
     .e-chart-grouping-bar .e-axis-value {
       height: auto !important;
-      padding-left: 6px;
       border-bottom: $pivotgrid-border-size $pivotgrid-border-type $pivotgrid-default-border-color;
-
-      .e-group-chart-multi-values {
-        padding-left: 2px;
-      }
 
       .e-group-chart-values-drodown {
         margin: $pivotgrid-group-chart-values-dropdown-margin;
@@ -1565,23 +1576,10 @@
           line-height: 1em !important;
         }
 
-        .e-group-all-fields {
-          .e-pvt-btn-div {
-            .e-pivot-button {
-              max-width: 130px;
-            }
-          }
-        }
-
+        .e-group-chart-rows,
+        .e-group-all-fields,
         .e-group-filters,
-        .e-group-values {
-          .e-pvt-btn-div {
-            .e-pivot-button {
-              max-width: 130px;
-            }
-          }
-        }
-
+        .e-group-values,
         .e-group-columns {
           .e-pvt-btn-div {
             .e-pivot-button {
@@ -1590,7 +1588,6 @@
           }
         }
       }
-
       .e-drillthrough-dialog {
         width: 100% !important;
       }

@@ -150,7 +150,8 @@ export class ResponsiveDialogRenderer implements IAction {
             );
             return this.filterParent;
         } else {
-            this.customColumnDiv = gObj.createElement('div', { className: 'columndiv columnmenudiv', styles: 'width: 100%' });
+            this.customColumnDiv = gObj.createElement('div', { className: 'columndiv columnmenudiv' });
+            this.customColumnDiv.style.width = '100%';
             if (this.parent.showColumnMenu && this.parent.rowRenderingMode === 'Horizontal' && this.action === ResponsiveDialogAction.isColMenu) {
                 this.columnMenuResponsiveContent('AutoFitAll', gObj.localeObj.getConstant('AutoFitAll'));
                 this.columnMenuResponsiveContent('AutoFit', gObj.localeObj.getConstant('AutoFit'));
@@ -433,7 +434,8 @@ export class ResponsiveDialogRenderer implements IAction {
     private getDialogOptions(col: Column, isCustomFilter: boolean, id?: string, column?: Column): Dialog {
         const options: Dialog = new Dialog({
             isModal: true,
-            showCloseIcon: true,
+            showCloseIcon: (id === 'columnchooser' && this.parent.columnChooserSettings.headerTemplate &&
+                !this.parent.enableColumnVirtualization) ? false : true,
             closeOnEscape: false,
             locale: this.parent.locale,
             target: this.parent.adaptiveDlgTarget ? this.parent.adaptiveDlgTarget : document.body,
@@ -607,6 +609,11 @@ export class ResponsiveDialogRenderer implements IAction {
         const gObj: IGrid = this.parent;
         gObj.on(events.enterKeyHandler, this.keyHandler, this);
         const id: string = gObj.element.id + this.getDialogName(this.action);
+        if (this.parent.columnChooserSettings.headerTemplate && !this.parent.enableColumnVirtualization &&
+            this.getHeaderTitle(args, col) === gObj.localeObj.getConstant('ChooseColumns')) {
+            const headerTempteElement: HTMLElement | string = this.parent.columnChooserModule.renderHeader();
+            return headerTempteElement;
+        }
         const header: HTMLElement | string = gObj.createElement('div', { className: 'e-res-custom-element' });
         const titleDiv: HTMLElement = gObj.createElement('div', { className: 'e-dlg-custom-header', id: id });
         titleDiv.innerHTML = this.getHeaderTitle(args, col);
@@ -681,6 +688,20 @@ export class ResponsiveDialogRenderer implements IAction {
         const custommenu: Element = document.querySelector('.e-rescolumnchooser');
         if (custommenu) {
             remove(custommenu);
+        }
+    }
+
+    /**
+     * Function to close the Responsive Column Chooser dialog.
+     * @returns {void}
+     * @hidden
+     */
+    public hideResponsiveColumnChooser(): void {
+        const columnChooserElement: Element = document.querySelector('.e-rescolumnchooser');
+        if (columnChooserElement) {
+            remove(columnChooserElement);
+            this.isCustomDialog = false;
+            this.isDialogClose = false;
         }
     }
 

@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 //default
 $range-bg-color: $bg-base-0 !default;
 $range-primary-color: $selection-bg !default;
@@ -6,9 +8,9 @@ $range-font-color: $selection-font !default;
 $range-active-icon-color: $content-font !default;
 $range-active-state-icon-color: $selection-font !default;
 $range-hover-color: $selection-bg !default;
-$range-hover-content-color: darken($range-hover-color, 15%) !default;
+$range-hover-content-color: color.adjust($range-hover-color, $lightness: -15%) !default;
 $range-today-color: $selection-bg !default;
-$range-selection-bg: darken($selection-bg, 15%) !default;
+$range-selection-bg: color.adjust($selection-bg, $lightness: -15%) !default;
 $range-other-hover-color: $bg-base-0 !default;
 $range-other-month-date: $content-font-alt !default;
 $range-box-shadow: none !default;
@@ -59,7 +61,7 @@ $range-float-clear: both !default;
 $range-start-end-container-height: 35px !default;
 $range-calendar-border: none !default;
 $range-calendar-selection-border: 1px solid $selection-bg !default;
-$range-calendar-hover-border: 1px solid darken($range-hover-color, 15%) !default;
+$range-calendar-hover-border: 1px solid color.adjust($range-hover-color, $lightness: -15%) !default;
 $range-calendar-hover-border-color: none !default;
 $range-calendar-other-month-border: 1px solid $bg-base-0 !default;
 $range-calendar-margin: 0 !default;

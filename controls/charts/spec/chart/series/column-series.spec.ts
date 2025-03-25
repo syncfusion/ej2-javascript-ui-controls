@@ -2307,6 +2307,53 @@ describe('Column Series', () => {
             expect(svg != null).toBe(true);
             done();
         });
+        it('Checking corner radius negative value', function (done) {
+            loaded = (): void => {
+                let svg = document.getElementById('container_Series_0_Point_3');
+                expect(svg != null).toBe(true);
+                expect(svg.getAttribute('d')).toBe('M 287.83125 208.75 Q 287.83125 198.75 297.83125 198.75 L 341.79375 198.75 Q 351.79375 198.75 351.79375 208.75 L 351.79375 288.125 Q 351.79375 298.125 341.79375 298.125 L 297.83125 298.125 Q 287.83125 298.125 287.83125 288.125 L 287.83125 208.75 Z');
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].dataSource = [
+                { country: 'China', gold: 40},
+                { country: 'Japan', gold: 70},
+                { country: 'Australia', gold: 60},
+                { country: 'France', gold: -50},
+                { country: 'Germany', gold: 40},
+                { country: 'Italy', gold: 40},
+                { country: 'Sweden', gold: 30},
+                { country: 'USA', gold: 50 },
+            ];
+            chartObj.series[0].cornerRadius = {topLeft: 10, topRight: 10, bottomLeft: 10, bottomRight: 10};
+            chartObj.refresh();
+        });
+        it('Checking corner radius individual point', function (done) {
+            loaded = (): void => {
+                let svg = document.getElementById('container_Series_0_Point_1');
+                expect(svg != null).toBe(true);
+                expect(svg.getAttribute('d')).toBe('M 105.08125 79.625 Q 105.08125 59.625 125.08125 59.625 L 149.04375000000002 59.625 Q 169.04375000000002 59.625 169.04375000000002 79.625 L 169.04375000000002 183.75 Q 169.04375000000002 198.75 154.04375000000002 198.75 L 120.08125 198.75 Q 105.08125 198.75 105.08125 183.75 L 105.08125 79.625 Z');
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].dataSource = [
+                { country: 'China', gold: 40},
+                { country: 'Japan', gold: 70},
+                { country: 'Australia', gold: 60},
+                { country: 'France', gold: -50},
+                { country: 'Germany', gold: 40},
+                { country: 'Italy', gold: 40},
+                { country: 'Sweden', gold: 30},
+                { country: 'USA', gold: 50 },
+            ];
+            chartObj.pointRender = (args: IPointRenderEventArgs) => {
+                if(args.point.index === 1){
+                    args.cornerRadius = {topLeft: 20, topRight: 20, bottomLeft: 15, bottomRight: 15};
+                }
+            }
+            chartObj.series[0].cornerRadius = {topLeft: 10, topRight: 10, bottomLeft: 10, bottomRight: 10};
+            chartObj.refresh();
+        });
     });
 });
 

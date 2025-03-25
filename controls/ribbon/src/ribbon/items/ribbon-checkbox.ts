@@ -105,7 +105,9 @@ export class RibbonCheckBox {
         const inputEle: HTMLElement = getItemElement(this.parent, controlId);
         if (!inputEle) { return; }
         const checkBoxObj: CheckBox = getComponent(inputEle, CheckBox);
-        checkBoxObj.click();
+        if (!checkBoxObj.disabled) {
+            checkBoxObj.click();
+        }
     }
     /**
      * Updates the checkbox.

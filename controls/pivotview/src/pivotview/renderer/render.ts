@@ -23,7 +23,7 @@ import { AggregateTypes } from '../../common/base/enum';
 import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';
 import { FieldOptionsModel } from '../../model/datasourcesettings-model';
 import { ExportType } from '@syncfusion/ej2-charts';
-import { PdfImage, PdfTextWebLink } from '@syncfusion/ej2-pdf-export';
+import { PdfGridCell, PdfImage, PdfTextWebLink } from '@syncfusion/ej2-pdf-export';
 
 /**
  * Module to render PivotGrid control
@@ -138,8 +138,6 @@ export class Render {
             } else {
                 this.removePivotAutoFitClass();
             }
-            const e: HTMLElement = this.parent.element.querySelector('.' + cls.GRID_CLASS) as HTMLElement;
-            e.querySelector('colGroup').innerHTML = this.parent.grid.getHeaderContent().querySelector('colgroup').innerHTML;
             if (!this.gridSettings.allowAutoResizing && this.parent.showGroupingBar && this.parent.groupingBarModule && this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
                 this.parent.groupingBarModule.refreshUI();
             }
@@ -257,7 +255,7 @@ export class Render {
             rowSelected: this.rowSelected.bind(this),
             rowDeselecting: this.gridSettings.rowDeselecting ? this.gridSettings.rowDeselecting.bind(this.parent) : undefined,
             rowDeselected: this.rowDeselected.bind(this),
-            cellSelecting: this.gridSettings.cellSelecting ? this.gridSettings.cellSelecting.bind(this.parent) : undefined,
+            cellSelecting: this.cellSelecting.bind(this),
             cellSelected: this.cellSelected.bind(this),
             cellDeselecting: this.gridSettings.cellDeselecting ? this.gridSettings.cellDeselecting.bind(this.parent) : undefined,
             cellDeselected: this.cellDeselected.bind(this),
@@ -359,7 +357,11 @@ export class Render {
     }
 
     private cellSelecting(args: CellSelectingEventArgs): void {
-        this.parent.trigger(events.cellSelecting, args);
+        const target: HTMLElement = this.parent.grid.selectionModule['actualTarget'];
+        if (!isNullOrUndefined(target) && (target.classList.contains('e-expand') || target.classList.contains('e-collapse'))) {
+            args.cancel = true;
+        }
+        this.parent.trigger(events.selecting, args);
     }
 
     private cellDeselected(args: CellDeselectEventArgs): void {
@@ -392,7 +394,8 @@ export class Render {
     }
 
     private pdfExportComplete(args: PdfExportCompleteArgs): void {
-        if (this.parent.lastColumn !== undefined && (this.parent.lastColumn as ColumnModel).width !== 'auto') {
+        if (this.parent.lastColumn !== undefined && (this.parent.lastColumn as ColumnModel) &&
+            (this.parent.lastColumn as ColumnModel).width !== 'auto') {
             (this.parent.lastColumn as ColumnModel).width = 'auto';
             this.parent.lastColumn = undefined;
         }
@@ -404,7 +407,8 @@ export class Render {
     }
 
     private excelExportComplete(args: ExcelExportCompleteArgs): void {
-        if (this.parent.lastColumn !== undefined && (this.parent.lastColumn as ColumnModel).width !== 'auto') {
+        if (this.parent.lastColumn !== undefined && (this.parent.lastColumn as ColumnModel) &&
+            (this.parent.lastColumn as ColumnModel).width !== 'auto') {
             (this.parent.lastColumn as ColumnModel).width = 'auto';
             this.parent.lastColumn = undefined;
         }
@@ -471,7 +475,7 @@ export class Render {
             const elem: Element = this.getCellElement(cellTarget);
             let bool: boolean;
             let isGroupElement: boolean;
-            if (!elem || (elem && Number(elem.getAttribute('index')) === 0 && Number(elem.getAttribute('data-colindex')) === 0)) {
+            if (!elem || (elem && Number(elem.getAttribute('index')) === 0 && parseInt(elem.getAttribute('aria-colindex'), 10) - 1 === 0)) {
                 args.cancel = true;
                 return;
             }
@@ -482,7 +486,7 @@ export class Render {
                 isGroupElement = true;
             }
             const rowIndex: number = Number(elem.getAttribute('index'));
-            const colIndex: number = Number(elem.getAttribute('data-colindex'));
+            const colIndex: number = parseInt(elem.getAttribute('aria-colindex'), 10) - 1;
             const pivotValue1: IAxisSet = this.parent.pivotValues[rowIndex as number][colIndex as number] as IAxisSet;
             const selectedID: string = item.id;
             switch (selectedID) {
@@ -551,7 +555,7 @@ export class Render {
                     if (groupField && groupField.type === 'Custom' || (this.parent.engineModule.fieldList[fieldName as string].isCustomField && fieldName.indexOf('_custom_group') > -1)) {
                         groupField = PivotUtil.getFieldByName(fieldName.replace('_custom_group', ''), this.parent.dataSourceSettings.groupSettings) as IGroupSettings;
                         if (groupField) {
-                            const cell: IAxisSet = (this.parent.engineModule.pivotValues[Number(elem.getAttribute('index'))][Number(elem.getAttribute('data-colindex'))] as IAxisSet);
+                            const cell: IAxisSet = (this.parent.engineModule.pivotValues[Number(elem.getAttribute('index'))][parseInt(elem.getAttribute('aria-colindex'), 10) - 1] as IAxisSet);
                             const selectedCellsInfo: SelectedCellsInfo[] =
                                 this.parent.groupingModule.getSelectedCells(cell.axis, fieldName, cell.actualText.toString());
                             selectedCellsInfo.push({ axis: cell.axis, fieldName: fieldName, name: cell.actualText.toString(),
@@ -732,7 +736,7 @@ export class Render {
         };
         const ele: Element = this.getCellElement(target);
         const rowIndx: number = Number(ele.getAttribute('index'));
-        const colIndx: number = Number(ele.getAttribute('data-colindex'));
+        const colIndx: number = parseInt(ele.getAttribute('aria-colindex'), 10) - 1;
         const pivotValue: IAxisSet = this.parent.pivotValues[rowIndx as number][colIndx as number] as IAxisSet;
         let aggregateType: string;
         if (args.item.id.indexOf(this.parent.element.id + '_Agg') > -1) {
@@ -888,7 +892,7 @@ export class Render {
             let fieldName: string = target.getAttribute('fieldName');
             if (!fieldName || fieldName === '') {
                 const rowIndx: number = Number(target.getAttribute('index'));
-                const colIndx: number = Number(target.getAttribute('data-colindex'));
+                const colIndx: number = parseInt(target.getAttribute('aria-colindex'), 10) - 1;
                 fieldName = (this.engine.pivotValues[rowIndx as number][colIndx as number] as IAxisSet).actualText as string;
             }
             const valuefields: IFieldOptions[] = this.parent.dataSourceSettings.values;
@@ -1010,8 +1014,11 @@ export class Render {
         if (args.column.columns && args.column.columns.length > 0) {
             this.getChildColumnWidth(args.column.columns as ColumnModel[]);
         } else {
-            const column: string = args.column.field === '0.formattedText' ? '0.formattedText' :
-                (args.column.customAttributes.cell as IAxisSet).valueSort.levelName as string;
+            const column: string = this.parent.isTabular ?
+                (args.column.index < this.parent.engineModule.rowMaxLevel + 1) ? `${args.column.index}.formattedText` :
+                    `${(args.column.customAttributes.cell as IAxisSet).valueSort.levelName}` :
+                args.column.field === '0.formattedText' ? '0.formattedText' :
+                    `${(args.column.customAttributes.cell as IAxisSet).valueSort.levelName}`;
             this.parent.resizeInfo[column as string] = Number(args.column.width.toString().split('px')[0]);
         }
         if (this.parent.enableVirtualization && args.column.field === '0.formattedText') {
@@ -1096,7 +1103,7 @@ export class Render {
             + cls.CELL_SELECTED_BGCOLOR + ',.' + cls.SELECTED_BGCOLOR);
         for (let i: number = 0; i < selectedElements.length; i++) {
             const element: HTMLElement = selectedElements[i as number];
-            const colIndex: number = Number(element.getAttribute('data-colindex'));
+            const colIndex: number = parseInt(element.getAttribute('aria-colindex'), 10) - 1;
             const rowIndex: number = Number(element.getAttribute('index'));
             const cell: IAxisSet = (this.engine.pivotValues[rowIndex as number][colIndex as number] as IAxisSet);
             if (cell) {
@@ -1137,14 +1144,17 @@ export class Render {
         });
         if (tCell && (this.parent.notEmpty) && this.engine.headerContent) {
             const customClass: string = this.parent.hyperlinkSettings.cssClass;
-            const index: string = this.parent.isTabular ? tCell.getAttribute('data-colindex') : '0';
+            const colIndex: number = parseInt(tCell.getAttribute('aria-colindex'), 10) - 1;
+            const index: string = this.parent.isTabular ? colIndex.toString() : '0';
             let cell: IAxisSet = (args.data as IGridValues)[Number(index) as number] as IAxisSet;
             const isRowFieldsAvail: boolean = cell.valueSort && cell.valueSort.levelName === (this.parent.dataSourceSettings.rows.length === 0 && this.parent.dataSourceSettings.valueAxis === 'row' &&
                 this.parent.localeObj.getConstant('grandTotal') + (this.parent.dataSourceSettings.valueSortSettings.headerDelimiter) + (cell.formattedText));
             tCell.setAttribute('index', cell.rowIndex ? cell.rowIndex.toString() : '0');
-            const pivotValue: IAxisSet = this.parent.pivotValues[cell.rowIndex] && this.parent.pivotValues[cell.rowIndex][Number(tCell.getAttribute('data-colindex'))] ? this.parent.pivotValues[cell.rowIndex][Number(tCell.getAttribute('data-colindex'))] as IAxisSet : null;
+            const pivotValue: IAxisSet = this.parent.pivotValues[cell.rowIndex as number] &&
+                this.parent.pivotValues[cell.rowIndex as number][colIndex as number] ?
+                this.parent.pivotValues[cell.rowIndex as number][colIndex as number] as IAxisSet : null;
             const dataColIndex: number = this.parent.isTabular ? this.parent.engineModule.rowMaxLevel : 0;
-            if (Number(tCell.getAttribute('data-colindex')) <= dataColIndex) {
+            if (colIndex <= dataColIndex) {
                 if (this.parent.dataType === 'pivot') {
                     const isValueCell: boolean = cell.type && cell.type === 'value';
                     tCell.innerText = '';
@@ -1269,15 +1279,15 @@ export class Render {
                 const innerText: string = tCell.innerText;
                 tCell.innerText = '';
                 tCell.classList.add(cls.VALUESCONTENT);
-                cell = (args.data as IGridValues)[Number(tCell.getAttribute('data-colindex'))] as IAxisSet;
+                cell = (args.data as IGridValues)[colIndex as number] as IAxisSet;
                 cell = isNullOrUndefined(cell) ? (args.column.customAttributes.cell as IAxisSet) : cell;
                 cell.isGrandSum = isRowFieldsAvail ? true : cell.isGrandSum;
                 if (cell.isSum) {
                     tCell.classList.add(cls.SUMMARY);
                 }
                 const isGrandSum: boolean = (isNullOrUndefined(cell.isGrandSum) && (!isNullOrUndefined(this.parent.olapEngineModule) && this.parent.olapEngineModule.olapValueAxis === 'column') && this.parent.dataType === 'olap' &&
-                    ((this.colGrandPos - this.parent.dataSourceSettings.values.length) < Number(tCell.getAttribute('data-colindex'))));
-                if (cell.isGrandSum || (isGrandSum || this.colGrandPos === Number(tCell.getAttribute('data-colindex'))) || this.rowGrandPos === Number(tCell.getAttribute('index'))) {
+                    ((this.colGrandPos - this.parent.dataSourceSettings.values.length) < colIndex));
+                if (cell.isGrandSum || (isGrandSum || this.colGrandPos === colIndex) || this.rowGrandPos === Number(tCell.getAttribute('index'))) {
                     tCell.classList.add('e-gtot');
                 } else if (this.parent.dataType === 'olap' ? cell.isSum : this.validateColumnTotalcell(cell.colIndex)) {
                     tCell.classList.add('e-colstot');
@@ -1292,7 +1302,7 @@ export class Render {
                         '<a data-url="' + innerText + '" class="e-hyperlinkcell ' + customClass + '">' + innerText + '</a>' : innerText)
                 }));
                 if (this.parent.gridSettings.allowReordering) {
-                    tCell.setAttribute('data-colindex', args.column.customAttributes ? (args.column.customAttributes.cell as IAxisSet).colIndex.toString() : args.column.index.toString());
+                    tCell.setAttribute('aria-colindex', args.column.customAttributes ? (args.column.customAttributes.cell as IAxisSet).colIndex.toString() : args.column.index.toString());
                 }
             }
             if (this.parent.cellTemplate) {
@@ -1492,7 +1502,7 @@ export class Render {
                         (args.node as HTMLElement).style.borderBottomWidth = '0px';
                     }
                 }
-                args.node.setAttribute('data-colindex', cell.colIndex.toString());
+                args.node.setAttribute('aria-colindex', (cell.colIndex + 1).toString());
                 args.node.setAttribute('index', cell.rowIndex.toString());
                 let fieldName: string;
                 if (this.parent.dataType === 'pivot') {
@@ -1655,11 +1665,10 @@ export class Render {
     }
 
     private onHyperCellClick(e: MouseEvent): void {
-        let cell: Element = (e.target as Element).parentElement.parentElement;
-        cell = (cell.className.indexOf('e-headercelldiv') > -1 ? cell.parentElement : cell);
+        const cell: Element = (e.target as Element).closest('td.e-rowcell') ? (e.target as Element).closest('td.e-rowcell') : (e.target as Element).closest('th');
         const args: HyperCellClickEventArgs = {
             currentCell: cell,
-            data: this.engine.pivotValues[Number(cell.getAttribute('index'))][Number(cell.getAttribute('data-colindex'))],
+            data: this.engine.pivotValues[Number(cell.getAttribute('index'))][parseInt(cell.getAttribute('aria-colindex'), 10) - 1],
             cancel: true,
             nativeEvent: e
         };
@@ -1733,8 +1742,10 @@ export class Render {
         }
         this.resColWidth = !isNullOrUndefined(this.parent.resizedValue) ? this.parent.resizedValue : this.resColWidth;
         const offsetWidth: number = this.calculateGridWidth() as number;
+        const eleWidth: number = this.parent.element.getBoundingClientRect().width ?
+            this.parent.element.getBoundingClientRect().width : this.parent.element.offsetWidth;
         let parWidth: number = isNaN(this.parent.width as number) ? (this.parent.width.toString().indexOf('%') > -1 ?
-            ((parseFloat(this.parent.width.toString()) / 100) * offsetWidth) : offsetWidth) :
+            ((parseFloat(this.parent.width.toString()) / 100) * eleWidth) : offsetWidth) :
             Number(this.parent.width);
         parWidth = parWidth - (this.gridSettings.columnWidth > this.resColWidth ? this.gridSettings.columnWidth : this.parent.isTabular ?
             (this.parent.engineModule.rowMaxLevel + 1) * this.resColWidth : this.resColWidth);
@@ -1910,9 +1921,10 @@ export class Render {
                                 field: (cCnt + '.formattedText'),
                                 headerText: formattedText,
                                 customAttributes: { 'cell': this.cloneDataWithoutIndex(colField[cCnt as number] as Record<string, unknown>) },
-                                width: autoFitApplied ? (gridColumns[actualCnt as number] as ColumnModel).width : colField[cCnt as number]
-                                    ? colField[cCnt as number].valueSort ? this.setSavedWidth((colField[cCnt as number]
-                                        .valueSort as IDataSet).levelName as string, colWidth) : this.resColWidth : this.resColWidth,
+                                width: autoFitApplied && gridColumns[actualCnt as number] ?
+                                    (gridColumns[actualCnt as number] as ColumnModel).width : colField[cCnt as number]
+                                        ? colField[cCnt as number].valueSort ? this.setSavedWidth((colField[cCnt as number]
+                                            .valueSort as IDataSet).levelName as string, colWidth) : this.resColWidth : this.resColWidth,
                                 minWidth: autoFitApplied && actualCnt === colCount
                                     ? (gridColumns[gridColumns.length - 1] as ColumnModel).minWidth : 30,
                                 allowReordering: this.parent.gridSettings.allowReordering,
@@ -2000,7 +2012,7 @@ export class Render {
                             minWidth: 30,
                             headerText: '',
                             allowReordering: false,
-                            allowResizing: this.parent.isTabular ? false : this.parent.gridSettings.allowResizing,
+                            allowResizing: this.parent.gridSettings.allowResizing,
                             visible: true,
                             clipMode: this.parent.gridSettings.clipMode
                         };
@@ -2154,13 +2166,18 @@ export class Render {
             this.parent.lastColumn = (args.gridCell as Cell<Column>).column;
             (args.gridCell as Cell<Column>).column.width = (args.gridCell as Cell<Column>).column.minWidth;
         }
+        if ((args.gridCell as Cell<Column>).column.index === 0) {
+            (args.cell as { [key: string]: Object }).colSpan = this.parent.isTabular ? this.parent.engineModule.rowMaxLevel + 1 : 1;
+        }
         this.parent.trigger(events.pdfHeaderQueryCellInfo, args);
     }
 
     private excelRowEvent(args: ExcelQueryCellInfoEventArgs): void {
         let pivotValue: IAxisSet;
-        if (args.column.field === '0.formattedText') {
-            const cell: IAxisSet = (args.data as IAxisSet[])[0];
+        const rowMaxLevel: number = this.parent.isTabular ? this.parent.engineModule.rowMaxLevel : 0;
+        const colIndex: number = args.column ? args.column.index : undefined;
+        if (colIndex >= 0 && colIndex <= rowMaxLevel) {
+            const cell: IAxisSet = (args.data as IAxisSet[])[colIndex as number];
             const isValueCell: boolean = cell.type && cell.type === 'value';
             let level: number = 0;
             if (this.parent.dataType === 'olap') {
@@ -2176,6 +2193,10 @@ export class Render {
             this.colPos = 0;
             args.style = { hAlign: 'Left', indent: level * 2 };
             this.lastSpan = isValueCell ? this.lastSpan : level;
+            if (((args.data as IAxisSet[])[colIndex as number].rowSpan === 0 || (args.data as IAxisSet[])[colIndex as number].colSpan
+                === 0) && this.parent.exportType === 'CSV' && this.parent.isTabular) {
+                args.value = '';
+            }
         } else {
             this.colPos++;
             pivotValue = ((args.data) as { [key: string]: Object })[args.column.customAttributes.cell ?
@@ -2197,7 +2218,7 @@ export class Render {
                 : args.value;
         }
         this.parent.trigger(events.excelQueryCellInfo, args);
-        if (pivotValue) {
+        if (pivotValue && !isNullOrUndefined(args.value) && args.value !== '') {
             if (args.style && this.formatList[pivotValue.actualText]) {
                 args.style.type = 'number';
                 args.style.numberFormat = args.style.numberFormat ? args.style.numberFormat : this.formatList[pivotValue.actualText];
@@ -2315,6 +2336,12 @@ export class Render {
     ExcelQueryCellInfoEventArgs | PdfQueryCellInfoEventArgs {
         const cell: IAxisSet = ((args as ExcelQueryCellInfoEventArgs | PdfQueryCellInfoEventArgs).data as IAxisSet[])[
             Number(args.column.field.split('.formattedText')[0])];
+        if ((cell as IAxisSet).rowSpan > 0 && (cell as IAxisSet).axis === 'row') {
+            (args.cell as PdfGridCell | ExcelCell).rowSpan = (cell as IAxisSet).rowSpan;
+        }
+        if ((cell as IAxisSet).colSpan > 0 && (cell as IAxisSet).axis === 'row') {
+            args.colSpan = (cell as IAxisSet).colSpan;
+        }
         args.value = cell.type === 'grand sum' ? (isNullOrUndefined(cell.valueSort.axis) ?
             this.parent.localeObj.getConstant('grandTotal') : cell.formattedText) : args.value;
         return args;
@@ -2352,7 +2379,7 @@ export class Render {
             minWidth: 30,
             headerText: '',
             allowReordering: false,
-            allowResizing: this.parent.isTabular ? false : this.parent.gridSettings.allowResizing,
+            allowResizing: this.parent.gridSettings.allowResizing,
             visible: true,
             clipMode: this.parent.gridSettings.clipMode
         };

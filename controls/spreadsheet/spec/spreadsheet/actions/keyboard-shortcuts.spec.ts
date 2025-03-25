@@ -246,6 +246,70 @@ describe('Keyboard shortcuts module ->', () => {
         });
     });
 
+    describe('UI interaction checking with Keyboard shortcut when set keyboard shortcut value as false ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('F2 Edit', (done: Function) => {
+            let spreadsheet: any = helper.getInstance();
+            spreadsheet.enableKeyboardShortcut = false;
+            helper.invoke('selectRange', ['C5']);
+            helper.triggerKeyNativeEvent(113);
+            expect(helper.invoke('getCell', [14, 10]).classList).not.toContain('e-ss-edited');
+            done();
+        });
+        it('Edit Esc', (done: Function) => {
+            helper.invoke('selectRange', ['F2']);
+            helper.invoke('startEdit');
+            const coords: ClientRect = helper.getElement('.e-spreadsheet-edit').getBoundingClientRect();
+            helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, helper.getElement('.e-spreadsheet-edit'));
+            helper.triggerKeyNativeEvent(27);
+            expect(helper.invoke('getCell', [1, 5]).classList).toContain('e-ss-edited');
+            done();
+        });
+        it('Space', (done: Function) => {
+            helper.invoke('selectRange', ['D2']);
+            helper.triggerKeyNativeEvent(32);
+            expect(helper.getInstance().sheets[0].rows[1].cells[3].value).toBe(10);
+            done();
+        });
+        it('Delete', (done: Function) => {
+            helper.invoke('selectRange', ['D2']);
+            helper.triggerKeyNativeEvent(46);
+            expect(helper.getInstance().sheets[0].rows[1].cells[3].value).toBe(10);
+            done();
+        });
+        it('Context Menu using Shift+F10.', function (done) {
+            const contextMenu: HTMLElement = helper.getElement('.e-contextmenu');
+            helper.triggerKeyNativeEvent(121, false, true);
+            expect(getComputedStyle(contextMenu).display).toBe('none');
+            done();
+        });
+        it('Filter Popup using Alt+Up.', function (done) {
+            helper.invoke('selectRange', ['B1']);
+            helper.click(`#${helper.id}_sorting`);
+            helper.click(`#${helper.id}_applyfilter`);
+            helper.triggerKeyNativeEvent(40, false, false, null, 'keydown', true);
+            expect(helper.getElement('.e-filter-popup')).toBeNull();
+            done();
+        });
+        it('Shift + Space key for row selection', (done: Function) => {
+            helper.invoke('selectRange', ['C5']);
+            helper.triggerKeyNativeEvent(32, false, true);
+            expect(helper.getInstance().sheets[0].selectedRange).not.toBe('A5:CV5');
+            done();
+        });
+        it('Ctrl + Space key for column selection', (done: Function) => {
+            helper.invoke('selectRange', ['C5']);
+            helper.triggerKeyNativeEvent(32, true);
+            expect(helper.getInstance().sheets[0].selectedRange).not.toBe('C1:C100');
+            done();
+        });
+    });
+
     describe('Keyboard Shortcuts in Ribbon->', () => {
         let spreadsheet: any; let tbarEle: HTMLElement;
         const triggerToolbarAction: Function = (keyCode: number, count: number, action: string = 'keyup', ele: HTMLElement = tbarEle): void => {

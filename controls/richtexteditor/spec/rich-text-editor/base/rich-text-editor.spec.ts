@@ -5,8 +5,8 @@ import { createElement, L10n, isNullOrUndefined, Browser, getUniqueID, detach } 
 import { RichTextEditor, HTMLFormatter, MarkdownFormatter, IRenderer, QuickToolbar, dispatchEvent, ITableCommandsArgs, DialogType, ToolbarType, PasteCleanup, HtmlEditor, Toolbar } from '../../../src/rich-text-editor/index';
 import { NodeSelection } from '../../../src/selection/index';
 import { setEditFrameFocus } from '../../../src/common/util';
-import { renderRTE, destroy, dispatchKeyEvent, setCursorPoint as setCursor, clickImage, clickVideo } from './../render.spec';
-import { ESCAPE_KEY_EVENT_INIT, TAB_KEY_EVENT_INIT } from '../../constant.spec';
+import { renderRTE, destroy, dispatchKeyEvent, setCursorPoint as setCursor, clickImage, clickVideo, currentBrowserUA } from './../render.spec';
+import { ESCAPE_KEY_EVENT_INIT, SPACE_EVENT_INIT, TAB_KEY_EVENT_INIT } from '../../constant.spec';
 
 function setCursorPoint(curDocument: Document, element: Element, point: number) {
     let range: Range = curDocument.createRange();
@@ -449,7 +449,7 @@ describe('EJ2-69674 - Pressing enter key after deleting the list using backspace
         keyBoardEvent.which = 13;
         (rteObj as any).keyDown(keyBoardEvent);
         expect(window.getSelection().anchorOffset !== (rteObj as any).inputElement).toBe(true);
-        expect((rteObj as any).inputElement.innerHTML === `<p style="text-align:center; margin-bottom: 15px; "><span style="font-size: 17pt; "><strong><span style="font-family: Calibri; ">&lt;#meetingtitle#&gt;</span></strong></span><br></p><p style="text-align:center; margin-bottom: 5px; "><span style="font-family:Calibri;"><span style="font-size: 17pt; "><b>&lt;#districtname#&gt;</b></span></span><br></p><p style="text-align: center; margin-bottom: 2px; "><span style="font-family:Calibri;"><span style="font-size: 12pt; "><b><em>Policy Site:</em> ##&lt;#policysitelink#&gt;##</b></span><br></span></p><p style="text-align: center; margin-bottom: 2px; "><span style="font-size: 12pt;">​</span><span style="font-size: 14pt; "><span style="font-family: Calibri; ">&lt;#locationcity#&gt;, &lt;#locationstate#&gt;</span></span></p><p style="text-align: center; "><span style="font-size: 14pt; "><span style="font-family: Calibri; ">​</span><span style="font-size: 14pt;"><span style="font-family: Calibri; ">&lt;#meetingdatelong#&gt; at &lt;#meetingtime#&gt;</span></span></span></p><p style="text-align: center; "><span style="font-size: 14pt; "><span style="font-size: 14pt;"><span style="font-family: Calibri; "><br></span></span></span></p>`).toBe(true);
+        expect((rteObj as any).inputElement.innerHTML === `<p style="text-align:center; margin-bottom: 15px; "><span style="font-size: 17pt; "><strong><span style="font-family: Calibri; ">&lt;#meetingtitle#&gt;</span></strong></span><br></p><p style="text-align:center; margin-bottom: 5px; "><span style="font-family: Calibri;"><span style="font-size: 17pt; "><b>&lt;#districtname#&gt;</b></span></span><br></p><p style="text-align: center; margin-bottom: 2px; "><span style="font-family: Calibri;"><span style="font-size: 12pt; "><b><em>Policy Site:</em> ##&lt;#policysitelink#&gt;##</b></span><br></span></p><p style="text-align: center; margin-bottom: 2px; "><span style="font-size: 12pt;">​</span><span style="font-size: 14pt; "><span style="font-family: Calibri; ">&lt;#locationcity#&gt;, &lt;#locationstate#&gt;</span></span></p><p style="text-align: center; "><span style="font-size: 14pt; "><span style="font-family: Calibri; ">​</span><span style="font-size: 14pt;"><span style="font-family: Calibri; ">&lt;#meetingdatelong#&gt; at &lt;#meetingtime#&gt;</span></span></span></p><p style="text-align: center;"><span style="font-size: 14pt; "><span style="font-size: 14pt;"><span style="font-family: Calibri; "><br></span></span></span></p>`).toBe(true);
         done();
     });
     afterAll((done) => {
@@ -4631,6 +4631,7 @@ describe(' Image selection prevent - msie ', () => {
     });
     afterAll(() => {
         destroy(rteObj);
+        Browser.userAgent = currentBrowserUA;
     });
 });
 
@@ -7501,6 +7502,7 @@ describe('881576 - The tooltips are not destroyed when the dialog with the edito
 });  
 describe("Null or undefined value testing", () => {
     let rteObj: RichTextEditor;
+    const defaultUA = navigator.userAgent;
     beforeAll(() => {
         const ele = createElement('div', { id: 'rteTarget' });
         document.body.appendChild(ele);
@@ -7511,6 +7513,7 @@ describe("Null or undefined value testing", () => {
     });
     afterEach(() => {
         document.body.innerHTML = "";
+        Browser.userAgent = defaultUA;
     });
     it("autoSaveOnIdle", () => {
         rteObj = new RichTextEditor({ autoSaveOnIdle: null });
@@ -8949,7 +8952,6 @@ describe('942128 - Backspace not working properly.', () => {
         });
     });
     it('should merge content when pressing backspace key', (done: Function) => {
-        debugger
         let node: Element = (rteObj as any).inputElement.querySelector('.last_element');
         setCursorPoint(document, (node.childNodes[0] as Element), 0);
         keyBoardEvent.keyCode = 8;
@@ -8986,6 +8988,35 @@ describe('927297: When the Backspace key is pressed at the beginning of a line, 
         setTimeout(() => {
             expect((rteObj as any).inputElement.innerHTML).toBe('<p>Rich<br>TextEditor</p>');
             done();
+        }, 100);
+    });
+    afterAll((done) => {
+        destroy(rteObj);
+        done();
+    });
+});
+
+describe('945837: Pressing backspace with pasted content from Google docs the cursor moves to the previous line last position', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+    it('Pressing backspace at the start of the line with previous line', (done: Function) => {
+        rteObj = renderRTE({
+            value: `<p dir="ltr" style="line-height: 1.38; margin-top: 0pt; margin-bottom: 0pt;"><span id="docs-internal-guid-26a521c1-7fff-20d1-fef0-a7d45d5a3858" class="lastNode" style="background-color: unset; font-size: 1em; text-align: inherit; font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont;"><span style="font-size: 10.5pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; vertical-align: baseline; white-space-collapse: preserve;">Event Insights</span></span></p><p dir="ltr" style="line-height: 1.38; margin-top: 0pt; margin-bottom: 0pt;"><b id="docs-internal-guid-26a521c1-7fff-20d1-fef0-a7d45d5a3858" style="font-weight: normal;" class="lastNode"><span style="font-size: 10.5pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 400; font-style: normal; text-decoration: none; vertical-align: baseline; white-space: pre-wrap;"><br></span></b></p><p dir="ltr" style="line-height: 1.38; margin-top: 0pt; margin-bottom: 0pt;"><b id="docs-internal-guid-26a521c1-7fff-20d1-fef0-a7d45d5a3858" style="font-weight: normal;" class="lastNode"><span style="font-size: 10.5pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 400; font-style: normal; text-decoration: none; vertical-align: baseline; white-space: pre-wrap;">The following widgets are included for in-person events:</span><span style="font-size: 10.5pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 400; font-style: normal; text-decoration: none; vertical-align: baseline; white-space: pre-wrap;"><br><br></span></b></p><p dir="ltr" style="line-height: 1.38; margin-top: 0pt; margin-bottom: 0pt;"><b id="docs-internal-guid-26a521c1-7fff-20d1-fef0-a7d45d5a3858" style="font-weight: normal;" class="lastNode"><span style="font-size: 10.5pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 400; font-style: normal; text-decoration: none; vertical-align: baseline; white-space: pre-wrap;" class="focusNode">Check-in Overview</span><span style="font-size: 10.5pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 400; font-style: normal; text-decoration: none; vertical-align: baseline; white-space: pre-wrap;"><br><br></span></b></p>`,
+        });
+        let node: any = (rteObj as any).inputElement.querySelector('.focusNode');
+        setCursorPoint(document, node.childNodes[0] as Element, 0);
+        keyBoardEvent.keyCode = 8;
+        keyBoardEvent.code = 'Backspace';
+        (rteObj as any).keyDown(keyBoardEvent);
+        setTimeout(() => {
+            expect((rteObj as any).inputElement.innerHTML === `<p dir="ltr" style="line-height: 1.38; margin-top: 0pt; margin-bottom: 0pt;"><span id="docs-internal-guid-26a521c1-7fff-20d1-fef0-a7d45d5a3858" class="lastNode" style="background-color: unset; font-size: 1em; text-align: inherit; font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont;"><span style="font-size: 10.5pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; vertical-align: baseline; white-space-collapse: preserve;">Event Insights</span></span></p><p dir="ltr" style="line-height: 1.38; margin-top: 0pt; margin-bottom: 0pt;"><b id="docs-internal-guid-26a521c1-7fff-20d1-fef0-a7d45d5a3858" style="font-weight: normal;" class="lastNode"><span style="font-size: 10.5pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 400; font-style: normal; text-decoration: none; vertical-align: baseline; white-space: pre-wrap;"><br></span></b></p><p dir="ltr" style="line-height: 1.38; margin-top: 0pt; margin-bottom: 0pt;"><b id="docs-internal-guid-26a521c1-7fff-20d1-fef0-a7d45d5a3858" style="font-weight: normal;" class="lastNode"><span style="font-size: 10.5pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 400; font-style: normal; text-decoration: none; vertical-align: baseline; white-space: pre-wrap;">The following widgets are included for in-person events:</span><span style="font-size: 10.5pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 400; font-style: normal; text-decoration: none; vertical-align: baseline; white-space: pre-wrap;"><br></span></b><b id="docs-internal-guid-26a521c1-7fff-20d1-fef0-a7d45d5a3858" style="font-weight: normal;" class="lastNode"><span style="font-size: 10.5pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 400; font-style: normal; text-decoration: none; vertical-align: baseline; white-space: pre-wrap;" class="focusNode">Check-in Overview</span><span style="font-size: 10.5pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 400; font-style: normal; text-decoration: none; vertical-align: baseline; white-space: pre-wrap;"><br><br></span></b></p>`).toBe(true);
+            expect(window.getSelection().getRangeAt(0).startContainer.textContent === `Check-in Overview`).toBe(true);
+            expect(window.getSelection().getRangeAt(0).startOffset === 0).toBe(true);
+            (rteObj as any).keyDown(keyBoardEvent);
+            setTimeout(() => {
+                expect((rteObj as any).inputElement.innerHTML === `<p dir="ltr" style="line-height: 1.38; margin-top: 0pt; margin-bottom: 0pt;"><span id="docs-internal-guid-26a521c1-7fff-20d1-fef0-a7d45d5a3858" class="lastNode" style="background-color: unset; font-size: 1em; text-align: inherit; font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont;"><span style="font-size: 10.5pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; vertical-align: baseline; white-space-collapse: preserve;">Event Insights</span></span></p><p dir="ltr" style="line-height: 1.38; margin-top: 0pt; margin-bottom: 0pt;"><b id="docs-internal-guid-26a521c1-7fff-20d1-fef0-a7d45d5a3858" style="font-weight: normal;" class="lastNode"><span style="font-size: 10.5pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 400; font-style: normal; text-decoration: none; vertical-align: baseline; white-space: pre-wrap;"><br></span></b></p><p dir="ltr" style="line-height: 1.38; margin-top: 0pt; margin-bottom: 0pt;"><b id="docs-internal-guid-26a521c1-7fff-20d1-fef0-a7d45d5a3858" style="font-weight: normal;" class="lastNode"><span style="font-size: 10.5pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 400; font-style: normal; text-decoration: none; vertical-align: baseline; white-space: pre-wrap;">The following widgets are included for in-person events:</span><span style="font-size: 10.5pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 400; font-style: normal; text-decoration: none; vertical-align: baseline; white-space: pre-wrap;"><br></span></b><b id="docs-internal-guid-26a521c1-7fff-20d1-fef0-a7d45d5a3858" style="font-weight: normal;" class="lastNode"><span style="font-size: 10.5pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 400; font-style: normal; text-decoration: none; vertical-align: baseline; white-space: pre-wrap;" class="focusNode">Check-in Overview</span><span style="font-size: 10.5pt; font-family: Arial, sans-serif; color: rgb(0, 0, 0); background-color: transparent; font-weight: 400; font-style: normal; text-decoration: none; vertical-align: baseline; white-space: pre-wrap;"><br><br></span></b></p>`).toBe(true);
+                done();
+            }, 100);
         }, 100);
     });
     afterAll((done) => {
@@ -9087,7 +9118,7 @@ describe('921865 - undo not tirggerd, after performing copy and pasting content 
 });
 describe('942278 - Cursor is misplaced after performing undo action', () => {
     let rteObj: RichTextEditor;
-    beforeEach(() => {
+    beforeAll(() => {
         rteObj = renderRTE({
             toolbarSettings: {
                 items: ['Undo', 'Redo']
@@ -9111,27 +9142,7 @@ describe('942278 - Cursor is misplaced after performing undo action', () => {
         expect(window.getSelection().getRangeAt(0).startContainer.parentElement === (rteObj as any).inputElement.childNodes[2]).toBe(true);
         done();
     });
-    afterEach((done: DoneFn) => {
-        destroy(rteObj);
-        done();
-    });
-});
-
-describe('945044: Cursor Position Incorrect on Mac After Resetting Form Validation Sample Editor', () => {
-    let rteObj: RichTextEditor;
-    beforeAll(() => {
-        rteObj = renderRTE({
-            value: ``,
-        });
-    });
-    it('should clear the editor value and check the cursor position', (done: Function) => {
-        rteObj.value = null;
-        rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML === '<p><br></p>').toBe(true);
-        expect(window.getSelection().getRangeAt(0).startContainer.nodeName === 'BR').toBe(true);
-        done();
-    });
-    afterAll((done) => {
+    afterAll((done: DoneFn) => {
         destroy(rteObj);
         done();
     });
@@ -9167,6 +9178,81 @@ Rich Text Editor 3`
         done();
     });
 });
+describe('943025 - After pressing Delete key, fails to merge second line of the list with first line.', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46 };
+    beforeEach(() => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['Undo', 'Redo']
+            },
+            value: `<h1>Welcome to the Syncfusion Rich Text Editor</h1><p>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p><h2>Do you know the key features of the editor?</h2><ul> <li>Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</li> <li>Inline styles include <b>bold</b>, <em>italic</em>, <span style="text-decoration: underline">underline</span>, <span style="text-decoration: line-through">strikethrough</span>, <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" title="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" aria-label="Open in new window">hyperlinks</a>, 😀 and more.</li> <li>The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li> <li>Integration with Syncfusion Mention control lets users tag other users. To learn more, check out the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/mention-integration" title="Mention Documentation" aria-label="Open in new window">documentation</a> and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/mention-integration.html" title="Mention Demos" aria-label="Open in new window">demos</a>.</li> <li><b>Paste from MS Word</b> - helps to reduce the effort while converting the Microsoft Word content to HTML format with format and styles. To learn more, check out the documentation <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/paste-cleanup" title="Paste from MS Word Documentation" aria-label="Open in new window">here</a>.</li> <li>Other features: placeholder text, character count, form validation, enter key configuration, resizable editor, IFrame rendering, tooltip, source code view, RTL mode, persistence, HTML Sanitizer, autosave, and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/" title="Rich Text Editor API" aria-label="Open in new window">more</a>.</li></ul><blockquote><p><em>Easily access Audio, Image, Link, Video, and Table operations through the quick toolbar by right-clicking on the corresponding element with your mouse.</em></p></blockquote><h2>Unlock the Power of Tables</h2><p>A table can be created in the editor using either a keyboard shortcut or the toolbar. With the quick toolbar, you can perform table cell insert, delete, split, and merge operations. You can style the table cells using background colours and borders.</p><table class="e-rte-table" style="width: 100%; min-width: 0px; height: 151px"> <thead style="height: 16.5563%"> <tr style="height: 16.5563%"> <th style="width: 12.1813%"><span>S No</span><br></th> <th style="width: 23.2295%"><span>Name</span><br></th> <th style="width: 9.91501%"><span>Age</span><br></th> <th style="width: 15.5807%"><span>Gender</span><br></th> <th style="width: 17.9887%"><span>Occupation</span><br></th> <th style="width: 21.1048%">Mode of Transport</th> </tr> </thead> <tbody> <tr style="height: 16.5563%"> <td style="width: 12.1813%">1</td> <td style="width: 23.2295%">Selma Rose</td> <td style="width: 9.91501%">30</td> <td style="width: 15.5807%">Female</td> <td style="width: 17.9887%"><span>Engineer</span><br></td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚴</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">2</td> <td style="width: 23.2295%"><span>Robert</span><br></td> <td style="width: 9.91501%">28</td> <td style="width: 15.5807%">Male</td> <td style="width: 17.9887%"><span>Graphic Designer</span></td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚗</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">3</td> <td style="width: 23.2295%"><span>William</span><br></td> <td style="width: 9.91501%">35</td> <td style="width: 15.5807%">Male</td> <td style="width: 17.9887%">Teacher</td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚗</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">4</td> <td style="width: 23.2295%"><span>Laura Grace</span><br></td> <td style="width: 9.91501%">42</td> <td style="width: 15.5807%">Female</td> <td style="width: 17.9887%">Doctor</td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚌</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">5</td><td style="width: 23.2295%"><span>Andrew James</span><br></td><td style="width: 9.91501%">45</td><td style="width: 15.5807%">Male</td><td style="width: 17.9887%">Lawyer</td><td style="width: 21.1048%"><span style="font-size: 14pt">🚕</span></td></tr></tbody></table><h2>Elevating Your Content with Images</h2><p>Images can be added to the editor by pasting or dragging into the editing area, using the toolbar to insert one as a URL, or uploading directly from the File Browser. Easily manage your images on the server by configuring the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/#insertimagesettings" title="Insert Image Settings API" aria-label="Open in new window">insertImageSettings</a> to upload, save, or remove them. </p><p>The Editor can integrate with the Syncfusion Image Editor to crop, rotate, annotate, and apply filters to images. Check out the demos <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/image-editor-integration.html" title="Image Editor Demo" aria-label="Open in new window">here</a>.</p><p><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 50%" class="e-rte-image e-imginline"></p>`
+        });
+    });
+    it('should merge the second line of the list with the first line after pressing Delete key', (done: Function) => {
+        let node: any = rteObj.inputElement.querySelector('UL').firstElementChild.lastChild;
+        setCursorPoint(document, node, node.length);
+        (rteObj as any).mouseUp({ target: rteObj.inputElement, isTrusted: true });
+        keyBoardEvent.keyCode = 46;
+        keyBoardEvent.code = 'Delete';
+        (rteObj as any).keyDown(keyBoardEvent);
+        setTimeout(() => {
+            expect(rteObj.inputElement.querySelectorAll("li")[0].textContent === 'Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.Inline styles include bold, italic, underline, strikethrough, hyperlinks, 😀 and more.').toBe(true);
+            done();
+        }, 100);
+    });
+    afterEach((done) => {
+        destroy(rteObj);
+        done();
+    });
+});
+
+describe('945044: Cursor Position Incorrect on Mac After Resetting Form Validation Sample Editor', () => {
+    let rteObj: RichTextEditor;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            value: ``,
+        });
+    });
+    it('should clear the editor value and check the cursor position', (done: Function) => {
+        rteObj.value = null;
+        rteObj.dataBind();
+        expect(rteObj.inputElement.innerHTML === '<p><br></p>').toBe(true);
+        expect(window.getSelection().getRangeAt(0).startContainer.nodeName === 'BR').toBe(true);
+        done();
+    });
+    afterAll((done) => {
+        destroy(rteObj);
+        done();
+    });
+});
+
+describe('942843: Numbered List Creation Fails in Paragraph and Heading Formatted Text', () => {
+    let rteObj: RichTextEditor;
+    let keyboardEvent: any = { preventDefault: () => { }, key: ' ', stopPropagation: () => { }, shiftKey: false, which: 32 };
+    beforeAll(() => {
+        rteObj = renderRTE({
+            value: `<h1>1.Welcome to the Syncfusion<sup>®</sup> Rich Text Editor</h1>`,
+        });
+    });
+    it('should convert heading to ordered list item after adding space', (done: Function) => {
+        let headingElement: HTMLElement = rteObj.inputElement.querySelector('h1');
+        setCursorPoint(document, (headingElement.firstChild as HTMLElement), 2);
+        const spaceDownEvent: KeyboardEvent = new KeyboardEvent('keydown', SPACE_EVENT_INIT);
+        rteObj.inputElement.dispatchEvent(spaceDownEvent);
+        const spaceUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SPACE_EVENT_INIT);
+        rteObj.inputElement.dispatchEvent(spaceUpEvent);
+        setTimeout(() => {
+            const result = rteObj.inputElement.innerHTML;
+            const expected = `<ol><li><h1>Welcome to the Syncfusion<sup>®</sup> Rich Text Editor</h1></li></ol>`;
+            expect(result).toBe(expected);
+            done();
+        }, 100);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
 describe("943056 - Script error throws when using resizable Iframe Editor while toolbar is in disabled mode in RichTextEditor", () => {
     let rteObj: RichTextEditor;
     let originalConsoleError: { (...data: any[]): void; (...data: any[]): void; };
@@ -9198,5 +9284,30 @@ describe("943056 - Script error throws when using resizable Iframe Editor while 
     it("enableResize", () => {
         expect(errorSpy).not.toHaveBeenCalled();
     });
+});
+
+describe('945277 - Placeholder doesnt disappear on RichTextEditor component when inserting text with voice', () => {
+    let rteObj: RichTextEditor;
+        let view: HTMLElement;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                height: '200px',
+                width: '400px',
+                placeholder: 'type something',
+            });
+            done();
+        });
+        afterAll((done) => {
+            destroy(rteObj);
+            done();
+        });
+        it('945277 - Placeholder doesnt disappear on RichTextEditor component when inserting text with voice', () => {
+            rteObj.placeholder = 'Enter something';
+            rteObj.dataBind();
+            expect((rteObj as any).placeHolderWrapper.innerText).toBe('Enter something');
+            rteObj.value = '<p>Hello</p>';
+            rteObj.dataBind();
+            expect(((rteObj as any).placeHolderWrapper as HTMLElement).classList.contains('enabled')).toBe(false);
+        });
 });
 });

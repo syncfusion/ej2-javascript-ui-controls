@@ -1,5 +1,5 @@
 import { TreeGrid } from '../base/treegrid';
-import { Grid, RowDD as GridDragDrop, RowDropEventArgs, parentsUntil } from '@syncfusion/ej2-grids';
+import { Grid, RowDD as GridDragDrop, RowDropEventArgs, parentsUntil, Row, Column } from '@syncfusion/ej2-grids';
 import { EJ2Intance, getObject, Scroll } from '@syncfusion/ej2-grids';
 import { closest, isNullOrUndefined, setValue, extend, getValue, removeClass, addClass, setStyleAttribute } from '@syncfusion/ej2-base';
 import { ITreeData } from '../base';
@@ -131,7 +131,6 @@ export class RowDD {
             return;
         }
         const action: string = 'action'; const dropPosition: string = 'dropPosition';
-        const updateRowAndCellElements: string = 'updateRowAndCellElements';
         if (fromIndexes[0] !== toIndex && ['above', 'below', 'child'].indexOf(position) !== -1) {
             if (position === 'above') {
                 this.dropPosition = 'topSegment';
@@ -178,7 +177,7 @@ export class RowDD {
                 const parentData: Object = getParentData(this.parent, args.data[0][`${parentUniqueID}`]);
                 const parentrow: HTMLTableRowElement = this.parent.getRows()[parseInt(toIndex.toString(), 10)];
                 totalRecord.push(parentData); rows.push(parentrow);
-                this.parent[`${updateRowAndCellElements}`](totalRecord, rows, index);
+                this.updateRowAndCellElements(totalRecord, rows, index);
             }
             if (this.parent.enableImmutableMode && this.parent[`${action}`] === 'outdenting') {
                 const index: number = this.parent.allowRowDragAndDrop
@@ -188,7 +187,30 @@ export class RowDD {
                 const row: HTMLTableRowElement = this.parent.getRows()[fromIndexes[0]];
                 const totalRecord: Object[] = []; const rows: HTMLTableRowElement[] = [];
                 totalRecord.push(record); rows.push(row);
-                this.parent[`${updateRowAndCellElements}`](totalRecord, rows, index);
+                this.updateRowAndCellElements(totalRecord, rows, index);
+            }
+        }
+    }
+
+    /**
+     * Updates the rows and cells
+     *
+     * @param {Object[]} records - Updates the given records
+     * @param {HTMLTableRowElement[]} rows - Updates the given rows
+     * @param {number} index -  Updates the given cell index
+     * @returns {void}
+     */
+    private updateRowAndCellElements(records: Object[], rows: HTMLTableRowElement[], index: number): void {
+        for (let i: number = 0; i < records.length; i++) {
+            this.parent.renderModule.cellRender({
+                data: records[parseInt(i.toString(), 10)], cell: rows[parseInt(i.toString(), 10)].cells[parseInt(index.toString(), 10)] ,
+                column: this.parent.grid.getColumns()[this.parent.treeColumnIndex],
+                requestType: 'rowDragAndDrop'
+            });
+            if (this.parent['action'] === 'indenting' || this.parent['action'] === 'outdenting') {
+                this.parent.renderModule.RowModifier({
+                    data: records[parseInt(i.toString(), 10)], row: rows[parseInt(i.toString(), 10)]
+                });
             }
         }
     }
@@ -234,7 +256,7 @@ export class RowDD {
                             record.parentItem.taskData) {
                             dropIndex = i;
                             if (tObj.enableVirtualization) {
-                                dropIndex = parseInt(tObj.getRows()[parseInt(i.toString(), 10)].getAttribute('data-rowindex'), 10);
+                                dropIndex = parseInt(tObj.getRows()[parseInt(i.toString(), 10)].getAttribute('aria-rowindex'), 10) - 1;
                             }
                         }
                     }
@@ -243,23 +265,25 @@ export class RowDD {
                     dropIndex = this.selectedRow.rowIndex - 1;
                 }
                 if (this.parent.enableVirtualization && this.selectedRecord && !(record.level > this.selectedRecord.level)) {
-                    dropIndex = parseInt(this.selectedRow.getAttribute('data-rowindex'), 10) - 1;
+                    dropIndex = parseInt(this.selectedRow.getAttribute('aria-rowindex'), 10) - 2;
                 }
                 tObj[`${action}`] = 'indenting'; tObj[`${droppedIndex}`] = dropIndex;
                 this.eventTrigger('indenting', dropIndex);
             } else if (request === 'outdent') {
-                if (this.selectedRow.rowIndex === -1 || this.selectedRow.rowIndex === 0 ||
-                    (tObj.getCurrentViewRecords()[this.selectedRow.rowIndex] as ITreeData).level === 0) {
+                const isInvalidSelection: boolean = this.selectedRow.rowIndex === -1 || this.selectedRow.rowIndex === 0;
+                const isRootLevel: boolean = (tObj.getCurrentViewRecords()[this.selectedRow.rowIndex] as ITreeData).level === 0;
+                if (isInvalidSelection || isRootLevel) {
                     return;
                 }
-                let dropIndex: number; const parentItem: ITreeData = this.selectedRecord.parentItem;
-                for (let i: number = 0; i < tObj.getCurrentViewRecords().length; i++) {
-                    if ((tObj.getCurrentViewRecords()[parseInt(i.toString(), 10)] as ITreeData).uniqueID === parentItem.uniqueID) {
-                        dropIndex = i;
-                    }
+                const parentItem: ITreeData = this.selectedRecord.parentItem;
+                const records: object[] = tObj.getCurrentViewRecords();
+                let dropIndex: number = records.findIndex((record: ITreeData) => record.uniqueID === parentItem.uniqueID);
+                if (dropIndex === -1) {
+                    return;
                 }
                 if (this.parent.enableVirtualization && this.selectedRecord) {
-                    dropIndex = parseInt(this.parent.getRows()[parseInt(dropIndex.toString(), 10)].getAttribute('data-rowindex'), 10);
+                    const ariaRowIndex: string = this.parent.getRows()[parseInt(dropIndex.toString(), 10)].getAttribute('aria-rowindex');
+                    dropIndex = parseInt(ariaRowIndex, 10) - 1;
                 }
                 tObj[`${action}`] = 'outdenting'; tObj[`${droppedIndex}`] = dropIndex;
                 this.eventTrigger('outdenting', dropIndex);
@@ -285,14 +309,14 @@ export class RowDD {
             if (!actionArgs.cancel) {
                 if (actionArgs.action === 'indenting') {
                     if (this.parent.enableVirtualization) {
-                        this.reorderRows([parseInt(this.selectedRow.getAttribute('data-rowindex'), 10)], dropIndex, 'child');
+                        this.reorderRows([parseInt(this.selectedRow.getAttribute('aria-rowindex'), 10) - 1], dropIndex, 'child');
                     }
                     else {
                         this.reorderRows([this.selectedRow.rowIndex], dropIndex, 'child');
                     }
                 } else if (actionArgs.action === 'outdenting') {
                     if (this.parent.enableVirtualization) {
-                        this.reorderRows([parseInt(this.selectedRow.getAttribute('data-rowindex'), 10)], dropIndex, 'below');
+                        this.reorderRows([parseInt(this.selectedRow.getAttribute('aria-rowindex'), 10) - 1], dropIndex, 'below');
                     }
                     else {
                         this.reorderRows([this.selectedRow.rowIndex], dropIndex, 'below');
@@ -592,7 +616,8 @@ export class RowDD {
         else {
             rowTop = rowPositionHeight + contentHeight + roundOff;
         }
-        const rowBottom: number = rowTop + (row[0] as HTMLElement).offsetHeight;
+        const rowBottom: number = (row[0] as HTMLElement).offsetHeight !== 0 && isNullOrUndefined(rowEle) ?
+            rowTop + (row[0] as HTMLElement).offsetHeight : rowTop + (rowEle as HTMLElement).offsetHeight;
         const difference: number = rowBottom - rowTop;
         const divide: number = difference / 3;
         const topRowSegment: number = rowTop + divide;
@@ -609,6 +634,7 @@ export class RowDD {
         const isTopSegment: boolean = posy <= topRowSegment;
         const isMiddleRowSegment: boolean = (posy > topRowSegment && posy <= middleRowSegment);
         const isBottomRowSegment: boolean = (posy > middleRowSegment && posy <= bottomRowSegment);
+        let isBorderNeed: boolean = true;
         if (isTopSegment || isMiddleRowSegment || isBottomRowSegment) {
             if (isTopSegment && this.dropPosition !== 'Invalid') {
                 this.removeChildBorder();
@@ -617,19 +643,12 @@ export class RowDD {
                 this.addFirstrowBorder(rowEle as HTMLTableRowElement);
                 this.removeErrorElem();
                 this.removeLastrowBorder(rowEle as HTMLTableRowElement);
-                this.topOrBottomBorder(args.target);
             }
             if (isMiddleRowSegment && this.dropPosition !== 'Invalid') {
                 this.removetopOrBottomBorder();
-                let rowElement: HTMLElement[] = [];
-                const element: Element = closest(args.target, 'tr');
-                rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'));
-                if (rowElement.length > 0) {
-                    this.addRemoveClasses(rowElement, true, 'e-childborder');
-                }
+                this.dropPosition = 'middleSegment';
                 this.addLastRowborder(rowEle as HTMLTableRowElement);
                 this.addFirstrowBorder(rowEle as HTMLTableRowElement);
-                this.dropPosition = 'middleSegment';
             }
             if (isBottomRowSegment && this.dropPosition !== 'Invalid') {
                 this.removeErrorElem();
@@ -638,10 +657,160 @@ export class RowDD {
                 this.dropPosition = 'bottomSegment';
                 this.addLastRowborder(rowEle as HTMLTableRowElement);
                 this.removeFirstrowBorder(rowEle as HTMLTableRowElement);
-                this.topOrBottomBorder(args.target);
+            }
+            if ((isTopSegment || isBottomRowSegment) && this.dropPosition !== 'Invalid') {
+                isBorderNeed = this.updateBorderStatus(row, index);
+                this.topOrBottomBorder(args.target, isBorderNeed);
+            }
+            else if (isMiddleRowSegment && this.dropPosition !== 'Invalid') {
+                let rowElement: HTMLElement[] = [];
+                const element: Element = closest(args.target, 'tr');
+                rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'));
+                isBorderNeed = this.updateBorderStatus(row, index);
+                if (rowElement.length > 0 && isBorderNeed) {
+                    this.addRemoveClasses(rowElement, true, 'e-childborder');
+                }
             }
         }
         return this.dropPosition;
+    }
+
+    /**
+     * Updates the border status for a specified row and index.
+     *
+     * @private
+     * @param {Element[]} row - The array of row elements to be updated.
+     * @param {number} index - The index of the row element for which the border status is to be updated.
+     * @returns {boolean} - Returns true if the border status was successfully updated, otherwise false.
+     */
+    private updateBorderStatus(row: Element[], index: number): boolean {
+        let isBorderNeed: boolean = true;
+        let rows: any[] = this.parent.grid.getRows();
+        const childRows: any[] = [];
+        let hasDetailTemplate: boolean = false;
+        if (!isNullOrUndefined(this.parent.detailTemplate)) {
+            rows = this.parent.getDataRows();
+            hasDetailTemplate = true;
+        }
+        const treegridColumnIndex: number = this.parent.treeColumnIndex;
+        let treeColIndex: number = this.parent.allowRowDragAndDrop ?
+            (hasDetailTemplate ? treegridColumnIndex + 2 : treegridColumnIndex + 1) :
+            (hasDetailTemplate ? treegridColumnIndex + 1 : treegridColumnIndex);
+        if (!isNullOrUndefined(this.parent.rowDropSettings.targetID)) {
+            treeColIndex = treegridColumnIndex;
+        }
+        const dragRows: any[] = row;
+        const targetRow: any[] = [rows[`${index}`]];
+        if (this.dropPosition === 'topSegment') {
+            row.filter((e: any) => {
+                if (isNullOrUndefined(e) || isNullOrUndefined(e.cells) || isNullOrUndefined(targetRow[0]) ||
+                    isNullOrUndefined(targetRow[0].cells)) {
+                    return true;
+                }
+                const regex: RegExp = /index(\d+)|level(\d+)/g;
+                const parentIndexLevel: number = e === null || e === undefined ? undefined : e.cells[`${treeColIndex}`].className.match(regex);
+                const dropIndexLevel: number = targetRow[0].cells[`${treeColIndex}`].className.match(regex);
+                if (isNullOrUndefined(dropIndexLevel) || isNullOrUndefined(dropIndexLevel)) {
+                    return true;
+                }
+                const parentLevel: number = +parentIndexLevel[1].match(/\d+/)[0];
+                const dropParentLevel: number = +dropIndexLevel[1].match(/\d+/)[0];
+                let InDraggedRowIndex: boolean = false;
+                if (parentLevel !== 0 && parentLevel !== dropParentLevel) {
+                    return true;
+                }
+                for (let i: number = 0; i < rows.length; i++) {
+                    if (rows[parseInt(i.toString(), 10)] === dragRows[0]) {
+                        InDraggedRowIndex = true;
+                    }
+                    if (InDraggedRowIndex && rows[parseInt(i.toString(), 10)] !== dragRows[0]) {
+                        const parentIndexLevelInRow: any = rows[parseInt(i.toString(), 10)].cells[`${treeColIndex}`].className.match(regex);
+                        const parentLevelInRow: number = +parentIndexLevelInRow[1].match(/\d+/)[0];
+                        if (parentLevelInRow !== parentLevel && parentLevelInRow > parentLevel) {
+                            childRows.push(rows[parseInt(i.toString(), 10)]);
+                        } else {
+                            break;
+                        }
+                    }
+                }
+                if (parentLevel === dropParentLevel && ((childRows.length > 0 && parseInt(row[0].getAttribute('aria-rowindex')!, 10) - 1 === index - (childRows.length + 1)) || (childRows.length === 0 && parseInt(row[0].getAttribute('aria-rowindex')!, 10) - 1 === index - 1))) {
+                    isBorderNeed = false;
+                }
+                return true;
+            });
+            isBorderNeed = (!isNullOrUndefined(row) && childRows.length === 0 && !isNullOrUndefined(row[0].getAttribute('aria-rowindex')) && parseInt(row[0].getAttribute('aria-rowindex'), 10) - 1 === index - 1) && isNullOrUndefined(row[0]) ? false : isBorderNeed;
+        }
+        if (this.dropPosition === 'bottomSegment') {
+            targetRow.filter((e: any) => {
+                if (isNullOrUndefined(e) || isNullOrUndefined(e.cells) || isNullOrUndefined(dragRows[0]) ||
+                    isNullOrUndefined(dragRows[0].cells)) {
+                    return true;
+                }
+                const regex: RegExp = /index(\d+)|level(\d+)/g;
+                const parentIndexLevel: number = e === null || e === undefined ? undefined : e.cells[`${treeColIndex}`].className.match(regex);
+                const dragIndexLevel: number = dragRows[0].cells[`${treeColIndex}`].className.match(regex);
+                if (isNullOrUndefined(dragIndexLevel) || isNullOrUndefined(parentIndexLevel)) {
+                    return true;
+                }
+                const parentLevel: number = +parentIndexLevel[1].match(/\d+/)[0];
+                const dragParentLevel: number = +dragIndexLevel[1].match(/\d+/)[0];
+                let InDraggedRowIndex: boolean = false;
+                if (parentLevel !== 0 && parentLevel !== dragParentLevel) {
+                    return true;
+                }
+                for (let i: number = 0; i < rows.length; i++) {
+                    if (rows[parseInt(i.toString(), 10)] === targetRow[0]) {
+                        InDraggedRowIndex = true;
+                    }
+                    if (InDraggedRowIndex && rows[parseInt(i.toString(), 10)] !== targetRow[0]) {
+                        const parentIndexLevelInRow: any = rows[parseInt(i.toString(), 10)].cells[`${treeColIndex}`].className.match(regex);
+                        const parentLevelInRow: number = +parentIndexLevelInRow[1].match(/\d+/)[0];
+                        if (parentLevelInRow !== parentLevel && parentLevelInRow > parentLevel) {
+                            childRows.push(rows[parseInt(i.toString(), 10)]);
+                        } else {
+                            break;
+                        }
+                    }
+                }
+                if (!isNullOrUndefined(row) && parentLevel === dragParentLevel && ((childRows.length > 0 && !isNullOrUndefined(row[0].getAttribute('aria-rowindex')) && parseInt(row[0].getAttribute('aria-rowindex'), 10) - 1 === index + (childRows.length + 1)) || (childRows.length === 0 && !isNullOrUndefined(row[0].getAttribute('aria-rowindex')) && parseInt(row[0].getAttribute('aria-rowindex'), 10) - 1 === index + 1))) {
+                    isBorderNeed = false;
+                }
+                return true;
+            });
+            isBorderNeed = (!isNullOrUndefined(row) && childRows.length === 0 && !isNullOrUndefined(row[0].getAttribute('aria-rowindex')) && parseInt(row[0].getAttribute('aria-rowindex'), 10) - 1 === index + 1) && isNullOrUndefined(row[0]) ? false : isBorderNeed;
+        }
+        if (this.dropPosition === 'middleSegment') {
+            targetRow.filter((e: any) => {
+                if (isNullOrUndefined(e) || isNullOrUndefined(e.cells) || isNullOrUndefined(dragRows[0]) ||
+                    isNullOrUndefined(dragRows[0].cells)) {
+                    return true;
+                }
+                for (let i: number = 0; i < dragRows.length; i++) {
+                    const regex: RegExp = /index(\d+)|level(\d+)/g;
+                    let dropActualIndex: number = targetRow[0].rowIndex;
+                    const dragIndexLevel: RegExpMatchArray | null = dragRows[parseInt(i.toString(), 10)].cells[`${treeColIndex}`].className.match(regex);
+                    if (!dragIndexLevel) { return true; }
+                    const dragIndex: number = parseInt(dragIndexLevel.find((item: string) => item.includes('index')).match(/\d+/)[0] || '0', 10);
+                    if (hasDetailTemplate) {
+                        dropActualIndex = dropActualIndex / 2;
+                    }
+                    if (dragIndex === dropActualIndex && !this.parent.rowDropSettings.targetID) {
+                        isBorderNeed = false;
+                    }
+                    else {
+                        isBorderNeed = true;
+                        break;
+                    }
+                }
+                if (!isBorderNeed) {
+                    this.dropPosition = 'Invalid';
+                    this.addErrorElem();
+                }
+                return isBorderNeed;
+            });
+        }
+        this.canDrop = isBorderNeed;
+        return isBorderNeed;
     }
 
     /**
@@ -786,22 +955,24 @@ export class RowDD {
      * Applies drop border styles to row elements based on the current drop position ('topSegment' or 'bottomSegment').
      *
      * @param {Element} target - The target element where the drop action is taking place.
+     * @param {boolean} [isBorderNeed=true] - Indicates whether a border is needed during the drop action. Defaults to `true`.
      * @returns {void} No return value.
      */
-    private topOrBottomBorder(target: Element): void {
-        let rowElement: HTMLElement[] = [];
+    private topOrBottomBorder(target: Element, isBorderNeed: boolean = true): void {
         const element: Element = closest(target, 'tr');
-        rowElement = element ? [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse')) : [];
-        if (rowElement.length) {
-            if (this.dropPosition === 'topSegment') {
-                this.addRemoveClasses(rowElement, true, 'e-droptop');
-                if (this.parent.element.getElementsByClassName('e-lastrow-dragborder').length > 0) {
-                    this.parent.element.getElementsByClassName('e-lastrow-dragborder')[0].remove();
-                }
+        const rowElements: HTMLElement[] = element ?
+            Array.from(element.querySelectorAll('.e-rowcell, .e-rowdragdrop, .e-detailrowcollapse')) : [];
+        if (!rowElements.length) { return; }
+        const classAction: any = isBorderNeed ? this.addRemoveClasses.bind(this, rowElements, true) : this.addRemoveClasses.bind(this, rowElements, false, 'e-dragborder');
+        if (this.dropPosition === 'topSegment') {
+            classAction('e-droptop');
+            const lastRowDragBorder: Element = this.parent.element.querySelector('.e-lastrow-dragborder');
+            if (lastRowDragBorder) {
+                lastRowDragBorder.remove();
             }
-            if (this.dropPosition === 'bottomSegment') {
-                this.addRemoveClasses(rowElement, true, 'e-dropbottom');
-            }
+        }
+        if (this.dropPosition === 'bottomSegment') {
+            classAction('e-dropbottom');
         }
     }
 
@@ -868,18 +1039,29 @@ export class RowDD {
         if (!cloneElement) { return; }
         cloneElement.style.cursor = '';
         const rowEle: Element = args.target ? closest(args.target, 'tr') : null;
-        const rowIdx: number = rowEle ? (rowEle as HTMLTableRowElement).rowIndex : -1;
+        let rowIdx: number = -1;
+        if (!isNullOrUndefined(this.parent.detailTemplate)) {
+            rowIdx = rowEle ? this.parent.getDataRows().indexOf(rowEle as HTMLTableRowElement) : -1;
+        }
+        else {
+            rowIdx = rowEle ? (rowEle as HTMLTableRowElement).rowIndex : -1;
+        }
         if (rowIdx === -1) {
             this.canDrop = false;
             this.addErrorElem();
-            if (isNullOrUndefined(tObj.rowDropSettings.targetID)) {
-                this.removetopOrBottomBorder();
-                this.removeChildBorder();
-            }
+            this.removetopOrBottomBorder();
+            this.removeChildBorder();
             return;
         }
         const dragRecords: ITreeData[] = Array.isArray(args.data) ? args.data : [args.data as ITreeData];
-        const droppedRecord: ITreeData = tObj.getCurrentViewRecords()[parseInt(rowIdx.toString(), 10)];
+        let droppedRecord: ITreeData = tObj.getCurrentViewRecords()[parseInt(rowIdx.toString(), 10)];
+        if (tObj.rowDropSettings.targetID) {
+            const dropElement: Element = parentsUntil(args.target, 'e-treegrid');
+            if (dropElement && dropElement.id === this.parent.rowDropSettings.targetID) {
+                const srcControl: TreeGrid = (<EJ2Intance>dropElement).ej2_instances[0];
+                droppedRecord = srcControl.getCurrentViewRecords()[parseInt(rowIdx.toString(), 10)];
+            }
+        }
         this.removeErrorElem();
         this.canDrop = true;
         this.ensuredropPosition(dragRecords, droppedRecord);
@@ -912,13 +1094,13 @@ export class RowDD {
         const parentItem: string = 'parentItem';
         if (!tObj.rowDropSettings.targetID) {
             if (parentsUntil(args.target, 'e-content') || (this.dropPosition === 'Invalid' || !this.canDrop)) {
-                if (this.parent.element.querySelector('.e-errorelem')) {
+                if (this.parent.element.querySelector('.e-errorelem') || !this.canDrop) {
                     this.dropPosition = 'Invalid';
                 }
                 setValue('dropPosition', this.dropPosition, args);
                 tObj.trigger(events.rowDrop, args);
                 if (!args.cancel) {
-                    if (!isCountRequired(this.parent) && this.dropPosition === 'Invalid') {
+                    if (!isCountRequired(this.parent) && (this.dropPosition === 'Invalid' && !this.canDrop)) {
                         return;
                     }
                     if (!isCountRequired(this.parent)) {
@@ -934,9 +1116,15 @@ export class RowDD {
         } else {
             if (args.target && closest(args.target, '#' + tObj.rowDropSettings.targetID) || parentsUntil(args.target, 'e-treegrid') &&
                 parentsUntil(args.target, 'e-treegrid').id === tObj.rowDropSettings.targetID || args.target && document.getElementById(tObj.rowDropSettings.targetID)) {
+                if (this.parent.element.querySelector('.e-errorelem') || !this.canDrop) {
+                    this.dropPosition = 'Invalid';
+                }
                 setValue('dropPosition', this.dropPosition, args);
                 tObj.trigger(events.rowDrop, args);
                 if (!args.cancel && tObj.rowDropSettings.targetID) {
+                    if (this.dropPosition === 'Invalid' && !this.canDrop) {
+                        return;
+                    }
                     this.dragDropGrid(args);
                     if (tObj.isLocalData) {
                         tObj.flatData = this.orderToIndex(tObj.flatData);
@@ -1068,13 +1256,13 @@ export class RowDD {
     }
 
     /**
-     * Retrieves the index of the target row based on its 'data-rowindex' attribute.
+     * Retrieves the index of the target row based on its 'aria-rowindex' attribute.
      *
      * @param {Element} targetRow - The target row element from which to retrieve the index.
      * @returns {number} - The index of the target row, or 0 if the targetRow is null or undefined.
      */
     private getTargetIdx(targetRow: Element): number {
-        return targetRow ? parseInt(targetRow.getAttribute('data-rowindex'), 10) : 0;
+        return targetRow ? parseInt(targetRow.getAttribute('aria-rowindex'), 10) - 1 : 0;
     }
 
     /**
@@ -1134,7 +1322,13 @@ export class RowDD {
                     this.droppedRecord = tObj.getCurrentViewRecords()[parseInt(index.toString(), 10)];
                 }
                 else {
-                    this.droppedRecord = tObj.getCurrentViewRecords()[args.dropIndex];
+                    if (!isNullOrUndefined(this.parent.rowDropSettings.targetID)) {
+                        const rowsObject: Row<Column>[] = this.parent.grid.getRowsObject();
+                        this.droppedRecord = rowsObject.length > 0 ? rowsObject[args.dropIndex].data : undefined;
+                    }
+                    else {
+                        this.droppedRecord = tObj.getCurrentViewRecords()[args.dropIndex];
+                    }
                 }
             }
             let dragRecords: ITreeData[] = [];
@@ -1664,6 +1858,7 @@ export class RowDD {
 
     /**
      * Cleans up resources, event listeners, and DOM elements when the TreeGrid component is destroyed.
+     *
      * @returns {void}
      */
     public destroy(): void {

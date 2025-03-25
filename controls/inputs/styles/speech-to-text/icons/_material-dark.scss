@@ -1,0 +1,8 @@
+@include export-module('speechtotext-material-dark-icons') {
+  .e-listen-icon::before {
+    content: '\e9e1';
+  }
+  .e-listen-stop::before {
+    content: '\e9de';
+  }
+}

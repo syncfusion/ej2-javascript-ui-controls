@@ -9,7 +9,7 @@ import { Magnification } from './index';
 import { Toolbar } from './index';
 import { ToolbarItem } from './index';
 import { PdfRenderer } from './index';
-import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem, DisplayMode, Visibility, FormFieldDataFormat, PdfKeys, ModifierKeys } from './base/types';
+import { LinkTarget, InteractionMode, SignatureFitMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem, FormFieldType, AllowedInteraction, AnnotationDataFormat, SignatureType, CommentStatus, SignatureItem, FormDesignerToolbarItem, DisplayMode, Visibility, FormFieldDataFormat, PdfKeys, ModifierKeys, ExtractTextOption } from './base/types';
 import { Annotation } from './index';
 import { LinkAnnotation } from './index';
 import { ThumbnailView } from './index';
@@ -6059,6 +6059,27 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enableBookmark: boolean;
 
     /**
+     * Enables different levels of extract text for the Standalone PDF Viewer.
+     * The choice of `extractTextCompleted` determines the content of the `textData`.
+     *
+     * **Options:**
+     * - `ExtractTextOption.TextAndBounds`: Indicates that both plain text and text with bounds (layout information) are returned.
+     * This is the default behavior, providing both the extracted text and its positional data.
+     * Use this option when you need both the textual content and its layout information for further processing or analysis.
+     * - `ExtractTextOption.TextOnly`: Indicates that only plain text is extracted and returned.
+     * This option does not include any additional bounds  information.
+     * - `ExtractTextOption.BoundsOnly`: Indicates that text is returned along with layout information, such as bounds or coordinates.
+     * This option does not include plain text and is useful when only positional data is required.
+     * - `ExtractTextOption.None`: Indicates that no text information is returned. This option is not applicable for the ExtractText method and is only used in the extractTextCompleted event when no text data is available.
+     *
+     * This property is used to determine how `textData` should be managed during the `extractTextCompleted` event.
+     *
+     * @default 'TextAndBounds'
+     */
+    @Property('TextAndBounds')
+    public extractTextOption: ExtractTextOption;
+
+    /**
      * Enable or disable session storage for PDF Viewer data.
      * When true, the PDF Viewer stores data in an internal collection instead of session storage.
      * When false, the default session storage mechanism is used.
@@ -7272,6 +7293,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public created: EmitType<void>;
 
     /**
+     * Triggers after loading the Pdfium resources.
+     *
+     * @event resourcesLoaded
+     */
+    @Event()
+    public resourcesLoaded: EmitType<void>;
+
+    /**
      * Triggers while loading document into PDF viewer.
      *
      * @event documentLoad
@@ -8023,9 +8052,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             else {
                 this.initializePdfiumModule({});
             }
-            this.viewerBase.pdfViewerRunner.onMessage(function (event: any): void {
+            this.viewerBase.pdfViewerRunner.onMessage('loaded', function (event: any): void {
                 if (event.data.message === 'loaded') {
                     proxy.renderComponent();
+                    proxy.fireResourcesLoaded();
                 }
             });
         } else {
@@ -8073,6 +8103,73 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             imageDeatils = this.pdfRendererModule.exportAsImages(startIndex, endIndex);
         }
         return imageDeatils;
+    }
+
+
+    /**
+     * Extracts text from a specific page of the PDF document based on the supplied options.
+     *
+     * @param {number} pageIndex - The index of the page from which text will be extracted. The first page is indexed as 0.
+     * @param {ExtractTextOption} options - A configuration option specifying the type of text extraction, such as layout preferences.
+     *
+     * @returns {Promise<{ textData: TextDataSettingsModel[], pageText: string }>} - A promise that resolves with an object containing:
+     * - textData: An array of TextDataSettingsModel, detailing the structure and positioning of the extracted text.
+     * - pageText: A concatenated string of the extracted text content from the specified page.
+     */
+    public extractText(pageIndex: number, options: ExtractTextOption):
+    Promise<{ textData: TextDataSettingsModel[], pageText: string }>;
+
+    /**
+     * Extracts text from a specified range of pages in the PDF document.
+     *
+     * @param {number} startIndex - The starting page index for text extraction. The first page is indexed as 0.
+     * @param {number} endIndex - The ending page index for text extraction. The page at this index is also included.
+     * @param {ExtractTextOption} options - The options to specify additional extraction configurations, such as layout preferences.
+     *
+     * @returns {Promise<{ textData: TextDataSettingsModel[], pageText: string }>} - A promise that resolves with an object containing:
+     * - textData: An array of TextDataSettingsModel representing the structure and bounds of the extracted text.
+     * - pageText: A concatenated string of the extracted text from the specified range of pages.
+     */
+    public extractText(startIndex: number, endIndex: number, options: ExtractTextOption):
+    Promise<{ textData: TextDataSettingsModel[], pageText: string }>;
+
+    /**
+     * Extracts text from one or multiple pages in the PDF document based on the specified criteria.
+     *
+     * This method retrieves the text data and associated information from the specified page(s) in the PDF document.
+     * Based on the input parameters, it can extract text data from either a single page or a range of pages.
+     *
+     * @param {number} startIndex - The starting page index for text extraction.
+     * @param {number | ExtractTextOption} endIndexOrIsoptions - Either the ending page index for the text extraction
+     *        or the options for text extraction if extracting text from a single page.
+     * @param {ExtractTextOption} [options] - Optional parameter that specifies additional options for text extraction
+     *        when extracting from multiple pages.
+     *
+     * @returns {Promise<{textData: TextDataSettingsModel[], pageText: string}>} - A promise that resolves with an object containing two properties:
+     * - textData: An array of TextDataSettingsModel objects, each representing details and structure of extracted text.
+     * - pageText: A concatenated string of the text extracted from the page(s).
+     *          {Promise<{pageText: string}>} - A promise resolving with an object containing the extracted plain text
+     *                                           from a single page.
+     *          {Promise<{textData: TextDataSettingsModel[]}>} - A promise resolving with an array of extracted text
+     *                                                            data models from a single page.
+     */
+    public extractText(startIndex: number, endIndexOrIsoptions?: number | ExtractTextOption, options?: ExtractTextOption):
+    Promise<{ textData: TextDataSettingsModel[], pageText: string }> | Promise<{ pageText: string }> |
+    Promise<{ textData: TextDataSettingsModel[] }> {
+        const isLayout: boolean = true;
+        let endIndex: number | undefined;
+        let option: ExtractTextOption;
+        // Determines the correct values for endIndex and isLayout
+        if (typeof endIndexOrIsoptions === 'number') {
+            endIndex = endIndexOrIsoptions;
+            option = options;
+        } else {
+            option = endIndexOrIsoptions;
+        }
+        if (isNullOrUndefined(endIndex)) {
+            endIndex = startIndex;
+        }
+        return this.pdfRendererModule.extractsText(startIndex, endIndex, option, isLayout);
     }
 
     private getScriptPathForPlatform(): string {
@@ -9627,6 +9724,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
+     * @returns {void}
+     */
+    private fireResourcesLoaded(): void {
+        this.trigger('resourcesLoaded');
+    }
+
+    /**
      * @param {any} JsonData - It gives the json data values
      * @private
      * @returns {void}
@@ -10472,7 +10576,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @returns {void}
      */
     public renderDrawing(canvas?: HTMLCanvasElement, index?: number): void {
-        if (isNullOrUndefined(index) && this.viewerBase.activeElements.activePageID && !this.viewerBase.isPrint) {
+        if (isNullOrUndefined(index) && (!isNullOrUndefined(this.viewerBase.activeElements.activePageID) &&
+        this.viewerBase.activeElements.activePageID >= 0) && !this.viewerBase.isPrint) {
             index = this.viewerBase.activeElements.activePageID;
         }
         if (this.annotation) {
@@ -10847,7 +10952,31 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @returns {void}
      */
     public fireTextExtractionCompleted(documentCollection: DocumentTextCollectionSettingsModel[][]): void {
-        const eventArgs: ExtractTextCompletedEventArgs = { documentTextCollection: documentCollection };
+        let emptyObj: any = [];
+        if (this.extractTextOption === ExtractTextOption.TextAndBounds) {
+            emptyObj = documentCollection;
+        }
+        else if (this.extractTextOption === ExtractTextOption.None) {
+            emptyObj = [];
+        } else {
+            for (let i: number = 0; i < documentCollection.length; i++) {
+                const document: any = documentCollection[parseInt(i.toString(), 10)][parseInt(i.toString(), 10)];
+                if (!emptyObj[parseInt(i.toString(), 10)]) {
+                    emptyObj[parseInt(i.toString(), 10)] = {};
+                }
+                switch (this.extractTextOption) {
+                case ExtractTextOption.TextOnly:
+                    emptyObj[parseInt(i.toString(), 10)][parseInt(i.toString(), 10)] =
+                        { PageSize: document.PageSize, PageText: document.PageText };
+                    break;
+                case ExtractTextOption.BoundsOnly:
+                    emptyObj[parseInt(i.toString(), 10)][parseInt(i.toString(), 10)] =
+                        { PageSize: document.PageSize, TextData: document.TextData };
+                    break;
+                }
+            }
+        }
+        const eventArgs: ExtractTextCompletedEventArgs = { documentTextCollection: emptyObj };
         this.trigger('extractTextCompleted', eventArgs);
     }
 

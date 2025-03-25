@@ -1322,6 +1322,7 @@ export class ParagraphWidget extends BlockWidget {
                 }
                 element = element.nextNode as ElementBox;
             } while (true);
+
             let pattern;
             if (this.isInsideTable && this.containerWidget instanceof TableCellWidget && this.containerWidget.ownerTable &&
                 this.containerWidget.ownerTable.bodyWidget && this.containerWidget.ownerTable.bodyWidget.page &&
@@ -4675,6 +4676,10 @@ export class LineWidget implements IWidget {
                 continue;
             }
             if (inlineElement instanceof ListTextElementBox) {
+                continue;
+            }
+            if (inlineElement.characterFormat.hidden) {
+                count += inlineElement.length;
                 continue;
             }
             if (inlineElement instanceof TextElementBox || inlineElement instanceof CommentCharacterElementBox

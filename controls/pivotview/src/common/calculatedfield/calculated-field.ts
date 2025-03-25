@@ -2259,7 +2259,10 @@ export class CalculatedField implements IAction {
                     for (let j: number = 0; j < report.calculatedFieldSettings.length; j++) {
                         if (report.calculatedFieldSettings[j as number].name === calcInfo.name) {
                             report.calculatedFieldSettings[j as number].formula = calcInfo.formula;
-                            this.parent.lastCalcFieldInfo = report.calculatedFieldSettings[j as number];
+                            this.parent.lastCalcFieldInfo =
+                                (<{ [key: string]: Object }>report.calculatedFieldSettings[j as number]).properties ?
+                                    (<{ [key: string]: Object }>report.calculatedFieldSettings[j as number]).properties :
+                                    report.calculatedFieldSettings[j as number];
                             this.updateFormatSettings(report, calcInfo.name, calcInfo.formatString);
                         }
                     }

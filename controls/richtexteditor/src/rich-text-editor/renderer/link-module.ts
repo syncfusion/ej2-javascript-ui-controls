@@ -181,7 +181,7 @@ export class Link {
         }
         const args: MouseEvent = e.args as MouseEvent;
         const showOnRightClick: boolean = this.parent.quickToolbarSettings.showOnRightClick;
-        const ismacRightClick: boolean = /Version\/\d+\.\d+.*Safari/.test(navigator.userAgent) && !/Chrome|Edg|Firefox/.test(navigator.userAgent) && args.which === 3;
+        const ismacRightClick: boolean = this.parent.userAgentData.isSafari() && args.which === 3;
         if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) {
             return;
         }

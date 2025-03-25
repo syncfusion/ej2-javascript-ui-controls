@@ -1,4 +1,4 @@
-import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, classList, Complex, formatUnit, Base } from '@syncfusion/ej2-base';
+import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, classList, Complex, formatUnit, Base, updateCSSText } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
 import { Save } from '@syncfusion/ej2-file-utils';
 import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs, FormFieldData } from './index';
@@ -375,7 +375,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * @private
      */
-    public findResultsList: string[] = undefined;
+    public findResultsList: HTMLElement[] = undefined;
     //Module Declaration
     /**
      * @private
@@ -1537,13 +1537,13 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             if (fontFaceDeclarations) {
                 style.appendChild(document.createTextNode(fontFaceDeclarations));
                 document.head.appendChild(style);
-
                 style.onload = function (): void {
                     this.externalFonts.forEach((externalFont: ExternalFontInfo) => {
                         if (externalFont.src && externalFont.fontFamily && !this.parser.isFontInstalled(externalFont.fontFamily)) {
                             // Render text in a div for each font
                             const testDiv: HTMLElement = document.createElement('div');
-                            testDiv.setAttribute('style', 'position:absolute;top:-1000px;left:-1000px;opacity:0;font-size:0px;line-height:normal;');
+                            const cssText: string = 'position:absolute;top:-1000px;left:-1000px;opacity:0;font-size:0px;line-height:normal;';
+                            updateCSSText(testDiv, cssText);
                             testDiv.textContent = 'test font';
                             testDiv.style.fontFamily = `"${externalFont.fontFamily}"`;
                             document.body.appendChild(testDiv);

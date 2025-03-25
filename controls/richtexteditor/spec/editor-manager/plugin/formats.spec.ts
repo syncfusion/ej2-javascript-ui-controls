@@ -847,6 +847,33 @@ describe('Formats plugin', () => {
         });
     });
 
+    describe(' 943711: Block Quote format when cursor at the start of the table', () => {
+        let editorObj: EditorManager;
+        let rteContent: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner"><p><span style="font-size: 1em; text-align: inherit; font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, sans-serif, -apple-system, BlinkMacSystemFont;">A table.</span><br></p><table class="e-rte-table" style="width: 100%; min-width: 0px; height: 151px"> <thead style="height: 16.5563%"> <tr style="height: 16.5563%"> <th style="width: 12.1813%"><span>S No</span><br></th> <th style="width: 23.2295%"><span>Name</span><br></th> <th style="width: 9.91501%"><span>Age</span><br></th> <th style="width: 15.5807%"><span>Gender</span><br></th> <th style="width: 17.9887%"><span>Occupation</span><br></th> <th style="width: 21.1048%">Mode of Transport</th> </tr> </thead> <tbody> <tr style="height: 16.5563%"> <td style="width: 12.1813%">1</td> <td style="width: 23.2295%">Selma Rose</td> <td style="width: 9.91501%">30</td> <td style="width: 15.5807%">Female</td> <td style="width: 17.9887%"><span>Engineer</span><br></td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚴</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">2</td> <td style="width: 23.2295%"><span>Robert</span><br></td> <td style="width: 9.91501%">28</td> <td style="width: 15.5807%">Male</td> <td style="width: 17.9887%"><span>Graphic Designer</span></td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚗</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">3</td> <td style="width: 23.2295%"><span>William</span><br></td> <td style="width: 9.91501%">35</td> <td style="width: 15.5807%">Male</td> <td style="width: 17.9887%">Teacher</td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚗</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">4</td> <td style="width: 23.2295%"><span>Laura Grace</span><br></td> <td style="width: 9.91501%">42</td> <td style="width: 15.5807%">Female</td> <td style="width: 17.9887%">Doctor</td> <td style="width: 21.1048%"><span style="font-size: 14pt">🚌</span></td> </tr> <tr style="height: 16.5563%"> <td style="width: 12.1813%">5</td><td style="width: 23.2295%"><span>Andrew James</span><br></td><td style="width: 9.91501%">45</td><td style="width: 15.5807%">Male</td><td style="width: 17.9887%">Lawyer</td><td style="width: 21.1048%"><span style="font-size: 14pt">🚕</span></td></tr></tbody></table><h2>Elevating Your Content with Image</h2><p></div>`;
+        let elem: HTMLElement = createElement('div', {
+            id: 'dom-node', innerHTML: rteContent
+        });
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+        });
+
+        it(' Applying & reverting and applying the blockquotes for the table when cursor at the start of the table', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            editorObj.nodeSelection.setSelectionText(document, elem, elem, 1, 1);
+            editorObj.execCommand("Formats", 'blockquote', null);
+            expect(elem.querySelector('table').parentElement.nodeName.toLowerCase() === 'blockquote').toBe(true);
+            editorObj.execCommand("Formats", 'blockquote', null);
+            expect(elem.querySelector('table').parentElement.nodeName.toLowerCase() !== 'blockquote').toBe(true);
+            editorObj.execCommand("Formats", 'blockquote', null);
+            expect(elem.querySelector('table').parentElement.nodeName.toLowerCase() === 'blockquote').toBe(true);
+            editorObj.nodeSelection.Clear(document);
+        });
+        afterAll(() => {
+            detach(elem);
+        });
+    });
+
     describe(' Apply blockquotes after improvement', () => {
         let editorObj: EditorManager;
         let rteContent: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner"><p id="startNode">Content 1</p><p>Content 2</p><p>Content 3</p><p>Content 4</p><p id="endNode">Content 5</p></div>`;

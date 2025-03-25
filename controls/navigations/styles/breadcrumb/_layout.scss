@@ -1,3 +1,5 @@
+@use 'sass:list';
+
 @include export-module('breadcrumb-layout') {
   .e-breadcrumb {
     display: block;
@@ -277,7 +279,7 @@
     &.e-rtl .e-breadcrumb-separator + .e-breadcrumb-separator {
       margin-left: 0;
       margin-right: $breadcrumb-sibling-separator-margin-left;
-      padding-left: nth($breadcrumb-separator-padding, 2);
+      padding-left: list.nth($breadcrumb-separator-padding, 2);
       padding-right: $breadcrumb-sibling-separator-padding;
     }
 

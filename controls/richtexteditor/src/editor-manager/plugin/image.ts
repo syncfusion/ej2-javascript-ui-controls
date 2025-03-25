@@ -5,7 +5,7 @@ import * as classes from './../base/classes';
 import { IHtmlItem } from './../base/interface';
 import { InsertHtml } from './inserthtml';
 import * as EVENTS from './../../common/constant';
-import { isSafari, scrollToCursor } from '../../common/util';
+import { scrollToCursor } from '../../common/util';
 
 /**
  * Link internal component
@@ -123,7 +123,7 @@ export class ImageCommand {
                 (Browser.isIE ? (selectedNode.previousSibling as Element) : (selectedNode as Element).previousElementSibling);
             const onImageLoadEvent: () => void = () => {
                 if (!isNOU(this.parent.currentDocument)) {
-                    if (isSafari()) {
+                    if (this.parent.userAgentData.isSafari()) {
                         scrollToCursor(this.parent.currentDocument, this.parent.editableElement as HTMLElement);
                     }
                     const imgWidth: string = imgElm.getAttribute('width');

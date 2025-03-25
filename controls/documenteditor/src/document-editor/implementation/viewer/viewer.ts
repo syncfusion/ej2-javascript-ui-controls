@@ -7,7 +7,7 @@ import { WLevelOverride } from '../list/level-override';
 import { WSectionFormat, WCharacterFormat, WParagraphFormat, WStyles, WStyle, WColumnFormat, WBorder } from '../format/index';
 import { Layout } from './layout';
 import { Renderer } from './render';
-import { createElement, Browser, L10n } from '@syncfusion/ej2-base';
+import { createElement, Browser, L10n, updateCSSText } from '@syncfusion/ej2-base';
 import {
     Page, Rect, Widget, ListTextElementBox, FieldElementBox, ParagraphWidget, HeaderFooterWidget, EditRangeStartElementBox,
     CommentElementBox, CommentCharacterElementBox, Padding, DropDownFormField, TextFormField, CheckBoxFormField, ShapeElementBox,
@@ -1369,7 +1369,7 @@ export class DocumentHelper {
     }
     private measureScrollbarWidth(element: HTMLElement): void {
         const parentDiv: HTMLElement = document.createElement('div');
-        parentDiv.setAttribute('style', 'visibility:hidden;overflow:scroll');
+        parentDiv.style.cssText = 'visibility:hidden;overflow:scroll;';
         element.appendChild(parentDiv);
         const childDiv: HTMLElement = document.createElement('div');
         parentDiv.appendChild(childDiv);
@@ -1401,18 +1401,21 @@ export class DocumentHelper {
         this.initIframeContent();
     }
     private initIframeContent(): void {
-        const style: string = 'background-color:transparent;width:100%;height:100%;padding: 0px; margin: 0px;';
-        const innerHtml: string = '<!DOCTYPE html>'
-            + '<html lang="' + this.owner.locale +'"><head></head>'
-            + '<body spellcheck="false" style=' + style + ' >'
-            + '<div contenteditable="true" style=' + style + '></div>'
-            + '</body>'
-            + '</html>';
+        const innerHtml: string = `<!DOCTYPE html>
+            <html lang="${this.owner.locale}">
+            <head></head>
+            <body spellcheck="false">
+                <div contenteditable="true"></div>
+            </body>
+            </html>`;
         if (!isNullOrUndefined(this.iframe.contentDocument)) {
             this.iframe.contentDocument.open();
             this.iframe.contentDocument.write(innerHtml);
             this.iframe.contentDocument.close();
             this.editableDiv = this.iframe.contentDocument.body.children[0] as HTMLElement;
+            const cssText: string = 'background-color:transparent;width:100%;height:100%;padding: 0px; margin: 0px';
+            updateCSSText(this.iframe.contentDocument.body, cssText);
+            updateCSSText(this.editableDiv, cssText);
         }
     }
     /**
@@ -1535,7 +1538,8 @@ export class DocumentHelper {
                 }
                 this.isComposingIME = false;
                 this.lastComposedText = '';
-                this.iframe.setAttribute('style', 'pointer-events:none;position:absolute;left:' + this.owner.viewer.containerLeft + 'px;top:' + this.owner.viewer.containerTop + 'px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden');
+                const cssText: string = 'pointer-events:none;position:absolute;left:' + this.owner.viewer.containerLeft + 'px;top:' + this.owner.viewer.containerTop + 'px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden';
+                updateCSSText(this.iframe, cssText);
                 this.editableDiv.innerHTML = '';
                 if (this.owner.editorHistoryModule) {
                     if (text !== '') {
@@ -1645,7 +1649,7 @@ export class DocumentHelper {
         iframeStyle += 'top:' + top + 'px;';
         iframeStyle += 'width:' + (HelperMethods.convertPointToPixel(pageWidth) * this.zoomFactor) + 'px;';
         iframeStyle += 'height:250px;outline-style:none;position:absolute';
-        this.iframe.setAttribute('style', iframeStyle);
+        updateCSSText(this.iframe, iframeStyle);
 
         let style: string = 'background-color:transparent;width:100%;height:250px;padding: 0px; margin: 0px;';
         style += 'text-indent:' + (point.x - left) + 'px;';
@@ -1653,7 +1657,7 @@ export class DocumentHelper {
         style += 'font-size:' + (HelperMethods.convertPointToPixel(this.selection.characterFormat.fontSize) * this.zoomFactor) + 'px;';
         style += 'font-family' + this.selection.characterFormat.fontFamily + ';';
         style += 'overflow:hidden;text-decoration:none;white-space:normal;';
-        this.editableDiv.setAttribute('style', style);
+        updateCSSText(this.editableDiv, style);
     }
     /* eslint-disable @typescript-eslint/no-explicit-any */
     private onImageResizer = (args: any): void => {
@@ -3965,6 +3969,7 @@ export class DocumentHelper {
             this.owner.editorModule.insertContentControlPlaceholder();
         }
         if (!isHandled && !isNullOrUndefined(this.selection)) {
+            this.selection.caret.classList.remove("e-de-cursor-animation");
             this.selection.onKeyDownInternal(event, ctrl, shift, alt);
         }
         if (!isNullOrUndefined(this.owner.documentHelper) && this.owner.documentHelper.contentControlCollection.length > 0) {
@@ -3981,6 +3986,9 @@ export class DocumentHelper {
                 this.owner.viewer.updateScrollBars();
             }
         }, 100);
+        if (!isNullOrUndefined(this.selection) && !this.selection.caret.classList.contains("e-de-cursor-animation")) {
+            this.selection.caret.classList.add("e-de-cursor-animation");
+        }
     }
     /**
      * @private

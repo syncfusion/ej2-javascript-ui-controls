@@ -88,7 +88,7 @@ $gantt-clone-dragdrop-bg-color: $gantt-table-background-color !default;
 $error-elem-color: $danger;
 $gantt-active-container-border: $border !default;
 $rangecontainer-border-color: rgba(220, 53, 69, 1);
-$gantt-chartrow-hover-bg-color: $table-bg-color-hover !default;
+$gantt-chartrow-hover-bg-color: $content-bg-color-alt2 !default;
 $gantt-context-menu-click-color: $flyout-text-color-pressed !default;
 
 // Layout
@@ -214,7 +214,6 @@ $gantt-group-clone-text-align: center !default;
 $gantt-clone-prop-box-shadow: 0 6px 12px rgba($warning-text, .175) !default;
 $gantt-border-size: 1px !default;
 $grid-active-container-border: 0 0 0 1px $primary inset !default;
-$gantt-collapse-progress-width: 0px !important;
 $gantt-range-container-arc-radius: 2px !default;
 $bigger-column-menu-size: 35px !default;
 $gantt-masked-table-background-color: rgb(225,223,221);

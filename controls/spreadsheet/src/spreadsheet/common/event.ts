@@ -174,8 +174,6 @@ export const renderFilterCell: string = 'renderFilterCell';
 /** @hidden */
 export const refreshFilterRange: string = 'refreshFilterRange';
 /** @hidden */
-export const updateSortCollection: string = 'updateSortCollection';
-/** @hidden */
 export const reapplyFilter: string = 'reapplyFilter';
 /** @hidden */
 export const filterByCellValue: string = 'filterByCellValue';
@@ -225,6 +223,8 @@ export const spreadsheetCreated: string = 'spreadsheetCreated';
 export const editAlert: string = 'editAlert';
 /** @hidden */
 export const readonlyAlert: string = 'readonlyAlert';
+/** @hidden */
+export const finiteAlert: string = 'finiteAlert';
 /** @hidden */
 export const setUndoRedo: string = 'setUndoRedo';
 /** @hidden */
@@ -309,8 +309,6 @@ export const undoRedoForChartDesign: string = 'undoRedoForChartDesign';
 export const protectWorkbook: string = 'protectWorkbook';
 /** @hidden */
 export const unProtectWorkbook: string = 'unProtectWorkbook';
-/** @hidden */
-export const getPassWord: string = 'getPassWord';
 /** @hidden */
 export const setProtectWorkbook: string = 'setProtectWorkbook';
 /** @hidden */

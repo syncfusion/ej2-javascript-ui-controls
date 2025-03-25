@@ -6,21 +6,21 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';import { PageSize
 export interface PageSettingsModel {
 
     /**
-     * Defines the number of records to be displayed in TreeGrid per page.
+     * Specifies the number of records to display per page in the TreeGrid. Adjust this setting to control the volume of data presented on each page.
      *
      * @default 12
      */
     pageSize?: number;
 
     /**
-     * Defines the number of pages to be displayed in the TreeGrid pager container.
+     * Determines the number of page numbers displayed in the TreeGrid pager container. This setting helps users navigate between different parts of the dataset.
      *
      * @default 8
      */
     pageCount?: number;
 
     /**
-     * Defines the current page number of the pager in TreeGrid.
+     * Sets the current page number in the TreeGrid, defining which page of data is initially displayed to users.
      *
      * @default 1
      */
@@ -28,29 +28,26 @@ export interface PageSettingsModel {
 
     /**
      * @hidden
-     * Gets the total records count of the TreeGrid.
+     * Retrieves the total number of records in the TreeGrid. This property is primarily used internally by the TreeGrid component.
      */
     totalRecordsCount?: number;
 
     /**
-     * If `enableQueryString` set to true,
-     * then it pass current page information as a query string along with the URL while navigating to other page in TreeGrid.
+     * When set to true, appends the current page information as a query string to the remote service URL during page navigation within the TreeGrid.
      *
      * @default false
      */
     enableQueryString?: boolean;
 
     /**
-     * If `pageSizes` set to true or Array of values,
-     * It renders DropDownList in the pager of TreeGrid which allow us to select pageSize from DropDownList.
+     * Enables a DropDownList in the TreeGrid pager, allowing users to select the page size. Accepts either a boolean to toggle this feature or an array of page size options.
      *
      * @default false
      */
     pageSizes?: boolean | (number | string)[];
 
     /**
-     * Defines the template which renders customized elements in pager of TreeGrid instead of default elements.
-     * It accepts either [template string](https://ej2.syncfusion.com/documentation/common/template-engine/) or HTML element ID.
+     * Provides a custom template for rendering pager elements in the TreeGrid, offering enhanced flexibility and control over the pager's appearance and functionality. Accepts a template string or the ID of an HTML element.
      *
      * @default null
      * @aspType string
@@ -58,9 +55,9 @@ export interface PageSettingsModel {
     template?: string | Function;
 
     /**
-     * Specifies the mode of record count in a page. The options are,
-     * * `All`: Count all the records.
-     * * `Root`: Count only zeroth level parent records.
+     * Specifies the mode for counting records on a page, determining whether all records are counted or only zeroth level parent records. The available options are:
+     * * `All`: Includes all records in the count.
+     * * `Root`: Includes only zeroth level parent records.
      *
      * @default All
      */

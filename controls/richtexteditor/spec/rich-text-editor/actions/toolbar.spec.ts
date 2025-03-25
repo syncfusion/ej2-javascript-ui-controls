@@ -2688,4 +2688,4 @@ describe('941202 - None Option Incorrectly Selected in List Dropdown for Normal 
             done();
         }, 100);
     });
-})
+});

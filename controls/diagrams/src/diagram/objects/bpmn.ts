@@ -100,7 +100,7 @@ export class BpmnDiagrams {
         if (bpmnShape === 'Group') {
             //854195 - bpmn group serialization issue
             content = this.getBPMNGroup(node, diagram);
-            content.style.strokeDashArray = '2 2 6 2';
+            content.style.strokeDashArray = node.style.strokeDashArray !== '' ? node.style.strokeDashArray : '2 2 6 2';
             content.cornerRadius = 10;
         }
         if (bpmnShape === 'Activity') {
@@ -166,7 +166,11 @@ export class BpmnDiagrams {
         }
         const path: PathElement = new PathElement();
         path.data = data;
-        path.style.fill = 'transparent';
+        path.style.fill = ((annotation.style.fill === 'white') ? 'transparent' : annotation.style.fill);
+        path.style.strokeDashArray = (annotation.style.strokeDashArray ? annotation.style.strokeDashArray : '');
+        path.style.strokeWidth = annotation.style.strokeWidth;
+        path.style.strokeColor = ((annotation.style.strokeColor === 'transparent') ? 'black' : annotation.style.strokeColor);
+        path.style.opacity = annotation.style.opacity;
         return path;
     }
     /** @private */
@@ -191,6 +195,8 @@ export class BpmnDiagrams {
     /** @private */
     public getBPMNGroup(node: Node, diagram: Diagram): Container {
         const group: Canvas = new Canvas();
+        //set style
+        this.setStyle(group, node);
         group.id = node.id + '_group';
         if (!group.children) {
             group.children = [];
@@ -702,6 +708,8 @@ export class BpmnDiagrams {
         diagram.updateSelector();
         //909205: The selector updates properly, but the node does not update correctly, so call the updateDiagramObject method.
         diagram.updateDiagramObject(node);
+        //941048: The connectors not updates properly on redo, so call the updateConnectorEdges method.
+        diagram.updateConnectorEdges(obj);
         this.updateDocks(obj as Node, diagram);
     }
     /** @private */
@@ -732,7 +740,7 @@ export class BpmnDiagrams {
                 diagram.nameTable[source.id].processId = target.id;
                 targetWrapper.children.push(diagram.nameTable[source.id].wrapper);
                 //To identify the processess added at runtime.
-                diagram.nameTable[source.id].wrapper.isDroppedProcess = true;
+                //diagram.nameTable[source.id].wrapper.isDroppedProcess = true;
                 const bound: Rect = this.getChildrenBound(target, source.id, diagram);
                 this.updateSubProcessess(bound, source, diagram);
                 targetWrapper.measure(new Size(undefined, undefined));
@@ -758,7 +766,9 @@ export class BpmnDiagrams {
                     if (source.zIndex < target.zIndex) {
                         diagram.updateProcesses(source as Node);
                         this.updateSubprocessNodeIndex(source, diagram, target);
-                    }
+                    }//909204-The node inside the subprocess disappears while grouping
+                    const parent: HTMLElement = getDiagramElement(target.id + '_groupElement');
+                    parent.appendChild(getDiagramElement(source.id + '_groupElement'));
                 }
                 this.updateDocks(source as Node, diagram);
             }
@@ -837,7 +847,7 @@ export class BpmnDiagrams {
         for (const i of wrapper.children) {
             if (i.id === name) {
                 wrapper.children.splice(wrapper.children.indexOf(i), 1);
-                if (!(i as any).isDroppedProcess && !isDelete) {
+                if (!isDelete) {
                     // To remove the child node from subprocess to diagram in DOM.
                     this.removeGElement(i.id, diagram);
                 }
@@ -899,6 +909,8 @@ export class BpmnDiagrams {
         process.id = process.id || randomId();
         const id: string = process.id;
         const node: Node = diagram.nameTable[`${id}`];
+        //913821-Adding of process node to expanded subprocess at runtime won't be undoed.
+        const undoElement: NodeModel = cloneObject(node);
         if (!node) {
             diagram.add(process);
         }
@@ -920,6 +932,16 @@ export class BpmnDiagrams {
             parentNode.wrapper.arrange(parentNode.wrapper.desiredSize);
             diagram.bpmnModule.updateDocks((parentNode as Node), diagram);
             diagram.refreshDiagramLayer();
+            //913821-Adding of process node to expanded subprocess at runtime won't be undoed
+            if (!(diagram.diagramActions & DiagramAction.UndoRedo) && (!diagram.historyManager.currentEntry ||
+                diagram.historyManager.currentEntry.type !== 'CollectionChanged')) {
+                const obj: NodeModel = cloneObject(node);
+                const entry: HistoryEntry = {
+                    type: 'PositionChanged', undoObject: { nodes: [undoElement] },
+                    redoObject: { nodes: [obj] }, category: 'Internal'
+                };
+                diagram.addHistoryEntry(entry);
+            }
             if (diagram.mode === 'SVG' && (node.shape && (node.shape as BpmnShape).activity
                 && !(node.shape as BpmnShape).activity.subProcess.processes)) {
                 const child: HTMLElement = getDiagramElement(parentId + '_groupElement');
@@ -1354,12 +1376,20 @@ export class BpmnDiagrams {
         }
         actualObject.wrapper.children[0].id = actualObject.wrapper.children[0].id || elementWrapper.id;
         if (changedProp.style) {
-            updateStyle(
-                changedProp.style,
-                elementWrapper instanceof Container ? ((!isBlazor() && (actualObject.shape as BpmnShape).shape === 'Activity')) ?
-                    (elementWrapper.children[0] as Container).children[0] :
-                    elementWrapper.children[0] : elementWrapper);
-
+            //941045: update styles for bpmn group shape
+            let containerChild: DiagramElement = elementWrapper;
+            if (elementWrapper instanceof Container) {
+                if (!isBlazor() && (actualObject.shape as BpmnShape).shape === 'Activity') {
+                    containerChild = (elementWrapper.children[0] as Container).children[0];
+                }
+                else if (!isBlazor() && (actualObject.shape as BpmnShape).shape === 'Group') {
+                    containerChild = elementWrapper;
+                }
+                else {
+                    containerChild = elementWrapper.children[0];
+                }
+            }
+            updateStyle(changedProp.style, containerChild);
             if (changedProp.style && changedProp.style.strokeColor) {
                 //EJ2-844052-BPMN nodes styles are not updated properly at runtime
                 if ((elementWrapper as Container) && (elementWrapper as Container).children !== undefined

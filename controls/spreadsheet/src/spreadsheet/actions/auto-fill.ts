@@ -1,8 +1,8 @@
 import { getColIdxFromClientX, getClientY, getClientX, selectAutoFillRange, setPosition, completeAction, showAggregate, dialog, locale, hideAutoFillOptions, performUndoRedo, hideAutoFillElement, removeAllChildren } from '../../spreadsheet/index';
 import { Spreadsheet, contentLoaded, positionAutoFillElement, getCellPosition, getRowIdxFromClientY } from '../../spreadsheet/index';
 import { performAutoFill, isLockedCells } from '../../spreadsheet/index';
-import { ICellRenderer, editAlert, AutoFillEventArgs, FillRangeInfo, isReadOnlyCells, readonlyAlert } from '../common/index';
-import { updateSelectedRange, isHiddenRow, setAutoFill, AutoFillType, AutoFillDirection, refreshCell, getFillInfo, getautofillDDB } from '../../workbook/index';
+import { ICellRenderer, editAlert, AutoFillEventArgs, FillRangeInfo, readonlyAlert } from '../common/index';
+import { updateSelectedRange, isHiddenRow, setAutoFill, AutoFillType, AutoFillDirection, refreshCell, getFillInfo, getautofillDDB, isReadOnlyCells } from '../../workbook/index';
 import { getRangeIndexes, getSwapRange, Workbook, getRowsHeight, getColumnsWidth, isInRange } from '../../workbook/index';
 import { getCell, CellModel, SheetModel, getRangeAddress, isHiddenCol, beginAction, refreshRibbonIcons } from '../../workbook/index';
 import { addClass, isNullOrUndefined, L10n, removeClass } from '@syncfusion/ej2-base';
@@ -245,6 +245,20 @@ export class AutoFill {
                     };
                     if (this.parent.autoFillSettings.showFillOptions && args && args.isautofill) {
                         removeClass([this.autoFillDropDown.element], 'e-hide');
+                        const sheetPanel: Element = this.parent.element.querySelector('.e-main-panel');
+                        const virtualable: Element = this.parent.element.querySelector('.e-main-panel .e-sheet-content .e-virtualable');
+                        const scroller: Element = this.parent.element.querySelector('.e-sheet-panel .e-scrollbar .e-scroller');
+                        const rowOffset: number = virtualable && virtualable.clientHeight < sheetPanel.clientHeight ?
+                            (sheetPanel.clientHeight - virtualable.clientHeight) : 0;
+                        const columnsOffset: number = virtualable && virtualable.clientWidth < sheetPanel.clientWidth ?
+                            (sheetPanel.clientWidth - virtualable.clientWidth) : 0;
+                        const autoFillDropDownRect: ClientRect = this.autoFillDropDown.element.getBoundingClientRect();
+                        if ((sheetPanel.scrollTop + sheetPanel.clientHeight - rowOffset) < (top + autoFillDropDownRect.height)) {
+                            top -= autoFillDropDownRect.height;
+                        }
+                        if ((scroller.scrollLeft + scroller.clientWidth - columnsOffset) < (left + autoFillDropDownRect.width)) {
+                            left -= autoFillDropDownRect.width;
+                        }
                         this.autoFillDropDown.element.style.top = top + otdiff + 'px';
                         if (isRtl) {
                             this.autoFillDropDown.element.style.right = left + oldiff + 'px';

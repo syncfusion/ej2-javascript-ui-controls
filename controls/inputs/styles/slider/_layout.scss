@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 @mixin position($position, $top, $left) {
   position: $position;
   top: $top;
@@ -425,11 +427,11 @@
       &:not(.e-disabled) {
         .e-slider-button {
           &:hover {
-            @include bg-border(darken($gray-600, 7.5%), darken($gray-600, 10%));
+            @include bg-border(color.adjust($gray-600, $lightness: -7.5%), color.adjust($gray-600, $lightness: -10%));
           }
 
           &:active {
-            @include bg-border(darken($gray-600, 10%), darken($gray-600, 12%));
+            @include bg-border(color.adjust($gray-600, $lightness: -10%), color.adjust($gray-600, $lightness: -12%));
           }
         }
       }

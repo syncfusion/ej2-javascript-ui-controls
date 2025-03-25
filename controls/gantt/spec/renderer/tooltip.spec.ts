@@ -98,7 +98,7 @@ describe('Gantt spec for tooltip', () => {
         it('Taskbar Tooltip', () => {
             let taskbarElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;
             triggerMouseEvent(taskbarElement, 'mouseover', 50);
-            expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">Start-Duration</td></tr><tr><td class = "e-gantt-tooltip-label">Start Date</td><td style="padding: 2px;">:</td><td class = "e-gantt-tooltip-value"> 10/23/2017</td></tr><tr><td class = "e-gantt-tooltip-label">End Date</td><td style="padding: 2px;">:</td><td class = "e-gantt-tooltip-value">10/26/2017</td></tr><tr><td class = "e-gantt-tooltip-label">Duration</td><td style="padding: 2px;">:</td><td class = "e-gantt-tooltip-value"> 4 days</td></tr><tr><td class = "e-gantt-tooltip-label">Progress</td><td style="padding: 2px;">:</td><td>80</td></tr></tbody></table>');
+            expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">Start-Duration</td></tr><tr><td class = "e-gantt-tooltip-label">Start Date</td><td class=e-template-padding>:</td><td class = "e-gantt-tooltip-value"> 10/23/2017</td></tr><tr><td class = "e-gantt-tooltip-label">End Date</td><td class=e-template-padding>:</td><td class = "e-gantt-tooltip-value">10/26/2017</td></tr><tr><td class = "e-gantt-tooltip-label">Duration</td><td class=e-template-padding>:</td><td class = "e-gantt-tooltip-value"> 4 days</td></tr><tr><td class = "e-gantt-tooltip-label">Progress</td><td class=e-template-padding>:</td><td>80</td></tr></tbody></table>');
         });
         
         it('Marker Tooltip', () => {
@@ -375,12 +375,12 @@ describe('Gantt spec for tooltip', () => {
             ganttObj.dataBind();
             let taskbarElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(6) > td > div.e-taskbar-main-container > div.e-gantt-child-progressbar-inner-div.e-gantt-child-taskbar.e-gantt-unscheduled-taskbar-right') as HTMLElement;
             triggerMouseEvent(taskbarElement, 'mouseover', 0);
-            expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">EndDate-alone</td></tr><tr><td class = "e-gantt-tooltip-label">End Date</td><td style="padding: 2px;">:</td><td class = "e-gantt-tooltip-value">10/27/2017</td></tr><tr><td class = "e-gantt-tooltip-label">Progress</td><td style="padding: 2px;">:</td><td>65</td></tr></tbody></table>');
+            expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">EndDate-alone</td></tr><tr><td class = "e-gantt-tooltip-label">End Date</td><td class=e-template-padding>:</td><td class = "e-gantt-tooltip-value">10/27/2017</td></tr><tr><td class = "e-gantt-tooltip-label">Progress</td><td class=e-template-padding>:</td><td>65</td></tr></tbody></table>');
         });
         it('Tooltip for unscheduled task', () => {
             let taskbarElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(4) > td > div.e-taskbar-main-container > div.e-gantt-child-progressbar-inner-div.e-gantt-child-taskbar.e-gantt-unscheduled-taskbar') as HTMLElement;
             triggerMouseEvent(taskbarElement, 'mouseover', 50);
-            expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">Duration-alone</td></tr><tr><td class = "e-gantt-tooltip-label">Duration</td><td style="padding: 2px;">:</td><td class = "e-gantt-tooltip-value"> 32 hours</td></tr><tr><td class = "e-gantt-tooltip-label">Progress</td><td style="padding: 2px;">:</td><td>65</td></tr></tbody></table>');
+            expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">Duration-alone</td></tr><tr><td class = "e-gantt-tooltip-label">Duration</td><td class=e-template-padding>:</td><td class = "e-gantt-tooltip-value"> 32 hours</td></tr><tr><td class = "e-gantt-tooltip-label">Progress</td><td class=e-template-padding>:</td><td>65</td></tr></tbody></table>');
         });
         it('Marker tooltip without label', () => {
             let marker: HTMLElement = ganttObj.element.querySelector('#stripline1') as HTMLElement;
@@ -1552,6 +1552,111 @@ describe('Gantt tooltip module', () => {
         expect((ganttObj.tooltipModule.toolTipObj as any).content()).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">Parent Task 1</td></tr><tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td><td class = "e-gantt-tooltip-value">2/27/2017</tr><tr><td class = "e-gantt-tooltip-label">SubTasks Start Date</td><td>:</td><td class = "e-gantt-tooltip-value"> 2/27/2017</td></tr><tr><td class = "e-gantt-tooltip-label">SubTasks End Date</td><td>:</td><td class = "e-gantt-tooltip-value">3/3/2017</td></tr></tbody></table>');
         ganttObj.tooltipModule['mouseMoveHandler'](taskbarElement as any);
     });
+    afterAll(function () {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt timeline tooltip module', () => {
+    let ganttObj: Gantt;
+    let ele: HTMLElement;
+    let tooltip: Element = createElement('div', { id: 'tooltip', styles: 'visibility:hidden' });
+    tooltip.innerHTML = '<div>StartDate : ${this.getFormatedDate(StartDate)}</div>';
+    document.body.appendChild(tooltip);
+    let TimelineTemplates: Element = createElement('div', { id: 'TimelineTemplates', styles: 'visibility:hidden' });
+    TimelineTemplates.innerHTML = '<div>date : ${date}</div>';
+    document.body.appendChild(TimelineTemplates);
+    let bLTooltip: Element = createElement('div', { id: 'bLTooltip', styles: 'visibility:hidden' });
+    bLTooltip.innerHTML = '<div>Timeline tier : ${tier}</div>';
+    document.body.appendChild(bLTooltip);
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: data,
+            allowSorting: true,
+            taskFields: {
+                id: 'TaskId',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'Children',
+                cssClass: 'cusClass',
+                baselineStartDate: 'BaselineStartDate',
+                baselineEndDate: 'BaselineEndDate',
+                resourceInfo: 'resourceInfo',
+                indicators: 'Indicators'
+            },
+            enableHtmlSanitizer:true,
+            renderBaseline: true,
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                },
+                timelineUnitSize: 40
+            },
+            editSettings: {
+                allowEditing: true,
+                allowAdding: true,
+                allowTaskbarEditing: true
+            },
+            allowUnscheduledTasks: true,
+            highlightWeekends: true,
+            labelSettings: {
+                taskLabel: 'Progress'
+            },
+            rowHeight: 30,
+            taskbarHeight: 20,
+            projectStartDate: new Date('10/15/2017'),
+            projectEndDate: new Date('12/30/2017'),
+            resourceIDMapping: 'resourceId',
+            resourceNameMapping: 'resourceName',
+            resources: resourceData,
+            holidays: [
+                {
+                    from: '10/16/2017',
+                    cssClass: 'e-custom-holiday',
+                    label: 'Local Holiday'
+                },
+                {
+                    from: '10/19/2017',
+                    to: '10/20/2017',
+                    label: ' Public holiday',
+                    cssClass: 'e-custom-holiday'
+                }
+            ],
+            timelineTemplate:"#TimelineTemplates",
+            eventMarkers: [
+                {
+                    day: '10/18/2017',
+                    cssClass: 'e-custom-event-marker',
+                    label: 'Event Marker 1'
+                }, {
+                    day: '10/23/2017',
+                    cssClass: 'e-custom-event-marker'
+                }
+            ],
+        }, done);
+    });
+    it('Timeline Tooltip Template', () => {
+        ganttObj.tooltipSettings.timeline = '#bLTooltip';
+        ganttObj.dataBind();
+        let timeline: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttChart > div.e-timeline-header-container > table:nth-child(2) > thead > tr > th:nth-child(7) > div') as HTMLElement;
+        triggerMouseEvent(timeline, 'mouseover', 50);
+        const contentValue : any = ganttObj.tooltipModule.toolTipObj.content;
+        if(contentValue){    
+            expect(contentValue).not.toBe(null);
+        }
+    });
+
     afterAll(function () {
         if (ganttObj) {
             destroyGantt(ganttObj);

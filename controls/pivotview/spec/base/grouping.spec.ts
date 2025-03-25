@@ -97,14 +97,14 @@ describe('Group By Date feature', () => {
         });
         it('Check date groups initially', (done: Function) => {
             setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('th[aria-colindex="2"]')[0].textContent).toBe('Balance');
+                expect(pivotGridObj.element.querySelectorAll('th[aria-colindex="2"]')[1].textContent).toBe('Balance');
                 (pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).click();
                 done();
             }, 100);
         });
         it('Check single value header', (done: Function) => {
             setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('th[aria-colindex="2"]')[0].textContent).toBe('Balance');
+                expect(pivotGridObj.element.querySelectorAll('th[aria-colindex="2"]')[1].textContent).toBe('Balance');
                 (pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).click();
                 done();
             }, 100);
@@ -136,7 +136,7 @@ describe('Group By Date feature', () => {
         });
         it('Check date groups initially', (done: Function) => {
             setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('th[data-colindex="1"]')[0].textContent).toBe('27-31');
+                expect(pivotGridObj.element.querySelectorAll('th[aria-colindex="2"]')[0].textContent).toBe('27-31');
                 (pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).click();
                 done();
             }, 100);
@@ -151,7 +151,7 @@ describe('Group By Date feature', () => {
         it('Check group settings update using on proptery', (done: Function) => {
             pivotGridObj.dataSourceSettings.groupSettings[0].groupInterval = ['Years', 'Quarters', 'Months', 'Days', 'Hours'];
             setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('th[data-colindex="3"]')[0].textContent).toBe('Out of Range');
+                expect(pivotGridObj.element.querySelectorAll('th[aria-colindex="4"]')[0].textContent).toBe('Out of Range');
                 expect((pivotGridObj.element.querySelector('.e-firstcell') as HTMLInputElement).innerText.trim() === 'Balance').toBeTruthy();
                 done();
             }, 100);

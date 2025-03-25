@@ -287,6 +287,24 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             const firstBlock: number = Math.ceil(this.rowIndex / this.getBlockSize());
             if (firstBlock !== 1 && (infoType.blockIndexes[1] !== firstBlock || infoType.blockIndexes.length < 3)) {
                 infoType.blockIndexes = [firstBlock - 1, firstBlock, firstBlock + 1];
+                if (infoType.loadNext) {
+                    const nextBlock: number[] = this.vgenerator.getBlockIndexes(infoType.nextInfo.page);
+                    let hasCommonValue: boolean = false;
+                    for (let i: number = 0; i < infoType.blockIndexes.length; i++) {
+                        for (let j: number = 0; j < nextBlock.length; j++) {
+                            if (infoType.blockIndexes[parseInt(i.toString(), 10)] === nextBlock[parseInt(j.toString(), 10)]) {
+                                hasCommonValue = true;
+                                break;
+                            }
+                        }
+                        if (hasCommonValue) { break; }
+                    }
+                    if (!hasCommonValue) {
+                        infoType.loadNext = false;
+                        infoType.nextInfo = {};
+                        infoType.event = refreshVirtualBlock;
+                    }
+                }
             }
         }
         infoType.columnIndexes = info.axis === 'X' ? this.vgenerator.getColumnIndexes() : this.parent.getColumnIndexesInView();
@@ -536,7 +554,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         const cell: any = (<{ cells?: HTMLElement[] }>row).cells[this.cellIndex];
         cell.focus({ preventScroll: true });
         if (!this.parent.selectionSettings.checkboxOnly) {
-            this.parent.selectRow(parseInt(row.getAttribute(literals.dataRowIndex), 10));
+            this.parent.selectRow(parseInt(row.getAttribute(literals.ariaRowIndex), 10) - 1);
         }
         this.activeKey = this.empty as string;
     }
@@ -810,11 +828,11 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                 const cell: HTMLElement = cells[parseInt(i.toString(), 10)];
                 let col: Column;
                 if (cell.classList.contains('e-rowcell')) {
-                    if (isNullOrUndefined(cell.getAttribute('data-colindex')) && cell.querySelector('[e-mappinguid]')) {
+                    if (isNullOrUndefined(cell.getAttribute('aria-colindex')) && cell.querySelector('[e-mappinguid]')) {
                         const uid: string = cell.querySelector('[e-mappinguid]').getAttribute('e-mappinguid');
                         col = this.parent.getColumnByUid(uid);
                     } else {
-                        const idx: number = parseInt(cell.getAttribute('data-colindex'), 10);
+                        const idx: number = parseInt(cell.getAttribute('aria-colindex'), 10) - 1;
                         col = this.parent.getColumnByIndex(parseInt(idx.toString(), 10));
                     }
                 } else {
@@ -896,7 +914,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         }
         if (row && this.parent.isManualRefresh && this.currentInfo.blockIndexes
             && (this.currentInfo.blockIndexes.length === 3 || visiblePage.length > 1)) {
-            this.vgenerator.startIndex = parseInt(row.getAttribute('data-rowindex'), 10);
+            this.vgenerator.startIndex = parseInt(row.getAttribute('aria-rowindex'), 10) - 1;
             this.vgenerator.currentInfo = extend({}, this.currentInfo);
             this.vgenerator.currentInfo.blockIndexes = this.currentInfo.blockIndexes.slice();
             const includePrevPage: boolean = this.vgenerator.includePrevPage = this.currentInfo.blockIndexes[0] % 2 === 0;
@@ -1124,7 +1142,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         }
         if (ele && ele.classList.contains(literals.rowCell)
             && e && (e.action === 'upArrow' || e.action === 'downArrow' || e.action === 'shiftEnter')) {
-            let rowIndex: number = parseInt(ele.parentElement.getAttribute(literals.dataRowIndex), 10);
+            let rowIndex: number = parseInt(ele.parentElement.getAttribute(literals.ariaRowIndex), 10) - 1;
             if (e && (e.action === 'upArrow' || e.action === 'shiftEnter' || e.action === 'downArrow')) {
                 const scrollEle: Element = this.parent.getContent().firstElementChild;
                 if (e.action === 'downArrow') {
@@ -1133,7 +1151,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                     rowIndex -= 1;
                 }
                 this.rowIndex = rowIndex;
-                this.cellIndex = parseInt(ele.getAttribute(literals.dataColIndex), 10);
+                this.cellIndex = parseInt(ele.getAttribute(literals.ariaColIndex), 10) - 1;
                 const row: Element = this.parent.getRowByIndex(rowIndex);
                 const page: number = this.parent.pageSettings.currentPage;
                 const visibleRowCount: number = Math.floor((scrollEle as HTMLElement).offsetHeight / this.parent.getRowHeight()) - 1;
@@ -1356,7 +1374,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         if (isGroupAdaptive(this.parent)) {
             if (!isNullOrUndefined(index) && this.parent.enableVirtualization && this.parent.groupSettings.columns.length) {
                 for (let i: number = 0; i < this.parent.getDataRows().length; i++) {
-                    if (this.parent.getDataRows()[parseInt(i.toString(), 10)].getAttribute(literals.dataRowIndex) === index.toString()) {
+                    if (parseInt(this.parent.getDataRows()[parseInt(i.toString(), 10)].getAttribute(literals.ariaRowIndex), 10) - 1 ===
+                        index) {
                         row = this.parent.getDataRows()[parseInt(i.toString(), 10)];
                     }
                 }
@@ -1365,8 +1384,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             }
         }
         else if (!this.parent.enableVirtualization && this.parent.enableColumnVirtualization) {
-            row = !isNullOrUndefined(index) ? this.enableCacheOnInfiniteColumnVirtual() ?
-                this.parent.getDataRows().find((element: Element) => parseInt(element.getAttribute(literals.dataRowIndex), 10) === index) :
+            row = !isNullOrUndefined(index) ? this.enableCacheOnInfiniteColumnVirtual() ? this.parent.getDataRows()
+                .find((element: Element) => parseInt(element.getAttribute(literals.ariaRowIndex), 10) - 1 === index) :
                 this.parent.getDataRows()[parseInt(index.toString(), 10)] : undefined;
         }
         else if (this.prevInfo) {
@@ -1392,11 +1411,11 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         const rowCollection: Element[] = this.parent.getDataRows();
         let collection: Element[] | Object[] = isRowObject ? this.parent.getCurrentViewRecords() : rowCollection;
         if (isRowObject && this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
-            startIdx = parseInt(this.parent.getRows()[0].getAttribute(literals.dataRowIndex), 10);
+            startIdx = parseInt(this.parent.getRows()[0].getAttribute(literals.ariaRowIndex), 10) - 1;
             collection = collection.filter((m: object) => { return isNullOrUndefined((<{items?: object }>m).items); });
         }
         if (!isRowObject && this.parent.allowGrouping && this.parent.groupSettings.columns.length && rowCollection.length) {
-            startIdx = parseInt(rowCollection[0].getAttribute(literals.dataRowIndex), 10);
+            startIdx = parseInt(rowCollection[0].getAttribute(literals.ariaRowIndex), 10) - 1;
         }
         let selectedRow: Element | Object = collection[index - startIdx];
         if (this.parent.frozenRows && this.parent.pageSettings.currentPage > 1) {
@@ -1662,18 +1681,21 @@ export class VirtualElementHandler {
     public table: HTMLElement;
 
     public renderWrapper(height?: number): void {
-        this.wrapper = createElement('div', { className: 'e-virtualtable', styles: `min-height:${formatUnit(height)}` });
+        this.wrapper = createElement('div', { className: 'e-virtualtable' });
+        this.wrapper.style.minHeight = formatUnit(height);
         this.wrapper.appendChild(this.table);
         this.content.appendChild(this.wrapper);
     }
 
     public renderPlaceHolder(position: string = 'relative'): void {
-        this.placeholder = createElement('div', { className: 'e-virtualtrack', styles: `position:${position}` });
+        this.placeholder = createElement('div', { className: 'e-virtualtrack' });
+        this.placeholder.style.position = position;
         this.content.appendChild(this.placeholder);
     }
 
     public renderFrozenWrapper(height?: number): void {
-        this.wrapper = createElement('div', { className: 'e-virtualtable', styles: `min-height:${formatUnit(height)}; display: flex` });
+        this.wrapper = createElement('div', { className: 'e-virtualtable' });
+        this.wrapper.style.cssText = `min-height:${formatUnit(height)}; display: flex;`;
         this.content.appendChild(this.wrapper);
     }
 

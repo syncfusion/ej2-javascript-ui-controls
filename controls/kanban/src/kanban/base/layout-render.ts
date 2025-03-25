@@ -242,6 +242,19 @@ export class LayoutRender extends MobileLayout {
                 swimlaneHeaderName.appendChild(swimlaneTemplate[0]);
             } else {
                 swimlaneHeaderName.innerHTML = this.swimlaneRow[0].textField;
+                if (this.parent.swimlaneSettings.showItemCount) {
+                    const cardCount: number =  this.swimlaneData[this.swimlaneRow[0].keyField].length;
+                    const targetItemCountElement: HTMLElement = this.parent.element.querySelector('.' + cls.SWIMLANE_HEADER_TOOLBAR_CLASS);
+                    let itemCountElement: HTMLElement;
+                    let itemCountInnerElement: HTMLElement;
+                    if (!isNoU(targetItemCountElement)) {
+                        itemCountElement = createElement('div', { className: cls.TOOLBAR_SWIMLANE_ITEM_COUNT_CLASS });
+                        itemCountInnerElement = createElement('div', { className: cls.CARD_ITEM_COUNT_CLASS });
+                        itemCountElement.appendChild(itemCountInnerElement);
+                        targetItemCountElement.appendChild(itemCountElement);
+                    }
+                    itemCountInnerElement.innerHTML = `- ${cardCount} ${this.parent.localeObj.getConstant('items')}`;
+                }
             }
         }
     }
@@ -440,10 +453,12 @@ export class LayoutRender extends MobileLayout {
                 const className: string = index === -1 ? (isToggle ? cls.COLLAPSED_CLASS : '') : cls.COLLAPSED_CLASS;
                 const col: HTMLElement = createElement('col', {
                     className: className,
-                    attrs: { 'data-key': column.keyField.toString() },
-                    styles: this.parent.isAdaptive ? 'width: ' +
-                        (isToggle ? formatUnit(events.toggleWidth) : formatUnit(this.getWidth())) : ''
+                    attrs: { 'data-key': column.keyField.toString() }
                 });
+                if (this.parent.isAdaptive) {
+                    const width: string = isToggle ? formatUnit(events.toggleWidth) : formatUnit(this.getWidth());
+                    col.style.width = width;
+                }
                 colGroup.appendChild(col);
             }
         });
@@ -1131,6 +1146,11 @@ export class LayoutRender extends MobileLayout {
         const swimlaneContent: Element = this.parent.element.querySelector('.' + cls.SWIMLANE_CONTENT_CLASS);
         if (swimlaneContent) {
             remove(swimlaneContent);
+        }
+        const swimlaneFrozenRow: Element = this.parent.element.querySelector('.' + cls.FROZEN_SWIMLANE_ROW_CLASS);
+        if (swimlaneFrozenRow) {
+            remove(swimlaneFrozenRow);
+            this.frozenSwimlaneRow = null;
         }
     }
 }

@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $schedule-skin: $skin-name !default;
 $schedule-header-bg-color: $grey-white !default;
 $schedule-header-border-color: $grey-dd !default;
@@ -50,7 +52,7 @@ $schedule-month-date-header-cell-text-transform: none !default;
 $schedule-appointment-details-padding: 0 4px !default;
 $schedule-appointment-bg-color: $brand-primary !default;
 $schedule-appointment-font-color: $brand-primary-font !default;
-$schedule-appointment-border-color: lighten($schedule-appointment-bg-color, 40%) !default;
+$schedule-appointment-border-color: color.adjust($schedule-appointment-bg-color, $lightness: 40%) !default;
 $schedule-appointment-border-radius: 2px !default;
 $schedule-appointment-active-border-color: $grey-base !default;
 $schedule-month-agenda-app-indicator-color: $grey-light-font !default;
@@ -259,6 +261,8 @@ $schedule-header-icon-wrapper-bg-color: $schedule-content-bg-color !default;
 $schedule-bgr-date-time-icon-padding-right: 13px !default;
 $schedule-bgr-more-event-close-icon-padding: unset !default;
 $schedule-bgr-tbar-btn-text-font-size: $schedule-header-nrml-font-size !default;
+$schedule-calendar-width: 300px !default;
+$schedule-bgr-calendar-width: 345px !default;
 
 @mixin tbar-btn-animation {
   content: '';

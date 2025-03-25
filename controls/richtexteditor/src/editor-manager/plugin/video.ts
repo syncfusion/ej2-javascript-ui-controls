@@ -6,7 +6,7 @@ import { IHtmlItem } from './../base/interface';
 import { InsertHtml } from './inserthtml';
 import * as EVENTS from './../../common/constant';
 import { NodeSelection } from '../../selection';
-import { isSafari, scrollToCursor } from '../../common/util';
+import { scrollToCursor } from '../../common/util';
 
 /**
  * Video internal component
@@ -202,11 +202,10 @@ export class VideoCommand {
             InsertHtml.Insert(this.parent.currentDocument, wrapElement, this.parent.editableElement);
             if (!isNOU(e.item.selection)) {
                 const range: Range = e.item.selection.getRange(this.parent.currentDocument);
+                const focusNode: Node = document.createTextNode(' ');
+                const node: Node = this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument)[0];
+                wrapElement.parentNode.insertBefore(focusNode, node.nextSibling);
                 const save: NodeSelection = e.item.selection.save(range, this.parent.currentDocument);
-            }
-            if (wrapElement.nextElementSibling === null) {
-                const insertElem: HTMLElement = createElement('br');
-                wrapElement.parentNode.insertBefore(insertElem, wrapElement.nextSibling);
             }
         }
         if (e.callBack && (isNOU(e.selector) || !isNOU(e.selector) && e.selector !== 'pasteCleanupModule')) {
@@ -231,7 +230,7 @@ export class VideoCommand {
                         videoElm.classList.add('e-rte-embed-url');
                     }
                     if (!isNOU(this.parent.currentDocument)) {
-                        if (isSafari()) {
+                        if (this.parent.userAgentData.isSafari()) {
                             scrollToCursor(this.parent.currentDocument, this.parent.editableElement as HTMLElement);
                         }
                         e.callBack({

@@ -144,6 +144,14 @@ export interface CellModel {
      */
     formattedText?: string;
 
+    /**
+     * It allows to set the cell row height.
+     *
+     * @default 20
+     * @hidden
+     */
+    rowHeight?: number;
+
 }
 
 /**

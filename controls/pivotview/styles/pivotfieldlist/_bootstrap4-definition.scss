@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $field-list-skin: 'bootstrap4' !default;
 $field-list-active-color: $primary !default;
 $field-list-default-font-color: $gray-900 !default;
@@ -58,8 +60,8 @@ $field-list-static-bigger-header-icon-wrapper-padding: 9px !default;
 $field-list-default-header-font-color: $gray-900 !default;
 $field-list-tree-icon-color: $gray-700 !default;
 $field-list-default-header-icon-font-color: #555 !default;
-$field-list-button-hover-color: darken($gray-100, 2%) !default;
-$field-list-button-focus-color: darken($gray-100, 4%) !default;
+$field-list-button-hover-color: color.adjust($gray-100, $lightness: -2%) !default;
+$field-list-button-focus-color: color.adjust($gray-100, $lightness: -4%) !default;
 $field-list-button-icon-color: $gray-700 !default;
 $field-list-icon-hover-color: #333 !default;
 $field-list-treeview-font-weight: bold !default;
@@ -91,8 +93,8 @@ $field-list-mobile-header-color: #eee !default;
 $field-list-mobile-header-font-color: #333 !default;
 $field-list-back-margin: 5px !default;
 $field-list-sort-wrapper-padding-size: 10px !default;
-$field-list-sort-select-background-color: darken($gray-600, 10%) !default;
-$field-list-sort-select-border-color: darken($gray-600, 12.5%) !default;
+$field-list-sort-select-background-color: color.adjust($gray-600, $lightness: -10%) !default;
+$field-list-sort-select-border-color: color.adjust($gray-600, $lightness: -12.5%) !default;
 $field-list-sort-select-color: $white !default;
 $field-list-border: $field-list-default-border-color !default;
 $field-list-cal-button-text-color: $gray-100 !default;

@@ -563,20 +563,18 @@ describe('Protect sheet ->', () => {
         it('Cancelling protect sheet dialog', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
-            args.cancel = true;
+                args.cancel = true;
             };
             helper.click('#' + helper.id + '_protect');
             setTimeout(() => {
-                var dialog = helper.getElement('.e-protect-dlg.e-dialog');
-                expect(!!dialog).toBeTruthy();
+                expect(helper.getElement('.e-protect-dlg.e-dialog')).toBeNull();
                 done();
             });
         }); 
         it('Cancelling protect workbook dialog', (done: Function) => {
             helper.click('#' + helper.id + '_protectworkbook');
             setTimeout(() => {
-                var dialog = helper.getElement('.e-protect-dlg.e-dialog');
-                expect(!!dialog).toBeTruthy();
+                expect(helper.getElement('.e-protect-dlg.e-dialog')).toBeNull();
                 done();
             });
         }); 
@@ -619,49 +617,19 @@ describe('Protect sheet ->', () => {
         it('Cancelling unprotect sheet dialog', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
-            args.cancel = true;
+                args.cancel = true;
             };
             helper.click('#' + helper.id + '_protect');
             setTimeout(() => {
-                var dialog = helper.getElement('.e-unprotectworksheet-dlg.e-dialog');
-                expect(!!dialog).toBeTruthy();
+                expect(helper.getElement('.e-unprotectworksheet-dlg.e-dialog')).toBeNull();
                 done();
             });
         }); 
         it('Cancelling unprotect workbook dialog', (done: Function) => {
             helper.click('#' + helper.id + '_protectworkbook');
             setTimeout(() => {
-                var dialog = helper.getElement('.e-unprotectworkbook-dlg.e-dialog');
-                expect(!!dialog).toBeTruthy();
+                expect(helper.getElement('.e-unprotectworkbook-dlg.e-dialog')).toBeNull();
                 done();
-            });
-        }); 
-    });
-
-    describe('Cancelling dialog open re enter password dialog', () => {
-        beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }]
-            }, done);
-        });
-        afterAll(() => {
-            helper.invoke('destroy');
-        });
-        it('Cancelling re enter password dialog', (done: Function) => {
-            helper.switchRibbonTab(4);
-            helper.click('#' + helper.id + '_protect');
-            setTimeout(() => {
-                const spreadsheet: Spreadsheet = helper.getInstance();
-                spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
-                args.cancel = true;
-                };
-                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
-                (helper.getElements('.e-protect-dlg input')[0] as HTMLInputElement).value = '123';
-                helper.click('.e-protect-dlg .e-primary');
-                setTimeout(() => {
-                    var dialog = helper.getElement('.e-reenterpwd-dlg.e-dialog');
-                    expect(!!dialog).toBeTruthy();
-                    done();
-                });
             });
         }); 
     });
@@ -861,10 +829,10 @@ describe('Protect sheet ->', () => {
             });
         });
         describe('EJ2-56489 ->', () => {
-            beforeEach((done: Function) => {
+            beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ isProtected: true }] }, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
             it('To disable some toolbar items for protect sheet and customize the edit alert dialog content', (done: Function) => {
@@ -902,6 +870,21 @@ describe('Protect sheet ->', () => {
                 helper.triggerKeyEvent('keydown', 46, null, null, null, helper.invoke('getCell', [0, 0]));
                 setTimeout((): void => {
                     expect((helper.getElement(id + ' .e-editAlert-dlg' + ' .e-dlg-content') as any).innerText).toBe("Custom Alert");
+                    helper.setAnimationToNone('.e-editAlert-dlg.e-dialog');
+                    helper.click('.e-editAlert-dlg .e-dlg-closeicon-btn');
+                    done();
+                });
+            });
+            it('Ribbon items are disabled after creating a new sheet between two protected sheets', (done: Function) => {
+                helper.switchRibbonTab(1);
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                const toolbarBtn: HTMLElement = helper.getElementFromSpreadsheet(`#${helper.id}_bold`).parentElement;
+                expect(toolbarBtn.classList).toContain('e-overlay');
+                expect(spreadsheet.activeSheetIndex).toBe(0);
+                helper.invoke('insertSheet', [0, 0]);
+                expect(toolbarBtn.classList.contains('e-overlay')).toBeFalsy();
+                setTimeout((): void => {
+                    expect(spreadsheet.activeSheetIndex).toBe(0);
                     done();
                 });
             });
@@ -1419,6 +1402,48 @@ describe('Protect sheet ->', () => {
         });
     });
 
+    describe('Undo protect cells ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Protect sheet', (done: Function) => {
+            helper.switchRibbonTab(4);
+            helper.click('#' + helper.id + '_protect');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
+                (document.getElementsByClassName('e-frame e-icons')[3] as HTMLElement).click();
+                (document.getElementsByClassName('e-frame e-icons')[4] as HTMLElement).click();
+                (document.getElementsByClassName('e-frame e-icons')[5] as HTMLElement).click();
+                (document.getElementsByClassName('e-frame e-icons')[6] as HTMLElement).click();
+                helper.click('.e-protect-dlg .e-primary');
+                expect(helper.getInstance().sheets[0].isProtected).toBeTruthy();
+                done();
+            });
+        });
+        it('Cell Edit', (done: Function) => {
+            helper.invoke('lockCells', ['A3', false]);
+            helper.edit('A3', 'Hi');
+            expect(helper.invoke('getCell', [2, 0]).textContent).toBe('Hi');
+            helper.switchRibbonTab(1);
+            done();
+        });
+        it('Undo action', () => {
+            helper.getElement('#' + helper.id + '_undo').click();
+            expect(helper.invoke('getCell', [2, 0]).textContent).toBe('Sports Shoes');
+            helper.invoke('selectRange', ['A3']);
+        });
+        it('Delete in unlocked cell', (done: Function) => {
+            helper.triggerKeyNativeEvent(46);
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [2, 0]).textContent).toBe('');
+                done();
+            });
+        });
+    });
+
     describe('Sort & Filter context menu ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
@@ -1506,6 +1531,313 @@ describe('Protect sheet ->', () => {
             btnDisable = (helper.getElements('#spreadsheet_paste')[0] as HTMLInputElement).parentElement.parentElement.classList.contains('e-overlay');
             expect(btnDisable).toBeTruthy();
             done();
+        });
+    });
+
+    describe('Insert func icon ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Protect sheet', (done: Function) => {
+            helper.switchRibbonTab(4);
+            helper.click('#' + helper.id + '_protect');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
+                (document.getElementsByClassName('e-frame e-icons')[3] as HTMLElement).click();
+                (document.getElementsByClassName('e-frame e-icons')[4] as HTMLElement).click();
+                (document.getElementsByClassName('e-frame e-icons')[5] as HTMLElement).click();
+                (document.getElementsByClassName('e-frame e-icons')[6] as HTMLElement).click();
+                helper.click('.e-protect-dlg .e-primary');
+                expect(helper.getInstance().sheets[0].isProtected).toBeTruthy();
+                done();
+            });
+        });
+        it('Check insert func icon', (done: Function) => {
+            helper.switchRibbonTab(3);
+            const btnDisable: boolean = (helper.getElements('#spreadsheet_insert_function')[0] as HTMLInputElement).parentElement.classList.contains('e-overlay');
+            expect(btnDisable).toBeTruthy();
+            helper.invoke('lockCells', ['A1:H10', false]);
+            done();
+        });
+        it('Icon check', (done: Function) => {
+            let td: HTMLElement = helper.invoke('getCell', [4, 3]);
+            let coords: ClientRect = td.getBoundingClientRect();
+            helper.triggerMouseAction('mousedown', { x: coords.left + 1, y: coords.top }, null, td);
+            helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top }, document, td);
+            const btnDisable: boolean = (helper.getElements('#spreadsheet_insert_function')[0] as HTMLInputElement).parentElement.classList.contains('e-overlay');
+            expect(btnDisable).toBeFalsy();
+            done();
+        });
+        it('Check insert func icon-1', (done: Function) => {
+            let td: HTMLElement = helper.invoke('getCell', [4, 10]);
+            let coords: ClientRect = td.getBoundingClientRect();
+            helper.triggerMouseAction('mousedown', { x: coords.left + 1, y: coords.top }, null, td);
+            helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top }, document, td);
+            const btnDisable: boolean = (helper.getElements('#spreadsheet_insert_function')[0] as HTMLInputElement).parentElement.classList.contains('e-overlay');
+            expect(btnDisable).toBeTruthy();
+            done();
+        });
+    });
+
+    describe('Unlock cells ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Protect sheet', (done: Function) => {
+            helper.switchRibbonTab(4);
+            helper.click('#' + helper.id + '_protect');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
+                (document.getElementsByClassName('e-frame e-icons')[3] as HTMLElement).click();
+                (document.getElementsByClassName('e-frame e-icons')[4] as HTMLElement).click();
+                (document.getElementsByClassName('e-frame e-icons')[5] as HTMLElement).click();
+                (document.getElementsByClassName('e-frame e-icons')[6] as HTMLElement).click();
+                helper.click('.e-protect-dlg .e-primary');
+                expect(helper.getInstance().sheets[0].isProtected).toBeTruthy();
+                done();
+            });
+        });
+        it('Cell Edit', (done: Function) => {
+            helper.invoke('lockCells', ['A:A', false]);
+            helper.edit('A3', 'Hi');
+            expect(helper.invoke('getCell', [2, 0]).textContent).toBe('Hi');
+            helper.edit('A14', 'Hi');
+            expect(helper.invoke('getCell', [13, 0]).textContent).toBe('Hi');
+            helper.invoke('selectRange', ['B3']);
+            done();
+        });
+        it('Delete in locked cell', (done: Function) => {
+            helper.triggerKeyNativeEvent(46);
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-editAlert-dlg.e-dialog');
+                expect(helper.getElement('.e-editAlert-dlg.e-dialog')).not.toBeNull();
+                helper.click('.e-editAlert-dlg .e-footer-content button:nth-child(1)');
+                expect(helper.getInstance().sheets[0].rows[2].cells[1].value).toBe('41801');
+                done();
+            });
+        });
+        it('Unlock cells', (done: Function) => {
+            helper.invoke('lockCells', ['6:8', false]);
+            helper.invoke('selectRange', ['D7']);
+            done();
+        });
+        it('Delete in unlocked cell', (done: Function) => {
+            helper.triggerKeyNativeEvent(46);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[6].cells[3].value).toBe(undefined);
+                helper.invoke('selectRange', ['D3']);
+                done();
+            });
+        });
+        it('Delete in locked cell - 1', (done: Function) => {
+            helper.triggerKeyNativeEvent(46);
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-editAlert-dlg.e-dialog');
+                expect(helper.getElement('.e-editAlert-dlg.e-dialog')).not.toBeNull();
+                helper.click('.e-editAlert-dlg .e-footer-content button:nth-child(1)');
+                expect(helper.getInstance().sheets[0].rows[2].cells[3].value).toBe(20);
+                done();
+            });
+        });
+    });
+
+    describe('Perform console methods ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Protect sheet', (done: Function) => {
+            helper.switchRibbonTab(4);
+            helper.click('#' + helper.id + '_protect');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
+                helper.click('.e-protect-dlg .e-primary');
+                expect(helper.getInstance().sheets[0].isProtected).toBeTruthy();
+                done();
+            });
+        });
+        it('setColWidth cells', (done: Function) => {
+            helper.invoke('setColWidth', [140, 2, 0]);
+            expect(helper.invoke('getCell', [2, 2]).offsetWidth).toBe(64);
+            done();
+        });
+        it('cellFormat cells', (done: Function) => {
+            helper.invoke('cellFormat', [{ fontWeight: 'bold', fontSize: '12pt', backgroundColor: '#279377', color: '#ffffff' }, 'A2:E2']);
+            expect(helper.invoke('getCell', [1, 2]).style.backgroundColor).toBe('');
+            done();
+        });
+        it('Un protect sheet', (done: Function) => {
+            helper.switchRibbonTab(4);
+            helper.click('#' + helper.id + '_protect');
+            expect(helper.getInstance().sheets[0].isProtected).toBeFalsy();
+            done();
+        });
+        it('Protect sheet-1', (done: Function) => {
+            helper.switchRibbonTab(4);
+            helper.click('#' + helper.id + '_protect');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
+                (document.getElementsByClassName('e-frame e-icons')[3] as HTMLElement).click();
+                (document.getElementsByClassName('e-frame e-icons')[5] as HTMLElement).click();
+                helper.click('.e-protect-dlg .e-primary');
+                expect(helper.getInstance().sheets[0].isProtected).toBeTruthy();
+                done();
+            });
+        });
+        it('setColWidth cells-1', (done: Function) => {
+            helper.invoke('setColWidth', [140, 2, 0]);
+            expect(helper.invoke('getCell', [2, 2]).offsetWidth).toBe(140);
+            done();
+        });
+        it('cellFormat cells-1', (done: Function) => {
+            helper.invoke('cellFormat', [{ fontWeight: 'bold', fontSize: '12pt', backgroundColor: '#279377', color: '#ffffff' }, 'A2:E2']);
+            expect(helper.invoke('getCell', [1, 2]).style.backgroundColor).toBe('rgb(39, 147, 119)');
+            done();
+        });
+    });
+
+    describe('Protect workbook public methods ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, { ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Switch sheet', (done: Function) => {
+            helper.click('.e-sheets-list');
+            helper.click('.e-popup.e-sheets-list ul li:nth-child(2)');
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [1, 5]).textContent).toBe('200');
+                done();
+            }, 100);
+        });
+        it('Protect workbook', (done: Function) => {
+            helper.switchRibbonTab(4);
+            helper.click('#' + helper.id + '_protectworkbook');
+            setTimeout(() => {
+                (helper.getElementFromSpreadsheet('.e-protectworkbook-dlg input') as HTMLInputElement).value = 'hi';
+                (helper.getElements('.e-protectworkbook-dlg input')[1] as HTMLInputElement).value = 'hi';
+                helper.click('.e-protectworkbook-dlg .e-primary');
+                done();
+            });
+        });
+        it('Duplicate public methods', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.duplicateSheet();
+            setTimeout(() => {
+                expect(spreadsheet.sheets.length).toBe(2);
+                done();
+            });
+        });
+        it('Insert public methods', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.insertSheet();
+            setTimeout(() => {
+                expect(spreadsheet.sheets.length).toBe(2);
+                done();
+            });
+        });
+        it('Move sheet public methods', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.moveSheet(0);
+            setTimeout(() => {
+                expect(spreadsheet.sheets.length).toBe(2);
+                done();
+            });
+        });
+        it('Delete public methods', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            spreadsheet.delete();
+            setTimeout(() => {
+                expect(spreadsheet.sheets.length).toBe(2);
+                done();
+            });
+        });
+    });
+
+    describe('Undo Redo for lock cells ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Protect sheet', (done: Function) => {
+            helper.switchRibbonTab(4);
+            helper.click('#' + helper.id + '_protect');
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-protect-dlg.e-dialog');
+                helper.click('.e-protect-dlg .e-primary');
+                expect(helper.getInstance().sheets[0].isProtected).toBeTruthy();
+                done();
+            });
+        });
+        it('Unlock cells', (done: Function) => {
+            helper.invoke('lockCells', ['A:H', false]);
+            helper.invoke('selectRange', ['D4:G8']);
+            done();
+        });
+        it('Delete in unlocked cells', (done: Function) => {
+            helper.triggerKeyNativeEvent(46);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[6].cells[3].value).toBe(undefined);
+                done();
+            });
+        });
+        it('Cell Edit', (done: Function) => {
+            helper.edit('A3', 'Hi');
+            expect(helper.invoke('getCell', [2, 0]).textContent).toBe('Hi');
+            helper.switchRibbonTab(1);
+            done();
+        });
+        it('Undo action', () => {
+            helper.getElement('#' + helper.id + '_undo').click();
+            expect(helper.invoke('getCell', [2, 0]).textContent).toBe('Sports Shoes');
+        });
+        it('Redo action', () => {
+            helper.getElement('#' + helper.id + '_redo').click();
+            expect(helper.invoke('getCell', [2, 0]).textContent).toBe('Hi');
+        });
+        it('Cell Edit-1', (done: Function) => {
+            helper.edit('A3', 'Hello');
+            expect(helper.invoke('getCell', [2, 0]).textContent).toBe('Hello');
+            done();
+        });
+        it('Lock cells', (done: Function) => {
+            helper.invoke('lockCells', ['A:H', true]);
+            expect(helper.invoke('getCell', [2, 0]).textContent).toBe('Hello');
+            done();
+        });
+        it('Undo action-1', () => {
+            helper.getElement('#' + helper.id + '_undo').click();
+            expect(helper.invoke('getCell', [2, 0]).textContent).toBe('Hi');
+        });
+        it('Undo action-2', () => {
+            helper.getElement('#' + helper.id + '_undo').click();
+            expect(helper.invoke('getCell', [2, 0]).textContent).toBe('Sports Shoes');
+        });
+        it('Undo action-3', () => {
+            helper.getElement('#' + helper.id + '_undo').click();
+            expect(helper.getInstance().sheets[0].rows[6].cells[3].value).toBe(40);
+            helper.invoke('selectRange', ['E5']);
+        });
+        it('Delete in locked cell', (done: Function) => {
+            helper.triggerKeyNativeEvent(46);
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-editAlert-dlg.e-dialog');
+                expect(helper.getElement('.e-editAlert-dlg.e-dialog')).not.toBeNull();
+                helper.click('.e-editAlert-dlg .e-footer-content button:nth-child(1)');
+                expect(helper.getInstance().sheets[0].rows[2].cells[3].value).toBe(20);
+                done();
+            });
         });
     });
 

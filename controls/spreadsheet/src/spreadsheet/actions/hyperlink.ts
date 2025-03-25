@@ -1,11 +1,11 @@
 import { Spreadsheet, DialogBeforeOpenEventArgs, ICellRenderer, completeAction, isLockedCells } from '../index';
-import { initiateHyperlink, locale, dialog, click, keyUp, createHyperlinkElement, getUpdateUsingRaf, focus, isReadOnlyCells, readonlyAlert, removeElements } from '../common/index';
+import { initiateHyperlink, locale, dialog, click, keyUp, createHyperlinkElement, getUpdateUsingRaf, focus, readonlyAlert, removeElements } from '../common/index';
 import { editHyperlink, openHyperlink, editAlert, removeHyperlink } from '../common/index';
 import { L10n, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { SheetModel } from '../../workbook/base/sheet-model';
 import { getRangeIndexes, getCellIndexes, getRangeAddress } from '../../workbook/common/address';
-import { CellModel, HyperlinkModel, BeforeHyperlinkArgs, AfterHyperlinkArgs, getTypeFromFormat, getCell, CellStyleModel } from '../../workbook/index';
+import { CellModel, HyperlinkModel, BeforeHyperlinkArgs, AfterHyperlinkArgs, getTypeFromFormat, getCell, CellStyleModel, isReadOnlyCells } from '../../workbook/index';
 import { beforeHyperlinkClick, afterHyperlinkClick, refreshRibbonIcons, deleteHyperlink, beginAction } from '../../workbook/common/event';
 import { isCellReference, DefineNameModel, updateCell, isImported } from '../../workbook/index';
 import { Tab, TreeView } from '@syncfusion/ej2-navigations';
@@ -241,6 +241,7 @@ export class SpreadsheetHyperlink {
                 this.parent.trigger('dialogBeforeOpen', dlgArgs);
                 if (dlgArgs.cancel) {
                     args.cancel = true;
+                    return;
                 }
                 dialogInst.dialogInstance.content = this.hyperEditContent();
                 displayText = (dialogInst.dialogInstance.content.querySelector('.e-text') as HTMLInputElement).value;
@@ -492,7 +493,7 @@ export class SpreadsheetHyperlink {
     }
 
     private createHyperlinkEle(args: { cell: CellModel, td: HTMLElement, rowIdx: number, colIdx: number,
-        style: CellStyleModel, fillType: string }): void {
+        style: CellStyleModel, fillType: string, action: string }): void {
         const cell: CellModel = args.cell;
         if (!isNullOrUndefined(cell.hyperlink)) {
             const td: HTMLElement = args.td;
@@ -522,7 +523,8 @@ export class SpreadsheetHyperlink {
             }
             td.textContent = '';
             td.innerText = '';
-            if (this.parent.autoFillSettings.fillType === 'FillWithoutFormatting' || args.fillType === 'FillWithoutFormatting') {
+            if (this.parent.autoFillSettings.fillType === 'FillWithoutFormatting' || args.fillType === 'FillWithoutFormatting' ||
+                args.action === 'Clear Formats') {
                 hyperEle.style.textDecoration = 'none';
             }
             td.appendChild(hyperEle);

@@ -176,12 +176,28 @@ export class GroupingBar implements IAction {
                         setStyleAttribute(this.groupingChartTable, {
                             width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber())
                         });
+                        const chartLeftAxisPanel: HTMLElement =
+                            this.groupingChartTable.getElementsByClassName(cls.LEFT_AXIS_PANEL_CLASS)[0] as HTMLElement;
+                        const chartValuePanel: HTMLElement =
+                            this.groupingChartTable.getElementsByClassName(cls.GROUP_VALUE_CLASS + ' ' +
+                            cls.VALUE_AXIS_CLASS)[0] as HTMLElement;
+                        if (this.parent.isAdaptive) {
+                            if (this.parent.isTabular) {
+                                chartLeftAxisPanel.style.minWidth = this.parent.dataSourceSettings.rows.length *
+                                 this.parent.gridSettings.columnWidth + 'px';
+                                chartValuePanel.style.minWidth = this.parent.dataSourceSettings.rows.length *
+                                 this.parent.gridSettings.columnWidth + 'px';
+                            } else {
+                                chartLeftAxisPanel.style.minWidth = '180px';
+                                chartValuePanel.style.minWidth = '180px';
+                            }
+                        }
                         this.parent.element.insertBefore(
                             this.groupingChartTable, select('#' + this.parent.element.id + '_chart', this.parent.element));
                         if (this.groupingChartTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.chartPanel != null && !this.chartPanel.isDestroyed) {
                             const chartPanelWidth: string | number = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) :
                                 (this.parent.getWidthAsNumber() - 2);
-                            this.chartPanel.width = chartPanelWidth < 400 ? '398px' : chartPanelWidth;
+                            this.chartPanel.width = this.parent.isAdaptive ? chartPanelWidth : chartPanelWidth < 400 ? (this.parent.minWidth || '398px') : chartPanelWidth;
                             this.chartPanel.refreshOverflow();
                             if (this.parent.showFieldList && this.parent.pivotFieldListModule && this.parent.pivotFieldListModule.element) {
                                 clearTimeout(this.timeOutObj);
@@ -234,10 +250,10 @@ export class GroupingBar implements IAction {
                     if (this.groupingTable && this.groupingTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.gridPanel != null && !this.gridPanel.isDestroyed) {
                         const gridPanelWidth: string | number = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) :
                             (this.parent.getWidthAsNumber() - 2);
-                        this.gridPanel.width = gridPanelWidth;
+                        this.gridPanel.width = this.parent.isAdaptive ? gridPanelWidth : gridPanelWidth < 400 ? (this.parent.minWidth || '398px') : gridPanelWidth;
                         this.gridPanel.refreshOverflow();
                     }
-                    this.groupingTable.style.minWidth = '400px';
+                    this.groupingTable.style.minWidth = this.parent.minWidth ? this.parent.minWidth + 'px' : '400px';
                     this.parent.axisFieldModule.render();
                     this.setGridRowWidth();
                     const colGroupElement: HTMLElement =
@@ -298,6 +314,8 @@ export class GroupingBar implements IAction {
 
     private updateChartAxisHeight(): void {
         if (this.groupingChartTable && select('#' + this.parent.element.id + '_chart', this.parent.element)) {
+            const rightAxisPanel: HTMLElement = this.groupingChartTable.querySelector('.' + cls.RIGHT_AXIS_PANEL_CLASS);
+            const leftAxisPanel: HTMLElement = this.groupingChartTable.querySelector('.' + cls.LEFT_AXIS_PANEL_CLASS);
             const rowPanel: HTMLElement = this.groupingChartTable.querySelector('.' + cls.GROUP_ROW_CLASS) as HTMLElement;
             const valuePanel: HTMLElement = this.groupingChartTable.querySelector('.' + cls.GROUP_VALUE_CLASS) as HTMLElement;
             const filterPanel: HTMLElement = this.groupingChartTable.querySelector('.' + cls.GROUP_FILTER_CLASS) as HTMLElement;
@@ -322,6 +340,10 @@ export class GroupingBar implements IAction {
                     setStyleAttribute(filterPanel, { height: formatUnit(maxHeight) });
                 }
             }
+            const rightAxisPanelWidth: string =
+                formatUnit(this.groupingChartTable.offsetWidth - Math.ceil(leftAxisPanel.getBoundingClientRect().width));
+            setStyleAttribute(valuePanel, { width: Math.ceil(valuePanel.getBoundingClientRect().width) + 'px' });
+            setStyleAttribute(rightAxisPanel, { width: rightAxisPanelWidth });
         }
     }
 
@@ -337,7 +359,7 @@ export class GroupingBar implements IAction {
             if (this.groupingChartTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.chartPanel != null && !this.chartPanel.isDestroyed) {
                 const chartPanelWidth: string | number = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) :
                     (this.parent.getWidthAsNumber() - 2);
-                this.chartPanel.width = chartPanelWidth < 400 ? '398px' : chartPanelWidth;
+                this.chartPanel.width = this.parent.isAdaptive ? chartPanelWidth : chartPanelWidth < 400 ? (this.parent.minWidth || '398px') : chartPanelWidth;
                 this.chartPanel.refreshOverflow();
             }
             this.updateChartAxisHeight();
@@ -355,10 +377,10 @@ export class GroupingBar implements IAction {
             if (this.groupingTable && this.groupingTable.querySelector('.' + cls.ALL_FIELDS_PANEL_CLASS) && this.gridPanel != null && !this.gridPanel.isDestroyed) {
                 const gridPanelWidth: string | number = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) :
                     (this.parent.getWidthAsNumber() - 2);
-                this.gridPanel.width = gridPanelWidth < 400 ? '398px' : gridPanelWidth;
+                this.gridPanel.width = this.parent.isAdaptive ? gridPanelWidth : gridPanelWidth < 400 ? (this.parent.minWidth || '398px') : gridPanelWidth;
                 this.gridPanel.refreshOverflow();
             }
-            this.groupingTable.style.minWidth = '400px';
+            this.groupingTable.style.minWidth = this.parent.minWidth ? this.parent.minWidth + 'px' : '400px';
             const colGroupElement: HTMLElement =
                 this.parent.element.querySelector('.' + cls.HEADERCONTENT).querySelector('colgroup').children[0] as HTMLElement;
             const valuePanelWidth: number = this.parent.isTabular ? this.rowAxisWidth : parseInt(colGroupElement.style.width, 10);
@@ -426,17 +448,14 @@ export class GroupingBar implements IAction {
                 currentWidth = this.parent.chart ? this.parent.pivotChartModule.getCalulatedWidth() : currentWidth;
             }
             if (currentWidth) {
-                const minWidth: number = !this.parent.isAdaptive ? 400 : 300;
+                const minWidth: number = this.parent.minWidth ? this.parent.minWidth : !this.parent.isAdaptive ? 400 : 300;
                 const actWidth: number = currentWidth < minWidth ? minWidth : currentWidth;
                 setStyleAttribute(element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement, {
                     left: formatUnit(this.parent.enableRtl ?
                         -Math.abs((actWidth) -
                             (element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth) :
                         (actWidth) -
-                        (element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth),
-
-                    top: this.parent.element.querySelector('.' + cls.FIELD_PANEL_SCROLL_CLASS) ? (this.parent.element.querySelector(
-                        '.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetHeight.toString() + 'px' : ''
+                        (element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth)
                 });
             }
         }

@@ -2,38 +2,6 @@
 
 ## [Unreleased]
 
-## 28.2.12 (2025-03-19)
-
-### Common
-
-#### Bug Fixes
-
-- `#I701045` - Resolved the security vulnerability in the `setValue` method of the base package.
-
-## 28.2.9 (2025-03-04)
-
-### Common
-
-#### Bug Fixes
-
-- `#I678051` - Resolved trailing zeros issue in custom number format.
-
-## 28.2.5 (2025-02-11)
-
-### Common
-
-#### Bug Fixes
-
-- `#I664843` - Resolved the issue with `formatDate` method incorrectly calculates the week number.
-
-## 28.2.4 (2025-02-04)
-
-### Common
-
-#### Bug Fixes
-
-- `#I664843` - Resolved the issue with `formatDate` method incorrectly calculates the week number.
-
 ## 23.2.6 (2023-11-28)
 
 ### Common

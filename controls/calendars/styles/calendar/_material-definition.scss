@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 /*! calendar material theme variables */
 $calendar-title-hover-color: rgba($grey-light-font, .75) !default;
 $calendar-icon-hover-color: rgba($grey-light-font, .75) !default;
@@ -147,7 +149,7 @@ $calendar-bigger-year-decade-width: $calendar-bigger-year-decade-height !default
 $calendar-today-bg-hover-color: $grey-200 !default;
 $calendar-disable-font-color: $calendar-light-font !default;
 $calendar-disable-opacity: .35 !default;
-$calendar-active-hover-bg-color: darken($calendar-active-bg-color, 10%) !default;
+$calendar-active-hover-bg-color: color.adjust($calendar-active-bg-color, $lightness: -10%) !default;
 $calendar-other-decade-cell-color: $calendar-other-month-date !default;
 $calendar-icon-padding: 10px !default;
 $calendar-icon-button-margin: 0 !default;

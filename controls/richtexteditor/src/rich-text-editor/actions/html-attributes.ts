@@ -30,7 +30,7 @@ export function setAttributes(htmlAttributes: { [key: string]: string }, rte: IR
                 rte.readonly = true;
                 rte.setReadOnly(initial);
             } else if (htmlAttr === 'style') {
-                target.setAttribute('style', htmlAttributes[`${htmlAttr}`]);
+                target.style.cssText = htmlAttributes[`${htmlAttr}`];
             } else if (htmlAttr === 'tabindex') {
                 rte.inputElement.setAttribute('tabindex', htmlAttributes[`${htmlAttr}`]);
             } else if (htmlAttr === 'placeholder') {

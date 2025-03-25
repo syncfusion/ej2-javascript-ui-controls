@@ -151,6 +151,18 @@ export type PyramidModes =
     'Surface';
 
 /**
+ * Specifies the available modes for rendering a funnel chart.
+ */
+export type FunnelModes =
+    /**
+     * Displays a funnel shape that narrows down to a point.
+     */
+    'Standard' |
+    /**
+     * Displays a funnel shape with parallel sides near the top.
+     */
+    'Trapezoidal';
+/**
  * Defines the mode of the group.
  * * Point - When choosing points, the selected points get grouped.
  * * Value - When choosing values, the points which less then values get grouped.

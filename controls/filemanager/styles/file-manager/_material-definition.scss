@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 /*! FileManager's material theme wise override definitions and variables */
 $fm-skin-name: 'material' !default;
 $fe-bc-font-size: 14px !default;
@@ -22,8 +24,8 @@ $fe-active-bg-color: $grey-300 !default;
 $fe-active-font-color: rgba($grey-light-font, .87) !default;
 $fe-hover-border-color: $grey-200 !default;
 $fe-hover-bg-color: $grey-200 !default;
-$fe-ah-border-color: darken($grey-300, 5%) !default;
-$fe-ah-bg-color: darken($grey-300, 5%) !default;
+$fe-ah-border-color: color.adjust($grey-300, $lightness: -5%) !default;
+$fe-ah-bg-color: color.adjust($grey-300, $lightness: -5%) !default;
 $fe-focus-border-color: $grey-200 !default;
 $fe-bc-color: $fe-text-color !default;
 $fe-bc-link-color: $fe-label-color !default;

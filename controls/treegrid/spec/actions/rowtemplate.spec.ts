@@ -426,3 +426,38 @@ describe('coverage improvement', () => {
         destroy(gridObj);
     });
 });
+
+describe('coverage improvement - frozenRow actionFailureHandler', () => {
+    let gridObj: TreeGrid;
+    let actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: employeeData,
+                childMapping: 'Children',
+                rowTemplate: rowtemplate,
+                treeColumnIndex: 0,
+                frozenRows: 3,
+                height: 335,
+                width: 'auto',
+                rowHeight: 83,
+                columns: [
+                    { field: "taskID", headerText: "Task Id", width: 90, showCheckbox: true },
+                    { field: 'taskName', headerText: 'taskName', width: 60, showCheckbox: true },
+                    { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
+                    { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
+                ],
+                actionFailure: actionFailedFunction
+            },
+            done
+        );
+    });
+
+    it('actionFailure testing', () => {
+        expect(actionFailedFunction).toHaveBeenCalled();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

@@ -1159,10 +1159,65 @@ describe('Column chooser module', () => {
             ccInstance.setFullScreenDialog();
             ccInstance.innerDiv = null;
             ccInstance.rtlUpdate();
-
         });
-        
 
+        afterAll(() => {
+            (<any>gridObj).columnChooserModule.destroy();
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Coverage Improvement - 2', () => {
+        let gridObj: Grid;
+        let renderCustomColumnChooser = (targetLHTMLElement: HTMLElement, columns?: any) => {
+            const contentElement = document.createElement('div');
+            contentElement.innerHTML = 'Test';
+            targetLHTMLElement.appendChild(contentElement);
+        };
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [],
+                    allowPaging: true,
+                    showColumnChooser: true,
+                    toolbar: ['ColumnChooser'],
+                    columnChooserSettings: { 
+                        headerTemplate: '<div>Choose Columns Template</div>',
+                        template: '<div>Choose Columns Template</div>',
+                        footerTemplate: '<div>Choose Columns Template</div>',
+                        renderCustomColumnChooser: renderCustomColumnChooser,
+                        enableSearching: false
+                    },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 130, textAlign: 'Right' },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                        { field: 'ShippedDate', headerText: 'Shipped Date', width: 140, format: 'yMd', textAlign: 'Right' },
+                        { field: 'ShipCountry', visible: false, headerText: 'Ship Country', width: 150 },
+                    ],
+                }, done);
+        });
+
+        it('Coverage Improvement - column chooser template', (done: Function) => {
+            gridObj.columnChooserModule.openColumnChooser();
+            (gridObj.columnChooserModule as any).columnChooserSearch('Or', false);
+            const columnsToUpdate = { visibleColumns: ['OrderID', 'OrderDate'], hiddenColumns: ['Freight', 'ShippedDate'] };
+            gridObj.columnChooserModule.changeColumnVisibility(columnsToUpdate, 'field');
+            expect(gridObj.getVisibleColumns().length).toBe(2);
+            done();
+        });
+
+        it('Coverage Improvement - React platform column chooser template', (done: Function) => {
+            gridObj.isReact = true;
+            (gridObj.columnChooserModule as any).columnChooserSearch('Or', false);
+            (gridObj.columnChooserModule as any).renderHeader();
+            (gridObj.columnChooserModule as any).renderFooter(); 
+            (gridObj.columnChooserModule as any).renderChooserList();
+            select('#' + gridObj.element.id + '_columnchooser', gridObj.toolbarModule.getToolbar()).click();
+            (gridObj.columnChooserModule as any).destroy(); 
+            done();
+        });
 
         afterAll(() => {
             (<any>gridObj).columnChooserModule.destroy();

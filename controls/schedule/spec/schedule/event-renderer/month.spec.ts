@@ -334,6 +334,47 @@ describe('Month Event Render Module', () => {
         });
     });
 
+    describe('Test case for handling appointment width calculation with rowAutoHeight', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const overlappingData: Record<string, any>[] = [{
+                Id: 1,
+                Subject: 'Spanning Event',
+                StartTime: new Date(2017, 10, 6),
+                EndTime: new Date(2017, 10, 20)
+            },
+            {
+                Id: 2,
+                Subject: 'BirthDay Event',
+                StartTime: new Date(2017, 10, 6),
+                EndTime: new Date(2017, 10, 20)
+            },
+            {
+                Id: 3,
+                Subject: 'Holiday Event',
+                StartTime: new Date(2017, 10, 6),
+                EndTime: new Date(2017, 10, 20)
+            },
+            {
+                Id: 4,
+                Subject: 'Normal Event',
+                StartTime: new Date(2017, 10, 6),
+                EndTime: new Date(2017, 10, 20)
+            }];
+            const model: ScheduleModel = {
+                currentView: 'Month', height: '550px', width: '500px',
+                showWeekNumber: true, rowAutoHeight: true, selectedDate: new Date(2017, 10, 6)
+            };
+            schObj = util.createSchedule(model, overlappingData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('checking week number cell and work cell height ', () => {
+            expect((schObj.element.querySelector('.e-week-number') as HTMLElement).style.height).toEqual('95px');
+        });
+    });
+
     describe('EJ2-56503 - Month view event rendered arguments checking', () => {
         let schObj: Schedule;
         const sampleData: Record<string, any>[] = [{

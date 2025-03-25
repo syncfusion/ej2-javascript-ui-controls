@@ -335,6 +335,13 @@
       & .e-toolbar-item {
         height: auto !important; /* stylelint-disable-line declaration-no-important */
 
+        & .filter-wrapper {
+          box-sizing: content-box;
+          & div {
+            text-align: center;
+          }
+        }
+
         & .filterwrapper canvas,
         & .filter-wrapper canvas {
           border: 2px solid transparent;
@@ -813,7 +820,7 @@
   .e-device.e-image-editor .e-ie-drop-area .e-ie-drop-info {
     top: calc(50% + 60px);
   }
-
+   
   .e-image-editor.e-control.e-readonly {
     opacity: 1 !important; /* stylelint-disable-line declaration-no-important */
   }

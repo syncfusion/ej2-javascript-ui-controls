@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $ddl-chip-mobile-close-font: 16px !default;
 $ddl-multiselect-skin-name: 'Material3' !default;
 $ddl-delim-font-size: $text-sm !default;
@@ -226,6 +228,6 @@ $outline-multiselect-close-icon-hover-bg-color: rgba($icon-color-hover, .87) !de
 $outline-multiselect-remains-font-color: rgba($content-text-color, .6) !default;
 $outline-multiselect-disabled-font-color: rgba($content-text-color, .38) !default;
 $outline-multiselect-disabled-chip-bg-color: transparent !default;
-$filled-multiselect-chip-bg-color: darken($grey-300, 7%) !default;
-$filled-multiselect-chip-hover-bg-color: darken($grey-300, 7%) !default;
+$filled-multiselect-chip-bg-color: color.adjust($grey-300, $lightness: -7%) !default;
+$filled-multiselect-chip-hover-bg-color: color.adjust($grey-300, $lightness: -7%) !default;
 $ddl-chip-bigger-content-padding: 0 !default;

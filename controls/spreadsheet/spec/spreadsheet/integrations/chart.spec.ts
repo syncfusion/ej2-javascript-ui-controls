@@ -418,6 +418,61 @@ describe('Chart ->', () => {
             helper.invoke('deleteChart', [chartId]);
             done();
         });
+        it('Testing a Line Chart with Markers After Changing the Chart Type from a Pie Chart ->', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Column', range: 'D1:F11' }]]);
+            helper.getElement('#' + helper.id + '_chart-type-btn').click();
+            let target: HTMLElement = helper.getElement('#' + helper.id + '_chart-type-btn-popup .e-menu-item[aria-label="Pie/Doughnut"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#pie').click();
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-accumulationchart');
+                expect(chart).not.toBeNull();
+                helper.getElement('#' + helper.id + '_chart-type-btn').click();
+                const target1: HTMLElement = helper.getElement('#' + helper.id + '_chart-type-btn-popup .e-menu-item[aria-label="Line"]');
+                helper.triggerMouseAction('mouseover', { x: target1.getBoundingClientRect().left + 5, y: target1.getBoundingClientRect().top + 5 }, document, target1);
+                helper.getElement('#lineMarker').click();
+                setTimeout(() => {
+                    const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                    const marker: HTMLCollectionOf<SVGEllipseElement> = chart.getElementsByTagName("ellipse");
+                    expect(marker.length).not.toBe(0);
+                    done();
+                });
+            });
+        });
+        it('Testing a Line Chart with Markers after a Pie Chart switch and undo-redo ->', (done: Function) => {
+            helper.switchRibbonTab(1);
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {
+                helper.click('#spreadsheet_redo');
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                const marker: HTMLCollectionOf<SVGEllipseElement> = chart.getElementsByTagName("ellipse");
+                expect(marker.length).not.toBe(0);
+                done();
+            });
+        });
+        it('Testing a Line Chart with Markers after switching from a Pie Chart with multiple charts inserted ->', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Bar', range: 'D1:F11' }]]);
+            helper.getElement('#' + helper.id + '_chart-type-btn').click();
+            let target: HTMLElement = helper.getElement('#' + helper.id + '_chart-type-btn-popup .e-menu-item[aria-label="Pie/Doughnut"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#pie').click();
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-accumulationchart');
+                expect(chart).not.toBeNull();
+                helper.getElement('#' + helper.id + '_chart-type-btn').click();
+                const target1: HTMLElement = helper.getElement('#' + helper.id + '_chart-type-btn-popup .e-menu-item[aria-label="Line"]');
+                helper.triggerMouseAction('mouseover', { x: target1.getBoundingClientRect().left + 5, y: target1.getBoundingClientRect().top + 5 }, document, target1);
+                helper.getElement('#lineMarker').click();
+                setTimeout(() => {
+                    const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                    const marker: HTMLCollectionOf<SVGEllipseElement> = chart.getElementsByTagName("ellipse");
+                    expect(marker.length).not.toBe(0);
+                    done();
+                });
+            });
+        });
     });
 
 
@@ -444,6 +499,19 @@ describe('Chart ->', () => {
                     expect(helper.getElementFromSpreadsheet('#' + helper.getInstance().sheets[0].rows[0].cells[3].chart[0].id).classList).toContain('e-chart');
                     done();
                 });
+            });
+        });
+        it('EJ2-943526 - Chart is missing after deleting it and performing an undo action in a duplicated sheet', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Column', range: 'H2:H11', id: 'e_spreadsheet_chart_1' }]]);
+            expect(helper.getElementFromSpreadsheet('#' + helper.getInstance().sheets[0].rows[1].cells[7].chart[0].id).classList).toContain('e-chart');
+            helper.invoke('duplicateSheet', [0]);
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('#' + helper.getInstance().sheets[1].rows[1].cells[7].chart[0].id).classList).toContain('e-chart');
+                helper.invoke('deleteChart', ['e_spreadsheet_chart_1']);
+                expect(helper.getElementFromSpreadsheet('#' + helper.getInstance().sheets[1].rows[1].cells[7].chart[0])).toEqual(null);
+                helper.invoke('undo');
+                expect(helper.getElementFromSpreadsheet('#' + helper.getInstance().sheets[1].rows[1].cells[7].chart[0].id).classList).toContain('e-chart');
+                done();
             });
         });
     });
@@ -2876,6 +2944,328 @@ describe('Chart ->', () => {
                 const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
                 expect(chart).not.toBeNull();
                 done();
+            });
+        });
+    });
+
+    describe('EJ2-877764 , EJ2-877488 - Scatter chart with different formatted text in multiple columns ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Insert Chart with Accounting Number Formatting->', (done: Function) => {
+            helper.invoke('selectRange', ['D1:E5'])
+            helper.switchRibbonTab(1);
+            helper.getElement('#' + helper.id + '_number_format').click();
+            helper.getElement('#' + helper.id + '_Accounting').click();
+            helper.invoke('insertChart', [[{ type: 'Scatter', range: 'D1:E5' }]]);
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                helper.triggerKeyNativeEvent(46);
+                done();
+            });
+        });
+        it('Insert Chart with Currency Number Formatting->', (done: Function) => {
+            helper.invoke('selectRange', ['D1:E5'])
+            helper.switchRibbonTab(1);
+            helper.getElement('#' + helper.id + '_number_format').click();
+            helper.getElement('#' + helper.id + '_Currency').click();
+            helper.invoke('insertChart', [[{ type: 'Scatter', range: 'D1:E5' }]]);
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                helper.triggerKeyNativeEvent(46);
+                done();
+            });
+        });
+        it('Insert Chart with Percentage Number Formatting->', (done: Function) => {
+            helper.invoke('selectRange', ['D1:E5'])
+            helper.switchRibbonTab(1);
+            helper.getElement('#' + helper.id + '_number_format').click();
+            helper.getElement('#' + helper.id + '_Percentage').click();
+            helper.invoke('insertChart', [[{ type: 'Scatter', range: 'D1:E5' }]]);
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                helper.triggerKeyNativeEvent(46);
+                done();
+            });
+        });
+        it('Insert Chart with Fraction Number Formatting->', (done: Function) => {
+            helper.invoke('selectRange', ['D1:E5'])
+            helper.switchRibbonTab(1);
+            helper.getElement('#' + helper.id + '_number_format').click();
+            helper.getElement('#' + helper.id + '_Fraction').click();
+            helper.invoke('insertChart', [[{ type: 'Scatter', range: 'D1:E5' }]]);
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                helper.triggerKeyNativeEvent(46);
+                done();
+            });
+        });
+    });
+    describe('Chart elements not restored correctly after undo action on deleted chart ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Adding Chart Title ->', (done: Function) => {
+            helper.invoke('selectRange', ['D1:H11']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart-btn').click();
+            const target1: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Column"]');
+            (getComponent(target1.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target1.getBoundingClientRect().left + 5, y: target1.getBoundingClientRect().top + 5 }, document, target1);
+            helper.getElement('#clusteredColumn').click();
+            helper.getElement('#' + helper.id + '_addchart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Chart Title"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#ChartTitleAbove').click();
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-title-dlg.e-dialog')
+                const input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-title-dlg .e-dlg-content .e-input') as HTMLInputElement;
+                input.value = 'Clustered Column Chart';
+                helper.click('.e-title-dlg .e-primary');
+                setTimeout(() => {
+                    expect(document.getElementsByClassName('e-chart-focused')[1].textContent).toBe('Clustered Column Chart');
+                    done();
+                });
+            });
+        });
+        it('Adding Chart Horizontal Title->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_addchart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Axis Title"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#PHAxisTitle').click();
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-title-dlg.e-dialog')
+                const input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-title-dlg .e-dlg-content .e-input') as HTMLInputElement;
+                input.value = 'Purchase Details';
+                helper.click('.e-title-dlg .e-primary');
+                done();
+            });
+        });
+        it('Adding Chart Vertical Title->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_addchart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Axis Title"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#PVAxisTitle').click();
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-title-dlg.e-dialog')
+                const input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-title-dlg .e-dlg-content .e-input') as HTMLInputElement;
+                input.value = 'Price Details';
+                helper.click('.e-title-dlg .e-primary');
+                done();
+            });
+        });
+        it('Applying Inside End Data Labels->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_addchart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Data Labels"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#DLInsideend').click();
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                done();
+            }, 20);
+        });
+        it('Apply Bottom Legend settings->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_addchart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Legends"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#LegendsBottom').click();
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                done();
+            });
+        });
+        it('Apply Minor Horizontal Gridlines->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_addchart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Gridlines"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#GLMinorHorizontal').click();
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                done();
+            }, 20);
+        });
+        it('Apply Minor Vertical Gridlines->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_addchart').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_addchart-popup .e-menu-item[aria-label="Gridlines"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#GLMinorVertical').click();
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                done();
+            }, 20);
+        });
+        it('Performing undo action after deleting the chart', (done: Function) => {
+            helper.invoke('deleteChart');
+            helper.switchRibbonTab(1);
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                expect(document.getElementsByClassName('e-chart-focused')[1].textContent).toBe('Clustered Column Chart');
+                setTimeout(() => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    const chartCell: ChartModel = spreadsheet.sheets[0].rows[0].cells[3].chart[0];
+                    expect(chartCell.title).toBe('Clustered Column Chart');
+                    expect(chartCell.dataLabelSettings.position).toBe('Top');
+                    expect(chartCell.legendSettings.position).toBe('Bottom');
+                    expect(chartCell.primaryXAxis.title).toBe('Purchase Details');
+                    expect(chartCell.primaryXAxis.minorGridLines.width).toBe(1);
+                    expect(chartCell.primaryYAxis.title).toBe('Price Details');
+                    expect(chartCell.primaryYAxis.minorGridLines.width).toBe(1);
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('Clear All for chart ->', () => {
+        let spreadsheet: Spreadsheet;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Insert Chart->', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['G1:H6']);
+            helper.switchRibbonTab(2);
+            helper.getElement('#' + helper.id + '_chart-btn').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Bar"]');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#stackedBar').click();
+            setTimeout(() => {
+                helper.switchRibbonTab(1);
+                done();
+            });
+        });
+        it('Check Chart->', (done: Function) => {
+            setTimeout(() => {
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                expect(helper.invoke('getCell', [1, 7]).textContent).toBe('10');
+                helper.invoke('selectRange', ['C1']);
+                done();
+            });
+        });
+        it('Select All->', (done: Function) => {
+            setTimeout(() => {
+                const selectAl: HTMLElement = helper.getElement('#' + helper.id + '_select_all');
+                helper.triggerMouseAction('mousedown', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, null, selectAl);
+                helper.triggerMouseAction('mouseup', { x: selectAl.getBoundingClientRect().left + 1, y: selectAl.getBoundingClientRect().top + 1 }, document, selectAl);
+                helper.switchRibbonTab(1);
+                done();
+            });
+        });
+        it('Clear all', (done: Function) => {
+            setTimeout(() => {
+                helper.click('#spreadsheet_clear');
+                helper.click('#spreadsheet_clear-popup ul li:nth-child(1)');
+                done();
+            });
+        });
+        it('Undo action', (done: Function) => {
+            expect(helper.invoke('getCell', [1, 7]).textContent).toBe('');
+            setTimeout(() => {
+                helper.click('#spreadsheet_undo');
+                done();
+            });
+        });
+        it('Redo check', (done: Function) => {
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [1, 7]).textContent).toBe('10');
+                helper.click('#spreadsheet_redo');
+                done();
+            });
+        });
+        it('Value Check', (done: Function) => {
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [1, 7]).textContent).toBe('');
+                expect(document.getElementById('e_spreadsheet_chart_868_Series_1_Point_4')).toBeNull();
+                done();
+            }, 30);
+        });
+    });
+
+    describe('EJ2-914951, , EJ2-914955 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Exception occur while trying to change the chart type in the duplicate sheet', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.insertChart([{ type: "Column", range: 'D1:H11', id: 'Custom_Chart' }]);
+            let chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            expect(chart).not.toBeNull();
+            expect(chart.id).toBe('Custom_Chart_overlay');
+            let td: HTMLElement = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+            let coords = td.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.left, y: coords.top }, null, td);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.click('#' + helper.id + '_contextmenu li:nth-child(3)');
+            setTimeout(() => {
+                expect(spreadsheet.sheets[1].name.toString()).toBe('Sheet1 (2)');
+                expect(spreadsheet.activeSheetIndex).toBe(1);
+                helper.invoke('selectChart');
+                helper.getElement('#' + helper.id + '_chart-type-btn').click();
+                const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-type-btn-popup .e-menu-item[aria-label="Pie/Doughnut"]');
+                (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+                helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+                helper.getElement('#pie').click();
+                setTimeout(() => {
+                    chart = helper.getElement().querySelector('.e-accumulationchart');
+                    expect(chart).not.toBeNull();
+                    done();
+                });
+            });
+        });
+         it('Exception occurs while deleting the chart inserted sheet after inserting a duplicate sheet.', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.goTo('Sheet1!A1')
+            setTimeout(() => {
+                let chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(spreadsheet.activeSheetIndex).toBe(0);
+                expect(chart).not.toBeNull();
+                expect(chart.id).toBe('Custom_Chart_overlay');
+                let td: HTMLElement = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+                let coords = td.getBoundingClientRect();
+                helper.triggerMouseAction('contextmenu', { x: coords.left, y: coords.top }, null, td);
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.click('#' + helper.id + '_contextmenu li:nth-child(2)');
+                helper.setAnimationToNone('.e-delete-sheet-dlg.e-dialog');
+                helper.click('.e-delete-sheet-dlg .e-primary');
+                setTimeout(() => {
+                    expect(spreadsheet.activeSheetIndex).toBe(0);
+                    expect(spreadsheet.sheets[0].name.toString()).toBe('Sheet1 (2)');
+                    chart = helper.getElement().querySelector('.e-accumulationchart');
+                    expect(chart).not.toBeNull();
+                    expect(chart.id).toBe('Custom_Chart');
+                    done();
+                });
             });
         });
     });

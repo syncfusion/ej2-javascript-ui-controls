@@ -164,10 +164,79 @@ export class Crud {
         }
     }
 
+    private processAddEvent(addArgs: ActionEventArgs): void {
+        const fields: EventFieldsMapping = this.parent.eventFields;
+        const editParams: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
+        let promise: Promise<any>;
+        if (addArgs.addedRecords instanceof Array) {
+            for (let event of addArgs.addedRecords) {
+                event = this.parent.eventBase.updateEventDateTime(event);
+                const eventData: Record<string, any> = <Record<string, any>>extend({}, this.parent.eventBase.processTimezone(event, true), null, true);
+                editParams.addedRecords.push(eventData);
+            }
+            promise = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;
+        } else {
+            const event: Record<string, any> = this.parent.eventBase.processTimezone(addArgs.addedRecords, true);
+            editParams.addedRecords.push(event);
+            promise = this.parent.dataModule.dataManager.insert(event, this.getTable(), this.getQuery()) as Promise<any>;
+        }
+        const crudArgs: CrudArgs = {
+            requestType: 'eventCreated', cancel: false, data: addArgs.addedRecords, promise: promise, editParams: editParams
+        };
+        this.refreshData(crudArgs);
+    }
+
+    private processSaveEvent(saveArgs: ActionEventArgs): void {
+        let promise: Promise<any>;
+        const fields: EventFieldsMapping = this.parent.eventFields;
+        const editParams: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
+        if (saveArgs.changedRecords instanceof Array) {
+            for (let event of saveArgs.changedRecords) {
+                event = this.parent.eventBase.updateEventDateTime(event);
+                const eventData: Record<string, any> = <Record<string, any>>extend({}, this.parent.eventBase.processTimezone(event, true), null, true);
+                editParams.changedRecords.push(eventData);
+            }
+            promise = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;
+        } else {
+            const event: Record<string, any> = this.parent.eventBase.processTimezone(saveArgs.changedRecords, true);
+            editParams.changedRecords.push(event);
+            promise = this.parent.dataModule.dataManager.update(fields.id, event, this.getTable(), this.getQuery()) as Promise<any>;
+        }
+        const cloneEvent: Record<string, any> = extend({}, saveArgs.changedRecords[saveArgs.changedRecords.length - 1], null, true) as Record<string, any>;
+        this.parent.eventBase.selectWorkCellByTime([this.parent.eventBase.processTimezone(cloneEvent)]);
+        const crudArgs: CrudArgs = {
+            requestType: 'eventChanged', cancel: false,
+            data: saveArgs.changedRecords, promise: promise, editParams: editParams
+        };
+        this.refreshData(crudArgs);
+    }
+
+    private processDeleteEvent(deleteArgs: ActionEventArgs): void {
+        let promise: Promise<any>;
+        const fields: EventFieldsMapping = this.parent.eventFields;
+        const editParams: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
+        if (deleteArgs.deletedRecords.length > 1) {
+            editParams.deletedRecords = editParams.deletedRecords.concat(deleteArgs.deletedRecords);
+            promise = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;
+        } else {
+            editParams.deletedRecords.push(deleteArgs.deletedRecords[0]);
+            promise = this.parent.dataModule.dataManager.remove(fields.id, deleteArgs.deletedRecords[0], this.getTable(), this.getQuery()) as Promise<any>;
+        }
+        this.parent.eventBase.selectWorkCellByTime(deleteArgs.deletedRecords);
+        const crudArgs: CrudArgs = {
+            requestType: 'eventRemoved', cancel: false,
+            data: deleteArgs.deletedRecords, promise: promise, editParams: editParams
+        };
+        this.refreshData(crudArgs);
+    }
+
     public addEvent(eventData: Record<string, any> | Record<string, any>[]): void {
         if (this.parent.eventSettings.allowAdding && !this.parent.activeViewOptions.readonly) {
             if (!this.isBlockEvent(eventData) && this.parent.eventBase.isBlockRange(eventData)) {
                 this.parent.quickPopup.openValidationError('blockAlert', eventData);
+                return;
+            }
+            if (this.parent.eventBase.checkOverlap(eventData)) {
                 return;
             }
             const addEvents: Record<string, any>[] = (eventData instanceof Array) ? eventData : [eventData];
@@ -180,25 +249,19 @@ export class Crud {
             };
             this.parent.trigger(events.actionBegin, args, (addArgs: ActionEventArgs) => {
                 if (!addArgs.cancel) {
-                    const fields: EventFieldsMapping = this.parent.eventFields;
-                    const editParams: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
-                    let promise: Promise<any>;
-                    if (addArgs.addedRecords instanceof Array) {
-                        for (let event of addArgs.addedRecords) {
-                            event = this.parent.eventBase.updateEventDateTime(event);
-                            const eventData: Record<string, any> = <Record<string, any>>extend({}, this.parent.eventBase.processTimezone(event, true), null, true);
-                            editParams.addedRecords.push(eventData);
-                        }
-                        promise = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;
+                    if (addArgs.promise) {
+                        addArgs.promise.then((hasContinue: boolean) => {
+                            if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
+                            if (hasContinue) {
+                                this.processAddEvent(addArgs);
+                            }
+                        }).catch((e: ReturnType) => {
+                            if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
+                            this.parent.trigger(events.actionFailure, { error: e });
+                        });
                     } else {
-                        const event: Record<string, any> = this.parent.eventBase.processTimezone(addArgs.addedRecords, true);
-                        editParams.addedRecords.push(event);
-                        promise = this.parent.dataModule.dataManager.insert(event, this.getTable(), this.getQuery()) as Promise<any>;
+                        this.processAddEvent(addArgs);
                     }
-                    const crudArgs: CrudArgs = {
-                        requestType: 'eventCreated', cancel: false, data: addArgs.addedRecords, promise: promise, editParams: editParams
-                    };
-                    this.refreshData(crudArgs);
                 }
             });
         }
@@ -233,34 +296,28 @@ export class Crud {
                     break;
                 }
             } else {
+                if (this.parent.eventBase.checkOverlap(eventData)) {
+                    return;
+                }
                 const args: ActionEventArgs = {
                     requestType: 'eventChange', cancel: false, data: eventData,
                     addedRecords: [], changedRecords: updateEvents, deletedRecords: []
                 };
                 this.parent.trigger(events.actionBegin, args, (saveArgs: ActionEventArgs) => {
                     if (!saveArgs.cancel) {
-                        let promise: Promise<any>;
-                        const fields: EventFieldsMapping = this.parent.eventFields;
-                        const editParams: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
-                        if (saveArgs.changedRecords instanceof Array) {
-                            for (let event of saveArgs.changedRecords) {
-                                event = this.parent.eventBase.updateEventDateTime(event);
-                                const eventData: Record<string, any> = <Record<string, any>>extend({}, this.parent.eventBase.processTimezone(event, true), null, true);
-                                editParams.changedRecords.push(eventData);
-                            }
-                            promise = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;
+                        if (saveArgs.promise) {
+                            saveArgs.promise.then((hasContinue: boolean) => {
+                                if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
+                                if (hasContinue) {
+                                    this.processSaveEvent(saveArgs);
+                                }
+                            }).catch((e: ReturnType) => {
+                                if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
+                                this.parent.trigger(events.actionFailure, { error: e });
+                            });
                         } else {
-                            const event: Record<string, any> = this.parent.eventBase.processTimezone(saveArgs.changedRecords, true);
-                            editParams.changedRecords.push(event);
-                            promise = this.parent.dataModule.dataManager.update(fields.id, event, this.getTable(), this.getQuery()) as Promise<any>;
+                            this.processSaveEvent(saveArgs);
                         }
-                        const cloneEvent: Record<string, any> = extend({}, saveArgs.changedRecords[saveArgs.changedRecords.length - 1], null, true) as Record<string, any>;
-                        this.parent.eventBase.selectWorkCellByTime([this.parent.eventBase.processTimezone(cloneEvent)]);
-                        const crudArgs: CrudArgs = {
-                            requestType: 'eventChanged', cancel: false,
-                            data: saveArgs.changedRecords, promise: promise, editParams: editParams
-                        };
-                        this.refreshData(crudArgs);
                     }
                 });
             }
@@ -302,22 +359,19 @@ export class Crud {
                 };
                 this.parent.trigger(events.actionBegin, args, (deleteArgs: ActionEventArgs) => {
                     if (!deleteArgs.cancel) {
-                        let promise: Promise<any>;
-                        const fields: EventFieldsMapping = this.parent.eventFields;
-                        const editParams: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
-                        if (deleteArgs.deletedRecords.length > 1) {
-                            editParams.deletedRecords = editParams.deletedRecords.concat(deleteArgs.deletedRecords);
-                            promise = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;
+                        if (deleteArgs.promise) {
+                            deleteArgs.promise.then((hasContinue: boolean) => {
+                                if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
+                                if (hasContinue) {
+                                    this.processDeleteEvent(deleteArgs);
+                                }
+                            }).catch((e: ReturnType) => {
+                                if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
+                                this.parent.trigger(events.actionFailure, { error: e });
+                            });
                         } else {
-                            editParams.deletedRecords.push(deleteArgs.deletedRecords[0]);
-                            promise = this.parent.dataModule.dataManager.remove(fields.id, deleteArgs.deletedRecords[0], this.getTable(), this.getQuery()) as Promise<any>;
+                            this.processDeleteEvent(deleteArgs);
                         }
-                        this.parent.eventBase.selectWorkCellByTime(deleteArgs.deletedRecords);
-                        const crudArgs: CrudArgs = {
-                            requestType: 'eventRemoved', cancel: false,
-                            data: deleteArgs.deletedRecords, promise: promise, editParams: editParams
-                        };
-                        this.refreshData(crudArgs);
                     }
                 });
             }

@@ -1098,7 +1098,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         let element: HTMLElement;
         if (this.clone) {
             if (this.helper) {
-                element = this.helper({ sender: evt, element: this.target });
+                element = this.helper({ sender: evt, element: this.target, currentTargetElement: this.currentStateTarget});
             } else {
                 element = createElement('div', { className: 'e-drag-helper e-block-touch', innerHTML: 'Draggable' });
                 document.body.appendChild(element);

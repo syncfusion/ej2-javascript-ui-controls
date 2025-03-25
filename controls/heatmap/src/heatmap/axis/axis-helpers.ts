@@ -256,7 +256,8 @@ export class AxisHelper {
         isLineBreak = getIsLineBreakLabel(labels);
         for (let i: number = 0, len: number = labels.length; i < len; i++) {
             const lableRect: Rect = new Rect(lableStrtX, rect.y, interval, rect.height);
-            let label: string = (axis.textStyle.textOverflow !== 'Wrap' && !(isLineBreak) && axis.textStyle.textOverflow !== 'Trim' && axis.labelIntersectAction === 'Trim' && axis.isIntersect) ? axis.valueType !== 'DateTime' ||
+            let elementSize: Size = measureText(labels[i as number], axis.textStyle);
+            let label: string = (axis.textStyle.textOverflow !== 'Wrap' && !(isLineBreak) && axis.textStyle.textOverflow !== 'Trim' && axis.labelIntersectAction === 'Trim' && (axis.isIntersect || elementSize.width > interval)) ? axis.valueType !== 'DateTime' ||
                 axis.showLabelOn === 'None' ? textTrim(interval * axisInterval, labels[i as number], axis.textStyle) :
                 textTrim(axis.dateTimeAxisLabelInterval[i as number] * interval, labels[i as number], axis.textStyle) : labels[i as number];
             label = ((axis.enableTrim || axis.textStyle.textOverflow === 'Trim') && !isLineBreak) ? textTrim((axis.textStyle.textOverflow === 'Trim' ? interval - (axis.border.width / 2) : axis.maxLabelLength), labels[i as number], axis.textStyle) : label;
@@ -278,7 +279,7 @@ export class AxisHelper {
                 }
                 wrappedlabels.push(wrappedLabel);
             }
-            const elementSize: Size = measureText(wrappedLabel, axis.textStyle); let transform: string;
+            elementSize = measureText(wrappedLabel, axis.textStyle); let transform: string;
             labelPadding = (axis.opposedPosition) ? -(padding) : (padding + ((angle % 360) === 0 ? (elementSize.height / 2) : 0));
             elementSize.width = axis.isInversed ? (elementSize.width > interval ? interval : elementSize.width) : elementSize.width;
             let x: number = lableRect.x + ((!axis.isInversed) ?

@@ -757,4 +757,106 @@ describe('Slash Menu ', () => {
             }, 150);
         });
     });
+
+    describe('945338 - Slash menu Image insertion and quick toolbar testing', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                toolbarSettings: {
+                    items: ['Image']
+                },
+                slashMenuSettings: {
+                    enable: true,
+                    items: ['Image']
+                },
+                value: '/'
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+    
+        it('Slash menu - Should open image dialog, insert image, and show quick toolbar', (done: DoneFn) => {
+            editor.focusIn();
+            const range: Range = new Range();
+            range.setStart(editor.inputElement.firstChild.firstChild, 1);
+            range.setEnd(editor.inputElement.firstChild.firstChild, 1);
+            document.getSelection().removeAllRanges();
+            document.getSelection().addRange(range);
+            // Open slash menu
+            const keyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', SLASH_KEY_EVENT_INIT);
+            editor.inputElement.dispatchEvent(keyDownEvent);
+            const keyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SLASH_KEY_EVENT_INIT);
+            editor.inputElement.dispatchEvent(keyUpEvent);
+            setTimeout(() => {
+                // Click on the image option in slash menu
+                const imageItem: HTMLElement = document.querySelector('[data-value="Insert an image."]');
+                imageItem.click();
+                setTimeout(() => {
+                    // Verify image dialog is opened
+                    expect(editor.element.querySelectorAll('.e-rte-img-dialog').length).toBe(1);
+                    let dialogEle: Element = editor.element.querySelector('.e-dialog');
+                    (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+                    (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+                    let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
+                    let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+                    (<any>editor).imageModule.uploadObj.onSelectFiles(eventArgs);
+                    (document.querySelector('.e-insertImage') as HTMLElement).click();
+                    setTimeout(() => {
+                        // Verify image is inserted
+                        expect(editor.inputElement.querySelectorAll('img').length).toBe(1);
+                        //Should expect the image quicktoolbar since it will not be opened in test cases the expect is not added.
+                        done();
+                    }, 500);
+                }, 100);
+            }, 150);
+        });
+    });
+
+    describe('945701 - Slash menu heading format test after applying selection format like bold in empty RTE', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                slashMenuSettings: {
+                    enable: true,
+                },
+                value: '<p><strong>&#8203;/</strong></p>'  // Bold with zero-width space character
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        
+        it('Should apply heading 2 with bold formatting', (done: DoneFn) => {
+            editor.focusIn();
+            // Set cursor position inside the bold element with zero-width space
+            const range: Range = new Range();
+            const boldElement = editor.inputElement.querySelector('strong');
+            range.setStart(boldElement.firstChild, 2);
+            range.setEnd(boldElement.firstChild, 2);
+            document.getSelection().removeAllRanges();
+            document.getSelection().addRange(range);
+            // Type slash to open slash menu
+            const keyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', SLASH_KEY_EVENT_INIT);
+            editor.inputElement.dispatchEvent(keyDownEvent);
+            const keyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', SLASH_KEY_EVENT_INIT);
+            editor.inputElement.dispatchEvent(keyUpEvent);
+            setTimeout(() => {
+                // Select heading 2 from slash menu
+                const heading2: HTMLElement = document.querySelector('[data-value="Use this for key sections."]');
+                heading2.click();
+                setTimeout(() => {
+                    // Check if heading 2 was successfully applied
+                    const h2Element = editor.inputElement.querySelector('h2');
+                    expect(h2Element).not.toBeNull();
+                    expect(h2Element.innerHTML.includes('strong')).toBe(true);
+                    done();
+                }, 100);
+            }, 150);
+        });
+    });
 });

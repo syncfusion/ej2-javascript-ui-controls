@@ -1121,7 +1121,8 @@ describe('Pie Series - Checking animation on data changes.', () => {
             done();
         };
         pie.series[0].palettes = [];
-        pie.series[0].dataSource = piedata; 
+        pie.series[0].dataSource = piedata;
+        pie.series[0].dataLabel.visible = true; 
         pie.tooltip.enable = true;
         pie.tooltip.enableHighlight = true;
         pie.refresh();

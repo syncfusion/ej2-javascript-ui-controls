@@ -126,7 +126,7 @@ export class InputElement {
             }
         }
         pageDiv.removeChild(this.inputBoxElement);
-        const canvass: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
+        const canvass: HTMLElement = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', pageIndex);
         this.pdfViewer.renderDrawing(canvass as any, pageIndex);
     }
 

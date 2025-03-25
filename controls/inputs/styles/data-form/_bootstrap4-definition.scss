@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 /*! Form bootstrap theme wise override definitions and variables */
 // form field styles
 $field-label-color: var(--content-text-color-alt-1, #343a40) !default;
@@ -26,8 +28,8 @@ $form-group-title-border-height: 1px !default;
 $form-group-title-border-bottom-style: 1px solid $group-title-border-color !default;
 
 //tooltip styles
-$form-tooltip-background-color: lighten($red, 40%) !default;
-$form-tooltip-color: darken($red, 10%) !default;
+$form-tooltip-background-color: color.adjust($red, $lightness: 40%) !default;
+$form-tooltip-color: color.adjust($red, $lightness: -10%) !default;
 $form-validation-message-font-size: 12px;
 
 // form common styles

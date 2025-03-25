@@ -289,15 +289,15 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
     }
 
     protected renderViewSections(element: HTMLElement, headerClassName: string, viewClassName: string): void {
-        const headerWrapper: HTMLElement = this.createElement('div', { attrs: { class: headerClassName }});
+        const headerWrapper: HTMLElement = this.createElement('div', { className: headerClassName });
         element.appendChild(headerWrapper);
-        const viewWrapper: HTMLElement = this.createElement('div', { attrs: { class: viewClassName} });
+        const viewWrapper: HTMLElement = this.createElement('div', { className: viewClassName });
         element.appendChild(viewWrapper);
     }
 
     protected createViewComponents(viewWrapper: HTMLElement): void {
-        const contentWrapper: HTMLElement = this.createElement('div', { attrs: { class: 'e-views' } });
-        const viewContainer: HTMLElement = this.createElement('div', { attrs: { class: 'e-view-container' } });
+        const contentWrapper: HTMLElement = this.createElement('div', { className: 'e-views' });
+        const viewContainer: HTMLElement = this.createElement('div', { className: 'e-view-container' });
         contentWrapper.appendChild(viewContainer);
         viewWrapper.appendChild(contentWrapper);
     }
@@ -322,7 +322,7 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
             className = '';
             break;
         }
-        return this.createElement('div', { attrs: { class: className } });
+        return this.createElement('div', { className: className });
     }
 
     protected createSuggestionElement(suggestionHeader: string): {
@@ -330,9 +330,9 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
         suggestionHeaderElement: HTMLElement;
         suggestionListElement: HTMLElement;
     } {
-        const suggestionContainer: HTMLElement = this.createElement('div', { attrs: { class: 'e-suggestions' } });
-        const suggestionHeaderElement: HTMLElement =  this.createElement('div', { attrs: { class: 'e-suggestion-header' } });
-        const suggestionListElement: HTMLElement = this.createElement('div', { attrs: { class: 'e-suggestion-list' } });
+        const suggestionContainer: HTMLElement = this.createElement('div', { className: 'e-suggestions' });
+        const suggestionHeaderElement: HTMLElement =  this.createElement('div', { className: 'e-suggestion-header' });
+        const suggestionListElement: HTMLElement = this.createElement('div', { className: 'e-suggestion-list' });
         if (suggestionHeader) {
             suggestionContainer.appendChild(suggestionHeaderElement);
         }
@@ -394,7 +394,7 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
     protected renderBannerView(bannerTemplate: string | Function, parentElement: HTMLElement, templateName: string): void {
         if (bannerTemplate) {
             const className: string = templateName === 'emptyChatTemplate' ? 'e-empty-chat-template' : 'e-banner-view';
-            const introContainer: HTMLElement = this.createElement('div', { attrs: { class: className} });
+            const introContainer: HTMLElement = this.createElement('div', { className: className });
             this.updateContent(bannerTemplate, introContainer, {}, templateName);
             parentElement.prepend(introContainer);
         }
@@ -413,23 +413,22 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
     }
 
     protected renderFooterContent(footerTemplate: string | Function, footer: HTMLElement, prompt: string,
-                                  promptPlaceholder: string, showClearButton: boolean, rowCount: number, className: string): TextArea {
+                                  promptPlaceholder: string, showClearButton: boolean, className: string): TextArea {
         if (footerTemplate) {
             this.updateContent(footerTemplate, footer, {}, 'footerTemplate');
             return null;
         } else {
-            const textareaEle: HTMLElement = this.createElement('textarea', { attrs: { class: className } });
+            const textareaEle: HTMLElement = this.createElement('textarea', { className: className });
             footer.appendChild(textareaEle);
-            return this.renderFooter(textareaEle, prompt, promptPlaceholder, showClearButton, rowCount);
+            return this.renderFooter(textareaEle, prompt, promptPlaceholder, showClearButton);
         }
     }
 
     private renderFooter(textareaElement: HTMLElement, prompt: string, promptPlaceholder: string,
-                         showClearButton: boolean = false, rowCount: number): TextArea {
+                         showClearButton: boolean = false): TextArea {
         const textareaObj: TextArea = new TextArea({
-            rows: rowCount,
+            rows: 1,
             cols: 300,
-            cssClass: rowCount >= 10 ? 'show-scrollbar' : 'hide-scrollbar',
             placeholder: promptPlaceholder,
             resizeMode: 'None',
             value: prompt,
@@ -438,7 +437,12 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
         textareaObj.appendTo(textareaElement);
         return textareaObj;
     }
-
+    protected updateTextAreaObject(textareaObj: TextArea): void {
+        if (isNOU(textareaObj)) { return; }
+        const textarea: HTMLElement = textareaObj.element;
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
     protected renderSendIcon(sendIconClass: string, footer: HTMLElement): HTMLElement {
         const sendIcon: HTMLElement = this.createElement('span', { attrs: { class: sendIconClass, role: 'button', 'aria-label': 'Submit', tabindex: '0' } }) as HTMLElement;
         footer.appendChild(sendIcon);
@@ -450,7 +454,7 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
     protected insertBeforeChildren(target: HTMLElement, ...children: HTMLElement[]): void {
         target.prepend(...children);
     }
-    protected wireFooterEvents(sendIcon: HTMLElement, footer: HTMLElement, footerTemplate: string | Function): void {
+    protected wireFooterEvents(sendIcon: HTMLElement, footer: HTMLElement, footerTemplate: string | Function, textareaObj: TextArea): void {
         if (sendIcon) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             EventHandler.add(sendIcon, 'click', (this as any).onSendIconClick, this);
@@ -459,9 +463,15 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             EventHandler.add(footer, 'keydown', (this as any).footerKeyHandler, this);
         }
+        EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', () => this.updateTextAreaObject(textareaObj), this);
     }
 
-    protected unWireFooterEvents(sendIcon: HTMLElement, footer: HTMLElement, footerTemplate: string | Function): void {
+    protected unWireFooterEvents(
+        sendIcon: HTMLElement,
+        footer: HTMLElement,
+        footerTemplate: string | Function,
+        textareaObj: TextArea
+    ): void {
         if (sendIcon) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             EventHandler.remove(sendIcon, 'click', (this as any).onSendIconClick);
@@ -470,6 +480,7 @@ export class InterActiveChatBase extends Component<HTMLElement> implements INoti
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             EventHandler.remove(footer, 'keydown', (this as any).footerKeyHandler);
         }
+        EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', () => this.updateTextAreaObject(textareaObj));
     }
     protected removeAndNullify(element: HTMLElement): void {
         if (element) {

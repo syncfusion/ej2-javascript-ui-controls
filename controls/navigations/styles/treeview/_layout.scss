@@ -261,6 +261,10 @@
         width: calc(100% - 8px);
         margin-left: 4px;
       }
+
+      @supports (-webkit-overflow-scrolling: touch) {
+        z-index: -1;
+      }
     }
 
     .e-checkbox-wrapper {
@@ -292,7 +296,7 @@
       display: inline-block;
       line-height: $treeview-text-height;
       margin: $treeview-text-margin;
-      @if $skin-name == 'Material3' {
+      @if $skin-name == 'Material3' or $skin-name == 'tailwind3' {
         min-height: $treeview-item-height;
       }
       @else if $skin-name != 'bootstrap4' {
@@ -570,7 +574,7 @@
               margin: $treeview-drag-icon-margin;
             }
           }
-          @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'FluentUI') {
+          @if ($skin-name == 'bootstrap5' or $skin-name == 'FluentUI') {
             box-sizing: content-box;
             padding-left: $treeview-drag-icon-padding;
           }

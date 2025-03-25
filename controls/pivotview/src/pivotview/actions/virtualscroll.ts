@@ -614,7 +614,7 @@ export class VirtualScroll {
 
     private setFrozenColumnPosition(horiOffset: number, rowsHeaderElement: HTMLElement, i: number, j: NodeListOf<Element>): void {
         if (rowsHeaderElement) {
-            const colIndex: number = Number(rowsHeaderElement.getAttribute('data-colIndex'));
+            const colIndex: number = parseInt(rowsHeaderElement.getAttribute('aria-colindex'), 10) - 1;
             if (colIndex > 0 && colIndex <= (this.parent.engineModule.rowMaxLevel + 1)) {
                 (j[i as number] as HTMLElement).style.left = (colIndex * this.parent.gridSettings.columnWidth) + 'px';
             }

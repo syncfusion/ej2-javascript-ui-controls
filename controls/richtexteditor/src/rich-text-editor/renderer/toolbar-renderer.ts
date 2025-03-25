@@ -15,7 +15,6 @@ import { hasClass } from '../base/util';
 import { ServiceLocator } from '../services/service-locator';
 import { ToolbarStatus } from '../../editor-manager/plugin/toolbar-status';
 import { IToolbarStatus } from '../../common/interface';
-import { isSafari } from '../../common/util';
 import { defaultLocale } from '../models/default-locale';
 
 /**
@@ -86,6 +85,18 @@ export class ToolbarRenderer implements IRenderer {
 
     private toolbarCreated(): void {
         this.parent.notify(events.toolbarCreated, this);
+        if (this.mode === 'Extended') {
+            const extendedToolbarElement: HTMLElement = this.toolbarPanel.querySelector(`#${CSS.escape(this.parent.element.id)}_toolbar_nav`);
+            if (extendedToolbarElement) {
+                EventHandler.add(extendedToolbarElement, 'mousedown', this.extendedToolbarMouseDownHandler, this);
+            }
+        }
+    }
+
+    private extendedToolbarMouseDownHandler(): void {
+        if (this.parent.userAgentData.isSafari()) {
+            this.parent.notify(events.selectionSave, {});
+        }
     }
 
     private toolbarClicked(args: ClickEventArgs): void {
@@ -136,8 +147,7 @@ export class ToolbarRenderer implements IRenderer {
     }
 
     private dropDownOpen(args: MenuEventArgs): void {
-        if (args.element.parentElement.getAttribute('id').indexOf('TableCell') > -1 && !isNOU(args.element.parentElement.querySelector('.e-cell-merge')) &&
-        (!isNOU(args.element.parentElement.querySelector('.e-cell-horizontal-split')) || !isNOU(args.element.parentElement.querySelector('.e-cell-vertical-split')))) {
+        if (args.element.parentElement.getAttribute('id').indexOf('TableCell') > -1 && !isNOU(args.element.parentElement.querySelector('.e-cell-merge'))) {
             const listEle: NodeListOf<HTMLElement> = args.element.querySelectorAll('li');
             const selectedEles: NodeListOf<HTMLElement> = this.parent.inputElement.querySelectorAll('.e-cell-select');
             if (selectedEles.length === 1) {
@@ -171,7 +181,6 @@ export class ToolbarRenderer implements IRenderer {
             this.parent.notify(events.preventQuickToolbarClose, args);
         }
     }
-
     /**
      * renderToolbar method
      *
@@ -230,6 +239,7 @@ export class ToolbarRenderer implements IRenderer {
      */
     public renderDropDownButton(args: IDropDownModel): DropDownButton {
         let css: string;
+        const targetEle: HTMLElement = args.activeElement;
         args.element.classList.add(CLS_DROPDOWN_BTN);
         css = args.cssClass + ' ' + CLS_RTE_ELEMENTS + ' ' + CLS_TB_BTN;
         if (this.parent.inlineMode.enable && Browser.isDevice) {
@@ -250,7 +260,7 @@ export class ToolbarRenderer implements IRenderer {
                     args.cancel = true;
                     return;
                 }
-                if (isSafari() && args.event.type === 'keydown' && this.parent.formatter.editorManager.nodeSelection &&
+                if (this.parent.userAgentData.isSafari() && args.event.type === 'keydown' && this.parent.formatter.editorManager.nodeSelection &&
                     !this.parent.inputElement.contains(this.parent.getRange().startContainer)) {
                     this.parent.notify(events.selectionRestore, args);
                 }
@@ -302,7 +312,7 @@ export class ToolbarRenderer implements IRenderer {
                     }
                     //image preselect
                     const closestNode: HTMLElement = startNode.closest('img');
-                    const imageEle: HTMLElement = closestNode ? closestNode : startNode.querySelector('img');
+                    const imageEle: HTMLElement = closestNode ? closestNode : (targetEle ? targetEle : startNode.querySelector('img'));
                     if (!isNOU(args.items[0 as number]) && (args.items[0 as number] as IDropDownItemModel).command === 'Images') {
                         if (!isNOU(imageEle)) {
                             let index: number;
@@ -320,7 +330,7 @@ export class ToolbarRenderer implements IRenderer {
                     }
                     //Video preselect
                     const videoClosestNode: HTMLElement = startNode.closest('.e-video-wrap') as HTMLElement | null;
-                    const videoEle: HTMLElement = videoClosestNode ? videoClosestNode : startNode.querySelector('video') as HTMLElement | null;
+                    const videoEle: HTMLElement = videoClosestNode ? videoClosestNode : (targetEle ? targetEle : startNode.querySelector('video') as HTMLElement | null);
                     if (!isNOU(args.items[0 as number]) && (args.items[0 as number] as IDropDownItemModel).command === 'Videos') {
                         if (!isNOU(videoEle)) {
                             let index: number;
@@ -355,8 +365,17 @@ export class ToolbarRenderer implements IRenderer {
                             fontName
                         );
                         for (let index: number = 0; index < args.element.childNodes.length; index++) {
+                            const htmlString: string = dropDown.content.trim();
+                            const styleMatch: string[] = htmlString.match(/style="([^"]*)"/);
+                            let styleValue: string = '';
+                            if (styleMatch) {
+                                styleValue = styleMatch[1];
+                            }
+                            const updatedHtml: string = htmlString.replace(/ style="([^"]*)"/, '');
                             const divNode: HTMLDivElement = this.parent.createElement('div') as HTMLDivElement;
-                            divNode.innerHTML = dropDown.content.trim();
+                            divNode.innerHTML = updatedHtml;
+                            const spanElement: HTMLSpanElement = divNode.querySelector('span');
+                            spanElement.style.cssText = styleValue;
                             if (!hasUpdatedActive && ((divNode.textContent.trim() !== ''
                                 && args.element.childNodes[index as number].textContent.trim() === divNode.textContent.trim()) ||
                                 (((args.items[0 as number] as IDropDownItemModel).command === 'Formats' && !isNOU(toolbarStatus.formats) && this.parent.format.types[index as number].value.toLowerCase() === toolbarStatus.formats.toLowerCase() && (args.element.childNodes[index as number] as Element).classList.contains(this.parent.format.types[index as number].cssClass))
@@ -552,12 +571,13 @@ export class ToolbarRenderer implements IRenderer {
      * @param {string} item - specifies the item.
      * @param {ColorPicker} colorPicker - specifies the colorpicker.
      * @param {string} defaultColor -specifies the defaultColor.
+     * @param {string} toolbarType - Specifies the type of toolbar triggering the color picker.
      * @returns {void}
      * @hidden
      * @deprecated
      */
     public renderColorPickerDropDown(args: IColorPickerModel, item: string, colorPicker: ColorPicker,
-                                     defaultColor: string): DropDownButton {
+                                     defaultColor: string, toolbarType?: string): DropDownButton {
         // eslint-disable-next-line
         const proxy: this = this;
         let css: string = CLS_RTE_ELEMENTS + ' ' + CLS_TB_BTN + ((this.parent.inlineMode) ? (' ' + CLS_INLINE_DROPDOWN) : '');
@@ -589,10 +609,12 @@ export class ToolbarRenderer implements IRenderer {
                     range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
                     const parentNode: Node = range.startContainer.parentNode;
                     const closestElement: Element = closest(range.startContainer.parentNode, 'table');
+                    const isMACSelection: boolean = this.parent.userAgentData.getPlatform() === 'macOS' && !range.collapsed;
+                    const allowSelectionRange: boolean = isMACSelection ? true : range.collapsed;
                     if ((range.startContainer.nodeName === 'TD' || range.startContainer.nodeName === 'TH' ||
                             (closest(range.startContainer.parentNode, 'td,th')) ||
                             (proxy.parent.iframeSettings.enable && !hasClass(parentNode.ownerDocument.querySelector('body'), 'e-lib')))
-                            && range.collapsed && args.subCommand === 'BackgroundColor' && (closest(closestElement, '.' + classes.CLS_RTE) || proxy.parent.iframeSettings.enable)) {
+                            && allowSelectionRange && args.subCommand === 'BackgroundColor' && (closest(closestElement, '.' + classes.CLS_RTE) || proxy.parent.iframeSettings.enable) && toolbarType === 'quick') {
                         const colorPickerArgs: ActionBeginEventArgs = { name: 'tableColorPickerChanged', item: { command: 'Table', subCommand: 'BackgroundColor', value: colorpickerValue  }, ...args };
                         proxy.parent.formatter.process(this.parent, colorPickerArgs, null, colorpickerValue);
                         proxy.parent.notify(events.hideTableQuickToolbar, {});
@@ -635,7 +657,7 @@ export class ToolbarRenderer implements IRenderer {
                         (element.querySelector('.' + CLS_RTE_ELEMENTS) as HTMLElement).style.borderBottomColor;
                     range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
                     if ((range.startContainer.nodeName === 'TD' || range.startContainer.nodeName === 'TH' ||
-                            closest(range.startContainer.parentNode, 'td,th')) && range.collapsed){
+                            closest(range.startContainer.parentNode, 'td,th')) && range.collapsed && toolbarType === 'quick') {
                         const colorPickerArgs: ActionBeginEventArgs = { name: 'tableColorPickerChanged', item: { command: 'Table', subCommand: 'BackgroundColor', value: colorpickerValue  }, ...args };
                         proxy.parent.formatter.process(this.parent, colorPickerArgs, null, colorpickerValue);
                         proxy.parent.notify(events.hideTableQuickToolbar, {});
@@ -656,16 +678,17 @@ export class ToolbarRenderer implements IRenderer {
         });
         dropDown.isStringTemplate = true; dropDown.createElement = proxy.parent.createElement; args.element.setAttribute('role', 'button');
         dropDown.appendTo(args.element);
-        args.element.setAttribute('aria-label', item === 'backgroundcolor' ? defaultLocale.backgroundColor : defaultLocale.fontColor);
         const popupElement: Element = document.getElementById(dropDown.element.id + '-popup');
         popupElement.setAttribute('aria-owns', this.parent.getID());
+        args.element.setAttribute('aria-label', item === 'backgroundcolor' ? defaultLocale.backgroundColor : defaultLocale.fontColor);
         dropDown.element.insertBefore(content, dropDown.element.querySelector('.e-caret'));
         args.element.tabIndex = -1; dropDown.element.removeAttribute('type');
         dropDown.element.onmousedown = (): void => {
             proxy.parent.notify(events.selectionSave, {});
         };
         dropDown.element.onkeydown = (): void => {
-            if (!isSafari() || isSafari() && proxy.parent.inputElement.contains(proxy.parent.getRange().startContainer)) {
+            if (!this.parent.userAgentData.isSafari() || this.parent.userAgentData.isSafari()
+                && proxy.parent.inputElement.contains(proxy.parent.getRange().startContainer)) {
                 proxy.parent.notify(events.selectionSave, {});
             }
         };
@@ -693,11 +716,12 @@ export class ToolbarRenderer implements IRenderer {
      *
      * @param {IColorPickerModel} args - specifies the arguments
      * @param {string} item - specifies the string values
+     * @param {string} toolbarType - Specifies the type of toolbar triggering the color picker.
      * @returns {void}
      * @hidden
      * @deprecated
      */
-    public renderColorPicker(args: IColorPickerModel, item: string): ColorPicker {
+    public renderColorPicker(args: IColorPickerModel, item: string, toolbarType?: string): ColorPicker {
         // eslint-disable-next-line
         let proxy: this = this;
         let value: string;
@@ -743,7 +767,8 @@ export class ToolbarRenderer implements IRenderer {
                 const range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
                 const closestElement: Element = closest(range.startContainer.parentNode, 'table');
                 if ((range.startContainer.nodeName === 'TD' || range.startContainer.nodeName === 'TH' || range.startContainer.nodeName === 'BODY' ||
-                    (range.startContainer.parentNode && closest(range.startContainer.parentNode, 'td,th'))) && range.collapsed && args.subCommand === 'BackgroundColor' && (closestElement && closest(closestElement, '.' + classes.CLS_RTE) || proxy.parent.iframeSettings.enable)) {
+                    (range.startContainer.parentNode && closest(range.startContainer.parentNode, 'td,th'))) && range.collapsed && args.subCommand === 'BackgroundColor' && (closestElement && closest(closestElement, '.' + classes.CLS_RTE) || proxy.parent.iframeSettings.enable)
+                    && toolbarType === 'quick') {
                     colorPickerArgs.name = 'tableColorPickerChanged';
                     colorPickerArgs.item.command = 'Table';
                     proxy.parent.formatter.process(this.parent, colorPickerArgs, colorPickerArgs.event, colorPickerArgs.item.value);

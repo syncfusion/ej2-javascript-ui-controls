@@ -151,5 +151,23 @@ describe('CR-Issues ->', () => {
                 });
             });
         });
+        it('EJ2- Undo autofill action not updated properly for merged cells under freeze pane', (done: Function) => {
+            helper.invoke('selectRange', ['A1']);
+            helper.invoke('merge', ['A1:F1']);
+            helper.invoke('selectRange', ['A1']);
+            const autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
+            let td: HTMLElement = helper.invoke('getCell', [5, 0]);
+            let autoFillCoords = autoFill.getBoundingClientRect();
+            let coords = td.getBoundingClientRect();
+            helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
+            helper.getInstance().selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.right, clientY: autoFillCoords.bottom });
+            helper.getInstance().selectionModule.mouseMoveHandler({ target: td, clientX: coords.left + 1, clientY: coords.top + 1 });
+            helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
+            helper.invoke('undo');
+            expect(helper.getInstance().sheets[0].rows[0].cells[0].colSpan).toBe(6);
+            expect(helper.invoke('getCell', [0, 0]).getAttribute('colspan')).toBe('6');
+            expect(helper.getInstance().sheets[0].rows[0].cells[0].value).toBe('Item Name');
+            done();
+        });
     });
 });

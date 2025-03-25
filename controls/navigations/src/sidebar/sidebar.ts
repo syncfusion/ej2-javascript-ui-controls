@@ -383,7 +383,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         if (!isNullOrUndefined(this.tabIndex)) {
             this.element.setAttribute('tabindex', this.tabIndex);
         }
-        if (this.type === 'Auto' && !Browser.isDevice) {
+        if (this.type === 'Auto' && !Browser.isDevice && this.checkMediaQuery()) {
             this.show();
         } else if (!this.isOpen) {
             addClass([this.element], [CLOSE, DISABLEANIMATION]);
@@ -604,6 +604,13 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
                 this.hide();
             }
         }
+    }
+    private checkMediaQuery(): boolean {
+        if (isNullOrUndefined(this.mediaQuery)) {
+            return true;
+        }
+        return (typeof (this.mediaQuery) === 'string') ?
+            window.matchMedia(this.mediaQuery).matches : (this.mediaQuery).matches;
     }
     protected resize(): void {
         if (!isNullOrUndefined(this.width) && this.width !== 'auto' && typeof this.width === 'string' && !this.width.includes('px')) {

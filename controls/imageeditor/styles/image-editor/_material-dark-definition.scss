@@ -1,4 +1,6 @@
-$image-editor-background: lighten($grey-black, 16%) !default;
+@use 'sass:color';
+
+$image-editor-background: color.adjust($grey-black, $lightness: 16%) !default;
 $image-editor-border: 1px solid $grey-600 !default;
 $image-editor-toolbar-icon-color: $grey-dark-font !default;
 $img-editor-cp-preview-border-bottom-color: $grey-black !default;

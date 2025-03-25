@@ -336,12 +336,20 @@
       padding: $grid-bigger-headercell-top-padding $grid-bigger-headercell-padding $grid-bigger-headercell-bootom-padding;
     }
 
-    .e-grid .e-gridheader .e-resizetable tr th:first-child {
+    .e-gridheader .e-resizetable tr th:first-child {
       padding-left: $grid-bigger-headercell-padding;
     }
 
-    .e-grid .e-gridheader .e-resizetable tr th:last-child {
+    .e-gridheader .e-resizetable tr th:last-child {
       padding-right: $grid-bigger-headercell-padding;
+    }
+  
+    .e-gridcontent .e-resizetable tr td:first-child {
+      padding-left: $grid-bigger-content-right-padding;
+    }
+
+    .e-gridcontent .e-resizetable tr td:last-child {
+      padding-right: $grid-bigger-content-right-padding;
     }
   
     &.e-grid-autofit .e-headercell {
@@ -416,6 +424,37 @@
       }
     }
 
+    @if $grid-skin == 'tailwind3' {
+      &.e-device .e-gridheader .e-headercell .e-headercelldiv.e-headerchkcelldiv {
+        margin-top: 4px;
+      }
+
+      &.e-device .e-gridheader .e-rightalign.e-fltr-icon .e-sortnumber {
+        margin: 0 4px 0 -15px;
+      }
+
+      &.e-device .e-gridheader .e-rightalign.e-fltr-icon .e-sortfilterdiv {
+        margin: -21px 10px -16px -13px;
+      }
+
+      &.e-device .e-gridheader .e-rightalign .e-sortnumber {
+        margin: 0 4px 0 -10px;
+      }
+
+      &.e-device .e-gridheader .e-rightalign .e-sortfilterdiv {
+        margin: -22px 4px -16px -13px;
+      }
+
+      &.e-device .e-gridheader .e-fltr-icon .e-sortnumber {
+        margin: 0 -4px 0 2px;
+      }
+
+      &.e-device .e-gridheader .e-fltr-icon .e-sortfilterdiv {
+        margin: -20px 18px -14px 5px;
+      }
+    }
+
+    
     .e-gridheader {
       .e-headercell .e-headercelldiv.e-headerchkcelldiv {
         @if $grid-skin == 'fluent2' {
@@ -803,7 +842,13 @@
       .e-device .e-groupheadercell {
         padding: $grid-bigger-device-rtl-group-headercell-padding;
       }
-  
+
+      &.e-device .e-groupheadercell {
+        @if $grid-skin == 'bootstrap5.3' {
+          padding: $grid-bigger-device-rtl-group-headercell-padding;
+        }
+      }
+
       span.e-ungroupbutton.e-icons {
         margin-left: $grid-bigger-rtl-ungroup-icon-margin-left;
         margin-right: $grid-bigger-rtl-ungroup-icon-margin-right;
@@ -1054,7 +1099,7 @@
 
       .e-groupheadercell {
         padding: $grid-device-group-headercell-padding;
-        @if $grid-skin == 'bootstrap5' {
+        @if $grid-skin == 'bootstrap5' or $grid-skin == 'bootstrap5.3' {
           padding: $grid-bigger-group-headercell-padding;
         }
         span {
@@ -1300,6 +1345,12 @@
     & .e-normaledit .e-rowcell,
     & .e-editedbatchcell.e-rowcell {
       @include grid-top-bottom-padding(0, 0);
+    }
+
+    td.e-boolcell input.e-input.e-boolcell {
+      @if $grid-skin != 'material' or $grid-skin != 'material3' or $grid-skin != 'tailwind3' {
+        height: 23px;
+      }
     }
   }
    

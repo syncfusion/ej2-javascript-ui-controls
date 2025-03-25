@@ -130,6 +130,24 @@ describe('Cell Format ->', () => {
             expect(sheet.rows[3].cells[1].style.textDecoration).toBe('underline line-through');
             done();
         });
+        it('EJ2-923415 - Issue while applying the inside border on merged cell', (done: Function) => {
+            helper.invoke('merge', ['G2:H3']);
+            const cell1: CellModel = helper.getInstance().sheets[0].rows[1].cells[6];
+            const cell2: CellModel = helper.getInstance().sheets[0].rows[1].cells[7];
+            const cell3: CellModel = helper.getInstance().sheets[0].rows[2].cells[6];
+            const cell4: CellModel = helper.getInstance().sheets[0].rows[2].cells[7];
+            expect(cell1.rowSpan).toBe(2);
+            expect(cell1.colSpan).toBe(2);
+            expect(cell2.colSpan).toBe(-1);
+            expect(cell3.rowSpan).toBe(-1);
+            expect(cell4.colSpan).toBe(-1);
+            helper.invoke('selectRange', ['G2:H3']);
+            helper.getElement('#' + helper.id + '_borders').click();
+            helper.getElement('.e-menu-item[aria-label="Inside Borders"]').click();
+            expect(cell1.style).toBe(undefined);
+            expect(cell2.style).toBe(undefined);
+            done();
+        });
     });
 
     describe('Set Border Method->', () => {
@@ -894,8 +912,8 @@ describe('Cell Format ->', () => {
                         expect(helper.invoke('getCell', [3, 8]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
                         expect(helper.invoke('getCell', [3, 9]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
                         done();
-                    }, 10);
-                }, 10);
+                    }, 20);
+                }, 20);
             });
 
             it('Border not rendered properly in merged cells - Horizontal Scrolling', (done: Function) => {
@@ -934,16 +952,16 @@ describe('Cell Format ->', () => {
                         expect(helper.invoke('getCell', [3, 8]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
                         expect(helper.invoke('getCell', [3, 9]).style.borderTop).toBe('1px solid rgb(0, 0, 0)');
                         done();
-                    }, 10);
-                }, 10);
+                    }, 20);
+                }, 20);
             });
         });
     });
-    describe('EJ2-58338, EJ2-840548 ->', () => {
-        beforeEach((done: Function) => {
+    describe('EJ2-58338, EJ2-840548, EJ2-896102 ->', () => {
+        beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
         });
-        afterEach(() => {
+        afterAll(() => {
             helper.invoke('destroy');
         });
         it('Clear Option does not work, when values are selected from bottom to top / left to right', (done: Function) => {
@@ -990,6 +1008,75 @@ describe('Cell Format ->', () => {
                 done();
             });
         });
+
+        it('Right border not applied properly with the merged cells', (done: Function) => {
+            let spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.merge('C12:E16','Horizontally')
+            spreadsheet.setBorder({borderRight: '1px dashed red' }, 'B9:E18');
+            expect(spreadsheet.sheets[0].rows[8].cells[4].style.borderRight).toBe('1px dashed red');
+            expect(helper.invoke('getCell', [8, 4]).style.borderRight).toBe('1px dashed red');
+            expect(spreadsheet.sheets[0].rows[9].cells[4].style.borderRight).toBe('1px dashed red');
+            expect(helper.invoke('getCell', [9, 4]).style.borderRight).toBe('1px dashed red');
+            expect(spreadsheet.sheets[0].rows[10].cells[4].style.borderRight).toBe('1px dashed red');
+            expect(helper.invoke('getCell', [10, 4]).style.borderRight).toBe('1px dashed red');
+            expect(spreadsheet.sheets[0].rows[11].cells[2].style.borderRight).toBe('1px dashed red');
+            expect(helper.invoke('getCell', [11, 2]).style.borderRight).toBe('1px dashed red');
+            expect(spreadsheet.sheets[0].rows[12].cells[2].style.borderRight).toBe('1px dashed red');
+            expect(helper.invoke('getCell', [12, 2]).style.borderRight).toBe('1px dashed red');
+            expect(spreadsheet.sheets[0].rows[13].cells[2].style.borderRight).toBe('1px dashed red');
+            expect(helper.invoke('getCell', [13, 2]).style.borderRight).toBe('1px dashed red');
+            expect(spreadsheet.sheets[0].rows[14].cells[2].style.borderRight).toBe('1px dashed red');
+            expect(helper.invoke('getCell', [14, 2]).style.borderRight).toBe('1px dashed red');
+            expect(spreadsheet.sheets[0].rows[15].cells[2].style.borderRight).toBe('1px dashed red');
+            expect(helper.invoke('getCell', [15, 2]).style.borderRight).toBe('1px dashed red');
+            expect(spreadsheet.sheets[0].rows[16].cells[4].style.borderRight).toBe('1px dashed red');
+            expect(helper.invoke('getCell', [16, 4]).style.borderRight).toBe('1px dashed red');
+            expect(spreadsheet.sheets[0].rows[17].cells[4].style.borderRight).toBe('1px dashed red');
+            expect(helper.invoke('getCell', [17, 4]).style.borderRight).toBe('1px dashed red');
+            done();
+        });
+
+        it('Bottom border not applied properly with the merged cells', (done: Function) => {
+            let spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.merge('G12:I14','Vertically')
+            spreadsheet.setBorder({borderBottom: '1px dashed red' }, 'E11:J14');
+            expect(spreadsheet.sheets[0].rows[13].cells[4].style.borderBottom).toBe('1px dashed red');
+            expect(helper.invoke('getCell', [13, 4]).style.borderBottom).toBe('1px dashed red');
+            expect(spreadsheet.sheets[0].rows[13].cells[5].style.borderBottom).toBe('1px dashed red');
+            expect(helper.invoke('getCell', [13, 5]).style.borderBottom).toBe('1px dashed red');
+            expect(spreadsheet.sheets[0].rows[11].cells[6].style.borderBottom).toBe('1px dashed red');
+            expect(helper.invoke('getCell', [11, 6]).style.borderBottom).toBe('1px dashed red');
+            expect(spreadsheet.sheets[0].rows[11].cells[7].style.borderBottom).toBe('1px dashed red');
+            expect(helper.invoke('getCell', [11, 7]).style.borderBottom).toBe('1px dashed red');
+            expect(spreadsheet.sheets[0].rows[11].cells[8].style.borderBottom).toBe('1px dashed red');
+            expect(helper.invoke('getCell', [11, 8]).style.borderBottom).toBe('1px dashed red');
+            expect(spreadsheet.sheets[0].rows[13].cells[9].style.borderBottom).toBe('1px dashed red');
+            expect(helper.invoke('getCell', [13, 9]).style.borderBottom).toBe('1px dashed red');
+            done();
+        });
+        it('EJ2-897348 - Clear options have to skip merged cells content', (done: Function) => {
+            const cell1: CellModel = helper.getInstance().sheets[0].rows[3].cells[3];
+            const cell2: CellModel = helper.getInstance().sheets[0].rows[4].cells[3];
+            helper.invoke('merge', ['D5:E6']);
+            helper.invoke('cellFormat', [{ backgroundColor: '#ff0000' }, 'D1:E200']);
+            helper.invoke('clear', [{ type: 'Clear Formats', range: 'D1:D200' }]);
+            expect(cell1.style).toEqual(undefined);
+            expect(cell2.style.backgroundColor).toEqual("#ff0000");
+            expect(cell2.rowSpan).toEqual(2);
+            expect(cell2.colSpan).toEqual(2);
+            helper.invoke('clear', [{ type: 'Clear All', range: 'E1:E200' }]);
+            expect(helper.getInstance().sheets[0].rows[3].cells[4].style).toEqual(undefined);
+            expect(helper.getInstance().sheets[0].rows[3].cells[4].value).toEqual(undefined);
+            expect(helper.getInstance().sheets[0].rows[4].cells[4].style.backgroundColor).toEqual("#ff0000");
+            helper.invoke('clear', [{ type: 'Clear Formats', range: 'D1:E200' }]);
+            expect(cell2.style).toEqual(undefined);
+            expect(cell2.rowSpan).toEqual(undefined);
+            expect(cell2.colSpan).toEqual(undefined);
+            helper.invoke('clear', [{ type: 'Clear All', range: 'D1:E200' }]);
+            expect(helper.getInstance().sheets[0].rows[3].cells[3].value).toEqual(undefined);
+            expect(helper.getInstance().sheets[0].rows[4].cells[3].value).toEqual(undefined);
+            done();
+        });
     });
     describe('Applying formats to the hidden rows ->', () => {
         beforeEach((done: Function) => {
@@ -1013,6 +1100,106 @@ describe('Cell Format ->', () => {
             });
         });
     });
+
+    describe('EJ2-931292 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Line color in border not working properly after importing and applying all borders cases', (done: Function) => {
+            helper.invoke('setBorder', [{ border: '1px solid rgb(0, 0, 0)' }, 'D3:F6', 'Outer']);
+            expect(helper.invoke('getCell', [2, 2]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [3, 2]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [4, 2]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [5, 2]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [2, 5]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [3, 5]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [4, 5]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [5, 5]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [1, 3]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [1, 4]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [1, 5]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [5, 3]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [5, 4]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [5, 5]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+            helper.invoke('setBorder', [{ border: '1px solid rgb(0, 0, 0)' }, 'C7:G9', 'Vertical']);
+            expect(helper.invoke('getCell', [6, 2]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [7, 2]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [8, 2]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [6, 3]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [7, 3]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [8, 3]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [6, 4]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [7, 5]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [8, 4]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [6, 5]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [7, 5]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [8, 5]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [6, 6]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [7, 6]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [8, 6]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [1, 0]).style.borderRight).toBe('');
+            expect(helper.invoke('getCell', [2, 0]).style.borderRight).toBe('');
+            expect(helper.invoke('getCell', [3, 0]).style.borderRight).toBe('');
+            expect(helper.invoke('getCell', [3, 0]).style.borderRight).toBe('');
+            expect(helper.invoke('getCell', [6, 7]).style.borderRight).toBe('');
+            expect(helper.invoke('getCell', [7, 7]).style.borderRight).toBe('');
+            expect(helper.invoke('getCell', [8, 7]).style.borderRight).toBe('');
+            helper.invoke('selectRange', ['B2:H10']);
+            helper.getElement('#' + helper.id + '_borders').click();
+            helper.getElement('.e-menu-item[aria-label="All Borders"]').click();
+            expect(helper.invoke('getCell', [1, 0]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [2, 0]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [3, 0]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [4, 0]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [6, 7]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [7, 7]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [8, 7]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [1, 0]).style.borderRight).toBe('');
+                expect(helper.invoke('getCell', [2, 0]).style.borderRight).toBe('');
+                expect(helper.invoke('getCell', [3, 0]).style.borderRight).toBe('');
+                expect(helper.invoke('getCell', [4, 0]).style.borderRight).toBe('');
+                expect(helper.invoke('getCell', [6, 7]).style.borderRight).toBe('');
+                expect(helper.invoke('getCell', [7, 7]).style.borderRight).toBe('');
+                expect(helper.invoke('getCell', [8, 7]).style.borderRight).toBe('');
+                expect(helper.invoke('getCell', [2, 2]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [3, 2]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [4, 2]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [5, 2]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [2, 5]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [3, 5]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [4, 5]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [5, 5]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [1, 3]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [1, 4]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [1, 5]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [5, 3]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [5, 4]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [5, 5]).style.borderBottom).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [6, 2]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [7, 2]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [8, 2]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [6, 3]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [7, 3]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [8, 3]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [6, 4]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [7, 5]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [8, 4]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [6, 5]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [7, 5]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [8, 5]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [6, 6]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [7, 6]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                expect(helper.invoke('getCell', [8, 6]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+                done();
+            });
+        });
+    });
+
     describe('Applying text decorator formats with args.cancel as true in actionBegin event ->', () => {
         beforeEach((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }],
@@ -1058,6 +1245,125 @@ describe('Cell Format ->', () => {
         });
     });
 
+    describe('Clear content for hyperlink cells', () => {
+        let spreadsheet: any;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet(
+                { sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Select Range', (done: Function) => {
+            helper.invoke('selectRange', ['I1:I50']);
+            done();
+        });
+        it('Insert hyperlink', (done: Function) => {
+            helper.switchRibbonTab(2);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_hyperlink').click();
+            setTimeout(() => {
+                helper.getElements('.e-hyperlink-dlg .e-webpage input')[1].value = 'www.google.com';
+                helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
+                helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+                helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
+                done();
+            }, 100);
+        });
+        it('Check', (done: Function) => {
+            helper.switchRibbonTab(1);
+            spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].rows[3].cells[8].hyperlink.address).toBe('http://www.google.com');
+            done();
+        });
+        it('Apply Clear Contents', (done: Function) => {
+            helper.invoke('selectRange', ['I1:I90']);
+            setTimeout((): void => {
+                helper.click('#' + helper.id + '_clear');
+                helper.click('#spreadsheet_clear-popup ul li:nth-child(3)');
+                setTimeout((): void => {
+                    spreadsheet = helper.getInstance();
+                    expect(spreadsheet.sheets[0].rows[1].cells[8].value).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[3].cells[8].hyperlink).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[3].cells[8].style.textDecoration).toBe('underline');
+                    done();
+                });
+            });
+        });
+        it('Add text', (done: Function) => {
+            helper.edit('I2', 'Check');
+            setTimeout((): void => {
+                spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[1].cells[8].value).toBe('Check');
+                expect(spreadsheet.sheets[0].rows[1].cells[8].hyperlink).toBeUndefined();
+                expect(spreadsheet.sheets[0].rows[1].cells[8].style.textDecoration).toBe('underline');
+                done();
+            });
+        });
+        it('Undo action', (done: Function) => {
+            helper.getElement('#' + helper.id + '_undo').click();
+            setTimeout((): void => {
+                expect(spreadsheet.sheets[0].rows[1].cells[8].value).toBeUndefined();
+                expect(spreadsheet.sheets[0].rows[3].cells[8].hyperlink).toBeUndefined();
+                expect(spreadsheet.sheets[0].rows[3].cells[8].style.textDecoration).toBe('underline');
+                done();
+            });
+        });
+        it('Undo action-1', (done: Function) => {
+            helper.getElement('#' + helper.id + '_undo').click();
+            setTimeout((): void => {
+                expect(spreadsheet.sheets[0].rows[3].cells[8].hyperlink.address).toBe('http://www.google.com');
+                done();
+            });
+        });
+        it('Redo action', (done: Function) => {
+            helper.getElement('#' + helper.id + '_redo').click();
+            setTimeout((): void => {
+                spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[1].cells[8].value).toBeUndefined();
+                expect(spreadsheet.sheets[0].rows[3].cells[8].hyperlink).toBeUndefined();
+                expect(spreadsheet.sheets[0].rows[3].cells[8].style.textDecoration).toBe('underline');
+                done();
+            }, 100);
+        });
+        it('Redo action-1', (done: Function) => {
+            helper.getElement('#' + helper.id + '_redo').click();
+            setTimeout((): void => {
+                expect(spreadsheet.sheets[0].rows[1].cells[8].value).toBe('Check');
+                expect(spreadsheet.sheets[0].rows[1].cells[8].hyperlink).toBeUndefined();
+                expect(spreadsheet.sheets[0].rows[1].cells[8].style.textDecoration).toBe('underline');
+                done();
+            }, 100);
+        });
+        it('Apply autoFill', (done: Function) => {
+            helper.invoke('selectRange', ['I2']);
+            const autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
+            let td: HTMLElement = helper.invoke('getCell', [6, 8]);
+            let coords = td.getBoundingClientRect();
+            let autoFillCoords = autoFill.getBoundingClientRect();
+            helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
+            helper.getInstance().selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.right, clientY: autoFillCoords.bottom });
+            helper.getInstance().selectionModule.mouseMoveHandler({ target: td, clientX: coords.left + 1, clientY: coords.top + 1 });
+            helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
+            const instance: any = helper.getInstance();
+            expect(instance.selectionModule.dAutoFillCell).toBe('I2:I2');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('Check');
+            helper.click('#spreadsheet_autofilloptionbtn');
+            helper.click('.e-dragfill-ddb ul li:nth-child(2)');
+            expect(spreadsheet.sheets[0].rows[5].cells[8].value).toBe('');
+            expect(spreadsheet.sheets[0].rows[5].cells[8].hyperlink).toBeUndefined();
+            expect(spreadsheet.sheets[0].rows[5].cells[8].style.textDecoration).toBe('underline');
+            done();
+        }, 100);
+        it('Change autoFill option', (done: Function) => {
+            helper.click('#spreadsheet_autofilloptionbtn');
+            helper.click('.e-dragfill-ddb ul li:nth-child(3)');
+            expect(spreadsheet.sheets[0].rows[4].cells[8].value).toBe('Check');
+            expect(spreadsheet.sheets[0].rows[4].cells[8].hyperlink).toBeUndefined();
+            expect(spreadsheet.sheets[0].rows[4].cells[8].style.textDecoration).toBe('underline');
+            done();
+        }, 100);
+    });
+    
     describe('Testing Cell Formatting while performing undo action ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
@@ -1132,4 +1438,49 @@ describe('Cell Format ->', () => {
             });
         });
     });
+
+    describe('EJ2-897127 -> Image not removed when using "Clear Contents" option', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Insert and remove image', (done: Function) => {
+            helper.invoke('insertImage', [[{src:"https://www.w3schools.com/images/w3schools_green.jpg", width: 110, height: 70 }], 'A1']);
+            setTimeout(() => {
+                const image = helper.getInstance().sheets[0].rows[0].cells[0].image;
+                expect(image.length).toBe(1);
+                helper.getElement('#'+helper.id+'_clear').click();
+                helper.getElement('#'+helper.id+'_clear-popup li:nth-child(3)').click();
+                setTimeout(() => {
+                    expect(image.length).toBe(0);
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('EJ2-931394 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Restrict actionBegin and actionComplete event when ClearAll is performed for readonly cells', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.cellFormat({ backgroundColor: '#FFFF00' }, 'A1:H11');
+            spreadsheet.setRangeReadOnly(true, 'A1:H11', spreadsheet.activeSheetIndex)
+            helper.getElement('#' + helper.id + '_clear').click();
+            helper.click('#' + helper.id + '_clear-popup ul li:nth-child(1)');
+            setTimeout(() => {
+                const dialog: HTMLElement = helper.getElement('.e-readonly-alert-dlg.e-dialog');
+                expect(dialog.querySelector('.e-dlg-content').textContent).toBe('You are trying to modify a cell that is in read-only mode. To make changes, please disable the read-only status.');
+                (dialog.querySelector('.e-readonly-alert-dlg.e-btn.e-primary') as HTMLElement).click();
+                done();
+            });
+        });
+    });
+
 });

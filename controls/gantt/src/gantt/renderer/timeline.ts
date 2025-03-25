@@ -1537,6 +1537,12 @@ export class Timeline {
             };
             template = timelineTemplate(extend({}, args), this.parent, 'TimelineTemplate',
                                         this.parent.chartRowsModule.getTemplateID('TimelineTemplate'), false, undefined, null, this.parent['root']);
+            const firstElement : HTMLElement = template[0] as HTMLElement;
+            if (firstElement instanceof HTMLElement) {
+                firstElement.setAttribute('data-tier', tier);
+                firstElement.setAttribute('date', date);
+                firstElement.setAttribute('value', value);
+            }
         }
         const className: string = this.parent.timelineModule.isSingleTier ? cls.timelineSingleHeaderCell : cls.timelineTopHeaderCell;
         const weekendClass: string = isWeekendCell ? ' ' + cls.weekendHeaderCell : '';
@@ -1552,6 +1558,7 @@ export class Timeline {
         });
         div.title = this.parent.timelineSettings.showTooltip ? date : '';
         div.textContent = value;
+        div.setAttribute('data-tier', tier);
         if (this.parent.isReact && !isNullOrUndefined(template) && template.length > 0) {
             template[0]['style'].width = '100%';
             template[0]['style'].height = '100%';

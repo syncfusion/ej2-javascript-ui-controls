@@ -191,7 +191,8 @@ export class BulletChartLegend extends BaseLegend {
         this.isPaging = bulletLegendBounds.height < columnHeight;
         this.totalPages = legendRowCount;
         if (render) {
-            this.setBounds(Math.max((legendRowWidth + padding), maximumWidth), columnHeight, legend, bulletLegendBounds);
+            this.setBounds(Math.max((legendRowWidth + padding), maximumWidth), (this.position === 'Bottom' || this.position === 'Top') ? Math.min(columnHeight, this.chart.initialClipRect.height -
+            (this.legend.border.width + this.legend.margin.bottom + this.legend.margin.top)) : columnHeight, legend, bulletLegendBounds);
         } else {
             this.setBounds(0, 0, legend, bulletLegendBounds);
         }

@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $tbar-skin: 'material' !default;
 $tbar-zero-value: 0 !default;
 $tbar-pop-icon-bgr-padding: 0 !default;
@@ -151,7 +153,7 @@ $tbar-btn-active-text-color: $tbar-default-icon-color !default;
 $tbar-btn-text-color: $grey-dark-font !default;
 $tbar-btn-pressed-text-color: $grey-dark-font !default;
 $tbar-btn-pressed-focus-box-shadow: none !default;
-$tbar-btn-pressed-bg: mix($grey-dark-font, transparent, 24%) !default;
+$tbar-btn-pressed-bg: color.mix($grey-dark-font, transparent, 24%) !default;
 $tbar-flat-btn-active-box-shadow: none !default;
 $tbar-ext-btn-focus-padding: 0 1.5px !default;
 $tbar-ext-btn-icon-padding: 0 !default;

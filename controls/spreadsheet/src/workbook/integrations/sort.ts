@@ -1,10 +1,11 @@
-import { Workbook, SheetModel, CellModel, getCell, setCell, getData, getSheet, isHiddenRow } from '../base/index';
+import { Workbook, SheetModel, CellModel, getCell, setCell, getData, getSheet, isHiddenRow, wrap as wrapText, RangeModel } from '../base/index';
 import { DataManager, Query, ReturnOption, DataUtil, Deferred } from '@syncfusion/ej2-data';
-import { getCellIndexes, getColumnHeaderText, getRangeAddress, workbookLocale, isNumber, getUpdatedFormula, getDataRange } from '../common/index';
+import { getCellIndexes, getColumnHeaderText, getRangeAddress, workbookLocale, isNumber, getUpdatedFormula, getDataRange, getCellAddress } from '../common/index';
 import { SortDescriptor, SortOptions, BeforeSortEventArgs, SortEventArgs, getSwapRange, CellStyleModel } from '../common/index';
 import { parseIntValue, SortCollectionModel, getColIndex } from '../common/index';
 import { initiateSort, updateSortedDataOnCell } from '../common/event';
 import { extend, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
+import { refreshFilterRange } from '../../spreadsheet/common/event';
 
 /**
  * The `WorkbookSort` module is used to handle sort action in Spreadsheet.
@@ -53,7 +54,7 @@ export class WorkbookSort {
      * @returns {void} - Sorts range of cells in the sheet.
      */
     private initiateSortHandler(
-        eventArgs: { args: BeforeSortEventArgs, promise: Promise<SortEventArgs>, previousSort: SortCollectionModel }): void {
+        eventArgs: { args: BeforeSortEventArgs, promise: Promise<SortEventArgs>, previousSort: SortCollectionModel[] }): void {
         const args: BeforeSortEventArgs = eventArgs.args;
         const deferred: Deferred = new Deferred();
         const addressInfo: { sheetIndex: number, indices: number[] } = this.parent.getAddressInfo(args.range);
@@ -76,7 +77,7 @@ export class WorkbookSort {
                     typeof getCell(range[0] + 1, range[1], sheet, null, true).value) {
                     containsHeader = this.isSameStyle(
                         getCell(range[0], range[1], sheet, null, true).style,
-                        getCell(range[0] + 1, range[1], sheet, null, true).style) ? false : true;
+                        getCell(range[0] + 1, range[1], sheet, null, true).style) ? this.isHeaderRow(sheet, range) : true;
                 } else {
                     containsHeader = true;
                 }
@@ -87,7 +88,7 @@ export class WorkbookSort {
             const secondCell: CellModel = getCell(range[0] + 1, range[1], sheet);
             if (firstCell && secondCell) {
                 if (typeof firstCell.value === typeof secondCell.value) {
-                    containsHeader = !this.isSameStyle(firstCell.style, secondCell.style);
+                    containsHeader = !this.isSameStyle(firstCell.style, secondCell.style) || this.isHeaderRow(sheet, range);
                 } else {
                     containsHeader = true;
                 }
@@ -128,14 +129,52 @@ export class WorkbookSort {
             this.parent, `${sheet.name}!${address}`, true, null, null, null, null, null, undefined, null,
             getColIndex(header)).then((jsonData: { [key: string]: CellModel }[]) => {
             const dataManager: DataManager = new DataManager(jsonData);
+            if (jsonData.length === 1 && (jsonData[0].throwMergeAlert)) {
+                const sortModel: SortCollectionModel = this.parent.sortCollection &&
+                this.parent.sortCollection[this.parent.sortCollection.length - 1];
+                if (sortModel) {
+                    let prevSortModel: SortCollectionModel;
+                    if (eventArgs.previousSort && eventArgs.previousSort.length) {
+                        for (let i: number = 0; i < eventArgs.previousSort.length; i++) {
+                            const sort: SortCollectionModel = eventArgs.previousSort[i as number];
+                            if (sortModel.sheetIndex === sort.sheetIndex) {
+                                prevSortModel = sort;
+                            }
+                        }
+                    }
+                    if (prevSortModel) {
+                        sortModel.columnIndex = prevSortModel.columnIndex;
+                        sortModel.order = prevSortModel.order;
+                        sortModel.sortRange = prevSortModel.sortRange;
+                    } else {
+                        this.parent.sortCollection.pop();
+                    }
+                    this.parent.notify(refreshFilterRange, null);
+                }
+                deferred.reject(this.parent.serviceLocator.getService<L10n>(workbookLocale).getConstant('AutoFillMergeAlertMsg'));
+                return;
+            }
             dataManager.executeQuery(query).then((e: ReturnOption) => {
                 this.parent.notify('setActionData', { args: { action: 'beforeSort', eventArgs: { range: address, cellDetails: jsonData, sortedCellDetails: e.result } } });
                 this.updateSortedDataOnCell({ result: e.result, range: range, sheet: sheet, jsonData: jsonData });
-                const sortArgs: { range: string, sortOptions: SortOptions, previousSort?: SortCollectionModel } = { range:
+                const sortArgs: { range: string, sortOptions: SortOptions, previousSort?: SortCollectionModel[] } = { range:
                     `${sheet.name}!${address}`, sortOptions: args.sortOptions };
                 if (eventArgs.previousSort) { sortArgs.previousSort = eventArgs.previousSort; }
                 deferred.resolve(sortArgs);
             });
+        });
+    }
+
+    private isHeaderRow(sheet: SheetModel, range: number[]): boolean {
+        if (!sheet.ranges || !sheet.ranges.length) {
+            return false;
+        }
+        return sheet.ranges.some((rangeItem: RangeModel): boolean => {
+            if (!rangeItem.dataSource || !rangeItem.showFieldAsHeader) {
+                return false;
+            }
+            const startCellIndexes: number[] = getCellIndexes(rangeItem.startCell);
+            return startCellIndexes[0] === range[0] && startCellIndexes[1] >= range[1] && startCellIndexes[1] <= range[3];
         });
     }
 
@@ -161,8 +200,13 @@ export class WorkbookSort {
                     delete cell.validation;
                 }
                 const existingCell: CellModel = getCell(rowIdx, j, args.sheet);
-                if (existingCell && existingCell.validation) {
-                    cell = Object.assign({}, cell, { validation: existingCell.validation }); // To preserve validation settings
+                if (existingCell) {
+                    if (existingCell.validation) {
+                        cell = Object.assign({}, cell, { validation: existingCell.validation }); // To preserve validation settings
+                    }
+                    if (existingCell.wrap) {
+                        wrapText(getCellAddress(rowIdx, j), false, this.parent as Workbook);
+                    }
                 }
                 if (cell && cell.formula) {
                     cell.formula = getUpdatedFormula(
@@ -250,16 +294,15 @@ export class WorkbookSort {
     private sortComparer(sortDescriptor: SortDescriptor, caseSensitive: boolean, x: CellModel, y: CellModel): number {
         const direction: string = sortDescriptor.order || '';
         const comparer: Function = DataUtil.fnSort(direction);
-        let isXStringVal: boolean = false; let isYStringVal: boolean = false;
         let xVal: string | CellModel = x ? x.value : x;
         let yVal: string | CellModel = y ? y.value : y;
-        if (x && y && (typeof x.value === 'string' || typeof y.value === 'string') && (x.value !== '' && y.value !== '')) {
+        if (x && y && (typeof xVal === 'string' || typeof yVal === 'string') && xVal !== '' && yVal !== '') {
+            let isXStringVal: boolean; let isYStringVal: boolean;
             if (isNumber(x.value)) { // Imported number values are of string type, need to handle this case in server side
                 xVal = <string>parseIntValue(x.value);
                 if (x.format !== '@') {
                     x.value = xVal;
                 }
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 isXStringVal = true;
             }
             if (isNumber(y.value)) {
@@ -269,7 +312,7 @@ export class WorkbookSort {
                 }
                 isYStringVal = true;
             }
-            if (!isYStringVal && !isYStringVal) {
+            if (!isXStringVal && !isYStringVal) {
                 const caseOptions: { [key: string]: string } = { sensitivity: caseSensitive ? 'case' : 'base' };
                 const collator: Intl.Collator = new Intl.Collator(this.parent.locale, caseOptions);
                 if (!direction || direction.toLowerCase() === 'ascending') {
@@ -279,16 +322,11 @@ export class WorkbookSort {
                 }
             }
         }
-        const isXNull: boolean = (isNullOrUndefined(x) || x && (isNullOrUndefined(x.value) || x.value === ''));
-        const isYNull: boolean = (isNullOrUndefined(y) || y && (isNullOrUndefined(y.value) || y.value === ''));
-        if (isXNull && isYNull) {
+        if (isNullOrUndefined(yVal) || yVal === '') {
             return -1;
         }
-        if (isXNull) {
+        if (isNullOrUndefined(xVal) || xVal === '') {
             return 1;
-        }
-        if (isYNull) {
-            return -1;
         }
         return comparer(xVal, yVal);
     }

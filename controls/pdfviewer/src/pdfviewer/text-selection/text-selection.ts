@@ -64,7 +64,10 @@ export class TextSelection {
     private selectionFocusTouch: { [key: string]: Object } = null;
     private scrollMoveTimer: number = 0;
     private isMouseLeaveSelection: boolean = false;
-    private isTouchSelection: boolean = false;
+    /**
+     * @private
+     */
+    public isTouchSelection: boolean = false;
     private previousScrollDifference: number = 0;
     private topStoreLeft: { [key: string]: Object } = null;
     private topStoreRight: { [key: string]: Object } = null;
@@ -1876,7 +1879,8 @@ export class TextSelection {
                     if ((selectedContent.bottom + proxy.contextMenuHeight + proxy.pdfViewerBase.toolbarHeight) > window.innerHeight) {
                         top = selectedContent.top - (proxy.contextMenuHeight + proxy.pdfViewerBase.toolbarHeight - topMargin);
                     } else {
-                        top = selectedContent.bottom;
+                        top = proxy.dropDivElementRight ? (selectedContent.bottom + proxy.dropDivElementRight.clientHeight) :
+                            selectedContent.bottom;
                     }
                     left =  selectedContent.right;
                     const toolbarModule: any = this.pdfViewer.toolbarModule ? this.pdfViewer.toolbarModule.annotationToolbarModule : 'null';
@@ -1937,15 +1941,13 @@ export class TextSelection {
                 drawTextMarkupAnnotations(this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAddMode);
         } else {
             this.fireTextSelectEnd();
-            let top: any = event.changedTouches[0].clientY + event.currentTarget.clientHeight;
+            let top: any = event.changedTouches[0].clientY;
             const spanBounds: any = this.getSpanBounds();
             if (spanBounds) {
                 if ((spanBounds.bottom + this.contextMenuHeight + this.pdfViewerBase.toolbarHeight) > window.innerHeight) {
                     top = spanBounds.top - (this.contextMenuHeight + this.pdfViewerBase.toolbarHeight);
-                } else {
-                    top = spanBounds.bottom + this.pdfViewerBase.toolbarHeight - topMargin;
                 }
-                this.pdfViewerBase.contextMenuModule.open(top, (spanBounds.right - spanBounds.left) / 2,
+                this.pdfViewerBase.contextMenuModule.open(top, event.changedTouches[0].clientX,
                                                           this.pdfViewerBase.viewerContainer);
             }
         }

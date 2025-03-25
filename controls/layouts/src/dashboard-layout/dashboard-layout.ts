@@ -1367,7 +1367,8 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
 
     protected setHeightWidth(): void {
         let heightValue: string;
-        if (isNullOrUndefined(this.cellSpacing) || (this.panels.length === 0 && this.panelCollection.length === 0)) { return; }
+        if (isNullOrUndefined(this.cellSpacing) || (this.panels.length === 0 && this.panelCollection &&
+            this.panelCollection.length === 0)) { return; }
         if (this.checkMediaQuery()) {
             let entirePanelsY: number = 0;
             for (let i: number = 0; i < this.panels.length; i++) {
@@ -3196,8 +3197,10 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                 break;
             case 'cellSpacing':
                 this.setProperties({ cellSpacing: newProp.cellSpacing }, true);
-                this.updateCellSizeAndSpacing();
-                this.updateGridLines();
+                if (!this.checkMediaQuery()) {
+                    this.updateCellSizeAndSpacing();
+                    this.updateGridLines();
+                }
                 break;
             case 'draggableHandle':
                 this.setProperties({ draggableHandle: newProp.draggableHandle }, true);

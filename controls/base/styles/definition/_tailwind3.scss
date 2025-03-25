@@ -1,3 +1,6 @@
+@use 'sass:color';
+@use 'sass:meta';
+@use 'sass:list';
 @import '../common/mixin.scss';
 
 @function mapcolorvariable($pallete-name){
@@ -242,7 +245,7 @@
   --color-sf-appbar-bg-color-alt2: #1f2937;
   --color-sf-appbar-color-alt2: #ffffff;
   --color-sf-appbar-border-color-alt2: #1f2937;
-  --color-sf-appbar-hover-bg-color-alt2: #fff;
+  --color-sf-appbar-hover-bg-color-alt2: #818cf8;
 
   //diagram Palette color
   --color-sf-diagram-palette-background: #fff;

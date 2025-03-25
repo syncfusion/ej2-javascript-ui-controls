@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // layout variables
 $slider-height: 4px !default;
 $slider-handle-height: 12px !default;
@@ -88,3 +90,4 @@ $slider-limit-bar-color: $overlay-bg-color !default;
 $slider-tick-font-color: $content-text-color-alt1 !default;
 $slider-hover-handle-color: $primary-bg-color-hover !default;
 $slider-hover-handle-border-color: $primary-border-color-hover !default;
+$slider-button-size: 20px !default;

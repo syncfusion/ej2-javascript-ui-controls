@@ -29,6 +29,7 @@ import { StockChartIndexesModel, StockChartFontModel, StockChartAreaModel, Stock
 import { StockChartBorderModel, StockMarginModel } from './model/base-model';
 import { ChartSeriesType, TrendlineTypes, TechnicalIndicators} from '../chart/utils/enum';
 import { ChartTheme, SelectionMode } from '../common/utils/enum';
+import { IExportEventArgs } from '../common/model/interface';
 import { ExportType, Alignment } from '../common/utils/enum';
 import { getSeriesColor, getThemeColor } from '../common/model/theme';
 import { StockEvents } from './renderer/stock-events';
@@ -445,6 +446,15 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      */
     @Event()
     public axisLabelRender: EmitType<IAxisLabelRenderEventArgs>;
+
+    /**
+     * Triggers before the export process begins. This event allows for the customization of export settings before the chart is exported.
+     *
+     * @event beforeExport
+     *
+     */
+    @Event()
+    public beforeExport: EmitType<IExportEventArgs>;
 
     /**
      * Triggers before the tooltip for series is rendered.
@@ -1128,9 +1138,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
                     this.renderTitle();
                     this.renderLegend();
                     this.cartesianChart.cartesianChartRefresh(this);
-                    if (!this.legendSettings.visible) {
-                        this.mainObject.setAttribute('width', this.availableSize.width.toString());
-                    }
+                    this.mainObject.setAttribute('width', (this.availableSize.width + (this.stockLegendModule && (this.legendSettings.position === 'Right' || this.legendSettings.position === 'Left') ? this.stockLegendModule.legendBounds.width : 0)).toString());
                     if (this.enablePeriodSelector) {
                         this.renderPeriodSelector();
                     }

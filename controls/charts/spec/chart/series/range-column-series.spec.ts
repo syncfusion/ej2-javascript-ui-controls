@@ -658,7 +658,7 @@ describe('Chart', () => {
                 let element: HTMLElement = document.getElementById('container_Series_0_Point_4_Text_0');
                 expect(element != null).toBe(true);
                 element = document.getElementById('container_Secondary_Element');
-                expect(element.childElementCount).toBe(0);
+                expect(element.childElementCount).toBe(1);
                 done();
             };
             chartObj.series[0].animation.enable = false;
@@ -671,7 +671,7 @@ describe('Chart', () => {
                 let element: HTMLElement = document.getElementById('container_Series_0_Point_4_Text_0');
                 expect(element).toBe(null);
                 element = document.getElementById('container_Secondary_Element');
-                expect(element.childElementCount).toBe(0);
+                expect(element.childElementCount).toBe(1);
                 element = document.getElementById('container_Series_0_DataLabelCollections');
                 expect(element).toBe(null);
                 done();
@@ -686,7 +686,7 @@ describe('Chart', () => {
                 let element: HTMLElement = document.getElementById('container_Series_0_Point_4_Text_0');
                 expect(element).toBe(null);
                 element = document.getElementById('container_Secondary_Element');
-                expect(element.childElementCount).toBe(1);
+                expect(element.childElementCount).toBe(2);
                 expect(element.children[0].id).toBe('container_Series_0_DataLabelCollections');
                 element = document.getElementById('container_Series_0_DataLabelCollections');
                 expect(element.childElementCount).toBe(16);
@@ -727,7 +727,7 @@ describe('Chart', () => {
                 let element: HTMLElement = document.getElementById('container_Series_0_Point_4_Text_0');
                 expect(element).toBe(null);
                 element = document.getElementById('container_Secondary_Element');
-                expect(element.childElementCount).toBe(1);
+                expect(element.childElementCount).toBe(2);
                 expect(element.children[0].id).toBe('container_Series_0_DataLabelCollections');
                 element = document.getElementById('container_Series_0_DataLabelCollections');
                 expect(element.childElementCount).toBe(16);

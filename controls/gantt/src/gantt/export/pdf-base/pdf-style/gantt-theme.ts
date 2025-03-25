@@ -1,6 +1,6 @@
 import { PdfTheme } from './../../../base/enum';
 import { IGanttStyle } from './../../../base/interface';
-import { PdfColor, PdfFontFamily, PdfStringFormat } from '@syncfusion/ej2-pdf-export';
+import { PdfBorders, PdfColor, PdfDashStyle, PdfFontFamily, PdfPen, PdfStringFormat } from '@syncfusion/ej2-pdf-export';
 
 /**
  * @hidden
@@ -12,6 +12,7 @@ export class PdfGanttTheme {
         this.theme = theme;
         this.ganttStyle = {};
         this.setTheme(this.ganttStyle, this.theme);
+        this.ganttStyle.eventMarker.lineStyle.dashStyle = PdfDashStyle.Dash;
     }
     public get style(): IGanttStyle {
         return this.ganttStyle;
@@ -37,13 +38,18 @@ export class PdfGanttTheme {
         ganttStyle.footer.fontStyle = 0;
         ganttStyle.footer.format.alignment = 1; //Centre
         ganttStyle.footer.format.lineAlignment = 1; // Middle
-        ganttStyle.footer.borderColor = new PdfColor(206, 206, 206);
+        ganttStyle.footer.borderColor = new PdfColor(235, 235, 235);
         ganttStyle.timeline.fontSize = 9.5;
         ganttStyle.timeline.fontStyle = 0;
         ganttStyle.timeline.backgroundColor = new PdfColor(252, 252, 252);
         ganttStyle.timeline.fontColor = new PdfColor(40, 40, 39);
-        ganttStyle.chartGridLineColor = new PdfColor(206, 206, 206);
-        ganttStyle.timeline.borderColor = new PdfColor(206, 206, 206);
+        ganttStyle.chartGridLineColor = new PdfColor(235, 235, 235);
+        ganttStyle.timeline.borderColor = new PdfColor(235, 235, 235);
+        ganttStyle.eventMarker.label.backgroundColor = new PdfColor(100, 253, 191);
+        ganttStyle.eventMarker.label.fontColor = new PdfColor(33, 33, 33);
+        ganttStyle.eventMarker.lineStyle = new PdfPen(new PdfColor(227, 22, 91));
+        ganttStyle.eventMarker.lineStyle.dashStyle = PdfDashStyle.Dash;
+        ganttStyle.holiday.backgroundColor = new PdfColor(238, 238, 238);
         switch (theme) {
         case 'Bootstrap':
             //chart side theme
@@ -75,6 +81,10 @@ export class PdfGanttTheme {
             ganttStyle.taskbar.manualLineColor = new PdfColor(152, 154, 156);
             ganttStyle.taskbar.manualParentBorder = new PdfColor(85, 85, 85);
             ganttStyle.taskbar.manualChildBorder = new PdfColor(87, 42, 150);
+            ganttStyle.eventMarker.label.backgroundColor = new PdfColor(138, 109, 59);
+            ganttStyle.eventMarker.label.fontColor =  new PdfColor(252, 248, 227);
+            ganttStyle.eventMarker.lineStyle = new PdfPen(new PdfColor(49, 122, 185));
+            ganttStyle.holiday.backgroundColor = new PdfColor(238, 238, 238);
             break;
         case 'Bootstrap 4':
             //chart side theme
@@ -106,6 +116,10 @@ export class PdfGanttTheme {
             ganttStyle.taskbar.manualLineColor = new PdfColor(152, 154, 156);
             ganttStyle.taskbar.manualParentBorder = new PdfColor(73, 80, 87);
             ganttStyle.taskbar.manualChildBorder = new PdfColor(102, 40, 238);
+            ganttStyle.eventMarker.label.backgroundColor = new PdfColor(255, 193, 7);
+            ganttStyle.eventMarker.label.fontColor =  new PdfColor(0, 0, 0);
+            ganttStyle.eventMarker.lineStyle = new PdfPen(new PdfColor(0, 123, 255));
+            ganttStyle.holiday.backgroundColor = new PdfColor(233, 236, 239);
             break;
         case 'Fabric':
             ganttStyle.columnHeader.fontColor = new PdfColor(102, 102, 102);
@@ -139,6 +153,10 @@ export class PdfGanttTheme {
             ganttStyle.taskbar.manualLineColor = new PdfColor(152, 154, 156);
             ganttStyle.taskbar.manualParentBorder = new PdfColor(80, 80, 80);
             ganttStyle.taskbar.manualChildBorder = new PdfColor(109, 24, 136);
+            ganttStyle.eventMarker.label.backgroundColor = new PdfColor(202, 232, 255);
+            ganttStyle.eventMarker.label.fontColor = new PdfColor(0, 90, 158);
+            ganttStyle.eventMarker.lineStyle = new PdfPen(new PdfColor(0, 120, 214));
+            ganttStyle.holiday.backgroundColor = new PdfColor(244, 244, 244);
             break;
         default:
             //chart side theme
@@ -170,6 +188,10 @@ export class PdfGanttTheme {
             ganttStyle.taskbar.manualLineColor = new PdfColor(152, 154, 156);
             ganttStyle.taskbar.manualParentBorder = new PdfColor(97, 97, 97);
             ganttStyle.taskbar.manualChildBorder = new PdfColor(0, 135, 134);
+            ganttStyle.eventMarker.label.backgroundColor = new PdfColor(253, 191, 100);
+            ganttStyle.eventMarker.label.fontColor = new PdfColor(33, 33, 33);
+            ganttStyle.eventMarker.lineStyle = new PdfPen(new PdfColor(227, 22, 91));
+            ganttStyle.holiday.backgroundColor = new PdfColor(238, 238, 238);
             break;
         }
     }
@@ -183,5 +205,9 @@ export class PdfGanttTheme {
         ganttStyle.footer.format = new PdfStringFormat();
         ganttStyle.label = {};
         ganttStyle.taskbar = {};
+        ganttStyle.eventMarker = {};
+        ganttStyle.eventMarker.label = {};
+        ganttStyle.eventMarker.lineStyle = new PdfPen(null);
+        ganttStyle.holiday = {};
     }
 }

@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 /* stylelint-disable property-no-vendor-prefix */
 @mixin sibling-theme($left, $right) {
   @if $skin-name == 'material' {
@@ -16,7 +18,7 @@
 
 @mixin active-hover-theme {
   @if $theme-name =='fluentui-dark' {
-    background-color: lighten($treeview-item-active-bg, 5%);
+    background-color: color.adjust($treeview-item-active-bg, $lightness: 5%);
   }
   @else {
     @if ($skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3') {

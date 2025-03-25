@@ -806,6 +806,7 @@ describe('column menu module', () => {
             gridObj = createGrid({
                 dataSource: data,
                 showColumnMenu: true,
+                showColumnChooser: true,
                 height: 300,
                 allowSorting: true,
                 allowFiltering: true,
@@ -817,7 +818,7 @@ describe('column menu module', () => {
                     { field: 'OrderID', headerText: 'Order ID', textAlign: 'Left', width: 125, isPrimaryKey: true },
                     { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
                     { field: 'ShipName', headerText: 'Ship Name', width: 120},
-                    { field: 'ShipCity', headerText: 'Ship City', width: 170},
+                    { field: 'ShipCity', headerText: 'Ship City', width: 170, filterTemplate: '<input></input>'},
                     { field: 'CustomerID', headerText: 'Customer ID', width: 150, visible: false, textAlign: 'Right' }
                 ]
             }, done);
@@ -833,8 +834,7 @@ describe('column menu module', () => {
         it('column menu open shipcity for filter template', (done: Function) => {
             gridObj.columnMenuModule.openColumnMenuByField('ShipCity');
             document.getElementById(gridObj.element.id +'_colmenu_Filter').click();
-            document.querySelector('.e-flmenu-input').remove();
-            (gridObj.columnMenuModule as any).getFilter()
+            (gridObj.columnMenuModule as any).getFilter();
             done();
         });
         
@@ -842,41 +842,6 @@ describe('column menu module', () => {
             (gridObj as any).isColumnMenuFilterClosing = true;
             (gridObj.columnMenuModule as any).columnMenuBeforeClose({cancel: true});
             done();
-        });
-
-        afterAll(() => {
-            destroy(gridObj);
-            gridObj = null;
-        });
-    });
-
-    describe('Coverage for adaptive condition lines', () => {
-        let gridObj: Grid;
-        beforeAll((done: Function) => {
-            gridObj = createGrid(
-                {
-                    dataSource: data.slice(0, 24),
-                    allowPaging: true,
-                    showColumnMenu: true,
-                    height: 300,
-                    allowSorting: true,
-                    enableAdaptiveUI: true,
-                    rowRenderingMode: 'Horizontal',
-                    allowFiltering: true,
-                    filterSettings: { type: 'Menu' },
-                    toolbar: ['ColumnChooser'],
-                    columns: [
-                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Left', width: 125, isPrimaryKey: true },
-                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
-                        { field: 'ShipName', headerText: 'Ship Name', width: 120},
-                        { field: 'ShipCity', headerText: 'Ship City', width: 170, },
-                        { field: 'CustomerID', headerText: 'Customer ID', width: 150, visible: false, textAlign: 'Right' }
-                    ]
-                }, done);
-        });
-
-        it('coverage issue for columnMenuHandlerClick method in adptive', function () {
-            (gridObj.element.querySelector('.e-columnmenu') as any).click();
         });
 
         afterAll(() => {
@@ -935,6 +900,17 @@ describe('column menu module', () => {
             (document.querySelector('.e-filter-item') as HTMLElement).click();
             (document.querySelectorAll('.e-btn')[1] as HTMLElement).click();
             expect((document.querySelector('.e-colmenu') as HTMLElement).style.display).toBe('none');
+            done();
+        });
+
+        it('Coverage', (done: Function) => {
+            const dummyElement = document.createElement("div");
+            dummyElement.innerHTML = "Hi";
+            gridObj.cssClass = 'test';
+            (gridObj.columnMenuModule as any).beforeMenuItemRender({
+                item: { id: (gridObj as any).element.id + "_colmenu__chooser_ShipCountry" },
+                element: dummyElement
+            });
             done();
         });
 

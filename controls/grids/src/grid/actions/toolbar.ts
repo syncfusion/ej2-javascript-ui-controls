@@ -198,25 +198,27 @@ export class Toolbar {
                     <input id="' + this.gridID + '_searchbar" class="e-input e-search" name="input" type="search" \
                     placeholder= "' + this.l10n.getConstant('Search') + '"/>\
                     <span id="' + this.gridID + '_clearbutton" class="e-input-group-icon e-icons e-sicon" \
-                    tabindex="-1" aria-label= "clear" role= "button" style="cursor: default"></span>\
+                    tabindex="-1" aria-label= "clear" role= "button" ></span>\
                     <span id="' + this.gridID + '_searchbutton" class="e-input-group-icon e-search-icon e-icons" \
                     tabindex="-1" title="' + this.l10n.getConstant('Search') + '" role= "search"></span> \
                     </div>';
             } else {
                 this.element.querySelector('.e-search-wrapper').innerHTML = '<span id="' + this.gridID
                 + '_clearbutton" class="e-input-group-icon e-icons e-sicon" \
-                    tabindex="-1" role= "button" aria-label= "clear" style="cursor: default"></span>\
+                    tabindex="-1" role= "button" aria-label= "clear" ></span>\
                     <span id="' + this.gridID
                     + '_searchbutton" class="e-input-group-icon e-search-icon e-icons" \
                     tabindex="-1" role= "button" title="' + this.l10n.getConstant('Search') + '"></span> \
                     </div>';
             }
+            (this.element.querySelector('#' + this.gridID + '_clearbutton')as HTMLElement).style.cursor = 'default';
         }
         if (this.element.querySelector('.e-responsive-toolbar-items')) {
             this.element.querySelector('.e-responsive-toolbar-items').innerHTML = '<button id="' + this.gridID
                     + '_responsivetoolbaritems" class="e-tbar-btn e-control e-btn e-lib e-icon-btn" \
                     type="button" data-ripple="true" tabindex="-1" data-tabindex="-1" aria-label="responsivetoolbaritems" \
-                     aria-disabled="false" style="width: auto;"><span class="e-btn-icon e-responsivetoolbaritems-btn e-icons"></span>';
+                     aria-disabled="false" ><span class="e-btn-icon e-responsivetoolbaritems-btn e-icons"></span>';
+            (this.element.querySelector('#' + this.gridID + '_responsivetoolbaritems') as HTMLElement).style.width = 'auto';
         }
         this.bindSearchEvents();
     }
@@ -362,6 +364,7 @@ export class Toolbar {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     /**
      * Refreshes the toolbar items
      *
@@ -369,7 +372,6 @@ export class Toolbar {
      * @returns {void}
      * @hidden
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public refreshToolbarItems(args?: RefreshToolbarItemsArgs): void {
         const gObj: IGrid = this.parent;
         let enableItems: string[] = [];

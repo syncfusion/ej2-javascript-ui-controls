@@ -13,7 +13,7 @@ export class VirtualScroll {
     private parent: Schedule;
     private translateY: number = 0;
     private itemSize: number = 60;
-    public bufferCount: number = 3;
+    public bufferCount: number;
     private renderedLength: number = 0;
     private averageRowHeight: number = 0;
     private timeValue: number;
@@ -27,6 +27,7 @@ export class VirtualScroll {
 
     constructor(parent: Schedule) {
         this.parent = parent;
+        this.bufferCount = parent.activeViewOptions.overscanCount < 3 ? 3 : parent.activeViewOptions.overscanCount;
         this.addEventListener();
     }
 
@@ -311,6 +312,7 @@ export class VirtualScroll {
 
     private getCollection(startIndex: number, endIndex: number): TdData[] {
         this.translateY = startIndex * this.itemSize;
+        startIndex = (startIndex < 0) ? 0 : startIndex;
         const lastLevel: TdData[] = this.getResCollection(startIndex, endIndex);
         if (this.parent.enableRtl) {
             this.translateY = - this.translateY;
@@ -320,6 +322,7 @@ export class VirtualScroll {
 
     private getResCollection(startIndex: number, endIndex: number): TdData[] {
         const lastLevel: TdData[] = this.parent.activeView.colLevels[this.parent.activeView.colLevels.length - 1];
+        endIndex = endIndex > lastLevel.length ? lastLevel.length - 1 : endIndex;
         let resCollection: TdData[] = [];
         const index: Record<string, number> = { startIndex: 0, endIndex: 0 };
         if (this.parent.activeViewOptions.group.byDate) {

@@ -399,6 +399,79 @@ describe('Selection ->', () => {
                 });
             }, 100);
         });
+        it('EJ2-931208 - Selection highlight not updated properly during autofill on merged cells under freeze pane', (done: Function) => {
+            helper.invoke('selectRange', ['D5']);
+            helper.invoke('freezePanes', [4, 3]);
+            setTimeout((): void => {
+                expect(helper.getInstance().sheets[0].frozenRows).toBe(4);
+                expect(helper.getInstance().sheets[0].frozenColumns).toBe(3);
+                helper.invoke('merge', ['C1:D1']);
+                expect(helper.getInstance().sheets[0].rows[0].cells[2].colSpan).toBe(2);
+                expect(helper.getInstance().sheets[0].rows[0].cells[3].colSpan).toBe(-1);
+                const helper1: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
+                helper.invoke('selectRange', ['C1:D7']);
+                expect(helper1.getElementFromSpreadsheet('.e-column-header .e-selection').style.zIndex).toBe('2');
+                expect(helper1.getElementFromSpreadsheet('.e-row-header .e-selection').style.zIndex).toBe('2');
+                expect(helper1.getElementFromSpreadsheet('.e-sheet-content .e-selection').style.zIndex).toBe('2');
+                helper.invoke('autoFill', ['C2:C7', 'C1', 'Down', 'FillSeries']);
+                expect(helper.getInstance().sheets[0].rows[6].cells[2].value).toBe('Time');
+                expect(helper1.getElementFromSpreadsheet('.e-frozen-row').style.zIndex).toBe('4');
+                expect(helper1.getElementFromSpreadsheet('.e-frozen-column').style.zIndex).toBe('4');
+                expect(helper1.getElementFromSpreadsheet('.e-selectall-container').style.zIndex).toBe('3');
+                expect(helper1.getElementFromSpreadsheet('.e-column-header .e-selection').style.zIndex).toBe('3');
+                expect(helper1.getElementFromSpreadsheet('.e-row-header .e-selection').style.zIndex).toBe('3');
+                expect(helper1.getElementFromSpreadsheet('.e-sheet-content .e-selection').style.zIndex).toBe('2');
+                helper.invoke('Unfreeze', [0]);
+                setTimeout((): void => {
+                    expect(helper.getInstance().sheets[0].frozenRows).toBe(0);
+                    expect(helper.getInstance().sheets[0].frozenColumns).toBe(0);
+                    expect(helper1.getElementFromSpreadsheet('.e-frozen-row')).toBeNull();
+                    expect(helper1.getElementFromSpreadsheet('.e-frozen-column')).toBeNull();
+                    expect(helper1.getElementFromSpreadsheet('.e-selectall-container').style.zIndex).toBe('');
+                    expect(helper1.getElementFromSpreadsheet('.e-column-header .e-selection')).toBeNull();
+                    expect(helper1.getElementFromSpreadsheet('.e-row-header').style.zIndex).toBe('');
+                    expect(helper1.getElementFromSpreadsheet('.e-row-header .e-selection')).toBeNull();
+                    expect(helper1.getElementFromSpreadsheet('.e-sheet-content .e-selection').style.zIndex).toBe('');
+                    helper.invoke('freezePanes', [4, 3]);
+                    setTimeout((): void => {
+                        helper.invoke('unMerge', ['C1:D7']);
+                        helper.invoke('merge', ['C7:D7']);
+                        helper.invoke('autoFill', ['C6:C1', 'C7', 'Up', 'FillSeries']);
+                        done();
+                    });
+                });
+            });
+        });
+        it('EJ2-892908 - Column selection issue on merged cell, when freeze pane is enabled', (done: Function) => {
+            helper.invoke('selectRange', ['D5']);
+            helper.invoke('freezePanes', [4, 3]);
+            setTimeout((): void => {
+                expect(helper.getInstance().sheets[0].frozenRows).toBe(4);
+                expect(helper.getInstance().sheets[0].frozenColumns).toBe(3);
+                helper.invoke('merge', ['C1:D1']);
+                expect(helper.getInstance().sheets[0].rows[0].cells[2].colSpan).toBe(2);
+                expect(helper.getInstance().sheets[0].rows[0].cells[3].colSpan).toBe(-1);
+                helper.invoke('merge', ['A4:A5']);
+                expect(helper.getInstance().sheets[0].rows[3].cells[0].rowSpan).toBe(2);
+                expect(helper.getInstance().sheets[0].rows[4].cells[0].rowSpan).toBe(-1);
+                const helper1: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
+                expect(helper1.getElementFromSpreadsheet('.e-column-header .e-selection')).toBeNull();
+                expect(helper1.getElementFromSpreadsheet('.e-sheet-content .e-selection.e-hide')).not.toBeNull();
+                expect(helper1.getElementFromSpreadsheet('.e-row-header .e-selection')).toBeNull();
+                expect(helper1.getElementFromSpreadsheet('.e-sheet-content .e-selection.e-hide')).not.toBeNull();
+                const tableEle = document.querySelector('table.e-table.e-selectall-table') as HTMLElement;
+                let colOffset: DOMRect = tableEle.getBoundingClientRect() as DOMRect;
+                helper.triggerMouseAction('mousedown', { x: colOffset.right , y: colOffset.y }, null, tableEle);
+                helper.triggerMouseAction('mouseup', { x: colOffset.right, y: colOffset.y }, document, tableEle);
+                expect(helper1.getElementFromSpreadsheet('.e-column-header .e-selection')).not.toBeNull();
+                expect(helper1.getElementFromSpreadsheet('.e-sheet-content .e-selection')).not.toBeNull();
+                helper.triggerMouseAction('mousedown', { x: colOffset.left , y: colOffset.bottom }, null, tableEle);
+                helper.triggerMouseAction('mouseup', { x: colOffset.left, y: colOffset.bottom }, document, tableEle);
+                expect(helper1.getElementFromSpreadsheet('.e-row-header .e-selection')).not.toBeNull();
+                expect(helper1.getElementFromSpreadsheet('.e-sheet-content .e-selection')).not.toBeNull();
+                done();
+            });
+        });
     });
 
     describe('Rtl with selection and resize ->', () => {

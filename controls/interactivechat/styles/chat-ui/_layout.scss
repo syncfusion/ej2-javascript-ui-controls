@@ -74,6 +74,7 @@
       margin-top: $text-margin-top;
       font-size: $chat-text-font-size;
       width: fit-content;
+      text-align: left;
     }
     .e-right,
     .e-right .e-text,
@@ -141,6 +142,9 @@
         }
       }
       &:not(.e-footer-template) {
+        .e-textarea {
+          max-height: 280px;
+        }
         .e-chat-send {
           position: absolute;
           right: 15px;
@@ -316,6 +320,9 @@
       height: 35px;
     }
     &.e-rtl {
+      .e-text {
+        text-align: right;
+      }
       .e-left {
         &:not(.e-message-item-template) {
           padding-right: calc(32px + $user-icon-gap);

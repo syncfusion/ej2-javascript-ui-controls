@@ -125,7 +125,7 @@ export class MsWordPaste {
                     const cssText: string = newline.parentElement.style.cssText;
                     const currentStyle: string = newElement.getAttribute('style') || '';
                     const newStyle: string = currentStyle + cssText;
-                    newElement.setAttribute('style', newStyle);
+                    newElement.style.cssText = newStyle;
                     elm.insertBefore(newElement, node.nextSibling);
                     detach(newline);
                     break;
@@ -561,13 +561,13 @@ export class MsWordPaste {
                                 }
                             }
                             const changedValue: string = valueSplit.join(';') + ';' + styleProperty;
-                            resultElem[j as number].setAttribute('style', changedValue);
+                            (resultElem[j as number] as HTMLElement).style.cssText = changedValue;
                         } else {
                             values[i as number] = values[i as number]
                                 .replace(/text-indent:-.*?;?/g, '') // Remove 'text-indent'
                                 .replace(/border:\s*none;?/g, '') // Remove 'border:none'
                                 .trim();
-                            resultElem[j as number].setAttribute('style', values[i as number]);
+                            (resultElem[j as number] as HTMLElement).style.cssText = values[i as number];
                         }
                     }
                     fromClass = false;
@@ -609,7 +609,7 @@ export class MsWordPaste {
                     styleValue += elemStyleProperty[j as number] + ';';
                 }
             }
-            elmWithStyles[i as number].setAttribute('style', styleValue);
+            (elmWithStyles[i as number] as HTMLElement).style.cssText = styleValue;
         }
     }
 
@@ -708,7 +708,7 @@ export class MsWordPaste {
                 continue;
             }
             if (listNodes[i as number].getAttribute('style') && listNodes[i as number].getAttribute('style').indexOf('mso-outline-level') !== -1) {
-                listNodes[i as number].setAttribute('style', listNodes[i as number].getAttribute('style').replace('mso-outline-level', 'mso-outline'));
+                (listNodes[i as number] as HTMLElement).style.cssText = listNodes[i as number].getAttribute('style').replace('mso-outline-level', 'mso-outline');
             }
             content = listNodes[i as number].getAttribute('style');
             if (content && content.indexOf('level') !== -1) {
@@ -774,7 +774,7 @@ export class MsWordPaste {
                     currentClassName = listNodes[i as number].className;
                 }
                 if (!isNOU(listNodes[i as number].getAttribute('style'))) {
-                    listNodes[i as number].setAttribute('style', listNodes[i as number].getAttribute('style').replace('text-align:start;', ''));
+                    (listNodes[i as number] as HTMLElement).style.cssText = listNodes[i as number].getAttribute('style').replace('text-align:start;', '');
                     (listNodes[i as number] as HTMLElement).style.textIndent = '';
                     currentListStyle = listNodes[i as number].getAttribute('style');
                 }
@@ -1015,7 +1015,7 @@ export class MsWordPaste {
                 }
             }
             prevList.setAttribute('class', collection[index as number].class);
-            prevList.setAttribute('style', (!isNOU(collection[index as number].listStyle) ? collection[index as number].listStyle : ''));
+            prevList.style.cssText = (!isNOU(collection[index as number].listStyle) ? collection[index as number].listStyle : '');
             pLevel = collection[index as number].nestedLevel;
             lfo = collection[index as number].listFormatOverride;
             listCount++;

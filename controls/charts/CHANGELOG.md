@@ -2,7 +2,28 @@
 
 ## [Unreleased]
 
-## 28.2.12 (2025-03-19)
+## 29.1.33 (2025-03-25)
+
+### Chart
+
+#### Features
+
+- `#I597593` - Introduced support for displaying a tooltip that provides information about the data point closest to the cursor.
+- `#I580507` - Users can now place horizontal and vertical scrollbars at the top, bottom, left, or right of the chart.
+- `#I609348`- Provided support for customizing the corner radius for individual columns.
+- Added support for displaying the cumulative total for stacked chart data directly through data labels.
+- Users can now highlight the entire range of data points within a specific category for better visibility.
+- Added support to customize Excel properties through an event triggered before the chart data is exported.
+- Added animation support for data labels, enhancing the visual appearance when they appear on the chart.
+
+### Accumulation Chart
+
+#### Features
+
+- `#I667715` - Added support for trapezoidal funnel shapes in the accumulation chart, offering a new design option to represent data more effectively and enhance visual appeal.
+- Provided the customization support for accumulation chart title position.
+
+## 28.2.9 (2025-03-04)
 
 ### Chart
 

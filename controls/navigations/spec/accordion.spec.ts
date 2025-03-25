@@ -2741,7 +2741,7 @@ describe("Accordion Testing", () => {
             }
             document.body.innerHTML = "";
         });
-        it("Accordion Content Expand Testing", (done: Function) => {
+        it("Accordion Content Expand Testing with args.cancel", (done: Function) => {
             let ele: HTMLElement = document.getElementById("accordion");
             (<HTMLElement>ele.querySelector("." + CLS_HEADER)).click();
             setTimeout(() => { done(); }, TIME_DELAY);

@@ -2,9 +2,10 @@
 import { isNullOrUndefined, Internationalization, append, createElement, addClass, initializeCSPTemplate, removeClass } from '@syncfusion/ej2-base';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { Schedule } from '../base/schedule';
-import { TdData, ResourceDetails, EventFieldsMapping } from '../base/interface';
+import { TdData, ResourceDetails, EventFieldsMapping, TooltipOpenEventArgs } from '../base/interface';
 import * as cls from '../base/css-constant';
 import * as util from '../base/util';
+import * as events from '../base/constant';
 
 /**
  * Tooltip for Schedule
@@ -149,9 +150,26 @@ export class EventTooltip {
         });
     }
     private onTooltipOpen(args: TooltipEventArgs): void {
-        if (args.element && this.parent.isReact && !isNullOrUndefined(this.parent.eventSettings.tooltipTemplate)) {
+        if (args.element && this.parent.isReact && !isNullOrUndefined(this.parent.eventSettings.tooltipTemplate) ) {
             addClass([args.element], cls.TOOLTIP_HIDDEN_CLASS);
         }
+        const record: Record<string, any> = this.parent.eventBase.getEventByGuid(args.target.getAttribute('data-guid'));
+        if (isNullOrUndefined(record)) {
+            return;
+        }
+        const callbackArgs: TooltipOpenEventArgs = {
+            cancel: false,
+            data: record,
+            content: args.element,
+            target: args.target
+        };
+        this.parent.trigger(events.tooltipOpen, callbackArgs, (callbackArgs: TooltipOpenEventArgs) => {
+            if (callbackArgs.cancel) {
+                args.cancel = true;
+                return;
+            }
+            args.element = callbackArgs.content;
+        });
     }
     private onTooltipClose(args: TooltipEventArgs): void {
         if (args.element) {

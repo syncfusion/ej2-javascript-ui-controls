@@ -809,7 +809,7 @@ export class FreeTextAnnotation {
             let inputEleWidth: number = parseFloat(this.inputBoxElement.style.width);
             let inputEleLeft: number = parseFloat(this.inputBoxElement.style.left);
             if (this.pdfViewerBase.isMixedSizeDocument) {
-                const canvas: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
+                const canvas: HTMLElement = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', pageIndex);
                 inputEleLeft = inputEleLeft - canvas.offsetLeft;
             }
             const inputEleTop: number = parseFloat(this.inputBoxElement.style.top);
@@ -926,7 +926,7 @@ export class FreeTextAnnotation {
                     this.inputBoxElement.parentElement.removeChild(this.inputBoxElement);
                 }
             }
-            const canvass: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
+            const canvass: HTMLElement = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', pageIndex);
             this.pdfViewer.renderDrawing(canvass as any, pageIndex);
             this.inputBoxCount += 1;
         } else {
@@ -1041,7 +1041,7 @@ export class FreeTextAnnotation {
      */
     public autoFitFreeText(xPosition?: number, yPosition?: number): void {
         const pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
-        const canvas: any = this.pdfViewerBase.getElement('_annotationCanvas_' + pageIndex);
+        const canvas: any = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', pageIndex);
         const context: any = canvas.getContext('2d');
         let fontSize: any = this.inputBoxElement.style.fontSize;
         if (this.pdfViewer.freeTextSettings.fontStyle === FontStyle.Bold || this.inputBoxElement.style.fontWeight === 'bold') {
@@ -1138,7 +1138,7 @@ export class FreeTextAnnotation {
         }
         this.inputBoxElement.id = this.pdfViewer.element.id + '_freeText_' + pageIndex + '_' + this.inputBoxCount;
         const pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (pageIndex));
-        const canvass: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
+        const canvass: HTMLElement = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', pageIndex);
         const zoomFactor: number = this.pdfViewerBase.getZoomFactor();
         this.inputBoxElement.value = (annotation && annotation.dynamicText) ? annotation.dynamicText : this.defaultText;
         this.inputBoxElement.style.boxSizing = 'border-box';
@@ -1513,7 +1513,7 @@ export class FreeTextAnnotation {
             InnerColor: null,
             IsCommentLock: false,
             IsLock: annotationObject.isLock ? annotationObject.isLock : false,
-            IsPrint: (annotationObject.isPrint !== null && annotationObject.isPrint !== undefined) ? annotationObject.isPrint : true,
+            IsPrint: !isNullOrUndefined(annotationObject.isPrint) ? annotationObject.isPrint : true,
             Layer: null,
             LineEndingStyle: 'OpenArrow',
             Location: null,

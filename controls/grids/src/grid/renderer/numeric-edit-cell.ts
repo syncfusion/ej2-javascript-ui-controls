@@ -2,7 +2,7 @@ import { extend, Internationalization, KeyboardEventArgs } from '@syncfusion/ej2
 import { IGrid, IEditCell } from '../base/interface';
 import { Column } from '../models/column';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
-import { isEditable, getComplexFieldID, getObject, createEditElement, isCellHaveWidth, parentsUntil } from '../base/util';
+import { isEditable, getComplexFieldID, getObject, createEditElement, parentsUntil, isCellHaveWidth } from '../base/util';
 
 /**
  * `NumericEditCell` is used to handle numeric cell type editing.

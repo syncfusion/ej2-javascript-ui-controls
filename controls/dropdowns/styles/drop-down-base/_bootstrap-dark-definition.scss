@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 //default
 $ddl-last-child-bottom-border: 0 !default;
 $ddl-default-font-family: inherit !default;
@@ -39,7 +41,7 @@ $ddl-list-header-bigger-small-padding-left: $ddl-list-header-padding-left !defau
 $ddl-list-header-bigger-padding-left: $ddl-list-header-padding-left !default;
 $ddl-list-font-size: 14px !default;
 $ddl-group-list-font-size: 12px !default;
-$ddl-list-header-font-color: lighten($brand-primary, 15%) !default;
+$ddl-list-header-font-color: color.adjust($brand-primary, $lightness: 15%) !default;
 $ddl-list-text-indent: 20px !default;
 $ddl-bigger-text-indent: $ddl-list-text-indent !default;
 $ddl-list-rtl-padding-right: 0 !default;

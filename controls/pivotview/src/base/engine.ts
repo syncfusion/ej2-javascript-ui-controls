@@ -302,7 +302,14 @@ export class PivotEngine {
         this.valueContent = [];
         this.dataSourceSettings = PivotUtil.getClonedDataSourceSettings(dataSource);
         if (!(dataSource.dataSource instanceof DataManager)) {
-            this.data = dataSource.dataSource;
+            if (dataSource.type === 'CSV') {
+                this.data = (dataSource.dataSource as string[][]).map((innerArray: string[]) => [...innerArray]);
+                if (this.fieldList) {
+                    this.data.shift();
+                }
+            } else {
+                this.data = dataSource.dataSource;
+            }
         }
         if (this.data && (this.data as IDataSet[])[0]) {
             if (!this.fieldList) {
@@ -311,6 +318,7 @@ export class PivotEngine {
                 } else {
                     this.fields = Object.keys((this.data as IDataSet[])[0]);
                 }
+                this.fieldKeys = {};
                 for (let i: number = 0; i < this.fields.length; i++) {
                     this.fieldKeys[this.fields[i as number]] = dataSource.type === 'CSV' ? i : this.fields[i as number];
                 }
@@ -333,9 +341,6 @@ export class PivotEngine {
                 this.valueAxisFields[value.name] = value;
             }
             fields = this.getGroupData(this.data as IDataSet[]);
-            for (let i: number = 0; i < this.fields.length; i++) {
-                this.fieldKeys[this.fields[i as number]] = dataSource.type === 'CSV' ? i : this.fields[i as number];
-            }
             this.validateFilters(dataSource);
             this.isExpandAll = (this.isValueFiltersAvail && dataSource.allowValueFilter) ? true : dataSource.expandAll;
             this.drilledMembers =
@@ -527,7 +532,8 @@ export class PivotEngine {
     }
     private getGroupData(data: IDataSet[]): IDataSet {
         let fieldkeySet: IDataSet = data[0];
-        for (const group of this.dataSourceSettings.groupSettings) {
+        for (let i: number = 0, groupElements: IGroupSettings[] = this.dataSourceSettings.groupSettings; i < groupElements.length; i++) {
+            const group: IGroupSettings = groupElements[i as number];
             const fieldName: string = group.name;
             const caption: string = group.caption;
             if (this.fields.indexOf(fieldName) > -1) {
@@ -793,10 +799,11 @@ export class PivotEngine {
                                         return axisField.name === fieldName;
                                     })[0];
                                     if (!isNullOrUndefined(currentField)) {
-                                        const currentFieldCaption: string = (currentField.caption.indexOf(' (') !== -1 &&
-                                            currentField.caption.indexOf(')') !== -1) ? currentField.caption.slice(
-                                                currentField.caption.indexOf('(') + 1, currentField.caption.length - 1
-                                            ) : currentField.caption;
+                                        const currentFieldCaption: string = currentField.caption ?
+                                            (currentField.caption.indexOf(' (') !== -1 && currentField.caption.indexOf(')') !== -1) ?
+                                                currentField.caption.slice(
+                                                    currentField.caption.indexOf('(') + 1, currentField.caption.length - 1
+                                                ) : currentField.caption : fieldName;
                                         axis[i as number].caption = (this.localeObj ? this.localeObj.getConstant(axisField) : currentField)
                                             + ' (' + currentFieldCaption + ')';
                                     }
@@ -1088,7 +1095,11 @@ export class PivotEngine {
                 }
                 this.groupingFields = extend(this.groupingFields, groupFields) as { [key: string]: string };
             } else {
-                return fieldkeySet;
+                if (i < groupElements.length - 1) {
+                    continue;
+                } else {
+                    return fieldkeySet;
+                }
             }
         }
         //this.fields = Object.keys(fieldkeySet);
@@ -5613,7 +5624,9 @@ export class PivotEngine {
                     delete formatSetting.maximumSignificantDigits;
                 }
                 if (formatSetting.type) {
-                    formattedValue.formattedText = this.dateFormatFunction[fieldName as string].exactFormat(new Date(value as string));
+                    formattedValue.formattedText = this.dateFormatFunction[fieldName as string].exactFormat(new Date(value as string))
+                        === null ? formattedValue.formattedText :
+                        this.dateFormatFunction[fieldName as string].exactFormat(new Date(value as string));
                     formattedValue.actualText = value;
                 } else {
                     delete formatSetting.type;
@@ -5682,6 +5695,7 @@ export class PivotEngine {
         this.tabularPivotValues = [];
         let colIndex: number;
         this.emptyRowsLength = 0;
+        const isGrouping: boolean = Object.keys(this.groupingFields).length > 0;
         if (this.dataSourceSettings.valueAxis === 'row' && (this.dataSourceSettings.values.length > 1 ||
             this.dataSourceSettings.alwaysShowValueHeader)) {
             this.rowMaxLevel = this.rowMaxLevel + 1;
@@ -5692,6 +5706,7 @@ export class PivotEngine {
             let isValue: boolean = true;
             let levelName: string;
             let levelNameParts: string[];
+            let valueAxis: string | number | Date;
             while (isNullOrUndefined(this.pivotValues[i as number]) && i < this.pivotValues.length) {
                 this.tabularPivotValues.length++;
                 i++;
@@ -5703,10 +5718,32 @@ export class PivotEngine {
             if (firstRow) {
                 levelName = firstRow.valueSort.levelName as string;
                 levelNameParts = levelName.split(this.dataSourceSettings.valueSortSettings.headerDelimiter);
-                if (!this.dataSourceSettings.showSubTotals && firstRow.formattedText !==
-                    this.localeObj.getConstant('grandTotal')) {
+                if ((!this.dataSourceSettings.showSubTotals || (this.dataSourceSettings.showColumnSubTotals &&
+                    !this.dataSourceSettings.showRowSubTotals)) && firstRow.formattedText !== this.localeObj.getConstant('grandTotal')) {
                     if (firstRow.isSum) {
                         isValue = false;
+                    }
+                }
+                if (isGrouping) {
+                    const pivotValue: IAxisSet = this.pivotValues[i - 1][this.rowMaxLevel - 1];
+                    const previousValue: IAxisSet = this.tabularPivotValues[this.tabularPivotValues.length - 1][this.rowMaxLevel - 1];
+                    if (!isNullOrUndefined(pivotValue) || !isNullOrUndefined(previousValue)) {
+                        const pivotValueAxis: string = pivotValue.valueSort.axis as string;
+                        let previousValueAxis: string;
+                        if (!isNullOrUndefined(previousValue) && previousValue.valueSort.axis) {
+                            previousValueAxis = previousValue.valueSort.axis as string;
+                        }
+                        if (pivotValueAxis.includes('custom_group') || previousValueAxis.includes('custom_group')) {
+                            if ((pivotValue.formattedText === levelNameParts[this.rowMaxLevel - 1] && pivotValue.formattedText !==
+                                levelNameParts[levelNameParts.length - 1]) || (previousValue && previousValue.formattedText ===
+                                levelNameParts[this.rowMaxLevel - 1])) {
+                                valueAxis = pivotValue.valueSort.axis ? pivotValue.valueSort.axis : previousValue.valueSort.axis;
+                            } else {
+                                valueAxis = firstRow.valueSort.axis;
+                            }
+                        } else {
+                            valueAxis = firstRow.valueSort.axis;
+                        }
                     }
                 }
             }
@@ -5785,6 +5822,7 @@ export class PivotEngine {
                         let valueIsDrill: boolean;
                         let valueHasChild: boolean;
                         let duplIsDrilled: boolean = firstRow.isDrilled;
+                        let dupliHasChild: boolean = firstRow.hasChild;
                         if (this.dataSourceSettings.valueAxis === 'row' && (this.dataSourceSettings.values.length > 1 ||
                             this.dataSourceSettings.alwaysShowValueHeader)) {
                             valueIsDrill = false;
@@ -5801,6 +5839,9 @@ export class PivotEngine {
                                 }
                             }
                         } else {
+                            if (k < this.rowMaxLevel) {
+                                dupliHasChild = true;
+                            }
                             if (levelNameParts.length > 1 || k === 0) {
                                 duplIsDrilled = true;
                             }
@@ -5811,18 +5852,20 @@ export class PivotEngine {
                                     levelNameParts[k as number];
                             }
                             currentRow.push({
+                                actualText: levelNameParts[k as number],
                                 axis: firstRow.axis,
                                 formattedText: levelNameParts[k as number],
                                 rowIndex: this.tabularPivotValues.length,
                                 hasChild: (this.dataSourceSettings.valueAxis === 'row' && (this.dataSourceSettings.values.length > 1 ||
                                     this.dataSourceSettings.alwaysShowValueHeader) && firstRow.type !== 'grand sum') ?
-                                    valueHasChild : firstRow.hasChild,
+                                    valueHasChild : dupliHasChild,
                                 isDrilled: (this.dataSourceSettings.valueAxis === 'row' && (this.dataSourceSettings.values.length > 1 ||
                                     this.dataSourceSettings.alwaysShowValueHeader) && firstRow.type !== 'grand sum') ?
                                     valueIsDrill : duplIsDrilled,
                                 level: level,
                                 valueSort: {
-                                    levelName: dLevelName
+                                    levelName: dLevelName,
+                                    axis: isGrouping ? valueAxis : this.dataSourceSettings.rows[k as number].name
                                 },
                                 colIndex: colIndex++,
                                 colSpan: 1,
@@ -5832,6 +5875,9 @@ export class PivotEngine {
                         if (k >= firstRow.level) {
                             const span: number = k === 0 ? this.rowMaxLevel : this.rowMaxLevel - 1;
                             currentRow.push({
+                                actualText: this.dataSourceSettings.valueAxis === 'row' && (this.dataSourceSettings.values.length > 1 ||
+                                    this.dataSourceSettings.alwaysShowValueHeader) ? levelNameParts[k as number] === undefined ?
+                                        levelNameParts[levelNameParts.length - 1] : levelNameParts[k as number] : firstRow.formattedText,
                                 axis: firstRow.axis,
                                 formattedText: (this.dataSourceSettings.valueAxis === 'row' && (this.dataSourceSettings.values.length > 1 ||
                                     this.dataSourceSettings.alwaysShowValueHeader)) ? levelNameParts[k as number] === undefined ?
@@ -5845,7 +5891,8 @@ export class PivotEngine {
                                     valueIsDrill : firstRow.isDrilled,
                                 level: level,
                                 valueSort: {
-                                    levelName: firstRow.valueSort.levelName
+                                    levelName: firstRow.valueSort.levelName,
+                                    axis: isGrouping ? valueAxis : this.dataSourceSettings.rows[k as number].name
                                 },
                                 colIndex: colIndex++,
                                 colSpan: span,

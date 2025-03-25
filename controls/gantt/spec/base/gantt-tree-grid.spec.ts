@@ -247,3 +247,91 @@ describe('Coverage issue changeDelocale', () => {
         }
     });
 });
+describe('Unscheduled task rendering with duration alone', () => {
+    let ganttObj: Gantt;
+    let editingData = [
+        {
+          TaskID: 1,
+          TaskName: 'Product concept',
+          StartDate: new Date('04/02/2024'),
+          EndDate: new Date('04/21/2024'),
+          subtasks: [
+            {
+              TaskID: 2,
+              TaskName: 'Defining the product and its usage',
+              Duration: 3,
+              Progress: 30,
+            },
+            {
+              TaskID: 3,
+              TaskName: 'Defining target audience',
+              Duration: 3,
+            },
+            {
+                TaskID: 4,
+                TaskName: 'Prepare product sketch and notes',
+                StartDate: new Date('04/02/2024'),
+                Duration: 2,
+                Predecessor: '2',
+                Progress: 30,
+              },
+          ],
+        },
+      ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: editingData,
+        allowSorting: true,
+        allowReordering: true,
+        enableContextMenu: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration:'Duration',
+            progress: 'Progress',
+            child: 'subtasks',
+            notes: 'info',
+            resourceInfo: 'resources',
+            manual: 'isManual',
+        },
+        renderBaseline: true,
+        baselineColor: 'red',
+        editSettings: {
+             allowEditing: true,
+            allowTaskbarEditing: true,
+        },
+        columns: [
+            { field: 'TaskID', headerText: 'Task ID' },
+            { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+            { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+            { field: 'Duration', headerText: 'Duration', allowEditing: false },
+            { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+            { field: 'CustomColumn', headerText: 'CustomColumn' }
+        ],
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowSelection: true,
+        allowRowDragAndDrop: true,
+        selectedRowIndex: 1,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true
+        }, done);
+    });
+    it('parent dates update', () => {
+        expect(ganttObj.flatData[0].ganttProperties.endDate.getDate()).toBe(4);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

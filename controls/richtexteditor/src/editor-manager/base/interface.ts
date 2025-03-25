@@ -252,3 +252,14 @@ export interface ITableSelection {
     getBlockNodes(action?: boolean): HTMLElement[];
     getTextNodes(): Node[];
 }
+
+/**
+ * @private
+ * @hidden
+ */
+export interface BeforeInputEvent extends Event {
+    data: string | null;
+    inputType: string;
+    isComposing: boolean;
+    preventDefault(): void;
+}

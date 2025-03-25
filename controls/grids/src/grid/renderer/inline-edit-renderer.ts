@@ -112,11 +112,8 @@ export class InlineEditRender {
             const col: Column = cols[parseInt(i.toString(), 10)] as Column;
             inputValue = (elements[col.uid]).value;
             const td: HTMLElement = this.parent.createElement(
-                'td',
-                {
-                    className: literals.rowCell, attrs:
-                        { style: 'text-align:' + (col.textAlign ? col.textAlign : ''), 'colspan': span ? span : '' }
-                });
+                'td', { className: literals.rowCell, attrs: { 'colspan': span ? span : '' }});
+            td.style.cssText = col.textAlign ? `text-align: ${col.textAlign};` : '';
             if (col.visible) {
                 td.appendChild(elements[col.uid]);
                 if (this.parent.rowRenderingMode === 'Vertical') {

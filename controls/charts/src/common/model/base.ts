@@ -211,6 +211,67 @@ export class Font extends ChildProperty<Font> {
 
     @Property('Wrap')
     public textOverflow: TextOverflow;
+}
+
+/**
+ * The `StackLabelsFont` class provides configuration options for customizing the font properties of stack labels in charts.
+ */
+
+export class StackLabelsFont extends ChildProperty<StackLabelsFont> {
+
+    /**
+     * Specifies the style of the text.
+     *
+     * @default 'Normal'
+     */
+    @Property('Normal')
+    public fontStyle: string;
+
+    /**
+     * Specifies the size of the text.
+     *
+     * @default '16px'
+     */
+    @Property('16px')
+    public size: string;
+
+    /**
+     * Specifies the font weight of the text.
+     *
+     * @default 'Normal'
+     */
+    @Property('Normal')
+    public fontWeight: string;
+
+    /**
+     * Specifies the color of the text.
+     *
+     * @default ''
+     */
+    @Property('')
+    public color: string;
+
+    /**
+     * Specifies the alignment of the text.
+     *
+     * @default 'Center'
+     */
+    @Property('Center')
+    public textAlignment: Alignment;
+
+    /**
+     * Specifies the font family for the text.
+     */
+    @Property('Segoe UI')
+    public fontFamily: string;
+
+    /**
+     * Specifies the opacity level for the text.
+     *
+     * @default 1
+     */
+    @Property(1)
+    public opacity: number;
 
 }
 
@@ -554,6 +615,24 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
      */
     @Property(false)
     public enableHighlight: boolean;
+
+    /**
+     * Enables or disables the display of tooltips for the nearest data point to the cursor.
+     *
+     * @default false.
+     */
+
+    @Property(false)
+    public showNearestTooltip: boolean;
+
+    /**
+     * Specifies whether to display the header line in the tooltip.
+     *
+     * @default true
+     */
+
+    @Property(true)
+    public showHeaderLine: boolean;
 }
 
 /**
@@ -574,7 +653,7 @@ export class EmptyPointSettings extends ChildProperty<EmptyPointSettings> {
     /**
      * Options to customize the border for empty points in the series, including color and width.
      *
-     * @default "{color: 'transparent', width: 0}"
+     * @default "{color: '', width: 0}"
      */
 
     @Complex<BorderModel>({ color: '', width: 0 }, Border)
@@ -863,6 +942,42 @@ export class titleSettings extends ChildProperty<titleSettings> {
     @Complex<AccessibilityModel>({}, Accessibility)
     public accessibility: AccessibilityModel;
 
+}
+
+/**
+ * The `TitleStyleSettings` class provides options to customize the title and subtitle displayed in the accumulation chart.
+ */
+export class TitleStyleSettings extends Font {
+
+    /**
+     * Defines the position for the chart title and subtitle.
+     * The available options are:
+     * * Top: Displays the title and subtitle at the top of the accumulation chart.
+     * * Left: Displays the title and subtitle at the left of the accumulation chart.
+     * * Bottom: Displays the title and subtitle at the bottom of the accumulation chart.
+     * * Right: Displays the title and subtitle at the right of the accumulation chart.
+     * * Custom: Displays the title and subtitle based on the specified x and y values.
+     *
+     * @default 'Top'
+     */
+    @Property('Top')
+    public position: TitlePosition;
+
+    /**
+     * Defines the X coordinate for the accumulation chart title and subtitle.
+     *
+     * @default 0
+     */
+    @Property(0)
+    public x: number;
+
+    /**
+     * Defines the Y coordinate for the accumulation chart title and subtitle.
+     *
+     * @default 0
+     */
+    @Property(0)
+    public y: number;
 }
 
 /**
@@ -1194,6 +1309,24 @@ export class StockTooltipSettings extends ChildProperty<StockTooltipSettings> {
 
     @Property('Fixed')
     public position: TooltipPosition;
+
+    /**
+     * Enables or disables the display of tooltips for the nearest data point to the cursor.
+     *
+     * @default false.
+     */
+
+    @Property(false)
+    public showNearestTooltip: boolean;
+
+    /**
+     * Specifies whether to display the header line in the tooltip.
+     *
+     * @default true
+     */
+
+    @Property(true)
+    public showHeaderLine: boolean;
 
 }
 

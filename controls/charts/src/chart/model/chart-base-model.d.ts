@@ -1,4 +1,4 @@
-import { ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';import { ZIndex, Anchor, BorderType, SizeType } from '../utils/enum';import { Font, Border, Accessibility } from '../../common/model/base';import { BorderModel, FontModel, AccessibilityModel } from '../../common/model/base-model';import { Units, Alignment, Regions, Position, TextOverflow } from '../../common/utils/enum';
+import { ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';import { ZIndex, Anchor, BorderType, SizeType } from '../utils/enum';import { Font, Border, Accessibility, Margin, StackLabelsFont } from '../../common/model/base';import { BorderModel, FontModel, AccessibilityModel, MarginModel, StackLabelsFontModel } from '../../common/model/base-model';import { Units, Alignment, Regions, Position, TextOverflow, ScrollbarPosition } from '../../common/utils/enum';
 
 /**
  * Interface for a class ChartAnnotationSettings
@@ -543,6 +543,20 @@ export interface ScrollbarSettingsModel {
      */
     enableZoom?: boolean;
 
+    /**
+     * Specifies the position of the scrollbar in the chart.
+     *
+     * The available options are:
+     * * `Top`: Places the scrollbar at the top of the chart. Applicable only for horizontal scrollbars.
+     * * `Bottom`: Places the scrollbar at the bottom of the chart. Applicable only for horizontal scrollbars.
+     * * `Left`: Places the scrollbar on the left side of the chart. Applicable only for vertical scrollbars.
+     * * `Right`: Places the scrollbar on the right side of the chart. Applicable only for vertical scrollbars.
+     * * `PlaceNextToAxisLine`: Places the scrollbar next to the axis line.
+     *
+     * @default 'PlaceNextToAxisLine'
+     */
+    position?: ScrollbarPosition;
+
 }
 
 /**
@@ -598,5 +612,78 @@ export interface ToolbarPositionModel {
      * @default false.
      */
     draggable?: boolean;
+
+}
+
+/**
+ * Interface for a class StackLabelSettings
+ */
+export interface StackLabelSettingsModel {
+
+    /**
+     * Specifies whether the stack labels are visible or not in the chart.
+     * Setting this property to `true` will display the stack labels, showing the total value for each stack in stacked charts.
+     *
+     * @default false
+     */
+    visible?: boolean;
+
+    /**
+     * The background color of the stack labels. Accepts valid CSS color strings, including hex and RGBA values.
+     *
+     * @default 'transparent'
+     */
+    fill?: string;
+
+    /**
+     * Used to format the stack label text. This property accepts a string that can contain placeholders.
+     * Supports placeholders such as `{value}`, where `{value}` represents the total stack value.
+     *
+     * @default null
+     */
+    format?: string;
+
+    /**
+     * Specifies the rotation angle for the stack labels. This property allows to rotate the stack labels to a specific angle (in degrees).
+     *
+     * @default 0
+     */
+    angle?: number;
+
+    /**
+     * Specifies the rounded corner radius along the X-axis for the stack label background.
+     * It defines how much curvature the corners of the label will have along the X-axis (horizontal direction).
+     * Note: The `border` property must be set for rounded corners to be visible.
+     *
+     * @default 5
+     */
+    rx?: number;
+
+    /**
+     * Specifies the rounded corner radius along the Y-axis for the stack label background.
+     * It defines the curvature of the stack label's background along the Y-axis (vertical direction).
+     * Note: The `border` property must be set for rounded corners to be visible.
+     *
+     * @default 5
+     */
+    ry?: number;
+
+    /**
+     * Configures the margin for the stack label. This property allows you to define the spacing around the stack label by specifying the left, right, top, and bottom margins.
+     */
+    margin?: MarginModel;
+
+    /**
+     * Configures the border appearance for the stack labels.
+     * For rounded corners to appear, both the `rx` and `ry` properties must be set, and the `border` property should also be configured with a width and color.
+     */
+    border?: BorderModel;
+
+    /**
+     * Customizes the appearance of the stack label text. Options include font size, color, style, weight, and family.
+     * Customizing these properties allows to ensure that the stack labels are legible and match the overall chart design.
+     *
+     */
+    font?: StackLabelsFontModel;
 
 }

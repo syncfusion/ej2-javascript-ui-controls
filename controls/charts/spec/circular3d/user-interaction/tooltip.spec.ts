@@ -896,13 +896,19 @@ describe('3DChart Control', () => {
         });
         it('chart tooltip format checking with keyboard navigation', (done: Function) => {
             loaded = (args: CircularChart3DLoadedEventArgs): void => {
-                const element = document.getElementById('container-svg-0-region-series-0-point-0');
+                const element: HTMLElement = document.getElementById('container-svg-0-region-series-0-point-0');
                 trigger.keyboardEvent('keydown', element, 'Space', 'Space');
+                chartObj.theme = 'HighContrastLight';
                 trigger.keyboardEvent('keyup', element, 'ArrowUp', 'ArrowUp');
+                chartObj.theme = 'HighContrast';
                 trigger.keyboardEvent('keydown', element, 'Escape', 'Escape');
+                chartObj.theme = 'MaterialDark';
                 trigger.keyboardEvent('keyup', element, 'ArrowDown', 'ArrowDown');
+                chartObj.theme = 'FabricDark';
                 trigger.keyboardEvent('keyup', element, 'ArrowLeft', 'ArrowLeft');
+                chartObj.theme = 'Bootstrap';
                 trigger.keyboardEvent('keyup', element, 'ArrowRight', 'ArrowRight');
+                chartObj.theme = 'Bootstrap4';
                 trigger.keyboardEvent('keyup', element, 'Tab', 'Tab');
                 expect(element !== null).toBe(true);
                 done();
@@ -911,6 +917,33 @@ describe('3DChart Control', () => {
             chartObj.highlightMode = 'Point';
             chartObj.highlightPattern = 'Box';
             chartObj.legendSettings = { visible: true };
+            chartObj.refresh();
+        });
+        it('Checking with keyboard navigation', (done: Function) => {
+            loaded = (args: CircularChart3DLoadedEventArgs): void => {
+                const element: HTMLElement = document.getElementById('container-svg-0-region-series-0-point-0');
+                trigger.keyboardEvent('keyup', element, 'ArrowUp', 'ArrowUp');
+                chartObj.theme = 'TailwindDark';
+                trigger.keyboardEvent('keydown', element, 'Escape', 'Escape');
+                chartObj.theme = 'Bootstrap5';
+                trigger.keyboardEvent('keyup', element, 'ArrowDown', 'ArrowDown');
+                chartObj.theme = 'Bootstrap5Dark';
+                trigger.keyboardEvent('keyup', element, 'ArrowLeft', 'ArrowLeft');
+                chartObj.theme = 'Fluent';
+                trigger.keyboardEvent('keyup', element, 'ArrowRight', 'ArrowRight');
+                chartObj.theme = 'FluentDark';
+                trigger.keyboardEvent('keyup', element, 'Tab', 'Tab');
+                chartObj.theme = 'Fluent2';
+                trigger.keyboardEvent('keydown', element, 'Escape', 'Escape');
+                chartObj.theme = 'Fluent2Dark';
+                trigger.keyboardEvent('keyup', element, 'ArrowDown', 'ArrowDown');
+                chartObj.theme = 'Fluent2HighContrast';
+                trigger.keyboardEvent('keyup', element, 'ArrowLeft', 'ArrowLeft');
+                expect(element !== null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.theme = 'Tailwind';
             chartObj.refresh();
         });
     });

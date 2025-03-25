@@ -2,157 +2,31 @@
 
 ## [Unreleased]
 
-## 28.2.12 (2025-03-19)
+## 29.1.33 (2025-03-25)
 
 ### Grid
 
-#### Bug fixes
+#### Bug Fixes
 
-- `#F195594` - Resolved a script error that occurred when focusing on hidden cells after clicking the scrollbar.
-- `#I679119` - The issue with filtering the `Date` column by month or day value has been resolved.
-- `#I684300` - Fixed an issue where virtual scrolling did not conclude properly when adding a new record at the bottom.
-- `#I695471` - The issue where the `notEqual` filter in menu filtering failed for `Date` and `DateTime` columns has been resolved.
-- `#I691688` - Resolved the issue where the grid `captionTemplate` key value conflicted with React `key` prop.
-- `#I693712` - Resolved the issue where `customAttributes` were not applied when splitting stacked header columns with frozen columns.
+- `#FB65738` - The issue where the menu Filter with `greaterthanorequal to 0` displayed rows with undefined values has been resolved.
+- `#I694874` - Fixed an issue that caused a script error when expanding grouped rows and selecting all columns in the column chooser.
+- `#FB65764` - Resolved an issue where opening the checkbox filter with the `hideSearchbox` option enabled caused an error.
 
-## 28.2.9 (2025-03-04)
+#### Features
 
-### Grid
+- `#I651431` - The Grid now supports enhanced `in` and `not in` filters, allowing users to filter multiple values in a column using a `multiselect dropdown` with checkboxes. Explore the demo [here](https://ej2.syncfusion.com/demos/#/tailwind3/grid/filter-menu.html).
+- `#I657081` - The `DataManager` now supports the `enableCache` property to skip requests for revisited pages, with the cache resetting on actions like sorting or filtering. Explore the demo [here](https://ej2.syncfusion.com/demos/#/tailwind3/grid/remote-data.html).
+- The `DataManager` now supports middle ware integration, enabling modifications to requests and responses for authentication, error handling, and data transformation.
+- `#I612266` - The Grid now supports infinite scrolling for detail rows, integrating with hierarchical grids and detail templates. This enhancement enables smooth scrolling, multi-level child grids, and better handling of hierarchical data.
+- `#I419589` - The Grid now supports column chooser templates, allowing users to customize the header, content, and footer with custom elements like checkboxes or icons for a personalized UI. Explore the demo [here](https://ej2.syncfusion.com/demos/#/tailwind3/grid/stacked-header.html).
+- `#FB57941` - Enhanced the Grid filtering and searching functionality to ignore accents in the URL Adaptor when performing data actions.
+- `#FB62797` - Improved sorting performance in the Grid for large datasets, reducing delays caused by client side processing.
+- Enhanced the EJ2 Grid performance by removing unnecessary attributes and inline styles, ensuring a leaner HTML structure for faster rendering and improved responsiveness.
+- Provided support for rendering column template cells with or without the `aria-label` attribute using the new `enableAriaLabel` API in column settings. This provides flexibility in accessibility configurations based on requirements.
 
-#### Bug fixes
+#### Breaking Changes
 
-- `#I688846` - The issue of performance delay in checkbox row selection when filtering complex columns has been resolved.
-- `#I687298` - Resolved the issue where column header spanning was not working correctly with stacked headers in Excel export.
-- `#I682492` - Fixed an issue where a script error was thrown when copying with a focused stacked header in cell selection mode.
-- `#I690056` - Resolved the issue with `persistSelection` in the grouped grid when collapsing and expanding.
-- `#I685339` - Resolved the issue where resizing the frozen column is not adjust the content table properly.
-
-## 28.2.7 (2025-02-25)
-
-### Grid
-
-#### Bug fixes
-
-- `#I687341` - In `on-demand filtering`, filter dialog in a grouped grid with existing filters did not show all distinct values issue has been resolved.
-- `#I591587` - The issue where the `on-demand filtering` feature did not function correctly when using a `foreign key` column has been resolved.
-- `#I691061` - Resolved an issue where the row was selected while editing a cell in batch mode, even when `checkboxOnly` was enabled.
-- `#I688302` - Fixed an issue where a duplicate `API` call occurred during virtual scrolling.
-- `#I676970` - Resolved an issue where bottom white space appeared after fully scrolling down on the initial virtual grid load.
-
-## 28.2.6 (2025-02-18)
-
-### Grid
-
-#### Bug fixes
-
-- `#I684532` - Resolved the issue where the `dataSourceChanged` event was not triggered when end editing in batch mode with custom data binding.
-- `#I686671` - Fixed an issue where the updated React state was not accessible inside the Grid `filterTemplate`.
-- `#I689691` - Fixed a script error that occurred during the save action when using grouping and hierarchy features.
-- `#I682492` - Resolved the script error that was thrown when copying with column selection in cell selection mode.
-
-## 28.2.5 (2025-02-11)
-
-### Grid
-
-#### Bug fixes
-
-- `#I679470` - The issue of the missing focus border on grid cells after adding rows has been resolved.
-- `#I679056` - The problem of a script error occurring when updating the dataSource with a frozen column and the `All` option in the pager dropdown has been resolved.
-- `#I682856` - Resolved an issue where pressing `ESC` or the cancel button in the toolbar did not properly restore a row after editing.
-- `#I687968` - Fixed an issue where virtual scrolling did not function correctly when frozen columns were enabled.
-- `#I679046` - Resolved an issue where infinite scrolling not loading correctly in Firefox at specific resolutions.
-- `#I682690` - The issue where the `DropDownList popup` does not opening with `Alt + Down Arrow` in the Grid for remote data binding has been resolved.
-
-## 28.2.4 (2025-02-04)
-
-### Grid
-
-#### Bug fixes
-
-- `#I691051` - Fixed a script error thrown when accessing the `pageSize` property within the `actionComplete` event of the Grid.
-- `#I681001` - Resolved the issue where the Update and Cancel buttons were not displayed in normal edit mode on an adaptive layout.
-- `#I665236` - Fixed the issue where the header checkbox displayed an indeterminate state when all rows were selected with `virtualization` enabled.
--`#I677222` - Resolved an issue where the group caption text was not displayed properly when grouping with frozen columns.
-- `#I679448` - Fixed an issue where the validation error message was hidden under the Grid column header when the grid had only two rows for a custom tooltip.
-- `#I681556` - Resolved an issue where the Grid was displaying only the searched column in the `ColumnChooser`.
-- `#FB64702` - Fixed a script error that occurred on expand or collapse when `InfiniteScrolling` with frozen columns and grouping.
-- `#I683071` - Resolved an issue where data misalignment with the frozen column in the Material 3 theme.
-- `#I660627` - Resolved an issue where column reordering cancellation in the `actionBegin` event did not work as expected when only the header column was reordered.
-
-## 28.2.3 (2025-01-29)
-
-### Grid
-
-#### Bug fixes
-
-- `#I665951` - A blank space that appeared on the initial render when using frozen columns with `columnVirtualization` has been fixed.
-- `#I676688` - A script error that occurred during Excel export for image columns when grid column widths were not defined has been resolved.
-- `#I681573` - A script error that occurred when clicking the Cancel or Save button in dialog editing with grouping has been resolved.
-- `#I657081` - Duplicate `API` requests triggered during `virtual scrolling` in the grid have been resolved.
-- `#I678648` - The issue with the invalid attribute name `aria-grouped` detected in the Grid component with grouping has been fixed.
-- `#I679153` - A script error that occurred when destroying the grid with `virtualization` and `persistence` enabled has been fixed.
-
-## 28.1.41 (2025-01-21)
-
-### Grid
-
-#### Bug fixes
-
-- `#I676657` - Resolved an issue where two column chooser dialog were opened when the `openColumnChooser` method was called programmatically in an adaptive layout.
-- `#I932065` - Fixed the tooltip flickering issue when the mouse moves inside the grid header.
-- `#I675890` - Resolved an issue where the grid refresh action was triggered on search focus-out when performing a search for the same key.
-
-## 28.1.38 (2025-01-07)
-
-### Grid
-
-#### Bug fixes
-
-- `#I667386` - The issue where resizing a column with the frozen column feature enabled caused other columns to resize has been resolved.
-- `#I675761` - The issue of the spinner not being displayed in the filter dialog of the grid has been resolved.
-
-## 28.1.37 (2024-12-31)
-
-### Grid
-
-#### Bug fixes
-
-- `#I662531` - The script error that occurred when autofit was enabled in the Grid, the width of the first column was undefined, and its visibility was set to false has been resolved.
-- `#I661447` - Resolved an issue where templates were not rendered in the printed output of the React Grid.
-- `#I664462` - Resolved the issue where `SelectedRowIndex` was not updating correctly when `allowSelection` was enabled dynamically.
-- `#I666371` - Resolved the issue where the `rowSelected` event was triggered twice when persist selection was enabled.
-- `#FB63898` - The script issue caused by an initial filter query with complex predicates when using the `ODataV4Adaptor` has been resolved.
-- `#I665773` - Fixed the issue where the `Column Menu popup` was not positioned correctly when the `StickyHeader` feature was enabled, and the screen was zoomed.
-
-## 28.1.36
-
-### Grid
-
-#### Bug fixes
-
-- `I660080` - The issue where export options were not disabled when properties were set to false has been resolved.
-- `I657741` - Escape key does not function correctly for column menu filtering when the type is set to `Menu` has been resolved.
-- `#FB31658` - The issue of white space appearing during full downward scroll and the occurrence of repeated data with incorrect blocks during slow upward scrolling in virtual scrolling has been resolved.
-- `#I659372` - Fixed an issue where the Select All checkbox would automatically get checked after scrolling and selecting the last record when virtual scrolling was enabled.
-- `#I663580` - The issue with the cell save functionality not working properly on pressing the Enter key when collapsing rows has been resolved.
-- `#I662005` - Fixed an issue where the `pageSize` setting did not work as expected after updating rules using the `QueryBuilder`.
-- `#I660641` - Fixed an issue where the Checkbox Filter dialog was cut off when rendering the grid inside an `Accordion component`, with `filter.type` set to `CheckBox` and `filterSettings.type` set to `Menu`.
-- `#I665951` - Resolved an issue where frozen columns with `ColumnVirtualization` caused a blank space.
-- `#I664685` - The script error that occurred when collapsing all records and then deleting the last record has been fixed.
-
-## 28.1.35 (2024-12-18)
-
-### Grid
-
-#### Bug fixes
-
-- `#I659877` - Fixed the issue where the `getSelectedRecords` method retained previous selections when virtual scrolling was enabled.
-- `#I660588` - The issue of a script error occurring while searching for data after clearing the sorting in the hierarchy grid has been resolved.
-- `#I660594` - The problem of the vertical scrollbar disappearing when frozen rows are enabled in the responsive grid has been resolved.
-- `#F195226` - The issue of being unable to navigate to the `editTemplate` with the keyboard while adding a record has been resolved.
-- `#I656905` - Fixed an issue where clearing filters in the grid with custom page sizes displayed all records on one page.
-
-## 28.1.33 (2024-12-12)
+- To enhance grid performance, we have removed the `data-rowindex` and `data-colindex` attributes from the `tr` and `td` elements. Instead, use the `aria-rowindex` and `aria-colindex` attributes.
 
 ### Grid
 

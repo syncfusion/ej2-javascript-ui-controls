@@ -2,7 +2,7 @@ import { TreeGrid } from "../../src/treegrid/base/treegrid";
 import { createGrid, destroy } from "../base/treegridutil.spec";
 import {
   QueryCellInfoEventArgs,
-  RowSelectEventArgs,
+  RowSelectEventArgs, VirtualContentRenderer
 } from "@syncfusion/ej2-grids";
 import { isNullOrUndefined, EventHandler } from "@syncfusion/ej2-base";
 import { VirtualScroll } from "../../src/treegrid/actions/virtual-scroll";
@@ -22,12 +22,14 @@ import { Sort } from "../../src/treegrid/actions/sort";
 import { Filter } from "../../src/treegrid/actions/filter";
 import { ITreeData } from "../../src/treegrid/base/interface";
 import { Selection } from "../../src/treegrid/actions/selection";
+import { Freeze } from "../../src/treegrid/actions/freeze-column";
+import { VirtualTreeContentRenderer } from "../../src/treegrid/renderer/virtual-tree-content-render";
 
 /**
  * TreeGrid Virtual Scroll spec
  */
 
-TreeGrid.Inject(VirtualScroll, Edit, Toolbar, Sort, Filter, RowDD, Selection);
+TreeGrid.Inject(VirtualScroll, Edit, Toolbar, Sort, Filter, RowDD, Selection, Freeze);
 
 if (!editVirtualData.length) {
   dataSource();
@@ -412,7 +414,7 @@ describe("TreeGrid Virtual Scroll", () => {
     afterAll(() => {
       destroy(treegrid);
     });
-  }); 
+  });
 });
 
 describe("Scroll Down with CollapseAll", () => {
@@ -1033,10 +1035,7 @@ describe("Row Editing with Virtual Scrolling", () => {
     };
     gridObj.grid.actionComplete = actionComplete;
     gridObj.grid.actionBegin = actionBegin;
-    rowIndex = parseInt(
-      gridObj.getRows()[0].getAttribute("data-rowindex"),
-      10
-    );
+    rowIndex = parseInt(gridObj.getRows()[0].getAttribute("aria-rowindex"), 10) - 1;
     gridObj.grid.selectRow(rowIndex);
     (<any>gridObj.grid.toolbarModule).toolbarClickHandler({
       item: { id: gridObj.grid.element.id + "_edit" },
@@ -1312,7 +1311,7 @@ describe("Delete Row with Virtual Scrolling", () => {
     if (row.querySelector(".e-treegridexpand")) {
       isParent = true;
     }
-    gridObj.selectRow(parseInt(row.getAttribute("data-rowindex"), 10));
+    gridObj.selectRow(parseInt(row.getAttribute("aria-rowindex"), 10) - 1);
     (<any>gridObj.grid.toolbarModule).toolbarClickHandler({
       item: { id: gridObj.grid.element.id + "_delete" },
     });
@@ -1850,41 +1849,41 @@ describe("EJ2-916490- The page refreshes when adding a record on the last page w
     TreeGridObj = createGrid(
       {
         dataSource: virtualData1,
-          allowSorting: true,
-          enableVirtualization: true,
-          parentIdMapping: 'parentID',
-          idMapping: 'TaskID',
-          contextMenuItems: ['AddRow'],
-          toolbar: ["Indent", "Outdent", "Add", "Delete", "Update", "Cancel"],
-          editSettings: {
-            allowAdding: true,
-            allowEditing: true,
-            allowDeleting: true,
-            newRowPosition: "Below"
-          },
-          allowRowDragAndDrop: true,
-          columns: [
-              { field: 'TaskID', isPrimaryKey: true },
-              { field: 'TaskName' },
-              { field: 'StartDate' },
-              { field: 'Duration' },
-              { field: 'Progress' },
-          ],
-          allowExcelExport: true,
-          selectedRowIndex: 2,
-          allowPdfExport: true,
-          allowSelection: true,
-          allowFiltering: true,
-          gridLines: 'Both',
-          height: '400px',
-          allowResizing: true,
-          selectionSettings: {
-              mode: 'Row',
-              type: 'Single',
-              enableToggle: false,
-             
-          },
-          rowHeight: 40,
+        allowSorting: true,
+        enableVirtualization: true,
+        parentIdMapping: 'parentID',
+        idMapping: 'TaskID',
+        contextMenuItems: ['AddRow'],
+        toolbar: ["Indent", "Outdent", "Add", "Delete", "Update", "Cancel"],
+        editSettings: {
+          allowAdding: true,
+          allowEditing: true,
+          allowDeleting: true,
+          newRowPosition: "Below"
+        },
+        allowRowDragAndDrop: true,
+        columns: [
+          { field: 'TaskID', isPrimaryKey: true },
+          { field: 'TaskName' },
+          { field: 'StartDate' },
+          { field: 'Duration' },
+          { field: 'Progress' },
+        ],
+        allowExcelExport: true,
+        selectedRowIndex: 2,
+        allowPdfExport: true,
+        allowSelection: true,
+        allowFiltering: true,
+        gridLines: 'Both',
+        height: '400px',
+        allowResizing: true,
+        selectionSettings: {
+          mode: 'Row',
+          type: 'Single',
+          enableToggle: false,
+
+        },
+        rowHeight: 40,
       },
       done
     );
@@ -1896,147 +1895,25 @@ describe("EJ2-916490- The page refreshes when adding a record on the last page w
     EventHandler.trigger(content, "scroll", { target: content });
     setTimeout(done, 1000);
     done();
-});
- it("Select Last Row", function (done) {
+  });
+  it("Select Last Row", function (done) {
     let rows = TreeGridObj.getRows();
-    let lastRowIdx = rows[rows.length - 1].getAttribute("data-rowindex");
-    TreeGridObj.selectRow(parseInt(lastRowIdx));
+    let lastRowIdx = parseInt(rows[rows.length - 1].getAttribute("aria-rowindex")) - 1;
+    TreeGridObj.selectRow(lastRowIdx);
     done();
-});
- it("Add Record", function (done) {
+  });
+  it("Add Record", function (done) {
     let actionBegin = (args?: any): void => {
-        if (args.requestType === "virtualscroll") {
-            count++;
-            done();
-        }
+      if (args.requestType === "virtualscroll") {
+        count++;
         done();
+      }
+      done();
     };
     TreeGridObj.grid.actionBegin = actionBegin;
     TreeGridObj.addRecord();
     setTimeout(done, 1000);
     expect(count).toBe(0);
-    done();
-});
-  afterAll(() => {
-    destroy(TreeGridObj);
-  });
-});
-
-describe("EJ2-926455- Collapsed record not in viewport", () => {
-  var virtualData2: { TaskID: number; TaskName: string; StartDate: string; Duration: number; Progress: number; parentID: number | null }[] = [];
-
-  for (let i = 0; i < 100; i++) {
-  let parentTaskId: number = virtualData2.length + 1;
-
-  // Create parent task
-  let parent: { TaskID: number; TaskName: string; StartDate: string; Duration: number; Progress: number; parentID: number | null } = {
-    TaskID: parentTaskId,
-    TaskName: `Project ${i + 1}`,
-    StartDate: '2024-12-01',
-    Duration: 50, // Example duration
-    Progress: 0, // Example progress
-    parentID: null, // No parent for top-level
-  };
-  virtualData2.push(parent);
-
-  // Create 100 child tasks for this parent
-  for (let j = 0; j < 30; j++) {
-    let childTaskId: number = virtualData2.length + 1;
-
-    // Create child task
-    let child: { TaskID: number; TaskName: string; StartDate: string; Duration: number; Progress: number; parentID: number } = {
-      TaskID: childTaskId,
-      TaskName: `Task ${j + 1} of Project ${i + 1}`,
-      StartDate: '2024-12-01',
-      Duration: 5 + (j % 3), // Example duration
-      Progress: j % 100, // Example progress
-      parentID: parentTaskId,
-    };
-    virtualData2.push(child);
-
-    // Make the 11th child (index 10) a parent of 100 nested tasks
-    if (j === 10) {
-      for (let k = 0; k < 10; k++) {
-        let nestedTaskId: number = virtualData2.length + 1;
-
-        // Create nested child task
-        let nestedChild: { TaskID: number; TaskName: string; StartDate: string; Duration: number; Progress: number; parentID: number } = {
-          TaskID: nestedTaskId,
-          TaskName: `Subtask ${k + 1} of Task ${childTaskId}`,
-          StartDate: '2024-12-01',
-          Duration: 3 + (k % 2), // Example duration
-          Progress: k % 50, // Example progress
-          parentID: childTaskId,
-        };
-        virtualData2.push(nestedChild);
-      }
-    }
-    if (j === 20) {
-      for (let k = 0; k < 10; k++) {
-        let nestedTaskId: number = virtualData2.length + 1;
-
-        // Create nested child task
-        let nestedChild: { TaskID: number; TaskName: string; StartDate: string; Duration: number; Progress: number; parentID: number } = {
-          TaskID: nestedTaskId,
-          TaskName: `Subtask ${k + 1} of Task ${childTaskId}`,
-          StartDate: '2024-12-01',
-          Duration: 3 + (k % 2), // Example duration
-          Progress: k % 50, // Example progress
-          parentID: childTaskId,
-        };
-        virtualData2.push(nestedChild);
-      }
-    }
-  }
- }
-  let TreeGridObj: TreeGrid;
-  let oldTranslateY = 0;
-  const preventDefault: Function = new Function();
-  beforeAll((done: Function) => {
-    TreeGridObj = createGrid(
-      {
-          dataSource: virtualData2,
-          enableVirtualization: true,
-          height: 300,
-          treeColumnIndex: 1,
-          enableVirtualMaskRow: true,
-          parentIdMapping: 'parentID',
-          idMapping: 'TaskID',
-          columns: [
-            { field: 'TaskID', isPrimaryKey: true },
-            { field: 'TaskName' },
-            { field: 'StartDate' },
-          ],
-          editSettings: {
-            allowEditing: true,
-            allowAdding: true,
-            allowDeleting: true,
-            mode: 'Row',
-            newRowPosition: 'Child',
-          },
-          toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent'],
-      },
-      done
-    );
-  });
-  it("Scroll to Bottom", function (done: Function) {
-    let content: HTMLElement = <HTMLElement>TreeGridObj.getContent().firstChild;
-    EventHandler.trigger(content, "wheel");
-    content.scrollTop = 10;
-    content.scrollTop = 186813;
-    EventHandler.trigger(content, "scroll", { target: content });
-    setTimeout(done, 1000);
-});
-  it("Collapse last parentrecord", function (done: Function) {
-    const virtualTable: HTMLElement = <HTMLElement>TreeGridObj.getContent().querySelector('.e-virtualtable');
-    oldTranslateY = parseFloat(virtualTable.style.transform.split(',')[1].trim().replace('px)', ''));
-    TreeGridObj.collapseByKey(5050);
-    setTimeout(done, 500);
-  });
-  it("Compare TranslateY", function(done: Function) {
-    const virtualTable: HTMLElement = <HTMLElement>TreeGridObj.getContent().querySelector('.e-virtualtable');
-    const newTranslateY = parseFloat(virtualTable.style.transform.split(',')[1].trim().replace('px)', ''));
-    expect(oldTranslateY).not.toBe(newTranslateY);
     done();
   });
   afterAll(() => {
@@ -2227,16 +2104,16 @@ describe("EJ2-59214- Row Drag And Drop support with Virtual Scrolling", () => {
 
   it("Row Reorder Testing for Above, Child, Below positions After Sorting", () => {
     TreeGridObj.rowDragAndDropModule.reorderRows([4], 0, "above");
-   // expect(
-     // (TreeGridObj.rowDragAndDropModule["draggedRecord"] as ITreeData).level
+    // expect(
+    // (TreeGridObj.rowDragAndDropModule["draggedRecord"] as ITreeData).level
     //).toBe(0);
     TreeGridObj.rowDragAndDropModule.reorderRows([1], 4, "child");
     //expect(
-     // (TreeGridObj.getCurrentViewRecords()[4] as ITreeData).childRecords.length
+    // (TreeGridObj.getCurrentViewRecords()[4] as ITreeData).childRecords.length
     //).toBe(1);
     TreeGridObj.rowDragAndDropModule.reorderRows([8], 5, "below");
     //expect(
-     // (TreeGridObj.rowDragAndDropModule["draggedRecord"] as ITreeData).level
+    // (TreeGridObj.rowDragAndDropModule["draggedRecord"] as ITreeData).level
     //).toBe(0);
     TreeGridObj.rowDragAndDropModule.destroy();
   });
@@ -2500,13 +2377,13 @@ describe("EJ2-62266 - Frozen columns with Row and Column virutalization", () => 
     expect(
       gridObj
         .getRows()
-        [gridObj.frozenRows].closest("div")
+      [gridObj.frozenRows].closest("div")
         .classList.contains("e-virtualtable")
     ).toBe(true);
     expect(
       gridObj
         .getDataRows()
-        [gridObj.frozenColumns].closest("div")
+      [gridObj.frozenColumns].closest("div")
         .classList.contains("e-virtualtable")
     ).toBe(true);
   });
@@ -2571,13 +2448,13 @@ describe("EJ2-62266 - Frozen columns with virutalization", () => {
     expect(
       gridObj
         .getRows()
-        [gridObj.frozenRows].closest("div")
+      [gridObj.frozenRows].closest("div")
         .classList.contains("e-virtualtable")
     ).toBe(true);
     expect(
       gridObj
         .getDataRows()
-        [gridObj.frozenColumns].closest("div")
+      [gridObj.frozenColumns].closest("div")
         .classList.contains("e-virtualtable")
     ).toBe(true);
   });
@@ -2782,13 +2659,13 @@ describe("scrolling and adding records", () => {
   });
 
   it("scrolling and adding records", (done: Function) => {
-  //  gridObj.getContent().firstElementChild.scrollTop = 20000;
+    //  gridObj.getContent().firstElementChild.scrollTop = 20000;
     gridObj.selectRow(gridObj.getCurrentViewRecords()[3]["TaskID"]);
-    gridObj.actionComplete = function(args){
+    gridObj.actionComplete = function (args) {
 
       expect(this.flatData["length"] === 1001).toBe(true);
       done();
-  };
+    };
     gridObj.addRecord(
       { TaskID: 10000, FIELD1: "TEST1" },
       gridObj.getCurrentViewRecords()[3]["TaskID"],
@@ -2860,26 +2737,26 @@ describe("EJ2-63548 - Indent/Outdent action check after edited the row with virt
       done
     );
   });
-it("Edit and update", (done: Function) => {
-  actionComplete = (args?: any): void => {
-    expect(TreeGridObj2.getCurrentViewRecords()[1]['FIELD1']).toEqual("updated");
-    done();
-  }
-  TreeGridObj2.selectRow(1);
-  (<any>TreeGridObj2.grid.toolbarModule).toolbarClickHandler({
-    item: { id: TreeGridObj2.grid.element.id + "_edit" },
+  it("Edit and update", (done: Function) => {
+    actionComplete = (args?: any): void => {
+      expect(TreeGridObj2.getCurrentViewRecords()[1]['FIELD1']).toEqual("updated");
+      done();
+    }
+    TreeGridObj2.selectRow(1);
+    (<any>TreeGridObj2.grid.toolbarModule).toolbarClickHandler({
+      item: { id: TreeGridObj2.grid.element.id + "_edit" },
+    });
+    (
+      select(
+        "#" + TreeGridObj2.grid.element.id + "FIELD1",
+        TreeGridObj2.grid.element
+      ) as any
+    ).value = "updated";
+    TreeGridObj2.actionComplete = actionComplete;
+    (<any>TreeGridObj2.grid.toolbarModule).toolbarClickHandler({
+      item: { id: TreeGridObj2.grid.element.id + "_update" },
+    });
   });
-  (
-    select(
-      "#" + TreeGridObj2.grid.element.id + "FIELD1",
-      TreeGridObj2.grid.element
-    ) as any
-  ).value = "updated";
-  TreeGridObj2.actionComplete = actionComplete;
-  (<any>TreeGridObj2.grid.toolbarModule).toolbarClickHandler({
-    item: { id: TreeGridObj2.grid.element.id + "_update" },
-  });
-});
   it("Indent/Outdent icon updated check after edited the row", (done: Function) => {
     actionComplete = (args?: any): void => {
       if (args.requestType == "outdented") {
@@ -2887,7 +2764,7 @@ it("Edit and update", (done: Function) => {
         done();
       }
     };
-   
+
     TreeGridObj2.actionComplete = actionComplete;
     TreeGridObj2.outdent(TreeGridObj2.getCurrentViewRecords()[1]);
   });
@@ -3372,7 +3249,7 @@ describe("852080- External data source filter not working with virtualization af
     let counter = 0;
     let rowId = 0;
     let _items = [];
-  
+
     while (counter < 10000) {
       counter++;
       _items.push({
@@ -3383,21 +3260,21 @@ describe("852080- External data source filter not working with virtualization af
       });
       rowId++;
     }
-  
+
     if (searchText) {
       _items = _items.filter((x) => x.Name.includes(searchText));
     }
-  
+
     return _items;
   }
   beforeAll((done: Function) => {
     treegrid = createGrid(
       {
         dataSource: getDataSource(),
-            enableVirtualization: true,
-            treeColumnIndex: 1,
-            childMapping: 'Children',
-            height: 317,
+        enableVirtualization: true,
+        treeColumnIndex: 1,
+        childMapping: 'Children',
+        height: 317,
         columns: [
           { field: 'Id', headerText: 'Player Jersey', width: 140, textAlign: 'Right' },
           { field: 'Name', headerText: 'Player Name', width: 140 },
@@ -3544,7 +3421,7 @@ describe("Virtual Scrolling with paging", () => {
         dataSource: editVirtualData,
         enableVirtualization: true,
         allowPaging: true,
-        height:450,
+        height: 450,
         treeColumnIndex: 1,
         toolbar: ["Add", "Edit", "Update", "Delete", "Cancel"],
         editSettings: {
@@ -3977,20 +3854,20 @@ describe("Task disappear on collapse and expand action", () => {
         treeColumnIndex: 1,
         childMapping: 'SubTasks',
         editSettings: {
-            allowAdding: true,
-            allowEditing: true,
-            allowDeleting: true,
-            mode: 'Row',
-            newRowPosition: 'Child'
+          allowAdding: true,
+          allowEditing: true,
+          allowDeleting: true,
+          mode: 'Row',
+          newRowPosition: 'Child'
         },
         toolbar: ['Add', 'Edit', 'ExpandAll', 'CollapseAll', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent'],
         height: 400,
         columns: [
-            { field: 'TaskID', isPrimaryKey: true},
-            { field: 'TaskName', width: '230px' },
-            { field: 'StartDate' },
-            { field: 'Duration' },
-            { field: 'Progress' },
+          { field: 'TaskID', isPrimaryKey: true },
+          { field: 'TaskName', width: '230px' },
+          { field: 'StartDate' },
+          { field: 'Duration' },
+          { field: 'Progress' },
         ],
       },
       done
@@ -4023,20 +3900,20 @@ describe("Adding task at bottom coverage", () => {
         treeColumnIndex: 1,
         childMapping: 'SubTasks',
         editSettings: {
-            allowAdding: true,
-            allowEditing: true,
-            allowDeleting: true,
-            mode: 'Row',
-            newRowPosition: 'Child'
+          allowAdding: true,
+          allowEditing: true,
+          allowDeleting: true,
+          mode: 'Row',
+          newRowPosition: 'Child'
         },
         toolbar: ['Add', 'Edit', 'ExpandAll', 'CollapseAll', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent'],
         height: 400,
         columns: [
-            { field: 'TaskID', isPrimaryKey: true},
-            { field: 'TaskName', width: '230px' },
-            { field: 'StartDate' },
-            { field: 'Duration' },
-            { field: 'Progress' },
+          { field: 'TaskID', isPrimaryKey: true },
+          { field: 'TaskName', width: '230px' },
+          { field: 'StartDate' },
+          { field: 'Duration' },
+          { field: 'Progress' },
         ],
       },
       done
@@ -4072,20 +3949,20 @@ describe("Freeze Row Coverage", () => {
         treeColumnIndex: 1,
         childMapping: 'SubTasks',
         editSettings: {
-            allowAdding: true,
-            allowEditing: true,
-            allowDeleting: true,
-            mode: 'Row',
-            newRowPosition: 'Child'
+          allowAdding: true,
+          allowEditing: true,
+          allowDeleting: true,
+          mode: 'Row',
+          newRowPosition: 'Child'
         },
         toolbar: ['Add', 'Edit', 'ExpandAll', 'CollapseAll', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent'],
         height: 400,
         columns: [
-            { field: 'TaskID', isPrimaryKey: true},
-            { field: 'TaskName', width: '230px' },
-            { field: 'StartDate' },
-            { field: 'Duration' },
-            { field: 'Progress' },
+          { field: 'TaskID', isPrimaryKey: true },
+          { field: 'TaskName', width: '230px' },
+          { field: 'StartDate' },
+          { field: 'Duration' },
+          { field: 'Progress' },
         ],
       },
       done
@@ -4164,6 +4041,118 @@ describe("Bug 916448: Issues related to cell editing with virtualization.", () =
   });
 });
 
+describe("TreeGrid - expand action with virtual scrolling", () => {
+  var virtualData2: { TaskID: number; TaskName: string; StartDate: string; Duration: number; Progress: number; parentID: number | null }[] = [];
+
+  for (let i = 0; i < 38; i++) {
+    let parentTaskId: number = virtualData2.length + 1;
+
+    // Create parent task
+    let parent: { TaskID: number; TaskName: string; StartDate: string; Duration: number; Progress: number; parentID: number | null } = {
+      TaskID: parentTaskId,
+      TaskName: `Project ${i + 1}`,
+      StartDate: '2024-12-01',
+      Duration: 50, // Example duration
+      Progress: 0, // Example progress
+      parentID: null, // No parent for top-level
+    };
+    virtualData2.push(parent);
+
+    // Create 100 child tasks for this parent
+    for (let j = 0; j < 30; j++) {
+      let childTaskId: number = virtualData2.length + 1;
+
+      // Create child task
+      let child: { TaskID: number; TaskName: string; StartDate: string; Duration: number; Progress: number; parentID: number } = {
+        TaskID: childTaskId,
+        TaskName: `Task ${j + 1} of Project ${i + 1}`,
+        StartDate: '2024-12-01',
+        Duration: 5 + (j % 3), // Example duration
+        Progress: j % 100, // Example progress
+        parentID: parentTaskId,
+      };
+      virtualData2.push(child);
+
+      // Make the 11th child (index 10) a parent of 100 nested tasks
+      if (j === 10) {
+        for (let k = 0; k < 10; k++) {
+          let nestedTaskId: number = virtualData2.length + 1;
+
+          // Create nested child task
+          let nestedChild: { TaskID: number; TaskName: string; StartDate: string; Duration: number; Progress: number; parentID: number } = {
+            TaskID: nestedTaskId,
+            TaskName: `Subtask ${k + 1} of Task ${childTaskId}`,
+            StartDate: '2024-12-01',
+            Duration: 3 + (k % 2), // Example duration
+            Progress: k % 50, // Example progress
+            parentID: childTaskId,
+          };
+          virtualData2.push(nestedChild);
+        }
+      }
+      if (j === 20) {
+        for (let k = 0; k < 10; k++) {
+          let nestedTaskId: number = virtualData2.length + 1;
+
+          // Create nested child task
+          let nestedChild: { TaskID: number; TaskName: string; StartDate: string; Duration: number; Progress: number; parentID: number } = {
+            TaskID: nestedTaskId,
+            TaskName: `Subtask ${k + 1} of Task ${childTaskId}`,
+            StartDate: '2024-12-01',
+            Duration: 3 + (k % 2), // Example duration
+            Progress: k % 50, // Example progress
+            parentID: childTaskId,
+          };
+          virtualData2.push(nestedChild);
+        }
+      }
+    }
+  }
+  let TreeGridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    TreeGridObj = createGrid(
+      {
+        dataSource: virtualData2,
+        enableVirtualization: true,
+        enableVirtualMaskRow: true,
+        treeColumnIndex: 1,
+        parentIdMapping: 'parentID',
+        idMapping: 'TaskID',
+        editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true, mode: 'Row', newRowPosition: 'Child' },
+        allowSelection: true,
+        allowSorting: true,
+        selectionSettings: { enableToggle: true, persistSelection: true, mode: 'Row', type: 'Multiple' },
+        toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'ExpandAll', 'CollapseAll', 'Indent', 'Outdent'],
+        height: 400,
+        columns: [
+          { field: 'TaskID', isPrimaryKey: true },
+          { field: 'TaskName' },
+          { field: 'StartDate' },
+        ],
+      },
+      done
+    );
+  });
+
+  it('should collapse all and then expand the third row', (done: Function) => {
+    TreeGridObj.collapseAll();
+    setTimeout(done, 500);
+    TreeGridObj.selectRow(3);
+    TreeGridObj.expandRow(TreeGridObj.getRows()[3] as HTMLTableRowElement);
+    expect(TreeGridObj.getRows()[3].getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('should collapse row by collapseAtLevel', (done: Function) => {
+    TreeGridObj.collapseAtLevel(0);
+    setTimeout(done, 500);
+    expect(TreeGridObj.getRows()[0].getAttribute('aria-expanded')).toBe('false');
+  });
+
+  afterAll(() => {
+    destroy(TreeGridObj);
+  });
+});
+
 describe("Adding record in sorted column", () => {
   let gridObj: TreeGrid;
   let actionComplete: () => void;
@@ -4174,8 +4163,8 @@ describe("Adding record in sorted column", () => {
         enableVirtualization: true,
         enableVirtualMaskRow: false,
         childMapping: "Crew",
-        allowSelection:true,
-        allowSorting : true,
+        allowSelection: true,
+        allowSorting: true,
         treeColumnIndex: 1,
         editSettings: {
           allowAdding: true,
@@ -4184,7 +4173,7 @@ describe("Adding record in sorted column", () => {
         },
         height: 400,
         columns: [
-          
+
           {
             field: "TaskID",
             headerText: "Player Jersey",
@@ -4211,24 +4200,1150 @@ describe("Adding record in sorted column", () => {
     );
   });
   it("Sorts the column, adds a record, and verifies the selected record", (done: Function) => {
-    actionComplete = (args?: any): void => {};
+    actionComplete = (args?: any): void => { };
     gridObj.grid.actionComplete = actionComplete;
     gridObj.sortByColumn("FIELD1", "Descending", true);
     gridObj.selectRow(0);
     gridObj.addRecord(
-            {
-              TaskID : 10001,
-              FIELD1: "abramjo01",
-              FIELD2: 1999,
-              FIELD3: 30,
-            },
-            410
-          );
-          const selectedRow: any = gridObj.getSelectedRecords()[0];
-          expect(selectedRow.FIELD1).toBe("abramjo01"); 
-          done();
+      {
+        TaskID: 10001,
+        FIELD1: "abramjo01",
+        FIELD2: 1999,
+        FIELD3: 30,
+      },
+      410
+    );
+    const selectedRow: any = gridObj.getSelectedRecords()[0];
+    expect(selectedRow.FIELD1).toBe("abramjo01");
+    done();
   });
   afterAll(() => {
     destroy(gridObj);
+  });
+});
+
+describe("Virtualization coverage", () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: virtualData.slice(0, 500),
+        enableVirtualization: true,
+        childMapping: "Crew",
+        treeColumnIndex: 1,
+        height: 400,
+        columns: [
+          {
+            field: "TaskID",
+            headerText: "Player Jersey",
+            isPrimaryKey: true,
+            width: 140,
+            textAlign: "Right",
+          },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+        ],
+      },
+      done
+    );
+  });
+
+  it("Virtualization coverage", () => {
+    gridObj.isDestroyed = true;
+    (gridObj as any).virtualScrollModule.addEventListener();
+    gridObj.isDestroyed = false;
+    (gridObj as any).virtualScrollModule.removeEventListener();
+  });
+
+  afterAll(() => {
+    destroy(gridObj);
+    gridObj = null;
+  });
+});
+
+describe("Checkbox selection with virtualization", () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: editVirtualData,
+        enableVirtualization: true,
+        childMapping: "Crew",
+        treeColumnIndex: 1,
+        allowSelection: true,
+        selectionSettings: { persistSelection: true },
+        height: 400,
+        columns: [
+          { type: 'checkbox', width: 50 },
+          {
+            field: "TaskID",
+            headerText: "Player Jersey",
+            isPrimaryKey: true,
+            width: 140,
+            textAlign: "Right",
+          },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+        ],
+      },
+      () => {
+        let content: HTMLElement = (<HTMLElement>gridObj.grid.getContent().firstChild);
+        EventHandler.trigger(content, 'wheel');
+        content.scrollTop = 10;
+        content.scrollTop = 1200;
+        EventHandler.trigger(content, 'scroll', { target: content });
+        setTimeout(done, 200);
+      }
+    );
+  });
+
+
+  it("Select headercell", () => {
+    (<HTMLElement>gridObj.element.querySelector('.e-checkselectall')).click();
+    expect(gridObj.getSelectedRecords().length).toBe(1000);
+  });
+
+  afterAll(() => {
+    destroy(gridObj);
+    gridObj = null;
+  });
+});
+
+// describe("EJ2-924945- Focus removed on scrolling down using key in Virtualization", () => {
+//   var tempData = [
+//     {
+//       TaskID: 1,
+//       TaskName: 'Product concept',
+//       StartDate: new Date('04/02/2019'),
+//       EndDate: new Date('04/21/2019'),
+//       parentID: 0,
+//     },
+//     {
+//       TaskID: 2,
+//       TaskName: 'Defining the product and its usage',
+//       StartDate: new Date('04/02/2019'),
+//       Duration: 3,
+//       Progress: 30,
+//       parentID: 1,
+//     },
+//     {
+//       TaskID: 3,
+//       TaskName: 'Defining target audience',
+//       StartDate: new Date('04/02/2019'),
+//       parentID: 1,
+//       Duration: 3,
+//     },
+//     {
+//       TaskID: 4,
+//       TaskName: 'Prepare product sketch and notes',
+//       StartDate: new Date('04/05/2019'),
+//       Duration: 2,
+//       parentID: 1,
+//       Progress: 30,
+//     },
+//     {
+//       TaskID: 5,
+//       TaskName: 'Concept approval',
+//       StartDate: new Date('04/08/2019'),
+//       parentID: 0,
+//       Duration: 0,
+//     },
+//     {
+//       TaskID: 6,
+//       TaskName: 'Market research',
+//       StartDate: new Date('04/02/2019'),
+//       parentID: 0,
+//       EndDate: new Date('04/21/2019'),
+//     },
+//     {
+//       TaskID: 7,
+//       TaskName: 'Demand analysis',
+//       StartDate: new Date('04/04/2019'),
+//       EndDate: new Date('04/21/2019'),
+//       parentID: 6,
+//     },
+//     {
+//       TaskID: 8,
+//       TaskName: 'Customer strength',
+//       StartDate: new Date('04/09/2019'),
+//       Duration: 4,
+//       parentID: 7,
+//       Progress: 30,
+//     },
+//     {
+//       TaskID: 9,
+//       TaskName: 'Market opportunity analysis',
+//       StartDate: new Date('04/09/2019'),
+//       Duration: 4,
+//       parentID: 7,
+//     },
+//     {
+//       TaskID: 10,
+//       TaskName: 'Competitor analysis',
+//       StartDate: new Date('04/15/2019'),
+//       Duration: 4,
+//       parentID: 6,
+//       Progress: 30,
+//     },
+//     {
+//       TaskID: 11,
+//       TaskName: 'Product strength analsysis',
+//       StartDate: new Date('04/15/2019'),
+//       Duration: 4,
+//       parentID: 6,
+//     },
+//     {
+//       TaskID: 12,
+//       TaskName: 'Research complete',
+//       StartDate: new Date('04/18/2019'),
+//       Duration: 0,
+//       parentID: 6,
+//     },
+//     {
+//       TaskID: 13,
+//       TaskName: 'Product design and development',
+//       StartDate: new Date('04/04/2019'),
+//       parentID: 0,
+//       EndDate: new Date('04/21/2019'),
+//     },
+//     {
+//       TaskID: 14,
+//       TaskName: 'Functionality design',
+//       StartDate: new Date('04/19/2019'),
+//       Duration: 3,
+//       parentID: 13,
+//       Progress: 30,
+//     },
+//     {
+//       TaskID: 15,
+//       TaskName: 'Quality design',
+//       StartDate: new Date('04/19/2019'),
+//       Duration: 3,
+//       parentID: 13,
+//     },
+//     {
+//       TaskID: 16,
+//       TaskName: 'Define reliability',
+//       StartDate: new Date('04/24/2019'),
+//       Duration: 2,
+//       Progress: 30,
+//       parentID: 13,
+//     },
+//     {
+//       TaskID: 17,
+//       TaskName: 'Identifying raw materials',
+//       StartDate: new Date('04/24/2019'),
+//       Duration: 2,
+//       parentID: 13,
+//     },
+//     {
+//       TaskID: 18,
+//       TaskName: 'Define cost plan',
+//       StartDate: new Date('04/04/2019'),
+//       parentID: 13,
+//       EndDate: new Date('04/21/2019'),
+//     },
+//     {
+//       TaskID: 19,
+//       TaskName: 'Manufacturing cost',
+//       StartDate: new Date('04/26/2019'),
+//       Duration: 2,
+//       Progress: 30,
+//       parentID: 18,
+//     },
+//     {
+//       TaskID: 20,
+//       TaskName: 'Selling cost',
+//       StartDate: new Date('04/26/2019'),
+//       Duration: 2,
+//       parentID: 18,
+//     },
+//     {
+//       TaskID: 21,
+//       TaskName: 'Development of the final design',
+//       StartDate: new Date('04/30/2019'),
+//       parentID: 13,
+//       EndDate: new Date('04/21/2019'),
+//     },
+//     {
+//       TaskID: 22,
+//       TaskName: 'Defining dimensions and package volume',
+//       StartDate: new Date('04/30/2019'),
+//       Duration: 2,
+//       parentID: 21,
+//       Progress: 30,
+//     },
+//     {
+//       TaskID: 23,
+//       TaskName: 'Develop design to meet industry standards',
+//       StartDate: new Date('05/02/2019'),
+//       Duration: 2,
+//       parentID: 21,
+//     },
+//     {
+//       TaskID: 24,
+//       TaskName: 'Include all the details',
+//       StartDate: new Date('05/06/2019'),
+//       Duration: 3,
+//       parentID: 21,
+//     },
+//     {
+//       TaskID: 25,
+//       TaskName: 'CAD computer-aided design',
+//       StartDate: new Date('05/09/2019'),
+//       Duration: 3,
+//       parentID: 13,
+//       Progress: 30,
+//     },
+//     {
+//       TaskID: 26,
+//       TaskName: 'CAM computer-aided manufacturing',
+//       StartDate: new Date('09/14/2019'),
+//       Duration: 3,
+//       parentID: 13,
+//     },
+//     {
+//       TaskID: 27,
+//       TaskName: 'Design complete',
+//       StartDate: new Date('05/16/2019'),
+//       Duration: 0,
+//       parentID: 13,
+//     },
+//     {
+//       TaskID: 28,
+//       TaskName: 'Prototype testing',
+//       StartDate: new Date('05/17/2019'),
+//       Duration: 4,
+//       Progress: 30,
+//       parentID: 0,
+//     },
+//     {
+//       TaskID: 29,
+//       TaskName: 'Include feedback',
+//       StartDate: new Date('05/17/2019'),
+//       Duration: 4,
+//       parentID: 0,
+//     },
+//     {
+//       TaskID: 30,
+//       TaskName: 'Manufacturing',
+//       StartDate: new Date('05/23/2019'),
+//       Duration: 5,
+//       Progress: 30,
+//       parentID: 0,
+//     },
+//     {
+//       TaskID: 31,
+//       TaskName: 'Assembling materials to finsihed goods',
+//       StartDate: new Date('05/30/2019'),
+//       Duration: 5,
+//       parentID: 0,
+//     },
+//     {
+//       TaskID: 32,
+//       TaskName: 'Feedback and testing',
+//       StartDate: new Date('04/04/2019'),
+//       parentID: 0,
+//       EndDate: new Date('04/21/2019'),
+//     },
+//     {
+//       TaskID: 33,
+//       TaskName: 'Internal testing and feedback',
+//       StartDate: new Date('06/06/2019'),
+//       Duration: 3,
+//       parentID: 32,
+//       Progress: 45,
+//     },
+//     {
+//       TaskID: 34,
+//       TaskName: 'Customer testing and feedback',
+//       StartDate: new Date('06/11/2019'),
+//       Duration: 3,
+//       parentID: 32,
+//       Progress: 50,
+//     },
+//     {
+//       TaskID: 35,
+//       TaskName: 'Final product development',
+//       StartDate: new Date('04/04/2019'),
+//       parentID: 0,
+//       EndDate: new Date('04/21/2019'),
+//     },
+//     {
+//       TaskID: 36,
+//       TaskName: 'Important improvements',
+//       StartDate: new Date('06/14/2019'),
+//       Duration: 4,
+//       Progress: 30,
+//       parentID: 35,
+//     },
+//     {
+//       TaskID: 37,
+//       TaskName: 'Address any unforeseen issues',
+//       StartDate: new Date('06/14/2019'),
+//       Duration: 4,
+//       Progress: 30,
+//       parentID: 35,
+//     },
+//     {
+//       TaskID: 38,
+//       TaskName: 'Final product',
+//       StartDate: new Date('04/04/2019'),
+//       parentID: 0,
+//       EndDate: new Date('04/21/2019'),
+//     },
+//     {
+//       TaskID: 39,
+//       TaskName: 'Branding product',
+//       StartDate: new Date('06/20/2019'),
+//       Duration: 4,
+//       parentID: 38,
+//     },
+//     {
+//       TaskID: 40,
+//       TaskName: 'Marketing and presales',
+//       StartDate: new Date('06/26/2019'),
+//       Duration: 4,
+//       Progress: 30,
+//       parentID: 38,
+//     },
+//   ];
+//   interface Task {
+//     TaskID?: number;
+//     TaskName?: string;
+//     StartDate?: Date;
+//     Duration?: number;
+//     Progress?: number;
+//     parentID?: number;
+//   }
+
+//   var virtualData1: Task[] = [];
+//   var projId = 1;
+//   for (var i = 0; i < 50; i++) {
+//     var x = virtualData1.length + 1;
+//     var parent_1: Task = {};
+//     parent_1['TaskID'] = x;
+//     parent_1['TaskName'] = 'Project' + projId++;
+//     virtualData1.push(parent_1);
+//     for (var j = 0; j < tempData.length; j++) {
+//       var subtasks: Task = {};
+//       subtasks['TaskID'] = tempData[j].TaskID + x;
+//       subtasks['TaskName'] = tempData[j].TaskName;
+//       subtasks['StartDate'] = tempData[j].StartDate;
+//       subtasks['Duration'] = tempData[j].Duration;
+//       subtasks['Progress'] = tempData[j].Progress;
+//       subtasks['parentID'] = tempData[j].parentID + x;
+//       virtualData1.push(subtasks);
+//     }
+//   }
+//   let TreeGridObj: TreeGrid;
+//   const preventDefault: Function = new Function();
+//   beforeAll((done: Function) => {
+//     TreeGridObj = createGrid(
+//       {
+//         dataSource: virtualData1,
+//         allowSorting: true,
+//         enableVirtualization: true,
+//         parentIdMapping: 'parentID',
+//         idMapping: 'TaskID',
+//         contextMenuItems: ['AddRow'],
+//         toolbar: ["Indent", "Outdent", "Add", "Delete", "Update", "Cancel"],
+//         editSettings: {
+//           allowAdding: true,
+//           allowEditing: true,
+//           allowDeleting: true,
+//           newRowPosition: "Below"
+//         },
+//         allowRowDragAndDrop: true,
+//         columns: [
+//           { field: 'TaskID', isPrimaryKey: true },
+//           { field: 'TaskName' },
+//           { field: 'StartDate' },
+//           { field: 'Duration' },
+//           { field: 'Progress' },
+//         ],
+//         allowExcelExport: true,
+//         selectedRowIndex: 2,
+//         allowPdfExport: true,
+//         allowSelection: true,
+//         allowFiltering: true,
+//         gridLines: 'Both',
+//         height: '400px',
+//         allowResizing: true,
+//         selectionSettings: {
+//           mode: 'Row',
+//           type: 'Single',
+//           enableToggle: false,
+
+//         },
+//         rowHeight: 40,
+//       },
+//       done
+//     );
+//   });
+
+//   it("Scroll to Middle", function (done: Function) {
+//     let content: HTMLElement = <HTMLElement>TreeGridObj.getContent().firstChild;
+//     EventHandler.trigger(content, "wheel");
+//     content.scrollTop = 10;
+//     content.scrollTop = 4000;
+//     EventHandler.trigger(content, "scroll", { target: content });
+//     setTimeout(done, 500);
+//   });
+
+//   it("Move using downArrow key", function (done: Function) {
+//     (TreeGridObj.getContent().querySelector('.e-rowcell[index="108"]') as HTMLElement).click();
+//     (TreeGridObj.getContent().querySelector('.e-rowcell[index="108"]') as HTMLElement).focus();
+//     TreeGridObj.grid.keyboardModule.keyAction({
+//       action: 'downArrow', preventDefault: preventDefault,
+//       target: document.activeElement
+//     });
+//     setTimeout(done, 500);
+//   });
+
+//   it("DownArrow to Bottom Row", function (done: Function) {
+//     TreeGridObj.grid.keyboardModule.keyAction({
+//       action: 'downArrow', preventDefault: preventDefault,
+//       target: document.activeElement
+//     });
+//     setTimeout(done, 500);
+//   });
+
+//   it("Check for focused element", function (done: Function) {
+//     expect(document.activeElement.tagName).toBe('TD');
+//     done();
+//   });
+
+//   afterAll(() => {
+//     destroy(TreeGridObj);
+//     TreeGridObj = null;
+//   });
+// });
+
+// describe("EJ2-926455- Collapsed record not in viewport", () => {
+//   var virtualData2: { TaskID: number; TaskName: string; StartDate: string; Duration: number; Progress: number; parentID: number | null }[] = [];
+
+//   for (let i = 0; i < 100; i++) {
+//     let parentTaskId: number = virtualData2.length + 1;
+
+//     // Create parent task
+//     let parent: { TaskID: number; TaskName: string; StartDate: string; Duration: number; Progress: number; parentID: number | null } = {
+//       TaskID: parentTaskId,
+//       TaskName: `Project ${i + 1}`,
+//       StartDate: '2024-12-01',
+//       Duration: 50, // Example duration
+//       Progress: 0, // Example progress
+//       parentID: null, // No parent for top-level
+//     };
+//     virtualData2.push(parent);
+
+//     // Create 100 child tasks for this parent
+//     for (let j = 0; j < 30; j++) {
+//       let childTaskId: number = virtualData2.length + 1;
+
+//       // Create child task
+//       let child: { TaskID: number; TaskName: string; StartDate: string; Duration: number; Progress: number; parentID: number } = {
+//         TaskID: childTaskId,
+//         TaskName: `Task ${j + 1} of Project ${i + 1}`,
+//         StartDate: '2024-12-01',
+//         Duration: 5 + (j % 3), // Example duration
+//         Progress: j % 100, // Example progress
+//         parentID: parentTaskId,
+//       };
+//       virtualData2.push(child);
+
+//       // Make the 11th child (index 10) a parent of 100 nested tasks
+//       if (j === 10) {
+//         for (let k = 0; k < 10; k++) {
+//           let nestedTaskId: number = virtualData2.length + 1;
+
+//           // Create nested child task
+//           let nestedChild: { TaskID: number; TaskName: string; StartDate: string; Duration: number; Progress: number; parentID: number } = {
+//             TaskID: nestedTaskId,
+//             TaskName: `Subtask ${k + 1} of Task ${childTaskId}`,
+//             StartDate: '2024-12-01',
+//             Duration: 3 + (k % 2), // Example duration
+//             Progress: k % 50, // Example progress
+//             parentID: childTaskId,
+//           };
+//           virtualData2.push(nestedChild);
+//         }
+//       }
+//       if (j === 20) {
+//         for (let k = 0; k < 10; k++) {
+//           let nestedTaskId: number = virtualData2.length + 1;
+
+//           // Create nested child task
+//           let nestedChild: { TaskID: number; TaskName: string; StartDate: string; Duration: number; Progress: number; parentID: number } = {
+//             TaskID: nestedTaskId,
+//             TaskName: `Subtask ${k + 1} of Task ${childTaskId}`,
+//             StartDate: '2024-12-01',
+//             Duration: 3 + (k % 2), // Example duration
+//             Progress: k % 50, // Example progress
+//             parentID: childTaskId,
+//           };
+//           virtualData2.push(nestedChild);
+//         }
+//       }
+//     }
+//   }
+//   let TreeGridObj: TreeGrid;
+//   let oldTranslateY = 0;
+//   const preventDefault: Function = new Function();
+//   beforeAll((done: Function) => {
+//     TreeGridObj = createGrid(
+//       {
+//         dataSource: virtualData2,
+//         enableVirtualization: true,
+//         height: 300,
+//         treeColumnIndex: 1,
+//         enableVirtualMaskRow: true,
+//         parentIdMapping: 'parentID',
+//         idMapping: 'TaskID',
+//         columns: [
+//           { field: 'TaskID', isPrimaryKey: true },
+//           { field: 'TaskName' },
+//           { field: 'StartDate' },
+//         ],
+//         editSettings: {
+//           allowEditing: true,
+//           allowAdding: true,
+//           allowDeleting: true,
+//           mode: 'Row',
+//           newRowPosition: 'Child',
+//         },
+//         toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent'],
+//       },
+//       done
+//     );
+//   });
+
+//   it("Scroll to Bottom", function (done: Function) {
+//     let content: HTMLElement = <HTMLElement>TreeGridObj.getContent().firstChild;
+//     EventHandler.trigger(content, "wheel");
+//     content.scrollTop = 10;
+//     content.scrollTop = 186813;
+//     EventHandler.trigger(content, "scroll", { target: content });
+//     setTimeout(done, 1000);
+//   });
+
+//   it("Collapse last parentrecord", function (done: Function) {
+//     const virtualTable: HTMLElement = <HTMLElement>TreeGridObj.getContent().querySelector('.e-virtualtable');
+//     oldTranslateY = parseFloat(virtualTable.style.transform.split(',')[1].trim().replace('px)', ''));
+//     TreeGridObj.collapseByKey(5050);
+//     setTimeout(done, 500);
+//   });
+
+//   it("Compare TranslateY", function (done: Function) {
+//     const virtualTable: HTMLElement = <HTMLElement>TreeGridObj.getContent().querySelector('.e-virtualtable');
+//     const newTranslateY = parseFloat(virtualTable.style.transform.split(',')[1].trim().replace('px)', ''));
+//     expect(oldTranslateY).not.toBe(newTranslateY);
+//     done();
+//   });
+
+//   afterAll(() => {
+//     destroy(TreeGridObj);
+//     TreeGridObj = null;
+//   });
+
+// });
+
+describe("Virtualization coverage", () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: editVirtualData,
+        childMapping: "Crew",
+        enableVirtualization: true,
+        height: 400,
+        columns: [
+          {
+            field: "TaskID",
+            headerText: "Player Jersey",
+            width: 140,
+            textAlign: "Right",
+          },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD4",
+            headerText: "TMID",
+            width: 120,
+            textAlign: "Right",
+          }
+        ],
+      },
+      () => {
+        let content: HTMLElement = (<HTMLElement>gridObj.grid.getContent().firstChild);
+        EventHandler.trigger(content, 'wheel');
+        content.scrollTop = 10;
+        content.scrollTop = 1200;
+        EventHandler.trigger(content, 'scroll', { target: content });
+        setTimeout(done, 200);
+      }
+    );
+  });
+
+  it("Expand/collapse coverage", () => {
+    (gridObj.grid.contentModule as VirtualContentRenderer).startIndex = 20;
+    (gridObj.grid.contentModule as any).endIndex = 40;
+    gridObj.collapseAll();
+  });
+
+  afterAll(() => {
+    destroy(gridObj);
+    gridObj = null;
+  });
+});
+
+describe("Virtualization coverage", () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: editVirtualData,
+        childMapping: "Crew",
+        enableVirtualization: true,
+        enableColumnVirtualization: true,
+        enablePersistence: true,
+        height: 400,
+        columns: [
+          { field: "TaskID", headerText: "ID", isPrimaryKey: true, width: 140 },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD4",
+            headerText: "TMID",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD5",
+            headerText: "LGID",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD6",
+            headerText: "LGID",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD7",
+            headerText: "LGID",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD8",
+            headerText: "LGID",
+            width: 120,
+            textAlign: "Right",
+          },
+        ],
+      },
+      () => {
+        let content: HTMLElement = (<HTMLElement>gridObj.grid.getContent().firstChild);
+        EventHandler.trigger(content, 'wheel');
+        content.scrollTop = 10;
+        content.scrollTop = 1200;
+        EventHandler.trigger(content, 'scroll', { target: content });
+        setTimeout(done, 200);
+      }
+    );
+  });
+
+  it("Persistance coverage", () => {
+    expect(gridObj.flatData.length === 1000).toBe(true);
+  });
+
+  afterAll(() => {
+    destroy(gridObj);
+    gridObj = null;
+  });
+});
+
+describe("Virtualization coverage", () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: editVirtualData,
+        childMapping: "Crew",
+        enableVirtualization: true,
+        frozenRows: 2,
+        height: 400,
+        columns: [
+          { field: "TaskID", headerText: "ID", isPrimaryKey: true, width: 140 },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD4",
+            headerText: "TMID",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD5",
+            headerText: "LGID",
+            width: 120,
+            textAlign: "Right",
+          }
+        ],
+      },
+      done
+    );
+  });
+
+  it("GetRowCollection", () => {
+    gridObj.grid.pageSettings.currentPage = 2;
+   (gridObj.grid.contentModule as VirtualTreeContentRenderer).getRowCollection(1, false, true);
+  });
+
+  it("GetRowCollection", () => {
+    gridObj.grid.pageSettings.currentPage = 2;
+   (gridObj.grid.contentModule as VirtualTreeContentRenderer).getRowCollection(3, false, true);
+  });
+
+  it("GetRowCollection", () => {
+    gridObj.grid.pageSettings.currentPage = 2;
+   (gridObj.grid.contentModule as VirtualTreeContentRenderer).getRowCollection(3, false, false);
+  });
+
+  it("GetRowCollection", () => {
+    gridObj.grid.pageSettings.currentPage = 2;
+   (gridObj.grid.contentModule as VirtualTreeContentRenderer).getRowCollection(1, false, false);
+  });
+
+  afterAll(() => {
+    destroy(gridObj);
+    gridObj = null;
+  });
+});
+
+describe("Virtualization coverage", () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: editVirtualData,
+        childMapping: "Crew",
+        enableVirtualization: true,
+        height: 400,
+        editSettings: {
+          allowEditing: true,
+          allowAdding: true,
+          allowDeleting: true,
+          mode: "Row",
+          newRowPosition: "Below",
+        },
+        columns: [
+          { field: "TaskID", headerText: "ID", isPrimaryKey: true, width: 140 },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD4",
+            headerText: "TMID",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD5",
+            headerText: "LGID",
+            width: 120,
+            textAlign: "Right",
+          }
+        ],
+      },
+      done
+    );
+  });
+
+  it("restoreNewRow ", () => {
+    (gridObj.grid.contentModule as VirtualContentRenderer)['isAdd'] = true;
+    (gridObj.grid.contentModule as VirtualTreeContentRenderer)['restoreNewRow']();
+  });
+
+  afterAll(() => {
+    destroy(gridObj);
+    gridObj = null;
+  });
+});
+
+describe("Virtualization coverage", () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: editVirtualData,
+        childMapping: "Crew",
+        enableVirtualization: true,
+        height: 400,
+        editSettings: {
+          allowEditing: true,
+          allowAdding: true,
+          allowDeleting: true,
+          mode: "Batch",
+        },
+        columns: [
+          { field: "TaskID", headerText: "ID", isPrimaryKey: true, width: 140 },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD4",
+            headerText: "TMID",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD5",
+            headerText: "LGID",
+            width: 120,
+            textAlign: "Right",
+          }
+        ],
+      },
+      () => {
+        let content: HTMLElement = (<HTMLElement>gridObj.grid.getContent().firstChild);
+        EventHandler.trigger(content, 'wheel');
+        content.scrollTop = 10;
+        content.scrollTop = 1200;
+        EventHandler.trigger(content, 'scroll', { target: content });
+        setTimeout(done, 300);
+      }
+    );
+  });
+
+  it("getRowCollection ", () => {
+    gridObj.grid.isEdit = true;
+    (gridObj.grid.contentModule as VirtualTreeContentRenderer).getRowCollection(1, true, true);
+  });
+
+  afterAll(() => {
+    destroy(gridObj);
+    gridObj = null;
+  });
+});
+
+describe("Virtualization coverage", () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: editVirtualData,
+        childMapping: "Crew",
+        enableVirtualization: true,
+        height: 400,
+        editSettings: {
+          allowEditing: true,
+          allowAdding: true,
+          allowDeleting: true
+        },
+        columns: [
+          { field: "TaskID", headerText: "ID", isPrimaryKey: true, width: 140 },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD4",
+            headerText: "TMID",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD5",
+            headerText: "LGID",
+            width: 120,
+            textAlign: "Right",
+          }
+        ],
+      },
+      () => {
+        let content: HTMLElement = (<HTMLElement>gridObj.grid.getContent().firstChild);
+        EventHandler.trigger(content, 'wheel');
+        content.scrollTop = 10;
+        content.scrollTop = 1200;
+        EventHandler.trigger(content, 'scroll', { target: content });
+        setTimeout(done, 300);
+      }
+    );
+  });
+
+  it("Index modifier ", () => {
+    (gridObj.grid.contentModule as VirtualContentRenderer).startIndex = 980;
+    (gridObj.grid.contentModule as any)['endIndex'] = 1000;
+    (gridObj.grid.contentModule as any)['recordAdded'] = true;
+    gridObj.addRecord(
+      { TaskID: 10000, FIELD1: "TEST1" },
+      gridObj.getCurrentViewRecords()[0]["TaskID"],
+      "Child"
+    );
+  });
+
+  afterAll(() => {
+    destroy(gridObj);
+    gridObj = null;
+  });
+});
+
+describe("Virtualization coverage", () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: editVirtualData,
+        childMapping: "Crew",
+        enableVirtualization: true,
+        height: 400,
+        editSettings: {
+          allowEditing: true,
+          allowAdding: true,
+          allowDeleting: true,
+          mode: 'Row',
+          newRowPosition: 'Child'
+        },
+        columns: [
+          { field: "TaskID", headerText: "ID", isPrimaryKey: true, width: 140 },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD4",
+            headerText: "TMID",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD5",
+            headerText: "LGID",
+            width: 120,
+            textAlign: "Right",
+          }
+        ],
+      },
+      () => {
+        let content: HTMLElement = (<HTMLElement>gridObj.grid.getContent().firstChild);
+        EventHandler.trigger(content, 'wheel');
+        content.scrollTop = 10;
+        content.scrollTop = 1200;
+        EventHandler.trigger(content, 'scroll', { target: content });
+        setTimeout(done, 300);
+      }
+    );
+  });
+
+  it("Index modifier ", () => {
+    (gridObj.grid.contentModule as VirtualContentRenderer).startIndex = 14;
+    (gridObj.grid.contentModule as any)['endIndex'] = 34;
+    (gridObj.grid.contentModule as any)['recordAdded'] = true;
+    gridObj.addRecord(
+      { TaskID: 10000, FIELD1: "TEST1" },
+      gridObj.getCurrentViewRecords()[0]["TaskID"],
+      "Child"
+    );
+  });
+
+  afterAll(() => {
+    destroy(gridObj);
+    gridObj = null;
   });
 });

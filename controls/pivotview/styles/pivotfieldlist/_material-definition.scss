@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $field-list-skin: 'material' !default;
 $field-list-active-color: $accent !default;
 $field-list-default-font-color: $content-font-color !default;
@@ -110,7 +112,7 @@ $field-list-mobile-header-color: $grey-100 !default;
 $field-list-mobile-header-font-color: rgba($grey-light-font, .87) !default;
 $field-list-back-margin: 0 !default;
 $field-list-sort-wrapper-padding-size: 10px !default;
-$field-list-sort-select-background-color: mix($field-list-icon-hover-color, $grey-50, 32%) !default;
+$field-list-sort-select-background-color: color.mix($field-list-icon-hover-color, $grey-50, 32%) !default;
 $field-list-sort-select-border-color: transparent !default;
 $field-list-sort-select-color: rgba($grey-black, .87) !default;
 $field-list-border: $field-list-default-border-color !default;

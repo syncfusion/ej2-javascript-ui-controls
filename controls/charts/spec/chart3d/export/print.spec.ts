@@ -10,8 +10,9 @@ import { MouseEvents } from '../base/events.spec';
 import { Chart3DSeriesModel } from '../../../src/chart3d/series/chart-series-model';
 import { firstSeries, secondSeries, thirdSeries } from '../../chart/base/data.spec';
 import { Selection3D } from '../../../src/chart3d/user-interaction/selection';
-import { IPrintEventArgs, IExportEventArgs } from '../../../src/chart/model/chart-interface';
+import { IPrintEventArgs } from '../../../src/chart/model/chart-interface';
 import { Export3D } from '../../../src/chart3d/print-export/export';
+import { IExportEventArgs } from '../../../src/common/model/interface';
 
 Chart3D.Inject(
     ColumnSeries3D, BarSeries3D, Highlight3D, Legend3D, Selection3D, Export3D

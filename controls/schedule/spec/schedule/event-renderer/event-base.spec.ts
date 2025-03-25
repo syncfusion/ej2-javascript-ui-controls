@@ -3,14 +3,15 @@
  * Events base methods testing
  */
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { Schedule, Day, Week, WorkWeek, Month, Agenda, Timezone, ScheduleModel, CallbackFunction, EventClickArgs } from '../../../src/schedule/index';
+import { Schedule, Day, Week, WorkWeek, Month, Agenda, Timezone, ScheduleModel, CallbackFunction, EventClickArgs, View } from '../../../src/schedule/index';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
-import { resourceData } from '../base/datasource.spec';
-import { EJ2Instance } from '../../../src/schedule/base/interface';
+import { dragResizeData, resourceData } from '../base/datasource.spec';
+import { ActionEventArgs, EJ2Instance, PopupOpenEventArgs } from '../../../src/schedule/base/interface';
 import * as cls from '../../../src/schedule/base/css-constant';
 import * as util from '../util.spec';
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
+import { triggerMouseEvent } from '../util.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 
@@ -1293,6 +1294,1462 @@ describe('Event Base Module', () => {
             fridayButton.click();
             const saveButton: HTMLElement = dialogElement.querySelector('.e-event-save') as HTMLElement;
             saveButton.click();
+        });
+    });
+
+    describe('Checking the allowOverlap property in all views for normal events', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'OverlapEvent-1',
+            StartTime: new Date(2017, 9, 29, 10, 0),
+            EndTime: new Date(2017, 9, 29, 11, 30),
+            IsAllDay: false
+        }, {
+            Id: 2,
+            Subject: 'NonOverlapEvent-1',
+            StartTime: new Date(2017, 9, 29, 10, 0),
+            EndTime: new Date(2017, 9, 29, 12, 30),
+            IsAllDay: false
+        }, {
+            Id: 3,
+            Subject: 'AllDayNonOverlap-1',
+            StartTime: new Date(2017, 9, 30),
+            EndTime: new Date(2017, 9, 31),
+            IsAllDay: true
+        }, {
+            Id: 4,
+            Subject: 'AlldayOverlapEvent-1',
+            StartTime: new Date(2017, 9, 30, 11, 0),
+            EndTime: new Date(2017, 9, 30, 11, 30),
+            IsAllDay: false
+        }, {
+            Id: 5,
+            Subject: 'NonOverlapEvent-3',
+            StartTime: new Date(2017, 9, 31, 11, 0),
+            EndTime: new Date(2017, 9, 31, 14, 0),
+            IsAllDay: false
+        }, {
+            Id: 6,
+            Subject: 'OverlapEvent-3',
+            StartTime: new Date(2017, 9, 31, 9, 30),
+            EndTime: new Date(2017, 9, 31, 11, 45),
+            IsAllDay: false
+        }];
+
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
+                views: [
+                    { option: 'Day', allowOverlap: false },
+                    { option: 'Week', allowOverlap: false },
+                    { option: 'WorkWeek', allowOverlap: false },
+                    { option: 'Month', allowOverlap: false },
+                    { option: 'TimelineDay', allowOverlap: false },
+                    { option: 'TimelineWeek', allowOverlap: false },
+                    { option: 'TimelineWorkWeek', allowOverlap: false },
+                    { option: 'TimelineMonth', allowOverlap: false }
+                ],
+                height: '550px',
+                width: '100%',
+                selectedDate: new Date(2017, 9, 30),
+                currentView: 'Week',
+            };
+            schObj = util.createSchedule(options, eventData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Checking allowOverlap property in Day view', (done: Function) => {
+            schObj.dataBound = () => {
+                const appointmentElements = schObj.element.querySelectorAll('.e-appointment');
+                expect(appointmentElements.length).toBe(1);
+                expect(schObj.eventsProcessed.length).toBe(1);
+                done();
+            };
+            schObj.currentView = 'Day';
+            schObj.dataBind();
+        });
+
+        it('Checking allowOverlap property in Week view', (done: Function) => {
+            schObj.dataBound = () => {
+                const appointmentElements = schObj.element.querySelectorAll('.e-appointment');
+                expect(appointmentElements.length).toBe(3);
+                expect(schObj.eventsProcessed.length).toBe(3);
+                done();
+            };
+            schObj.currentView = 'Week';
+            schObj.dataBind();
+        });
+
+        it('Checking allowOverlap property in WorkWeek view', (done: Function) => {
+            schObj.dataBound = () => {
+                const appointmentElements = schObj.element.querySelectorAll('.e-appointment');
+                expect(appointmentElements.length).toBe(2);
+                expect(schObj.eventsProcessed.length).toBe(2);
+                done();
+            };
+            schObj.currentView = 'WorkWeek';
+            schObj.dataBind();
+        });
+
+        it('Checking allowOverlap property in Month view', (done: Function) => {
+            schObj.dataBound = () => {
+                const appointmentElements = schObj.element.querySelectorAll('.e-appointment');
+                expect(appointmentElements.length).toBe(3);
+                expect(schObj.eventsProcessed.length).toBe(3);
+                done();
+            };
+            schObj.currentView = 'Month';
+            schObj.dataBind();
+        });
+
+        it('Checking allowOverlap property in TimelineDay view', (done: Function) => {
+            schObj.dataBound = () => {
+                const appointmentElements = schObj.element.querySelectorAll('.e-appointment');
+                expect(appointmentElements.length).toBe(1);
+                expect(schObj.eventsProcessed.length).toBe(1);
+                done();
+            };
+            schObj.currentView = 'TimelineDay';
+            schObj.dataBind();
+        });
+
+        it('Checking allowOverlap property in TimelineWeek view', (done: Function) => {
+            schObj.dataBound = () => {
+                const appointmentElements = schObj.element.querySelectorAll('.e-appointment');
+                expect(appointmentElements.length).toBe(3);
+                expect(schObj.eventsProcessed.length).toBe(3);
+                done();
+            };
+            schObj.currentView = 'TimelineWeek';
+            schObj.dataBind();
+        });
+
+        it('Checking allowOverlap property in TimelineWorkWeek view', (done: Function) => {
+            schObj.dataBound = () => {
+                const appointmentElements = schObj.element.querySelectorAll('.e-appointment');
+                expect(appointmentElements.length).toBe(2);
+                expect(schObj.eventsProcessed.length).toBe(2);
+                done();
+            };
+            schObj.currentView = 'TimelineWorkWeek';
+            schObj.dataBind();
+        });
+
+        it('Checking allowOverlap property in TimelineMonth view', (done: Function) => {
+            schObj.dataBound = () => {
+                const appointmentElements = schObj.element.querySelectorAll('.e-appointment');
+                expect(appointmentElements.length).toBe(3);
+                expect(schObj.eventsProcessed.length).toBe(3);
+                done();
+            };
+            schObj.currentView = 'TimelineMonth';
+            schObj.dataBind();
+        });
+    });
+
+    describe('Checking the allowOverlap in intial load with resources in all Views', () => {
+        let schObj: Schedule;
+        const resourceData = [
+            {
+                Id: 1,
+                Subject: 'Workflow Analysis',
+                StartTime: new Date(2018, 3, 2, 9, 30),
+                EndTime: new Date(2018, 3, 2, 12, 0),
+                IsAllDay: false,
+                OwnerId: 1,
+                RoomId: 1
+            }, {
+                Id: 2,
+                Subject: 'Requirement planning',
+                StartTime: new Date(2018, 3, 2, 9, 0),
+                EndTime: new Date(2018, 3, 2, 10, 0),
+                IsAllDay: false,
+                OwnerId: 2,
+                RoomId: 1
+            }, {
+                Id: 3,
+                Subject: 'Quality Analysis',
+                StartTime: new Date(2018, 3, 2, 9, 30),
+                EndTime: new Date(2018, 3, 2, 12, 0),
+                IsAllDay: false,
+                OwnerId: 2,
+                RoomId: 1
+            }, {
+                Id: 4,
+                Subject: 'Resource planning',
+                StartTime: new Date(2018, 3, 2, 9, 30),
+                EndTime: new Date(2018, 3, 2, 10, 30),
+                IsAllDay: false,
+                OwnerId: 1,
+                RoomId: 1
+            }, {
+                Id: 5,
+                Subject: 'Timeline estimation',
+                StartTime: new Date(2018, 3, 3, 9, 0),
+                EndTime: new Date(2018, 3, 3, 11, 30),
+                IsAllDay: false,
+                OwnerId: 3,
+                RoomId: 2
+            }, {
+                Id: 6,
+                Subject: 'Developers Meeting',
+                StartTime: new Date(2018, 3, 3, 14, 0),
+                EndTime: new Date(2018, 3, 3, 16, 45),
+                IsAllDay: false,
+                OwnerId: 3,
+                RoomId: 2
+            }, {
+                Id: 7,
+                Subject: 'Project Review',
+                StartTime: new Date(2018, 3, 3, 9, 0),
+                EndTime: new Date(2018, 3, 3, 11, 30),
+                IsAllDay: false,
+                OwnerId: 2,
+                RoomId: 1
+            }, {
+                Id: 8,
+                Subject: 'Manual testing',
+                StartTime: new Date(2018, 3, 4, 9, 15),
+                EndTime: new Date(2018, 3, 4, 11, 45),
+                IsAllDay: false,
+                OwnerId: 3,
+                RoomId: 2
+            }, {
+                Id: 9,
+                Subject: 'Project Preview',
+                StartTime: new Date(2018, 3, 4, 9, 30),
+                EndTime: new Date(2018, 3, 4, 12, 45),
+                IsAllDay: false,
+                OwnerId: 1,
+                RoomId: 1
+            }
+        ];
+        const scheduleOptions: ScheduleModel = {
+            width: '100%',
+            height: '550px',
+            selectedDate: new Date(2018, 3, 4),
+            views: [
+                { option: 'Day', allowOverlap: false },
+                { option: 'Week', allowOverlap: false },
+                { option: 'WorkWeek', allowOverlap: false },
+                { option: 'Month', allowOverlap: false },
+                { option: 'TimelineDay', allowOverlap: false },
+                { option: 'TimelineWeek', allowOverlap: false },
+                { option: 'TimelineWorkWeek', allowOverlap: false },
+                { option: 'TimelineMonth', allowOverlap: false }
+            ],
+            group: {
+                resources: ['Rooms', 'Owners']
+            },
+            resources: [{
+                field: 'RoomId', title: 'Room',
+                name: 'Rooms', allowMultiple: false,
+                dataSource: [
+                    { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
+                    { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' }
+                ],
+                textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
+            }, {
+                field: 'OwnerId', title: 'Owner',
+                name: 'Owners', allowMultiple: true,
+                dataSource: [
+                    { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                    { OwnerText: 'Steven', Id: 2, OwnerGroupId: 1, OwnerColor: '#f8a398' },
+                    { OwnerText: 'Michael', Id: 3, OwnerGroupId: 2, OwnerColor: '#7499e1' }
+                ],
+                textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+            }],
+            eventSettings: { dataSource: resourceData }
+        };
+        beforeAll((done: DoneFn) => {
+            schObj = util.createSchedule(scheduleOptions, resourceData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        const testAllowOverlapForView = function (viewName: View) {
+            it("Checking the allowOverlap property for the initial load with resources in " + viewName + " view", function (done) {
+                schObj.currentView = viewName;
+                schObj.dataBind();
+                setTimeout(function () {
+                    if (!(viewName === 'Day' || viewName === 'TimelineDay')) {
+                        var appointmentElements = schObj.element.querySelectorAll('.e-appointment');
+                        expect(appointmentElements.length).toBeGreaterThan(0);
+                        var apr2Events = schObj.eventsProcessed.filter(function (event) { return event.StartTime.getDate() === 2; });
+                        expect(apr2Events.length).toBe(2);
+                        expect(apr2Events[0].Subject).toBe('Requirement planning');
+                        expect(apr2Events[1].Subject).toBe('Workflow Analysis');
+                        var apr3Events = schObj.eventsProcessed.filter(function (event) { return event.StartTime.getDate() === 3; });
+                        expect(apr3Events.length).toBe(3);
+                        expect(apr3Events[0].Subject).toBe('Timeline estimation');
+                        expect(apr3Events[1].Subject).toBe('Project Review');
+                        expect(apr3Events[2].Subject).toBe('Developers Meeting');
+                        var apr4Events = schObj.eventsProcessed.filter(function (event) { return event.StartTime.getDate() === 4; });
+                        expect(apr4Events.length).toBe(2);
+                        expect(apr4Events[0].Subject).toBe('Manual testing');
+                        expect(apr4Events[1].Subject).toBe('Project Preview');
+                    } else {
+                        var apr4Events = schObj.eventsProcessed.filter(function (event) { return event.StartTime.getDate() === 4; });
+                        expect(apr4Events.length).toBe(2);
+                        expect(apr4Events[0].Subject).toBe('Manual testing');
+                        expect(apr4Events[1].Subject).toBe('Project Preview');
+                    }
+                    done();
+                }, 500);
+            });
+        };
+        testAllowOverlapForView('Day');
+        testAllowOverlapForView('Week');
+        testAllowOverlapForView('WorkWeek');
+        testAllowOverlapForView('Month');
+        testAllowOverlapForView('TimelineDay');
+        testAllowOverlapForView('TimelineWeek');
+        testAllowOverlapForView('TimelineWorkWeek');
+        testAllowOverlapForView('TimelineMonth');
+    });
+
+    describe('Appointment editing with overlap validation in different views', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [
+            {
+                Id: 1,
+                Subject: 'Appointment 1',
+                StartTime: new Date(2023, 0, 2, 10, 0),
+                EndTime: new Date(2023, 0, 2, 10, 30)
+            },
+            {
+                Id: 2,
+                Subject: 'Appointment 2',
+                StartTime: new Date(2023, 0, 2, 11, 0),
+                EndTime: new Date(2023, 0, 2, 11, 30)
+            }
+        ];
+        beforeEach((done: DoneFn) => {
+            const options: ScheduleModel = {
+                height: '550px',
+                width: '100%',
+                selectedDate: new Date(2023, 0, 2),
+                views: [
+                    { option: 'Day', allowOverlap: false },
+                    { option: 'Week', allowOverlap: false },
+                    { option: 'WorkWeek', allowOverlap: false },
+                    { option: 'Month', allowOverlap: false },
+                    { option: 'TimelineDay', allowOverlap: false },
+                    { option: 'TimelineWeek', allowOverlap: false },
+                    { option: 'TimelineWorkWeek', allowOverlap: false },
+                    { option: 'TimelineMonth', allowOverlap: false }
+                ],
+                popupOpen: function (args: PopupOpenEventArgs) {
+                    if (args.type === 'OverlapAlert') {
+                        expect(args.overlapEvents[0].Subject).toBe('Appointment 2');
+                    }
+                }
+            };
+            schObj = util.createSchedule(options, eventData, done);
+        });
+        afterEach(() => {
+            util.destroy(schObj);
+        });
+        const testOverlapValidation = (viewName: View) => {
+            it(`should show validation popup when editing appointment to cause overlap and keep editor open in ${viewName} view`, (done: DoneFn) => {
+                schObj.currentView = viewName;
+                schObj.dataBind();
+                setTimeout(() => {
+                    const appointment1: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                    expect(appointment1).toBeTruthy();
+                    util.triggerMouseEvent(appointment1, 'click');
+                    util.triggerMouseEvent(appointment1, 'dblclick');
+                    setTimeout(() => {
+                        const editorWindow: HTMLElement = document.querySelector('.e-schedule-dialog') as HTMLElement;
+                        expect(editorWindow).toBeTruthy();
+                        const endTimeInput: HTMLInputElement = editorWindow.querySelector('.e-end') as HTMLInputElement;
+                        const endTimePicker = (endTimeInput as any).ej2_instances[0];
+                        endTimePicker.value = new Date(2023, 0, 2, 12, 0);
+                        endTimePicker.dataBind();
+                        const saveButton: HTMLElement = editorWindow.querySelector('.e-event-save') as HTMLElement;
+                        saveButton.click();
+                        setTimeout(() => {
+                            const alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+                            expect(alertDialog).toBeTruthy();
+                            expect(alertDialog.querySelector('.e-dlg-content').textContent).toContain('Events cannot be scheduled during the chosen time as it overlaps with another event.');
+                            (alertDialog.querySelector('.e-quick-dialog-alert-btn') as HTMLElement).click();
+                            const editorWindowAfterAlert: HTMLElement = document.querySelector('.e-schedule-dialog') as HTMLElement;
+                            expect(editorWindowAfterAlert).toBeTruthy();
+                            const cancelButton: HTMLElement = editorWindowAfterAlert.querySelector('.e-event-cancel') as HTMLElement;
+                            cancelButton.click();
+                            const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
+                            expect((event.StartTime as Date).getTime()).toEqual(new Date(2023, 0, 2, 10, 0).getTime());
+                            expect((event.EndTime as Date).getTime()).toEqual(new Date(2023, 0, 2, 10, 30).getTime());
+                            done();
+                        }, 300);
+                    }, 300);
+                }, 300);
+            });
+        };
+        testOverlapValidation('Day');
+        testOverlapValidation('Week');
+        testOverlapValidation('WorkWeek');
+        testOverlapValidation('Month');
+        testOverlapValidation('TimelineDay');
+        testOverlapValidation('TimelineWeek');
+        testOverlapValidation('TimelineWorkWeek');
+        testOverlapValidation('TimelineMonth');
+    });
+
+    describe('Checking sortcomparer function for Overlap API', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Rank 1',
+            StartTime: new Date(2017, 9, 29, 10, 0),
+            EndTime: new Date(2017, 9, 29, 11, 30),
+            IsAllDay: false,
+            RankId: '1'
+        }, {
+            Id: 2,
+            Subject: 'Rank 3',
+            StartTime: new Date(2017, 9, 29, 10, 30),
+            EndTime: new Date(2017, 9, 29, 12, 30),
+            IsAllDay: false,
+            RankId: '3'
+        }, {
+            Id: 3,
+            Subject: 'Rank 6',
+            StartTime: new Date(2017, 9, 29, 7, 0),
+            EndTime: new Date(2017, 9, 29, 14, 30),
+            IsAllDay: false,
+            RankId: '6'
+        }, {
+            Id: 4,
+            Subject: 'Rank 9',
+            StartTime: new Date(2017, 9, 29, 11, 0),
+            EndTime: new Date(2017, 9, 29, 15, 30),
+            IsAllDay: false,
+            RankId: '9'
+        }];
+        beforeAll((done: DoneFn) => {
+            const ComparerFn: string = 'sortComparer';
+            (window as any).sortComparer = (args: any) => {
+                args.sort((a: any, b: any) => a.RankId.localeCompare(b.RankId, undefined, { numeric: true }));
+                return args;
+            };
+            const options: ScheduleModel = {
+                height: '550px', width: '100%', selectedDate: new Date(2017, 9, 29),
+                views: ['Week', 'Month', 'TimelineDay', 'TimelineMonth'],
+                currentView: 'Week',
+                allowOverlap: false,
+                eventSettings: {
+                    sortComparer: ComparerFn as any
+                }
+            };
+            schObj = util.createSchedule(options, eventData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Overlap API should sort events based on their RankId', () => {
+            const eventElement: Element = schObj.element.querySelector('.e-appointment');
+            const expectedRankId: string = '1';
+            const eventDetails: Record<string, any> = schObj.getEventDetails(eventElement);
+            expect(eventDetails.RankId).toEqual(expectedRankId);
+            expect(schObj.eventsProcessed.length).toBe(1);
+        });
+    });
+
+    describe('Checking the events are assign to args.promise in actionBegin for add event', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [];
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
+                height: '550px',
+                width: '100%',
+                selectedDate: new Date(2023, 0, 1),
+                views: ['Week'],
+                currentView: 'Week',
+                allowOverlap: false,
+                popupOpen: function (args: PopupOpenEventArgs) {
+                    if (args.type === 'OverlapAlert') {
+                        expect(args.overlapEvents[0].Subject).toBe('OverlapEvent1');
+                    }
+                }
+            };
+            schObj = util.createSchedule(options, eventData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('should handle add event with promise without overlap events', (done: DoneFn) => {
+            const newEvent = {
+                Id: 1,
+                Subject: 'Test Event',
+                StartTime: new Date(2023, 0, 2, 10, 0),
+                EndTime: new Date(2023, 0, 2, 11, 0)
+            };
+            schObj.actionBegin = (args: ActionEventArgs) => {
+                if (args.requestType === 'eventCreate') {
+                    args.promise = Promise.resolve(true);
+                }
+            };
+            schObj.addEvent(newEvent);
+            setTimeout(() => {
+                expect(schObj.eventsData.length).toBe(1);
+                if (schObj.eventsData.length > 0) {
+                    expect(schObj.eventsData[0].Subject).toBe('Test Event');
+                }
+                done();
+            }, 100);
+        });
+
+        it('should handle add event with promise with overlap events', (done: DoneFn) => {
+            const overlapEvent = {
+                Id: 2,
+                Subject: 'OverlapEvent1',
+                StartTime: new Date(2023, 0, 2, 12, 0),
+                EndTime: new Date(2023, 0, 2, 12, 30)
+            };
+            schObj.actionBegin = (args: ActionEventArgs) => {
+                if (args.requestType === 'eventCreate') {
+                    args.promise = Promise.resolve(false);
+                }
+            };
+            schObj.addEvent(overlapEvent);
+            setTimeout(() => {
+                expect(schObj.eventsData.length).toBe(1);
+                if (schObj.eventsData.length > 0) {
+                    expect(schObj.eventsData[0].Subject).toBe('Test Event');
+                }
+                done();
+            }, 100);
+        });
+
+        it('should handle add event promise rejection', (done: DoneFn) => {
+            const failureEvent = {
+                Id: 3,
+                Subject: 'Failed Event',
+                StartTime: new Date(2023, 0, 3, 10, 0),
+                EndTime: new Date(2023, 0, 3, 11, 0)
+            };
+            schObj.actionBegin = (args: ActionEventArgs) => {
+                if (args.requestType === 'eventCreate') {
+                    args.promise = Promise.reject(new Error('Add event failed'));
+                }
+            };
+            schObj.addEvent(failureEvent);
+            setTimeout(() => {
+                expect(schObj.eventsData.length).toBe(1);
+                done();
+            }, 100);
+        });
+    });
+
+    describe('Checking the events are assign to args.promise in actionBegin for save event', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Initial Event',
+            StartTime: new Date(2023, 0, 2, 9, 0),
+            EndTime: new Date(2023, 0, 2, 10, 0)
+        }];
+
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
+                height: '550px',
+                width: '100%',
+                selectedDate: new Date(2023, 0, 1),
+                views: ['Week'],
+                currentView: 'Week',
+                allowOverlap: false,
+                eventSettings: { dataSource: eventData },
+                popupOpen: function (args: PopupOpenEventArgs) {
+                    if (args.type === 'OverlapAlert') {
+                        expect(args.overlapEvents[0].Subject).toBe('OverlapEvent1');
+                    }
+                }
+            };
+            schObj = util.createSchedule(options, eventData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('should handle save event with promise without overlap', (done: DoneFn) => {
+            const updatedEvent = {
+                Id: 1,
+                Subject: 'Updated Event',
+                StartTime: new Date(2023, 0, 2, 11, 0),
+                EndTime: new Date(2023, 0, 2, 12, 0)
+            };
+            schObj.actionBegin = (args: ActionEventArgs) => {
+                if (args.requestType === 'eventChange') {
+                    args.promise = Promise.resolve(true);
+                }
+            };
+            schObj.saveEvent(updatedEvent);
+            setTimeout(() => {
+                expect(schObj.eventsData.length).toBe(1);
+                expect(schObj.eventsData[0].Subject).toBe('Updated Event');
+                done();
+            }, 100);
+        });
+
+        it('should handle save event with promise with overlap', (done: DoneFn) => {
+            const overlapEvent = {
+                Id: 1,
+                Subject: 'OverlapEvent1',
+                StartTime: new Date(2023, 0, 2, 9, 30),
+                EndTime: new Date(2023, 0, 2, 10, 30)
+            };
+            schObj.actionBegin = (args: ActionEventArgs) => {
+                if (args.requestType === 'eventChange') {
+                    args.promise = Promise.resolve(false);
+                }
+            };
+            schObj.saveEvent(overlapEvent);
+            setTimeout(() => {
+                expect(schObj.eventsData.length).toBe(1);
+                expect(schObj.eventsData[0].Subject).toBe('Updated Event');
+                done();
+            }, 100);
+        });
+
+        it('should handle save event promise rejection', (done: DoneFn) => {
+            const failureEvent = {
+                Id: 1,
+                Subject: 'Failed Update',
+                StartTime: new Date(2023, 0, 3, 10, 0),
+                EndTime: new Date(2023, 0, 3, 11, 0)
+            };
+            schObj.actionBegin = (args: ActionEventArgs) => {
+                if (args.requestType === 'eventChange') {
+                    args.promise = Promise.reject(new Error('Save event failed'));
+                }
+            };
+            schObj.saveEvent(failureEvent);
+            setTimeout(() => {
+                expect(schObj.eventsData.length).toBe(1);
+                expect(schObj.eventsData[0].Subject).toBe('Updated Event');
+                done();
+            }, 100);
+        });
+    });
+
+    describe('Checking the events are assign to args.promise in actionBegin for delete event', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [
+            {
+                Id: 1,
+                Subject: 'Event to Delete',
+                StartTime: new Date(2023, 0, 2, 9, 0),
+                EndTime: new Date(2023, 0, 2, 10, 0)
+            },
+            {
+                Id: 2,
+                Subject: 'Event to not Delete',
+                StartTime: new Date(2023, 0, 2, 9, 0),
+                EndTime: new Date(2023, 0, 2, 10, 0)
+            }
+        ];
+
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
+                height: '550px',
+                width: '100%',
+                selectedDate: new Date(2023, 0, 1),
+                views: ['Week'],
+                currentView: 'Week',
+                eventSettings: { dataSource: eventData }
+            };
+            schObj = util.createSchedule(options, eventData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('should handle delete event with promise allowing deletion', (done: DoneFn) => {
+            schObj.actionBegin = (args: ActionEventArgs) => {
+                if (args.requestType === 'eventRemove') {
+                    args.promise = Promise.resolve(true);
+                }
+            };
+            schObj.deleteEvent(1);
+            setTimeout(() => {
+                expect(schObj.eventsData.length).toBe(1);
+                expect(schObj.eventsData[0].Subject).toBe('Event to not Delete');
+                done();
+            }, 100);
+        });
+
+        it('should handle delete event with promise preventing deletion', (done: DoneFn) => {
+            schObj.actionBegin = (args: ActionEventArgs) => {
+                if (args.requestType === 'eventRemove') {
+                    args.promise = Promise.resolve(false);
+                }
+            };
+            schObj.deleteEvent(1);
+            setTimeout(() => {
+                expect(schObj.eventsData.length).toBe(1);
+                expect(schObj.eventsData[0].Subject).toBe('Event to not Delete');
+                done();
+            }, 100);
+        });
+    });
+
+    describe('Checking the events are assign to args.promise  promise rejection delete event', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [
+            {
+                Id: 1,
+                Subject: 'Event to Delete',
+                StartTime: new Date(2023, 0, 2, 9, 0),
+                EndTime: new Date(2023, 0, 2, 10, 0)
+            },
+            {
+                Id: 2,
+                Subject: 'Event to not Delete',
+                StartTime: new Date(2023, 0, 2, 9, 0),
+                EndTime: new Date(2023, 0, 2, 10, 0)
+            }
+        ];
+
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
+                height: '550px',
+                width: '100%',
+                selectedDate: new Date(2023, 0, 1),
+                views: ['Week'],
+                currentView: 'Week',
+                eventSettings: { dataSource: eventData }
+            };
+            schObj = util.createSchedule(options, eventData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('should handle delete event promise rejection', (done: DoneFn) => {
+            let actionFailureCalled = false;
+            schObj.actionBegin = (args: ActionEventArgs) => {
+                if (args.requestType === 'eventRemove') {
+                    args.promise = Promise.reject(new Error('Delete event failed'));
+                }
+            };
+            schObj.actionFailure = (args: { error: Error }) => {
+                actionFailureCalled = true;
+                expect(args.error.message).toBe('Delete event failed');
+            };
+            schObj.deleteEvent(1);
+            setTimeout(() => {
+                expect(schObj.eventsData.length).toBe(2);
+                expect(schObj.eventsData[0].Subject).toBe('Event to Delete');
+                expect(actionFailureCalled).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+
+    describe('Appointment resizing with overlap validation in different views', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [
+            {
+                Id: 1,
+                Subject: 'Appointment 1',
+                StartTime: new Date(2023, 0, 2, 10, 0),
+                EndTime: new Date(2023, 0, 2, 10, 30)
+            },
+            {
+                Id: 2,
+                Subject: 'Appointment 2',
+                StartTime: new Date(2023, 0, 2, 11, 0),
+                EndTime: new Date(2023, 0, 2, 11, 30)
+            },
+            {
+                Id: 3,
+                Subject: 'Appointment 3',
+                StartTime: new Date(2023, 0, 3, 10, 0),
+                EndTime: new Date(2023, 0, 3, 10, 30)
+            }
+        ];
+        beforeEach((done: DoneFn) => {
+            const options: ScheduleModel = {
+                height: '550px',
+                width: '100%',
+                selectedDate: new Date(2023, 0, 2),
+                views: [
+                    { option: 'Day', allowOverlap: false },
+                    { option: 'Week', allowOverlap: false },
+                    { option: 'WorkWeek', allowOverlap: false },
+                    { option: 'Month', allowOverlap: false },
+                    { option: 'TimelineDay', allowOverlap: false },
+                    { option: 'TimelineWeek', allowOverlap: false },
+                    { option: 'TimelineWorkWeek', allowOverlap: false },
+                    { option: 'TimelineMonth', allowOverlap: false }
+                ],
+                popupOpen: function (args: PopupOpenEventArgs) {
+                    if (args.type === 'OverlapAlert') {
+                        expect(args.overlapEvents[0].Subject).toBe('Appointment 2');
+                    }
+                }
+            };
+            schObj = util.createSchedule(options, eventData, done);
+        });
+        afterEach(() => {
+            util.destroy(schObj);
+        });
+        const testOverlapValidationForDayWeekWorkWeek = (viewName: View) => {
+            it(`should not allow bottom resizing when it would cause overlap and show alert in Vertical view`, (done: DoneFn) => {
+                schObj.currentView = viewName;
+                schObj.dataBind();
+                setTimeout(() => {
+                    const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                    expect(resizeElement).toBeTruthy();
+                    const resizeHandler: HTMLElement = resizeElement.querySelector('.e-bottom-handler') as HTMLElement;
+                    expect(resizeHandler).toBeTruthy();
+                    triggerMouseEvent(resizeHandler, 'mousedown');
+                    triggerMouseEvent(resizeHandler, 'mousemove', 0, 50);
+                    const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+                    expect(cloneElement).toBeTruthy();
+                    triggerMouseEvent(resizeHandler, 'mousemove', 0, 100);
+                    triggerMouseEvent(resizeHandler, 'mouseup');
+                    setTimeout(() => {
+                        const alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+                        expect(alertDialog).toBeTruthy();
+                        expect(alertDialog.querySelector('.e-dlg-content').textContent).toContain('Events cannot be scheduled during the chosen time as it overlaps with another event.');
+                        (alertDialog.querySelector('.e-quick-dialog-alert-btn') as HTMLElement).click();
+                        const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
+                        expect((event.EndTime as Date).getTime()).toEqual(new Date(2023, 0, 2, 10, 30).getTime());
+                        done();
+                    }, 300);
+                }, 300);
+            });
+        };
+        const testOverlapValidationForMonth = (viewName: View) => {
+            it(`should not allow right resizing when it would cause overlap and show alert in Month view`, (done: DoneFn) => {
+                schObj.currentView = viewName;
+                schObj.dataBind();
+                setTimeout(() => {
+                    const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                    expect(resizeElement).toBeTruthy();
+                    const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+                    expect(resizeHandler).toBeTruthy();
+                    util.triggerMouseEvent(resizeHandler, 'mousedown', 130, 120);
+                    util.triggerMouseEvent(resizeHandler, 'mousemove', 200, 120);
+                    util.triggerMouseEvent(resizeHandler, 'mouseup', 200, 120);
+                    setTimeout(() => {
+                        const alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+                        expect(alertDialog).toBeTruthy();
+                        expect(alertDialog.querySelector('.e-dlg-content').textContent).toContain('Events cannot be scheduled during the chosen time as it overlaps with another event.');
+                        (alertDialog.querySelector('.e-quick-dialog-alert-btn') as HTMLElement).click();
+                        const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
+                        expect((event.EndTime as Date).getTime()).toEqual(new Date(2023, 0, 2, 10, 30).getTime());
+                        done();
+                    }, 300);
+                }, 300);
+            });
+        };
+        const testOverlapValidationForTimeline = (viewName: View) => {
+            it(`should not allow right resizing when it would cause overlap and show alert in Timeline view`, (done: DoneFn) => {
+                schObj.currentView = viewName;
+                schObj.dataBind();
+                setTimeout(() => {
+                    const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                    expect(resizeElement).toBeTruthy();
+                    const resizeHandler: HTMLElement = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+                    expect(resizeHandler).toBeTruthy();
+                    triggerMouseEvent(resizeHandler, 'mousedown', 130, 120);
+                    triggerMouseEvent(resizeHandler, 'mousemove', 130, 120);
+                    const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+                    expect(cloneElement).toBeTruthy();
+                    triggerMouseEvent(resizeHandler, 'mousemove', 200, 120);
+                    triggerMouseEvent(resizeHandler, 'mouseup', 200, 120);
+                    setTimeout(() => {
+                        const alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+                        expect(alertDialog).toBeTruthy();
+                        expect(alertDialog.querySelector('.e-dlg-content').textContent).toContain('Events cannot be scheduled during the chosen time as it overlaps with another event.');
+                        (alertDialog.querySelector('.e-quick-dialog-alert-btn') as HTMLElement).click();
+                        const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
+                        expect((event.EndTime as Date).getTime()).toEqual(new Date(2023, 0, 2, 10, 30).getTime());
+                        done();
+                    }, 300);
+                }, 300);
+            });
+        };
+
+        testOverlapValidationForDayWeekWorkWeek('Day');
+        testOverlapValidationForDayWeekWorkWeek('Week');
+        testOverlapValidationForDayWeekWorkWeek('WorkWeek');
+        testOverlapValidationForMonth('Month');
+        testOverlapValidationForTimeline('TimelineDay');
+        testOverlapValidationForTimeline('TimelineWeek');
+        testOverlapValidationForTimeline('TimelineWorkWeek');
+        testOverlapValidationForTimeline('TimelineMonth');
+    });
+
+    xdescribe('Appointment dragging with overlap validation in different views', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [
+            {
+                Id: 1,
+                Subject: 'Appointment 1',
+                StartTime: new Date(2023, 0, 2, 10, 0),
+                EndTime: new Date(2023, 0, 2, 10, 30)
+            },
+            {
+                Id: 2,
+                Subject: 'Appointment 2',
+                StartTime: new Date(2023, 0, 2, 11, 0),
+                EndTime: new Date(2023, 0, 2, 11, 30)
+            },
+            {
+                Id: 3,
+                Subject: 'Appointment 2',
+                StartTime: new Date(2023, 0, 4, 10, 0),
+                EndTime: new Date(2023, 0, 4, 10, 30)
+            }
+        ];
+        beforeEach((done: DoneFn) => {
+            const options: ScheduleModel = {
+                height: '550px',
+                width: '100%',
+                selectedDate: new Date(2023, 0, 2),
+                views: [
+                    { option: 'Day', allowOverlap: false },
+                    { option: 'Week', allowOverlap: false },
+                    { option: 'WorkWeek', allowOverlap: false },
+                    { option: 'Month', allowOverlap: false },
+                    { option: 'TimelineDay', allowOverlap: false },
+                    { option: 'TimelineWeek', allowOverlap: false },
+                    { option: 'TimelineWorkWeek', allowOverlap: false },
+                    { option: 'TimelineMonth', allowOverlap: false }
+                ],
+                popupOpen: function (args: PopupOpenEventArgs) {
+                    if (args.type === 'OverlapAlert') {
+                        expect(args.overlapEvents[0].Subject).toBe('Appointment 2');
+                    }
+                }
+            };
+            schObj = util.createSchedule(options, eventData, done);
+        });
+        afterEach(() => {
+            util.destroy(schObj);
+        });
+        const testOverlapValidationInView = (viewName: View) => {
+            it(`should not allow dragging when it would cause overlap and show alert in ${viewName} view`, (done: DoneFn) => {
+                schObj.dataBound = (done: DoneFn) => {
+                    let workCell: HTMLElement;
+                    const dragElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                    expect(dragElement).toBeTruthy();
+                    let startX: number; let startY: number; let moveX: number; let moveY: number;
+                    let targetCellIndex: number;
+                    switch (viewName) {
+                    case 'Day':
+                        startX = 436;
+                        startY = 132;
+                        moveX = 435;
+                        moveY = 205;
+                        targetCellIndex = 20;
+                        break;
+                    case 'Week':
+                        startX = 130;
+                        startY = 224;
+                        moveX = 130;
+                        moveY = 234;
+                        targetCellIndex = 171;
+                        break;
+                    case 'WorkWeek':
+                        startX = 230;
+                        startY = 224;
+                        moveX = 230;
+                        moveY = 234;
+                        targetCellIndex = 7;
+                        break;
+                    case 'Month':
+                        startX = 10;
+                        startY = 10;
+                        moveX = 100;
+                        moveY = 50;
+                        targetCellIndex = 3;
+                        break;
+                    case 'TimelineDay':
+                    case 'TimelineWeek':
+                    case 'TimelineWorkWeek':
+                        startX = 63;
+                        startY = 146;
+                        moveX = 233;
+                        moveY = 332;
+                        targetCellIndex = 22;
+                        break;
+                    case 'TimelineMonth':
+                        startX = 33;
+                        startY = 146;
+                        moveX = 153;
+                        moveY = 332;
+                        targetCellIndex = 22;
+                        break;
+                    }
+                    triggerMouseEvent(dragElement, 'mousedown', startX, startY);
+                    triggerMouseEvent(dragElement, 'mousemove', startX, startY + 5);
+                    const cloneElement: HTMLElement = schObj.element.querySelector('.e-drag-clone') as HTMLElement;
+                    expect(cloneElement).toBeTruthy();
+                    if (viewName === 'WorkWeek') {
+                        workCell = schObj.element.querySelectorAll('.e-work-cells.e-alternate-cells.e-work-hours').item(targetCellIndex) as HTMLElement;
+                    } else {
+                        workCell = schObj.element.querySelectorAll('.e-work-cells').item(targetCellIndex) as HTMLElement;
+                    }
+                    triggerMouseEvent(workCell, 'mousemove', moveX, moveY);
+                    triggerMouseEvent(workCell, 'mousemove', moveX, moveY);
+                    triggerMouseEvent(dragElement, 'mouseup');
+                    expect(schObj.element.querySelectorAll('.e-drag-clone').length).toEqual(0);
+                    const alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+                    expect(alertDialog).toBeTruthy();
+                    expect(alertDialog.querySelector('.e-dlg-content').textContent).toContain('Events cannot be scheduled during the chosen time as it overlaps with another event.');
+                    (alertDialog.querySelector('.e-quick-dialog-alert-btn') as HTMLElement).click();
+                    const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
+                    expect((event.StartTime as Date).getTime()).toEqual(new Date(2023, 0, 2, 10, 0).getTime());
+                    expect((event.EndTime as Date).getTime()).toEqual(new Date(2023, 0, 2, 10, 30).getTime());
+                    done();
+                };
+                schObj.currentView = viewName;
+                schObj.dataBind();
+                done();
+            });
+        };
+        testOverlapValidationInView('Day');
+        testOverlapValidationInView('Week');
+        testOverlapValidationInView('WorkWeek');
+        testOverlapValidationInView('Month');
+        testOverlapValidationInView('TimelineDay');
+        testOverlapValidationInView('TimelineWeek');
+        testOverlapValidationInView('TimelineWorkWeek');
+        testOverlapValidationInView('TimelineMonth');
+    });
+
+    describe('Checking recurrence creation with overlap validation in multiple views', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [
+            {
+                Id: 1,
+                Subject: 'Existing Appointment 1',
+                StartTime: new Date(2023, 0, 2, 10, 0),
+                EndTime: new Date(2023, 0, 2, 11, 0)
+            },
+            {
+                Id: 2,
+                Subject: 'Existing Appointment 2',
+                StartTime: new Date(2023, 0, 4, 10, 0),
+                EndTime: new Date(2023, 0, 4, 11, 0)
+            }
+        ];
+        const views: View[] = ['Day', 'Week', 'WorkWeek', 'Month', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'];
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
+                height: '550px',
+                width: '100%',
+                selectedDate: new Date(2023, 0, 2),
+                views: views.map(view => ({ option: view, allowOverlap: false })),
+                currentView: 'Week',
+                popupOpen: function (args: PopupOpenEventArgs) {
+                    if (args.type === 'OverlapAlert') {
+                        expect(args.overlapEvents[0].Subject).toBe('Existing Appointment 2');
+                    }
+                }
+            };
+            schObj = util.createSchedule(options, eventData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        const testOverlapValidationInView = (viewName: View) => {
+            it(`should show validation popup when editing appointment to create recurrence that overlaps with existing appointment in ${viewName} view`, (done: DoneFn) => {
+                schObj.currentView = viewName;
+                schObj.dataBind();
+                setTimeout(() => {
+                    const appointment1: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                    expect(appointment1).toBeTruthy();
+                    util.triggerMouseEvent(appointment1, 'click');
+                    util.triggerMouseEvent(appointment1, 'dblclick');
+                    setTimeout(() => {
+                        const editorWindow: HTMLElement = document.querySelector('.e-schedule-dialog') as HTMLElement;
+                        expect(editorWindow).toBeTruthy();
+                        const recurrenceElement: HTMLElement = editorWindow.querySelector('.e-repeat-element') as HTMLElement;
+                        const recurrenceDropDown = (recurrenceElement as any).ej2_instances[0];
+                        recurrenceDropDown.value = 'daily';
+                        recurrenceDropDown.dataBind();
+                        const endElement: HTMLElement = editorWindow.querySelector('.e-end-on-element') as HTMLElement;
+                        const endDropDown = (endElement as any).ej2_instances[0];
+                        endDropDown.value = 'count';
+                        endDropDown.dataBind();
+                        const countElement: HTMLInputElement = editorWindow.querySelector('.e-recurrence-count') as HTMLInputElement;
+                        countElement.value = '2';
+                        const saveButton: HTMLElement = editorWindow.querySelector('.e-event-save') as HTMLElement;
+                        saveButton.click();
+                        setTimeout(() => {
+                            const alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+                            expect(alertDialog).toBeTruthy();
+                            expect(alertDialog.querySelector('.e-dlg-content').textContent).toContain('Events cannot be scheduled during the chosen time as it overlaps with another event.');
+                            (alertDialog.querySelector('.e-quick-dialog-alert-btn') as HTMLElement).click();
+                            const editorWindowAfterAlert: HTMLElement = document.querySelector('.e-schedule-dialog') as HTMLElement;
+                            expect(editorWindowAfterAlert).toBeTruthy();
+                            const cancelButton: HTMLElement = editorWindowAfterAlert.querySelector('.e-event-cancel') as HTMLElement;
+                            cancelButton.click();
+                            const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
+                            expect(event.RecurrenceRule).toBeUndefined();
+                            expect((event.StartTime as Date).getTime()).toEqual(new Date(2023, 0, 2, 10, 0).getTime());
+                            expect((event.EndTime as Date).getTime()).toEqual(new Date(2023, 0, 2, 11, 0).getTime());
+                            done();
+                        }, 300);
+                    }, 300);
+                }, 300);
+            });
+        };
+
+        testOverlapValidationInView('Week');
+        testOverlapValidationInView('WorkWeek');
+        testOverlapValidationInView('Month');
+
+        testOverlapValidationInView('TimelineWeek');
+        testOverlapValidationInView('TimelineWorkWeek');
+        testOverlapValidationInView('TimelineMonth');
+    });
+
+    describe('Checking recurrence editing with overlap validation in multiple views', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [
+            {
+                Id: 1,
+                Subject: 'Recurring Appointment 1',
+                StartTime: new Date(2023, 0, 2, 10, 0),
+                EndTime: new Date(2023, 0, 2, 11, 0),
+                RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
+            },
+            {
+                Id: 2,
+                Subject: 'Recurring Appointment 2',
+                StartTime: new Date(2023, 0, 2, 14, 0),
+                EndTime: new Date(2023, 0, 2, 15, 0),
+                RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
+            }
+        ];
+        const views: View[] = ['Day', 'Week', 'WorkWeek', 'Month', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'];
+
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
+                height: '550px',
+                width: '100%',
+                selectedDate: new Date(2023, 0, 2),
+                views: views.map(view => ({ option: view, allowOverlap: false })),
+                currentView: 'Week'
+            };
+            schObj = util.createSchedule(options, eventData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        const testOverlapValidationInView = (viewName: View) => {
+            it(`should show validation popup when editing recurring appointment series to overlap with another recurring appointment in ${viewName} view`, (done: DoneFn) => {
+                schObj.currentView = viewName;
+                schObj.dataBind();
+
+                setTimeout(() => {
+                    const appointment1: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                    expect(appointment1).toBeTruthy();
+                    util.triggerMouseEvent(appointment1, 'click');
+
+                    const quickPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+                    expect(quickPopup).toBeTruthy();
+                    const editElement: HTMLElement = quickPopup.querySelector('.e-edit') as HTMLElement;
+                    util.triggerMouseEvent(editElement, 'click');
+
+                    const quickDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+                    expect(quickDialog).toBeTruthy();
+                    const editSeriesButton: HTMLElement = quickDialog.querySelector('.e-quick-dialog-series-event') as HTMLElement;
+                    util.triggerMouseEvent(editSeriesButton, 'click');
+
+                    setTimeout(() => {
+                        const editorWindow: HTMLElement = document.querySelector('.e-schedule-dialog') as HTMLElement;
+                        expect(editorWindow).toBeTruthy();
+                        const startTimeInput: HTMLInputElement = editorWindow.querySelector('.e-start') as HTMLInputElement;
+                        const startTimePicker = (startTimeInput as any).ej2_instances[0];
+                        startTimePicker.value = new Date(2023, 0, 2, 13, 30);
+                        startTimePicker.dataBind();
+                        const endTimeInput: HTMLInputElement = editorWindow.querySelector('.e-end') as HTMLInputElement;
+                        const endTimePicker = (endTimeInput as any).ej2_instances[0];
+                        endTimePicker.value = new Date(2023, 0, 2, 14, 30);
+                        endTimePicker.dataBind();
+                        const saveButton: HTMLElement = editorWindow.querySelector('.e-event-save') as HTMLElement;
+                        saveButton.click();
+
+                        setTimeout(() => {
+                            const alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+                            expect(alertDialog).toBeTruthy();
+                            expect(alertDialog.querySelector('.e-dlg-content').textContent).toContain('Events cannot be scheduled during the chosen time as it overlaps with another event.');
+                            const alertOkButton: HTMLElement = alertDialog.querySelector('.e-quick-dialog-alert-btn') as HTMLElement;
+                            alertOkButton.click();
+
+                            const editorWindowAfterAlert: HTMLElement = document.querySelector('.e-schedule-dialog') as HTMLElement;
+                            expect(editorWindowAfterAlert).toBeTruthy();
+                            const cancelButton: HTMLElement = editorWindowAfterAlert.querySelector('.e-event-cancel') as HTMLElement;
+                            cancelButton.click();
+
+                            const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
+                            expect(event.RecurrenceRule).toBe('FREQ=DAILY;INTERVAL=1;COUNT=5');
+                            expect((event.StartTime as Date).getTime()).toEqual(new Date(2023, 0, 2, 10, 0).getTime());
+                            expect((event.EndTime as Date).getTime()).toEqual(new Date(2023, 0, 2, 11, 0).getTime());
+                            done();
+                        }, 300);
+                    }, 300);
+                }, 300);
+            });
+        };
+        testOverlapValidationInView('Day');
+        testOverlapValidationInView('Week');
+        testOverlapValidationInView('WorkWeek');
+        testOverlapValidationInView('Month');
+        testOverlapValidationInView('TimelineDay');
+        testOverlapValidationInView('TimelineWeek');
+        testOverlapValidationInView('TimelineWorkWeek');
+        testOverlapValidationInView('TimelineMonth');
+    });
+
+    describe('Resizing recurring appointment with overlap validation in multiple views', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [
+            {
+                Id: 1,
+                Subject: 'Recurring Appointment 1',
+                StartTime: new Date(2023, 0, 2, 10, 0),
+                EndTime: new Date(2023, 0, 2, 11, 0),
+                RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
+            },
+            {
+                Id: 2,
+                Subject: 'Recurring Appointment 2',
+                StartTime: new Date(2023, 0, 2, 13, 0),
+                EndTime: new Date(2023, 0, 2, 14, 0),
+                RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
+            }
+        ];
+        const views: View[] = ['Day', 'Week', 'WorkWeek', 'Month', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'];
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
+                height: '550px',
+                width: '100%',
+                selectedDate: new Date(2023, 0, 2),
+                views: views.map(view => ({ option: view, allowOverlap: false })),
+                currentView: 'Week',
+                popupOpen: function (args: PopupOpenEventArgs) {
+                    if (args.type === 'OverlapAlert') {
+                        expect(args.overlapEvents[0].Subject).toBe('Recurring Appointment 2');
+                    }
+                }
+            };
+            schObj = util.createSchedule(options, eventData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        const testResizeOverlapInView = (viewName: View) => {
+            it(`should show validation popup when resizing recurring appointment to overlap in ${viewName} view`, (done: DoneFn) => {
+                schObj.currentView = viewName;
+                schObj.dataBind();
+                setTimeout(() => {
+                    const resizeElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement;
+                    expect(resizeElement).toBeTruthy();
+                    let resizeHandler: HTMLElement;
+                    const horizontalResizeViews = ['Month', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'];
+                    if (horizontalResizeViews.indexOf(viewName) !== -1) {
+                        resizeHandler = resizeElement.querySelector('.e-right-handler') as HTMLElement;
+                    } else {
+                        resizeHandler = resizeElement.querySelector('.e-bottom-handler') as HTMLElement;
+                    }
+                    expect(resizeHandler).toBeTruthy();
+                    if (viewName === 'Month') {
+                        util.triggerMouseEvent(resizeHandler, 'mousedown', 130, 120);
+                        util.triggerMouseEvent(resizeHandler, 'mousemove', 200, 120);
+                        util.triggerMouseEvent(resizeHandler, 'mouseup', 200, 120);
+                    } else {
+                        triggerMouseEvent(resizeHandler, 'mousedown');
+                        if (horizontalResizeViews.indexOf(viewName) !== -1) {
+                            triggerMouseEvent(resizeHandler, 'mousemove', 100, 0);
+                            triggerMouseEvent(resizeHandler, 'mousemove', 200, 0);
+                        } else {
+                            triggerMouseEvent(resizeHandler, 'mousemove', 0, 100);
+                            triggerMouseEvent(resizeHandler, 'mousemove', 0, 200);
+                        }
+                        const cloneElement: HTMLElement = schObj.element.querySelector('.e-resize-clone') as HTMLElement;
+                        expect(cloneElement).toBeTruthy();
+                        triggerMouseEvent(resizeHandler, 'mouseup');
+                    }
+                    setTimeout(() => {
+                        const alertDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+                        expect(alertDialog).toBeTruthy();
+                        expect(alertDialog.querySelector('.e-dlg-content').textContent).toContain('Events cannot be scheduled during the chosen time as it overlaps with another event.');
+                        (alertDialog.querySelector('.e-quick-dialog-alert-btn') as HTMLElement).click();
+                        const event: Record<string, any> = schObj.eventsData[0] as Record<string, any>;
+                        expect(event.RecurrenceRule).toBe('FREQ=DAILY;INTERVAL=1;COUNT=5');
+                        expect((event.EndTime as Date).getTime()).toEqual(new Date(2023, 0, 2, 11, 0).getTime());
+                        done();
+                    }, 300);
+                }, 300);
+            });
+        };
+        testResizeOverlapInView('Day');
+        testResizeOverlapInView('Week');
+        testResizeOverlapInView('WorkWeek');
+        testResizeOverlapInView('Month');
+        testResizeOverlapInView('TimelineDay');
+        testResizeOverlapInView('TimelineWeek');
+        testResizeOverlapInView('TimelineWorkWeek');
+        testResizeOverlapInView('TimelineMonth');
+    });
+
+    describe('Checking the public method for open and close overlap', () => {
+        let schObj: Schedule;
+        const eventData = [{
+            Id: 1,
+            Subject: 'OverlapEvent-1',
+            StartTime: new Date(2017, 9, 29, 10, 0),
+            EndTime: new Date(2017, 9, 29, 11, 30),
+            IsAllDay: false
+        }, {
+            Id: 2,
+            Subject: 'NonOverlapEvent-1',
+            StartTime: new Date(2017, 9, 29, 10, 0),
+            EndTime: new Date(2017, 9, 29, 12, 30),
+            IsAllDay: false
+        }];
+
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
+                views: [
+                    { option: 'Day', allowOverlap: false },
+                    { option: 'Week', allowOverlap: false },
+                    { option: 'WorkWeek', allowOverlap: false },
+                    { option: 'Month', allowOverlap: false },
+                    { option: 'TimelineDay', allowOverlap: false },
+                    { option: 'TimelineWeek', allowOverlap: false },
+                    { option: 'TimelineWorkWeek', allowOverlap: false },
+                    { option: 'TimelineMonth', allowOverlap: false }
+                ],
+                height: '550px',
+                width: '100%',
+                selectedDate: new Date(2017, 9, 30),
+                currentView: 'Week',
+            };
+            schObj = util.createSchedule(options, eventData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Checking the Open and close Overlap validation popup', (done: DoneFn) => {
+            const overlapEvent = {
+                Id: 1,
+                Subject: 'OverlapEvent',
+                StartTime: new Date(2017, 10, 23, 10, 0),
+                EndTime: new Date(2017, 10, 23, 11, 30),
+                IsAllDay: false
+            };
+            const args: PopupOpenEventArgs = {
+                type: 'OverlapAlert',
+                data: overlapEvent,
+                overlapEvents: [],
+                element: createElement('div'),
+                cancel: false
+            };
+            schObj.openOverlapAlert(args);
+            const alertDialog = document.querySelector('.e-quick-dialog') as HTMLElement;
+            expect(alertDialog).toBeTruthy();
+            expect(alertDialog.querySelector('.e-dlg-content').textContent).toContain('Events cannot be scheduled during the chosen time as it overlaps with another event.');
+            setTimeout(() => {
+                schObj.closeOverlapAlert();
+                done();
+            }, 2000);
+        });
+    });
+
+    describe('Appointment adding with overlap validation and adjustment in different views', function () {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [
+            {
+                Id: 1,
+                Subject: 'Existing Appointment',
+                StartTime: new Date(2023, 0, 2, 10, 0),
+                EndTime: new Date(2023, 0, 2, 11, 0)
+            }
+        ];
+        const views: View[] = ['Day', 'Week', 'WorkWeek', 'Month', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'];
+        beforeEach((done: DoneFn) => {
+            const options: ScheduleModel = {
+                height: '550px',
+                width: '100%',
+                selectedDate: new Date(2023, 0, 2),
+                views: views.map(view => ({ option: view, allowOverlap: false })),
+                popupOpen: function (args: PopupOpenEventArgs) {
+                    if (args.type === 'OverlapAlert') {
+                        expect(args.overlapEvents[0].Subject).toBe('Existing Appointment');
+                    }
+                }
+            };
+            schObj = util.createSchedule(options, eventData, done);
+        });
+        afterEach(() => {
+            util.destroy(schObj);
+        });
+        views.forEach(function (view) {
+            it(`should show validation popup when adding overlapping appointment, allow adjustment, and save non-overlapping appointment in ${view} view`, function (done) {
+                schObj.currentView = view;
+                schObj.dataBind();
+                setTimeout(() => {
+                    const firstWorkCell = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+                    expect(firstWorkCell).toBeTruthy();
+                    util.triggerMouseEvent(firstWorkCell, 'dblclick');
+                    const editorWindow = document.querySelector('.e-schedule-dialog') as HTMLElement;
+                    expect(editorWindow).toBeTruthy();
+                    const startTimeInput = editorWindow.querySelector('.e-start') as HTMLElement;
+                    const startTimePicker = (startTimeInput as any).ej2_instances[0] as DateTimePicker;
+                    startTimePicker.value = new Date(2023, 0, 2, 9, 0);
+                    startTimePicker.dataBind();
+                    const endTimeInput = editorWindow.querySelector('.e-end') as HTMLElement;
+                    const endTimePicker = (endTimeInput as any).ej2_instances[0] as DateTimePicker;
+                    endTimePicker.value = new Date(2023, 0, 2, 12, 0);
+                    endTimePicker.dataBind();
+                    const saveButton = editorWindow.querySelector('.e-event-save') as HTMLElement;
+                    saveButton.click();
+                    setTimeout(function () {
+                        const alertDialog = document.querySelector('.e-quick-dialog') as HTMLElement;
+                        expect(alertDialog).toBeTruthy();
+                        expect(alertDialog.querySelector('.e-dlg-content').textContent).toContain('Events cannot be scheduled during the chosen time as it overlaps with another event.');
+                        (alertDialog.querySelector('.e-quick-dialog-alert-btn') as HTMLElement).click();
+                        const editorWindowAfterAlert = document.querySelector('.e-schedule-dialog') as HTMLElement;
+                        expect(editorWindowAfterAlert).toBeTruthy();
+                        const endTimeInputAfterAlert = editorWindowAfterAlert.querySelector('.e-end') as HTMLElement;
+                        const endTimePickerAfterAlert = (endTimeInputAfterAlert as any).ej2_instances[0] as DateTimePicker;
+                        endTimePickerAfterAlert.value = new Date(2023, 0, 2, 9, 30);
+                        endTimePickerAfterAlert.dataBind();
+                        const saveButtonAfterAlert = editorWindowAfterAlert.querySelector('.e-event-save') as HTMLElement;
+                        saveButtonAfterAlert.click();
+                        setTimeout(function () {
+                            const newAppointment = schObj.eventsData.find((event: any) =>
+                                event.StartTime.getTime() === new Date(2023, 0, 2, 9, 0).getTime() &&
+                                event.EndTime.getTime() === new Date(2023, 0, 2, 9, 30).getTime()
+                            );
+                            expect(newAppointment).toBeTruthy();
+                            done();
+                        }, 100);
+                    }, 100);
+                }, 100);
+            });
         });
     });
 

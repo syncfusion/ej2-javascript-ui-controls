@@ -444,7 +444,7 @@ describe('SendToBack exception', () => {
         diagram.select([diagram.nodes[2]]);
         diagram.sendToBack();
         zIndexAfterCall = diagram.nodes[2].zIndex;
-        expect(zIndexBeforeCall !== zIndexAfterCall).toBe(true);
+        expect(zIndexBeforeCall === zIndexAfterCall).toBe(true);
         done();
     });
     it('Exception occurs when bringToFront method is called', (done: Function) => {
@@ -949,14 +949,14 @@ describe('Diagram keyboard commands', () => {
             mouseEvents.clickEvent(diagramCanvas, 100, 100);
             expect(diagram.selectedItems.nodes.length > 0).toBe(true);
             mouseEvents.keyDownEvent(diagramCanvas, 'Tab');
-            expect(diagram.selectedItems.nodes[0].zIndex==1).toBe(true);
+            expect(diagram.selectedItems.nodes[0].zIndex==12).toBe(true);
             done();
         });
         it('Checking move to previous element commands', function (done) {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             expect(diagram.selectedItems.nodes.length > 0).toBe(true);
             mouseEvents.keyDownEvent(diagramCanvas, 'Tab',false,true);
-            expect(diagram.selectedItems.nodes[0].zIndex==0).toBe(true);
+            expect(diagram.selectedItems.nodes[0].zIndex==11).toBe(true);
             done();
         });
         it('Checking tab commands-connectors', function (done) {
@@ -964,14 +964,14 @@ describe('Diagram keyboard commands', () => {
             diagram.select([diagram.connectors[0]]);
             expect(diagram.selectedItems.connectors.length > 0).toBe(true);
             mouseEvents.keyDownEvent(diagramCanvas, 'Tab');
-            expect(diagram.selectedItems.connectors[0].zIndex == 6).toBe(true);
+            expect(diagram.selectedItems.connectors[0].zIndex == 8).toBe(true);
             done();
         });
         it('Checking shift + tab commands-connectors', function (done) {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             expect(diagram.selectedItems.connectors.length > 0).toBe(true);
             mouseEvents.keyDownEvent(diagramCanvas, 'Tab', false, true);
-            expect(diagram.selectedItems.connectors[0].zIndex == 5).toBe(true);
+            expect(diagram.selectedItems.connectors[0].zIndex == 7).toBe(true);
             done();
         });
         it('Checking text tool', (done: Function) => {

@@ -336,22 +336,6 @@ export class TimelineEvent extends MonthEvent {
         }
     }
 
-    private adjustAppointments(conWidth: number): void {
-        const tr: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr');
-        const actualCellWidth: number = this.parent.getElementWidth(this.workCells[0]);
-        this.cellWidth = actualCellWidth / +(this.workCells[0].getAttribute('colspan') || 1);
-        const currentPercentage: number = (actualCellWidth * tr.children.length) / (conWidth / 100);
-        const apps: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
-        apps.forEach((app: HTMLElement) => {
-            if (this.parent.enableRtl && app.style.right !== '0px') {
-                app.style.right = ((parseFloat(app.style.right) / 100) * currentPercentage) + 'px';
-            } else if (app.style.left !== '0px') {
-                app.style.left = ((parseFloat(app.style.left) / 100) * currentPercentage) + 'px';
-            }
-            app.style.width = ((parseFloat(app.style.width) / 100) * currentPercentage) + 'px';
-        });
-    }
-
     private getFirstChild(index: number): HTMLElement {
         const query: string = '.' + cls.CONTENT_TABLE_CLASS + ' tbody td';
         let groupIndex: string = '';
@@ -469,13 +453,24 @@ export class TimelineEvent extends MonthEvent {
         if (this.parent.getIndexOfDate(this.dateRender, util.resetTime(new Date(endDate.getTime()))) === -1) {
             endWidth = 0;
         } else {
-            const end: { [key: string]: Date } =
+            const { startHour, endHour }: { [key: string]: Date } =
                 util.getStartEndHours(util.resetTime(new Date(endDate.getTime())), this.startHour, this.endHour);
-            endWidth = this.getSameDayEventsWidth(endDate, end.endHour);
+            const interval: number = this.interval / this.slotCount;
+            const lastSlotEndTime: Date = this.getEndTimeOfLastSlot(startHour, endHour, interval);
+            const adjustedEndDate: Date = endHour < lastSlotEndTime ? endHour : lastSlotEndTime;
+            endWidth = this.getSameDayEventsWidth(endDate, adjustedEndDate);
             endWidth = ((this.slotsPerDay * this.cellWidth) === endWidth) ? 0 : endWidth;
         }
         const spannedWidth: number = startWidth + endWidth;
         return (width > spannedWidth) ? width - spannedWidth : width - startWidth;
+    }
+
+    private getEndTimeOfLastSlot(startHour: Date, endHour: Date, interval: number): Date {
+        const minutesInDay: number = (endHour.getTime() - startHour.getTime()) / (1000 * 60);
+        const lastSlotEndMinutes: number = Math.floor(minutesInDay / interval) * interval;
+        const lastSlotEndTime: Date = new Date(startHour);
+        lastSlotEndTime.setMinutes(lastSlotEndMinutes);
+        return lastSlotEndTime;
     }
 
     private isSameDay(startTime: Date, endTime: Date): boolean {

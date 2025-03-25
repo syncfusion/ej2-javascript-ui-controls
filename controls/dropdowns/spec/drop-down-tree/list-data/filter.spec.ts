@@ -1,6 +1,6 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { DropDownTree, DdtFilteringEventArgs } from '../../../src/drop-down-tree/drop-down-tree';
-import { listData, filteredlistData } from '../dataSource.spec';
+import { listData, filteredlistData, disabledListData } from '../dataSource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 
 describe('filter list data testing', () => {
@@ -2038,6 +2038,48 @@ describe('filter list data testing', () => {
                 expect(ddtreeObj.value.indexOf('1') !== -1).toBe(true);
                 expect(ddtreeObj.value.indexOf('3') !== -1).toBe(true);
                 expect(ddtreeObj.treeObj.selectedNodes.length).toBe(2);
+                done();
+            }, 350);
+        });
+        it('Filter with SelectAll in Disabled Node and loadOnDemand true', function (done) {
+            ddtreeObj = new DropDownTree({
+                fields: { dataSource: disabledListData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+                allowFiltering: true,
+                treeSettings: { autoCheck: true, expandOn: 'Auto', checkDisabledChildren: false },
+                showCheckBox: true,
+                allowMultiSelection: true,
+                showSelectAll: true,
+                filterType: 'Contains'
+            }, '#ddtree');
+            ddtreeObj.showPopup();
+            var parentNode = document.querySelector('.e-selectall-parent');
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            parentNode.querySelector('.e-frame').dispatchEvent(e);
+            e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            parentNode.querySelector('.e-frame').dispatchEvent(e);
+            e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            parentNode.querySelector('.e-frame').dispatchEvent(e);
+            expect(document.querySelector('.e-selectall-parent .e-frame').classList.contains('e-check')).toBe(true);
+            expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(14);
+            expect(ddtreeObj.treeObj.checkedNodes.length).toBe(12);
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter_wrap').length).toBe(1);
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter').length).toBe(1);
+            let filterEle: any = ddtreeObj.popupObj.element.querySelector('#' + ddtreeObj.element.id + "_filter");
+            let filterObj: any = filterEle.ej2_instances[0];
+            filterEle.value = 'vic';
+            filterObj.value = 'vic';
+            var eventArgs = { value: 'vic', container: filterEle };
+            filterObj.input(eventArgs);
+            filterEle.value = '';
+            filterObj.value = '';
+            eventArgs = { value: '', container: filterEle };
+            filterObj.input(eventArgs);
+            ddtreeObj.hidePopup();
+            ddtreeObj.showPopup();
+            setTimeout(() => {
+                ddtreeObj.showPopup();
+                expect(ddtreeObj.treeObj.checkedNodes.length).toBe(12);
+                expect(document.querySelector('.e-selectall-parent .e-frame').classList.contains('e-check')).toBe(true);
                 done();
             }, 350);
         });

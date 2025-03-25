@@ -885,9 +885,9 @@ describe('Chart Control', () => {
         it('checking datalabel template cout without None', (done: Function) => {
             loaded = (args: Object): void => {
                 dataLabel = document.getElementById('container_Series_0_DataLabelCollections');
-                expect(dataLabel.childElementCount === 6).toBe(true);
+                expect(dataLabel.childElementCount).toBe(6);
                 dataLabel = document.getElementById('container_Series_1_DataLabelCollections');
-                expect(dataLabel.childElementCount === 6).toBe(true);
+                expect(dataLabel.childElementCount).toBe(6);
                 done();
             };
             chart.loaded = loaded;

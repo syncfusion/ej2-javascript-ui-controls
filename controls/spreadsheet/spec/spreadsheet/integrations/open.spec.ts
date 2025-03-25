@@ -1,6 +1,7 @@
 import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
 import { BeforeOpenEventArgs, DialogBeforeOpenEventArgs, ICellRenderer, setCell, SheetModel, Spreadsheet } from '../../../src/index';
+import { BeforeSaveEventArgs, saveCompleted } from '../../../src/index';
 
 describe('Open & Save ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -19,16 +20,21 @@ describe('Open & Save ->', () => {
         it('Open', (done: Function) => {
             fetch('https://cdn.syncfusion.com/scripts/spreadsheet/Sample.xlsx').then((response) => {
                 response.blob().then((data: Blob) => {
-                    const file: File = new File([data], 'Sample.xlsx');
-                    helper.invoke('open', [{ file: file }]);
                     const spreadsheet: Spreadsheet = helper.getInstance();
                     spreadsheet.openComplete = () => {
                         const sheet: SheetModel = helper.invoke('getActiveSheet');
                         expect(JSON.stringify(sheet.rows[0].cells[0])).toBe('{"value":"Customer Name","style":{"fontWeight":"Bold","verticalAlign":"Middle","textAlign":"Center"}}');
                         expect(JSON.stringify(sheet.rows[30].cells[5])).toBe('{"format":"$#,##0.00","formula":"=SUM(F2:F30)","style":{"fontWeight":"Bold"}}');
                         expect(sheet.columns[0].width).toBe(180);
-                        done();
-                    }
+                        setTimeout(() => {
+                            spreadsheet.openComplete = undefined;
+                            spreadsheet.dataBind();
+                            done();
+                        });
+                    };
+                    spreadsheet.dataBind();
+                    const file: File = new File([data], 'Sample.xlsx');
+                    helper.invoke('open', [{ file: file }]);
                 });
             });
         });
@@ -48,6 +54,8 @@ describe('Open & Save ->', () => {
             //     helper.invoke('openFromJson', [{ file: response.jsonObject }]);
             //     setTimeout(() => {
             //         expect(helper.getInstance().sheets[0].rows[0].cells[0].value).toBe('Test');
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    spreadsheet.notify(saveCompleted, {});
                      done();
             //     });
             // });
@@ -149,16 +157,35 @@ describe('Open & Save ->', () => {
                 done();
             });
         });
-        it('Cancelling the save as dialog opening', (done: Function) => {
+        it('Save as Excel action using dialog', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
-            spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+            spreadsheet.beforeSave = (args: BeforeSaveEventArgs): void => {
                 args.cancel = true;
             };
-            helper.triggerKeyNativeEvent(83,true);
-            setTimeout(function () {
-                expect(helper.getElementFromSpreadsheet('.e-open-dlg.e-dialog.e-popup-open')).toBeNull();
+            spreadsheet.dataBind();
+            helper.triggerKeyNativeEvent(83, true);
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('.e-open-dlg.e-dialog')).not.toBeNull();
+                expect(helper.getElement('.e-open-dlg.e-dialog .e-dlg-content .e-text-open').value).toBe('Sample');
+                helper.setAnimationToNone('.e-open-dlg.e-dialog');
+                helper.click('.e-open-dlg.e-dialog .e-btn-open-ok.e-primary');
+                spreadsheet.beforeSave = undefined;
+                spreadsheet.dataBind();
                 done();
             });
+        });
+        it('Canceling the save as dialog opening', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+                expect(args.dialogName).toBe('Save As');
+                args.cancel = true;
+            };
+            spreadsheet.dataBind();
+            helper.triggerKeyNativeEvent(83, true);
+            expect(helper.getElementFromSpreadsheet('.e-open-dlg.e-dialog')).toBeNull();
+            spreadsheet.dialogBeforeOpen = undefined;
+            spreadsheet.dataBind();
+            done();
         });
     });
 });

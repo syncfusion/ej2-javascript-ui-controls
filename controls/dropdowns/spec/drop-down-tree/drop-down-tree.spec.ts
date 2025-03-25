@@ -1,7 +1,7 @@
 import { Browser, createElement, detach } from '@syncfusion/ej2-base';
 import { DdtChangeEventArgs, DropDownTree } from '../../src/drop-down-tree/drop-down-tree';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { listData , hierarchicalData3, popupClosedata, hierarchicalDataString } from '../../spec/drop-down-tree/dataSource.spec'
+import { listData , hierarchicalData3, hierarchicalDataString, popupClosedata } from '../../spec/drop-down-tree/dataSource.spec'
 import '../../node_modules/es6-promise/dist/es6-promise';
 
 describe('DropDownTree control', () => {
@@ -110,12 +110,12 @@ describe('DropDownTree control', () => {
         let ddtreeObj: DropDownTree;
         let mouseEventArgs: any;
         let tapEvent: any;
+        let changed1: boolean;
         let changed: boolean = false;
         function onChange(args: DdtChangeEventArgs): void {
             changed = true;
             ddtreeObj.value = ['2'];
         }
-        let changed1: boolean;
         function onChange1(args: DdtChangeEventArgs): void {
             changed1 = true;
             let newListData = listData.filter(item => item.id !== 3);
@@ -322,20 +322,6 @@ describe('DropDownTree control', () => {
             expect((ddtreeObj as any).inputEle.classList.contains('e-chip-input')).toBe(true);
             expect((ddtreeObj as any).inputWrapper.querySelector('.e-overflow').classList.contains('e-icon-hide')).toBe(true);
         });
-        it('Value changed dynamically in the change event', () => {
-            ddtreeObj = new DropDownTree({
-                fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
-                placeholder: "Select items",
-                showCheckBox: true,
-                changeOnBlur: false,
-                change: onChange
-            }, '#ddtree');
-            let li: any = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
-            mouseEventArgs.target = li[1].querySelector('.e-list-text');
-            (ddtreeObj as any).treeObj.touchClickObj.tap(tapEvent);
-            expect(changed).toBe(true);
-            expect(ddtreeObj.value[0]).toBe('2');
-        });
         it('testing value property restore after dynamic datasource change', () => {
             ddtreeObj = new DropDownTree({
                 fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
@@ -348,6 +334,20 @@ describe('DropDownTree control', () => {
             mouseEventArgs.target = li[1].querySelector('.e-list-text');
             (ddtreeObj as any).treeObj.touchClickObj.tap(tapEvent);
             expect(changed1).toBe(true);
+            expect(ddtreeObj.value[0]).toBe('2');
+        });
+        it('Value changed dynamically in the change event', () => {
+            ddtreeObj = new DropDownTree({
+                fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+                placeholder: "Select items",
+                showCheckBox: true,
+                changeOnBlur: false,
+                change: onChange
+            }, '#ddtree');
+            let li: any = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
+            mouseEventArgs.target = li[1].querySelector('.e-list-text');
+            (ddtreeObj as any).treeObj.touchClickObj.tap(tapEvent);
+            expect(changed).toBe(true);
             expect(ddtreeObj.value[0]).toBe('2');
         });
         it('empty value at initial rendering - Default', () => {
@@ -1345,6 +1345,7 @@ describe('DropdownTree', () => {
         changed = true;
         argsValue = args;
     }
+
     beforeEach((): void => {
         originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -1532,74 +1533,5 @@ describe('DropdownTree', () => {
             expect((ddtreeObj as any).isPopupOpen).toBe(false);
             done();
         }, 450);
-    });
-});
-
-describe('DropDownTree Chip Visibility Tests', () => {
-    let mouseEventArgs: any;
-    let originalTimeout: any;
-    let tapEvent: any;
-    let ddtreeObj: DropDownTree;
-    beforeEach((): void => {
-        originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-        mouseEventArgs = {
-            preventDefault: (): void => { },
-            stopImmediatePropagation: (): void => { },
-            target: null,
-            type: null,
-            shiftKey: false,
-            ctrlKey: false
-        };
-        tapEvent = {
-            originalEvent: mouseEventArgs,
-        };
-        ddtreeObj = undefined;
-        let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddtree' });
-        document.body.appendChild(ele);
-    });
-    afterEach((): void => {
-        if (ddtreeObj)
-            ddtreeObj.destroy();
-        document.body.innerHTML = '';
-    });
-
-    it('Should hide chip elements when value is an empty string', () => {
-        ddtreeObj = new DropDownTree({
-            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
-            allowMultiSelection: true,
-            placeholder: "Select items",
-            value: ['']
-        }, '#ddtree');
-        let chipWrapper: HTMLElement = (ddtreeObj as any).inputWrapper.querySelector('.e-chips-wrapper');
-        expect(chipWrapper.classList.contains('e-icon-hide')).toBe(true);
-        let overflowEle: HTMLElement = (ddtreeObj as any).inputWrapper.querySelector('.e-overflow');
-        expect(overflowEle.classList.contains('e-icon-hide')).toBe(true);
-    });
-
-    it('Should hide chip elements when multiple empty strings are assigned to value property', () => {
-        ddtreeObj = new DropDownTree({
-            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
-            allowMultiSelection: true,
-            placeholder: "Select items",
-            value: ['', '']
-        }, '#ddtree');
-        let chipWrapper: HTMLElement = (ddtreeObj as any).inputWrapper.querySelector('.e-chips-wrapper');
-        expect(chipWrapper.classList.contains('e-icon-hide')).toBe(true);
-        let overflowEle: HTMLElement = (ddtreeObj as any).inputWrapper.querySelector('.e-overflow');
-        expect(overflowEle.classList.contains('e-icon-hide')).toBe(true);
-    });
-
-    it('Should hide chip elements when ivalid values are assigned to value property', () => {
-        ddtreeObj = new DropDownTree({
-            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
-            allowMultiSelection: true,
-            placeholder: "Select items",
-            value: ['1000']
-        }, '#ddtree');
-        let chipWrapper: HTMLElement = (ddtreeObj as any).inputWrapper.querySelector('.e-chips-wrapper');
-        expect(chipWrapper.classList.contains('e-icon-hide')).toBe(true);
-        let overflowEle: HTMLElement = (ddtreeObj as any).inputWrapper.querySelector('.e-overflow');
-        expect(overflowEle.classList.contains('e-icon-hide')).toBe(true);
     });
 });

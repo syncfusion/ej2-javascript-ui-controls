@@ -163,8 +163,8 @@ export class Layout {
 
     private layoutedFootnoteElement: FootnoteElementBox[] = [];
     /**
-      * @private
-      */
+     * @private
+     */
     public isAllColumnHasAutoWidthType: boolean = false;
 
     private isSameStyle(currentParagraph: ParagraphWidget, isAfterSpacing: boolean): boolean {
@@ -1863,7 +1863,6 @@ export class Layout {
         }
         return height;
     }
-    
     // Check whether the block has the field separator or field end of the field begin.
     private checkBlockHasField(block: BlockWidget): boolean {
         if (block instanceof ParagraphWidget) {
@@ -3945,8 +3944,8 @@ export class Layout {
         lineWidget.margin = new Margin(0, topMargin, 0, bottomMargin);
         lineWidget.height = topMargin + height + bottomMargin;
         this.adjustPositionBasedOnTopAndBottom(lineWidget);
-        if (isNullOrUndefined(paragraph.nextRenderedWidget) && paragraph.isInsideTable
-            && paragraph.previousRenderedWidget instanceof TableWidget && paragraph.childWidgets.length == 1) {
+        if ((isNullOrUndefined(paragraph.nextRenderedWidget) && paragraph.isInsideTable
+            && paragraph.previousRenderedWidget instanceof TableWidget && paragraph.childWidgets.length == 1) || paragraph.characterFormat.hidden) {
             //Special behavior for empty cell mark after nested table, preserved with zero height by default.
             //Empty line is displayed in cell for the last empty paragraph (Cell mark - last paragraph in cell) after a nested table.
             lineWidget.height = 0;
@@ -4063,6 +4062,26 @@ export class Layout {
             paragraph.childWidgets.push(lineWidget);
         }
         let element: ListTextElementBox = new ListTextElementBox(currentListLevel, false);
+        let considerAsHidden: boolean = false;
+        if (paragraph.characterFormat.hidden) {
+            if (paragraph.isEmpty()) {
+                considerAsHidden = true;
+            } else {
+                let firstElement: ElementBox = lineWidget.children[0];
+                while (firstElement) {
+                    if (!firstElement.characterFormat.hidden) {
+                        considerAsHidden = false;
+                        break;
+                    } else {
+                        considerAsHidden = true;
+                    }
+                    firstElement = firstElement.nextNode;
+                }
+            }
+            if (considerAsHidden) {
+                element.characterFormat.hidden = true;
+            }
+        }
         element.line = lineWidget;
         if (currentListLevel.listLevelPattern === 'Bullet') {
             element.text = currentListLevel.numberFormat;
@@ -4093,12 +4112,17 @@ export class Layout {
         lineWidget.children.splice(0, 0, element);
         if (currentListLevel.followCharacter !== 'None') {
             element = new ListTextElementBox(currentListLevel, true);
+            if (considerAsHidden) {
+                element.characterFormat.hidden = true;
+            }
             if (currentListLevel.followCharacter === 'Tab') {
                 element.text = '\t';
                 const index: number = lineWidget.children.indexOf(element);
                 let tabWidth: number = this.getTabWidth(paragraph, this.viewer, index, lineWidget, element);
                 documentHelper.textHelper.updateTextSize(element, paragraph);
-                element.width = tabWidth;
+                if (!considerAsHidden) {
+                    element.width = tabWidth;
+                }
             } else {
                 element.text = ' ';
                 documentHelper.textHelper.updateTextSize(element, paragraph);
@@ -4698,11 +4722,15 @@ export class Layout {
         let maxElementBottomMargin = 0;
         let maxElementTopMargin = 0;
         let elementLeft: number = this.viewer.clientArea.x;
+        let isHidden: boolean = true;
         for (let i: number = 0; i < children.length; i++) {
             let topMargin: number = 0;
             let bottomMargin: number = 0;
             let leftMargin: number = 0;
             let elementBox: ElementBox = children[i];
+            if (isHidden && !elementBox.characterFormat.hidden) {
+                isHidden = false;
+            }
             if (!isNullOrUndefined(getWidthAndSpace) && isStarted && elementBox.padding.left > 0 &&
                 (getWidthAndSpace.length > wrapIndex + 1)) {
                 let previousWidth: number = subWidth;
@@ -4809,7 +4837,11 @@ export class Layout {
                 this.updateShapeYPosition(elementBox);
             }
         }
+        if (isHidden) {
+            line.height = 0;
+        }
         line.margin = new Margin(0, maxElementTopMargin, 0, maxElementBottomMargin);
+        
         this.adjustPositionBasedOnTopAndBottom(line);
         this.checkInbetweenShapeOverlap(line);
         if (!isMultiColumnSplit && line.isLastLine() && line.indexInOwner === 0 && line.paragraph.paragraphFormat.widowControl) {
@@ -4953,7 +4985,7 @@ export class Layout {
             if (element instanceof FieldElementBox && element.fieldType === 2) {
                 isFieldCode = false;
             }
-            if (isFieldCode) {
+            if (isFieldCode || element.characterFormat.hidden) {
                 continue;
             }
             if (element instanceof FieldElementBox && element.fieldType === 0) {
@@ -6483,6 +6515,9 @@ export class Layout {
     }
     
     private getTabWidth(paragraph: ParagraphWidget, viewer: LayoutViewer, index: number, lineWidget: LineWidget, element: TabElementBox | ListTextElementBox): number {
+        if (element.characterFormat.hidden) {
+            return 0;
+        }
         let fPosition: number = 0;
         let isCustomTab: boolean = false;
         let tabs: WTabStop[] = paragraph.paragraphFormat.getUpdatedTabs();

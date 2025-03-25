@@ -516,7 +516,18 @@ export class TextPosition {
                 }
             }
         } else if (lineIndex + 1 < this.paragraph.childWidgets.length) {
-            const nextLineWidget: LineWidget = this.paragraph.childWidgets[lineIndex + 1] as LineWidget;
+            let nextLineWidget: LineWidget = this.paragraph.childWidgets[lineIndex + 1] as LineWidget;
+            while (nextLineWidget && nextLineWidget.height === 0) {
+                if (isNullOrUndefined(nextLineWidget.nextLine)) {
+                    let block: BlockWidget = this.selection.getNextParagraphBlock(nextLineWidget.paragraph);
+                    if (!isNullOrUndefined(block)) {
+                        this.currentWidget = nextLineWidget;
+                        this.updateOffsetToNextParagraph(index, false);
+                        return;
+                    }
+                }
+                nextLineWidget = nextLineWidget.nextLine;
+            }
             if (nextLineWidget) {
                 this.currentWidget = nextLineWidget;
                 this.offset = this.selection.getStartLineOffset(this.currentWidget);
@@ -552,6 +563,28 @@ export class TextPosition {
         this.currentWidget = previousParagraph.childWidgets[previousParagraph.childWidgets.length - 1] as LineWidget;
         this.offset = this.currentWidget.getEndOffset() + 1;
     }
+    private nextValidVisibleBlock(visibleBlock: ParagraphWidget, isStart: boolean): ParagraphWidget {
+        let currentValidVisibleBlock: ParagraphWidget = visibleBlock;
+        while (visibleBlock && ((visibleBlock.characterFormat.hidden && visibleBlock.height === 0) || (!visibleBlock.isEmpty() && !visibleBlock.characterFormat.hidden && visibleBlock.height === 0 && (visibleBlock.firstChild as LineWidget).children[0].characterFormat.hidden))) {
+            visibleBlock = isStart ? this.selection.getNextParagraphBlock(visibleBlock) : this.selection.getPreviousParagraphBlock(visibleBlock);
+        }
+        if (isNullOrUndefined(visibleBlock)) {
+            return currentValidVisibleBlock;
+        }
+        return visibleBlock;
+    }
+    private setPositionForValidLine(cell: TableCellWidget, isNext: boolean, positionAtStart: boolean): void {
+        let visibleBlock: ParagraphWidget;
+        if (!isNext) {
+            visibleBlock = this.selection.getLastParagraph(cell);
+            visibleBlock = this.nextValidVisibleBlock(visibleBlock, false);
+            this.setPosition(this.getValidVisibleLine(visibleBlock.childWidgets[visibleBlock.childWidgets.length - 1] as LineWidget, isNext), positionAtStart);
+        } else {
+            visibleBlock = this.selection.getFirstParagraph(cell);
+            visibleBlock = this.nextValidVisibleBlock(visibleBlock, true);
+            this.setPosition(this.getValidVisibleLine(visibleBlock.childWidgets[0] as LineWidget, isNext), positionAtStart);
+        }
+    }
     private updateOffsetToNextParagraph(indexInInline: number, isHighlight: boolean): void {
         //Moves to owner and get next paragraph.
         let inline: ElementBox;
@@ -560,6 +593,7 @@ export class TextPosition {
         const lineIndex: number = this.paragraph.childWidgets.indexOf(this.currentWidget);
         if (!isHighlight) {
             nextParagraph = this.selection.getNextParagraphBlock(this.paragraph) as ParagraphWidget;
+            nextParagraph = this.nextValidVisibleBlock(nextParagraph, true);
         } else if (lineIndex + 1 < this.paragraph.childWidgets.length) {
             const nextLineWidget: LineWidget = this.paragraph.childWidgets[lineIndex + 1] as LineWidget;
             if (nextLineWidget) {
@@ -582,10 +616,10 @@ export class TextPosition {
         }
         if (!isNullOrUndefined(nextParagraph) && nextParagraph.childWidgets.length > 0) {
             if (!positionAtStart) {
-                this.currentWidget = nextParagraph.firstChild as LineWidget;
+                this.currentWidget = this.getValidVisibleLine(nextParagraph.firstChild as LineWidget, true);
                 this.offset = isHighlight ? 1 : this.selection.getStartLineOffset(this.currentWidget);
             } else {
-                this.currentWidget = nextParagraph.childWidgets[nextParagraph.childWidgets.length - 1] as LineWidget;
+                this.currentWidget = this.getValidVisibleLine(nextParagraph.lastChild as LineWidget, false);
                 this.offset = this.selection.getLineLength(this.currentWidget) + 1;
             }
         }
@@ -596,26 +630,65 @@ export class TextPosition {
             this.offset++;
         }
     }
+    private getValidVisibleLine(visibleLine: LineWidget, isNext: boolean): LineWidget {
+        let currentVisibleLine: LineWidget = visibleLine;
+        if (isNext) {
+            while (visibleLine && visibleLine.height === 0) {
+                visibleLine = visibleLine.nextLine;
+            }
+        } else {
+            while (visibleLine && visibleLine.height === 0) {
+                visibleLine = visibleLine.previousLine;
+            }
+        }
+        if (visibleLine) {
+            return visibleLine;
+        }
+        return currentVisibleLine;
+    }
     private updateOffsetToPrevPosition(index: number, isHighlight: boolean): void {
         let inlineInfo: ElementInfo;
         let inline: ElementBox;
         const lineIndex: number = this.paragraph.childWidgets.indexOf(this.currentWidget);
-        const prevOffset: number = this.selection.getPreviousValidOffset(this.currentWidget.paragraph as ParagraphWidget, this.offset);
+        const prevOffset: number = this.selection.getPreviousValidOffset(this.currentWidget as LineWidget, this.offset);
+        let isMoveToVisibleBlock: boolean = true;
         if (this.offset > prevOffset) {
             this.offset = prevOffset;
+            isMoveToVisibleBlock = false;
         } else if (lineIndex > 0) {
-            const prevLineWidget: LineWidget = this.paragraph.childWidgets[lineIndex - 1] as LineWidget;
+            let prevLineWidget: LineWidget = this.paragraph.childWidgets[lineIndex - 1] as LineWidget;
+            while (prevLineWidget && prevLineWidget.height === 0) {
+                if (isNullOrUndefined(prevLineWidget.previousLine)) {
+                    let block: BlockWidget = this.selection.getPreviousParagraphBlock(prevLineWidget.paragraph);
+                    if (!isNullOrUndefined(block)) {
+                        this.currentWidget = prevLineWidget;
+                        isMoveToVisibleBlock = true;
+                        break;
+                    }
+                }
+                prevLineWidget = prevLineWidget.previousLine;
+            }
             if (prevLineWidget) {
+                isMoveToVisibleBlock = false;
                 this.currentWidget = prevLineWidget;
                 const endOffset: number = this.currentWidget.getEndOffset();
                 this.offset = endOffset > 0 ? endOffset - 1 : endOffset;
+                let length: number = 0;
+                let visibleElement: ElementBox = this.selection.getElementInfo(this.currentWidget, this.offset).element;
+                while (!isNullOrUndefined(visibleElement) && visibleElement.characterFormat.hidden) {
+                    length += visibleElement.length;
+                    visibleElement = visibleElement.previousElement;
+                }
+                this.offset -= length;
             }
-        } else {
+        }
+        if (isMoveToVisibleBlock) {
             //Moves to owner and get previous paragraph.
             let previousParagraph: ParagraphWidget = undefined;
             let positionAtStart: boolean = false;
             if (!isHighlight) {
                 previousParagraph = this.selection.getPreviousParagraphBlock(this.paragraph);
+                previousParagraph = this.nextValidVisibleBlock(previousParagraph, false);
             } else {
                 previousParagraph = this.selection.getPreviousSelectionBlock(this.paragraph);
                 if (!isNullOrUndefined(previousParagraph)) {
@@ -632,12 +705,12 @@ export class TextPosition {
             }
             if (!isNullOrUndefined(previousParagraph)) {
                 if (!positionAtStart) {
-                    this.currentWidget = previousParagraph.childWidgets[previousParagraph.childWidgets.length - 1] as LineWidget;
+                    this.currentWidget = this.getValidVisibleLine(previousParagraph.lastChild as LineWidget, false);
                     // line end with page break and updating offset before page break.
 
                     this.offset = (this.currentWidget.isEndsWithPageBreak || this.currentWidget.isEndsWithColumnBreak) ? this.currentWidget.getEndOffset() - 1 : this.currentWidget.getEndOffset();
                 } else {
-                    this.currentWidget = previousParagraph.firstChild as LineWidget;
+                    this.currentWidget = this.getValidVisibleLine(previousParagraph.firstChild as LineWidget, true);
                     this.offset = this.selection.getStartLineOffset(this.currentWidget);
                 }
             }
@@ -1625,8 +1698,7 @@ export class TextPosition {
             if (ownerRow.previousRenderedWidget instanceof TableRowWidget) {
 
                 const cell: TableCellWidget = selection.getFirstCellInRegion(ownerRow.previousRenderedWidget as TableRowWidget, currentParagraph.associatedCell, left, true);
-                const lastParagraph: ParagraphWidget = selection.getLastParagraph(cell);
-                this.setPosition(lastParagraph.childWidgets[lastParagraph.childWidgets.length - 1] as LineWidget, false);
+                this.setPositionForValidLine(cell, false, true);
             } else {
                 let prevBlock: BlockWidget = ownerRow.ownerTable.previousRenderedWidget as BlockWidget;
                 do {
@@ -1635,7 +1707,8 @@ export class TextPosition {
                     }
                 } while (prevBlock instanceof TableWidget);
                 if (prevBlock instanceof ParagraphWidget) {
-                    this.setPosition((prevBlock as ParagraphWidget).childWidgets[prevBlock.childWidgets.length - 1] as LineWidget, false);
+                    prevBlock = this.nextValidVisibleBlock(prevBlock, false);
+                    this.setPosition(this.getValidVisibleLine((prevBlock as ParagraphWidget).childWidgets[prevBlock.childWidgets.length - 1] as LineWidget, false), false);
                 }
             }
             prevLine = selection.getLineWidgetParagraph(this.offset, this.currentWidget);
@@ -1643,15 +1716,12 @@ export class TextPosition {
             if (!paragraph.isInsideTable && this.currentWidget.paragraph.isInsideTable) {
 
                 const cell: TableCellWidget = selection.getFirstCellInRegion(this.currentWidget.paragraph.associatedCell.ownerRow, this.currentWidget.paragraph.associatedCell, this.owner.selectionModule.upDownSelectionLength, true);
-                const lastParagraph: ParagraphWidget = selection.getLastParagraph(cell);
-                this.setPosition(lastParagraph.childWidgets[lastParagraph.childWidgets.length - 1] as LineWidget, false);
-
+                this.setPositionForValidLine(cell, false, false);
             } else if (paragraph.isInsideTable && (!isNullOrUndefined(this.currentWidget.paragraph.associatedCell) && paragraph.associatedCell.ownerRow.previousRenderedWidget !== paragraph.associatedCell.ownerRow.previousSplitWidget &&
                 paragraph.associatedCell.ownerRow.previousRenderedWidget === this.currentWidget.paragraph.associatedCell.ownerRow)) {
 
                 const cell: TableCellWidget = selection.getLastCellInRegion(this.currentWidget.paragraph.associatedCell.ownerRow, this.currentWidget.paragraph.associatedCell, this.owner.selectionModule.upDownSelectionLength, true);
-                const lastParagraph: ParagraphWidget = selection.getLastParagraph(cell);
-                this.setPosition(lastParagraph.childWidgets[lastParagraph.childWidgets.length - 1] as LineWidget, false);
+                this.setPositionForValidLine(cell, false, false);
             }
             prevLine = selection.getLineWidgetParagraph(this.offset, this.currentWidget);
         }
@@ -1691,7 +1761,7 @@ export class TextPosition {
             if (ownerRow.nextRenderedWidget instanceof TableRowWidget) {
 
                 const cell: TableCellWidget = this.selection.getLastCellInRegion(ownerRow.nextRenderedWidget as TableRowWidget, this.currentWidget.paragraph.associatedCell, left, false);
-                this.setPosition(this.selection.getFirstParagraph(cell).childWidgets[0] as LineWidget, true);
+                this.setPositionForValidLine(cell, true, true);
             } else {
                 let nextBlock: BlockWidget = this.selection.getNextRenderedBlock(ownerRow.ownerTable);
                 do {
@@ -1700,7 +1770,8 @@ export class TextPosition {
                     }
                 } while (nextBlock instanceof TableWidget);
                 if (nextBlock instanceof ParagraphWidget) {
-                    this.setPosition((nextBlock as ParagraphWidget).childWidgets[0] as LineWidget, true);
+                    nextBlock = this.nextValidVisibleBlock(nextBlock, true);
+                    this.setPosition(this.getValidVisibleLine((nextBlock as ParagraphWidget).childWidgets[0] as LineWidget, true), true);
                 }
             }
             nextLine = selection.getLineWidgetParagraph(this.offset, this.currentWidget);
@@ -1708,15 +1779,15 @@ export class TextPosition {
             if (!prevParagraph.isInsideTable && this.currentWidget.paragraph.isInsideTable) {
 
                 const cell: TableCellWidget = this.selection.getLastCellInRegion(this.currentWidget.paragraph.associatedCell.ownerRow, this.currentWidget.paragraph.associatedCell, this.owner.selectionModule.upDownSelectionLength, false);
-                this.setPosition(this.selection.getFirstParagraph(cell).childWidgets[0] as LineWidget, true);
+                this.setPositionForValidLine(cell, true, true);
 
             } else if (prevParagraph.isInsideTable && (!isNullOrUndefined(this.currentWidget.paragraph.associatedCell) && prevParagraph.associatedCell.ownerRow.nextRenderedWidget !== prevParagraph.associatedCell.ownerRow.nextSplitWidget)) {
                 if (prevParagraph.associatedCell.ownerRow.nextRenderedWidget === this.currentWidget.paragraph.associatedCell.ownerRow) {
                     const cell: TableCellWidget = selection.getLastCellInRegion(this.currentWidget.paragraph.associatedCell.ownerRow, this.currentWidget.paragraph.associatedCell, this.owner.selectionModule.upDownSelectionLength, true);
-                    this.setPosition(selection.getFirstParagraph(cell).childWidgets[0] as LineWidget, false);
+                    this.setPositionForValidLine(cell, true, false);
                 } else if (this.currentWidget.paragraph.isInsideTable && prevParagraph.associatedCell.ownerRow.nextRenderedWidget instanceof TableRowWidget && prevParagraph.associatedCell.ownerRow !== this.currentWidget.paragraph.associatedCell.ownerRow) {
                     const cell: TableCellWidget = this.selection.getLastCellInRegion(prevParagraph.associatedCell.ownerRow.nextRenderedWidget as TableRowWidget, this.currentWidget.paragraph.associatedCell, left, false);
-                    this.setPosition(this.selection.getFirstParagraph(cell).childWidgets[0] as LineWidget, true);
+                    this.setPositionForValidLine(cell, true, true);
                 }
             }
             nextLine = selection.getLineWidgetParagraph(this.offset, this.currentWidget);

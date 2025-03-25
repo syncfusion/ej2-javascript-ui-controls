@@ -10,7 +10,7 @@ import * as cls from '../../../src/schedule/base/css-constant';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
 import { RecurrenceEditor } from '../../../src/recurrence-editor/index';
-import { PopupOpenEventArgs } from '../../../src/schedule/base/interface';
+import { PopupOpenEventArgs, TooltipOpenEventArgs } from '../../../src/schedule/base/interface';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, TimelineViews);
 
@@ -357,6 +357,56 @@ describe('Schedule event tooltip module', () => {
             expect(tooltipEle.querySelector('.e-details').innerHTML).toBe('April 4, 2018');
             expect(tooltipEle.querySelector('.e-all-day').innerHTML).toBe('2:00 PM - 3:30 PM');
             util.triggerMouseEvent(targets[1], 'mouseleave');
+        });
+    });
+
+    describe('Disable/Enable Event tooltip customization with subject-based restriction', () => {
+        let schObj: Schedule;
+    
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px',
+                width: '500px',
+                selectedDate: new Date(2017, 10, 6),
+                tooltipOpen: (args: TooltipOpenEventArgs) => {
+                    const record = args.data;
+                    if (record.Subject === 'Vacation') {
+                        args.cancel = true;
+                    }
+                },
+                eventSettings: {
+                    enableTooltip: true,
+                    dataSource: defaultData
+                }
+            };
+            schObj = util.createSchedule(model, defaultData, done);
+        });
+    
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+    
+        it('should not show tooltip for appointments with Subject "Vacation"', () => {
+            const elements: NodeListOf<Element> = schObj.element.querySelectorAll('.e-appointment');
+            const target: HTMLElement = Array.from(elements).find((element) => {
+                const event: Record<string, any> = schObj.getEventDetails(element) as Record<string, any>;
+                return event.Subject === 'Vacation';
+            }) as HTMLElement;
+            expect(target).toBeDefined();
+            expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
+            util.triggerMouseEvent(target, 'mouseover');
+            expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
+        });
+    
+        it('should show tooltip for appointments with other subjects', () => {
+            util.disableTooltipAnimation((schObj.eventTooltip as any).tooltipObj);
+            const target: HTMLElement = schObj.element.querySelector('.e-appointment');
+            expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
+            util.triggerMouseEvent(target, 'mouseover');
+            const tooltipEle: HTMLElement = document.querySelector('.e-schedule-event-tooltip') as HTMLElement;
+            expect(isVisible(tooltipEle)).toBe(true);
+            util.triggerMouseEvent(target, 'mouseleave');
+            expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
         });
     });
 

@@ -3744,6 +3744,9 @@ export class Editor {
                 }
                 // Todo: compare selection format
                 let insertFormat: WCharacterFormat = this.copyInsertFormat(inline.characterFormat, true);
+                if (insertFormat.hidden) {
+                    insertFormat.hidden = false;
+                }
                 let isBidi: boolean = this.documentHelper.textHelper.getRtlLanguage(text).isRtl || this.selection.characterFormat.bidi;
                 let insertLangId: number = this.documentHelper.textHelper.getRtlLanguage(text).id;
                 let inlineLangId: number = 0;
@@ -6610,15 +6613,7 @@ export class Editor {
                 this.pasteAjax(rtfContent, '.rtf');
             } else if (htmlContent !== '') {
                 this.isHtmlPaste = true;
-                let doc: Document = new DOMParser().parseFromString(htmlContent, 'text/html');
-                let result: string = new XMLSerializer().serializeToString(doc);
-                result = result.replace(/<!--StartFragment-->/gi, '');
-                result = result.replace(/<!--EndFragment-->/gi, '');
-                // Removed namesapce which is added when using XMLSerializer.
-                // When copy content from MS Word, the clipboard html content already have same namespace which cause duplicate namespace
-                // Here, removed the duplicate namespace.
-                result = result.replace('xmlns="http://www.w3.org/1999/xhtml"', '');
-                this.pasteAjax(result, '.html');
+                this.pasteAjax(htmlContent, '.html');
             } else if (textContent !== null && textContent !== '') {
                 this.selection.currentPasteAction = 'TextOnly';
                 this.pasteContents(textContent);
@@ -7462,7 +7457,7 @@ export class Editor {
         commentStartToInsert = this.checkAndRemoveComments();
         //}
 
-        this.defaultPaste(widgets as BodyWidget[], currentFormat, pastedComments)
+        this.defaultPaste(widgets as BodyWidget[], currentFormat, pastedComments);
 
         //if (!this.isSkipHistory) {
         this.updateHistoryForComments(commentStartToInsert);
@@ -18596,7 +18591,6 @@ export class Editor {
         }
         if (!isCombined && (this.owner.enableTrackChanges || (!isNullOrUndefined(firstChild) && firstChild.paragraph.characterFormat.revisions.length > 0))) {
             this.insertRevision(paragraph.characterFormat, revisionType);
-
             // for spitted paragraph on moving content we maintain same revision, so if it not matched with inserted paragraph then we need to spit it.
             if (splitRevision && lastElement.revisions.length > 0 && !isNullOrUndefined(firstElement) && firstElement.revisions.length > 0) {
                 this.updateRevisionForSpittedTextElement(lastElement as TextElementBox, firstElement as TextElementBox);
@@ -19099,7 +19093,6 @@ export class Editor {
     }
     /**
      * @private
-     * @returns 
      */
     public getSelectedComments(): SelectedCommentInfo {
         let comments: CommentElementBox[] = this.documentHelper.comments;
@@ -19188,6 +19181,9 @@ export class Editor {
                 this.isSkipOperationsBuild = false;
                 updateSelection = true;
             }
+        }
+        if (!isNullOrUndefined(inline) && inline.characterFormat.hidden) {
+            return;
         }
         if (updateSelection) {
             //When paragraph has only comment end mark, there will be no previous inline and comment end mark will be delete
@@ -19438,12 +19434,15 @@ export class Editor {
                 this.onApplyParagraphFormat('textAlignment', 'Left', false, true);
                 return;
             }
-            if (paragraph.previousRenderedWidget instanceof ParagraphWidget) {
-                selection.owner.isShiftingEnabled = true;
+            if (paragraph.previousRenderedWidget instanceof ParagraphWidget) {                
                 let previousParagraph: ParagraphWidget = paragraph.previousRenderedWidget as ParagraphWidget;
                 // if (isNullOrUndefined(previousParagraph)) {
                 //     previousParagraph = this.documentHelper.selection.getPreviousBlock(paragraph) as ParagraphWidget;
                 // }
+                if (previousParagraph.characterFormat.hidden) {
+                    return;
+                }
+                selection.owner.isShiftingEnabled = true;
                 if (this.owner.enableTrackChanges && paragraph.previousRenderedWidget != undefined && paragraph.previousRenderedWidget.characterFormat.revisions.length == 0) {
                     const characterFormat = previousParagraph.characterFormat.cloneFormat();
                     if (!this.checkToMatchEmptyParaMarkBack(previousParagraph)) {
@@ -20238,10 +20237,13 @@ export class Editor {
     public singleDelete(selection: Selection, isRedoing: boolean): void {
 
         let lineWidget: LineWidget = selection.start.currentWidget;
-        let paragraph: ParagraphWidget = selection.start.paragraph; let offset: number = selection.start.offset; let indexInInline: number = 0;
-
+        let paragraph: ParagraphWidget = selection.start.paragraph; 
+        let offset: number = selection.start.offset; let indexInInline: number = 0;
         let inlineObj: ElementInfo = lineWidget.getInline(selection.start.offset, indexInInline);
         let inline: ElementBox = inlineObj.element;
+        if (paragraph.characterFormat.hidden) {
+            return;
+        }
         if (this.selection.isInlineFormFillMode()) {
             if (inline instanceof FieldElementBox && inline.fieldType === 1) {
                 return;
@@ -20305,6 +20307,9 @@ export class Editor {
         if (!isNullOrUndefined(inline)) {
             let nextRenderedInline: ElementBox = undefined;
             let nextInline: ElementBox = this.documentHelper.getNextValidElement(inline);
+            if (inline.characterFormat.hidden) {
+                return;
+            }
             if (nextInline instanceof ElementBox) {
                 nextRenderedInline = nextInline;
             }
@@ -20415,6 +20420,18 @@ export class Editor {
             }
             let previousParagraph: ParagraphWidget = undefined; let newParagraph: ParagraphWidget = undefined;
             let nextParagraph: ParagraphWidget = selection.getNextParagraphBlock(paragraph);
+            if (!isNullOrUndefined(nextParagraph)) {
+                if (nextParagraph.isEmpty() && nextParagraph.characterFormat.hidden) {
+                    return;
+                }
+                let firstLine: LineWidget = nextParagraph.firstChild as LineWidget;
+                if (!isNullOrUndefined(firstLine)) {
+                    let firstElement: ElementBox = firstLine.children[0] as ElementBox;
+                    if (!isNullOrUndefined(firstElement) && firstElement.characterFormat.hidden) {
+                        return;
+                    }
+                }
+            }
             if (isNullOrUndefined(nextParagraph)) {
                 if (offset > 0) {
                     return;
@@ -20433,9 +20450,7 @@ export class Editor {
                         //Adds an empty paragraph, to ensure minimal content.
                     }
                 }
-            }
-
-          
+            }          
             if (!isRedoing) {
                 this.initHistory('Delete');
             }
@@ -20772,6 +20787,7 @@ export class Editor {
             this.documentHelper.selection.editPosition = this.selection.getHierarchicalIndex(currentParagraph, this.documentHelper.selection.getLineLength(currentParagraph.lastChild as LineWidget).toString());
         }
     }
+    
     private checkEndPosition(selection?: Selection): boolean {
         return (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)
             && isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo.endPosition));

@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined, L10n, initializeCSPTemplate, attributes } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, L10n, initializeCSPTemplate, attributes, updateCSSText } from '@syncfusion/ej2-base';
 import { DropDownList, ComboBox, SelectEventArgs, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { RadioButton, Button } from '@syncfusion/ej2-buttons';
 import { WStyle, WCharacterStyle, WParagraphStyle } from '../../implementation/format/style';
@@ -622,13 +622,15 @@ export class StyleDialog {
     }
     private toggleDisable(): void {
         if (this.styleType.value === this.localObj.getConstant('Character')) {
+            const cssText: string = 'display:flex;pointer-events:none;opacity:0.5';
             this.styleParagraph.enabled = false;
 
-            this.target.getElementsByClassName('e-style-paragraph').item(0).setAttribute('style', 'display:flex;pointer-events:none;opacity:0.5');
+            updateCSSText(this.target.getElementsByClassName('e-style-paragraph').item(0) as HTMLElement, cssText);
         } else {
+            const cssText: string = 'display:flex';
             this.styleParagraph.enabled = true;
             this.target.getElementsByClassName('e-style-paragraph').item(0).removeAttribute('style');
-            this.target.getElementsByClassName('e-style-paragraph').item(0).setAttribute('style', 'display:flex');
+            updateCSSText(this.target.getElementsByClassName('e-style-paragraph').item(0) as HTMLElement, cssText);
         }
         this.styleBasedOn.enabled = true;
     }

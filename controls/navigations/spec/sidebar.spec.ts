@@ -196,16 +196,14 @@ describe("Sidebar DOM class Testing ", () => {
     it("Sidebar with auto type and mediaQuery test case", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
-        sidebar = new Sidebar({ type: 'Auto', mediaQuery: '(min-width:1400px)' }, ele);
-        expect(document.getElementById('sidebar').classList.contains('e-visibility')).toBe(false);
-        expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(false);
+        sidebar = new Sidebar({ type: 'Auto', mediaQuery: '(min-width:500px)', width: '500px' }, ele);
+        expect(sidebar.isOpen).toBe(true);
     });
     it("Sidebar with auto type and mediaQuer list test case", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
-        sidebar = new Sidebar({ type: 'Auto', mediaQuery: window.matchMedia('min-width:1400px') }, ele);
-        expect(document.getElementById('sidebar').classList.contains('e-visibility')).toBe(false);
-        expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(false);
+        sidebar = new Sidebar({ type: 'Auto', mediaQuery: window.matchMedia('(min-width: 500px)'), width: '500px' }, ele);
+        expect(sidebar.isOpen).toBe(true);
     });
 
     // animation onproperty change test case
@@ -886,8 +884,8 @@ describe("Sidebar DOM class Testing ", () => {
     it("Sidebar  with mediaQuery less than 400px test case", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
-        sidebar = new Sidebar({ type: 'Auto', mediaQuery: '(max-width:400px)' }, ele);
-        expect(ele.classList.contains("e-close")).toEqual(false);
+        sidebar = new Sidebar({ type: 'Auto', mediaQuery: '(max-width:400px)', width: '500px' }, ele);
+        expect(ele.classList.contains("e-close")).toEqual(true);
         sidebar.mediaQuery ='(min-width:700px)';
         sidebar.dataBind();
         expect(ele.classList.contains("e-open")).toEqual(true);

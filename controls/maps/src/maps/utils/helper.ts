@@ -230,7 +230,7 @@ export function convertGeoToPoint(latitude: number, longitude: number, factor: n
  * @returns {string} - Returns the path.
  * @private
  */
-export function calculatePolygonPath(maps: Maps, factor: number, currentLayer: LayerSettings, markerData: Coordinate[] ): string {
+export function calculatePolygonPath(maps: Maps, factor: number, currentLayer: LayerSettings, markerData: Coordinate[]): string {
     let path: string = '';
     if (!isNullOrUndefined(markerData) && markerData.length > 1) {
         Array.prototype.forEach.call(markerData, (data: Coordinate, dataIndex: number) => {
@@ -1441,7 +1441,6 @@ export function mergeSeparateCluster(sameMarkerData: MarkerClusterData[], maps: 
     const markerIndex: number = sameMarkerData[0].markerIndex;
     const dataIndex: number = sameMarkerData[0].dataIndex;
     const markerId: string = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex;
-    const marker: MarkerSettingsModel = maps.layers[layerIndex as number].markerSettings[markerIndex as number];
     const clusterId: string = markerId + '_dataIndex_' + dataIndex + '_cluster_' + clusterIndex;
     const clusterEle: Element = maps.layers[layerIndex as number].markerClusterSettings.shape === 'Balloon' ? getElement(clusterId + '_Group') : getElement(clusterId);
     const clusterEleLabel: Element = getElement(clusterId + '_datalabel_' + clusterIndex);

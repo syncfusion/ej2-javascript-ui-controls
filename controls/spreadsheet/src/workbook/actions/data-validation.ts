@@ -1,5 +1,5 @@
 import { Workbook, SheetModel, CellModel, getSheet, ColumnModel, isHiddenRow, getCell, setCell } from '../base/index';
-import { cellValidation, addHighlight, getCellAddress, updateHighlight, getSwapRange } from '../common/index';
+import { cellValidation, addHighlight, getCellAddress, updateHighlight, getSwapRange, getUpdatedRange } from '../common/index';
 import { removeHighlight, InsertDeleteEventArgs, checkIsFormula, getSheetIndexFromAddress, getRangeFromAddress } from '../common/index';
 import { getRangeIndexes, getUpdatedFormulaOnInsertDelete, InsertDeleteModelArgs, getUpdatedFormula } from '../common/index';
 import { ValidationModel, updateCell, beforeInsert, beforeDelete, addListValidationDropdown } from '../common/index';
@@ -55,7 +55,6 @@ export class WorkbookDataValidation {
             this.parent.off(refreshInsertDelete, this.beforeInsertDeleteHandler);
         }
     }
-
 
     private updateValidationHandler(
         args: { range: string, rules?: ValidationModel, isRemoveValidation?: boolean, isAction?: boolean }): void {
@@ -246,19 +245,6 @@ export class WorkbookDataValidation {
         this.invalidDataHandler(args.range, true);
     }
 
-    private getRange(range: string): string {
-        const indexes: number[] = getRangeIndexes(range);
-        const sheet: SheetModel = this.parent.getActiveSheet();
-        const maxColCount: number = sheet.colCount;
-        const maxRowCount: number = sheet.rowCount;
-        if (indexes[2] === maxRowCount - 1 && indexes[0] === 0) {
-            range = range.replace(/[0-9]/g, '');
-        } else if (indexes[3] === maxColCount - 1 && indexes[2] === 0) {
-            range = range.replace(/\D/g, '');
-        }
-        return range;
-    }
-
     private invalidDataHandler(range?: string, isRemoveHighlightedData?: boolean): void {
         let cell: CellModel; let col: ColumnModel; let rowIdx: number; let colIdx: number; let indexes: number[];
         let uiRefresh: boolean; let isActiveSheet: boolean; let isFullRange: boolean; let lastColIdx: number; let row: RowModel;
@@ -268,14 +254,17 @@ export class WorkbookDataValidation {
         const viewport: number[] = parent.scrollSettings && parent.scrollSettings.enableVirtualization ? (parent.viewport ?
             [frozenRow + parent.viewport.topIndex, frozenCol + parent.viewport.leftIndex, parent.viewport.bottomIndex,
                 parent.viewport.rightIndex] : []) : [0, 0, sheet.rowCount - 1, sheet.colCount - 1];
-        const updateHighlightOnUI: (validation: ValidationModel) => void = (validation: ValidationModel): void => {
-            if (uiRefresh && ((colIdx >= viewport[1] && colIdx <= viewport[3]) || colIdx < frozenCol) && !isHiddenCol(sheet, colIdx)) {
-                this.parent.notify(
-                    updateHighlight, { isRemoveHighlightedData: isRemoveHighlightedData, rowIdx: rowIdx, colIdx: colIdx, cell: cell,
-                        validation: validation, removeOnValidData: true });
-            }
-        };
-        let updateHighlightProp: (validation: ValidationModel, updateHighlight: boolean) => void;
+        const updateHighlightOnUI: (validation: ValidationModel, col?: ColumnModel) => void =
+            (validation: ValidationModel, col?: ColumnModel): void => {
+                if (uiRefresh && ((colIdx >= viewport[1] && colIdx <= viewport[3]) || colIdx < frozenCol) && !isHiddenCol(sheet, colIdx)) {
+                    this.parent.notify(
+                        updateHighlight, {
+                            isRemoveHighlightedData: isRemoveHighlightedData, rowIdx: rowIdx, colIdx: colIdx, cell: cell,
+                            validation: validation, removeOnValidData: true, col: col
+                        });
+                }
+            };
+        let updateHighlightProp: (validation: ValidationModel, updateHighlight: boolean, col?: ColumnModel) => void;
         if (isRemoveHighlightedData) {
             updateHighlightProp = (validation: ValidationModel, updateHighlight: boolean): void => {
                 if (validation.isHighlighted) {
@@ -286,11 +275,11 @@ export class WorkbookDataValidation {
                 }
             };
         } else {
-            updateHighlightProp = (validation: ValidationModel, updateHighlight: boolean): void => {
+            updateHighlightProp = (validation: ValidationModel, updateHighlight: boolean, col?: ColumnModel): void => {
                 if (updateHighlight) {
                     validation.isHighlighted = true;
                 }
-                updateHighlightOnUI(validation);
+                updateHighlightOnUI(validation, col);
             };
         }
         const updateValidationHighlight: Function = (): void => {
@@ -303,10 +292,10 @@ export class WorkbookDataValidation {
                 }
                 for (colIdx = indexes[1]; colIdx <= lastColIdx; colIdx++) {
                     cell = getCell(rowIdx, colIdx, sheet, false, true);
+                    col = sheet.columns[colIdx as number];
                     if (cell.validation) {
-                        updateHighlightProp(cell.validation, true);
+                        updateHighlightProp(cell.validation, true, col);
                     } else {
-                        col = sheet.columns[colIdx as number];
                         if (checkColumnValidation(col, rowIdx, colIdx)) {
                             updateHighlightProp(col.validation, rowIdx === indexes[2]);
                         }
@@ -323,7 +312,7 @@ export class WorkbookDataValidation {
             } else {
                 isActiveSheet = true;
             }
-            indexes = getSwapRange(getRangeIndexes(this.getRangeWhenColumnSelected(this.getRange(range), sheet).range));
+            indexes = getSwapRange(getRangeIndexes(this.getRangeWhenColumnSelected(getUpdatedRange(sheet, range), sheet).range));
             lastColIdx = indexes[3];
             updateValidationHighlight();
         } else {

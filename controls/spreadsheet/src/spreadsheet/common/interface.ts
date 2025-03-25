@@ -1,4 +1,4 @@
-import { CellModel, BeforeSortEventArgs, SheetModel, ImageModel, ChartType, ConditionalFormatModel, AutoFillDirection, AutoFillType, ChartModel, MarkerSettingsModel } from './../../workbook/index';
+import { CellModel, BeforeSortEventArgs, SheetModel, ImageModel, ChartType, ConditionalFormatModel, AutoFillDirection, AutoFillType, ChartModel, MarkerSettingsModel, DataLabelSettingsModel, LegendSettingsModel, AxisModel, ColumnModel } from './../../workbook/index';
 import { ValidationType, ValidationOperator, MergeArgs, InsertDeleteEventArgs, HyperlinkModel } from './../../workbook/index';
 import { Spreadsheet, RefreshType } from '../index';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
@@ -145,7 +145,7 @@ export interface ICellRenderer {
     refreshRange(
         range: number[], refreshing?: boolean, checkWrap?: boolean, checkHeight?: boolean, checkCF?: boolean,
         skipFormatCheck?: boolean, checkFormulaAdded?: boolean, isFromAutoFillOption?: boolean,
-        isHeightCheckNeeded?: boolean, isSortAction?: boolean): void;
+        isHeightCheckNeeded?: boolean, isSortAction?: boolean, isSelectAll?: boolean, cells?: PreviousCellDetails[]): void;
     refresh(
         rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element, checkCF?: boolean, checkWrap?: boolean,
         skipFormatCheck?: boolean): void;
@@ -313,6 +313,9 @@ export interface CellRenderArgs {
     fillType?: string;
     isSortAction?: boolean;
     action?: string;
+    isSelectAll?: boolean;
+    rowHeight?: number;
+    col?: ColumnModel;
     mergeBorderRows?: number[];
 }
 /** @hidden */
@@ -368,6 +371,8 @@ export interface CellSaveEventArgs {
      * > Only applicable for Manual calculation
      */
     previousFormulaValue?: string | number;
+    /** @hidden */
+    format?: string;
 }
 
 /**
@@ -403,6 +408,7 @@ export interface CollaborativeEditArgs {
     action: string;
     eventArgs: UndoRedoEventArgs;
     cancel?: boolean;
+    isClearAction?: boolean;
 }
 
 /** @hidden */
@@ -538,6 +544,7 @@ export interface PreviousCellDetails {
     formattedText?: string;
     copyCellValue?: string | number;
     autoFillText?: string | number;
+    rowHeight?: number;
 }
 
 export interface BeforePasteEventArgs {
@@ -589,7 +596,12 @@ export interface BeforeChartEventArgs {
     type?: ChartType;
     theme?: ChartTheme;
     isSeriesInRows?: boolean;
-    markerSettings?: MarkerSettingsModel
+    markerSettings?: MarkerSettingsModel;
+    dataLabelSettings?: DataLabelSettingsModel;
+    title?: string;
+    legendSettings?: LegendSettingsModel;
+    primaryXAxis?: AxisModel;
+    primaryYAxis?: AxisModel;
     range?: string;
     id?: string;
     height?: number;

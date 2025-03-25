@@ -1,7 +1,7 @@
 import { SpreadsheetModel, CellRenderEventArgs, Spreadsheet, CellEditEventArgs, CellSaveEventArgs, onContentScroll } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { CellModel, SheetModel, getCell, ImageModel } from '../../../src/index';
+import { CellModel, SheetModel, getCell, ImageModel, getFormatFromType } from '../../../src/index';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { EventHandler, createElement } from '@syncfusion/ej2-base';
@@ -43,6 +43,19 @@ describe('Editing ->', () => {
                     done();
                 });
             }, 20);
+        });
+        it('Checking alt enter on currency formatted cell', (done: Function) => {
+            helper.invoke('updateCell', [{ value: '10', format: '$#,##0', wrap: true }, 'I1']);
+            const cell: any = helper.getInstance().sheets[0].rows[0].cells[8];
+            expect(cell.value).toBe(10);
+            expect(cell.format).toBe('$#,##0');
+            expect(cell.wrap).toBeTruthy();
+            const cellEle: HTMLElement = helper.invoke('getCell', [0, 8]);
+            expect(cellEle.textContent).toBe('$10');
+            helper.edit('I1', '10\n');
+            expect(cell.value).toBe('10\n');
+            expect(cellEle.textContent).toBe('10\n');
+            done();
         });
     });
 
@@ -357,6 +370,18 @@ describe('Editing ->', () => {
             helper.invoke('endEdit');
             done();
         });
+        it('EJ2-923418- Cell height is not maintained correctly after unmerging the merged cells', function (done) {
+            helper.invoke('merge', ['A7:A9']);
+            helper.edit('A7', 'Syncfusio\nSyncfusio\nSyncfusio');
+            expect(helper.invoke('getCell', [6, 0]).classList).toContain('e-wraptext');
+            expect(helper.invoke('getCell', [7, 0]).classList).not.toContain('e-wraptext');
+            expect(helper.invoke('getCell', [8, 0]).classList).not.toContain('e-wraptext');
+            helper.invoke('unMerge', ['A7']);
+            expect(helper.invoke('getCell', [6, 0]).classList).toContain('e-wraptext');
+            expect(helper.invoke('getRow', [7]).style.height).toBe('20px');
+            expect(helper.invoke('getRow', [8]).style.height).toBe('20px');
+            done();
+        });
     });
 
     describe('Edit formula in formula bar and cells ->', () => {
@@ -385,7 +410,6 @@ describe('Editing ->', () => {
             expect(spreadsheet.sheets.length).toBe(1);
             helper.invoke('insertSheet', [1]);
             setTimeout(function () {
-                debugger;
                 expect(spreadsheet.sheets.length).toBe(2);
                 helper.invoke('delete', [0,2]);
                 expect(spreadsheet.sheets.length).toBe(2);
@@ -1197,7 +1221,7 @@ describe('Editing ->', () => {
                 done();
             });
         });
-        describe('EJ2-71834, EJ2-853079, EJ2-861718, EJ2-941712', () => {
+        describe('EJ2-71834, EJ2-853079, EJ2-861718, EJ2-941712 ', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{  ranges: [{ dataSource: defaultData }]}], calculationMode: 'Manual' }, done);
             });
@@ -1763,6 +1787,87 @@ describe('Editing ->', () => {
         });
     });
 
+    describe('Cell added to different formats ->', () => {
+        let formulaBar: HTMLInputElement;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply Number format', (done: Function) => {
+            formulaBar = helper.getElement('#' + helper.id + '_formula_input');
+            helper.invoke('numberFormat', ['0.00', 'J2']);
+            helper.edit('J2', '1/3');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('0.33');
+            done();
+        });
+        it('Apply Percentage format', (done: Function) => {
+            expect(formulaBar.value).toBe('0.3333333333333333');
+            helper.invoke('selectRange', ['J3']);
+            helper.invoke('numberFormat', ['0.00%', 'J3']);
+            helper.edit('J3', '1/3');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('33.33%');
+            done();
+        });
+        it('Apply Fraction format', (done: Function) => {
+            expect(formulaBar.value).toBe('33.33%');
+            helper.invoke('selectRange', ['J4']);
+            helper.invoke('numberFormat', ['# ?/?', 'J4']);
+            helper.edit('J4', '1/3');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe(' 1/3');
+            done();
+        });
+        it('Apply Fraction format-1', (done: Function) => {
+            expect(formulaBar.value).toBe('0.3333333333333333');
+            helper.invoke('selectRange', ['J5']);
+            helper.invoke('numberFormat', ['# ?/?', 'J5']);
+            helper.edit('J5', '22 1/3');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('22 1/3');
+            setTimeout(() => {
+                expect(formulaBar.value).toBe('22.333333333333332');
+                done();
+            });
+        });
+        it('Undo action', (done: Function) => {
+            helper.getElement('#' + helper.id + '_undo').click();
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_undo').click();
+                setTimeout((): void => {
+                    helper.getElement('#' + helper.id + '_undo').click();
+                    setTimeout((): void => {
+                        helper.getElement('#' + helper.id + '_undo').click();
+                        done();
+                    });
+                });
+            });
+        });
+        it('Redo action', (done: Function) => {
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('');
+            helper.getElement('#' + helper.id + '_redo').click();
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_redo').click();
+                setTimeout((): void => {
+                    helper.getElement('#' + helper.id + '_redo').click();
+                    setTimeout((): void => {
+                        helper.getElement('#' + helper.id + '_redo').click();
+                        done();
+                    });
+                });
+            });
+        });
+        it('Check', (done: Function) => {
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('0.33');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('33.33%');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe(' 1/3');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('22 1/3');
+            done();
+        });
+    });
+
     describe('EJ2-893055 ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
@@ -1796,6 +1901,457 @@ describe('Editing ->', () => {
             helper.edit('B4', '02/25/2024');
             expect(helper.invoke('getCell', [1, 8]).textContent).toBe('25-02-2024');
             done();
+        });
+        it('EJ2-923898: Not able to add defined name when sheet is protected', (done: Function) => {
+            helper.invoke('protectSheet', ['Sheet1', { selectCells: true, selectUnLockedCells: true }]);
+            let nameBox: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('#' + helper.id + '_name_box');
+            nameBox.click();
+            helper.triggerKeyEvent('keydown', 13, null, false, false, nameBox);
+            setTimeout(() => {
+                expect(helper.getElement('.e-editAlert-dlg.e-dialog')).toBeNull();
+                done();
+            });
+        });
+    });
+
+    describe('UpdateCell finite use cases without virtual scroll ->', () => {
+        let spreadsheet: Spreadsheet;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ colCount: 27, rowCount: 100, ranges: [{ dataSource: defaultData }] }],
+                    scrollSettings: {enableVirtualization: false, isFinite: true }
+                }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Value check', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].rowCount).toBe(100);
+            expect(spreadsheet.sheets[0].colCount).toBe(27);
+            expect(helper.invoke('getCell', [2, 0]).textContent).toBe('Sports Shoes');
+            helper.invoke('updateCell', [{ value: 'Sync' }, 'A100']);
+            done();
+        });
+        it('Row update cell', (done: Function) => {
+            expect(helper.invoke('getCell', [99, 0]).textContent).toBe('Sync');
+            helper.invoke('updateCell', [{ value: 'Sync' }, 'A150']);
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-finite-alert-dlg.e-dialog');
+                expect(helper.getElement('.e-finite-alert-dlg.e-dialog')).not.toBeNull();
+                helper.click('.e-finite-alert-dlg .e-footer-content button:nth-child(1)');
+                expect(spreadsheet.sheets[0].rowCount).toBe(100);
+                expect(spreadsheet.sheets[0].colCount).toBe(27);
+                helper.invoke('updateCell', [{ value: 'Sync' }, 'U10']);
+                done();
+            });
+        });
+        it('Column update cell', (done: Function) => {
+            expect(helper.invoke('getCell', [9, 20]).textContent).toBe('Sync');
+            helper.invoke('updateCell', [{ value: 'Sync' }, 'BC10']);
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-finite-alert-dlg.e-dialog');
+                expect(helper.getElement('.e-finite-alert-dlg.e-dialog')).not.toBeNull();
+                helper.click('.e-finite-alert-dlg .e-footer-content button:nth-child(1)');
+                expect(spreadsheet.sheets[0].rowCount).toBe(100);
+                expect(spreadsheet.sheets[0].colCount).toBe(27);
+                done();
+            });
+        });
+    });
+
+    describe('UpdateCell finite use cases with virtual scroll ->', () => {
+        let spreadsheet: Spreadsheet;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ colCount: 27, rowCount: 100, ranges: [{ dataSource: defaultData }] }],
+                    scrollSettings: {enableVirtualization: true, isFinite: true }
+                }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Value check', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].rowCount).toBe(100);
+            expect(spreadsheet.sheets[0].colCount).toBe(27);
+            expect(helper.invoke('getCell', [2, 0]).textContent).toBe('Sports Shoes');
+            helper.invoke('updateCell', [{ value: 'Sync' }, 'A100']);
+            done();
+        });
+        it('Row update cell', (done: Function) => {
+            helper.invoke('goTo', ['A100']);
+            setTimeout((): void => {
+                expect(helper.invoke('getCell', [99, 0]).textContent).toBe('Sync');
+                helper.invoke('updateCell', [{ value: 'Sync' }, 'A150']);
+                setTimeout(() => {
+                    helper.setAnimationToNone('.e-finite-alert-dlg.e-dialog');
+                    expect(helper.getElement('.e-finite-alert-dlg.e-dialog')).not.toBeNull();
+                    helper.click('.e-finite-alert-dlg .e-footer-content button:nth-child(1)');
+                    expect(spreadsheet.sheets[0].rowCount).toBe(100);
+                    expect(spreadsheet.sheets[0].colCount).toBe(27);
+                    helper.invoke('updateCell', [{ value: 'Sync' }, 'U10']);
+                    done();
+                });
+            }, 30);
+        });
+        it('Column update cell', (done: Function) => {
+            helper.invoke('goTo', ['A1']);
+            setTimeout((): void => {
+                expect(helper.invoke('getCell', [9, 20]).textContent).toBe('Sync');
+                helper.invoke('updateCell', [{ value: 'Sync' }, 'BC10']);
+                setTimeout(() => {
+                    helper.setAnimationToNone('.e-finite-alert-dlg.e-dialog');
+                    expect(helper.getElement('.e-finite-alert-dlg.e-dialog')).not.toBeNull();
+                    helper.click('.e-finite-alert-dlg .e-footer-content button:nth-child(1)');
+                    expect(spreadsheet.sheets[0].rowCount).toBe(100);
+                    expect(spreadsheet.sheets[0].colCount).toBe(27);
+                    done();
+                });
+            }, 30);
+        });
+    });
+
+    describe('905250 - formula appeared for empty cell ->', () => {
+        let spreadsheet: any;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply formula for F12 cell', (done: Function) => {
+            helper.invoke('selectRange', ['F12']);
+            helper.invoke('startEdit');
+            helper.getElement('.e-spreadsheet-edit').textContent = '=SUM(F2:F11)';
+            helper.triggerKeyNativeEvent(13);
+            setTimeout(() => {
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[11].cells[5])).toBe('{"value":4720,"formula":"=SUM(F2:F11)"}');
+                done();
+            });
+        });
+        it('Edit empty cell (K10)', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['F12']);
+            helper.invoke('selectRange', ['K10']);
+            let td: HTMLElement = helper.invoke('getCell', [9, 10]);
+            let coords: ClientRect = td.getBoundingClientRect();
+            helper.triggerMouseAction('dblclick', { x: coords.right, y: coords.top }, null, td);
+            helper.getInstance().notify('editOperation', { action: 'refreshEditor', value: '', refreshCurPos: false, refreshEditorElem: true, isAppend: false, trigEvent: false });
+            expect(helper.getElement('.e-spreadsheet-edit').textContent).toBe('');
+            helper.triggerKeyNativeEvent(13);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[9].cells[10].value).toBe('');
+                done();
+            });
+        });
+        it('Edit empty cell (K2) by using F2', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['F12']);
+            helper.invoke('selectRange', ['K2']);
+            helper.triggerKeyNativeEvent(113);
+            helper.getInstance().notify('editOperation', { action: 'refreshEditor', value: '', refreshCurPos: false, refreshEditorElem: true, isAppend: false, trigEvent: false });
+            expect(helper.getElement('.e-spreadsheet-edit').textContent).toBe('');
+            helper.triggerKeyNativeEvent(27);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[1].cells[10]).toBeUndefined();
+                done();
+            });
+        });
+    });
+
+    describe('EJ2-916332 - Typing value in scientific format cell ->', () => {
+        let spreadsheet: any;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Checking the date values', (done: Function) => {
+            helper.invoke('selectRange', ['I1:I10']);
+            helper.click('#spreadsheet_number_format');
+            helper.click('.e-numformat-ddb ul li:nth-child(10)');
+            setTimeout((): void => {
+                spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[0].cells[8].format).toBe('0.00E+00');
+                expect(document.querySelector('.e-numformat-ddb').textContent).toBe('Scientific');
+                helper.edit('I1', '11/09/2024');
+                helper.invoke('selectRange', ['I3']);
+                helper.invoke('selectRange', ['I1']);
+                expect(spreadsheet.sheets[0].rows[0].cells[8].format).toBe('m/d/yyyy');
+                expect(helper.invoke('getCell', [0, 8]).textContent).toBe('11/9/2024');
+                expect(document.querySelector('.e-numformat-ddb').textContent).toBe('Short Date');
+                helper.edit('I2', '1-2');
+                helper.invoke('selectRange', ['J2']);
+                helper.invoke('selectRange', ['I2']);
+                expect(spreadsheet.sheets[0].rows[1].cells[8].format).toBe('d-mmm');
+                expect(helper.invoke('getCell', [1, 8]).textContent).toBe('2-Jan');
+                expect(document.querySelector('.e-numformat-ddb').textContent).toBe('Custom');
+                done();
+            });
+        });
+        it('Checking the time values', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            helper.edit('I3', '1:20');
+            helper.invoke('selectRange', ['J3']);
+            helper.invoke('selectRange', ['I3']);
+            expect(spreadsheet.sheets[0].rows[2].cells[8].format).toBe('h:mm');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('1:20');
+            expect(document.querySelector('.e-numformat-ddb').textContent).toBe('Custom');
+            helper.edit('I4', '1:20:33 AM');
+            helper.invoke('selectRange', ['J4']);
+            helper.invoke('selectRange', ['I4']);
+            expect(spreadsheet.sheets[0].rows[3].cells[8].format).toBe('h:mm:ss AM/PM');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('1:20:33 AM');
+            expect(document.querySelector('.e-numformat-ddb').textContent).toBe('Time');
+            done();
+        });
+        it('Checking fraction values', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            helper.edit('I5', '1/2');
+            helper.invoke('selectRange', ['J5']);
+            helper.invoke('selectRange', ['I5']);
+            expect(spreadsheet.sheets[0].rows[4].cells[8].format).toBe('# ?/?');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe(' 1/2');
+            expect(document.querySelector('.e-numformat-ddb').textContent).toBe('Fraction');
+            done();
+        });
+        it('Checking percentage values', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            helper.edit('I6', '100%');
+            helper.invoke('selectRange', ['J6']);
+            helper.invoke('selectRange', ['I6']);
+            expect(spreadsheet.sheets[0].rows[5].cells[8].format).toBe('0%');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('100%');
+            expect(document.querySelector('.e-numformat-ddb').textContent).toBe('Percentage');
+            done();
+        });
+        it('Checking currency values', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            helper.edit('I7', '$123');
+            helper.invoke('selectRange', ['J7']);
+            helper.invoke('selectRange', ['I7']);
+            expect(spreadsheet.sheets[0].rows[6].cells[8].format).toBe('$#,##0');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('$123');
+            expect(document.querySelector('.e-numformat-ddb').textContent).toBe('Currency');
+            done();
+        });
+        it('Checking scientific values', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            helper.edit('I8', '123');
+            helper.invoke('selectRange', ['J8']);
+            helper.invoke('selectRange', ['I8']);
+            expect(spreadsheet.sheets[0].rows[7].cells[8].format).toBe('0.00E+00');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('1.23E+02');
+            expect(document.querySelector('.e-numformat-ddb').textContent).toBe('Scientific');
+            done();
+        });
+        it('Undo action', (done: Function) => {
+            helper.getElement('#' + helper.id + '_undo').click();
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_undo').click();
+                setTimeout((): void => {
+                    helper.getElement('#' + helper.id + '_undo').click();
+                    setTimeout((): void => {
+                        helper.getElement('#' + helper.id + '_undo').click();
+                        done();
+                    });
+                });
+            });
+        });
+        it('Undo action - 1', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('');
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe('');
+            expect(spreadsheet.sheets[0].rows[7].cells[8].format).toBe('0.00E+00');
+            expect(spreadsheet.sheets[0].rows[6].cells[8].format).toBe('0.00E+00');
+            helper.getElement('#' + helper.id + '_undo').click();
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_undo').click();
+                setTimeout((): void => {
+                    helper.getElement('#' + helper.id + '_undo').click();
+                    setTimeout((): void => {
+                        helper.getElement('#' + helper.id + '_undo').click();
+                        done();
+                    });
+                });
+            });
+        });
+        it('Redo action', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('');
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('');
+            expect(spreadsheet.sheets[0].rows[0].cells[8].format).toBe('0.00E+00');
+            expect(spreadsheet.sheets[0].rows[1].cells[8].format).toBe('0.00E+00');
+            helper.getElement('#' + helper.id + '_redo').click();
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_redo').click();
+                setTimeout((): void => {
+                    helper.getElement('#' + helper.id + '_redo').click();
+                    done();
+                });
+            });
+        });
+        it('Redo action - 1', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('11/9/2024');
+            helper.invoke('selectRange', ['J1']);
+            helper.invoke('selectRange', ['I1']);
+            expect(document.querySelector('.e-numformat-ddb').textContent).toBe('Short Date');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('2-Jan');
+            helper.invoke('selectRange', ['J2']);
+            helper.invoke('selectRange', ['I2']);
+            expect(document.querySelector('.e-numformat-ddb').textContent).toBe('Custom');
+            expect(helper.invoke('getCell', [2, 8]).textContent).toBe('1:20');
+            helper.invoke('selectRange', ['J3']);
+            helper.invoke('selectRange', ['I3']);
+            expect(document.querySelector('.e-numformat-ddb').textContent).toBe('Custom');
+            helper.getElement('#' + helper.id + '_redo').click();
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_redo').click();
+                setTimeout((): void => {
+                    helper.getElement('#' + helper.id + '_redo').click();
+                    done();
+                });
+            });
+        });
+        it('Redo action - 2', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            expect(helper.invoke('getCell', [3, 8]).textContent).toBe('1:20:33 AM');
+            helper.invoke('selectRange', ['J4']);
+            helper.invoke('selectRange', ['I4']);
+            expect(document.querySelector('.e-numformat-ddb').textContent).toBe('Time');
+            expect(helper.invoke('getCell', [4, 8]).textContent).toBe(' 1/2');
+            helper.invoke('selectRange', ['J5']);
+            helper.invoke('selectRange', ['I5']);
+            expect(document.querySelector('.e-numformat-ddb').textContent).toBe('Fraction');
+            expect(helper.invoke('getCell', [5, 8]).textContent).toBe('100%');
+            helper.invoke('selectRange', ['J6']);
+            helper.invoke('selectRange', ['I6']);
+            expect(document.querySelector('.e-numformat-ddb').textContent).toBe('Percentage');
+            helper.getElement('#' + helper.id + '_redo').click();
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_redo').click();
+                done();
+            });
+        });
+        it('Check - format', (done: Function) => {
+            expect(helper.invoke('getCell', [6, 8]).textContent).toBe('$123');
+            helper.invoke('selectRange', ['J7']);
+            helper.invoke('selectRange', ['I7']);
+            expect(document.querySelector('.e-numformat-ddb').textContent).toBe('Currency');
+            expect(helper.invoke('getCell', [7, 8]).textContent).toBe('1.23E+02');
+            helper.invoke('selectRange', ['J8']);
+            helper.invoke('selectRange', ['I8']);
+            expect(document.querySelector('.e-numformat-ddb').textContent).toBe('Scientific');
+            done();
+        });
+        it('Check formula', (done: Function) => {
+            helper.edit('I9', '=DATE(2012,2,2)');
+            helper.invoke('selectRange', ['J9']);
+            helper.invoke('selectRange', ['I9']);
+            expect(spreadsheet.sheets[0].rows[8].cells[8].format).toBe('m/d/yyyy');
+            expect(helper.invoke('getCell', [8, 8]).textContent).toBe('2/2/2012');
+            expect(document.querySelector('.e-numformat-ddb').textContent).toBe('Short Date');
+            helper.edit('I10', '=TIME(2,30,22)');
+            helper.invoke('selectRange', ['J10']);
+            helper.invoke('selectRange', ['I10']);
+            expect(spreadsheet.sheets[0].rows[9].cells[8].format).toBe('h:mm AM/PM');
+            expect(helper.invoke('getCell', [9, 8]).textContent).toBe('2:30 AM');
+            expect(document.querySelector('.e-numformat-ddb').textContent).toBe('Custom');
+            done();
+        });
+    });
+  
+    describe('EJ2-931122 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Formula values are not evaluated correctly when changing a text-formatted value to the general format', (done: Function) => {
+            helper.edit('J2', '=SUM(H2+10)');
+            helper.invoke('numberFormat', [getFormatFromType('Text'), 'J2']);
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('20');
+            helper.invoke('selectRange', ['J2']);
+            helper.invoke('startEdit');
+            let coords: ClientRect = helper.getElement('.e-spreadsheet-edit').getBoundingClientRect();
+            helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, helper.getElement('.e-spreadsheet-edit'));
+            helper.getInstance().editModule.editCellData.value = '=SUM(H2+10)';
+            helper.invoke('endEdit');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('=SUM(H2+10)');
+            helper.invoke('numberFormat', ['General', 'J2']);
+            helper.invoke('selectRange', ['J2']);
+            helper.invoke('startEdit');
+            coords = helper.getElement('.e-spreadsheet-edit').getBoundingClientRect();
+            helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, helper.getElement('.e-spreadsheet-edit'));
+            helper.getInstance().editModule.editCellData.value = '=SUM(H2+10)';
+            helper.invoke('endEdit');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('20');
+            done();
+        });
+    });
+
+    describe('EJ2-931184 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }]
+            }, done)
+        })
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Wrap applies when invalid data with a newline is entered in a validation applied cell', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.addDataValidation({ type: 'WholeNumber', operator: 'LessThanOrEqualTo', value1: '20' }, 'I1:I1');
+            helper.editInUI('12 \n', 'I1');
+            setTimeout(() => {
+                expect(helper.getElements('.e-validation-error-dlg.e-dialog').length).toBe(1);
+                helper.setAnimationToNone('.e-validation-error-dlg.e-dialog');
+                helper.click('.e-validation-error-dlg .e-footer-content button:nth-child(2)');
+                expect(helper.invoke('getCell', [0, 8]).classList).not.toContain('e-wraptext');
+                expect(spreadsheet.sheets[0].rows[0].cells[8].wrap).toBeUndefined();
+                done();
+            });
+        });
+        it('Wrap applies when invalid data with a newline is entered in a validation applied column', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.addDataValidation({ type: 'TextLength', operator: 'LessThanOrEqualTo', value1: '10' }, 'A:A');
+            helper.editInUI('Casual Shoes \n', 'A2');
+            setTimeout(() => {
+                expect(helper.getElements('.e-validation-error-dlg.e-dialog').length).toBe(1);
+                helper.setAnimationToNone('.e-validation-error-dlg.e-dialog');
+                helper.click('.e-validation-error-dlg .e-footer-content button:nth-child(2)');
+                expect(helper.invoke('getCell', [1, 0]).classList).not.toContain('e-wraptext');
+                expect(spreadsheet.sheets[0].rows[1].cells[0].wrap).toBeUndefined();
+                done();
+            });
+        });
+        it('Testing mousedown when invalid data with a newline is entered in a validation applied column', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['A4']);
+            helper.triggerKeyNativeEvent(113);
+            const editElem: HTMLElement = helper.getElement('.e-spreadsheet-edit');
+            editElem.textContent = 'Sports Spike Shoes \n';
+            helper.triggerKeyEvent('keyup', 13, null, null, null, editElem, undefined, true);
+            const td: HTMLElement = helper.invoke('getCell', [4, 0]);
+            const coords: ClientRect = td.getBoundingClientRect();
+            helper.triggerMouseAction('mousedown', { x: coords.left, y: coords.top }, null, td);
+            helper.triggerMouseAction('mouseup', { x: coords.left, y: coords.top }, document, td);
+            setTimeout(() => {
+                expect(helper.getElements('.e-validation-error-dlg.e-dialog').length).toBe(1);
+                helper.setAnimationToNone('.e-validation-error-dlg.e-dialog');
+                helper.click('.e-validation-error-dlg .e-footer-content button:nth-child(2)');
+                expect(helper.invoke('getCell', [3, 0]).classList).not.toContain('e-wraptext');
+                expect(spreadsheet.sheets[0].rows[3].cells[0].wrap).toBeUndefined();
+                done();
+            });
         });
     });
 });

@@ -40,12 +40,17 @@ export class KeyboardNavigation {
     private keyDownHandler(e: KeyboardEvent): void {
         const target: Element = e.target as Element;
         const isRtl: boolean = this.parent.enableRtl;
+        const isKeyboardShortcut: boolean = this.parent.enableKeyboardShortcut;
+        if (e.altKey && (e.keyCode === 38 || e.keyCode === 40) && !isKeyboardShortcut) {
+            e.preventDefault();
+            return;
+        }
         /*alt + up to close filter popup*/
         if (e.altKey && e.keyCode === 38 && this.parent.element.lastElementChild.classList.contains('e-filter-popup')) {
             this.parent.notify(filterCellKeyDown, { closePopup: true });
             return;
         }
-        if (this.parent.allowPrint && e.ctrlKey && e.keyCode === 80 && this.parent.enableKeyboardShortcut) {
+        if (this.parent.allowPrint && e.ctrlKey && e.keyCode === 80 && isKeyboardShortcut) {
             e.preventDefault();
             this.parent.print();
             return;
@@ -269,7 +274,7 @@ export class KeyboardNavigation {
                 actIdxes[2] = lastRow; actIdxes[3] = lastCol;
                 this.updateSelection(sheet, actIdxes.concat(actIdxes), e);
                 this.scrollNavigation([lastRow, lastCol], true);
-            } else if (e.keyCode === 32 && !e.shiftKey) { /*ctrl + space*/
+            } else if (e.keyCode === 32 && !e.shiftKey && isKeyboardShortcut) { /*ctrl + space*/
                 selectIdx[0] = 0;
                 selectIdx[2] = sheet.rowCount - 1;
                 this.updateSelection(sheet, selectIdx, <KeyboardEvent>{ shiftKey: true });
@@ -314,7 +319,7 @@ export class KeyboardNavigation {
             }
         } else {
             if (e.shiftKey) {
-                if (e.keyCode === 32) { /*shift + space*/
+                if (e.keyCode === 32 && isKeyboardShortcut) { /*shift + space*/
                     e.preventDefault();
                     selectIdx[1] = 0;
                     selectIdx[3] = sheet.colCount - 1;
@@ -554,7 +559,7 @@ export class KeyboardNavigation {
                     if (e.shiftKey || ribbon.classList.contains('e-collapsed')) {
                         this.focusEle(e, '.e-ribbon .e-drop-icon');
                     } else {
-                        this.focusEle(e, '.e-ribbon .e-content .e-toolbar-item:not(.e-separator):not(.e-overlay) .e-btn');
+                        this.focusEle(e, '.e-ribbon .e-content .e-toolbar-item:not(.e-separator):not(.e-overlay):not(.e-hide) .e-btn');
                     }
                 } else if (closest(document.activeElement, '.e-content')) {
                     if (e.shiftKey) {
@@ -564,7 +569,7 @@ export class KeyboardNavigation {
                     }
                 } else if (document.activeElement.classList.contains('e-drop-icon')) {
                     if (e.shiftKey && !ribbon.classList.contains('e-collapsed')) {
-                        this.focusEle(e, '.e-ribbon .e-content .e-toolbar-item:not(.e-separator):not(.e-overlay) .e-btn');
+                        this.focusEle(e, '.e-ribbon .e-content .e-toolbar-item:not(.e-separator):not(.e-overlay):not(.e-hide) .e-btn');
                     } else {
                         this.focusEle(e, '.e-ribbon .e-toolbar-items .e-toolbar-item.e-active .e-tab-wrap', true);
                     }
@@ -625,6 +630,9 @@ export class KeyboardNavigation {
                     }
                 }
             }
+        }
+        if (e.keyCode === 121 && e.shiftKey && !this.parent.enableKeyboardShortcut) { /*Shift + F10*/
+            e.preventDefault();
         }
     }
 

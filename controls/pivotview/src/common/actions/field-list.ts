@@ -98,7 +98,7 @@ export class FieldList implements IAction {
                     hasFieldList = true;
                 }
             }
-            if (hasFieldList && this.parent.dataSourceSettings.mode === 'Server') {
+            if (hasFieldList && this.parent.showToolbar && this.parent.dataSourceSettings.mode === 'Server') {
                 this.element.style.display = 'none';
             } else {
                 this.element.style.display = 'block';
@@ -132,15 +132,13 @@ export class FieldList implements IAction {
             currentWidth = this.parent.grid ? this.parent.grid.element.offsetWidth : currentWidth;
         }
         if (currentWidth && (!isNullOrUndefined((this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS))))) {
-            const actualWidth: number = currentWidth < 400 ? 400 : currentWidth;
+            const actualWidth: number = currentWidth < 400 ? (this.parent.minWidth || 400) : currentWidth;
             setStyleAttribute(this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement, {
                 left: formatUnit(this.parent.enableRtl ?
                     -Math.abs((actualWidth) -
                         (this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth) :
                     (actualWidth) -
-                    (this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth),
-
-                top: this.parent.element.querySelector('.' + cls.FIELD_PANEL_SCROLL_CLASS) ? (this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetHeight.toString() + 'px' : ''
+                    (this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement).offsetWidth)
             });
             if (this.parent.enableRtl) {
                 addClass([this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)], 'e-fieldlist-left');

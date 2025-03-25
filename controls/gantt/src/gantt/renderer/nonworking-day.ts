@@ -54,7 +54,11 @@ export class NonWorkingDay {
                 }
                 this.nonworkingContainer.appendChild(this.holidayContainer);
             }
-            this.holidayContainer.innerHTML = this.getHolidaysElement().innerHTML;
+            const holidayElements: NodeList = this.getHolidaysElement().childNodes;
+            this.holidayContainer.innerHTML = '';
+            holidayElements.forEach((element: Node) => {
+                this.holidayContainer.appendChild(element.cloneNode(true));
+            });
         } else if (this.holidayContainer && this.holidayContainer.parentNode) {
             remove(this.holidayContainer);
             if (this.nonworkingContainer && this.nonworkingContainer.childNodes.length === 0) {
@@ -133,7 +137,11 @@ export class NonWorkingDay {
                 }
                 this.nonworkingContainer.appendChild(this.weekendContainer);
             }
-            this.weekendContainer.innerHTML = this.getWeekendElements().innerHTML;
+            const weekendElements: NodeList = this.getWeekendElements().childNodes;
+            this.weekendContainer.innerHTML = '';
+            weekendElements.forEach((element: Node) => {
+                this.weekendContainer.appendChild(element.cloneNode(true));
+            });
         } else if (this.weekendContainer) {
             remove(this.weekendContainer);
             if (this.nonworkingContainer && this.nonworkingContainer.childNodes.length === 0) {

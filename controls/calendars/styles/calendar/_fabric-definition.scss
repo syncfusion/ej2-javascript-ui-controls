@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 /*! calendar fabric theme variables */
 $calendar-title-hover-color: $theme-darker !default;
 $calendar-icon-hover-color: $neutral-light-fontalt !default;
@@ -149,7 +151,7 @@ $calendar-bigger-year-decade-width: $calendar-bigger-year-decade-height !default
 $calendar-today-bg-hover-color: $alert-bg !default;
 $calendar-disable-font-color: $calendar-light-font !default;
 $calendar-disable-opacity: .35 !default;
-$calendar-active-hover-bg-color: darken($calendar-active-bg-color, 10%) !default;
+$calendar-active-hover-bg-color: color.adjust($calendar-active-bg-color, $lightness: -10%) !default;
 $calendar-other-decade-cell-color: $calendar-other-month-date !default;
 $calendar-decade-title-left-margin-style: $calendar-title-margin-left-style !default;
 $calendar-icon-padding: 7px !default;

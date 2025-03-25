@@ -1006,6 +1006,28 @@ describe('Chart Control - Box and Whisker Series', () => {
             chartObj.series[0].setData(data);
             chartObj.refresh(); unbindResizeEvents(chartObj);
         });
+        it('Checking outliers to hide in the box plot', (done: Function) => {
+            loaded = (args: Object): void => {
+                let element: Element = document.getElementById('container_Series_0_Point_1');
+                expect(element.children.length).toBe(1);
+                done();
+            };
+            chartObj.loaded = loaded;
+            let data = [
+                { x: "Development", yValues: [22, 22, 23, 25, 25, 25, 26, 27, 27, 28, 28, 29, 30, 32, 34, 32, 34, 36, 35, 38] },
+                { x: "Testing", yValues: [22, 33, 23, 25, 26, 28, 29, 30, 34, 33, 32, 31, 50] },
+                { x: "HR", yValues: [22, 24, 25, 30, 32, 34, 36, 38, 39, 41, 35, 36, 40, 56] },
+                { x: "Finance", yValues: [26, 27, 28, 30, 32, 34, 35, 37, 35, 37, 45] },
+                { x: "R&D", yValues: [26, 27, 29, 32, 34, 35, 36, 37, 38, 39, 41, 43, 58] },
+                { x: "Sales", yValues: [27, 26, 28, 28, 28, 29, 32, 35, 32, 38, 53] },
+                { x: "Inventory", yValues: [21, 23, 24, 25, 26, 27, 28, 30, 34, 36, 38] },
+                { x: "Graphics", yValues: [26, 28, 29, 30, 32, 33, 35, 36, 52] },
+                { x: "Training", yValues: [28, 29, 30, 31, 32, 34, 35, 36] }
+            ];
+            chartObj.series[0].setData(data);
+            chartObj.series[0].showOutliers = false;
+            chartObj.refresh(); unbindResizeEvents(chartObj);
+        });
         it('Box plot - checking remove point', (done: Function) => {
             loaded = (args: Object): void => {
                 let element: Element = document.getElementById('containerSeriesGroup0');

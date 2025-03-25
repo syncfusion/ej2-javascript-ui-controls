@@ -232,7 +232,8 @@ export class PdfGantt extends PdfTreeGrid {
             this.parent.eventMarkerColloction.map((eventMarker: IEventMarkerInfo) => {
                 const timelimeHeight: number = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60);
                 const pdfPage: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
-                this.eventMarker.drawEventMarker(pdfPage, taskbarPoint, cumulativeWidth, detail, eventMarker, timelimeHeight);
+                this.eventMarker.drawEventMarker(pdfPage, taskbarPoint, cumulativeWidth, detail, eventMarker, timelimeHeight,
+                                                 this.ganttStyle);
             });
             for (let i: number = 0; i < this.taskbarCollection.length; i++) {
                 const task: PdfGanttTaskbarCollection = this.taskbarCollection[i as number];
@@ -279,7 +280,8 @@ export class PdfGantt extends PdfTreeGrid {
                 this.parent.eventMarkerColloction.map((eventMarker: IEventMarkerInfo) => {
                     const timelimeHeight: number = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60);
                     const pdfPage: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
-                    this.eventMarker.drawEventMarker(pdfPage, taskbarPoint, cumulativeWidth, detail, eventMarker, timelimeHeight);
+                    this.eventMarker.drawEventMarker(pdfPage, taskbarPoint, cumulativeWidth, detail, eventMarker, timelimeHeight,
+                                                     this.ganttStyle);
                 });
             }
 

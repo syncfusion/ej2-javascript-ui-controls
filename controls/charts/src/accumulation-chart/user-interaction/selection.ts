@@ -251,6 +251,11 @@ export class AccumulationSelection extends BaseSelection {
         switch (this.currentMode) {
         case 'Point':
             if (!isNaN(index.point)) {
+                const dataLabelElement: HTMLElement = document.getElementById(accumulation.element.id + '_datalabel_Series_' + index.series + '_g_' + index.point);
+                if (this.series[0].dataLabel.visible && dataLabelElement) {
+                    dataLabelElement.setAttribute('class', element && element.hasAttribute('class') ? element.getAttribute('class') : dataLabelElement.hasAttribute('class') ? dataLabelElement.getAttribute('class') : '');
+                    this.selection(accumulation, index, [dataLabelElement]);
+                }
                 this.selection(accumulation, index, [element]);
                 this.selectionComplete(accumulation, <AccumulationSeries>accumulation.series[0]);
                 this.blurEffect(accumulation.element.id, accumulation.visibleSeries);
@@ -308,7 +313,7 @@ export class AccumulationSelection extends BaseSelection {
             } else {
                 this.addOrRemoveIndex(this.selectedDataIndexes, index);
             }
-            if (accumulation.enableBorderOnMouseMove) {
+            if (accumulation.enableBorderOnMouseMove && selectedElements[0].id.indexOf('datalabel') === -1) {
                 const borderElement: Element = document.getElementById(selectedElements[0].id.split('_')[0] + 'PointHover_Border');
                 if (!isNullOrUndefined(borderElement)) {
                     this.removeSvgClass(borderElement, borderElement.getAttribute('class'));
@@ -316,10 +321,10 @@ export class AccumulationSelection extends BaseSelection {
             }
         } else {
             this.previousSelectedElement = accumulation.highlightMode !== 'None' ? selectedElements : [];
-            if (className.indexOf('selection') < 0) {
+            if (selectedElements[0] && className.indexOf('selection') < 0) {
                 this.applyStyles(selectedElements, index);
             }
-            if (accumulation.enableBorderOnMouseMove) {
+            if (accumulation.enableBorderOnMouseMove && selectedElements[0].id.indexOf('datalabel') === -1) {
                 const borderElement: Element = document.getElementById(selectedElements[0].id.split('_')[0] + 'PointHover_Border');
                 if (!isNullOrUndefined(borderElement)) {
                     this.removeSvgClass(borderElement, borderElement.getAttribute('class'));
@@ -393,6 +398,10 @@ export class AccumulationSelection extends BaseSelection {
             //let seriesStyle: string = this.generateLegendClickStyle(accumulation.visibleSeries[series as number], eventType);
             const seriesElements: Element = <Element>accumulation.getSeriesElement().
                 childNodes[series as number].childNodes[pointIndex as number];
+            const dataLabelElement: HTMLElement = document.getElementById(accumulation.element.id + '_datalabel_Series_' + series + '_g_' + pointIndex);
+            if (this.series[0].dataLabel.visible && dataLabelElement) {
+                this.selection(accumulation, new Index(series, pointIndex), [dataLabelElement]);
+            }
             this.selection(accumulation, new Index(series, pointIndex), [seriesElements]);
             this.blurEffect(accumulation.element.id, accumulation.visibleSeries);
         }
@@ -429,6 +438,9 @@ export class AccumulationSelection extends BaseSelection {
             series = seriesCollection[index[i as number].series];
             if (!this.checkEquals(index[i as number], currentIndex)) {
                 this.removeStyles(this.findElements(accumulation, series, index[i as number]), index[i as number]);
+                if (series.dataLabel.visible) {
+                    this.removeStyles([document.getElementById(accumulation.element.id + '_datalabel_Series_0_g_' + index[i as number].point)], index[i as number]);
+                }
                 index.splice(i, 1);
                 i--;
             }
@@ -460,14 +472,21 @@ export class AccumulationSelection extends BaseSelection {
      * @returns {void}
      */
     private checkSelectionElements(element: Element, className: string, visibility: boolean): void {
+        const selectionElements: Node[] = [];
         const children: NodeList = element.childNodes[0].childNodes;
+        children.forEach((child: Node) => selectionElements.push(child));
+        const dataLabelElement: HTMLElement | null = document.getElementById(this.control.element.id + '_datalabel_Series_0');
+        if (dataLabelElement) {
+            const dataLabelChildren: NodeList = dataLabelElement.childNodes;
+            dataLabelChildren.forEach((child: Node) => selectionElements.push(child));
+        }
         let legendShape: Element;
         let elementClass: string;
         let parentClass: string;
         //let selectElement: Element = element;
-        for (let i: number = 0; i < children.length; i++) {
-            elementClass = (children[i as number] as HTMLElement).getAttribute('class') || '';
-            parentClass = (<Element>children[i as number].parentNode).getAttribute('class') || '';
+        for (let i: number = 0; i < selectionElements.length; i++) {
+            elementClass = (selectionElements[i as number] as HTMLElement).getAttribute('class') || '';
+            parentClass = (<Element>selectionElements[i as number].parentNode).getAttribute('class') || '';
             if (this.accumulation.selectionMode !== 'None' || this.accumulation.highlightMode !== 'None') {
                 className = elementClass.indexOf('selection') > 0 ||
                     elementClass.indexOf('highlight') > 0 ? elementClass : className;
@@ -475,17 +494,17 @@ export class AccumulationSelection extends BaseSelection {
                     parentClass.indexOf('highlight') > 0) ? parentClass : className;
             }
             if (elementClass.indexOf(className) === -1 && parentClass.indexOf(className) === -1 && visibility) {
-                this.addSvgClass(children[i as number] as HTMLElement, this.unselected);
+                this.addSvgClass(selectionElements[i as number] as HTMLElement, this.unselected);
             } else {
-                this.removeSvgClass(children[i as number] as HTMLElement, this.unselected);
+                this.removeSvgClass(selectionElements[i as number] as HTMLElement, this.unselected);
             }
             if (elementClass.indexOf(className) === -1 &&
                 parentClass.indexOf(className) === -1 && visibility) {
-                this.addSvgClass(children[i as number] as HTMLElement, this.unselected);
+                this.addSvgClass(selectionElements[i as number] as HTMLElement, this.unselected);
             } else {
                 // selectElement = children[i as number] as HTMLElement;
-                this.removeSvgClass(children[i as number] as HTMLElement, this.unselected);
-                this.removeSvgClass(<Element>children[i as number].parentNode, this.unselected);
+                this.removeSvgClass(selectionElements[i as number] as HTMLElement, this.unselected);
+                this.removeSvgClass(<Element>selectionElements[i as number].parentNode, this.unselected);
             }
             if ((this.control as AccumulationChart).accumulationLegendModule &&
             (this.control as AccumulationChart).legendSettings.visible) {

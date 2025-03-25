@@ -111,7 +111,7 @@ export class Selection {
             const sheet: SheetModel = this.parent.getActiveSheet();
             let ele: HTMLElement = this.getActiveCell();
             if (ele && (sheet.frozenRows || sheet.frozenColumns || sheet.selectedRange.includes(' '))) {
-                this.selectRange({ address: sheet.selectedRange });
+                this.selectRange({ address: sheet.selectedRange, isRowHeightChanged: true });
                 return;
             }
             const sRange: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
@@ -198,9 +198,9 @@ export class Selection {
         });
     }
 
-    private selectRange(args: { address: string, skipChecking?: boolean }): void {
+    private selectRange(args: { address: string, skipChecking?: boolean, isRowHeightChanged?: boolean }): void {
         args.address = this.parent.selectionSettings.mode === 'Single' ? getRangeAddress(getCellIndexes(args.address)) : args.address;
-        this.selectMultiRange(args.address, null, null, args.skipChecking);
+        this.selectMultiRange(args.address, null, null, args.skipChecking, args.isRowHeightChanged);
     }
 
     private init(): void {
@@ -213,7 +213,9 @@ export class Selection {
         this.selectMultiRange(sheet.selectedRange, true, inRange);
     }
 
-    private selectMultiRange(address: string, isInit?: boolean, inRange?: boolean, skipChecking?: boolean): void {
+    private selectMultiRange(
+        address: string, isInit?: boolean, inRange?: boolean, skipChecking?: boolean, isisRowHeightChanged?: boolean
+    ): void {
         let sheetIdx: number = this.parent.activeSheetIndex;
         if (address.indexOf('!') > -1) {
             sheetIdx = getSheetIndex(this.parent as Workbook, getSheetNameFromAddress(address));
@@ -222,7 +224,9 @@ export class Selection {
         if (this.parent.activeSheetIndex === sheetIdx) {
             address.split(' ').forEach((rng: string, idx: number) => {
                 this.selectRangeByIdx(
-                    getRangeIndexes(rng), { type: 'mousedown', ctrlKey: idx !== 0 } as MouseEvent, null, inRange, isInit, skipChecking);
+                    getRangeIndexes(rng), { type: 'mousedown', ctrlKey: idx !== 0 } as MouseEvent, null,
+                    inRange, isInit, skipChecking, undefined, false, isisRowHeightChanged
+                );
             });
         } else {
             updateSelectedRange(this.parent as Workbook, address, this.parent.sheets[sheetIdx as number]);
@@ -235,6 +239,17 @@ export class Selection {
         content.appendChild(ele);
         ele = this.parent.createElement('div', { className: 'e-active-cell' });
         content.appendChild(ele);
+    }
+
+    private isMergeActiveCell(sheet: SheetModel, activeIdx: number[], rowIdx: number, colIdx: number): boolean {
+        const cell: CellModel = getCell(rowIdx, colIdx, sheet, false, true);
+        if ((!!cell.rowSpan && cell.rowSpan !== 1) || (!!cell.colSpan && cell.colSpan !== 1)) {
+            const mergeArgs: MergeArgs = { range: [rowIdx, colIdx, rowIdx, colIdx] };
+            this.parent.notify(activeCellMergedRange, mergeArgs);
+            const mergeRange: number[] = mergeArgs.range as number[];
+            return mergeRange[0] === activeIdx[0] && mergeRange[1] === activeIdx[1];
+        }
+        return false;
     }
 
     private mouseDownHandler(e: MouseEvent & TouchEvent): void {
@@ -293,8 +308,8 @@ export class Selection {
                     && !(e.target as HTMLElement).classList.contains('e-rowresize')) {
                     const sheet: SheetModel = this.parent.getActiveSheet(); const mode: string = this.parent.selectionSettings.mode;
                     const mouseClientX: number = getClientX(e); const mouseClientY: number = getClientY(e);
-                    const rowIdx: number = this.getRowIdxFromClientY({ clientY: mouseClientY, target: e.target as Element });
-                    const colIdx: number = this.getColIdxFromClientX({ clientX: mouseClientX, target: e.target as Element });
+                    let rowIdx: number = this.getRowIdxFromClientY({ clientY: mouseClientY, target: e.target as Element });
+                    let colIdx: number = this.getColIdxFromClientX({ clientX: mouseClientX, target: e.target as Element });
                     const activeIdx: number[] = getCellIndexes(sheet.activeCell);
                     let isRowSelected: boolean; let isColSelected: boolean;
                     if (sheet.showHeaders) {
@@ -303,7 +318,8 @@ export class Selection {
                             let headerEle: HTMLElement = this.parent.getSelectAllContent().querySelector('thead');
                             if (headerEle) {
                                 isColSelected = (this.parent.getColumnHeaderContent().contains(trgt) || headerEle.contains(trgt)) &&
-                                    trgt.classList.contains('e-header-cell');
+                                trgt.classList.contains('e-header-cell') || (trgt.classList.contains('e-selectall-table') &&
+                                rowIdx < 0 && colIdx >= this.parent.frozenColCount(sheet));
                             } else {
                                 isColSelected = this.parent.getColumnHeaderContent().contains(trgt) &&
                                     trgt.classList.contains('e-header-cell');
@@ -311,10 +327,17 @@ export class Selection {
                             headerEle = this.parent.getSelectAllContent().querySelector('tbody');
                             if (headerEle) {
                                 isRowSelected = (this.parent.getRowHeaderContent().contains(trgt) || headerEle.contains(trgt)) &&
-                                    trgt.classList.contains('e-header-cell');
+                                trgt.classList.contains('e-header-cell') || (trgt.classList.contains('e-selectall-table') &&
+                                colIdx < 0 && rowIdx >= this.parent.frozenRowCount(sheet));
                             } else {
                                 isRowSelected = this.parent.getRowHeaderContent().contains(trgt) &&
                                     trgt.classList.contains('e-header-cell');
+                            }
+                            if (rowIdx === -1) {
+                                rowIdx = 0;
+                            }
+                            if (colIdx === -1) {
+                                colIdx = 0;
                             }
                         } else {
                             isRowSelected = this.parent.getRowHeaderContent().contains(e.target as Node);
@@ -359,8 +382,7 @@ export class Selection {
                     }
                     if ((e.target as HTMLElement).classList.contains('e-autofill')) {
                         this.isautoFillClicked = true;
-                        const autoFillDdb: Element = (e.target as HTMLElement).parentElement &&
-                            (e.target as HTMLElement).parentElement.querySelector('.e-dragfill-ddb');
+                        const autoFillDdb: Element = (e.target as HTMLElement).parentElement.querySelector('.e-dragfill-ddb');
                         if (!autoFillDdb || autoFillDdb.classList.contains('e-hide')) {
                             this.dAutoFillCell = sheet.selectedRange;
                         }
@@ -371,12 +393,16 @@ export class Selection {
                         this.isRowSelected = true;
                         if (!e.shiftKey || mode === 'Single') {
                             this.startCell = [rowIdx, 0];
+                        } else if (!this.startCell) {
+                            this.startCell = [topLeftIdx[0], 0];
                         }
                         range = [this.startCell[0], sheet.frozenColumns ? topLeftIdx[1] : 0, rowIdx, sheet.colCount - 1];
                     } else if (isColSelected) {
                         this.isColSelected = true;
                         if (!e.shiftKey || mode === 'Single') {
                             this.startCell = [0, colIdx];
+                        } else if (!this.startCell) {
+                            this.startCell = [0, topLeftIdx[1]];
                         }
                         range = [sheet.frozenRows ? topLeftIdx[0] : 0, this.startCell[1], sheet.rowCount - 1, colIdx];
                     } else if (closest(e.target as Element, '.e-select-all-cell')) {
@@ -396,7 +422,8 @@ export class Selection {
                     }
                     const preventEvt: boolean = e.ctrlKey && range && sheet.selectedRange.includes(getRangeAddress(range));
                     if (!preventEvt && mode === 'Multiple' && (!isTouchEnd(e) && (!isTouchStart(e) ||
-                        (isTouchStart(e) && activeIdx[0] === rowIdx && activeIdx[1] === colIdx)) || isColSelected || isRowSelected)) {
+                        (isTouchStart(e) && ((activeIdx[0] === rowIdx && activeIdx[1] === colIdx) ||
+                            this.isMergeActiveCell(sheet, activeIdx, rowIdx, colIdx)))) || isColSelected || isRowSelected)) {
                         document.addEventListener(getMoveEvent().split(' ')[0], this.mouseMoveEvt);
                         if (!Browser.isPointer) {
                             if (Browser.isIos && isTouchStart(e) && e.target && (e.target as HTMLElement).classList.contains('e-cell')) {
@@ -595,8 +622,7 @@ export class Selection {
             const sheet: SheetModel = this.parent.getActiveSheet();
             const indexes: number[] = getRangeIndexes(sheet.selectedRange);
             if (!(this.isColSelected && indexes[1] === colIdx) && !(this.isRowSelected && indexes[0] === rowIdx)) {
-                const autoFillDdb: Element = (e.target as HTMLElement).parentElement &&
-                    (e.target as HTMLElement).parentElement.querySelector('.e-dragfill-ddb');
+                const autoFillDdb: Element = (e.target as HTMLElement).parentElement.querySelector('.e-dragfill-ddb');
                 if (!autoFillDdb || autoFillDdb.classList.contains('e-hide')) {
                     this.dAutoFillCell = sheet.selectedRange;
                 }
@@ -710,6 +736,9 @@ export class Selection {
                     left > frozenColPosition() || e.isFScroll)) {
                 left += (this.getScrollLeft() / this.parent.viewport.scaleX);
             }
+            if (sheet.frozenRows && left < 0 && sheet.showHeaders) {
+                return -1;
+            }
         }
         let size: number;
         for (let i: number = 0; ; i++) {
@@ -745,6 +774,9 @@ export class Selection {
             if (!args.target || !closest(args.target, '.e-header-panel') || this.isScrollableArea(args.clientY, args.target)) {
                 top += (this.parent.getMainContent().parentElement.scrollTop / this.parent.viewport.scaleY);
             }
+            if (sheet.frozenColumns && top < 0 && sheet.showHeaders) {
+                return -1;
+            }
         }
         let size: number;
         for (let i: number = 0; ; i++) {
@@ -775,9 +807,9 @@ export class Selection {
     }
 
     private selectRangeByIdx(
-        range: number[], e?: MouseEvent | KeyboardEvent, isScrollRefresh?: boolean,
-        isActCellChanged?: boolean, isInit?: boolean, skipChecking?: boolean, selectedRowColIdx?: number,
-        preventAnimation?: boolean): void {
+        range: number[], e?: MouseEvent | KeyboardEvent, isScrollRefresh?: boolean, isActCellChanged?: boolean, isInit?: boolean,
+        skipChecking?: boolean, selectedRowColIdx?: number, preventAnimation?: boolean, isisRowHeightChanged?: boolean
+    ): void {
         const isMouseEvent: boolean = e && this.isMouseEvent(e as MouseEvent);
         if (e && e.target && isMouseEvent && closest(e.target as Element, '#' + this.parent.element.id + '_edit')) { return; }
         const eventArgs: { action: string, editedValue: string, endFormulaRef: boolean } = { action: 'getCurrentEditValue', editedValue: '',
@@ -827,7 +859,9 @@ export class Selection {
         if (isFormulaEdit && formulaRefIndicator) {
             formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
         }
-        this.parent.notify(hideAutoFillOptions, null );
+        if (!isisRowHeightChanged) {
+            this.parent.notify(hideAutoFillOptions, null);
+        }
         if ((isSingleCell(range) || mergeArgs.isActiveCell) && !isMultiRange) {
             if (ele) {
                 if (!ele.classList.contains('e-multi-range')) {
@@ -1241,7 +1275,7 @@ export class Selection {
                 if (i > 0) {
                     if (parsedVal[i - 1].lastIndexOf('!') === parsedVal[i - 1].length - 1) {
                         const sheetName: string = parsedVal[i - 1].substring(1, parsedVal[i - 1].lastIndexOf('!') - 1);
-                        formulaSheetIdx = getSheetIndex(this.parent as Workbook, sheetName);
+                        formulaSheetIdx = sheetName ? getSheetIndex(this.parent as Workbook, sheetName) : formulaSheetIdx;
                     }
                 }
                 if (parsedVal[i + 1] === ':') {

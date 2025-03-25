@@ -770,6 +770,39 @@ describe('DOM Wrapper Testing with basic properites', () => {
         let dateTimeFormat1: any = datetimepicker.cldrDateTimeFormat();
         expect(dateTimeFormat1).toBe("MM/dd/yyyy hh:mm a");
     });
+    it('inputFormats testing', () => {
+        debugger;
+        datetimepicker = new DateTimePicker({
+            value: new Date('5/5/2017 10:00:00 AM'),
+            format: "dd/MM/yyyy hh:mm a",
+            enabled: true,
+            inputFormats: ["MM/dd/yyyy HH:mm", "yyyy-MM-dd hh-mm", "dd-MM-yy HH-mm"],
+        });
+        datetimepicker.appendTo('#dateTime');
+        datetimepicker.element.value = '2025-11-23 10-11';
+        datetimepicker.dataBind();
+        datetimepicker.inputBlurHandler();
+        expect(datetimepicker.element.value).toBe('23/11/2025 10:11 AM');
+    });
+    it('inputFormats testing with dynamicupdate', () => {
+        debugger;
+        datetimepicker = new DateTimePicker({
+            value: new Date('5/5/2017 10:00:00 AM'),
+            format: "dd/MM/yyyy hh:mm a",
+            enabled: true,
+            inputFormats: ["MM/dd/yyyy HH:mm", "yyyy-MM-dd hh-mm", "dd-MM-yy HH-mm"],
+        });
+        datetimepicker.appendTo('#dateTime');
+        datetimepicker.element.value = '2025-11-23 10-11';
+        datetimepicker.dataBind();
+        datetimepicker.inputBlurHandler();
+        expect(datetimepicker.element.value).toBe('23/11/2025 10:11 AM');
+        datetimepicker.inputFormats = ["MM-dd-yyyy HH-mm", "yyyy/MM/dd hh:mm", "dd/MM/yy HH:mm"];
+        datetimepicker.dataBind();
+        datetimepicker.element.value = '2025/11/23 10:11';
+        datetimepicker.inputBlurHandler();
+        expect(datetimepicker.element.value).toBe('23/11/2025 10:11 AM');
+    });
     it('value checking exeeding min value with max value testing', () => {
         datetimepicker = new DateTimePicker({
             value: new Date('10/12/2016 10:00 AM')

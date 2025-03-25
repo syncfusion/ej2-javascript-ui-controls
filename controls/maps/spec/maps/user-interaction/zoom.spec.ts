@@ -2819,6 +2819,85 @@ describe('Zoom feature tesing for map control', () => {
         }); 
         
     });
+    describe('Checking with tile pich zooming', () => {
+        let id: string = 'container';
+        let map: Maps;
+        let ele: HTMLDivElement;
+        let prevent: Function = (): void => {
+            //Prevent Function
+        };
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            map = new Maps({
+                baseLayerIndex: 0,
+                layers: [
+                    {
+                        urlTemplate: 'https://a.tile.openstreetmap.org/level/tileX/tileY.png'
+                    }
+                ],
+                zoomSettings: {
+                    enable: true,
+                    zoomOnClick: true
+                }
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            map.destroy();
+        });
+
+        it('Checking with pinch zooming - zoom in', () => {
+            let rect: ClientRect = getElementByID(map.element.id + '_svg').getBoundingClientRect();
+            let down: ITouches[] = [{ pageX: rect.left + 100, pageY: rect.top + 100 }, { pageX: rect.left + 200, pageY: rect.top + 200 }];
+            map.zoomModule.startDistance = Math.sqrt(Math.pow((down[0].pageX - down[0].pageY), 2) + Math.pow((down[1].pageX - down[1].pageY), 2));
+            map.zoomModule.touchCenter = { x: (down[0].pageX + down[1].pageX) / 2, y: (down[0].pageY + down[1].pageY) / 2 };
+            map.zoomModule.pinchStartLatLong = map.pointToLatLong((down[0].pageX + down[1].pageX) / 2, (down[0].pageY + down[0].pageY) / 2);
+            let move: ITouches[] = [
+                { pageX: rect.left - 100, pageY: (rect.top + 200) },
+                { pageX: (rect.left + 300), pageY: rect.top - 200 }
+            ];
+            map.zoomModule.touchStartList = down;
+            map.zoomModule.touchMoveList = move;
+            map.isTileMap = true;
+            map.zoomModule.performPinchZooming(<TouchEvent>{});
+            move = [{ pageX: rect.left - 200, pageY: (rect.top + 300) }, { pageX: (rect.left + 400), pageY: rect.top - 300 }];
+            map.zoomModule.touchMoveList = move;
+            map.zoomModule.performPinchZooming(<TouchEvent>{});
+            map.zoomSettings.pinchZooming = true;
+            let eventObj: Object = {
+                target: map.element,
+                type: 'touchmove',
+                preventDefault: prevent,
+                touches: move
+            };
+            map.zoomModule.mouseMoveHandler(<PointerEvent | TouchEvent>eventObj);
+            move = [{ pageX: rect.left - 150, pageY: (rect.top + 200) }, { pageX: (rect.left + 300), pageY: rect.top - 250 }];
+            map.zoomModule.touchMoveList = move;
+            map.zoomModule.performPinchZooming(<TouchEvent>{});
+            map.zoomSettings.pinchZooming = true;
+            eventObj = {
+                target: map.element,
+                type: 'touchmove',
+                preventDefault: prevent,
+                touches: move
+            };
+            map.zoomModule.mouseMoveHandler(<PointerEvent | TouchEvent>eventObj);
+            move = [{ pageX: rect.left - 100, pageY: (rect.top + 100) }, { pageX: (rect.left + 100), pageY: rect.top - 50 }];
+            map.zoomModule.touchMoveList = move;
+            map.zoomModule.performPinchZooming(<TouchEvent>{});
+            map.zoomSettings.pinchZooming = true;
+            eventObj = {
+                target: map.element,
+                type: 'touchmove',
+                preventDefault: prevent,
+                touches: move
+            };
+            map.zoomModule.mouseMoveHandler(<PointerEvent | TouchEvent>eventObj);
+        });
+    });
+    
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

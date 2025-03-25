@@ -343,6 +343,14 @@ describe('Bullet Chart Scale', () => {
             expect(svg.getAttribute('stroke-width') == '0').toBe(true);
             done();
         });
+        it('Checking theme as Tailwind3', (done: Function) => {
+            bullet.theme = 'Tailwind3';
+            bullet.refresh();
+            svg = document.getElementById('container_ChartBorder');
+            expect(svg.getAttribute('fill') == 'transparent').toBe(true);
+            expect(svg.getAttribute('stroke-width') == '0').toBe(true);
+            done();
+        });
         it('Checking theme as Bootstrap5', (done: Function) => {
             bullet.theme = 'Bootstrap5';
             bullet.refresh();

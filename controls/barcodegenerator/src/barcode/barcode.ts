@@ -209,7 +209,7 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
                 this.barcodeCanvas.setAttribute('height', String(this.element.offsetHeight));
                 break;
             case 'backgroundColor':
-                this.barcodeCanvas.setAttribute('style', 'background:' + newProp.backgroundColor);
+                this.barcodeCanvas.style.background = newProp.backgroundColor;
                 break;
             case 'mode':
                 this.initialize();

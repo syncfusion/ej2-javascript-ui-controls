@@ -6,8 +6,7 @@ import { ExportType } from '../../common/utils/enum';
 import { ExportUtils } from '../../common/utils/export';
 import { StockChart, StockSeriesModel } from '../../stock-chart';
 import { beforeExport } from '../../common/model/constants';
-import { IExportEventArgs } from '../model/chart-interface';
-import { IPDFArgs } from '../../common/model/interface';
+import { IPDFArgs, IExportEventArgs } from '../../common/model/interface';
 import { Workbook } from '@syncfusion/ej2-excel-export';
 import { ErrorBarSettingsModel, Series, SeriesModel, AxisModel } from '../../chart';
 import { getValue } from '@syncfusion/ej2-base';
@@ -87,7 +86,7 @@ interface ExcelCell {
  *
  * @private
  */
-interface ExcelRowAndColumn {
+export interface ExcelRowAndColumn {
     /**
      * The `index` property specifies the position of a cell within a row or column.
      *
@@ -152,15 +151,18 @@ export class Export {
     ): void {
         const exportChart: ExportUtils = new ExportUtils(this.chart);
         controls = controls ? controls : [this.chart];
-        const argsData: IExportEventArgs = {
-            cancel: false, name: beforeExport, width: width, height: height
-        };
-        this.chart.trigger(beforeExport, argsData);
-        if (!argsData.cancel) {
-            if (type === 'CSV' || type === 'XLSX') {
-                this.excelExport(controls, fileName, type);
-            }
-            else {
+        if (type === 'CSV' || type === 'XLSX') {
+            this.excelExport(controls, fileName, type, width, height);
+        }
+        else {
+            const argsData: IExportEventArgs = {
+                cancel: false, name: beforeExport, width: width, height: height, excelProperties : {
+                    rows: undefined,
+                    columns: undefined
+                }
+            };
+            this.chart.trigger(beforeExport, argsData);
+            if (!argsData.cancel) {
                 exportChart.export(
                     type, fileName, orientation, controls, width = argsData.width,
                     height = argsData.height, isVertical, header, footer, exportToMultiplePage
@@ -174,10 +176,13 @@ export class Export {
      * @param {(Chart | AccumulationChart | RangeNavigator | StockChart)[]} controls - An array of chart or chart-like components to export.
      * @param {string} fileName - The name of the Excel file to save.
      * @param {ExportType} type - The type of export (e.g., 'XLSX', 'CSV', etc.).
+     * @param {number} [width] - The width of the exported Excel sheet.
+     * @param {number} [height] - The width of the exported Excel sheet.
      * @returns {void}
      * @private
      */
-    private excelExport(controls: (Chart | AccumulationChart | RangeNavigator | StockChart)[], fileName: string, type: ExportType): void{
+    private excelExport(controls: (Chart | AccumulationChart | RangeNavigator | StockChart)[], fileName: string, type: ExportType,
+                        width?: number, height?: number): void{
         this.rows = [];
         this.actualRowCount = 1;
         const workSheets: Object[] = [];
@@ -224,10 +229,19 @@ export class Export {
         for (let columnCount: number = 0; columnCount < this.requiredValuesLength; columnCount++) {
             columns.push({ index: columnCount + 1, width: 100 });
         }
-        workSheets.push({ columns: columns, rows: this.rows });
-        const book: Workbook = new Workbook({ worksheets: workSheets }, type === 'XLSX' ? 'xlsx' : 'csv');
-        fileName = fileName ? fileName : type === 'XLSX' ? 'XLSX' : 'CSV';
-        book.save(fileName +  (type === 'XLSX' ? '.xlsx' : '.csv'));
+        const argsData: IExportEventArgs = {
+            cancel: false, name: beforeExport, width: width, height: height, excelProperties: {
+                rows: this.rows,
+                columns: columns
+            }
+        };
+        controls[0].trigger(beforeExport, argsData);
+        if (!argsData.cancel) {
+            workSheets.push({ columns: argsData.excelProperties.columns, rows: argsData.excelProperties.rows });
+            const book: Workbook = new Workbook({ worksheets: workSheets }, type === 'XLSX' ? 'xlsx' : 'csv');
+            fileName = fileName ? fileName : type === 'XLSX' ? 'XLSX' : 'CSV';
+            book.save(fileName + (type === 'XLSX' ? '.xlsx' : '.csv'));
+        }
     }
     /**
      * Creates an Excel sheet for exporting RangeNavigator control data.

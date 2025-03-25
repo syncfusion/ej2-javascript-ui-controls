@@ -96,7 +96,7 @@ export class Edit {
         }
         if ((e.target as HTMLElement).classList.contains('e-treegridcollapse') || (e.target as HTMLElement).classList.contains('e-treegridexpand')) {
             const tr: Element = parentsUntil(e.target as Element, 'e-row');
-            const rowIndex: number = tr && parseInt(tr.getAttribute('data-rowindex'), 10);
+            const rowIndex: number = tr && parseInt(tr.getAttribute('aria-rowindex'), 10) - 1;
             if (!isNullOrUndefined(rowIndex) && rowIndex >= 0 && this.parent.allowPaging) {
                 /* eslint-disable-next-line */
                 (this.parent.grid.getDataRows()[rowIndex]as HTMLTableRowElement).dataset.uid = (this.parent.grid.contentModule.getRows()[rowIndex] as any).uid;
@@ -264,16 +264,16 @@ export class Edit {
         if (!(this.parent.grid.editSettings.allowEditing) || this.parent.grid.isEdit) {
             return;
         }
-        const column: Column = this.parent.grid.getColumnByIndex(+target.closest('td.e-rowcell').getAttribute('data-colindex'));
+        const column: Column = this.parent.grid.getColumnByIndex(+target.closest('td.e-rowcell').getAttribute('aria-colindex') - 1);
         if (this.parent.editSettings.mode === 'Cell' && !this.isOnBatch && column && !column.isPrimaryKey &&
-        this.parent.editSettings.allowEditing && column.allowEditing && !(target.classList.contains('e-treegridexpand') ||
-          target.classList.contains('e-treegridcollapse')) && this.parent.editSettings.allowEditOnDblClick) {
+            this.parent.editSettings.allowEditing && column.allowEditing && !(target.classList.contains('e-treegridexpand') ||
+                target.classList.contains('e-treegridcollapse')) && this.parent.editSettings.allowEditOnDblClick) {
             this.isOnBatch = true;
             this.parent.grid.setProperties({ selectedRowIndex: args.rowIndex }, true);
             if (this.parent.enableVirtualization) {
                 const tr: HTMLTableRowElement = <HTMLTableRowElement>parentsUntil(args.target as Element, 'e-row');
-                this.prevAriaRowIndex = tr.getAttribute('data-rowindex');
-                tr.setAttribute('data-rowindex', tr.rowIndex + '');
+                this.prevAriaRowIndex = tr.getAttribute('aria-rowindex');
+                tr.setAttribute('aria-rowindex', (tr.rowIndex + 1) + '');
             }
             this.updateGridEditMode('Batch');
         }
@@ -320,7 +320,7 @@ export class Edit {
         const prom: Deferred = args[`${promise}`];
         delete args[`${promise}`];
         if (this.parent.enableVirtualization && !isNullOrUndefined(this.prevAriaRowIndex) && this.prevAriaRowIndex !== '-1') {
-            args.row.setAttribute('data-rowindex', this.prevAriaRowIndex);
+            args.row.setAttribute('aria-rowindex', this.prevAriaRowIndex);
             this.prevAriaRowIndex = undefined;
         }
         if (this.keyPress !== 'enter') {
@@ -638,8 +638,8 @@ export class Edit {
             }
         }
         const rows: Element[] = this.parent.grid.getDataRows();
-        const firstAriaIndex: number = rows.length ? +rows[0].getAttribute('data-rowindex') : 0;
-        const lastAriaIndex: number = rows.length ? +rows[rows.length - 1].getAttribute('data-rowindex') : 0;
+        const firstAriaIndex: number = rows.length ? +rows[0].getAttribute('aria-rowindex') - 1 : 0;
+        const lastAriaIndex: number = rows.length ? +rows[rows.length - 1].getAttribute('aria-rowindex') - 1 : 0;
         const withinRange: boolean = this.selectedIndex >= firstAriaIndex && this.selectedIndex <= lastAriaIndex;
         const isVirtualization: boolean = this.parent.enableVirtualization && this.addRowIndex > -1 && this.prevAriaRowIndex !== '-1';
         if (this.parent.editSettings.mode !== 'Dialog') {
@@ -688,7 +688,7 @@ export class Edit {
                 if (isVirtualization) {
                     this.prevAriaRowIndex = '-1';
                 }
-                if (!this.parent.enableVirtualization || this.parent.enableVirtualization && !Object.keys(this.parent.grid.contentModule['emptyRowData']).length) {
+                if (!this.parent.enableVirtualization || this.parent.enableVirtualization) {
                     this.isScrollByFocus = true;
                     focussedElement.focus();
                 }
@@ -777,7 +777,7 @@ export class Edit {
                 this.selectedIndex = this.parent.grid.selectedRowIndex;
             }
             if (this.parent.enableVirtualization) {
-                let selector: string = '.e-row[data-rowindex="' + this.selectedIndex + '"]';
+                let selector: string = '.e-row[aria-rowindex="' + (this.selectedIndex + 1) + '"]';
                 let row: HTMLTableRowElement;
                 if (this.selectedIndex > -1 && this.parent.editSettings.newRowPosition !== 'Top' &&
                   this.parent.editSettings.newRowPosition !== 'Bottom') {
@@ -786,7 +786,7 @@ export class Edit {
                     this.addRowIndex = row ? row.rowIndex : 0;
                 } else {
                     if (this.prevAriaRowIndex && this.prevAriaRowIndex !== '-1') {
-                        selector = '.e-row[data-rowindex="' + this.prevAriaRowIndex + '"]';
+                        selector = '.e-row[aria-rowindex="' + (this.prevAriaRowIndex + 1) + '"]';
                         row = <HTMLTableRowElement>this.parent.getContent().querySelector(selector);
                         this.addRowIndex = row ? row.rowIndex : 0;
                     } else {
@@ -875,7 +875,7 @@ export class Edit {
             const isVirtualization: boolean = this.parent.enableVirtualization && this.addRowIndex > -1 && this.prevAriaRowIndex !== '-1';
             const rows: HTMLTableRowElement[] = this.parent.getRows();
             const firstAriaIndex: number = rows.length ? currentData.indexOf(currentData[0]) : 0;
-            const lastAriaIndex: number = rows.length ? +rows[rows.length - 1].getAttribute('data-rowindex') : 0;
+            const lastAriaIndex: number = rows.length ? +rows[rows.length - 1].getAttribute('aria-rowindex') - 1 : 0;
             const withinRange: boolean = this.parent.enableVirtualization && args.index !== 0 ? true :
                 this.selectedIndex >= firstAriaIndex && this.selectedIndex <= lastAriaIndex;
             if (currentData.length) {
@@ -1066,7 +1066,7 @@ export class Edit {
     private closeEdit(): void {
         if (this.parent.enableVirtualization && this.parent.grid.editSettings.mode === 'Batch' && this.parent.grid.pageSettings.currentPage > 1) {
             this.editedRowIndex = this.parent.grid.editModule.editModule['cellDetails'].rowIndex;
-            this.parent.grid.editModule.editModule['cellDetails'].rowIndex = parseInt(this.parent.getRows()[this.parent.grid.editModule.editModule['cellDetails'].rowIndex].getAttribute('data-rowIndex'), 10);
+            this.parent.grid.editModule.editModule['cellDetails'].rowIndex = parseInt(this.parent.getRows()[this.parent.grid.editModule.editModule['cellDetails'].rowIndex].getAttribute('aria-rowIndex'), 10) - 1;
         }
         this.parent.grid.editModule.closeEdit();
     }

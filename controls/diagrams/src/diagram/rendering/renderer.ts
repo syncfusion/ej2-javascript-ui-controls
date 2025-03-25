@@ -320,6 +320,10 @@ export class DiagramRenderer {
         (options as PathAttributes).data = element.absolutePath;
         options.id = options.id + '_highlighter';
         const ariaLabel: Object = element.description ? element.description : element.id;
+        if (!this.isSvgMode) {
+            options.x = element.flipOffset.x ? element.flipOffset.x : options.x;
+            options.y = element.flipOffset.y ? element.flipOffset.y : options.y;
+        }
         if (transform) {
             options.x = options.x * transform.scale;
             options.y = options.y * transform.scale;
@@ -1385,10 +1389,6 @@ export class DiagramRenderer {
             }
         }
         const ariaLabel: Object = element.description ? element.description : element.id;
-        if (!this.isSvgMode) {
-            options.x = element.flipOffset.x ? element.flipOffset.x : options.x;
-            options.y = element.flipOffset.y ? element.flipOffset.y : options.y;
-        }
         if (element.isExport) {
             const pathBounds: Rect = element.absoluteBounds;
             //Bug 857388: Connector with bridging is not properly exported.
@@ -1923,7 +1923,7 @@ export class DiagramRenderer {
         (options as ImageAttributes).alignment = element.imageAlign;
         (options as ImageAttributes).scale = element.imageScale;
         (options as ImageAttributes).description = element.description ? element.description : element.id;
-        this.renderer.drawImage(canvas, options as ImageAttributes, parentSvg, fromPalette, this, element);
+        this.renderer.drawImage(canvas, options as ImageAttributes, parentSvg, fromPalette,  this, element);
     }
 
     /**
@@ -2195,6 +2195,7 @@ export class DiagramRenderer {
             return attr;
         }
     }
+
 
     private setFlipAttributes(element: DiagramElement, canvas: SVGElement | HTMLCanvasElement,
                               attr: object, scaleX: number, scaleY: number, isHtml: boolean): void {

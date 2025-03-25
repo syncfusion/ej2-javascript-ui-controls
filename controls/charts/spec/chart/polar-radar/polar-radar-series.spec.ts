@@ -1876,6 +1876,8 @@ describe('Chart Control', () => {
                 done();
             };
             chartObj.tooltip.enableHighlight = true;
+            chartObj.series[0].marker.dataLabel.visible = true;
+            chartObj.series[1].marker.dataLabel.visible = true;
             chartObj.series[0].drawType = 'Column';
             chartObj.series[1].drawType = 'Column';
             chartObj.series[2].drawType = 'Column';

@@ -348,7 +348,12 @@ export function createHtmlElement(elementType: string, attribute: Object): HTMLE
 export function setAttributeHtml(element: HTMLElement, attributes: Object): void {
     let keys: string[] = Object.keys(attributes);
     for (let i: number = 0; i < keys.length; i++) {
-        element.setAttribute(keys[parseInt(i.toString(), 10)], attributes[keys[parseInt(i.toString(), 10)]]);
+        if (keys[parseInt(i.toString(), 10)] === 'style') {
+            element.style.cssText = attributes[keys[parseInt(i.toString(), 10)]];
+        }
+        else {
+            element.setAttribute(keys[parseInt(i.toString(), 10)], attributes[keys[parseInt(i.toString(), 10)]]);
+        }
     }
 }
 

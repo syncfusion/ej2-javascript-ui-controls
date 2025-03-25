@@ -1295,7 +1295,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
                     classList(PP, ['e-nextprevitemdisabled', 'e-disable'], ['e-numericitem', 'e-pager-default']);
                 }
                 const isLastSet: boolean = Array.from(numItems).some((item: HTMLElement) => parseInt(item.getAttribute('index'), 10) === this.totalPages);
-                const ppIndex: number = (parseInt(numItems[0].getAttribute('index'), 10) - (isLastSet ? this.avgNumItems : numItems.length));
+                const ppIndex: number = (parseInt(numItems[0].getAttribute('index'), 10) - (isLastSet && !isNullOrUndefined(this.avgNumItems) ? this.avgNumItems : numItems.length));
                 PP.setAttribute('index', (ppIndex < 1) ? '1' : ppIndex.toString());
                 NP.setAttribute('index', (parseInt(numItems[numItems.length - 1].getAttribute('index'), 10) + 1).toString());
                 this.avgNumItems = isLastSet ? this.avgNumItems : numItems.length;

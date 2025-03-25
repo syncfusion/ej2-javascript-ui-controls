@@ -1,3 +1,6 @@
+@use 'sass:color';
+@use 'sass:meta';
+@use 'sass:list';
 @import '../common/mixin.scss';
 
 @function mapcolorvariable($pallete-name){
@@ -34,7 +37,7 @@
   --color-sf-primary-label-color: var(--color-sf-primary);
   --color-sf-primary-cell-selection: var(--color-sf-primary-lighter);
   --color-sf-brand-primary: #{#7e56d8};
-  --color-sf-brand-primary-d10: #{darken(#7e56d8, 5%)};
+  --color-sf-brand-primary-d10: #{color.adjust(#7e56d8, $lightness: -5%)};
 
   --color-sf-content-bg-color: #fafafa;
   --color-sf-content-bg-color-alt1: #fff;

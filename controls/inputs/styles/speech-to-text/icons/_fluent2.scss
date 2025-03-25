@@ -1,0 +1,8 @@
+@include export-module('speechtotext-fluent2-icons') {
+  .e-listen-icon::before {
+    content: '\e91c';
+  }
+  .e-listen-stop::before {
+    content: '\e919';
+  }
+}

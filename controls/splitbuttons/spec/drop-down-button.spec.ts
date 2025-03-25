@@ -220,6 +220,22 @@ describe('DropDownButton', () => {
             expect(drpButton.popupWidth).toEqual('40px');
             expect(drpButton.dropDown.element.style.width).toEqual('40px');
         });
+
+        it('enableHtmlSanitizer Checking', () => {
+            const customItems: ItemModel[] = [
+                { text: '<b>Artwork</b>', id: '01' },
+                { text: '<i>Abstract</i>', id: '02' },
+                { text: '<img src="x" onerror="alert(1)">Home', id: '03' },
+                { text: 'Share<script>alert(1)</script>', id: '04' }
+            ];
+            drpButton = new DropDownButton({ items: customItems, enableHtmlSanitizer: true });
+            drpButton.appendTo('#drp-button');
+            drpButton.toggle();
+            expect(document.getElementById('01').innerText).toBe('<b>Artwork</b>');
+            expect(document.getElementById('02').innerText).toBe('<i>Abstract</i>');
+            expect(document.getElementById('03').innerText).not.toContain('onerror=');
+            expect(document.getElementById('04').innerText).not.toContain('<script>');
+        });
     });
 
     describe('notify property changes of', () => {
@@ -826,10 +842,10 @@ describe('DropDownButton', () => {
     });
 
     it('DropDownButton with popupWidth', function () {
-        drpButton = new DropDownButton({ popupWidth: '50%' });
+        drpButton = new DropDownButton({ popupWidth: '250px' });
         drpButton.appendTo('#drp-button');
         element.click();
-        expect(drpButton.dropDown.element.style.width).toEqual('19.5px');
+        expect(drpButton.dropDown.element.style.width).toEqual('250px');
     });
 
     describe('Null or undefined Property testing', () => {
@@ -1006,6 +1022,53 @@ describe('DropDownButton', () => {
             drpButton.itemTemplate = null;
             drpButton.dataBind();
             (drpButton as any).compiletemplate(null);
+        });
+    });
+
+    describe('Dropdown Button Template function testing', () => {
+        afterEach(() => {
+            drpButton.destroy();
+        });
+
+        it('DropDownButton with items', () => {
+            items = [
+                {
+                    text: 'JavaScript',
+                },
+                {
+                    text: 'TypeScript',
+                },
+                {
+                    separator: true
+                },
+                {
+                    text: 'Angular'
+                },
+                {
+                    text: 'React'
+                },
+                {
+                    text: 'Vue'
+                }
+            ];
+            function template (data: any) {
+                return `<span class='template'>${data.text}</span>`;
+            };
+            drpButton = new DropDownButton({items: items, itemTemplate:  template, animationSettings: { duration: 1000, easing: 'ease', effect: 'SlideDown' },  beforeItemRender: (args: MenuEventArgs) => {
+                if (args.item.disabled) {
+                    args.item.disabled = false
+                }
+                } });
+            drpButton.appendTo('#drp-button');
+            drpButton.isReact = true;
+            drpButton.toggle();
+            expect(drpButton.dropDown.element.classList.contains('e-popup-open')).toBeTruthy();
+            let listItem: any = drpButton.dropDown.element.querySelectorAll('.e-item > span');
+            expect(listItem[0].innerHTML).toEqual("JavaScript");
+            drpButton.itemTemplate = null;
+            drpButton.dataBind();
+            (drpButton as any).compiletemplate(null);
+            drpButton.isReact = false;
         });
     });
 });

@@ -79,6 +79,14 @@ export interface MentionModel {
     ignoreCase?: boolean;
 
     /**
+     * Specifies whether a space is required before the mention character to trigger the suggestion list.
+     * When set to false, the suggestion list will be triggered even without a space before the mention character.
+     *
+     * @default true
+     */
+    requireLeadingSpace?: boolean;
+
+    /**
      * Specifies whether to highlight the searched characters on suggestion list items.
      *
      * @default false

@@ -350,6 +350,48 @@ export class Selection {
         case 'setTransformedShape':
             this.isTransformedShape = args.value['bool'];
             break;
+        case 'rgbToHex':
+            this.rgbToHex(args.value['r'], args.value['g'], args.value['b'], args.value['a']);
+            break;
+        case 'padLeft':
+            this.padLeft(args.value['value'], args.value['length'], args.value['padChar']);
+            break;
+        case 'setTimer':
+            this.setTimer(args.value['e']);
+            break;
+        case 'targetTouches':
+            args.value['output'] = this.targetTouches(args.value['touches']);
+            break;
+        case 'calculateScale':
+            args.value['output'] = this.calculateScale(args.value['startTouches'], args.value['endTouches']);
+            break;
+        case 'beforeSaveEvent':
+            this.beforeSaveEvent(args.value['args'], args.value['e']);
+            break;
+        case 'isKeyBoardCrop':
+            args.value['output'] = this.isKeyBoardCrop(args.value['e']);
+            break;
+        case 'focusRatioBtn':
+            this.focusRatioBtn();
+            break;
+        case 'performEnterAction':
+            this.performEnterAction(args.value['e']);
+            break;
+        case 'getImagePoints':
+            args.value['output'] = this.getImagePoints(args.value['x'], args.value['y']);
+            break;
+        case 'revertPoints':
+            this.revertPoints(args.value['actPoint'], args.value['tempActiveObj']);
+            break;
+        case 'performNWResize':
+            this.performNWResize(args.value['x'], args.value['y'], args.value['tempActiveObj'], args.value['actPoint']);
+            break;
+        case 'performSEResize':
+            this.performSEResize(args.value['x'], args.value['y'], args.value['tempActiveObj'], args.value['actPoint']);
+            break;
+        case 'isMouseOutsideImg':
+            args.value['output'] = this.isMouseOutsideImg(args.value['x'], args.value['y']);
+            break;
         }
     }
 
@@ -2936,7 +2978,7 @@ export class Selection {
             parent.cursor : 'default';
         const tempCursor: string = parent.upperCanvas.style.cursor;
         if (parent.isResize) {
-            this.performEnterAction();
+            this.performEnterAction(e);
             parent.upperCanvas.style.cursor = 'default';
             return;
         } else if (JSON.stringify(parent.frameObj) !== JSON.stringify(parent.tempFrameObj)) {
@@ -3522,9 +3564,10 @@ export class Selection {
                     }
                     parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
                     if (!this.isFhdEditing) {
+                        const width: number = Math.floor(parent.activeObj.activePoint.width);
                         if (parent.activeObj.shape && parent.activeObj.shape === 'text' &&
-                            parent.activeObj.textSettings.fontSize === 11 && Math.floor(parent.activeObj.activePoint.width) === 55 &&
-                            Math.floor(parent.activeObj.activePoint.height) === 11) {
+                            parent.activeObj.textSettings.fontSize === 11 && Math.floor(parent.activeObj.activePoint.height) === 11 &&
+                            (width === 55 || (parent.activeObj.textSettings.bold && width === 58))) {
                             parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false });
                             if (parent.drawingShape === 'text' && !parent.activeObj.keyHistory) {
                                 parent.activeObj.keyHistory = 'Enter Text';
@@ -4079,7 +4122,7 @@ export class Selection {
         }
     }
 
-    private performEnterAction(e?: KeyboardEvent): void {
+    private performEnterAction(e?: KeyboardEvent | MouseEvent | TouchEvent): void {
         const parent: ImageEditor = this.parent;
         if (parent.isResize) {
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -4156,7 +4199,7 @@ export class Selection {
         }
     }
 
-    private isKeyBoardCrop(e: KeyboardEvent): boolean {
+    private isKeyBoardCrop(e: KeyboardEvent | MouseEvent | TouchEvent): boolean {
         let bool: boolean = false;
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         const target: any = e.target;

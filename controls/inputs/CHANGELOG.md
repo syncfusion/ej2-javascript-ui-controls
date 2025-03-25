@@ -2,39 +2,7 @@
 
 ## [Unreleased]
 
-## 28.2.9 (2025-03-04)
-
-### Uploader
-
-#### Bug Fixes
-
-- `#I685282` - The clear button has been disabled during the file upload process to prevent user interactions while the upload is in progress.
-
-## 28.2.3 (2025-01-29)
-
-### Form Validator
-
-#### Bug Fixes
-
-- `#I677916` - Fixed an issue where validation rules for the date property were not functioning correctly in the `ar` culture.
-
-## 28.1.41 (2025-01-21)
-
-### Signature
-
-#### Bug Fixes
-
-- `#I679504`  - Issue with "The `getSignature` method not shown in signature component instance for VUE platforms" has been resolved.
-
-## 28.1.37 (2024-12-31)
-
-### Uploader
-
-#### Bug Fixes
-
-- `#I666908` - Resolved a console error that occurred when copying an image from `Microsoft Word` and pasting it into the uploader.
-
-## 28.1.33 (2024-12-12)
+## 29.1.33 (2025-03-25)
 
 ### ColorPicker
 

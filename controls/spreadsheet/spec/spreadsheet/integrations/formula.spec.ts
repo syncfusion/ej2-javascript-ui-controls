@@ -2617,17 +2617,17 @@ describe('Spreadsheet formula module ->', () => {
             done();
         });
         it('TRUNC formula with different datatype - 10->', (done: Function) => {
-            helper.edit('J1', '6/23/2014');
-            helper.edit('J7', '=TRUNC(J1)');
+            helper.edit('J4', '6/23/2014');
+            helper.edit('J7', '=TRUNC(J4)');
             expect(helper.invoke('getCell', [6, 9]).textContent).toBe('41813');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"41813","formula":"=TRUNC(J1)"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"41813","formula":"=TRUNC(J4)"}');
             done();
         });
         it('TRUNC formula with different datatype - 11->', (done: Function) => {
-            helper.edit('J1', '12/5/2013 4:45:00 PM');
-            helper.edit('J7', '=TRUNC(J1,10)');
+            helper.edit('J4', '12/5/2013 4:45:00 PM');
+            helper.edit('J7', '=TRUNC(J4,10)');
             expect(helper.invoke('getCell', [6, 9]).textContent).toBe('41613.69792');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"41613.6979166666","formula":"=TRUNC(J1,10)"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[6].cells[9])).toBe('{"value":"41613.6979166666","formula":"=TRUNC(J4,10)"}');
             done();
         });
         it('TRUNC formula with specific cases - 1->', (done: Function) => {
@@ -11448,16 +11448,16 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [5, 10]).textContent).toBe('$103.30');
             helper.invoke('numberFormat', ['$#,##0.00', 'K7']);
             helper.edit('K7', '=ROUNDDOWN(I13,-1)');
-            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('110.00');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('$110.00');
             helper.invoke('numberFormat', ['$#,##0.00', 'K8']);
             helper.edit('K8', '=ROUNDDOWN(I16,1)');
             expect(helper.invoke('getCell', [7, 10]).textContent).toBe('$12.70');
             helper.invoke('numberFormat', ['$#,##0.00', 'K9']);
             helper.edit('K9', '=ROUNDDOWN(I17,1)');
-            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('1.2000E+01');
+            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('$12.00');
             helper.invoke('numberFormat', ['$#,##0.00', 'K10']);
             helper.edit('K10', '=ROUNDDOWN(I20,0)');
-            expect(helper.invoke('getCell', [9, 10]).textContent).toBe('11500%');
+            expect(helper.invoke('getCell', [9, 10]).textContent).toBe('$115.00');
             done();
         });
         it('ROUNDDOWN Formula with different format arguments as input in Percentage formatted cells ->', (done: Function) => {
@@ -11466,7 +11466,7 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [10, 10]).textContent).toBe('10330%');
             helper.invoke('numberFormat', ['0%', 'K12']);
             helper.edit('K12', '=ROUNDDOWN(I13,-1)');
-            expect(helper.invoke('getCell', [11, 10]).textContent).toBe('110.00');
+            expect(helper.invoke('getCell', [11, 10]).textContent).toBe('11000%');
             helper.invoke('numberFormat', ['0%', 'K13']);
             helper.edit('K13', '=ROUNDDOWN(I16,1)');
             expect(helper.invoke('getCell', [12, 10]).textContent).toBe('$12.70');
@@ -11484,7 +11484,7 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [15, 10]).textContent).toBe('1.0330E+02');
             helper.invoke('numberFormat', ['0.0000E+00', 'K17']);
             helper.edit('K17', '=ROUNDDOWN(I13,-1)');
-            expect(helper.invoke('getCell', [16, 10]).textContent).toBe('110.00');
+            expect(helper.invoke('getCell', [16, 10]).textContent).toBe('1.1000E+02');
             helper.invoke('numberFormat', ['0.0000E+00', 'K18']);
             helper.edit('K18', '=ROUNDDOWN(I16,1)');
             expect(helper.invoke('getCell', [17, 10]).textContent).toBe('$12.70');
@@ -11505,13 +11505,13 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [21, 10]).textContent).toBe('110.00');
             helper.invoke('numberFormat', ['#,##0.00', 'K23']);
             helper.edit('K23', '=ROUNDDOWN(I16,1)');
-            expect(helper.invoke('getCell', [22, 10]).textContent).toBe('$12.70');
+            expect(helper.invoke('getCell', [22, 10]).textContent).toBe('12.70');
             helper.invoke('numberFormat', ['#,##0.00', 'K24']);
             helper.edit('K24', '=ROUNDDOWN(I17,1)');
-            expect(helper.invoke('getCell', [23, 10]).textContent).toBe('1.2000E+01');
+            expect(helper.invoke('getCell', [23, 10]).textContent).toBe('12.00');
             helper.invoke('numberFormat', ['#,##0.00', 'K25']);
             helper.edit('K25', '=ROUNDDOWN(I20,0)');
-            expect(helper.invoke('getCell', [24, 10]).textContent).toBe('11500%');
+            expect(helper.invoke('getCell', [24, 10]).textContent).toBe('115.00');
             done();
         });
         it('ROUNDDOWN Formula with cell references as arguments ->', (done: Function) => {
@@ -12669,7 +12669,28 @@ describe('Spreadsheet formula module ->', () => {
                 editElem.textContent = '=SUM(SU';
                 helper.triggerKeyEvent('keyup', 83, null, null, null, editElem);
                 setTimeout(() => {
-                    helper.click('.e-ddl.e-popup li:nth-child(2)');
+                    helper.click('.e-ddl.e-popup li:nth-child(1)');
+                    helper.getElement('.e-spreadsheet-edit').textContent = '=SUM(SUM(H2:H11))';
+                    helper.triggerKeyNativeEvent(13);
+                    setTimeout(() => {
+                        expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[9])).toBe('{"value":554,"formula":"=SUM(SUM(H2:H11))"}');
+                        done();
+                    });
+                });
+            });
+        });
+        it('Selecting sub formula in dropdown with list separator->', (done: Function) => {
+            helper.invoke('selectRange', ['J2']);
+            helper.triggerKeyNativeEvent(113);
+            const editElem: HTMLElement = helper.getCellEditorElement();
+            editElem.textContent = '=SU';
+            helper.triggerKeyEvent('keyup', 83, null, null, null, editElem);
+            setTimeout(() => {
+                helper.click('.e-ddl.e-popup li:nth-child(2)');
+                editElem.textContent = '=SUM(10,SU';
+                helper.triggerKeyEvent('keyup', 83, null, null, null, editElem);
+                setTimeout(() => {
+                    helper.click('.e-ddl.e-popup li:nth-child(1)');
                     helper.getElement('.e-spreadsheet-edit').textContent = '=SUM(SUM(H2:H11))';
                     helper.triggerKeyNativeEvent(13);
                     setTimeout(() => {
@@ -13289,13 +13310,13 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [5, 10]).textContent).toBe('$175.00');
             helper.invoke('numberFormat', ['$#,##0.00', 'K7']);
             helper.edit('K7', '=SUM(I26:I27)');
-            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('2.9000E+01');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('$29.00');
             helper.invoke('numberFormat', ['$#,##0.00', 'K8']);
             helper.edit('K8', '=SUM(I24:I25)');
             expect(helper.invoke('getCell', [7, 10]).textContent).toBe('$131.56');
             helper.invoke('numberFormat', ['$#,##0.00', 'K9']);
             helper.edit('K9', '=SUM(I28:I29)');
-            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('11700%');
+            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('$117.00');
             helper.invoke('numberFormat', ['$#,##0.00', 'K10']);
             helper.edit('K10', '=SUM(I2:I10)');
             expect(helper.invoke('getCell', [9, 10]).textContent).toBe('$3,884.89');
@@ -13343,13 +13364,13 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [20, 10]).textContent).toBe('175.00');
             helper.invoke('numberFormat', ['#,##0.00', 'K22']);
             helper.edit('K22', '=SUM(I26:I27)');
-            expect(helper.invoke('getCell', [21, 10]).textContent).toBe('2.9000E+01');
+            expect(helper.invoke('getCell', [21, 10]).textContent).toBe('29.00');
             helper.invoke('numberFormat', ['#,##0.00', 'K23']);
             helper.edit('K23', '=SUM(I24:I25)');
-            expect(helper.invoke('getCell', [22, 10]).textContent).toBe('$131.56');
+            expect(helper.invoke('getCell', [22, 10]).textContent).toBe('131.56');
             helper.invoke('numberFormat', ['#,##0.00', 'K24']);
             helper.edit('K24', '=SUM(I28:I29)');
-            expect(helper.invoke('getCell', [23, 10]).textContent).toBe('11700%');
+            expect(helper.invoke('getCell', [23, 10]).textContent).toBe('117.00');
             helper.invoke('numberFormat', ['#,##0.00', 'K25']);
             helper.edit('K25', '=SUM(I2:I10)');
             expect(helper.invoke('getCell', [24, 10]).textContent).toBe('3,884.89');
@@ -13586,13 +13607,13 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [5, 10]).textContent).toBe('$17.50');
             helper.invoke('numberFormat', ['$#,##0.00', 'K7']);
             helper.edit('K7', '=AVERAGE(I26:I27)');
-            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('1.4500E+01');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('$14.50');
             helper.invoke('numberFormat', ['$#,##0.00', 'K8']);
             helper.edit('K8', '=AVERAGE(I24:I25)');
             expect(helper.invoke('getCell', [7, 10]).textContent).toBe('$65.78');
             helper.invoke('numberFormat', ['$#,##0.00', 'K9']);
             helper.edit('K9', '=AVERAGE(I28:I29)');
-            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('5850%');
+            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('$58.50');
             helper.invoke('numberFormat', ['$#,##0.00', 'K10']);
             helper.edit('K10', '=AVERAGE(I2:I10)');
             expect(helper.invoke('getCell', [9, 10]).textContent).toBe('$431.65');
@@ -13640,13 +13661,13 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [20, 10]).textContent).toBe('17.50');
             helper.invoke('numberFormat', ['#,##0.00', 'K22']);
             helper.edit('K22', '=AVERAGE(I26:I27)');
-            expect(helper.invoke('getCell', [21, 10]).textContent).toBe('1.4500E+01');
+            expect(helper.invoke('getCell', [21, 10]).textContent).toBe('14.50');
             helper.invoke('numberFormat', ['#,##0.00', 'K23']);
             helper.edit('K23', '=AVERAGE(I24:I25)');
-            expect(helper.invoke('getCell', [22, 10]).textContent).toBe('$65.78');
+            expect(helper.invoke('getCell', [22, 10]).textContent).toBe('65.78');
             helper.invoke('numberFormat', ['#,##0.00', 'K24']);
             helper.edit('K24', '=AVERAGE(I28:I29)');
-            expect(helper.invoke('getCell', [23, 10]).textContent).toBe('5850%');
+            expect(helper.invoke('getCell', [23, 10]).textContent).toBe('58.50');
             helper.invoke('numberFormat', ['#,##0.00', 'K25']);
             helper.edit('K25', '=AVERAGE(I2:I10)');
             expect(helper.invoke('getCell', [24, 10]).textContent).toBe('431.65');
@@ -13990,6 +14011,25 @@ describe('Spreadsheet formula module ->', () => {
             expect(helper.invoke('getCell', [6, 8]).textContent).toBe('6');
             expect(helper.getInstance().sheets[0].rows[6].cells[8].formula).toEqual('=SUM([{1+5}])');
             expect(helper.getInstance().sheets[0].rows[6].cells[8].value).toEqual(6);
+            done();
+        });
+    });
+
+    describe('EJ2-819414 - Testing defined names in data binding cases->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                definedNames: [{ name: 'Profit', refersTo: '=F2:F11' }],
+                sheets: [{ ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Verify that the scope defaults to Workbook when not explicitly set->', (done: Function) => {
+            expect(helper.getInstance().definedNames.length).toBe(1);
+            expect(helper.getInstance().definedNames[0].name).toBe('Profit');
+            expect(helper.getInstance().definedNames[0].refersTo).toBe('=Sheet1!F2:F11');
+            expect(helper.getInstance().definedNames[0].scope).toBe('Workbook');
             done();
         });
     });
@@ -16662,7 +16702,7 @@ describe('Spreadsheet formula module ->', () => {
                 expect(helper.getInstance().sheets[0].rows[9].cells[9].value).toBe('FALSE');
                 done();
             });
-        });   
+        });
     });
     describe('EJ2-917774 ->', () => {
         beforeAll((done: Function) => {
@@ -16988,6 +17028,196 @@ describe('Spreadsheet formula module ->', () => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             helper.invoke('updateCell', [{ formula: '=LARGE(A1:B100,4)' }, 'J3']);
             expect(parseInt(spreadsheet.sheets[0].rows[2].cells[9].value)).toEqual(41847);
+            done();
+        });
+    });
+    describe('EJ2-915326, EJ2-894946 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }],
+                    rows: [
+                        { cells: [{ index: 8, value: 'Different Formats' }] },
+                        { cells: [{ index: 8, value: '10' }] }, { cells: [{ index: 8, value: '12', format: '#,##0.00' }] },
+                        { cells: [{ index: 8, value: '11', format: '$#,##0.00' }] }, { cells: [{ index: 8, value: '32', format: getFormatFromType('Accounting') }] },
+                        { cells: [{ index: 8, value: '1', format: 'm/d/yyyy' }] }, { cells: [{ index: 8, value: '1', format: 'dddd, mmmm dd, yyyy' }] },
+                        { cells: [{ index: 8, value: '1', format: 'h:mm:ss AM/PM' }] }, { cells: [{ index: 8, value: '15', format: '0%' }] },
+                        { cells: [{ index: 8, value: '12', format: '# ?/?' }] }, { cells: [{ index: 8, value: '15', format: '0.0000E+00' }] },
+                    ]
+                }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Formula results are not working properly when a cells is applied  with currency formats', (done: Function) => {
+            helper.invoke('numberFormat', ['0.00E+00', 'D2:D11']);
+            helper.invoke('numberFormat', ['0.00%', 'E2:E11']);
+            helper.invoke('numberFormat', ['$#,##0.00', 'F2:F11']);
+            helper.invoke('numberFormat', ['$#,##0.00', 'J1:J10']);
+            helper.invoke('numberFormat', ['0.00', 'K1:K10']);
+            helper.edit('J1', '=SUM(B3:B4)');
+            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('$83,648.00');
+            helper.edit('J2', '=AVERAGE(C3:C4)');
+            expect(helper.invoke('getCell', [1, 9]).textContent).toBe('$0.20');
+            helper.edit('J3', '=ROUNDDOWN(D3:D4)');
+            expect(helper.invoke('getCell', [2, 9]).textContent).toBe('$20.00');
+            helper.edit('J4', '=ROUNDUP(E2:E4)');
+            expect(helper.invoke('getCell', [3, 9]).textContent).toBe('$20.00');
+            helper.edit('J5', '=MOD(F3,1200)');
+            expect(helper.invoke('getCell', [4, 9]).textContent).toBe('$600.00');
+            done();
+        });
+        it('Checking number formats applied cells with formula', (done: Function) => {
+            helper.edit('K1', '=SUM(B3:B4)');
+            expect(helper.invoke('getCell', [0, 10]).textContent).toBe('83648.00');
+            helper.edit('K2', '=AVERAGE(C3:C4)');
+            expect(helper.invoke('getCell', [1, 10]).textContent).toBe('0.20');
+            helper.edit('K3', '=ROUNDDOWN(D3:D4)');
+            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('20.00');
+            helper.edit('K4', '=ROUNDUP(E2:E4)');
+            expect(helper.invoke('getCell', [3, 10]).textContent).toBe('20.00');
+            helper.edit('K5', '=MOD(F3,1200)');
+            expect(helper.invoke('getCell', [4, 10]).textContent).toBe('600.00');
+            done();
+        });
+        it('Format not maintained properly for formula applied cells ->', (done: Function) => {
+            helper.invoke('numberFormat', ['0.00', 'H1:H7']);
+            helper.invoke('numberFormat', ['mm-dd-yyyy', 'I12']);
+            helper.edit('I12', '=SUM(H2:H7)');
+            let cellEle = helper.invoke('getCell', [11, 8]);
+            expect(cellEle.textContent).toBe('10/16/1900');
+            helper.edit('I13', '=SUM(H2:H7)');
+            cellEle = helper.invoke('getCell', [12, 8]);
+            expect(cellEle.textContent).toBe('290.00');
+            done();
+        });
+        it('Checking number format applied cells with different formatted values as arguments in a formula', (done: Function) => {
+            helper.invoke('numberFormat', ['#,##0.00', 'J6:J15']);
+            helper.edit('J6', '=SUM(I2)');
+            expect(helper.invoke('getCell', [5, 9]).textContent).toBe('10.00');
+            helper.edit('J7', '=AVERAGE(I3)');
+            expect(helper.invoke('getCell', [6, 9]).textContent).toBe('12.00');
+            helper.edit('J8', '=ROUNDDOWN(I4,1)');
+            expect(helper.invoke('getCell', [7, 9]).textContent).toBe('11.00');
+            helper.edit('J9', '=ROUNDUP(I5,1)');
+            expect(helper.invoke('getCell', [8, 9]).textContent).toBe('32.00');
+            helper.edit('J10', '=MOD(I6,1200)');
+            expect(helper.invoke('getCell', [9, 9]).textContent).toBe('1.00');
+            helper.edit('J11', '=SUM(I7)');
+            expect(helper.invoke('getCell', [10, 9]).textContent).toBe('1.00');
+            helper.edit('J12', '=AVERAGE(I8)');
+            expect(helper.invoke('getCell', [11, 9]).textContent).toBe('1.00');
+            helper.edit('J13', '=ROUNDDOWN(I9,1)');
+            expect(helper.invoke('getCell', [12, 9]).textContent).toBe('15.00');
+            helper.edit('J14', '=ROUNDUP(I10,1)');
+            expect(helper.invoke('getCell', [13, 9]).textContent).toBe('12.00');
+            helper.edit('J15', '=MOD(I11,1200)');
+            expect(helper.invoke('getCell', [14, 9]).textContent).toBe('15.00');
+            done();
+        });
+        it('Checking Currency format applied cells with different formatted values as arguments in a formula', (done: Function) => {
+            helper.invoke('numberFormat', ['$#,##0.00', 'K6:K15']);
+            helper.edit('K6', '=SUM(I2)');
+            expect(helper.invoke('getCell', [5, 10]).textContent).toBe('$10.00');
+            helper.edit('K7', '=AVERAGE(I3)');
+            expect(helper.invoke('getCell', [6, 10]).textContent).toBe('$12.00');
+            helper.edit('K8', '=ROUNDDOWN(I4,1)');
+            expect(helper.invoke('getCell', [7, 10]).textContent).toBe('$11.00');
+            helper.edit('K9', '=ROUNDUP(I5,1)');
+            expect(helper.invoke('getCell', [8, 10]).textContent).toBe('$32.00');
+            helper.edit('K10', '=MOD(I6,1200)');
+            expect(helper.invoke('getCell', [9, 10]).textContent).toBe('$1.00');
+            helper.edit('K11', '=SUM(I7)');
+            expect(helper.invoke('getCell', [10, 10]).textContent).toBe('$1.00');
+            helper.edit('K12', '=AVERAGE(I8)');
+            expect(helper.invoke('getCell', [11, 10]).textContent).toBe('$1.00');
+            helper.edit('K13', '=ROUNDDOWN(I9,1)');
+            expect(helper.invoke('getCell', [12, 10]).textContent).toBe('$15.00');
+            helper.edit('K14', '=ROUNDUP(I10,1)');
+            expect(helper.invoke('getCell', [13, 10]).textContent).toBe('$12.00');
+            helper.edit('K15', '=MOD(I11,1200)');
+            expect(helper.invoke('getCell', [14, 10]).textContent).toBe('$15.00');
+            done();
+        });
+        it('Checking Long Date format applied cells with different formatted values as arguments in a formula', (done: Function) => {
+            helper.invoke('numberFormat', ['dddd, mmmm dd, yyyy', 'L1:L10']);
+            helper.edit('L1', '=SUM(I2)');
+            expect(helper.invoke('getCell', [0, 11]).textContent).toBe('Wednesday, January 10, 1900');
+            helper.edit('L2', '=AVERAGE(I3)');
+            expect(helper.invoke('getCell', [1, 11]).textContent).toBe('Friday, January 12, 1900');
+            helper.edit('L3', '=ROUNDDOWN(I4,1)');
+            expect(helper.invoke('getCell', [2, 11]).textContent).toBe('Thursday, January 11, 1900');
+            helper.edit('L4', '=ROUNDUP(I5,1)');
+            expect(helper.invoke('getCell', [3, 11]).textContent).toBe('Thursday, February 1, 1900');
+            helper.edit('L5', '=MOD(I6,1200)');
+            expect(helper.invoke('getCell', [4, 11]).textContent).toBe('Monday, January 1, 1900');
+            helper.edit('L6', '=SUM(I7)');
+            expect(helper.invoke('getCell', [5, 11]).textContent).toBe('Monday, January 1, 1900');
+            helper.edit('L7', '=AVERAGE(I8)');
+            expect(helper.invoke('getCell', [6, 11]).textContent).toBe('Monday, January 1, 1900');
+            helper.edit('L8', '=ROUNDDOWN(I9,1)');
+            expect(helper.invoke('getCell', [7, 11]).textContent).toBe('Monday, January 15, 1900');
+            helper.edit('L9', '=ROUNDUP(I10,1)');
+            expect(helper.invoke('getCell', [8, 11]).textContent).toBe('Friday, January 12, 1900');
+            helper.edit('L10', '=MOD(I11,1200)');
+            expect(helper.invoke('getCell', [9, 11]).textContent).toBe('Monday, January 15, 1900');
+            done();
+        });
+        it('Checking Time format applied cells with different formatted values as arguments in a formula', (done: Function) => {
+            helper.invoke('numberFormat', ['h:mm:ss AM/PM', 'L11:L20']);
+            helper.edit('L11', '=SUM(I2)');
+            expect(helper.invoke('getCell', [10, 11]).textContent).toBe('12:00:00 AM');
+            helper.edit('L12', '=AVERAGE(I3)');
+            expect(helper.invoke('getCell', [11, 11]).textContent).toBe('12:00:00 AM');
+            helper.edit('L13', '=ROUNDDOWN(I4,1)');
+            expect(helper.invoke('getCell', [12, 11]).textContent).toBe('12:00:00 AM');
+            helper.edit('L14', '=ROUNDUP(I5,1)');
+            expect(helper.invoke('getCell', [13, 11]).textContent).toBe('12:00:00 AM');
+            helper.edit('L15', '=MOD(I6,1200)');
+            expect(helper.invoke('getCell', [14, 11]).textContent).toBe('12:00:00 AM');
+            helper.edit('L16', '=SUM(I7)');
+            expect(helper.invoke('getCell', [15, 11]).textContent).toBe('12:00:00 AM');
+            helper.edit('L17', '=AVERAGE(I8)');
+            expect(helper.invoke('getCell', [16, 11]).textContent).toBe('12:00:00 AM');
+            helper.edit('L18', '=ROUNDDOWN(I9,1)');
+            expect(helper.invoke('getCell', [17, 11]).textContent).toBe('12:00:00 AM');
+            helper.edit('L19', '=ROUNDUP(I10,1)');
+            expect(helper.invoke('getCell', [18, 11]).textContent).toBe('12:00:00 AM');
+            helper.edit('L20', '=MOD(I11,1200)');
+            expect(helper.invoke('getCell', [19, 11]).textContent).toBe('12:00:00 AM');
+            done();
+        });
+        it('Checking different format applied cells with Number formatted values as arguments in a formula.', (done: Function) => {
+            helper.edit('M1', '=SUM(I3)');
+            expect(helper.invoke('getCell', [0, 12]).textContent).toBe('12.00');
+            helper.invoke('numberFormat', ['#,##0.00', 'M2']);
+            helper.edit('M2', '=AVERAGE(I3)');
+            expect(helper.invoke('getCell', [1, 12]).textContent).toBe('12.00');
+            helper.invoke('numberFormat', ['$#,##0.00', 'M3']);
+            helper.edit('M3', '=ROUNDDOWN(I3,1)');
+            expect(helper.invoke('getCell', [2, 12]).textContent).toBe('$12.00');
+            helper.invoke('numberFormat', [getFormatFromType('Accounting'), 'M4']);
+            helper.edit('M4', '=ROUNDUP(I3,1)');
+            expect(helper.invoke('getCell', [3, 12]).textContent).toBe(' $12.00 ');
+            helper.invoke('numberFormat', ['m/d/yyyy', 'M5']);
+            helper.edit('M5', '=MOD(I3,1200)');
+            expect(helper.invoke('getCell', [4, 12]).textContent).toBe('1/12/1900');
+            helper.invoke('numberFormat', ['dddd, mmmm dd, yyyy', 'M6']);
+            helper.edit('M6', '=SUM(I3)');
+            expect(helper.invoke('getCell', [5, 12]).textContent).toBe('Friday, January 12, 1900');
+            helper.invoke('numberFormat', ['h:mm:ss AM/PM', 'M7']);
+            helper.edit('M7', '=AVERAGE(I3)');
+            expect(helper.invoke('getCell', [6, 12]).textContent).toBe('12:00:00 AM');
+            helper.invoke('numberFormat', ['0%', 'M8']);
+            helper.edit('M8', '=ROUNDDOWN(I3,1)');
+            expect(helper.invoke('getCell', [7, 12]).textContent).toBe('1200%');
+            helper.invoke('numberFormat', ['# ?/?', 'M9']);
+            helper.edit('M9', '=ROUNDUP(I3,1)');
+            expect(helper.invoke('getCell', [8, 12]).textContent).toBe('12       ');
+            helper.invoke('numberFormat', ['0.0000E+00', 'M10']);
+            helper.edit('M10', '=MOD(I3,1200)');
+            expect(helper.invoke('getCell', [9, 12]).textContent).toBe('1.2000E+01');
             done();
         });
     });

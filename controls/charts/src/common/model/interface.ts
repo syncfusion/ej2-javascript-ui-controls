@@ -1,5 +1,7 @@
 import { Rect } from '@syncfusion/ej2-svg-base';
 import { RangeNavigator, RangeSlider, PeriodsModel } from '../../range-navigator';
+import { ExcelRowAndColumn } from '../../accumulation-chart';
+import { IChartEventArgs } from '../../chart/model/chart-interface';
 
 /** @private */
 export interface IFontMapping {
@@ -123,6 +125,32 @@ export interface IAfterExportEventArgs {
 }
 
 /**
+ * Provides the event arguments for the chart export functionality.
+ *
+ */
+export interface IExportEventArgs extends IChartEventArgs {
+    /**
+     * Specifies the width of the exported chart in pixels.
+     * This value determines the width of the output file when exporting the chart as an image, PDF, or Excel file.
+     *
+     */
+    width: number;
+    /**
+     * Specifies the height of the exported chart in pixels.
+     * This value determines the height of the output file when exporting the chart as an image, PDF, or Excel file.
+     *
+     */
+    height: number;
+    /**
+     * Defines additional properties related to the Excel export functionality.
+     * This includes settings such as sheet name, cell formatting, and customization options for exported data.
+     *
+     * If not specified, the default Excel export settings will be applied.
+     */
+    excelProperties?: ExcelProperties;
+}
+
+/**
  * Axis visible range.
  *
  * @public
@@ -136,4 +164,17 @@ export interface VisibleRangeModel {
     interval?: number;
     /** Axis delta value. */
     delta?: number;
+}
+/**
+ * Defines the properties related to Excel export for the chart.
+ * These properties are applicable only when exporting the chart to an Excel file.
+ *
+ * @interface
+ * @private
+ */
+export interface ExcelProperties {
+    /** Specifies the collection of rows to be exported to the Excel sheet. */
+    rows: ExcelRowAndColumn[];
+    /** Specifies the collection of columns to be exported to the Excel sheet. */
+    columns: ExcelRowAndColumn[];
 }

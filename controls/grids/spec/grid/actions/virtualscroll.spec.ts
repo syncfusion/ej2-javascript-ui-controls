@@ -467,13 +467,13 @@ describe('Virtualization testing', () => {
             it('check selection by click in first row', (done: Function) => {
                 grid.rowSelected = <EmitType<{}>>done;
                 let row: HTMLTableRowElement = <HTMLTableRowElement>(<HTMLTableElement>grid.getContentTable()).rows[0];
-                let index: number = parseInt(row.getAttribute('data-rowindex'), 10);
+                let index: number = parseInt(row.getAttribute('aria-rowindex'), 10) - 1;
                 (<HTMLElement>row.cells[0]).click();
                 expect(grid.getSelectedRowIndexes()[0]).toEqual(index);
             });
             it('check selection by selectRow method', (done: Function) => {
                 let row: HTMLTableRowElement = <HTMLTableRowElement>(<HTMLTableElement>grid.getContentTable()).rows[5];
-                let index: number = parseInt(row.getAttribute('data-rowindex'), 10);
+                let index: number = parseInt(row.getAttribute('aria-rowindex'), 10) - 1;
                 grid.rowSelected = <EmitType<{}>>done;
                 grid.selectRow(index, true);
                 expect(grid.getSelectedRowIndexes()[0]).toEqual(index);
@@ -542,13 +542,13 @@ describe('Column virtualization', () => {
         it('check first column index', () => {
             expect(grid.getColumns().length).toBeLessThan(500);
             let row: HTMLTableRowElement = <HTMLTableRowElement>(<HTMLTableElement>grid.getContentTable()).rows[0];
-            expect(grid.getColumnIndexesInView()[0]).toBeGreaterThanOrEqual(parseInt(row.cells[0].getAttribute('data-colindex'), 10));
+            expect(grid.getColumnIndexesInView()[0]).toBeGreaterThanOrEqual(parseInt(row.cells[0].getAttribute('aria-colindex'), 10) - 1);
         });
         it('check last column index', () => {
             let row: HTMLTableRowElement = <HTMLTableRowElement>(<HTMLTableElement>grid.getContentTable()).rows[0];
             let indexes: number[] = grid.getColumnIndexesInView();
             expect(indexes[indexes.length - 1])
-                .toBeGreaterThanOrEqual(parseInt(row.cells[indexes.length - 1].getAttribute('data-colindex'), 10));
+                .toBeGreaterThanOrEqual(parseInt(row.cells[indexes.length - 1].getAttribute('aria-colindex'), 10) - 1);
         });
         it('horizontal should not disturb vertical scroll', (done: Function) => {
             (<HTMLElement>grid.getContent().firstChild).scrollLeft = 100;
@@ -561,7 +561,7 @@ describe('Column virtualization', () => {
             expect(grid.pageSettings.currentPage).toEqual(1);
             expect(grid.getColumns().length).toBeLessThan(500);
             let row: HTMLTableRowElement = <HTMLTableRowElement>(<HTMLTableElement>grid.getContentTable()).rows[0];
-            expect(grid.getColumnIndexesInView()[0]).toBeGreaterThanOrEqual(parseInt(row.cells[0].getAttribute('data-colindex'), 10));
+            expect(grid.getColumnIndexesInView()[0]).toBeGreaterThanOrEqual(parseInt(row.cells[0].getAttribute('aria-colindex'), 10) - 1);
         });
         afterAll(() => {
             destroy(grid);
@@ -817,7 +817,7 @@ describe('Column virtualization', () => {
         it('check aggregare value after the collapse action', (done: Function) => {
             let text: string = (gObj as any).footerElement.querySelector('.e-templatecell').textContent;
             let value: number = parseInt(text.split(' ')[1], 10);
-            expect(gObj.getRows()[0].getAttribute('data-rowindex')).toBe('1');
+            expect(parseInt(gObj.getRows()[0].getAttribute('aria-rowindex'), 10) - 1).toBe(1);
             expect(text).not.toBe('Total:  ');
             expect(text).not.toBe('');
             expect(text).not.toBe(' ');
@@ -1557,7 +1557,7 @@ describe('EJ2-859411-Scroll using the down arrow key by focusing the template, t
     it('check selection by click in last viewable row', (done: Function) => {
         grid.rowSelected = <EmitType<{}>>done;
         row = <HTMLTableRowElement>(<HTMLTableElement>grid.getContentTable()).rows[7];
-        let index: number = parseInt(row.getAttribute('data-rowindex'), 10);
+        let index: number = parseInt(row.getAttribute('aria-rowindex'), 10) - 1;
         (<HTMLElement>row.cells[1]).click();
         expect(grid.getSelectedRowIndexes()[0]).toEqual(index);
     });

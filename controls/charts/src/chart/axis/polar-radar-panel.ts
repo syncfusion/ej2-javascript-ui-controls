@@ -538,7 +538,7 @@ export class PolarRadarPanel extends LineBase {
             label = axis.visibleLabels[i as number];
             labelText = <string>label.text;
             // to trim axis labels based on available size
-            if (axis.enableTrim || intersectType === 'Trim') {
+            if ((axis.enableTrim || intersectType === 'Trim') && !axis.enableWrap) {
                 const originalText: string = axis.visibleLabels[i as number].originalText;
                 let trimText: string;
                 let size: number;

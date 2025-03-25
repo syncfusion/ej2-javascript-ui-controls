@@ -193,7 +193,7 @@ export class BaseToolbar {
             for (let num : number = 0; num < items.length; num++) {
                 const tooltipText : string = items[num as number].tooltipText;
                 let shortCutKey : string;
-                const isMacDev: boolean = window.navigator.platform.toLocaleLowerCase().includes('mac');
+                const isMacDev: boolean = this.parent.userAgentData.getPlatform() === 'macOS';
                 if (windowKeys[`${(items[num as number] as IToolbarItems).subCommand}`] && (!isNullOrUndefined(items[num as number].id) || !isNullOrUndefined(items[num as number].cssClass))) {
                     const shortcuts: string[] = windowKeys[`${(items[num as number] as IToolbarItems).subCommand}`].split(','); // Handle multiple shortcuts
                     shortCutKey = shortcuts.map((shortcut: string) =>

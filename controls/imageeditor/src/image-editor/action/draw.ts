@@ -1854,7 +1854,7 @@ export class Draw {
                     }
                 }
             } else {
-                canvasDraw.lineWidth = 0;
+                canvasDraw.lineWidth = 1;
             }
             let textStyle: string = '';
             if (bold) {textStyle = 'bold '; }

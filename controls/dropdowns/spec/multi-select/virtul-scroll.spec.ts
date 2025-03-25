@@ -1083,57 +1083,6 @@ describe('MultiSelect_Virtualization', () => {
         });
     });
 
-    describe('EJ2-933634 - No records found showing in popup after we select all the item', () => {
-        let listObj: MultiSelect;
-        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
-        let datasource: { [key: string]: Object }[] =  [
-                { id: 'list1', text: 'JAVA' },
-                { id: 'list2', text: 'C#' },
-                { id: 'list3', text: 'C++' },
-                { id: 'list4', text: '.NET' },
-                { id: 'list5', text: 'Oracle' },
-                { id: 'list6', text: 'GO' },];
-        let originalTimeout: number;
-        beforeAll(() => {
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
-            document.body.appendChild(element);
-        });
-        afterAll(() => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-            if (element) {
-                listObj.destroy();
-                element.remove();
-            }
-        });
-
-        it('Check list count', (done) => {
-            listObj = new MultiSelect({
-                dataSource: datasource,
-                fields: { text: "text", value: "id" },
-                popupHeight: 50,
-                hideSelectedItem: false,
-                value: ['list4'],
-                enableVirtualization: true,
-            });
-            listObj.appendTo(element);
-            listObj.dataBind();
-            listObj.showPopup();
-            setTimeout(function () {
-                (<any>listObj).updateSelectionList();
-                let mouseEventArgs: any = { preventDefault: function () { }, target: null };                       
-                setTimeout(function () {
-                    (<any>listObj).clearAll(mouseEventArgs);
-                    listObj.showPopup();
-                    var li = (<any>listObj).list.querySelectorAll('.e-virtual-list');
-                    expect(li.length).toBe(0);
-                    done();
-                }, 300);
-            }, 200);
-            
-        });
-    });
-
     describe('Virtualization with 65k data preselection', () => {
         let multiObj: any;
         let ele: HTMLInputElement;

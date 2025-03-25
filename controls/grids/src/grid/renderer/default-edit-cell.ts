@@ -14,9 +14,13 @@ export class DefaultEditCell extends EditCellBase implements IEditCell {
 
     public create(args: { column: Column, value: string, requestType: string }): Element {
         const attr: { [key: string]: string } = {
-            type: 'text', value: !isNullOrUndefined(args.value) ? args.value : '', style: 'text-align:' + args.column.textAlign
+            type: 'text', value: !isNullOrUndefined(args.value) ? args.value : ''
         };
-        return createEditElement(this.parent, args.column, 'e-field e-input e-defaultcell', attr);
+        const inputElement: Element = createEditElement(this.parent, args.column, 'e-field e-input e-defaultcell', attr);
+        if (args.column.textAlign) {
+            (inputElement as HTMLElement).style.textAlign = args.column.textAlign;
+        }
+        return inputElement;
     }
 
     public read(element: Element): string {

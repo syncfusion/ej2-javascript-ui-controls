@@ -346,7 +346,11 @@ export class RibbonDropDown {
      * @returns {void}
      */
     public toggle(controlId: string): void {
-        this.getDropDownObj(controlId).toggle();
+        const dropdownObj: DropDownButton = this.getDropDownObj(controlId);
+        if (!dropdownObj) { return; }
+        if (!dropdownObj.disabled) {
+            dropdownObj.toggle();
+        }
     }
     /**
      * Updates the dropdown.

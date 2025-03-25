@@ -1988,6 +1988,14 @@ export class Series extends SeriesBase {
     public enableTooltip: boolean;
 
     /**
+     * Enables or disables the display of tooltips for the nearest data point to the cursor for series.
+     *
+     * @default true
+     */
+    @Property(true)
+    public showNearestTooltip: boolean;
+
+    /**
      * Use this property to define a custom format for how tooltips are displayed.
      * ```html
      * <div id='Chart'></div>
@@ -2138,6 +2146,19 @@ export class Series extends SeriesBase {
      */
     @Property('Normal')
     public boxPlotMode: BoxPlotMode;
+
+    /**
+     * Specifies whether to display outliers in the Box and Whisker chart.
+     *
+     * If set to `true`, outliers will be displayed as individual points beyond the whiskers, representing data points that significantly differ from the rest of the dataset.
+     * If set to `false`, outliers will be hidden, and only the box, median, and whiskers will be rendered.
+     *
+     * Outliers are typically used to identify extreme values in statistical data representation.
+     *
+     * @default true
+     */
+    @Property(true)
+    public showOutliers: boolean;
 
     /**
      * The `columnWidth` property can be used to customize the width of the columns in a column series.
@@ -2653,12 +2674,13 @@ export class Series extends SeriesBase {
             if (this.seriesElement) {
                 this.seriesElement.setAttribute('role', this.accessibility.accessibilityRole ? this.accessibility.accessibilityRole : 'region');
                 this.seriesElement.setAttribute('tabindex', this.accessibility.focusable ? String(this.accessibility.tabIndex) : '-1');
+                (this.seriesElement as HTMLElement).style.outline = 'none';
                 this.seriesElement.setAttribute('aria-label', this.accessibility.accessibilityDescription ? this.accessibility.accessibilityDescription : (this.name + ',' + this.type + ' series with ' + this.points.length + ' data points'));
                 this.seriesElement.setAttribute('aria-hidden', 'false');
             }
             if (!this.chart.enableCanvas || this.type === 'Bubble') {
                 this.seriesElement.setAttribute('tabindex', this.accessibility.focusable ? (index === 0 ? '0' : !this.checkTabindex(chart.visibleSeries, index as number) ? String(this.accessibility.tabIndex) : '') : '-1');
-                this.seriesElement.setAttribute('style', 'outline: none');
+                (this.seriesElement as HTMLElement).style.outline = 'none';
                 this.seriesElement.appendChild(this.clipRectElement);
             }
         }

@@ -201,14 +201,31 @@ export class FlowchartLayout {
                             let pts: PointModel[] = [internalConnector.sourcePoint, internalConnector.targetPoint];
                             if (isVertical) {
                                 updatedPts = this.updateVerticalConnectorSegments(internalConnector, pts);
-                                pts = this.updateConnectorPoints(updatedPts, segmentSize, intermediatePoint, transModelBounds);
+                                const sourceNode: NodeModel = this.diagram.nameTable[internalConnector.sourceID];
+                                const decisionNode: boolean = (this.vertexMapper.get(sourceNode.id) as FlowChartVertex).isDecisionNode;
+                                if (!decisionNode && updatedPts.length <= 2) {
+                                    pts = this.updateConnectorPoints(updatedPts, segmentSize, intermediatePoint, transModelBounds);
+                                } else {
+                                    pts = updatedPts;
+                                }
                             } else {
                                 updatedPts = this.updateHorizontalSegments(internalConnector, pts);
-                                pts = this.updateConnectorPoints(updatedPts, segmentSize, intermediatePoint, transModelBounds);
+                                pts = updatedPts;
                             }
                             if (pts.length > 2) {
                                 this.updatePoints(pts, internalConnector);
                             }
+                            modifiedConnectors.push(internalConnector);
+                        } else if (internalConnector.intermediatePoints.length === 4) {
+                            // Determine updated points based on orientation (vertical or horizontal)
+                            const start: PointModel = internalConnector.intermediatePoints[0];
+                            const end: PointModel = internalConnector.intermediatePoints[3];
+                            const offsetPoint: PointModel = isVertical
+                                ? { x: start.x, y: end.y - 20 }
+                                : { x: end.x - 20, y: start.y };
+                            const updatedPts: PointModel[] = [start, offsetPoint, end];
+                            // Update connector points and add to modified list
+                            this.updatePoints(updatedPts, internalConnector);
                             modifiedConnectors.push(internalConnector);
                         }
                     }
@@ -234,7 +251,6 @@ export class FlowchartLayout {
                                     }
                                 }
                                 internalConnector.segments = [];
-                                internalConnector.intermediatePoints = [];
                                 let pts: PointModel[] = [internalConnector.targetPoint, internalConnector.sourcePoint];
                                 let updatedPts: PointModel[] = [];
 
@@ -413,32 +429,92 @@ export class FlowchartLayout {
         rect.width += 2 * width;
         rect.height += 2 * height;
     }
-
+    private static isBranchConnector(internalConnector: Connector, branchValues: string[]): boolean {
+        if (internalConnector.annotations.length > 0 && internalConnector.annotations[0].content) {
+            const text: string = internalConnector.annotations[0].content;
+            return branchValues.some((branchText : string) => text.localeCompare(branchText, undefined, { sensitivity: 'accent' }) === 0);
+        }
+        return false;
+    }
+    private isYesBranchConnector(internalConnector: Connector): boolean {
+        return FlowchartLayout.isBranchConnector(internalConnector, this.yesBranchValues);
+    }
+    private isNoBranchConnector(internalConnector: Connector): boolean {
+        return FlowchartLayout.isBranchConnector(internalConnector, this.noBranchValues);
+    }
     private updateHorizontalSegments(internalConnector: Connector, pts: PointModel[]): PointModel[] {
         let updatedPts: PointModel[] = [];
         const sourcenode: NodeModel = this.diagram.nameTable[internalConnector.sourceID];
         const targetnode: NodeModel = this.diagram.nameTable[internalConnector.targetID];
         const decisionNode: boolean = (this.vertexMapper.get(sourcenode.id) as FlowChartVertex).isDecisionNode;
+        const hSpacing: number = this.horizontalSpacing / 2;
+        const vSpacing: number = this.verticalSpacing / 2;
+        if (decisionNode) {
+            const isYesBranch: boolean = this.isYesBranchConnector(internalConnector);
+            const isNoBranch: boolean = this.isNoBranchConnector(internalConnector);
 
-        if (decisionNode && !this.contains({ x: sourcenode.offsetX, y: targetnode.offsetY }, sourcenode.wrapper.bounds)) {
-            if (sourcenode.offsetY < targetnode.offsetY) {
-                const spoint1: number = sourcenode.wrapper.bounds.bottom;
-                const spoint2: number = sourcenode.offsetX;
+            if ((!targetnode.wrapper.bounds.containsPoint({ x: targetnode.offsetX, y: sourcenode.offsetY })) &&
+                !((sourcenode.offsetY !== targetnode.offsetY) &&
+                    ((isYesBranch && this.yesBranchDirection === 'SameAsFlow') ||
+                        (isNoBranch && this.noBranchDirection === 'SameAsFlow' && this.yesBranchDirection !== 'SameAsFlow')))) {
+                if (sourcenode.wrapper.bounds.bottom < targetnode.wrapper.bounds.center.y) {
+                    const spoint1: number = sourcenode.wrapper.bounds.bottom;
+                    const spoint2: number = sourcenode.offsetX;
+                    const tpoint1: number = targetnode.wrapper.bounds.left;
+                    const tpoint2: number = targetnode.offsetY;
+                    updatedPts.push({ x: spoint2, y: spoint1 });
+                    updatedPts.push({ x: spoint2, y: tpoint2 });
+                    updatedPts.push({ x: tpoint1, y: tpoint2 });
+                }
+                else if (sourcenode.wrapper.bounds.top > targetnode.wrapper.bounds.center.y) {
+                    const spoint1: number = sourcenode.wrapper.bounds.top;
+                    const spoint2: number = sourcenode.offsetX;
+                    const tpoint1: number = targetnode.wrapper.bounds.left;
+                    const tpoint2: number = targetnode.offsetY;
+                    updatedPts.push({ x: spoint2, y: spoint1 });
+                    updatedPts.push({ x: spoint2, y: tpoint2 });
+                    updatedPts.push({ x: tpoint1, y: tpoint2 });
+                } else if ((isYesBranch && this.yesBranchDirection === 'RightInFlow') ||
+                    (isNoBranch && ((this.yesBranchDirection === 'SameAsFlow' &&
+                        (this.noBranchDirection === 'RightInFlow' || this.noBranchDirection === 'SameAsFlow')) ||
+                        (this.yesBranchDirection === 'LeftInFlow' &&
+                            (this.noBranchDirection === 'LeftInFlow' || this.noBranchDirection === 'RightInFlow'))))) {
+                    const spoint1: number = sourcenode.offsetX;
+                    const spoint2: number = sourcenode.wrapper.bounds.bottom;
+                    const tpoint1: number = targetnode.wrapper.bounds.left;
+                    const tpoint2: number = targetnode.wrapper.bounds.center.y;
+                    updatedPts.push({ x: spoint1, y: spoint2 });
+                    updatedPts.push({ x: spoint1, y: spoint2 + vSpacing });
+                    updatedPts.push({ x: tpoint1 - hSpacing, y: spoint2 + vSpacing });
+                    updatedPts.push({ x: tpoint1 - hSpacing, y: tpoint2 });
+                    updatedPts.push({ x: tpoint1, y: tpoint2 });
+                }
+            } else if ((isYesBranch && this.yesBranchDirection === 'LeftInFlow') ||
+                (isNoBranch && ((this.yesBranchDirection === 'SameAsFlow' &&
+                    (this.noBranchDirection === 'SameAsFlow' || this.noBranchDirection === 'LeftInFlow')) ||
+                    (this.yesBranchDirection === 'RightInFlow' &&
+                        (this.noBranchDirection === 'LeftInFlow' || this.noBranchDirection === 'RightInFlow'))))) {
+                const spoint1: number = sourcenode.offsetX;
+                const spoint2: number = sourcenode.wrapper.bounds.top;
                 const tpoint1: number = targetnode.wrapper.bounds.left;
-                const tpoint2: number = targetnode.offsetY;
-                updatedPts.push({ x: spoint2, y: spoint1 });
-                updatedPts.push({ x: spoint2, y: tpoint2 });
+                const tpoint2: number = targetnode.wrapper.bounds.center.y;
+                updatedPts.push({ x: spoint1, y: spoint2 });
+                updatedPts.push({ x: spoint1 , y: spoint2 - vSpacing });
+                updatedPts.push({ x: tpoint1 - hSpacing, y: spoint2 - vSpacing });
+                updatedPts.push({ x: tpoint1 - hSpacing, y: tpoint2 });
                 updatedPts.push({ x: tpoint1, y: tpoint2 });
-            } else if (sourcenode.offsetY > targetnode.offsetY) {
-                const spoint1: number = sourcenode.wrapper.bounds.top;
-                const spoint2: number = sourcenode.offsetX;
+            } else if ((sourcenode.offsetY !== targetnode.offsetY) &&
+                ((isYesBranch && this.yesBranchDirection === 'SameAsFlow') ||
+                    (isNoBranch && this.noBranchDirection === 'SameAsFlow' &&
+                        this.yesBranchDirection !== 'SameAsFlow'))) {
+                const spoint1: number = sourcenode.wrapper.bounds.right;
+                const spoint2: number = sourcenode.offsetY;
                 const tpoint1: number = targetnode.wrapper.bounds.left;
-                const tpoint2: number = targetnode.offsetY;
-                updatedPts.push({ x: spoint2, y: spoint1 });
-                updatedPts.push({ x: spoint2, y: tpoint2 });
+                const tpoint2: number = targetnode.wrapper.bounds.center.y;
+                updatedPts.push({ x: spoint1, y: spoint2 });
+                updatedPts.push({ x: tpoint1 - hSpacing, y: spoint2 });
+                updatedPts.push({ x: tpoint1 - hSpacing, y: tpoint2 });
                 updatedPts.push({ x: tpoint1, y: tpoint2 });
-            } else {
-                updatedPts = pts;
             }
         } else {
             updatedPts = pts;
@@ -452,39 +528,146 @@ export class FlowchartLayout {
         const sourcenode: NodeModel = this.diagram.nameTable[internalConnector.sourceID];
         const targetnode: NodeModel = this.diagram.nameTable[internalConnector.targetID];
         const decisionNode: boolean = (this.vertexMapper.get(sourcenode.id) as FlowChartVertex).isDecisionNode;
-
-        if (decisionNode && !this.contains({ x: targetnode.offsetX, y: sourcenode.offsetY }, sourcenode.wrapper.bounds)) {
-            if (sourcenode.offsetX < targetnode.offsetX) {
+        const hSpacing: number = this.horizontalSpacing / 2;
+        const vSpacing: number = this.verticalSpacing / 2;
+        if (decisionNode) {
+            const isYesBranch: boolean = this.isYesBranchConnector(internalConnector);
+            const isNoBranch: boolean = this.isNoBranchConnector(internalConnector);
+            if ((sourcenode.wrapper.bounds.right < targetnode.wrapper.bounds.center.x) &&
+                ((isYesBranch && this.yesBranchDirection === 'RightInFlow') ||
+                    (isNoBranch && ((this.yesBranchDirection === 'SameAsFlow' &&
+                        (this.noBranchDirection === 'RightInFlow' || this.noBranchDirection === 'SameAsFlow')) ||
+                        (this.yesBranchDirection === 'LeftInFlow' &&
+                            (this.noBranchDirection === 'LeftInFlow' || this.noBranchDirection === 'RightInFlow')))))) {
                 const spoint1: number = sourcenode.wrapper.bounds.right;
                 const spoint2: number = sourcenode.offsetY;
                 const tpoint1: number = targetnode.wrapper.bounds.top;
                 const tpoint2: number = targetnode.offsetY;
                 updatedPts.push({ x: spoint1, y: spoint2 });
-                updatedPts.push({ x: targetnode.offsetX, y: spoint2 });
+                let overlappingNodes: NodeModel[] = this.diagram.nodes.filter((e: NodeModel) =>
+                    e.wrapper.bounds.containsPoint({ x: targetnode.offsetX, y: sourcenode.offsetY }));
+                overlappingNodes = overlappingNodes.sort((a: NodeModel, b: NodeModel) =>
+                    b.wrapper.bounds.left - a.wrapper.bounds.left);
+                if (overlappingNodes.length === 0) {
+                    updatedPts.push({ x: targetnode.offsetX, y: spoint2 });
+                } else {
+                    const bounds: Rect = overlappingNodes[0].wrapper.bounds;
+                    updatedPts.push({ x: bounds.left - hSpacing, y: overlappingNodes[0].offsetY });
+                    updatedPts.push({ x: bounds.left - hSpacing, y: bounds.bottom + vSpacing });
+                }
                 updatedPts.push({ x: tpoint1, y: tpoint2 });
-            } else if (sourcenode.offsetX > targetnode.offsetX) {
+            } else if ((sourcenode.wrapper.bounds.left > targetnode.wrapper.bounds.center.x) &&
+                ((isYesBranch && this.yesBranchDirection === 'LeftInFlow') ||
+                    (isNoBranch && ((this.yesBranchDirection === 'SameAsFlow' &&
+                        (this.noBranchDirection === 'SameAsFlow' || this.noBranchDirection === 'LeftInFlow')) ||
+                        (this.yesBranchDirection === 'RightInFlow' &&
+                            (this.noBranchDirection === 'LeftInFlow' || this.noBranchDirection === 'RightInFlow')))))) {
                 const spoint1: number = sourcenode.wrapper.bounds.left;
                 const spoint2: number = sourcenode.offsetY;
                 const tpoint1: number = targetnode.wrapper.bounds.top;
                 const tpoint2: number = targetnode.offsetY;
                 updatedPts.push({ x: spoint1, y: spoint2 });
-                updatedPts.push({ x: targetnode.offsetX, y: spoint2 });
+                const middleRect: Rect = Rect.toBounds([updatedPts[0], { x: targetnode.offsetX, y: spoint2 }]);
+                let overlappingNodes: NodeModel[] = this.diagram.nodes.filter((e : NodeModel) =>
+                    e.wrapper.bounds.intersects(middleRect) &&
+                    e.id !== sourcenode.id &&
+                    e.id !== targetnode.id
+                );
+                overlappingNodes = overlappingNodes.sort((a: NodeModel, b: NodeModel) =>
+                    b.wrapper.bounds.right - a.wrapper.bounds.right
+                );
+                if (overlappingNodes.length === 0) {
+                    updatedPts.push({ x: targetnode.offsetX, y: spoint2 });
+                } else {
+                    const bounds: Rect = overlappingNodes[0].wrapper.bounds;
+                    updatedPts.push({ x: bounds.right + hSpacing, y: overlappingNodes[0].offsetY });
+                    updatedPts.push({ x: bounds.right + hSpacing, y: bounds.bottom + vSpacing });
+                }
                 updatedPts.push({ x: tpoint1, y: tpoint2 });
-            } else {
+            } else if ((isYesBranch && this.yesBranchDirection === 'RightInFlow') ||
+                (isNoBranch && ((this.yesBranchDirection === 'SameAsFlow' &&
+                    (this.noBranchDirection === 'RightInFlow' || this.noBranchDirection === 'SameAsFlow')) ||
+                    (this.yesBranchDirection === 'LeftInFlow' &&
+                        (this.noBranchDirection === 'LeftInFlow' || this.noBranchDirection === 'RightInFlow'))))) {
+                const spoint1: number = sourcenode.wrapper.bounds.right;
+                const spoint2: number = sourcenode.offsetY;
+                const tpoint1: number = targetnode.wrapper.bounds.topCenter.x;
+                const tpoint2: number = targetnode.wrapper.bounds.topCenter.y;
+                updatedPts.push({ x: spoint1, y: spoint2 });
+                updatedPts.push({ x: spoint1 + hSpacing, y: spoint2 });
+                updatedPts.push({ x: spoint1 + hSpacing, y: tpoint2 - vSpacing });
+                updatedPts.push({ x: tpoint1, y: tpoint2 - vSpacing });
+                updatedPts.push({ x: tpoint1, y: tpoint2 });
+
+                const middleRect: Rect = Rect.toBounds([updatedPts[1], updatedPts[2]]);
+                let overlappingNodes: NodeModel[] = this.diagram.nodes.filter((e: NodeModel) =>
+                    e.wrapper.bounds.intersects(middleRect)
+                );
+
+                overlappingNodes = overlappingNodes.sort((a: NodeModel, b: NodeModel) =>
+                    b.wrapper.bounds.right - a.wrapper.bounds.right
+                );
+
+                if (overlappingNodes.length > 0 && overlappingNodes[0].wrapper.bounds.intersects(middleRect)) {
+                    const bounds: Rect = overlappingNodes[0].wrapper.bounds;
+                    updatedPts[1].x = bounds.right + hSpacing;
+                    updatedPts[2].x = bounds.right + hSpacing;
+                }
+            }
+            else if ((isYesBranch && this.yesBranchDirection === 'LeftInFlow') ||
+                (isNoBranch && ((this.yesBranchDirection === 'SameAsFlow' &&
+                    (this.noBranchDirection === 'SameAsFlow' || this.noBranchDirection === 'LeftInFlow')) ||
+                        (this.yesBranchDirection === 'RightInFlow' &&
+                            (this.noBranchDirection === 'LeftInFlow' || this.noBranchDirection === 'RightInFlow'))))) {
+                const spoint1: number = sourcenode.wrapper.bounds.left;
+                const spoint2: number = sourcenode.offsetY;
+                const tpoint1: number = targetnode.wrapper.bounds.topCenter.x;
+                const tpoint2: number = targetnode.wrapper.bounds.topCenter.y;
+
+                updatedPts.push({ x: spoint1, y: spoint2 });
+                updatedPts.push({ x: spoint1 - hSpacing, y: spoint2 });
+                updatedPts.push({ x: spoint1 - hSpacing, y: tpoint2 - vSpacing });
+                updatedPts.push({ x: tpoint1, y: tpoint2 - vSpacing });
+                updatedPts.push({ x: tpoint1, y: tpoint2 });
+
+                const middleRect: Rect = Rect.toBounds([updatedPts[1], updatedPts[2]]);
+
+                let overlappingNodes: NodeModel[] = this.diagram.nodes.filter((e: NodeModel) =>
+                    e.wrapper.bounds.intersects(middleRect)
+                );
+
+                overlappingNodes = overlappingNodes.sort((a: NodeModel, b: NodeModel) =>
+                    b.wrapper.bounds.left - a.wrapper.bounds.left
+                );
+
+                if (overlappingNodes.length > 0 && overlappingNodes[0].wrapper.bounds.intersects(middleRect)) {
+                    const bounds: Rect = overlappingNodes[0].wrapper.bounds;
+                    updatedPts[1].x = bounds.left - hSpacing;
+                    updatedPts[2].x = bounds.left - hSpacing;
+                }
+            }
+            else if (
+                (sourcenode.offsetX !== targetnode.offsetX) &&
+                ((isYesBranch && this.yesBranchDirection === 'SameAsFlow') ||
+                    (isNoBranch &&
+                        this.noBranchDirection === 'SameAsFlow' &&
+                        this.yesBranchDirection !== 'SameAsFlow'))
+            ) {
+                const spoint1: number = sourcenode.offsetX;
+                const spoint2: number = sourcenode.wrapper.bounds.bottom;
+                const tpoint1: number = targetnode.wrapper.bounds.topCenter.x;
+                const tpoint2: number = targetnode.wrapper.bounds.topCenter.y;
+
+                updatedPts.push({ x: spoint1, y: spoint2 });
+                updatedPts.push({ x: spoint1, y: tpoint2 - vSpacing });
+                updatedPts.push({ x: tpoint1, y: tpoint2 - vSpacing });
+                updatedPts.push({ x: tpoint1, y: tpoint2 });
+            }
+            else {
                 updatedPts = pts;
             }
         } else {
             updatedPts = pts;
-        }
-
-        if (updatedPts.length > 2) {
-            const point: PointModel = updatedPts[1];
-            this.diagram.nodes.forEach((node: NodeModel) => {
-                if (this.contains(point, node.wrapper.bounds)) {
-                    updatedPts[1] = { x: node.wrapper.bounds.left - 5, y: node.offsetY };
-                    updatedPts.splice(2, 0, { x: node.wrapper.bounds.left - 5, y: node.wrapper.bounds.bottom + 5 });
-                }
-            });
         }
 
         return updatedPts;
@@ -608,33 +791,132 @@ export class FlowchartLayout {
         const tarBounds: Rect = targetNode.wrapper.bounds;
         const srcNode: NodeModel = sourceNode;
         const tarNode: NodeModel = targetNode;
-
+        const decisionNode: boolean = (this.vertexMapper.get(internalConnector.sourceID) as FlowChartVertex).isDecisionNode;
+        const isYesBranch: boolean = this.isYesBranchConnector(internalConnector);
+        const isNoBranch: boolean = this.isNoBranchConnector(internalConnector);
+        const isYesBranchLeft: boolean = isYesBranch && this.yesBranchDirection === 'LeftInFlow';
+        const isNoBranchRight: boolean = isNoBranch && (
+            (this.yesBranchDirection === 'RightInFlow' &&
+                (this.noBranchDirection === 'RightInFlow' || this.noBranchDirection === 'SameAsFlow')
+            ) ||
+            (this.noBranchDirection === 'LeftInFlow' &&
+                (this.yesBranchDirection === 'RightInFlow' || this.yesBranchDirection === 'SameAsFlow')
+            )
+        );
+        const hSpacing: number = this.horizontalSpacing / 2;
+        const vSpacing: number = this.verticalSpacing / 2;
+        const combinedBounds: Rect = new Rect().uniteRect(srcNode.wrapper.bounds).uniteRect(tarNode.wrapper.bounds);
+        const overlappingNodesInDiagram: NodeModel[] = this.diagram.nodes.filter((node: NodeModel) =>
+            node.id !== tarNode.id && node.id !== srcNode.id && node.wrapper.bounds.intersects(combinedBounds));
         if (this.orientation === 'TopToBottom') {
-            const target: FlowChartVertex[] = Array.from((this.vertexMapper as any).values()).filter((e: FlowChartVertex) =>
-                (e.item as Node).wrapper.bounds.containsPoint({ x: (e.item as Node).wrapper.bounds.x, y: srcNode.offsetY }) &&
-                srcNode.id !== e.item.id
-            ) as FlowChartVertex[];
+            const source: FlowChartVertex[] = Array.from((this.vertexMapper as any).values())
+                .filter((e: FlowChartVertex) =>
+                    (e.item as Node).wrapper.bounds.containsPoint({ x: (e.item as Node).wrapper.bounds.x, y: srcNode.offsetY }) &&
+                        srcNode.id !== (e.item as Node).id) as FlowChartVertex[];
 
-            const max: number = Math.max(firstPt.x, lastPt.x);
-            const isSiblingsInRight: boolean = (target.length > 0 && (target[0].item as Node).wrapper.bounds.x > srcBounds.x);
+            const target: FlowChartVertex[] = Array.from((this.vertexMapper as any).values())
+                .filter((e: FlowChartVertex) =>
+                    (e.item as Node).wrapper.bounds.containsPoint({ x: (e.item as Node).wrapper.bounds.x, y: tarNode.offsetY }) &&
+                        tarNode.id !== (e.item as Node).id) as FlowChartVertex[];
 
-            pts.push({ x: (!isSiblingsInRight && max > srcBounds.right) ? srcBounds.right : srcBounds.left, y: srcNode.offsetY });
-            pts.push({ x: isSiblingsInRight ? pts[0].x - (srcBounds.width / 2) : max, y: srcNode.offsetY });
-            pts.push({ x: isSiblingsInRight ? pts[0].x - (srcBounds.width / 2) : max, y: tarNode.offsetY });
-            pts.push({ x: (!isSiblingsInRight && max > tarBounds.right) ? tarBounds.right : tarBounds.left, y: tarNode.offsetY });
+            const max: number = Math.max(...loopPts.map((pt: PointModel) => pt.x));
+            let isSiblingsInRight: boolean = false;
+
+            if (decisionNode) {
+                if (isYesBranchLeft || isNoBranchRight) {
+                    isSiblingsInRight = true;
+                }
+            } else {
+                isSiblingsInRight = (source.length > 0 && (source[0].item as Node).wrapper.bounds.x > srcBounds.x);
+            }
+            if (target.length === 0 || (!isSiblingsInRight && target.length > 0 && target.filter((e: FlowChartVertex) =>
+                (e.item as Node).wrapper.bounds.right < tarBounds.left).length > 0)) {
+                // Determine X coordinates based on conditions
+                const initialX: number = (!isSiblingsInRight && max > srcBounds.right) ? srcBounds.right : srcBounds.left;
+                const midX: number = initialX + (isSiblingsInRight ? -hSpacing : hSpacing);
+                const targetX: number = (!isSiblingsInRight && max > tarBounds.right) ? tarBounds.right : tarBounds.left;
+                // Add points to the collection
+                pts.push({ x: initialX, y: srcNode.offsetY });
+                pts.push({ x: midX, y: srcNode.offsetY });
+                pts.push({ x: midX, y: tarNode.offsetY });
+                pts.push({ x: targetX, y: tarNode.offsetY });
+            } else {
+                const targetBottom: number = (target[0].item as Node).wrapper.bounds.bottom;
+                const verticalMiddle: number = targetBottom + vSpacing;
+                const startX: number = !isSiblingsInRight ? srcBounds.right : srcBounds.left;
+                const middleX: number = startX + (isSiblingsInRight ? -hSpacing : hSpacing);
+                const endX: number = !isSiblingsInRight && max > tarBounds.right ? tarBounds.right + hSpacing : tarBounds.left - hSpacing;
+                const finalX: number = !isSiblingsInRight && max > tarBounds.right ? tarBounds.right : tarBounds.left;
+                pts.push({ x: startX, y: srcNode.offsetY });
+                pts.push({ x: middleX, y: srcNode.offsetY });
+                pts.push({ x: middleX, y: verticalMiddle });
+                pts.push({ x: endX, y: verticalMiddle });
+                pts.push({ x: endX, y: tarNode.offsetY });
+                pts.push({ x: finalX, y: tarNode.offsetY });
+            }
+            if (overlappingNodesInDiagram.length > 0) {
+                const boundsValue: number = isSiblingsInRight
+                    ? Math.min(...overlappingNodesInDiagram.map((node: NodeModel) => node.wrapper.bounds.left))
+                    : Math.max(...overlappingNodesInDiagram.map((node: NodeModel) => node.wrapper.bounds.right));
+
+                if ((isSiblingsInRight && boundsValue < pts[1].x) || (!isSiblingsInRight && boundsValue > pts[1].x)) {
+                    const newX: number = boundsValue + (isSiblingsInRight ? -hSpacing : hSpacing);
+                    pts[1].x = newX;
+                    pts[2].x = newX;
+                }
+            }
         } else {
-            const target: FlowChartVertex[] = Array.from((this.vertexMapper as any).values()).filter((e: FlowChartVertex) =>
-                (e.item as Node).wrapper.bounds.containsPoint({ x: srcNode.offsetX, y: (e.item as Node).wrapper.bounds.y }) &&
-                srcNode.id !== e.item.id
-            ) as FlowChartVertex[];
+            const source: FlowChartVertex[] = Array.from((this.vertexMapper as any).values())
+                .filter((e: FlowChartVertex) =>
+                    (e.item as Node).wrapper.bounds.containsPoint({ y: (e.item as Node).wrapper.bounds.y, x: srcNode.offsetX }) &&
+                        srcNode.id !== (e.item as Node).id) as FlowChartVertex[];
 
-            const isSiblingsInBottom: boolean = (target.length > 0 && (target[0].item as Node).wrapper.bounds.y > srcBounds.y);
-            const max: number = Math.max(firstPt.y, lastPt.y);
+            const target: FlowChartVertex[] = Array.from((this.vertexMapper as any).values())
+                .filter((e: FlowChartVertex) =>
+                    (e.item as Node).wrapper.bounds.containsPoint({ y: (e.item as Node).wrapper.bounds.y, x: tarNode.offsetX }) &&
+                        tarNode.id !== (e.item as Node).id) as FlowChartVertex[];
 
-            pts.push({ x: srcNode.offsetX, y: (!isSiblingsInBottom && max > srcBounds.bottom) ? srcBounds.bottom : srcBounds.top });
-            pts.push({ x: srcNode.offsetX, y: isSiblingsInBottom ? pts[0].y - (srcBounds.height / 2) : max });
-            pts.push({ x: tarNode.offsetX, y: isSiblingsInBottom ? pts[0].y - (srcBounds.height / 2) : max });
-            pts.push({ x: tarNode.offsetX, y: (!isSiblingsInBottom && max > tarBounds.bottom) ? tarBounds.bottom : tarBounds.top });
+            const max: number = Math.max(...loopPts.map((pt: PointModel) => pt.y));
+            let isSiblingsInBottom: boolean = false;
+
+            if (decisionNode) {
+                if (isYesBranchLeft || isNoBranchRight) {
+                    isSiblingsInBottom = true;
+                }
+            } else {
+                isSiblingsInBottom = (source.length > 0 && (source[0].item as Node).wrapper.bounds.y > srcBounds.y);
+            }
+
+            if (target.length === 0 || (!isSiblingsInBottom && target.length > 0 && target.some((e: FlowChartVertex) =>
+                (e.item as Node).wrapper.bounds.bottom < tarBounds.top))) {
+                pts.push({ x: srcNode.offsetX, y: (!isSiblingsInBottom && max > srcBounds.bottom) ? srcBounds.bottom : srcBounds.top });
+                const midY: number = pts[0].y + (isSiblingsInBottom ? -vSpacing : vSpacing);
+                pts.push({ x: srcNode.offsetX, y: midY });
+                pts.push({ x: tarNode.offsetX, y: midY });
+                pts.push({ x: tarNode.offsetX, y: (!isSiblingsInBottom && max > tarBounds.bottom) ? tarBounds.bottom : tarBounds.top });
+            } else {
+                const targetRight: number = (target[0].item as Node).wrapper.bounds.right + hSpacing;
+                const midY: number = (!isSiblingsInBottom && max > tarBounds.bottom)
+                    ? tarBounds.bottom + vSpacing : tarBounds.top - vSpacing;
+                pts.push({ x: srcNode.offsetX, y: (!isSiblingsInBottom) ? srcBounds.bottom : srcBounds.top });
+                pts.push({ x: srcNode.offsetX, y: pts[0].y + (isSiblingsInBottom ? -vSpacing : vSpacing) });
+                pts.push({ x: targetRight, y: pts[1].y });
+                pts.push({ x: targetRight, y: midY });
+                pts.push({ x: tarNode.offsetX, y: midY });
+                pts.push({ x: tarNode.offsetX, y: ((!isSiblingsInBottom && max > tarBounds.bottom) ? tarBounds.bottom : tarBounds.top) });
+            }
+
+            if (overlappingNodesInDiagram.length > 0) {
+                const boundsValue: number = isSiblingsInBottom
+                    ? Math.min(...overlappingNodesInDiagram.map((e: NodeModel) => e.wrapper.bounds.top))
+                    : Math.max(...overlappingNodesInDiagram.map((e: NodeModel) => e.wrapper.bounds.bottom));
+
+                if ((isSiblingsInBottom && pts[1].y > boundsValue) || (!isSiblingsInBottom && pts[1].y < boundsValue)) {
+                    const adjustment: number = isSiblingsInBottom ? -vSpacing : vSpacing;
+                    pts[1].y = boundsValue + adjustment;
+                    pts[2].y = boundsValue + adjustment;
+                }
+            }
         }
 
         this.updatePoints(pts, internalConnector);

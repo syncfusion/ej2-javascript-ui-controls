@@ -91,7 +91,7 @@ export class CommandColumn {
                 if (gObj.editSettings.mode !== 'Batch') {
                     gObj.editModule.endEdit();
                 }
-                gObj.commandDelIndex = parseInt(closest(target, 'tr').getAttribute(literals.dataRowIndex), 10);
+                gObj.commandDelIndex = parseInt(closest(target, 'tr').getAttribute(literals.ariaRowIndex), 10) - 1;
                 gObj.clearSelection();
                 //for toogle issue when dbl click
                 gObj.selectRow(gObj.commandDelIndex, false);

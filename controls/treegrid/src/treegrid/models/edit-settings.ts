@@ -3,11 +3,12 @@ import { EditMode, RowPosition } from '../enum';
 import { IDialogUI } from '@syncfusion/ej2-grids';
 
 /**
- * Configures the edit behavior of the TreeGrid.
+ * Configures the edit behavior of the TreeGrid, defining how records can be added, modified, or deleted.
  */
 export class EditSettings extends ChildProperty<EditSettings> {
     /**
-     * If `allowAdding` is set to true, new records can be added to the TreeGrid.
+     * Enables the ability to add new records to the TreeGrid when set to `true`.
+     * This allows users to insert new rows into the data set.
      *
      * @default false
      */
@@ -15,7 +16,8 @@ export class EditSettings extends ChildProperty<EditSettings> {
     public allowAdding: boolean;
 
     /**
-     * If `allowEditing` is set to true, values can be updated in the existing record.
+     * Permits updating values in existing records if set to `true`.
+     * This setting allows inline modification of data cells within the TreeGrid.
      *
      * @default false
      */
@@ -23,7 +25,8 @@ export class EditSettings extends ChildProperty<EditSettings> {
     public allowEditing: boolean;
 
     /**
-     * If `allowDeleting` is set to true, existing record can be deleted from the TreeGrid.
+     * Allows removal of records from the TreeGrid when set to `true`.
+     * Users can delete rows from the data set, reflecting changes immediately.
      *
      * @default false
      */
@@ -31,36 +34,33 @@ export class EditSettings extends ChildProperty<EditSettings> {
     public allowDeleting: boolean;
 
     /**
-     * Defines the mode to edit. The available editing modes are:
-     * ```props
-     * * Cell :- Defines the editing mode as Cell.
-     * * Row :- Defines the editing mode as Row.
-     * * Dialog :- Defines the editing mode as Dialog.
-     * * Batch :- Defines the editing mode as Batch.
-     * ```
+     * Specifies the editing mode for the TreeGrid. Available modes include:
+     * * `Cell`: Enables individual cell editing.
+     * * `Row`: Allows entire row editing at once.
+     * * `Dialog`: Opens a dialog for row editing.
+     * * `Batch`: Supports batch editing of cells across multiple rows. Changes are not immediately saved but can be committed all at once, enhancing efficiency in bulk data edits.
      *
      * @default Cell
      * @isEnumeration true
      */
     @Property('Cell')
     public mode: EditMode;
+
     /**
-     * Defines the row position for new records. The available row positions are:
-     * ```props
-     * * Top :- Defines the row position as Top.
-     * * Bottom :- Defines the row position as Bottom.
-     * * Above :- Defines the row position as Above.
-     * * Below :- Defines the row position as Below.
-     * * Child :- Defines the row position as Child.
-     * ```
-     * {% codeBlock src='treegrid/newRowPosition/index.md' %}{% endcodeBlock %}
+     * Determines the position where new rows are added within the TreeGrid. Options are:
+     * * `Top`: Adds new rows at the top of the grid.
+     * * `Bottom`: Adds new rows at the bottom of the grid.
+     * * `Above`: Inserts a new row above the selected row.
+     * * `Below`: Adds a new row below the selected row.
+     * * `Child`: Inserts a new row as a child of the currently selected row.
      *
      * @default Top
      */
     @Property('Top')
     public newRowPosition: RowPosition;
+
     /**
-     * If `allowEditOnDblClick` is set to false, TreeGrid will not allow editing of a record on double click.
+     * If set to `false`, prevents editing on a row double-click, allowing edits through other triggers only.
      *
      * @default true
      */
@@ -68,7 +68,8 @@ export class EditSettings extends ChildProperty<EditSettings> {
     public allowEditOnDblClick: boolean;
 
     /**
-     * if `showConfirmDialog` is set to false, confirm dialog does not show when batch changes are saved or discarded.
+     * Controls the display of a confirmation dialog when batch changes are either applied or discarded.
+     * Set to `false` to suppress the display of this confirmation prompt.
      *
      * @default true
      */
@@ -76,7 +77,7 @@ export class EditSettings extends ChildProperty<EditSettings> {
     public showConfirmDialog: boolean;
 
     /**
-     * If `showDeleteConfirmDialog` is set to true, confirm dialog will show delete action. You can also cancel delete command.
+     * If set to `true`, a confirmation dialog appears before record deletion, allowing users to confirm or cancel the operation.
      *
      * @default false
      */
@@ -84,7 +85,7 @@ export class EditSettings extends ChildProperty<EditSettings> {
     public showDeleteConfirmDialog: boolean;
 
     /**
-     * Defines the custom edit elements for the dialog template.
+     * Provides a template for custom editing elements within the dialog, supporting both HTML strings and functions.
      *
      * @default ''
      * @aspType string
@@ -93,7 +94,7 @@ export class EditSettings extends ChildProperty<EditSettings> {
     public template: string | Function;
 
     /**
-     * Defines the dialog params to edit.
+     * Specifies the parameters for customizing the edit dialog, allowing the configuration of elements and behavior.
      *
      * @default {}
      */
@@ -101,10 +102,10 @@ export class EditSettings extends ChildProperty<EditSettings> {
     public dialog: IDialogUI;
 
     /**
-     * If `allowNextRowEdit` is set as true, editing is continued to next row with keyboard navigation.
+     * Enables continued editing in subsequent rows when navigating with keyboard shortcuts if set to `true`.
      *
      * @default false
      */
     @Property(false)
-    public allowNextRowEdit : boolean;
+    public allowNextRowEdit: boolean;
 }

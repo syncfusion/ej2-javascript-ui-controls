@@ -2,7 +2,7 @@ import { FormulasErrorsStrings, CommonErrors, IBasicFormula, getSkeletonVal } fr
 import { Calculate, getAlphalabel, CalcSheetFamilyItem } from '../base/index';
 import { isNullOrUndefined, getValue, Internationalization } from '@syncfusion/ej2-base';
 import { DataUtil } from '@syncfusion/ej2-data';
-import { DateFormatCheckArgs, checkDateFormat, dateToInt, isNumber, isCellReference, isValidCellReference } from '../../workbook/index';
+import { DateFormatCheckArgs, checkDateFormat, dateToInt, isNumber, isCellReference, isValidCellReference, SheetModel, getCellIndexes, isHiddenRow, isHiddenCol } from '../../workbook/index';
 
 /**
  * Represents the basic formulas module.
@@ -229,10 +229,17 @@ export class BasicFormulas {
      * @returns {string | number} - Comput sum value
      */
     public ComputeSUM(...args: string[]): string | number {
-        let isSubtotalFormula: boolean = false;
-        if (args.length && args[args.length - 1] === 'isSubtotal') {
-            isSubtotalFormula = true;
-            args.pop();
+        let isSubtotalFormula: boolean = false; let isAggregateComputation: boolean; let sheet: SheetModel;
+        if (args.length) {
+            const lastArgument: string = args[args.length - 1];
+            if (lastArgument === 'isSubtotal') {
+                isSubtotalFormula = true;
+                args.pop();
+            } else if (lastArgument === 'isAggregate') {
+                sheet = (this.parent.parentObject as { getActiveSheet: Function }).getActiveSheet();
+                isAggregateComputation = true;
+                args.pop();
+            }
         }
         if (isNullOrUndefined(args) || (args.length === 1 && args[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.InvalidArguments];
@@ -240,7 +247,7 @@ export class BasicFormulas {
         let sum: number = 0;
         let val: string;
         let orgValue: number | string;
-        let maxDecimalLength: number = 0;
+        let maxDecimalLength: number = 0; let indexes: number[];
         if (!isNullOrUndefined(args)) {
             const argArr: string[] = args;
             const setMaxDecimalLength: Function = (val: string): void => {
@@ -253,6 +260,12 @@ export class BasicFormulas {
                 if (argValue.indexOf(':') > -1 && this.parent.isCellReference(argValue)) {
                     const cellCollection: string[] | string = this.parent.getCellCollection(argValue.split(this.parent.tic).join(''));
                     for (let j: number = 0; j < cellCollection.length; j++) {
+                        if (isAggregateComputation) {
+                            indexes = getCellIndexes(cellCollection[j as number]);
+                            if (isHiddenRow(sheet, indexes[0]) || isHiddenCol(sheet, indexes[1])) {
+                                continue;
+                            }
+                        }
                         val = !isSubtotalFormula ? this.parent.getValueFromArg(cellCollection[j as number]) :
                             this.parent.getValueFromArg(cellCollection[j as number], null, null, true);
                         if (isSubtotalFormula && val.includes('SUBTOTAL(')) {
@@ -3215,10 +3228,16 @@ export class BasicFormulas {
      * @returns {string} - Compute the AVERAGE value.
      */
     public ComputeAVERAGE(...args: string[]): string {
-        let isSubtotalFormula: boolean = false;
-        if (args.length && args[args.length - 1] === 'isSubtotal') {
-            isSubtotalFormula = true;
-            args.pop();
+        let isSubtotalFormula: boolean = false; let isAggregateComputation: boolean;
+        if (args.length) {
+            const lastArgument: string = args[args.length - 1];
+            if (lastArgument === 'isSubtotal') {
+                isSubtotalFormula = true;
+                args.pop();
+            } else if (lastArgument === 'isAggregate') {
+                isAggregateComputation = true;
+                args.pop();
+            }
         }
         if (isNullOrUndefined(args) || (args.length === 1 && args[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.InvalidArguments];
@@ -3231,7 +3250,7 @@ export class BasicFormulas {
                 }
             }
         }
-        return this.parent.calculateAvg(argArr, isSubtotalFormula);
+        return this.parent.calculateAvg(argArr, isSubtotalFormula, isAggregateComputation);
     }
 
     /**
@@ -3589,10 +3608,17 @@ export class BasicFormulas {
      * @returns {number | string} - Compute the count.
      */
     public ComputeCOUNTA(...args: string[]): number | string {
-        let isSubtotalFormula: boolean = false;
-        if (args.length && args[args.length - 1] === 'isSubtotal') {
-            isSubtotalFormula = true;
-            args.pop();
+        let isSubtotalFormula: boolean = false; let isAggregateComputation: boolean; let sheet: SheetModel;
+        if (args.length) {
+            const lastArgument: string = args[args.length - 1];
+            if (lastArgument === 'isSubtotal') {
+                isSubtotalFormula = true;
+                args.pop();
+            } else if (lastArgument === 'isAggregate') {
+                sheet = (this.parent.parentObject as { getActiveSheet: Function }).getActiveSheet();
+                isAggregateComputation = true;
+                args.pop();
+            }
         }
         if (isNullOrUndefined(args) || (args.length === 1 && args[0] === '')) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.WrongNumberArguments];
@@ -3600,12 +3626,18 @@ export class BasicFormulas {
         const argArr: string[] = args;
         let cellColl: string[] | string;
         let result: number = 0;
-        let cellValue: string; let value: string;
+        let cellValue: string; let value: string; let indexes: number[];
         for (let i: number = 0; i < argArr.length; i++) {
             if (this.parent.isCellReference(argArr[i as number])) {
                 if (argArr[i as number].indexOf(':') > -1) {
                     cellColl = this.parent.getCellCollection(argArr[i as number].split(this.parent.tic).join(''));
                     for (let j: number = 0; j < cellColl.length; j++) {
+                        if (isAggregateComputation) {
+                            indexes = getCellIndexes(cellColl[j as number]);
+                            if (isHiddenRow(sheet, indexes[0]) || isHiddenCol(sheet, indexes[1])) {
+                                continue;
+                            }
+                        }
                         cellValue = !isSubtotalFormula ? this.parent.getValueFromArg(cellColl[j as number]) :
                             this.parent.getValueFromArg(cellColl[j as number], null, null, true);
                         if (isSubtotalFormula && cellValue.includes('SUBTOTAL(')) {
@@ -5290,8 +5322,5 @@ export class BasicFormulas {
             value = (this.parent.parentObject as any).getActiveSheet().rows[index.startIdx].cells[index.endIdx].format;
         }
         return value;
-    }
-    protected getModuleName(): string {
-        return 'basic-formulas';
     }
 }

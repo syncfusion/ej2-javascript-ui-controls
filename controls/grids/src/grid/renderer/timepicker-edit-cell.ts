@@ -2,7 +2,7 @@ import { extend } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { IEditCell } from '../base/interface';
 import { TimePicker } from '@syncfusion/ej2-calendars';
-import { isEditable, getObject, parentsUntil, isCellHaveWidth } from '../base/util';
+import { isEditable, getObject,  parentsUntil, isCellHaveWidth } from '../base/util';
 import { EditCellBase } from './edit-cell-base';
 
 /**

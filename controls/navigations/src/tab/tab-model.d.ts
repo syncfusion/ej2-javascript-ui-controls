@@ -255,7 +255,7 @@ export interface TabModel extends ComponentModel{
      * Specifies the modes for Tab content.
      * The possible modes are:
      * * `Demand` - The content of the selected tab alone is loaded initially. The content of the tabs which were loaded once will be maintained in the DOM.
-     * * `Dynamic` - The content of all the tabs are rendered on the initial load and maintained in the DOM.
+     * * `Dynamic` - Only the content of the selected tab is loaded and available in the DOM, and it will be replaced with the corresponding content if the tab is selected dynamically.
      * * `Init` - The content of all the tabs are rendered on the initial load and maintained in the DOM.
      *
      * @default 'Demand'

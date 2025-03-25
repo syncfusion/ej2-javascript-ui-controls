@@ -38,6 +38,7 @@ import { NodeCutter, DOMNode, IFormatPainterEditor } from '../../editor-manager'
 import { EnterKeyAction } from '../actions/enter-key';
 import { EmojiPicker } from '../actions/emoji-picker';
 import { SlashMenuSettingsModel } from '../models/slash-menu-settings-model';
+import { CustomUserAgentData } from '../../common/user-agent';
 /**
  * Specifies Rich Text Editor interfaces.
  *
@@ -45,6 +46,13 @@ import { SlashMenuSettingsModel } from '../models/slash-menu-settings-model';
  * @deprecated
  */
 export interface IRichTextEditor extends Component<HTMLElement> {
+    /**
+     * Provides data about the user agent, platform and then whether its a mobile device.
+     *
+     * @hidden
+     *
+     */
+    userAgentData: CustomUserAgentData;
     /**
      * Specifies the root container of the Rich Text Editor component.
      *
@@ -286,8 +294,9 @@ export interface IRenderer {
     renderToolbar?(args: IToolbarOptions): void
     renderPopup?(args: BaseQuickToolbar): void
     renderDropDownButton?(args: DropDownItemModel): DropDownButton
-    renderColorPicker?(args: IColorPickerModel, item?: string): ColorPicker
-    renderColorPickerDropDown?(args?: IColorPickerModel, item?: string, colorPicker?: ColorPicker, defaultColor?: string): DropDownButton
+    renderColorPicker?(args: IColorPickerModel, item?: string, toobarType?: string): ColorPicker
+    renderColorPickerDropDown?(args?: IColorPickerModel, item?: string, colorPicker?: ColorPicker, defaultColor?: string,
+        toobarType?: string): DropDownButton
     renderListDropDown?(args: IDropDownModel): DropDownButton
 }
 
@@ -725,6 +734,7 @@ export interface IDropDownModel {
     itemName: string
     cssClass: string
     element: HTMLElement
+    activeElement?: HTMLElement
 }
 
 /**

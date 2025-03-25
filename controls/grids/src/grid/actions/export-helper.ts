@@ -252,9 +252,8 @@ export class ExportHelper {
             parentRowData: row.data
         };
         const exportId: string = getUid('child-grid');
-        const element: HTMLElement = createElement('div', {
-            id: exportId, styles: 'display: none'
-        });
+        const element: HTMLElement = createElement('div', { id: exportId });
+        element.style.display = 'none';
         document.body.appendChild(element);
         childGridObj.id = exportId;
         gridPool[`${exportId}`] = false;

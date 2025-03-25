@@ -817,7 +817,7 @@ export class LargeIconsView {
                 && (ctrlKey || target.classList.contains(CLS.CHECK))) {
                 action = 'unselect';
             }
-            if (e.ctrlKey && e.shiftKey && !isMacRightClick) {
+            if (ctrlKey && e.shiftKey && !isMacRightClick) {
                 this.isSelectAllCalled = true;
             }
             const fileSelectionArgs: FileSelectionEventArgs = this.triggerSelection(action, item);
@@ -828,7 +828,7 @@ export class LargeIconsView {
                     this.clearSelect();
                 }
                 if (this.parent.allowMultiSelection && e.shiftKey && !isMacRightClick) {
-                    if (!(e && e.ctrlKey)) { this.clearSelect(); }
+                    if (!(e && ctrlKey)) { this.clearSelect(); }
                     if (!this.startItem) {
                         this.startItem = item;
                     }

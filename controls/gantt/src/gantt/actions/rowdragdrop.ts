@@ -81,26 +81,35 @@ export class RowDD {
         this.parent.element.style.position = 'relative'; // for positioning the drag element properly
     }
     private addErrorElem(): void {
-        const dragelem: Element = document.getElementsByClassName('e-ganttdrag')[0];
-        const errorelem: number = dragelem.querySelectorAll('.e-errorelem').length;
-        if (!errorelem) {
-            const ele: Element = document.createElement('div');
-            classList(ele, ['e-errorcontainer'], []);
-            classList(ele, ['e-icons', 'e-errorelem'], []);
-            const errorVal: Element = dragelem.querySelector('.errorValue');
-            let content: string = dragelem.querySelector('.e-rowcell').innerHTML;
-            if (errorVal) {
-                content = errorVal.innerHTML;
-                errorVal.parentNode.removeChild(errorVal);
-            }
-            dragelem.querySelector('.e-rowcell').innerHTML = '';
-            const spanContent: HTMLElement = document.createElement('span');
-            spanContent.className = 'errorValue';
-            spanContent.style.paddingLeft = '16px';
-            spanContent.innerHTML = content;
-            dragelem.querySelector('.e-rowcell').appendChild(ele);
-            dragelem.querySelector('.e-rowcell').appendChild(spanContent);
+        const dragElem: Element = document.querySelector('.e-ganttdrag');
+        if (!dragElem) {
+            return;
         }
+        const errorElemExists: boolean = !!dragElem.querySelector('.e-errorelem');
+        if (errorElemExists) {
+            return;
+        }
+        const errorContainer: Element = document.createElement('div');
+        errorContainer.classList.add('e-errorcontainer', 'e-icons', 'e-errorelem');
+        const rowCell: Element = dragElem.querySelector('.e-rowcell');
+        if (!rowCell) {
+            return;
+        }
+        let content: NodeList = rowCell.childNodes;
+        const errorVal: Element = rowCell.querySelector('.errorValue');
+        if (errorVal) {
+            content = errorVal.childNodes;
+            errorVal.remove(); // Use `remove()` for cleaner DOM manipulation.
+        }
+        rowCell.innerHTML = ''; // Sanitization: Uses innerHTML carefully, ensuring safe content is inserted.
+        const spanContent: HTMLElement = document.createElement('span');
+        spanContent.className = 'errorValue';
+        spanContent.style.paddingLeft = '16px';
+        content.forEach((node: Node) => {
+            spanContent.appendChild(node.cloneNode(true)); // Clone cautiously to maintain structure integrity
+        });
+        rowCell.appendChild(errorContainer);
+        rowCell.appendChild(spanContent);
     }
     private removeErrorElem(): void {
         const errorelem: Element = document.querySelector('.e-errorelem');
@@ -162,7 +171,7 @@ export class RowDD {
         // }
         const gridRow: Element = closest(args.target, '.e-row');
         this.parent['oldRecords'] = extend([], [], args.data, true) as IGanttData[];
-        const dropIndex: number = gridRow ? parseInt(gridRow.getAttribute('data-rowindex'), 10) : args.dropIndex;
+        const dropIndex: number = gridRow ? parseInt(gridRow.getAttribute('aria-rowindex'), 10) - 1 : args.dropIndex;
         args.dropIndex = dropIndex;
         args.dropRecord = this.parent.updatedRecords[args.dropIndex];
         this.parent.trigger('rowDrop', args);

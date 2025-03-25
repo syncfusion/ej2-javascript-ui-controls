@@ -1083,6 +1083,13 @@ export interface SeriesModel extends SeriesBaseModel{
     enableTooltip?: boolean;
 
     /**
+     * Enables or disables the display of tooltips for the nearest data point to the cursor for series.
+     *
+     * @default true
+     */
+    showNearestTooltip?: boolean;
+
+    /**
      * Use this property to define a custom format for how tooltips are displayed.
      * ```html
      * <div id='Chart'></div>
@@ -1220,6 +1227,18 @@ export interface SeriesModel extends SeriesBaseModel{
      * @default 'Normal'
      */
     boxPlotMode?: BoxPlotMode;
+
+    /**
+     * Specifies whether to display outliers in the Box and Whisker chart.
+     *
+     * If set to `true`, outliers will be displayed as individual points beyond the whiskers, representing data points that significantly differ from the rest of the dataset.
+     * If set to `false`, outliers will be hidden, and only the box, median, and whiskers will be rendered.
+     *
+     * Outliers are typically used to identify extreme values in statistical data representation.
+     *
+     * @default true
+     */
+    showOutliers?: boolean;
 
     /**
      * The `columnWidth` property can be used to customize the width of the columns in a column series.

@@ -2,7 +2,7 @@ import { ScrollBar } from './scrollbar';
 import { Chart } from '../../chart/chart';
 import { RectOption, CircleOption } from '../utils/helper';
 import { PathOption, Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
-import { IScrollbarThemeStyle } from '../../chart/index';
+import { IScrollbarThemeStyle, calculateScrollbarOffset } from '../../chart/index';
 import { ScrollbarSettingsModel } from '../../chart/index';
 
 /**
@@ -33,15 +33,21 @@ export function createScrollSvg(scrollbar: ScrollBar, renderer: SvgRenderer): vo
             break;
         }
     }
+    let topOffset: number = (scrollbar.axis.isAxisOpposedPosition && isHorizontalAxis ? -16 :
+        (enablePadding ? markerHeight : 0)) + rect.y + Math.max(0.5, scrollbar.axis.lineStyle.width / 2);
+    let leftOffset: number = (((scrollbar.axis.isAxisOpposedPosition && !isHorizontalAxis ? 16 : 0) + rect.x) -
+        (scrollbar.isVertical ? scrollbar.height : 0));
+    if (!isHorizontalAxis && (scrollbar.axis.scrollbarSettings.position === 'Left' || scrollbar.axis.scrollbarSettings.position === 'Right')) {
+        leftOffset = calculateScrollbarOffset(scrollbar, isHorizontalAxis);
+    }
+    else if (isHorizontalAxis && (scrollbar.axis.scrollbarSettings.position === 'Top' || scrollbar.axis.scrollbarSettings.position === 'Bottom')) {
+        topOffset = calculateScrollbarOffset(scrollbar, isHorizontalAxis);
+    }
     scrollbar.svgObject = renderer.createSvg({
         id: scrollbar.component.element.id + '_' + 'scrollBar_svg' + scrollbar.axis.name,
         width: scrollbar.isVertical ? scrollbar.height : scrollbar.width,
         height: scrollbar.isVertical ? scrollbar.width : scrollbar.height,
-        style: 'position: absolute;top: ' + ((scrollbar.axis.isAxisOpposedPosition && isHorizontalAxis ? -16 :
-            (enablePadding ? markerHeight : 0)) + rect.y + Math.max(0.5, scrollbar.axis.lineStyle.width / 2)) + 'px;left: ' +
-            (((scrollbar.axis.isAxisOpposedPosition && !isHorizontalAxis ? 16 : 0) + rect.x) -
-             (scrollbar.isVertical ? scrollbar.height : 0))
-            + 'px;cursor:auto;'
+        style: 'position: absolute;top: ' + topOffset + 'px;left: ' + leftOffset + 'px;cursor:auto;'
     });
     scrollbar.elements.push(scrollbar.svgObject);
 }

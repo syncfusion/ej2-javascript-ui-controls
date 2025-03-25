@@ -1,22 +1,29 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { Workbook, SheetModel, getSheetIndex, getSheetNameFromAddress } from '../base/index';
+import { Workbook, SheetModel, getSheetIndex, getSheetNameFromAddress, getSheet } from '../base/index';
 
 /**
  * To get range indexes.
  *
  * @param {string} range - Specifies the range.
+ * @param {Workbook} [context] - Optional Workbook context to derive sheet information, used when the sheet name or index is provided.
+ * @param {number} [sheetIndex] - Optional sheet index to resolve sheet-specific range when context is provided.
  * @returns {number[]} - To get range indexes.
  */
-export function getRangeIndexes(range: string): number[] {
+export function getRangeIndexes(range: string, context?: Workbook, sheetIndex?: number): number[] {
     let cellindexes: number[];
     const indexes: number[] = [];
     if (range) {
+        let sheet: SheetModel;
+        if (context && !isNullOrUndefined(sheetIndex)) {
+            sheet = getSheet(context, sheetIndex);
+        }
         range = range.lastIndexOf('!') > -1 ? range.substring(range.lastIndexOf('!') + 1) : range;
         range = range.indexOf(':') === -1 ? range + ':' + range : range;
         const containsAlphabetsAndDigits: RegExp = new RegExp(/^(?=.*[a-zA-Z])(?=.*\d)/g);
         if (!containsAlphabetsAndDigits.test(range)) {
             const refArr: string[] = range.split(':');
-            range = isNullOrUndefined(range.match(/[0-9]/)) ? (refArr[0] + '1:' + refArr[1] + '1') : ('A' + refArr[0] + ':A' + refArr[1]);
+            range = isNullOrUndefined(range.match(/[0-9]/)) ? (refArr[0] + '1:' + refArr[1] + (sheet ? (sheet.rowCount - 1) : '1')) :
+                ('A' + refArr[0] + ':' + (sheet ? getColumnHeaderText(sheet.colCount) : 'A') + refArr[1]);
         }
         range.split(':').forEach((address: string) => {
             cellindexes = getCellIndexes(address);
@@ -94,10 +101,12 @@ export function getColumnHeaderText(colIndex: number): string {
 /**
  * @hidden
  * @param {SheetModel} address - Specifies the address.
+ * @param {Workbook} [context] - Optional Workbook context to derive sheet information, used when the sheet name or index is provided.
+ * @param {number} [sheetIndex] - Optional sheet index to resolve sheet-specific range when context is provided.
  * @returns {number[]} - Get Indexes From Address
  */
-export function getIndexesFromAddress(address: string): number[] {
-    return getRangeIndexes(getRangeFromAddress(address));
+export function getIndexesFromAddress(address: string, context?: Workbook, sheetIndex?: number): number[] {
+    return getRangeIndexes(getRangeFromAddress(address), context, sheetIndex);
 }
 
 /**
@@ -128,7 +137,8 @@ export function getAddressFromSelectedRange(sheet: SheetModel): string {
  * @hidden
  */
 export function getAddressInfo(context: Workbook, address: string): { sheetIndex: number, indices: number[] } {
-    return { sheetIndex: getSheetIndexFromAddress(context, address), indices: getIndexesFromAddress(address) };
+    const sheetIndex: number = getSheetIndexFromAddress(context, address);
+    return { sheetIndex: sheetIndex, indices: getIndexesFromAddress(address, context, sheetIndex) };
 }
 
 /**

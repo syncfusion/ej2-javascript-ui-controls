@@ -76,6 +76,10 @@ export class DialogRenderer {
         }
     }
     private open(args: Object): void {
+        const isFileMangerDialog: boolean = !isNOU(((args as any).container as HTMLElement).querySelector('.e-rte-file-manager-dialog'));
+        if (isFileMangerDialog) {
+            ((args as any).preventFocus as boolean) = true;
+        }
         this.parent.trigger(events.dialogOpen, args);
     }
     private documentClickClosedBy(args: { closedBy: string; }): void {

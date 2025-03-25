@@ -924,9 +924,10 @@ export class ExcelExport {
                         }
                         eCell.style = this.getCaptionThemeStyle(this.theme); //{ name: gObj.element.id + 'column' + index };
                         this.aggregateStyle(cell.column, eCell.style, cell.column.field);
-                        const gridCellStyle: {textAlign?: ExcelHAlign} = cell.attributes.style;
-                        if (gridCellStyle.textAlign) {
-                            eCell.style.hAlign = gridCellStyle.textAlign.toLowerCase() as ExcelHAlign;
+                        const gridCellStyle: string = cell.attributes.class != null ? cell.attributes.class.toString() : '';
+                        if (gridCellStyle) {
+                            eCell.style.hAlign = gridCellStyle.indexOf('e-rightalign') > -1 ? 'right' :
+                                gridCellStyle.indexOf('e-centeralign') > -1 ? 'center' : 'left';
                         }
                         const args: AggregateQueryCellInfoEventArgs = {
                             row: row,

@@ -1,7 +1,7 @@
 /**
  * CR-Issues RTE spec
  */
-import { createElement, Browser } from '@syncfusion/ej2-base';
+import { createElement, Browser, extend } from '@syncfusion/ej2-base';
 import { RichTextEditor } from '../../src/rich-text-editor/base/rich-text-editor';
 import { renderRTE, destroy, dispatchEvent as dispatchEve, setCursorPoint } from './../rich-text-editor/render.spec';
 import { NodeSelection } from '../../src/selection/selection';
@@ -362,40 +362,39 @@ describe('RTE CR issues ', () => {
 
     describe('Bug 934949: Cmd-Delete (macOS) does not trigger change function in Text Editor', () => {
         let rteObj: RichTextEditor;
-        let changeSpy: jasmine.Spy = jasmine.createSpy("change");
+        let isTriggered: boolean = false;
         let defaultUA: string = navigator.userAgent;
         let safari: string = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15";
-        beforeEach((done: Function) => {
-            Object.defineProperty(navigator, 'userAgent', {
-                value: safari,
-                configurable: true
-            });
+        beforeAll(() => {
+            Browser.userAgent = safari;
             rteObj = renderRTE({
                 value: `<p style="margin-left: 20px;" class="rte">RichTextEditor</p>`,
                 autoSaveOnIdle: true,
                 saveInterval: 0,
-                change: changeSpy
+                change: ()=>{
+                    isTriggered = true;
+                }
             });
-            rteObj.dataBind();
-            done();
         });
         it(' change event trigger while cmd+backspace in mac ', (done) => {
             rteObj.focusIn();
             let selectNode: Element = rteObj.element.querySelector('.rte');
-            setCursorPoint(selectNode as Element, 0);
-            const backSpaceKeyDown: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
-            const backSpaceKeyUp: KeyboardEvent = new KeyboardEvent('keyup', BACKSPACE_EVENT_INIT);
+            selectNode.innerHTML += 'Hi there';
+            const CMD_BACKSPACE_EVENT_INIT: any = extend(BACKSPACE_EVENT_INIT, {
+                metaKey: true
+            });
+            const backSpaceKeyDown: KeyboardEvent = new KeyboardEvent('keydown', CMD_BACKSPACE_EVENT_INIT);
+            const backSpaceKeyUp: KeyboardEvent = new KeyboardEvent('keyup', CMD_BACKSPACE_EVENT_INIT);
             rteObj.inputElement.dispatchEvent(backSpaceKeyDown);
             rteObj.inputElement.dispatchEvent(backSpaceKeyUp);
             setTimeout(() => {
-                expect(changeSpy).toHaveBeenCalled();
+                expect(isTriggered).toBe(true);
                 done();
             }, 400);
         });
-        afterEach((done: DoneFn) => {
-            Browser.userAgent = defaultUA;
+        afterAll(() => {
             destroy(rteObj);
-            done();
+            Browser.userAgent = defaultUA;
         });
     });
 
@@ -1439,7 +1438,7 @@ describe('RTE CR issues ', () => {
         beforeAll(() => {
             rteObj = renderRTE({
                 height: '200px',
-                value: `<p><img alt=\"Logo\" src=\"https://ej2.syncfusion.com/angular/demos/assets/rich-text-editor/images/RTEImage-Feather.png\" style=\"width: 300px;\"> </p>`
+                value:  `<p><img alt=\"Logo\" src=\"https://ej2.syncfusion.com/angular/demos/assets/rich-text-editor/images/RTEImage-Feather.png\" style=\"width: 300px;\"> </p>`
             });
         });
         it('Image get duplicated after the shift + enter is pressed twice', function (done: DoneFn): void {
@@ -1500,7 +1499,7 @@ describe('RTE CR issues ', () => {
                 document, nodetext, nodetext, 0, 0);
             (<any>rteObj).keyDown(keyboardEventArgs);
             setTimeout(() => {
-                expect(rteObj.inputElement.innerHTML).toBe('<p><span class="e-audio-wrap" style="width:300px; margin:0 auto;" contenteditable="false"><span class="e-clickelem"><audio controls="" class="e-rte-audio e-audio-inline"><source src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Audio.wav" type="audio/mp3"></audio></span></span><br></p>');
+                expect(rteObj.inputElement.innerHTML).toBe('<p><span class="e-audio-wrap" contenteditable="false" style="width: 300px; margin: 0px auto;"><span class="e-clickelem"><audio controls="" class="e-rte-audio e-audio-inline"><source src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Audio.wav" type="audio/mp3"></audio></span></span><br></p>');
                 done();
             }, 100);
         });
@@ -1868,6 +1867,23 @@ describe('RTE CR issues ', () => {
             done();
         });
     });
+
+    describe('923869 - The empty textarea element is not inserted using the ExecuteCommandAsync method', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: `<p id="rte">RichTextEditor</p>`
+            });
+        });
+        it('The empty textarea element is not inserted using the ExecuteCommandAsync method', () => {
+            rteObj.executeCommand('insertHTML',`<textarea id="text" name="text" miplato_id="text"></textarea>`);
+            expect(rteObj.inputElement.innerHTML).toBe('<p id="rte"><textarea id="text" name="text" miplato_id="text"></textarea>RichTextEditor</p>');
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
     describe('939792 - Image Caption is Editable in Rich Text Editor After Posting', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -1881,6 +1897,45 @@ describe('RTE CR issues ', () => {
         });
         afterAll(() => {
             destroy(rteObj);
+        });
+    });
+    describe('945968 - Listed table got removed while inserting new table into the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('should not remove existing tables when inserting a new table below a numbered list', (done) => {
+            rteObj.value = `<ol>
+                                <li>Point 1</li>
+                                <li>
+                                    <table>
+                                        <tr><td>Cell 1</td><td>Cell 2</td></tr>
+                                    </table>
+                                    <br>
+                                </li>
+                            </ol>`;
+            rteObj.dataBind();
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            const node = rteObj.contentModule.getDocument().querySelector('table') as HTMLElement;
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(rteObj.contentModule.getDocument(), node.parentNode as HTMLElement, 1);
+            const createTableButton: HTMLElement = rteEle.querySelector('[aria-label="Create Table (Ctrl+Shift+E)"]');
+            createTableButton.click();
+            var tableDialogPrimaryButton: HTMLElement = document.body.querySelector('#' + rteObj.element.id + '_insertTable');
+            tableDialogPrimaryButton.click();
+            var insertButton: HTMLElement = document.querySelector('button.e-rte-elements.e-control.e-btn.e-lib.e-flat.e-insert-table.e-primary');
+            insertButton.click();
+            const tables = rteObj.contentModule.getEditPanel().querySelectorAll('table');
+            expect(tables.length).toBe(2);
+            done();
         });
     });
     describe('942812 - RichTextEditor Image Interaction', () => {
@@ -1947,19 +2002,20 @@ describe('RTE CR issues ', () => {
         });
     });
 
-    describe('923869 - The empty textarea element is not inserted using the ExecuteCommandAsync method', () => {
+    describe('937864 - Inline Code Tooltip Missing Keyboard Shortcut', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
             rteObj = renderRTE({
-                value: `<p id="rte">RichTextEditor</p>`
+                toolbarSettings: {
+                    items: ['InlineCode']
+                },
             });
-        });
-        it('The empty textarea element is not inserted using the ExecuteCommandAsync method', () => {
-            rteObj.executeCommand('insertHTML',`<textarea id="text" name="text" miplato_id="text"></textarea>`);
-            expect(rteObj.inputElement.innerHTML).toBe('<p id="rte"><textarea id="text" name="text" miplato_id="text"></textarea>RichTextEditor</p>');
         });
         afterAll(() => {
             destroy(rteObj);
+        });
+        it('check the tooltip for custom toolbar item', () => {
+            expect(document.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Inline Code (Ctrl+`)");
         });
     });
 });

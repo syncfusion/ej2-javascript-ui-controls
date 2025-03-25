@@ -666,3 +666,45 @@ describe('867916 - Filtering not working on navigating to another page when all 
         destroy(gridObj);
     });
 });
+
+describe('Bug: 924053 TreeGrid Toolbar Actions - Collapse All and Delete', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        height: 350,
+        allowPaging: true,
+        pageSettings: { pageSize: 10 },
+        treeColumnIndex: 1,
+        enableCollapseAll: true,
+        editSettings: { allowAdding: true, allowDeleting: true, allowEditing: true, mode: 'Cell' },
+        toolbar: ['Add', 'Delete', 'Update', 'ExpandAll', 'CollapseAll'],
+        columns: [
+          { field: 'taskID', headerText: 'Task ID', width: 80, isPrimaryKey: true, textAlign: 'Right', editType: 'numericedit' },
+          { field: 'taskName', headerText: 'Task Name', width: 200 },
+          { field: 'startDate', headerText: 'Start Date', format: 'yMd', width: 120, editType: 'datepickeredit', textAlign: 'Right' },
+          { field: 'endDate', headerText: 'End Date', format: 'yMd', width: 110, editType: 'datepickeredit', textAlign: 'Right' },
+          { field: 'duration', headerText: 'Duration', width: 100, textAlign: 'Right', editType: 'numericedit', edit: { params: { format: 'n' } } },
+          { field: 'priority', headerText: 'Priority', width: 120 }
+        ]
+      }, done
+    );
+  });
+  it('should collapse all records, delete the 3rd record, and record count be 2', (done: Function) => {
+    actionComplete = (args?: Object): void => {
+      expect(gridObj.grid.pagerModule.pagerObj.totalRecordsCount).toBe(2);
+      done();
+    };
+    gridObj.grid.actionComplete = actionComplete;
+    gridObj.selectRow(2);
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_delete' } });
+    done();
+  });
+  afterAll(() => {
+    destroy(gridObj);
+    gridObj = null;
+  });
+});

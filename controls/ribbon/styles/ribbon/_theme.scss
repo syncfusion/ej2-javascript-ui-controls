@@ -37,10 +37,18 @@
         .e-ribbon-skeleton {
           &.e-skeleton.e-skeleton-text {
             background-color: $ribbon-skeleton-bg-color;
+
+            @if ($skin-name == 'highcontrast-light' or $skin-name == 'highcontrast') {
+              border-color: $bg-base-100;
+            }
           }
 
           &.e-skeleton.e-shimmer-wave::after {
             background-image: $ribbon-skeleton-wave-color;
+
+            @if ($theme-name == 'fluent2-highcontrast') {
+              background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 20%, $content-bg-color-alt6 50%, rgba(255, 255, 255, 0) 70%);
+            }
           }
         }
       }
@@ -213,7 +221,7 @@
           }
 
           &.e-selected,
-          &:hover {
+          &.e-focused {
             @include ribbon-colors($ribbon-backstage-menu-active-bg-color, $ribbon-backstage-menu-items-active-color, $ribbon-backstage-menu-active-border-color);
 
             .e-menu-icon {
@@ -281,39 +289,45 @@
     .e-ribbon-item,
     .e-ribbon-group-overflow,
     &.e-ribbon-overflow {
-      .e-btn:not(.e-ribbon-file-menu),
-      .e-btn-group .e-btn.e-ribbon-group-button,
-      .e-btn-group .e-btn.e-ribbon-group-button:not(:first-of-type):not(:last-of-type),
-      .e-ribbon-group-of-btn {
-        @include ribbon-colors($ribbon-items-background-color, $ribbon-text-color, transparent);
-        @include ribbon-button-icon-color($ribbon-items-icon-color);
+      &:not(:has(.e-ribbon-template)) {
+        .e-btn:not(.e-ribbon-file-menu),
+        .e-btn-group .e-btn.e-ribbon-group-button,
+        .e-btn-group .e-btn.e-ribbon-group-button:not(:first-of-type):not(:last-of-type),
+        .e-ribbon-group-of-btn {
+          @include ribbon-colors($ribbon-items-background-color, $ribbon-text-color, transparent);
+          @include ribbon-button-icon-color($ribbon-items-icon-color);
 
-        &:hover {
-          @include ribbon-colors($ribbon-items-hover-background-color, $ribbon-items-text-hover-color, $ribbon-items-hover-border-color);
-          @include ribbon-button-icon-color($ribbon-items-hover-color);
-        }
+          &:hover {
+            @include ribbon-colors($ribbon-items-hover-background-color, $ribbon-items-text-hover-color, $ribbon-items-hover-border-color);
+            @include ribbon-button-icon-color($ribbon-items-hover-color);
+          }
 
-        &.e-active {
-          background: $ribbon-items-active-background-color;
-          color: $ribbon-items-text-active-color;
-          @include ribbon-button-icon-color($ribbon-items-active-color);
-        }
+          &.e-active {
+            background: $ribbon-items-active-background-color;
+            color: $ribbon-items-text-active-color;
+            @include ribbon-button-icon-color($ribbon-items-active-color);
+          }
 
-        &:active {
-          background: $ribbon-items-pressed-background-color;
-          color: $ribbon-items-text-active-color;
-          @include ribbon-button-icon-color($ribbon-items-active-color);
-        }
+          &:active {
+            background: $ribbon-items-pressed-background-color;
+            color: $ribbon-items-text-active-color;
+            @include ribbon-button-icon-color($ribbon-items-active-color);
+          }
 
-        &:focus-visible {
-          @include ribbon-colors($ribbon-items-focus-background-color, $ribbon-items-text-focus-color, $ribbon-items-focus-border-color);
-          @include ribbon-button-icon-color($ribbon-items-focus-color);
-          box-shadow: $ribbon-items-focus-box-shadow;
-        }
+          &:focus-visible {
+            @include ribbon-colors($ribbon-items-focus-background-color, $ribbon-items-text-focus-color, $ribbon-items-focus-border-color);
+            @include ribbon-button-icon-color($ribbon-items-focus-color);
+            & {
+              box-shadow: $ribbon-items-focus-box-shadow;
+            }
+          }
 
-        &:disabled {
-          @include ribbon-button-icon-color($ribbon-items-disabled-color);
-          color: $ribbon-items-disabled-color;
+          &:disabled {
+            @include ribbon-button-icon-color($ribbon-items-disabled-color);
+            & {
+              color: $ribbon-items-disabled-color;
+            }
+          }
         }
       }
     }
@@ -385,10 +399,12 @@
       box-shadow: $ribbon-popup-common-box-shadow;
       border-color: $ribbon-popup-common-border-color;
 
-      .e-btn:not(.e-ribbon-file-menu),
+      .e-ribbon-item:not(:has(.e-ribbon-template)) .e-btn:not(.e-ribbon-file-menu),
       .e-btn-group .e-btn.e-ribbon-group-button,
       .e-ribbon-group-of-btn {
-        background: transparent;
+        &:not(:hover, :active, :focus-visible, :disabled, .e-active) {
+          background: transparent;
+        }
       }
     }
   }
@@ -473,7 +489,9 @@
       &.e-icon-btn:active,
       &:active {
         @include ribbon-button-icon-color($ribbon-group-button-icon-active-color);
-        background: $ribbon-group-button-pressed-background;
+        & {
+          background: $ribbon-group-button-pressed-background;
+        }
       }
     }
   }
@@ -497,6 +515,10 @@
     color: $ribbon-keytip-color;
   }
 
+  .e-ribbon-group-overflow-ddb.e-dropdown-popup {
+    box-shadow: $ribbon-grp-overflow-popup-box-shadow;
+    border: 1px solid $ribbon-grp-overflow-border-color;
+  }
   .e-ribbon-menu {
     &.e-menu-wrapper,
     &.e-menu-container {
@@ -505,27 +527,62 @@
       }
     }
 
-    &.e-menu-wrapper ul.e-vertical,
-    &.e-menu-wrapper ul.e-ul {
-      &.e-menu {
-        border-color: $ribbon-menu-border-color;
-        background: $ribbon-menu-items-background-color;
-      }
-
-      .e-menu-item {
-        color: $ribbon-text-color;
-
-        .e-menu-icon,
-        .e-caret {
-          color: $ribbon-menu-items-icon-color;
+    &.e-menu-wrapper,
+    &.e-menu-container {
+      ul.e-vertical,
+      ul.e-ul {
+        &.e-menu {
+          border-color: $ribbon-menu-border-color;
+          background: $ribbon-menu-items-background-color;
         }
-
-        &.e-focused {
-          background: $ribbon-menu-hover-background-color;
-          color: $ribbon-menu-items-color;
-          @if ($skin-name == 'fluent2') {
-            .e-menu-icon {
-              color: $ribbon-menu-items-color;
+  
+        .e-menu-item {
+          color: $ribbon-text-color;
+  
+          .e-menu-icon,
+          .e-caret {
+            color: $ribbon-menu-items-icon-color;
+          }
+  
+          &.e-focused {
+            background: $ribbon-menu-hover-background-color;
+            color: $ribbon-menu-items-color;
+            @if ($skin-name == 'fluent2') {
+              .e-menu-icon {
+                color: $ribbon-menu-items-color;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  .e-ribbon-backstage-popup .e-ribbon-backstage-wrapper {
+    .e-btn {
+      @if ($skin-name == 'tailwind3' or $theme-name == 'tailwind3-dark' or $skin-name == 'tailwind' or $theme-name == 'tailwind-dark') {
+        @include ribbon-colors($ribbon-backstage-btn-bg-color, $ribbon-backstage-btn-color, transparent);
+      }
+      &:hover {
+        @if ($skin-name == 'tailwind3' or $theme-name == 'tailwind3-dark' or $skin-name == 'tailwind' or $theme-name == 'tailwind-dark') {
+          @include ribbon-colors($ribbon-backstage-btn-hover-bg-color, $ribbon-backstage-btn-hover-color, transparent);
+        }
+      }
+    }
+    .e-ribbon-backstage-menu {
+      &.e-menu-wrapper ul.e-vertical,
+      &.e-menu-wrapper ul.e-ul {
+        .e-menu-item {
+          @if ($skin-name == 'tailwind3' or $theme-name == 'tailwind3-dark' or $skin-name == 'tailwind' or $theme-name == 'tailwind-dark') {
+            @include ribbon-colors($ribbon-backstage-btn-bg-color, $ribbon-backstage-btn-color, transparent);
+          }
+          &.e-focused {
+            @if ($skin-name == 'tailwind3' or $theme-name == 'tailwind3-dark' or $skin-name == 'tailwind' or $theme-name == 'tailwind-dark') {
+              @include ribbon-colors($ribbon-backstage-menu-active-bg-color, $ribbon-backstage-menu-items-active-color, transparent);
+            }
+          }
+          &.e-separator {
+            @if ($skin-name == 'tailwind3' or $theme-name == 'tailwind3-dark' or $skin-name == 'tailwind' or $theme-name == 'tailwind-dark') {
+              background: $ribbon-backstage-separator-color;
             }
           }
         }

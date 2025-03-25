@@ -154,12 +154,16 @@ export class WorkbookMerge {
             }
         }
         if (!args.preventRefresh) {
-            this.refreshCF(sheet, args.range[0], args.range[1], refreshAllCF);
+            this.refreshCF(sheet, [...args.range], refreshAllCF, args.merge);
         }
     }
-    private refreshCF(sheet: SheetModel, rowIdx: number, colIdx: number, refreshAll: boolean): void {
+    private refreshCF(sheet: SheetModel, range: number[], refreshAll: boolean, isMerge: boolean): void {
         if (sheet.conditionalFormats && sheet.conditionalFormats.length) {
-            this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: [rowIdx, colIdx], refreshAll: refreshAll, isAction: true });
+            if (isMerge) {
+                this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: [range[0], range[1]], refreshAll: refreshAll, isAction: true });
+            } else {
+                this.parent.notify(applyCF, <ApplyCFArgs>{ indexes: range, refreshAll: refreshAll, isAction: true });
+            }
         }
     }
     private activeCellRange(args: MergeArgs): void {

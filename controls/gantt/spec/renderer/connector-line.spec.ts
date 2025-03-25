@@ -1441,22 +1441,22 @@ describe('render dependency from parent to child', () => {
                 { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
                 { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
                 },
-                { TaskID: "4", TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
             ]
         },
-        {TaskID: 1,
+        {TaskID: 5,
             TaskName: 'Product Concept',
             StartDate: new Date('04/02/2019'),
             EndDate: new Date('04/21/2019'),
             subtasks: [
         {
-            TaskID: 5,
+            TaskID: 6,
             TaskName: 'Product Concept',
             StartDate: new Date('04/02/2019'),
             EndDate: new Date('04/21/2019'),
             subtasks: [
-                { TaskID: 6, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
-                { TaskID: 7, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                { TaskID: 7, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                { TaskID: 8, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
                 },
             ]
         }]},
@@ -1541,7 +1541,7 @@ describe('render dependency from parent to child', () => {
     
     it('dependency', () => {
         expect(ganttObj.currentViewData[0].ganttProperties.predecessorsName).toBe('5FS');
-        expect(ganttObj.connectorLineEditModule['compareArrays'](ganttObj.currentViewData[0].ganttProperties.predecessor, ganttObj.currentViewData[5].ganttProperties.predecessor)).toBe(true);
+        expect(ganttObj.connectorLineEditModule['compareArrays'](ganttObj.currentViewData[0].ganttProperties.predecessor, ganttObj.currentViewData[4].ganttProperties.predecessor)).toBe(true);
     });
     afterAll(() => {
         if (ganttObj) {
@@ -2584,5 +2584,125 @@ describe('CR:919774-Predecessor getting removed when offset is in decimal', () =
     });
     afterAll(() => {
         destroyGantt(ganttObj);       
+    });
+});
+describe('Coverage issue due to CSP - Optimized Tests', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: CR919774,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Name', width: 250 },
+                { field: 'Predecessor', headerText: 'Predecessor' }
+            ],
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            allowSelection: true,
+            gridLines: "Both",
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+        }, done);
+    });
+    it('should correctly add a predecessor using the addPredecessor method', () => {
+        ganttObj.addPredecessor(4, "3FS");
+        const task = ganttObj.flatData[3];
+        expect(task.ganttProperties.predecessor.length).toBe(2);
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+});
+describe('Coverage for validatetype method', () => {
+    let ganttObj: Gantt;
+    const data = [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+            ]
+        },
+        { TaskID: 5, TaskName: 'Concept Approval',Duration: 3, EndDate: new Date('04/02/2019')},
+    ]
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: data,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            columns: [
+                { field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Name', width: 250 },
+                { field: 'Predecessor', headerText: 'Predecessor' }
+            ],
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            allowSelection: true,
+            gridLines: "Both",
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019'),
+        }, done);
+    });
+    it('Coverage for validatetype method', () => {
+       const ganttdata :Object = ganttObj.getRecordByID('5');
+       const ganttdata1 :Object = ganttObj.getRecordByID('4');
+       const data: any = ganttObj.connectorLineEditModule.validateTypes(ganttdata,ganttdata1);
+       expect(data.task.ganttProperties.left).toBe(0);
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
     });
 });

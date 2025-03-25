@@ -1088,7 +1088,8 @@ export class CheckBoxFilterBase {
         let maskRowCount: number = 5;
         let maskItemHeight: string;
         const maskList: HTMLElement = this.parent.createElement('div', { id: this.id + this.options.type + '_CheckBoxMaskList',
-            className: 'e-checkboxlist e-fields e-infinite-list e-masklist', styles: 'z-index: 10;' }) as HTMLElement;
+            className: 'e-checkboxlist e-fields e-infinite-list e-masklist' }) as HTMLElement;
+        maskList.style.zIndex = '10';
         const wrapperElem: HTMLElement = this.cBox;
         this.removeMask();
         if (wrapperElem) {
@@ -1110,12 +1111,15 @@ export class CheckBoxFilterBase {
             maskRowCount = wrapperElem.children.length > maskRowCount ? wrapperElem.children.length : maskRowCount;
             maskItemHeight = liHeight + 'px';
         }
-        const maskTemplate: string = '<div class="e-ftrchk e-mask-ftrchk" style="width: 100%; height:' + maskItemHeight + ';">'
-            + '<div class="e-checkbox-wrapper" style="width: 100%;"><input class="e-chk-hidden">'
+        const maskTemplate: string = '<div class="e-ftrchk e-mask-ftrchk">'
+            + '<div class="e-checkbox-wrapper"><input class="e-chk-hidden">'
             + this.getShimmerTemplate() + this.getShimmerTemplate() + '</div></div>';
         maskList.innerHTML = '';
         if (!wrapperElem.children.length) {
             this.spinner.insertAdjacentHTML('beforebegin', maskTemplate);
+            (this.spinner.parentElement.querySelector('.e-ftrchk.e-mask-ftrchk') as HTMLElement).style.cssText =
+                'width: 100%; height: ' + maskItemHeight + ';';
+            (this.spinner.parentElement.querySelector('.e-checkbox-wrapper') as HTMLElement).style.width = '100%';
             const maskSpan: Element[] = [].slice.call(this.spinner.parentElement
                 .querySelectorAll('.e-mask:not(.e-mask-checkbox-filter-intent):not(.e-mask-checkbox-filter-span-intent)'));
             maskSpan[0].classList.add('e-mask-checkbox-filter-intent');
@@ -1124,6 +1128,9 @@ export class CheckBoxFilterBase {
         this.spinner.insertBefore(maskList, this.cBox);
         for (let i: number = 0; maskRowCount && i < maskRowCount; i++) {
             maskList.innerHTML += maskTemplate;
+            (maskList.lastElementChild as HTMLElement).style.cssText =
+                'width: 100%; height: ' + maskItemHeight + ';';
+            (maskList.lastElementChild.querySelector('.e-checkbox-wrapper') as HTMLElement).style.width = '100%';
             const maskSpan: Element[] = [].slice.call(maskList
                 .querySelectorAll('.e-mask:not(.e-mask-checkbox-filter-intent):not(.e-mask-checkbox-filter-span-intent)'));
             maskSpan[0].classList.add('e-mask-checkbox-filter-intent');
@@ -1307,8 +1314,13 @@ export class CheckBoxFilterBase {
         }
         const data: object[] = args1.executeQuery ? this.filteredData : args1.dataSource ;
         this.processDataSource(null, true, data, args1);
-        if (this.sInput && ((this.infiniteRenderMod && this.infiniteInitialLoad) || !this.infiniteRenderMod)) {
-            this.sInput.focus();
+        if ((this.infiniteRenderMod && this.infiniteInitialLoad) || !this.infiniteRenderMod) {
+            if (this.sInput) {
+                this.sInput.focus();
+            } else if (this.dlg.querySelector('.e-chk-hidden') && this.dlg.querySelector('.e-ftrchk')) {
+                (this.dlg.querySelector('.e-chk-hidden') as HTMLElement).focus();
+                this.dlg.querySelector('.e-ftrchk').classList.add('e-chkfocus');
+            }
         }
         if (this.infiniteInitialLoad || this.infiniteSearchValChange) {
             this.infiniteInitialLoad = false;
@@ -1710,7 +1722,7 @@ export class CheckBoxFilterBase {
             }
             const isColFiltered: number = new DataManager(this.options.filteredColumns as JSON[]).executeLocal(
                 new Query().where(predicate)).length;
-            if (this.sInput.value) {
+            if (this.sInput && this.sInput.value) {
                 const predicateCheckBox: Element = this.createCheckbox(this.getLocalizedLabel('AddCurrentSelection'), false, {
                     [this.options.field]: this.getLocalizedLabel('AddCurrentSelection') });
                 if (this.parent.cssClass) {
@@ -1861,7 +1873,7 @@ export class CheckBoxFilterBase {
     private updateInfiniteUnLoadedCheckboxExistPred(value: string | number, updatePredArr: Object[]): void {
         for (let j: number = 0; j < updatePredArr.length; j++) {
             const pred: PredicateModel = updatePredArr[j as number] as PredicateModel;
-            const predValue: string | number | boolean = pred.value instanceof Date ?
+            const predValue: string | number | boolean | (string | number | boolean | Date)[] = pred.value instanceof Date ?
                 this.valueFormatter.toView(pred.value, this.options.formatFn) as string : pred.value;
             const column : Column = this.options.column as Column;
             if (column.isForeignColumn()) {
@@ -1880,7 +1892,7 @@ export class CheckBoxFilterBase {
         if (!this.isFiltered || !isColFiltered) {
             return true;
         } else {
-            const checkState: boolean = this.sInput.value ? true : this.result[`${value}`];
+            const checkState: boolean = this.sInput && this.sInput.value ? true : this.result[`${value}`];
             if (this.infiniteRenderMod) {
                 return checkState;
             } else {

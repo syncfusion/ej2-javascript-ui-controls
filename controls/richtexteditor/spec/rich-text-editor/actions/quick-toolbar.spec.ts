@@ -2721,51 +2721,46 @@ describe("Quick Toolbar - Actions Module", () => {
         });
     });
 
-    describe('936959 - MAC-After pressing the Escape key, both the dropdown popup and the quick toolbar are closing, although only the dropdown popup should close.', () => {
-        let rteObj: any;
-        let QTBarModule: IRenderer;
-        let rteEle: HTMLElement;
-        beforeAll(() => {
+    describe('872307 - Tabel merge quick toolbar tooltip issues ', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: DoneFn) => {
             rteObj = renderRTE({
-                height: 400,
-                toolbarSettings: {
-                    items: ['Image', 'Bold']
+                quickToolbarSettings: {
+                    table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-',
+                    'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
                 },
-                value: "<div id='rte'><p><b>Syncfusion</b> Software</p>" + "<img id='imgTag' style='width: 200px' alt='Logo'" +
-                    " src='http://cdn.syncfusion.com/content/images/sales/buynow/Character-opt.png' />",
+                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="td1" style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr><tr><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr><tr><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr></tbody></table><p><br></p>`
             });
-            rteEle = rteObj.element;
-            QTBarModule = getQTBarModule(rteObj);
+            done();
         });
-        afterAll(() => {
+        afterAll((done: DoneFn) => {
             destroy(rteObj);
+            if (document.querySelector('.e-quick-dropdown').id.indexOf('quick_TableRows-popup') > 0) {
+                document.querySelector('.e-quick-dropdown').remove();
+            }
+            done();
         });
-        it("Should close only dropdown popup on Escape key press, not the entire quick toolbar", (done) => {
-            let target: HTMLElement = rteEle.querySelector('#imgTag');
-            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
-            setCursorPoint(target, 0);
-            rteObj.mouseUp(eventsArg);
-            (<any>QTBarModule).renderQuickToolbars();
-            QTBarModule.imageQTBar.showPopup(10, 131, (rteObj.element.querySelector('.e-rte-image') as HTMLElement));
-            (document.querySelectorAll(".e-rte-dropdown-btn")[1] as HTMLElement).click();
-            setTimeout(() => {
-                var escapeKeyDown = new KeyboardEvent('keydown', {
-                    key: 'Escape',
-                    code: 'Escape',
-                    keyCode: 27,
-                    bubbles: true,
-                    cancelable: true
-                } as KeyboardEventInit);
-                let dropDownElem = document.querySelector("#" + rteObj.getID() + '_quick_Display-popup');
-                dropDownElem.dispatchEvent(escapeKeyDown);
-                let keyBoardEventDel: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'Escape', stopPropagation: () => { }, shiftKey: false, which: 27 };
-                (rteObj as any).keyUp(keyBoardEventDel);
-                expect(document.querySelector(".e-rte-quick-popup.e-rte-image-popup") != null).toBe(true);
-                expect(dropDownElem.childNodes.length == 0).toBe(true);
-                (rteObj).keyUp(keyBoardEventDel);
-                expect(document.querySelector("#" + rteObj.getID() + '_quick_Display-popup')).toBe(null);
-                done();
-            }, 0);
+        it('check the tooltip text of table cell items', (done: Function) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            var clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent('mousedown', false, true);
+            rteObj.inputElement.dispatchEvent(clickEvent);
+            let tdEle: HTMLElement = rteObj.element.querySelector(".td1");
+            tdEle.focus();
+            setCursorPoint(tdEle, 0);
+            var eventsArg = { pageX: 50, pageY: 300, target: tdEle };
+            (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
+            let tableQTBarEle: HTMLElement = <HTMLElement>document.querySelector('.e-rte-quick-popup');
+            let tableCell: HTMLElement = (tableQTBarEle.querySelector('[title="Column"]').nextElementSibling as HTMLElement).childNodes[0] as HTMLElement;
+            tableCell.click();
+            tableCell.dispatchEvent(clickEvent);
+            const mergeCell = document.body.querySelector('li[title="Merge cells"]') as HTMLElement;
+            const horizSplit = document.body.querySelector('li[title="Horizontal split"]') as HTMLElement;
+            const verriSplit = document.body.querySelector('li[title="Vertical split"]') as HTMLElement;
+            expect(!isNullOrUndefined(mergeCell)).toBe(false);
+            expect(!isNullOrUndefined(horizSplit)).toBe(false);
+            expect(!isNullOrUndefined(verriSplit)).toBe(false);
+            done();
         });
     });
 
@@ -2817,46 +2812,51 @@ describe("Quick Toolbar - Actions Module", () => {
         });
     });
 
-    describe('872307 - Tabel merge quick toolbar tooltip issues ', () => {
-        let rteObj: RichTextEditor;
-        beforeAll((done: DoneFn) => {
+    describe('936959 - MAC-After pressing the Escape key, both the dropdown popup and the quick toolbar are closing, although only the dropdown popup should close.', () => {
+        let rteObj: any;
+        let QTBarModule: IRenderer;
+        let rteEle: HTMLElement;
+        beforeAll(() => {
             rteObj = renderRTE({
-                quickToolbarSettings: {
-                    table: ['TableHeader', 'TableRows', 'TableColumns', 'TableCell', '-',
-                    'BackgroundColor', 'TableRemove', 'TableCellVerticalAlign', 'Styles']
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
                 },
-                value: `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="td1" style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr><tr><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr><tr><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td><td style="width: 25%;"><br></td></tr></tbody></table><p><br></p>`
+                value: "<div id='rte'><p><b>Syncfusion</b> Software</p>" + "<img id='imgTag' style='width: 200px' alt='Logo'" +
+                    " src='http://cdn.syncfusion.com/content/images/sales/buynow/Character-opt.png' />",
             });
-            done();
+            rteEle = rteObj.element;
+            QTBarModule = getQTBarModule(rteObj);
         });
-        afterAll((done: DoneFn) => {
+        afterAll(() => {
             destroy(rteObj);
-            if (document.querySelector('.e-quick-dropdown').id.indexOf('quick_TableRows-popup') > 0) {
-                document.querySelector('.e-quick-dropdown').remove();
-            }
-            done();
         });
-        it('check the tooltip text of table cell items', (done: Function) => {
-            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-            var clickEvent = document.createEvent("MouseEvents");
-            clickEvent.initEvent('mousedown', false, true);
-            rteObj.inputElement.dispatchEvent(clickEvent);
-            let tdEle: HTMLElement = rteObj.element.querySelector(".td1");
-            tdEle.focus();
-            setCursorPoint(tdEle, 0);
-            var eventsArg = { pageX: 50, pageY: 300, target: tdEle };
-            (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
-            let tableQTBarEle: HTMLElement = <HTMLElement>document.querySelector('.e-rte-quick-popup');
-            let tableCell: HTMLElement = (tableQTBarEle.querySelector('[title="Column"]').nextElementSibling as HTMLElement).childNodes[0] as HTMLElement;
-            tableCell.click();
-            tableCell.dispatchEvent(clickEvent);
-            const mergeCell = document.body.querySelector('li[title="Merge cells"]') as HTMLElement;
-            const horizSplit = document.body.querySelector('li[title="Horizontal split"]') as HTMLElement;
-            const verriSplit = document.body.querySelector('li[title="Vertical split"]') as HTMLElement;
-            expect(!isNullOrUndefined(mergeCell)).toBe(false);
-            expect(!isNullOrUndefined(horizSplit)).toBe(false);
-            expect(!isNullOrUndefined(verriSplit)).toBe(false);
-            done();
+        it("Should close only dropdown popup on Escape key press, not the entire quick toolbar", (done) => {
+            let target: HTMLElement = rteEle.querySelector('#imgTag');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
+            setCursorPoint(target, 0);
+            rteObj.mouseUp(eventsArg);
+            (<any>QTBarModule).renderQuickToolbars();
+            QTBarModule.imageQTBar.showPopup(10, 131, (rteObj.element.querySelector('.e-rte-image') as HTMLElement));
+            (document.querySelectorAll(".e-rte-dropdown-btn")[1] as HTMLElement).click();
+            setTimeout(() => {
+                var escapeKeyDown = new KeyboardEvent('keydown', {
+                    key: 'Escape',
+                    code: 'Escape',
+                    keyCode: 27,
+                    bubbles: true,
+                    cancelable: true
+                } as KeyboardEventInit);
+                let dropDownElem = document.querySelector("#" + rteObj.getID() + '_quick_Display-popup');
+                dropDownElem.dispatchEvent(escapeKeyDown);
+                let keyBoardEventDel: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'Escape', stopPropagation: () => { }, shiftKey: false, which: 27 };
+                (rteObj as any).keyUp(keyBoardEventDel);
+                expect(document.querySelector(".e-rte-quick-popup.e-rte-image-popup") != null).toBe(true);
+                expect(dropDownElem.childNodes.length == 0).toBe(true);
+                (rteObj).keyUp(keyBoardEventDel);
+                expect(document.querySelector("#" + rteObj.getID() + '_quick_Display-popup')).toBe(null);
+                done();
+            }, 0);
         });
     });
 });

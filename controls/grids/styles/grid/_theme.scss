@@ -8,7 +8,12 @@
 }
 
 @mixin bgcolor-color-styles($bgcolor, $color) {
-  background-color: $bgcolor;
+  @if $grid-skin == 'material3' {
+    background: $bgcolor;
+  }
+  @else {
+    background-color: $bgcolor;
+  }
   color: $color;
 }
 
@@ -37,7 +42,12 @@
     .e-ftrchk.e-chkfocus,
     .e-menu-item.e-menufocus,
     li.e-cclist.e-colfocus {
-      background-color: $grid-hover-bg-color;
+      @if ($grid-skin == 'material3') {
+        background: $grid-hover-bg-color;
+      }
+      @else {
+        background-color: $grid-hover-bg-color;
+      }
     }
 
     .e-ccdlg {
@@ -850,7 +860,12 @@
     }
 
     &.sf-grid .e-ccheck.e-colfocus {
-      background-color: $grid-hover-bg-color;
+      @if ($grid-skin == 'material3') {
+        background: $grid-hover-bg-color;
+      }
+      @else {
+        background-color: $grid-hover-bg-color;
+      }
     }
 
     &.sf-grid{
@@ -862,7 +877,12 @@
   }
 
   .e-spreadsheet .e-ftrchk.e-chkfocus {
-    background-color: $grid-hover-bg-color;
+    @if ($grid-skin == 'material3') {
+      background: $grid-hover-bg-color;
+    }
+    @else {
+      background-color: $grid-hover-bg-color;
+    }
   }
 
   .e-tooltip-wrap.e-griderror,

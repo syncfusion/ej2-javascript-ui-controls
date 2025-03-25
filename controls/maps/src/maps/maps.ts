@@ -2788,6 +2788,20 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         if (!isNullOrUndefined(this.mapsTooltipModule)) {
             this.mapsTooltipModule.removeEventListener();
         }
+        if (!isNullOrUndefined(this.zoomModule)) {
+            this.zoomModule.removeEventListener();
+        }
+        if (!isNullOrUndefined(this.legendModule)) {
+            this.legendModule.removeEventListener();
+        }
+        if (!isNullOrUndefined(this.selectionModule)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            this.selectionModule.removeEventListener();
+        }
+        if (!isNullOrUndefined(this.highlightModule)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            this.highlightModule.removeEventListener();
+        }
         if (!isNullOrUndefined(this.bingMap)) {
             this.bingMap.destroy();
         }

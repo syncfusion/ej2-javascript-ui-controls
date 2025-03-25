@@ -47,4 +47,13 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
      */
     @Property()
     public editing: string | Function;
+
+    /**
+     * Defines template for timeLine tooltip element.
+     *
+     * @default null
+     * @aspType string
+     */
+    @Property()
+    public timeline: string | Function;
 }

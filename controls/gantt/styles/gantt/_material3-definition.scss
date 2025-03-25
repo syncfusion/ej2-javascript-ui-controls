@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // color
 $gantt-header-bg-color: rgba($content-bg-color) !default;
 $gantt-header-border-color: rgba($border-light) !default;
@@ -29,7 +31,7 @@ $gantt-line-container-cell-border-color: rgba($border-light) !default;
 $gantt-unscheduled-taskbar-background: linear-gradient(to right, rgba($primary-light), rgba($primary) 30%, rgba($primary) 70%, rgba($primary) 70%, rgba($primary-light) 100%) !default;
 $gantt-unscheduled-critical-taskbar-background: linear-gradient(to right, rgba(285,85,85, 0.2), #D13438 30%, #D13438 70%, #D13438 70%, rgba(285,85,85, 0.2) 100%) !default;
 $gantt-unscheduled-critical-taskbar-background-color: rgba(285,85,85, .2) !default;
-$gantt-critical-child-task-bar: linear-gradient(0deg, rgba($warning, .75), rgba($warning, .75)), rgba($content-bg-color) !default;
+$gantt-critical-child-task-bar: rgba($warning, 0.75) !default;
 $gantt-critical-child-progress-bar: rgba($warning) !default;
 $gantt-critical-child-task-bar-border: 1px solid rgba($danger-light) !default;
 $gantt-unscheduled-milestone-top-border: $content-bg-color-alt5 !default;
@@ -90,7 +92,7 @@ $gantt-clone-dragdrop-bg-color: $gantt-table-background-color !default;
 $error-elem-color: rgba($danger) !default;
 $gantt-active-container-border: rgba($border) !default;
 $rangecontainer-border-color: rgba($border-warning) !default;
-$gantt-chartrow-hover-bg-color: $table-bg-color-hover !default;
+$gantt-chartrow-hover-bg-color: rgba($secondary-container) !default;
 
 // Layout
 $holiday-label-font-size: 13px !default;
@@ -215,7 +217,6 @@ $gantt-group-clone-text-align: center !default;
 $gantt-clone-prop-box-shadow: 0 6px 12px rgba($warning-text, .175) !default;
 $gantt-border-size: 1px !default;
 $grid-active-container-border: 0 0 0 1px rgba($border) inset !default;
-$gantt-collapse-progress-width: 0px !important;
 $gantt-range-container-arc-radius: 2px !default;
 $bigger-column-menu-size: 35px !default;
 $gantt-masked-table-background-color: rgb(225,223,221);

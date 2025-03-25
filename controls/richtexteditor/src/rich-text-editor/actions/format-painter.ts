@@ -53,7 +53,7 @@ export class FormatPainter implements IFormatPainter {
             if ((originalEvent.action === 'format-copy' ||  originalEvent.action === 'format-paste')) {
                 originalEvent.stopPropagation();
             }
-            if (Browser.userAgent.indexOf('Firefox') !== -1) {
+            if (this.parent.userAgentData.getBrowser() === 'Firefox' || this.parent.userAgentData.getBrowser() === 'Safari') {
                 originalEvent.preventDefault();
             }
             this.actionHandler(event, 'keyBoard');

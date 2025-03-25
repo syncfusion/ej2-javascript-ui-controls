@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $ddl-last-child-bottom-border: 0 !default;
 $ddl-default-font-family: inherit !default;
 $ddl-list-border-size: 1px !default;
@@ -20,7 +22,7 @@ $mention-popup-bg-color: $white !default;
 $ddl-list-active-font-color: $primary-font !default;
 $mention-active-font-color: $primary !default;
 $ddl-list-active-bg-color: $primary !default;
-$ddl-list-hover-bg-color: darken($gray-100, 2%) !default;
+$ddl-list-hover-bg-color: color.adjust($gray-100, $lightness: -2%) !default;
 $ddl-list-hover-border-color: $white !default;
 $ddl-list-hover-font-color: $gray-900 !default;
 $ddl-nodata-font-color: $gray-900 !default;

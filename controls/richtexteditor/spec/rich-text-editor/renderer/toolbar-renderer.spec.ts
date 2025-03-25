@@ -316,10 +316,7 @@ describe('Toolbar - Renderer', () => {
         let defaultUA: string = navigator.userAgent;
         let safari: string = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15";
         beforeAll(function () {
-            Object.defineProperty(navigator, 'userAgent', {
-                value: safari,
-                configurable: true
-            });
+            Browser.userAgent = safari;
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['NumberFormatList', 'BulletFormatList']
@@ -347,8 +344,8 @@ describe('Toolbar - Renderer', () => {
             }, 100);
         });
         afterAll(function () {
-            Browser.userAgent = defaultUA;
             destroy(rteObj);
+            Browser.userAgent = defaultUA;
         });
     });
     describe('926936 - Toolbarclick cancel event not working', function () {

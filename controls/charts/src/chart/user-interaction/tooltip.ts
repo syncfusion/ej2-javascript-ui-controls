@@ -157,6 +157,8 @@ export class Tooltip extends BaseTooltip {
 
     private renderSeriesTooltip(chart: Chart, isFirst: boolean, tooltipDiv: HTMLDivElement): void {
         let data: PointData = this.getData();
+        let closestPointData: PointData = null;
+        let smallestDistance: number = Infinity;
         data.lierIndex = this.lierIndex;
         this.currentPoints = [];
         if (this.findData(data, this.previousPoints[0] as PointData)) {
@@ -168,15 +170,32 @@ export class Tooltip extends BaseTooltip {
                 this.triggerTooltipRender(data, isFirst, this.getTooltipText(data), this.findHeader(data));
             }
         } else {
-            if (!data.point && this.isRemove && chart.tooltip.fadeOutMode === 'Move') {
+            const tooltipWithInBounds: boolean = withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect);
+            if (!data.point && this.isRemove && chart.tooltip.fadeOutMode === 'Move' && (!chart.tooltip.showNearestTooltip || !tooltipWithInBounds)) {
                 this.removeTooltip(this.chart.tooltip.fadeOutDuration);
                 this.isRemove = false;
             } else {
                 const commonXvalues: number[] = this.mergeXvalues(this.chart.visibleSeries);
-                for (const series of chart.visibleSeries) {
+                for (let i : number = chart.visibleSeries.length - 1; i >= 0; i--) {
+                    const series: Series = chart.visibleSeries[i as number];
                     if (series.visible && !(series.category === 'TrendLine')) {
                         data = this.getClosestX(chart, series, commonXvalues) || data;
+                        if (chart.tooltip.showNearestTooltip && tooltipWithInBounds && series.showNearestTooltip && data &&
+                             data.point && series.enableTooltip && data.point.symbolLocations[0]) {
+                            const currentDistance: number = Math.sqrt(Math.pow((chart.mouseX - data.series.clipRect.x) -
+                                data.point.symbolLocations[0].x, 2) + Math.pow((chart.mouseY -
+                                    data.series.clipRect.y) - data.point.symbolLocations[0].y, 2));
+                            if (currentDistance < smallestDistance) {
+                                smallestDistance = currentDistance;
+                                closestPointData = data;
+                            }
+
+                        }
                     }
+                }
+                if (chart.tooltip.showNearestTooltip && closestPointData && this.pushData(closestPointData, isFirst, tooltipDiv, true)) {
+                    data = closestPointData;
+                    this.triggerTooltipRender(data, isFirst, this.getTooltipText(data), this.findHeader(data));
                 }
             }
         }
@@ -485,18 +504,23 @@ export class Tooltip extends BaseTooltip {
                 location.x = tooltip.location.x !== null ? tooltip.location.x : location.x;
                 location.y = tooltip.location.y !== null ? tooltip.location.y : location.y;
                 location = (location.x === null && location.y === null) ? null : location;
-                this.createTooltip(
-                    chart, isFirst, location,
-                    this.currentPoints.length === 1 ? this.currentPoints[0].series.clipRect : null,
-                    dataCollection.length === 1 ? dataCollection[0].point : null,
-                    this.findShapes(), this.findMarkerHeight(<PointData>this.currentPoints[0]),
-                    new Rect(borderWidth, (chart.stockChart ? (toolbarHeight + titleHeight + borderWidth) : borderWidth),
-                             this.chart.availableSize.width - padding - borderWidth * 2,
-                             this.chart.availableSize.height - padding - borderWidth * 2),
-                    this.chart.crosshair.enable, extraPoints,
-                    this.template ? this.getTemplateText(dataCollection) : null,
-                    this.template ? argsData.template.join('') : ''
-                );
+                if (point.series.type.indexOf('Range') === -1 || withInBounds(location.x, location.y, chart.chartAxisLayoutPanel.seriesClipRect)) {
+                    this.createTooltip(
+                        chart, isFirst, location,
+                        this.currentPoints.length === 1 ? this.currentPoints[0].series.clipRect : null,
+                        dataCollection.length === 1 ? dataCollection[0].point : null,
+                        this.findShapes(), this.findMarkerHeight(<PointData>this.currentPoints[0]),
+                        new Rect(borderWidth, (chart.stockChart ? (toolbarHeight + titleHeight + borderWidth) : borderWidth),
+                                 this.chart.availableSize.width - padding - borderWidth * 2,
+                                 this.chart.availableSize.height - padding - borderWidth * 2),
+                        this.chart.crosshair.enable, extraPoints,
+                        this.template ? this.getTemplateText(dataCollection) : null,
+                        this.template ? argsData.template.join('') : ''
+                    );
+                } else {
+                    removeElement(this.element.id + '_tooltip');
+                    extraPoints.push(point);
+                }
                 point = null;
             } else {
                 removeElement(this.element.id + '_tooltip');
@@ -594,6 +618,7 @@ export class Tooltip extends BaseTooltip {
         } else if (dataValue === 'size') {
             const format: Function = this.chart.intl.getNumberFormat({ format: '', useGrouping: this.chart.useGroupingSeparator });
             textValue = typeof point[dataValue as string] === 'number' ? format(point[dataValue as string]) : point[dataValue as string];
+            textValue = textValue ? textValue : '';
         } else {
             textValue = point[dataValue as string];
         }

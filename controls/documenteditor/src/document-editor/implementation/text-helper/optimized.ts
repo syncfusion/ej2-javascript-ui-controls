@@ -1,4 +1,4 @@
-import { isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, createElement, updateCSSText } from '@syncfusion/ej2-base';
 import { ExternalFontInfo, WCharacterFormat } from '..';
 import { DocumentHelper, FontHeightInfo, FontSizeInfo, TextSizeInfo } from '../viewer';
 /**
@@ -40,6 +40,7 @@ export class Optimized {
         }
         return formatText;
     }
+
     /**
      * Method to retrieve font information with optimized text measuring logic.
      *
@@ -70,13 +71,28 @@ export class Optimized {
         }
 
         const container: HTMLDivElement = document.createElement('div');
-        container.setAttribute('style', 'position:absolute;top:-1000px;left:-1000px;opacity:0;font-size:0px;line-height:normal;');
+        const cssText: string = 'position:absolute;top:-1000px;left:-1000px;opacity:0;font-size:0px;line-height:normal';
+        updateCSSText(container, cssText);
         // constant tested height value for calculating height factor which matches 90% accuracy with GDI+ value.
         const maxFontHeight: number = 288;
         const factor: number = 1.0 / window.devicePixelRatio;
         container.style.transform = 'scale(' + factor.toString() + ',' + factor.toString() + ')';
         /* eslint-disable-next-line max-len */
-        container.innerHTML = '<span class="e-de-font-info" style="font-size:0; font-family: ' + `'${characterFormat.fontFamily}'` + '; display: inline-block;">m</span><span class="e-de-font-info" style="font-size:' + maxFontHeight + 'pt; font-family: ' + `'${characterFormat.fontFamily}'` + ';' + ((characterFormat.bold) ? 'font-weight:bold;' : '') + ((characterFormat.italic) ? 'font-style:italic;' : '') + ' display: inline-block;">m</span>';
+        container.innerHTML = '';
+        const baselineReferenceSpan: HTMLSpanElement = document.createElement('span');
+        baselineReferenceSpan.className = 'e-de-font-info';
+        baselineReferenceSpan.style.cssText = 'font-size: 0; font-family: ' + characterFormat.fontFamily + '; display: inline-block;';
+        baselineReferenceSpan.textContent = 'm';
+        const fontMeasurementSpan: HTMLSpanElement = document.createElement('span');
+        fontMeasurementSpan.className = 'e-de-font-info';
+        fontMeasurementSpan.style.cssText = 'font-size: ' + maxFontHeight + 'pt; ' +
+            'font-family: ' + characterFormat.fontFamily + '; ' +
+            (characterFormat.bold ? 'font-weight: bold; ' : '') +
+            (characterFormat.italic ? 'font-style: italic; ' : '') +
+            'display: inline-block;';
+        fontMeasurementSpan.textContent = 'm';
+        container.appendChild(baselineReferenceSpan);
+        container.appendChild(fontMeasurementSpan);
         iframe.contentDocument.body.appendChild(container);
         /* eslint-disable-next-line max-len */
         const baseLineFactor: number = (container.firstChild as HTMLSpanElement).offsetTop / (container.lastChild as HTMLSpanElement).offsetHeight;

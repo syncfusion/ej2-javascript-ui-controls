@@ -1,7 +1,7 @@
 import { createElement, detach } from "@syncfusion/ej2-base";
 import { TableSelection } from "../../../src/editor-manager/plugin/table-selection";
-import { RichTextEditor } from "../../../src";
-import { renderRTE, destroy } from "../../rich-text-editor/render.spec";
+import { RichTextEditor } from "../../../src/rich-text-editor/base/rich-text-editor";
+import { destroy, renderRTE } from "../../rich-text-editor/render.spec";
 import { BASIC_MOUSE_EVENT_INIT } from "../../constant.spec";
 
 // Test case for the Table cell selection public methods

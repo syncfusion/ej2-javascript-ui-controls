@@ -1818,7 +1818,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             this.trigger('drawNode', eventArgs);
             if (e.curData[this.fields.selectable] === false && !this.showCheckBox) {
                 e.item.classList.add(PREVENTSELECT);
-                e.item.firstElementChild.setAttribute('style', 'cursor: not-allowed');
+                const firstChild: HTMLElement = e.item.firstElementChild as HTMLElement;
+                firstChild.style.cursor = 'not-allowed';
             }
         }
     }
@@ -4157,7 +4158,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.trigger('nodeEditing', eventArgs, (observedArgs: NodeEditEventArgs) => {
             if (!observedArgs.cancel) {
                 const inpWidth: number = (<HTMLElement>textEle).offsetWidth + 5;
-                const style: string = 'width:' + inpWidth + 'px';
+                const widthSize: string = inpWidth + 'px';
                 addClass([liEle], EDITING);
                 if (!isNOU(this.nodeTemplateFn)) {
                     this.destroyTemplate(liEle);
@@ -4165,16 +4166,16 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if ((this as any).isReact) {
                     setTimeout(() => {
-                        this.renderTextBox(eventArgs, textEle, style);
+                        this.renderTextBox(eventArgs, textEle, widthSize);
                     }, 5);
                 } else {
-                    this.renderTextBox(eventArgs, textEle, style);
+                    this.renderTextBox(eventArgs, textEle, widthSize);
                 }
             }
         });
     }
 
-    private renderTextBox(eventArgs: NodeEditEventArgs, textEle: Element, style: string): void {
+    private renderTextBox(eventArgs: NodeEditEventArgs, textEle: Element, widthSize: string): void {
         textEle.innerHTML = eventArgs.innerHtml;
         const inpEle: HTMLElement = <HTMLElement>select('.' + TREEINPUT, textEle);
         this.inputObj = Input.createInput(
@@ -4185,7 +4186,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 }
             },
             this.createElement);
-        this.inputObj.container.setAttribute('style', style);
+        this.inputObj.container.style.width = widthSize;
         inpEle.focus();
         const inputEle: HTMLInputElement = <HTMLInputElement>inpEle;
         inputEle.setSelectionRange(0, inputEle.value.length);

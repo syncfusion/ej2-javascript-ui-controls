@@ -502,7 +502,7 @@ describe('FileManager control Grid view', () => {
                 }, 400);
             }, 400);
         });
-
+        
         it('for sorting - Default value', (done) => {
             feObj = new FileManager({
                 view: 'Details',

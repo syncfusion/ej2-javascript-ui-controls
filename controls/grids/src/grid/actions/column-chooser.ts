@@ -1,14 +1,14 @@
-import { classList, addClass, removeClass, isNullOrUndefined, Browser, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { classList, addClass, removeClass, isNullOrUndefined, Browser, KeyboardEventArgs, updateCSSText } from '@syncfusion/ej2-base';
 import { Query, DataManager } from '@syncfusion/ej2-data';
 import { Column } from '../models/column';
 import { Button } from '@syncfusion/ej2-buttons';
 import { EventHandler, L10n, closest } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
-import { IGrid, IAction, NotifyArgs, EJ2Intance } from '../base/interface';
+import { IGrid, IAction, NotifyArgs, EJ2Intance, ColumnChooserActionArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { ShowHide } from './show-hide';
 import { Dialog, calculateRelativeBasedPosition, DialogModel } from '@syncfusion/ej2-popups';
-import { createCboxWithWrap, toogleCheckbox, parentsUntil, removeAddCboxClasses, setChecked, resetDialogAppend, Global, appendChildren, getListHeight, infiniteRemoveElements, infiniteAppendElements } from '../base/util';
+import { createCboxWithWrap, toogleCheckbox, parentsUntil, removeAddCboxClasses, setChecked, resetDialogAppend, Global, appendChildren, getListHeight, infiniteRemoveElements, infiniteAppendElements, clearReactVueTemplates, getObject } from '../base/util';
 import { ResponsiveDialogAction } from '../base/enum';
 import { ResponsiveDialogRenderer } from '../renderer/responsive-dialog-renderer';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
@@ -116,7 +116,20 @@ export class ColumnChooser implements IAction {
         this.infiniteLoadedElement = null;
         this.infiniteDiv = null;
         if (!isNullOrUndefined(this.dlgObj) && this.dlgObj.element && !this.dlgObj.isDestroyed) {
-            this.dlgObj.destroy();
+            if (this.parent.isReact && this.parent.columnChooserSettings.template) {
+                if (!Global.timer) {
+                    Global.timer = (setTimeout(() => {
+                        if (!isNullOrUndefined(this.dlgObj) && this.dlgObj.element && !this.dlgObj.isDestroyed) {
+                            this.dlgObj.destroy();
+                        }
+                    }, 0));
+                } else {
+                    clearTimeout(Global.timer as number);
+                    Global.timer = null;
+                }
+            } else {
+                this.dlgObj.destroy();
+            }
         }
     }
 
@@ -210,7 +223,7 @@ export class ColumnChooser implements IAction {
 
                 } else if (targetElement.classList.contains('e-cc-cancel')) {
                     (<HTMLInputElement>targetElement.parentElement.querySelector('.e-ccsearch')).value = '';
-                    this.columnChooserSearch('');
+                    this.columnChooserSearch('', false);
                     this.removeCancelIcon();
                     this.refreshCheckboxButton();
                 }
@@ -241,9 +254,13 @@ export class ColumnChooser implements IAction {
 
     private hideDialog(): void {
         if (!isNullOrUndefined(this.dlgObj) && this.dlgObj.visible) {
-            this.dlgObj.hide();
-            // this.unWireEvents();
-            this.isDlgOpen = false;
+            if (this.parent.enableAdaptiveUI) {
+                this.responsiveDialogRenderer.hideResponsiveColumnChooser();
+            } else {
+                this.dlgObj.hide();
+                // this.unWireEvents();
+                this.isDlgOpen = false;
+            }
         }
     }
 
@@ -265,6 +282,7 @@ export class ColumnChooser implements IAction {
             if ((<{ cancel?: boolean }>args).cancel) {
                 return;
             }
+            (<{ columns?: Column[] }>args).columns = null;
             if (target) { this.targetdlg = target; }
             if (this.infiniteRenderMode) {
                 this.dlgObj.show();
@@ -273,6 +291,10 @@ export class ColumnChooser implements IAction {
             this.dlgObj.dataBind();
             this.dlgObj.element.style.maxHeight = '430px';
             const elementVisible: string = this.dlgObj.element.style.display;
+            if (!this.parent.columnChooserSettings.enableSearching) {
+                const contentElement: HTMLElement = this.dlgObj.element.querySelector('.e-dlg-content');
+                contentElement.style.margin = '0px';
+            }
             this.dlgObj.element.style.display = 'block';
             const isSticky: boolean = this.parent.getHeaderContent().classList.contains('e-sticky');
             const toolbarItem: HTMLElement = <HTMLElement>closest(target, '.e-toolbar-item');
@@ -311,7 +333,9 @@ export class ColumnChooser implements IAction {
             if ((this.parent.getContent().firstElementChild as HTMLElement).offsetHeight < this.dlgObj.element.offsetHeight &&
                 !this.parent.element.classList.contains('e-drillthrough-grid')) {
                 resetDialogAppend(this.parent, this.dlgObj);
-                (this.dlgObj.element.querySelector('.e-ccsearch') as HTMLInputElement).select();
+                if (this.dlgObj.element.querySelector('.e-ccsearch')) {
+                    (this.dlgObj.element.querySelector('.e-ccsearch') as HTMLInputElement).select();
+                }
             }
             this.parent.notify(events.columnChooserOpened, { dialog: this.dlgObj });
 
@@ -351,12 +375,15 @@ export class ColumnChooser implements IAction {
         if ((<{ cancel?: boolean }>args).cancel) {
             return;
         }
+        (<{ columns?: Column[] }>args).columns = null;
         if (this.infiniteRenderMode) {
             this.dlgObj.show();
         }
         if (!this.isInitialOpen) {
             this.dlgObj.content = this.renderChooserList();
-            this.updateIntermediateBtn();
+            if (!this.parent.columnChooserSettings.template) {
+                this.updateIntermediateBtn();
+            }
         } else {
             this.refreshCheckboxState();
         }
@@ -375,6 +402,10 @@ export class ColumnChooser implements IAction {
             this.dlgObj.element.style.left = '';
             this.dlgObj.element.style.top = Y + 'px';
             this.dlgObj.element.style.left = X + 'px';
+        }
+        if (!this.parent.columnChooserSettings.enableSearching) {
+            const contentElement: HTMLElement = this.dlgObj.element.querySelector('.e-dlg-content');
+            contentElement.style.margin = '0px';
         }
         this.dlgObj.beforeOpen = this.customDialogOpen.bind(this);
         if (!this.infiniteRenderMode) {
@@ -397,6 +428,9 @@ export class ColumnChooser implements IAction {
     private keyUpHandler(e: KeyboardEventArgs): void {
         if (e.key === 'Escape') {
             this.resetColumnState();
+        }
+        if (e && e.target && !isNullOrUndefined(closest(e.target as Element, '.e-grid-popup'))) {
+            this.parent.trigger('keyPressed', e);
         }
         this.setFocus(parentsUntil(e.target as Element, 'e-cclist'));
     }
@@ -427,7 +461,6 @@ export class ColumnChooser implements IAction {
         return columns;
     }
 
-
     private renderDlgContent(): void {
         const isAdaptive: boolean = this.parent.enableAdaptiveUI;
         this.dlgDiv = this.parent.createElement('div', { className: 'e-ccdlg e-cc', id: this.parent.element.id + '_ccdlg' });
@@ -435,7 +468,7 @@ export class ColumnChooser implements IAction {
             this.parent.element.appendChild(this.dlgDiv);
         }
         this.dlgObj = new Dialog({
-            header: this.parent.enableAdaptiveUI ? null : this.l10n.getConstant('ChooseColumns'),
+            header: this.parent.enableAdaptiveUI ? null : this.renderHeader(),
             showCloseIcon: false,
             closeOnEscape: false,
             locale: this.parent.locale,
@@ -445,9 +478,10 @@ export class ColumnChooser implements IAction {
             content: this.renderChooserList(),
             width: 250,
             cssClass: this.parent.cssClass ? 'e-cc' + ' ' + this.parent.cssClass : 'e-cc',
-            animationSettings: { effect: 'None' }
+            animationSettings: { effect: 'None' },
+            footerTemplate: this.parent.enableAdaptiveUI ? null : this.renderFooter()
         });
-        if (!isAdaptive) {
+        if (!isAdaptive && (this.infiniteRenderMode || !this.parent.columnChooserSettings.footerTemplate)) {
             this.dlgObj.buttons = [{
                 click: this.confirmDlgBtnClick.bind(this),
                 buttonModel: {
@@ -478,6 +512,51 @@ export class ColumnChooser implements IAction {
         this.wireEvents();
     }
 
+    /**
+     * To render the header template for the column chooser.
+     * @returns {HTMLElement | string} This method return HTMLElement or string.
+     * @hidden
+     */
+    public renderHeader(): HTMLElement | string {
+        const gridInstance: IGrid = this.parent;
+        if (gridInstance.columnChooserSettings.headerTemplate && !this.infiniteRenderMode) {
+            const templateDiv: HTMLElement = this.parent.createElement('div', { className: 'e-columnChooserHeaderTemplate' });
+            const templateID: string = this.parent.element.id + 'columnChooserHeaderTemplate';
+            if (this.parent.isReact) {
+                this.parent.getColumnChooserHeaderTemplate()(
+                    null, this.parent, 'columnChooserHeaderTemplate', templateID, null, null, templateDiv);
+                this.parent.renderTemplates();
+            } else {
+                appendChildren(templateDiv, this.parent.getColumnChooserHeaderTemplate()(
+                    null, this.parent, 'columnChooserHeaderTemplate', templateID));
+            }
+            return templateDiv;
+        }
+        return this.l10n.getConstant('ChooseColumns');
+    }
+
+    /**
+     * To render the footer template for the column chooser.
+     * @returns {HTMLElement | string} This method return HTMLElement or string.
+     */
+    private renderFooter(): HTMLElement | string {
+        const gridInstance: IGrid = this.parent;
+        if (gridInstance.columnChooserSettings.footerTemplate && !this.infiniteRenderMode) {
+            const templateDiv: HTMLElement = this.parent.createElement('div', { className: 'e-columnChooserFooterTemplate' });
+            const templateID: string = this.parent.element.id + 'columnChooserFooterTemplate';
+            if (this.parent.isReact) {
+                this.parent.getColumnChooserFooterTemplate()(
+                    null, this.parent, 'columnChooserFooterTemplate', templateID, null, null, templateDiv);
+                this.parent.renderTemplates();
+            } else {
+                appendChildren(
+                    templateDiv, this.parent.getColumnChooserFooterTemplate()(null, this.parent, 'columnChooserFooterTemplate', templateID));
+            }
+            return templateDiv;
+        }
+        return null;
+    }
+
     private renderChooserList(): HTMLElement {
         this.mainDiv = this.parent.createElement('div', { className: 'e-main-div e-cc' });
         const searchDiv: HTMLElement = this.parent.createElement('div', { className: 'e-cc-searchdiv e-cc e-input-group' });
@@ -495,6 +574,15 @@ export class ColumnChooser implements IAction {
         searchDiv.appendChild(ccsearchicon);
         this.searchBoxObj = new SearchBox(ccsearchele, this.serviceLocator);
         let columns: Column[] = this.getColumns();
+        const showColumns: string[] = [];
+        const hideColumns: string[] = [];
+        columns.forEach((column: Column) => {
+            if (column.visible) {
+                showColumns.push(column.headerText);
+            } else {
+                hideColumns.push(column.headerText);
+            }
+        });
         if (this.infiniteRenderMode && !this.isInitialOpen) {
             columns = this.parent.columns as Column[];
             for (let i: number = 0; i < columns.length; i++) {
@@ -503,40 +591,70 @@ export class ColumnChooser implements IAction {
                 }
             }
         }
-        const innerDivContent: HTMLElement | string[] | string = this.refreshCheckboxList(columns);
-        this.innerDiv.appendChild((innerDivContent as Element));
-        conDiv.appendChild(this.innerDiv);
-        if (this.parent.enableAdaptiveUI) {
-            const searchBoxDiv: HTMLElement = this.parent.createElement('div', { className: 'e-cc-searchBox' });
-            searchBoxDiv.appendChild(searchDiv);
-            this.mainDiv.appendChild(searchBoxDiv);
-        } else {
+        if (this.parent.columnChooserSettings.template && !this.infiniteRenderMode) {
+            const templateDiv: Element = this.parent.createElement('div', { className: 'e-columnChooserTemplate' });
+            (templateDiv as HTMLElement).style.cssText = this.parent.enableAdaptiveUI ?
+                'height: 90%; min-height: 160px; overflow-y: auto;' : 'height: 196px; overflow-y: auto;';
+            const TemplateID: string = this.parent.element.id + 'columnChooserTemplate';
+            const argsData: Object = { columns : columns, hideColumns: hideColumns, showColumns: showColumns };
+            if (this.parent.isReact) {
+                this.parent.getColumnChooserTemplate()(argsData, this.parent, 'columnChooserTemplate', TemplateID, null, null, templateDiv);
+                this.parent.renderTemplates();
+            } else {
+                appendChildren(templateDiv, this.parent.getColumnChooserTemplate()(
+                    argsData, this.parent, 'columnChooserTemplate', TemplateID, null, null, null, this.parent.root));
+            }
+            if (this.parent.columnChooserSettings.renderCustomColumnChooser) {
+                if (typeof this.parent.columnChooserSettings.renderCustomColumnChooser === 'function') {
+                    this.parent.columnChooserSettings.renderCustomColumnChooser(templateDiv, columns);
+                } else if (typeof this.parent.columnChooserSettings.renderCustomColumnChooser === 'string') {
+                    this.parent.columnChooserSettings.renderCustomColumnChooser =
+                        getObject(this.parent.columnChooserSettings.renderCustomColumnChooser, window);
+                    (this.parent.columnChooserSettings.renderCustomColumnChooser as Function)(templateDiv, columns);
+                }
+            }
             this.mainDiv.appendChild(searchDiv);
+            this.mainDiv.appendChild(templateDiv);
+        } else {
+            const innerDivContent: HTMLElement | string[] | string = this.refreshCheckboxList(columns);
+            this.innerDiv.appendChild((innerDivContent as Element));
+            conDiv.appendChild(this.innerDiv);
+            if (this.parent.enableAdaptiveUI) {
+                const searchBoxDiv: HTMLElement = this.parent.createElement('div', { className: 'e-cc-searchBox' });
+                searchBoxDiv.appendChild(searchDiv);
+                this.mainDiv.appendChild(searchBoxDiv);
+            } else {
+                this.mainDiv.appendChild(searchDiv);
+            }
+            this.mainDiv.appendChild(conDiv);
         }
-        this.mainDiv.appendChild(conDiv);
+        if (!this.parent.columnChooserSettings.enableSearching) {
+            searchDiv.style.display = 'none';
+        }
         return this.mainDiv;
     }
 
     private confirmDlgBtnClick(args: Object): void {
+        const onActionBeginArgs: ColumnChooserActionArgs = {
+            requestType: 'columnVisibilityUpdate',
+            columns: this.getColumns() as Column[],
+            cancel: false
+        };
+        this.parent.trigger(events.actionBegin, onActionBeginArgs);
+        if (onActionBeginArgs.cancel) {
+            return;
+        }
         this.stateChangeColumns = [];
         this.changedStateColumns = [];
         const columns: Column[] = this.infiniteRenderMode ? this.infiniteColumns : this.parent.getColumns();
         this.changedColumns = (this.changedColumns.length > 0) ? this.changedColumns : this.unchangedColumns;
         this.changedColumnState(this.changedColumns);
         const uncheckedLength: number = this.infiniteRenderMode ? this.infiniteLoadedElement.filter(
-            (arr: HTMLElement) => arr.querySelector('.e-uncheck')).length : this.ulElement.querySelector('.e-uncheck') &&
-            this.ulElement.querySelectorAll('.e-uncheck:not(.e-selectall)').length;
+            (arr: HTMLElement) => arr.querySelector('.e-uncheck')).length : this.ulElement &&
+                this.ulElement.querySelector('.e-uncheck') && this.ulElement.querySelectorAll('.e-uncheck:not(.e-selectall)').length;
         if (!isNullOrUndefined(args)) {
             if (uncheckedLength < columns.length) {
-                if (this.hideColumn.length) {
-                    this.columnStateChange(this.hideColumn, false);
-                }
-                if (this.showColumn.length) {
-                    this.columnStateChange(this.showColumn, true);
-                }
-                this.getShowHideService.setVisible(this.stateChangeColumns, this.changedStateColumns);
-                this.clearActions();
-                this.parent.notify(events.tooltipDestroy, { module: 'edit' });
+                this.changeColumnVisibility({visibleColumns: this.showColumn, hiddenColumns: this.hideColumn}, 'uid');
                 if (this.parent.getCurrentViewRecords().length === 0) {
                     const emptyRowCell: HTMLElement = this.parent.element.querySelector('.e-emptyrow').querySelector('td');
                     emptyRowCell.setAttribute('colSpan', this.parent.getVisibleColumns().length.toString());
@@ -549,6 +667,45 @@ export class ColumnChooser implements IAction {
                 this.parent.notify(events.showAddNewRowFocus, {});
             }
         }
+        const onActionCompleteArgs: ColumnChooserActionArgs = {
+            requestType: 'columnVisibilityUpdate',
+            columns: this.getColumns() as Column[],
+            cancel: false
+        };
+        this.parent.trigger(events.actionComplete, onActionCompleteArgs);
+    }
+
+    /**
+     * Toggles the visibility of specified columns in the grid.
+     * @param {Object} columns - An object specifying the columns to show or hide.
+     * @param {string[]} columns.visibleColumns - An array of column identifiers specifying the columns to show.
+     * @param {string[]} columns.hiddenColumns - An array of column identifiers specifying the columns to hide.
+     * @param {string} columnKey - Defines the column key as a UID, field name, or header text.
+     * @returns {void}
+     * The 'columns' object contains the properties 'visibleColumns' and 'hiddenColumns' as arrays of column identifiers.
+     */
+    public changeColumnVisibility(columns: { visibleColumns: string[], hiddenColumns: string[]}, columnKey?: string): void {
+        columnKey = columnKey ? columnKey : 'headerText';
+        if (columnKey !== 'uid') {
+            if (columns.visibleColumns || columns.hiddenColumns) {
+                this.stateChangeColumns = [];
+                this.changedStateColumns = [];
+                const columnChooserColumns: Column[] = this.getColumns();
+                columns.hiddenColumns = columnChooserColumns.filter((column: Column) =>
+                    columns.hiddenColumns.indexOf(column[columnKey as keyof Column] as string) !== -1).map((column: Column) => column.uid);
+                columns.visibleColumns = columnChooserColumns.filter((column: Column) =>
+                    columns.visibleColumns.indexOf(column[columnKey as keyof Column] as string) !== -1).map((column: Column) => column.uid);
+            }
+        }
+        if (columns.hiddenColumns.length) {
+            this.columnStateChange(columns.hiddenColumns, false);
+        }
+        if (columns.visibleColumns.length) {
+            this.columnStateChange(columns.visibleColumns, true);
+        }
+        this.getShowHideService.setVisible(this.stateChangeColumns, this.changedStateColumns);
+        this.clearActions();
+        this.parent.notify(events.tooltipDestroy, { module: 'edit' });
     }
 
     private onResetColumns(e: NotifyArgs): void {
@@ -596,10 +753,12 @@ export class ColumnChooser implements IAction {
         for (let index: number = 0; index < stateColumns.length; index++) {
             const colUid: string = stateColumns[parseInt(index.toString(), 10)];
             const currentColumn: Column = this.parent.getColumnByUid(colUid,  this.infiniteRenderMode);
-            if (currentColumn.type !== 'checkbox') {
-                currentColumn.visible = state;
+            if (currentColumn) {
+                if (currentColumn.type !== 'checkbox') {
+                    currentColumn.visible = state;
+                }
+                this.stateChangeColumns.push(currentColumn);
             }
-            this.stateChangeColumns.push(currentColumn);
         }
     }
 
@@ -609,8 +768,21 @@ export class ColumnChooser implements IAction {
     }
 
     private clearBtnClick(): void {
+        const onActionBeginArgs: ColumnChooserActionArgs = {
+            requestType: 'columnChooserClose',
+            cancel: false
+        };
+        this.parent.trigger(events.actionBegin, onActionBeginArgs);
+        if (onActionBeginArgs.cancel) {
+            return;
+        }
         this.clearActions();
         this.parent.notify(events.columnChooserCancelBtnClick, { dialog: this.dlgObj });
+        const onActionCompleteArgs: ColumnChooserActionArgs = {
+            requestType: 'columnChooserClose',
+            cancel: false
+        };
+        this.parent.trigger(events.actionComplete, onActionCompleteArgs);
     }
 
     private checkstatecolumn(isChecked: boolean, coluid: string, selectAll: boolean = false): void {
@@ -643,24 +815,34 @@ export class ColumnChooser implements IAction {
         }
     }
 
-    private columnChooserSearch(searchVal: string): void {
+    private columnChooserSearch(searchVal: string, check: boolean): void {
+        if (check) {
+            const onActionBeginArgs: ColumnChooserActionArgs = {
+                requestType: 'columnChooserSearch',
+                columns: this.getColumns() as Column[],
+                cancel: false
+            };
+            this.parent.trigger(events.actionBegin, onActionBeginArgs);
+            if (onActionBeginArgs.cancel) {
+                return;
+            }
+        }
         let clearSearch: boolean = false;
         let okButton: Button;
         const buttonEle: HTMLElement = this.dlgDiv.querySelector('.e-footer-content');
-        let selectedCheckbox: number = this.ulElement.querySelector('.e-check') &&
+        let selectedCheckbox: number = this.ulElement && this.ulElement.querySelector('.e-check') &&
         this.ulElement.querySelectorAll('.e-check:not(.e-selectall)').length;
         if (this.infiniteRenderMode) {
             selectedCheckbox = this.infiniteLoadedElement.filter((arr: HTMLElement) => arr.querySelector('.e-check')).length;
         }
         this.isInitialOpen = true;
-        if (buttonEle) {
+        if (buttonEle && buttonEle.querySelector('.e-btn')) {
             okButton = (buttonEle.querySelector('.e-btn') as EJ2Intance).ej2_instances[0] as Button;
         }
         if (searchVal === '') {
             this.removeCancelIcon();
             this.filterColumns = this.getColumns() as Column[];
             clearSearch = true;
-
         } else {
             this.filterColumns = new DataManager((this.getColumns() as Object[]) as JSON[]).executeLocal(new Query()
                 .where('headerText', this.searchOperator, searchVal, true, this.parent.columnChooserSettings.ignoreAccent)) as Column[];
@@ -668,8 +850,54 @@ export class ColumnChooser implements IAction {
         if (this.infiniteRenderMode) {
             this.updateIfiniteSelectAll();
         }
-
-        if (this.filterColumns.length) {
+        if (this.parent.columnChooserSettings.template && !this.infiniteRenderMode) {
+            let TemplateElement: Element;
+            const isReactCompiler: boolean = this.parent.isReact;
+            if (isReactCompiler) {
+                clearReactVueTemplates(this.parent, ['columnChooserTemplate']);
+                TemplateElement = this.mainDiv.querySelector('.e-columnChooserTemplate');
+            } else {
+                this.mainDiv.querySelector('.e-columnChooserTemplate').remove();
+                TemplateElement = this.parent.createElement('div', { className: 'e-columnChooserTemplate' });
+                (TemplateElement as HTMLElement).style.cssText = this.parent.enableAdaptiveUI ?
+                    'height: 90%; min-height: 160px; overflow-y: auto;' : 'height: 196px; overflow-y: auto;';
+            }
+            const TemplateID: string = this.parent.element.id + 'columnChooserTemplate';
+            const chooserColumns: Column[] = this.filterColumns;
+            const searchedValue: string = searchVal;
+            const showColumns: string[] = [];
+            const hideColumns: string[] = [];
+            chooserColumns.forEach((column: Column) => {
+                if (column.visible) {
+                    showColumns.push(column.headerText);
+                } else {
+                    hideColumns.push(column.headerText);
+                }
+            });
+            const argsData: Object = {
+                columns: chooserColumns,
+                hideColumns: hideColumns,
+                showColumns: showColumns,
+                searchValue: searchedValue
+            };
+            if (isReactCompiler) {
+                this.parent.getColumnChooserTemplate()(argsData, this.parent, 'columnChooserTemplate', TemplateID, null, null, TemplateElement);
+                this.parent.renderTemplates();
+            } else {
+                appendChildren(TemplateElement, this.parent.getColumnChooserTemplate()(
+                    argsData, this.parent, 'columnChooserTemplate', TemplateID, null, null, null, this.parent.root));
+            }
+            if (this.parent.columnChooserSettings.renderCustomColumnChooser) {
+                if (typeof this.parent.columnChooserSettings.renderCustomColumnChooser === 'function') {
+                    this.parent.columnChooserSettings.renderCustomColumnChooser(TemplateElement, this.filterColumns);
+                } else if (typeof this.parent.columnChooserSettings.renderCustomColumnChooser === 'string') {
+                    this.parent.columnChooserSettings.renderCustomColumnChooser =
+                        getObject(this.parent.columnChooserSettings.renderCustomColumnChooser, window);
+                    (this.parent.columnChooserSettings.renderCustomColumnChooser as Function)(TemplateElement, this.filterColumns);
+                }
+            }
+            this.mainDiv.appendChild(TemplateElement);
+        } else if (this.filterColumns.length) {
             this.innerDiv.innerHTML = ' ';
             this.innerDiv.classList.remove('e-ccnmdiv');
             this.infiniteInitialLoad = true;
@@ -705,6 +933,14 @@ export class ColumnChooser implements IAction {
         }
         this.flag = true;
         this.stopTimer();
+        if (check) {
+            const onActionCompleteArgs: ColumnChooserActionArgs = {
+                requestType: 'columnChooserSearch',
+                columns: this.getColumns() as Column[],
+                cancel: false
+            };
+            this.parent.trigger(events.actionComplete, onActionCompleteArgs);
+        }
     }
 
     private updateIfiniteSelectAll(): void {
@@ -737,6 +973,9 @@ export class ColumnChooser implements IAction {
     }
 
     private checkBoxClickHandler(e: MouseEvent): void {
+        if (this.parent.columnChooserSettings.template && !this.infiniteRenderMode) {
+            return;
+        }
         let checkstate: boolean;
         const selectAllElement: Element = parentsUntil(e.target as Element, 'e-checkbox-wrapper');
         const columns: Column[] = this.infiniteRenderMode ? this.infiniteColumns : this.parent.getColumns();
@@ -771,7 +1010,9 @@ export class ColumnChooser implements IAction {
             }
             const isSelectAll: boolean = this.infiniteRenderMode && selectAllElement.querySelector('.e-selectall') &&
                 selectAllElement.querySelector('.e-uncheck') ? true : false;
-            this.refreshCheckboxButton(isSelectAll);
+            if (!this.parent.columnChooserSettings.footerTemplate) {
+                this.refreshCheckboxButton(isSelectAll);
+            }
             this.setFocus(parentsUntil(e.target as Element, 'e-cclist'));
             if (this.infiniteRenderMode) {
                 this.updateIntermediateBtn();
@@ -796,7 +1037,7 @@ export class ColumnChooser implements IAction {
         const selected: number = this.infiniteRenderMode ? this.infiniteLoadedElement.filter(
             (arr: HTMLElement) => arr.querySelector('.e-check')).length : this.ulElement.querySelectorAll('.e-check:not(.e-selectall)').length;
         let btn: Button;
-        if (!this.parent.enableAdaptiveUI) {
+        if (!this.parent.enableAdaptiveUI && !this.parent.columnChooserSettings.footerTemplate) {
             btn = (<{ btnObj?: Button }>(this.dlgObj as DialogModel)).btnObj[0];
             btn.disabled = false;
         } else if (this.parent.enableAdaptiveUI && this.responsiveDialogRenderer) {
@@ -813,13 +1054,13 @@ export class ColumnChooser implements IAction {
         } else {
             className = ['e-uncheck'];
             setChecked(inputElem, false);
-            if (!this.parent.enableAdaptiveUI) {
+            if (btn && !this.parent.enableAdaptiveUI) {
                 btn.disabled = true;
             } else if (this.parent.enableAdaptiveUI && this.responsiveDialogRenderer) {
                 this.parent.notify(events.refreshCustomFilterOkBtn, { disabled: true });
             }
         }
-        if (!this.parent.enableAdaptiveUI) {
+        if (btn && !this.parent.enableAdaptiveUI) {
             btn.dataBind();
         }
         removeClass([selectAllElement], ['e-check', 'e-stop', 'e-uncheck']);
@@ -897,9 +1138,8 @@ export class ColumnChooser implements IAction {
     private refreshCheckboxList(chooserColumns: Column[]): HTMLElement {
         this.ulElement = this.parent.createElement('ul', { className: 'e-ccul-ele e-cc' });
         const selectAllValue: string = this.l10n.getConstant('SelectAll');
-        const columnChooserList: HTMLElement = this.parent.createElement('li', { className: 'e-cclist e-cc e-cc-selectall',
-            'styles': this.infiniteRenderMode ? 'list-style:None' : ''
-        });
+        const columnChooserList: HTMLElement = this.parent.createElement('li', { className: 'e-cclist e-cc e-cc-selectall' });
+        updateCSSText(columnChooserList, this.infiniteRenderMode ? 'list-style: None;' : '');
         const selectAll: Element = this.createCheckBox(selectAllValue, false, this.parent.element.id + '-selectAll');
         if (chooserColumns.length) {
             selectAll.querySelector('.e-checkbox-wrapper').firstElementChild.classList.add('e-selectall');
@@ -997,8 +1237,11 @@ export class ColumnChooser implements IAction {
     }
 
     private refreshCheckboxState(): void {
+        if (!this.parent.columnChooserSettings.enableSearching) {
+            return;
+        }
         (<HTMLInputElement>this.dlgObj.element.querySelector('.e-cc.e-input')).value = '';
-        this.columnChooserSearch('');
+        this.columnChooserSearch('', false);
         const gridObject: IGrid = this.parent;
         const currentCheckBoxColls: NodeListOf<Element> = this.dlgObj.element.querySelectorAll('.e-cc-chbox:not(.e-selectall)');
         for (let i: number = 0, itemLen: number = currentCheckBoxColls.length; i < itemLen; i++) {
@@ -1048,7 +1291,8 @@ export class ColumnChooser implements IAction {
         for (let i: number = 0; i < columns.length; i++) {
             const column: Column = columns[parseInt(i.toString(), 10)];
             if (column.showInColumnChooser) {
-                const columnChooserList: HTMLElement = this.parent.createElement('li', { className: 'e-cclist e-cc', styles: 'list-style:None', id: 'e-ccli_' + column.uid });
+                const columnChooserList: HTMLElement = this.parent.createElement('li', { className: 'e-cclist e-cc', id: 'e-ccli_' + column.uid });
+                columnChooserList.style.listStyle = 'none';
                 const hideColumnState: boolean = this.hideColumn.indexOf(column.uid) === -1 ? false : true;
                 const showColumnState: boolean = this.showColumn.indexOf(column.uid) === -1 ? false : true;
                 const columnchooserccheckboxlist: Element =
@@ -1092,7 +1336,7 @@ export class ColumnChooser implements IAction {
         const proxy: ColumnChooser = this;
         const interval: number = !proxy.flag && e.keyCode !== 13 ? 500 : 0;
         this.timer = window.setInterval(
-            () => { proxy.columnChooserSearch(proxy.searchValue); }, interval);
+            () => { proxy.columnChooserSearch(proxy.searchValue, true); }, interval);
     }
 
     private stopTimer(): void {
@@ -1100,22 +1344,32 @@ export class ColumnChooser implements IAction {
     }
 
     private addcancelIcon(): void {
-        this.dlgDiv.querySelector('.e-cc.e-ccsearch-icon').classList.add('e-cc-cancel');
-        this.dlgDiv.querySelector('.e-cc-cancel').setAttribute('title', this.l10n.getConstant('Clear'));
+        if (this.dlgDiv.querySelector('.e-cc.e-ccsearch-icon')) {
+            this.dlgDiv.querySelector('.e-cc.e-ccsearch-icon').classList.add('e-cc-cancel');
+            this.dlgDiv.querySelector('.e-cc-cancel').setAttribute('title', this.l10n.getConstant('Clear'));
+        }
     }
 
     private removeCancelIcon(): void {
-        this.dlgDiv.querySelector('.e-cc.e-ccsearch-icon').classList.remove('e-cc-cancel');
-        this.dlgDiv.querySelector('.e-cc.e-ccsearch-icon').setAttribute('title', this.l10n.getConstant('Search'));
+        if (this.dlgDiv.querySelector('.e-cc.e-ccsearch-icon')) {
+            this.dlgDiv.querySelector('.e-cc.e-ccsearch-icon').classList.remove('e-cc-cancel');
+            this.dlgDiv.querySelector('.e-cc.e-ccsearch-icon').setAttribute('title', this.l10n.getConstant('Search'));
+        }
     }
 
     private mOpenDlg(): void {
         if (Browser.isDevice) {
-            this.dlgObj.element.querySelector('.e-cc-searchdiv').classList.remove('e-input-focus');
-            (<HTMLElement>this.dlgObj.element.querySelectorAll('.e-cc-chbox')[0]).focus();
+            if (this.dlgObj.element.querySelector('.e-cc-searchdiv')) {
+                this.dlgObj.element.querySelector('.e-cc-searchdiv').classList.remove('e-input-focus');
+            }
+            if (<HTMLElement>this.dlgObj.element.querySelectorAll('.e-cc-chbox')[0]) {
+                (<HTMLElement>this.dlgObj.element.querySelectorAll('.e-cc-chbox')[0]).focus();
+            }
         }
         if (this.parent.enableAdaptiveUI) {
-            this.dlgObj.element.querySelector('.e-cc-searchdiv').classList.add('e-input-focus');
+            if (this.dlgObj.element.querySelector('.e-cc-searchdiv')) {
+                this.dlgObj.element.querySelector('.e-cc-searchdiv').classList.add('e-input-focus');
+            }
         }
     }
 

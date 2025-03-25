@@ -228,7 +228,9 @@
           &.e-focused {
             padding: 10px 12px;
           }
-          padding: 10px 12px;
+          & {
+            padding: 10px 12px;
+          }
         }
       }
         

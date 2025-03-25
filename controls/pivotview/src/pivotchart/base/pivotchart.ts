@@ -189,12 +189,69 @@ export class PivotChart {
         let reductionLevel: number = 0;
         let reductionLevelCount: number = 0;
         let finalReductionLevel: number = 0;
+        let rowsInclude: boolean = false;
+        let ignoreCount: number = 0;
+        let rowReduction: number = 0;
+        let previousHeader: number = 0;
         for (const rKey of rKeys) {
             const rowIndex: number = Number(rKey);
-            let drillMem: boolean = false;
-            if (!isNullOrUndefined(pivotValues[rowIndex as number])) {
+            let drillMem: boolean;
+            let previousRow: boolean = false;
+            let firstRowCell: IAxisSet;
+            let indexReduction: number;
+            if (rowsInclude) {
+                firstRowCell = pivotValues[rowIndex - rowReduction][this.parent.engineModule.rowMaxLevel as number];
+            } else {
+                firstRowCell = pivotValues[rowIndex as number][this.parent.gridSettings.layout === 'Tabular' ?
+                    this.parent.engineModule.rowMaxLevel : 0];
+            }
+            if (firstRowCell) {
+                indexReduction = rowReduction === firstRowCell.level ? 1 : (rowReduction + 1);
+            }
+            if (this.parent.gridSettings.layout === 'Tabular' && (!this.parent.dataSourceSettings.showSubTotals ||
+                (!this.parent.dataSourceSettings.showRowSubTotals && this.parent.dataSourceSettings.showColumnSubTotals))) {
+                if (firstRowCell && pivotValues[rowIndex - (rowReduction === firstRowCell.level ? 1 : (rowReduction + 1))] &&
+                    !this.dataSourceSettings.showSubTotals &&
+                    pivotValues[rowIndex - indexReduction][this.parent.engineModule.rowMaxLevel]) {
+                    const previousRowCell: IAxisSet = rowsInclude ?
+                        pivotValues[rowIndex - (rowReduction + 1)][this.parent.engineModule.rowMaxLevel]
+                        : pivotValues[rowIndex - indexReduction][this.parent.engineModule.rowMaxLevel];
+                    const previousRowLevelName: string = previousRowCell.valueSort.levelName as string;
+                    const previousRowLevelNameCollection: string[] = previousRowLevelName.split(delimiter);
+                    const firstRowLevelName: string = firstRowCell.valueSort.levelName as string;
+                    const levelNameCollection: string[] = firstRowLevelName.split(delimiter);
+                    const previousRowTextCollection: string[] = previousRowCell.formattedText.split(' ');
+                    drillMem = this.isMemberDrilled(previousRowCell, previousRowTextCollection);
+                    for (let z: number = ((previousRowLevelNameCollection.length - 2) - previousHeader); z >= 0; z--) {
+                        if (previousRowLevelNameCollection[z as number] !==
+                            levelNameCollection[z as number] && !drillMem) {
+                            if (ignoreCount !== 1) {
+                                firstRowCell = rowsInclude ? pivotValues[rowIndex - (rowReduction + 1)][z as number] :
+                                    pivotValues[rowIndex - (rowReduction === firstRowCell.level ? 1 : (rowReduction + 1))][z as number];
+                                previousRow = true;
+                                rowsInclude = true;
+                                ignoreCount++;
+                                rowReduction++;
+                                const rowKeys: number = Number(rKeys[rKeys.length - 1]) + 1;
+                                rKeys[rKeys.length as number] = rowKeys.toString();
+                                if (previousRowLevelNameCollection[z - 1] && previousRowLevelNameCollection[z - 1] !==
+                                    levelNameCollection[z - 1]) {
+                                    ignoreCount = 0;
+                                    previousHeader++;
+                                } else {
+                                    previousHeader = 0;
+                                }
+                            } else {
+                                ignoreCount--;
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!isNullOrUndefined(pivotValues[rowIndex - rowReduction as number])) {
                 const colIndex: number = this.parent.gridSettings.layout === 'Tabular' ? this.parent.engineModule.rowMaxLevel : 0;
-                const header: IAxisSet = pivotValues[rowIndex as number][colIndex as number] as IAxisSet;
+                const header: IAxisSet = pivotValues[rowIndex - rowReduction][colIndex as number] as IAxisSet;
                 const valueSort: string[] = header && header.valueSort && !isNullOrUndefined(header.valueSort.levelName) ?
                     header.valueSort.levelName.toString().split(delimiter) : undefined;
                 isValidHeader = false;
@@ -215,8 +272,6 @@ export class PivotChart {
                 }
                 if (header && header.axis === 'row' && (this.dataSourceSettings.rows.length === 0 ? true :
                     (header.type !== 'grand sum' && isValidHeader))) {
-                    const firstRowCell: IAxisSet = pivotValues[rowIndex as number][this.parent.gridSettings.layout === 'Tabular' ?
-                        this.parent.engineModule.rowMaxLevel : 0] as IAxisSet;
                     if (this.parent.gridSettings.layout !== 'Tabular') {
                         if (firstRowCell.isSum) {
                             continue;
@@ -254,34 +309,32 @@ export class PivotChart {
                             const firstRowLevelName: string = firstRowCell.valueSort.levelName as string;
                             const levelNameCollection: string[] = firstRowLevelName.split(delimiter);
                             const formattedTextCollection: string[] = firstRowCell.formattedText.split(' ');
-                            for (let n: number = 0; n < this.parent.dataSourceSettings.drilledMembers.length; n++) {
-                                const drillItems: string[] = this.parent.dataSourceSettings.drilledMembers[n as number].items;
-                                for (let v: number = 0; v < drillItems.length; v++) {
-                                    const drillItemsCollection: string[] = drillItems[v as number].split(this.parent.dataSourceSettings
-                                        .drilledMembers[n as number].delimiter);
-                                    if (drillItemsCollection[drillItemsCollection.length - 1] === firstRowCell.formattedText.split(' ')[0]
-                                        && drillItemsCollection[0] === levelNameCollection[0]) {
-                                        drillMem = true;
-                                        break;
-                                    }
-                                }
-                            }
+                            drillMem = this.isMemberDrilled(firstRowCell, levelNameCollection);
                             const valueSortIndex: number = (valueSort.length - 2) !== (this.parent.engineModule.rowMaxLevel - 1) ?
                                 (valueSort.length - 2) : this.parent.engineModule.rowMaxLevel - 1;
                             for (let k: number = 0; k <= this.parent.engineModule.rowMaxLevel; k++) {
-                                if (this.headerColl[indexCount as number] && this.headerColl[indexCount as number][k as number]) {
-                                    if (firstRowCell.isSum) {
+                                if (this.headerColl[indexCount as number] && this.headerColl[indexCount as number][k as number] ||
+                                    previousRow) {
+                                    if (firstRowCell.isSum || previousRow) {
                                         if (firstRowCell.level > 0) {
                                             indexCount = indexCount - (firstRowCell.level === this.parent.engineModule.rowMaxLevel - 1 ?
                                                 reductionLevel - 1 : reductionLevelCount - 1);
-                                            firstRowCell.formattedText = formattedTextCollection.length > 2 ? formattedTextCollection
-                                                .slice(0, formattedTextCollection.length - 1).join(' ') : formattedTextCollection[0];
+                                            firstRowCell.formattedText = (!this.parent.dataSourceSettings.showSubTotals ||
+                                                (!this.parent.dataSourceSettings.showRowSubTotals &&
+                                                    this.parent.dataSourceSettings.showColumnSubTotals)) ? firstRowCell.formattedText :
+                                                formattedTextCollection.length > 2 ?
+                                                    formattedTextCollection.slice(0, formattedTextCollection.length - 1).join(' ') :
+                                                    formattedTextCollection[0];
                                             firstRowCell.hasChild = true;
                                             break;
                                         } else {
                                             indexCount = indexCount - (finalReductionLevel - 1);
-                                            firstRowCell.formattedText = formattedTextCollection.length > 2 ? formattedTextCollection
-                                                .slice(0, formattedTextCollection.length - 1).join(' ') : formattedTextCollection[0];
+                                            firstRowCell.formattedText = (!this.parent.dataSourceSettings.showSubTotals ||
+                                                (!this.parent.dataSourceSettings.showRowSubTotals &&
+                                                    this.parent.dataSourceSettings.showColumnSubTotals)) ? firstRowCell.formattedText :
+                                                formattedTextCollection.length > 2 ?
+                                                    formattedTextCollection.slice(0, formattedTextCollection.length - 1).join(' ') :
+                                                    formattedTextCollection[0];
                                             firstRowCell.hasChild = true;
                                             break;
                                         }
@@ -294,7 +347,7 @@ export class PivotChart {
                                     }
                                 }
                             }
-                            if (!firstRowCell.isSum) {
+                            if (!firstRowCell.isSum && !previousRow) {
                                 reductionLevel++;
                                 reductionLevelCount++;
                                 finalReductionLevel++;
@@ -328,7 +381,7 @@ export class PivotChart {
                         levelName: levelName,
                         level: currrentLevel,
                         fieldName: firstRowCell.valueSort.axis ? firstRowCell.valueSort.axis.toString() : '',
-                        rowIndex: rowIndex,
+                        rowIndex: rowIndex - rowReduction,
                         colIndex: 0,
                         cell: firstRowCell
                     };
@@ -340,7 +393,7 @@ export class PivotChart {
                             this.headerColl[indexCount as number][currrentLevel as number] = cellInfo;
                         }
                         if (this.parent.gridSettings.layout === 'Tabular') {
-                            if (firstRowCell.isSum) {
+                            if (firstRowCell.isSum || previousRow) {
                                 if (firstRowCell.level > 0) {
                                     indexCount = indexCount + (firstRowCell.level === this.parent.engineModule.rowMaxLevel - 1 ?
                                         reductionLevel - 1 : reductionLevelCount - 1);
@@ -359,7 +412,8 @@ export class PivotChart {
                             }
                         }
                     }
-                    const rows: IPivotRows = pivotValues[rowIndex as number];
+                    const rows: IPivotRows = this.parent.gridSettings.layout === 'Tabular' ? pivotValues[rowIndex - rowReduction as number]
+                        : pivotValues[rowIndex as number];
                     const cKeys: string[] = Object.keys(rows);
                     let prevMemberCell: IAxisSet;
                     if (this.parent.dataType === 'olap') {
@@ -397,7 +451,7 @@ export class PivotChart {
                     for (let f: number = this.parent.gridSettings.layout === 'Tabular' ? this.parent.engineModule.rowMaxLevel : 0; f < cKeys.length; f++) {
                         const cKey: string = cKeys[f as number];
                         const cellIndex: number = Number(cKey);
-                        const cell: IAxisSet = pivotValues[rowIndex as number][cellIndex as number] as IAxisSet;
+                        const cell: IAxisSet = pivotValues[rowIndex - rowReduction][cellIndex as number] as IAxisSet;
                         const measureAllow: boolean = isNullOrUndefined(cell.rowHeaders) ? this.dataSourceSettings.rows.length === 0 : true;
                         const actualText: string | number = (this.parent.dataType === 'olap' && tupInfo && tupInfo.measureName) ?
                             tupInfo.measureName : cell.actualText;
@@ -674,9 +728,9 @@ export class PivotChart {
             ((this.parent.element as HTMLElement).querySelector('.' + cls.PIVOTCHART_INNER) as HTMLElement).innerHTML = '';
         }
         if (this.parent.showGroupingBar) {
-            this.element.style.minWidth = '400px !important';
+            this.element.style.minWidth = this.parent.minWidth ? this.parent.minWidth + 'px' : '400px !important';
         } else {
-            this.element.style.minWidth = '310px !important';
+            this.element.style.minWidth = this.parent.minWidth ? this.parent.minWidth + 'px' : '310px !important';
         }
         let width: string = this.parent.width.toString();
         if (this.parent.showToolbar && this.parent.grid) {
@@ -981,8 +1035,7 @@ export class PivotChart {
                         break;
                     }
                 }
-                const format: string = PivotUtil.inArray(measureField.aggregateType, percentAggregateTypes) !== -1 ? 'P2' : (formatSetting ?
-                    (formatSetting.format.toLowerCase().match(/n|p|c/) === null ? 'N' : formatSetting.format) :
+                const format: string = PivotUtil.inArray(measureField.aggregateType, percentAggregateTypes) !== -1 ? 'P2' : (formatSetting ? formatSetting.format :
                     this.parent.dataType === 'olap' ? this.getFormat(measureField.formatString) : 'N');
                 const resFormat: boolean =
                     (this.chartSettings.chartSeries.type === 'Polar' || this.chartSettings.chartSeries.type === 'Radar') ? true : false;
@@ -1041,13 +1094,8 @@ export class PivotChart {
                     break;
                 }
             }
-            let lengthofFormat: number;
-            if (formatSetting) {
-                lengthofFormat = formatSetting.format.length;
-            }
             let currentYAxis: AxisModel = {};
-            const format: string = PivotUtil.inArray(measureField.aggregateType, percentAggregateTypes) !== -1 ? 'P2' : (formatSetting ?
-                (((formatSetting.format.toLowerCase().match(/n[0-10]|p[0-10]|c[0-10]/) === null) || lengthofFormat > 3) ? 'N' : formatSetting.format) :
+            const format: string = PivotUtil.inArray(measureField.aggregateType, percentAggregateTypes) !== -1 ? 'P2' : (formatSetting ? formatSetting.format :
                 this.parent.dataType === 'olap' ? this.getFormat(measureField.formatString) : 'N');
             currentYAxis = this.persistSettings.primaryYAxis ? this.frameObjectWithKeys(this.persistSettings.primaryYAxis as {
                 [key: string]: Object
@@ -1697,8 +1745,10 @@ export class PivotChart {
             this.parent.chartSettings.chartSeries.type === 'StackingBar100' ||
             this.parent.chartSettings.chartSeries.type === 'StackingArea100' ||
             this.parent.chartSettings.chartSeries.type === 'StackingLine100')) {
-            const formatField: IField = this.engineModule.formatFields[(this.chartSettings.enableMultipleAxis &&
-                this.chartSettings.multipleAxisMode === 'Combined') ? this.currentMeasure : args.axis.name];
+            const key: string = (this.chartSettings.enableMultipleAxis &&
+                this.chartSettings.multipleAxisMode === 'Combined') ? this.currentMeasure :
+                this.parent.dataType === 'olap' ? this.measuresNames[args.axis.name] : args.axis.name;
+            const formatField: IField = this.engineModule.formatFields[key as string] || null;
             const valueFormat: string | IAxisSet = this.engineModule.getFormattedValue(args.value, (this.chartSettings.enableMultipleAxis &&
                 this.chartSettings.multipleAxisMode === 'Combined') ? this.currentMeasure : args.axis.name, args.text);
             const formattedValue: string = ((formatField && formatField.format &&
@@ -1739,7 +1789,9 @@ export class PivotChart {
         let delimiter: string = (this.dataSourceSettings.drilledMembers[0] && this.dataSourceSettings.drilledMembers[0].delimiter) ?
             this.dataSourceSettings.drilledMembers[0].delimiter : '**';
         const fieldName: string = labelInfo.fieldName as string;
-        const currentColIndex: number = this.parent.gridSettings.layout === 'Tabular' ? this.parent.engineModule.rowMaxLevel : labelInfo.colIndex as number;
+        const currentColIndex: number = (this.parent.gridSettings.layout === 'Tabular' ? (!this.parent.dataSourceSettings.showSubTotals ||
+            (!this.parent.dataSourceSettings.showRowSubTotals && this.parent.dataSourceSettings.showColumnSubTotals)) ?
+            labelInfo.level as number : this.parent.engineModule.rowMaxLevel : labelInfo.colIndex as number);
         const currentCell: IAxisSet = this.engineModule.pivotValues[labelInfo.rowIndex as number][
             currentColIndex as number] as IAxisSet;
         let memberUqName: string =
@@ -1930,6 +1982,23 @@ export class PivotChart {
             }
         }
         this.parent.trigger(events.chartResized, args);
+    }
+
+    private isMemberDrilled(previousRowCell: IAxisSet, previousRowTextCollection: string[]): boolean {
+        let drillMem: boolean = false;
+        for (let n: number = 0; n < this.parent.dataSourceSettings.drilledMembers.length; n++) {
+            const drillItems: string[] = this.parent.dataSourceSettings.drilledMembers[n as number].items;
+            for (let v: number = 0; v < drillItems.length; v++) {
+                const drillItemsCollection: string[] = drillItems[v as number].split(this.parent.dataSourceSettings
+                    .drilledMembers[n as number].delimiter);
+                if (drillItemsCollection[drillItemsCollection.length - 1] === previousRowCell.formattedText.split(' ')[0]
+                    && drillItemsCollection[0] === previousRowTextCollection[0]) {
+                    drillMem = true;
+                    break;
+                }
+            }
+        }
+        return drillMem;
     }
 
     /** @hidden */

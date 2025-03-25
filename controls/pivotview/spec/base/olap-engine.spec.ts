@@ -14,6 +14,7 @@ import { ConditionalFormatting } from '../../src/common/conditionalformatting/co
 import { DrillThrough } from '../../src/pivotview/actions';
 import { Grouping } from '../../src/common/popups/grouping';
 import { HeadersSortEventArgs } from '../../src/common/base/interface';
+import { DropDownList } from '@syncfusion/ej2-dropdowns';
 
 describe('Pivot Olap Engine', () => {
     /**
@@ -714,6 +715,80 @@ describe('Pivot Olap Engine', () => {
             (document.querySelector('.e-cancel-btn') as HTMLElement).click();
         });
 
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange);
+            //Check average change in memory samples to not be over 10MB
+            let memory: any = inMB(getMemoryProfile());
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });
+    });
+
+    describe('Toolbar', () => {
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        let pivotGridObj: PivotView;
+        let numberFormattingInstance: any;
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            document.body.appendChild(elem);
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(FieldList, CalculatedField, NumberFormatting, Toolbar);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    catalog: 'Adventure Works DW Standard Edition',
+                    cube: 'Finance',
+                    providerType: 'SSAS',
+                    url: 'https://olap.flexmonster.com/olap/msmdpump.dll',
+                    localeIdentifier: 1033,
+                    enableSorting: true,
+                    columns: [{ name: '[Account].[Accounts]', caption: 'Accounts' },
+                    { name: '[Measures]', caption: 'Measures' }],
+                    rows: [{ name: '[Scenario].[Scenario]', caption: 'Customer Geography' }],
+                    values: [
+                        { name: '[Measures].[Amount]', caption: 'Amount' },
+                        { name: 'Calculated field 1', caption: 'Calculated field', isCalculatedField: true }
+                    ],
+                    calculatedFieldSettings: [
+                        {
+                            formula: '[Measures].[Amount]*[Measures].[Average Rate]',
+                            name: 'Calculated field 1',
+                            formatString: 'Standard'
+                        }
+                    ]
+                },
+                showFieldList: true,
+                allowCalculatedField: true,
+                toolbar: ['NumberFormatting', 'FieldList'],
+                allowNumberFormatting: true,
+                showToolbar: true,
+                dataBound: dataBound
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 1000);
+        });
+        it('Open number formatting dialog', function (done) {
+            (document.querySelector('.e-pivot-format-toolbar') as HTMLElement).click();
+            setTimeout(() => {
+                var numberFormatting = document.querySelector('#' + pivotGridObj.element.id + '_FormatDialog');
+                var element2 = numberFormatting.querySelector('#' + pivotGridObj.element.id + '_FormatDrop');
+                (getInstance(element2 as HTMLElement, DropDownList) as DropDownList).value  = 'Percentage';
+                done();
+            }, 1000);
+        });
+        it('Ok button click', function (done) {
+            setTimeout(function () {
+                (document.querySelector('.e-ok-btn') as HTMLElement).click();
+                done();
+            }, 1000);
+        });
         it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange);

@@ -11,7 +11,7 @@ import { ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { isCollide, OffsetPosition, calculatePosition } from '@syncfusion/ej2-popups';
 import { rippleEffect, L10n, closest, EventHandler, remove, isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import { Dialog } from '../services/index';
-import { sheetsDestroyed, activeCellChanged, workbookFormulaOperation, InsertDeleteModelArgs, checkIsFormula } from '../../workbook/common/index';
+import { sheetsDestroyed, activeCellChanged, workbookFormulaOperation, InsertDeleteModelArgs, checkIsFormula, sheetRenameUpdate } from '../../workbook/common/index';
 import { insertModel, refreshInsertDelete } from './../../workbook/common/index';
 import { BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 
@@ -230,7 +230,11 @@ export class SheetTabs {
         }
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
         if (args.preventUpdate) {
-            if (args.startIdx !== this.tabInstance.selectedItem) { this.refreshSheetTab(); }
+            if (args.startIdx !== this.tabInstance.selectedItem) {
+                this.refreshSheetTab();
+            } else {
+                this.parent.notify(protectSheet, null);
+            }
         } else {
             this.updateSheetTab({ idx: args.startIdx, preventDataBind: true });
         }
@@ -415,7 +419,7 @@ export class SheetTabs {
         } else {
             this.tabInstance.dataBind();
         }
-        this.parent.notify(workbookFormulaOperation, { action: 'renameUpdation', value: args.value, pName: pName });
+        this.parent.notify(sheetRenameUpdate, { value: args.value, pName: pName  });
         if (this.parent.allowChart) {
             const range: string[] = []; let lastIndex: number;
             this.parent.chartColl.forEach((chart: { range: string }): void => {
@@ -463,6 +467,7 @@ export class SheetTabs {
 
     private showRenameDialog(target: HTMLInputElement, content: string): void {
         const dialogInst: Dialog = this.parent.serviceLocator.getService(dialog) as Dialog;
+        let isCancelled: boolean;
         dialogInst.show({
             height: 180, width: 400, isModal: true, showCloseIcon: true,
             content: content,
@@ -473,13 +478,24 @@ export class SheetTabs {
                 };
                 this.parent.trigger('dialogBeforeOpen', dlgArgs);
                 if (dlgArgs.cancel) {
-                    args.cancel = true;
+                    isCancelled = (args as { preventFocus?: boolean }).preventFocus = args.cancel = true;
+                } else {
+                    args.element.querySelector('.e-footer-content .e-primary').setAttribute(
+                        'aria-label', `${content} ${this.parent.serviceLocator.getService<L10n>(locale).getConstant('Ok')}`);
+                    focus(target);
                 }
-                args.element.querySelector('.e-footer-content .e-primary').setAttribute(
-                    'aria-label', `${content} ${this.parent.serviceLocator.getService<L10n>(locale).getConstant('Ok')}`);
-                target.focus();
             },
-            close: (): void => target.setSelectionRange(0, target.value.length)
+            close: (): void => {
+                if (isCancelled) {
+                    getUpdateUsingRaf((): void => {
+                        const curPosition: number[] = [target.selectionStart, target.selectionEnd];
+                        focus(target);
+                        target.setSelectionRange(curPosition[0], curPosition[1]);
+                    });
+                } else {
+                    target.setSelectionRange(0, target.value.length);
+                }
+            }
         });
     }
 
@@ -526,10 +542,11 @@ export class SheetTabs {
                             this.parent.trigger('dialogBeforeOpen', dlgArgs);
                             if (dlgArgs.cancel) {
                                 args.cancel = true;
+                            } else {
+                                args.element.querySelector('.e-footer-content .e-primary').setAttribute(
+                                    'aria-label', `${l10n.getConstant('DeleteSheetAlert')} ${l10n.getConstant('Ok')}`);
+                                focus(this.parent.element);
                             }
-                            args.element.querySelector('.e-footer-content .e-primary').setAttribute(
-                                'aria-label', `${l10n.getConstant('DeleteSheetAlert')} ${l10n.getConstant('Ok')}`);
-                            focus(this.parent.element);
                         },
                         buttons: [{
                             buttonModel: { content: l10n.getConstant('Ok'), isPrimary: true },

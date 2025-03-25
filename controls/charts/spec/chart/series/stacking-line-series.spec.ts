@@ -173,6 +173,54 @@ describe('Chart Control', () => {
             chartObj.series[0].addPoint(1, 10);
             chartObj.refresh();
         });
+        it('Checking StackLabels', (done: Function) => {
+            loaded = (args: Object): void => {
+                const stackLabel: Element = document.getElementById('StackingLinecontainer_StackLabel_3');
+                const stackLabel1: Element = document.getElementById('StackingLinecontainer_StackLabel_5');
+                const stackLabelRect: Element = document.getElementById('StackingLinecontainerStackLabel_TextShape_1');
+                expect(stackLabel !== null).toBe(true);
+                expect(stackLabel1.innerHTML).toBe('20.00');
+                expect(stackLabel.innerHTML).toBe('75.00');
+                expect(stackLabel.getAttribute('x') === '470.8' || stackLabel.getAttribute('x') === '434.8').toBe(true);
+                expect(stackLabel.getAttribute('y') === '288.5208333333333' || stackLabel.getAttribute('y') === '275.0208333333333').toBe(true);
+                expect(stackLabel.getAttribute('transform') === 'rotate(270, 470.8, 288.5208333333333)' || stackLabel.getAttribute('transform') === 'rotate(270, 470.8, 275.0208333333333)').toBe(true);
+                expect(stackLabelRect !== null).toBe(true);
+                expect(stackLabelRect.getAttribute('x') === '161.1' || stackLabelRect.getAttribute('x') === '149.1').toBe(true);
+                expect(stackLabelRect.getAttribute('y')).toBe('313.78125');
+                expect(stackLabelRect.getAttribute('transform')).toBe('rotate(270, 182.6, 333.78125)');
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series = [{
+                dataSource: [{ x: 1, y: 10 }, { x: 2, y: null },
+                { x: 3, y: 15 }, { x: 4, y: 25 }, { x: 5, y: 30 }, { x: 6, y: 20 }],
+                xName: 'x', yName: 'y', emptyPointSettings: { mode: 'Average' },
+                type: 'StackingLine', animation: { enable: false },
+                marker: { visible: true, dataLabel: { visible: true } },
+            }, {
+                dataSource: [{ x: 1, y: 10 }, { x: 2, y: 30 },
+                { x: 3, y: 15 }, { x: 4, y: 25 }, { x: 5, y: 30 }, { x: 6, y: null }],
+                xName: 'x', yName: 'y', emptyPointSettings: { mode: 'Drop' },
+                type: 'StackingLine', animation: { enable: true },
+            }, {
+                dataSource: [{ x: 1, y: 10 }, { x: 2, y: 30 },
+                { x: 3, y: 15 }, { x: 4, y: null }, { x: 5, y: 30 }, { x: 6, y: 20 }],
+                xName: 'x', yName: 'y', emptyPointSettings: { mode: 'Gap' },
+                type: 'StackingLine', animation: { enable: false },
+            }, {
+                dataSource: [{ x: 1, y: null }, { x: 2, y: 30 },
+                { x: 3, y: 15 }, { x: 4, y: 25 }, { x: 5, y: 30 }, { x: 6, y: -20 }],
+                xName: 'x', yName: 'y', emptyPointSettings: { mode: 'Zero' },
+                type: 'StackingLine', animation: { enable: false },
+                marker: { visible: true, dataLabel: { visible: true } }
+            }];
+            chartObj.stackLabels.visible = true;
+            chartObj.primaryYAxis.isInversed = true;
+            chartObj.stackLabels.format = 'n2';
+            chartObj.stackLabels.angle = 270;
+            chartObj.stackLabels.border = { width: 1, color: 'black' };
+            chartObj.refresh();
+        });
         it('memory leak', () => {
             profile.sample();
             let average: any = inMB(profile.averageChange)

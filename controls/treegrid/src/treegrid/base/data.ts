@@ -301,6 +301,7 @@ export class DataManipulation {
         }
         this.parent.notify('updateResults', args);
     }
+
     /**
      * Function to manipulate datasource
      *
@@ -383,7 +384,7 @@ export class DataManipulation {
             qry.expand(expandDetail);
         }
         qry.where(this.parent.parentIdMapping, 'equal', rowDetails.record[this.parent.idMapping]);
-        if (rowDetails.action === 'remoteExpand' && this.parent.grid.filterModule && this.parent.grid.filterModule['value']) {
+        if (rowDetails.action === 'remoteExpand' && this.parent.grid.filterSettings && this.parent.grid.filterSettings.columns.length) {
             const filterqry: QueryOptions[] = this.parent.grid.getDataModule().generateQuery().queries.filter((e: QueryOptions) => e.fn !== 'onPage' && typeof e.e.predicates !== 'undefined');
             qry.queries.push(filterqry[0]);
         }
@@ -452,115 +453,116 @@ export class DataManipulation {
                 rowDetails.record.childRecords = result;
             }
             for (let r: number = 0; r < result.length; r++) {
-                if (this.parent.enableVirtualization && result[parseInt(r.toString(), 10)][`${this.parent.idMapping}`] === rowDetails.record[`${this.parent.idMapping}`] && rowDetails.action === 'remoteExpand') {
+                const record: any = result[parseInt(r.toString(), 10)];
+                if (this.parent.enableVirtualization && record[`${this.parent.idMapping}`] === rowDetails.record[`${this.parent.idMapping}`] && rowDetails.action === 'remoteExpand') {
                     this.parent[`${remoteExpandedData}`].push(rowDetails.record);
                 }
-                else if (this.parent.enableVirtualization && result[parseInt(r.toString(), 10)][`${this.parent.idMapping}`] === rowDetails.record[`${this.parent.idMapping}`] && rowDetails.action === 'collapse') {
+                else if (this.parent.enableVirtualization && record[`${this.parent.idMapping}`] === rowDetails.record[`${this.parent.idMapping}`] && rowDetails.action === 'collapse') {
                     for (let i: number = 0; i < this.parent[`${remoteExpandedData}`].length; i++) {
                         if (rowDetails.record[`${this.parent.idMapping}`] === this.parent[`${remoteExpandedData}`][parseInt(i.toString(), 10)][`${this.parent.idMapping}`]) {
                             this.parent[`${remoteExpandedData}`].splice(i, 1);
                         }
                     }
                 }
-                result[parseInt(r.toString(), 10)].taskData = extend({}, result[parseInt(r.toString(), 10)]);
-                if (result[parseInt(r.toString(), 10)][`${this.parent.parentIdMapping}`] && this.parent.enableVirtualization && this.parent[`${remoteExpandedData}`].length) {
+                record.taskData = extend({}, record);
+                if (record[`${this.parent.parentIdMapping}`] && this.parent.enableVirtualization && this.parent[`${remoteExpandedData}`].length) {
                     for (let i: number = 0; i < this.parent[`${remoteExpandedData}`].length; i++) {
-                        if (result[parseInt(r.toString(), 10)][`${this.parent.parentIdMapping}`] === this.parent[`${remoteExpandedData}`][parseInt(i.toString(), 10)][`${this.parent.idMapping}`]) {
-                            result[parseInt(r.toString(), 10)].level = this.parent[`${remoteExpandedData}`][parseInt(i.toString(), 10)][`${level}`] + 1;
+                        if (record[`${this.parent.parentIdMapping}`] === this.parent[`${remoteExpandedData}`][parseInt(i.toString(), 10)][`${this.parent.idMapping}`]) {
+                            record.level = this.parent[`${remoteExpandedData}`][parseInt(i.toString(), 10)][`${level}`] + 1;
                             const parentData: ITreeData = this.parent[`${remoteExpandedData}`][parseInt(i.toString(), 10)];
                             delete parentData.childRecords;
-                            result[parseInt(r.toString(), 10)].parentItem = parentData;
-                            result[parseInt(r.toString(), 10)].parentUniqueID = parentData.uniqueID;
+                            record.parentItem = parentData;
+                            record.parentUniqueID = parentData.uniqueID;
                         }
                     }
                 }
                 else if (this.parent.enableVirtualization) {
-                    if ((result[parseInt(r.toString(), 10)][`${this.parent.hasChildMapping}`] ||
-             this.parentItems.indexOf(result[parseInt(r.toString(), 10)][`${this.parent.idMapping}`]) !== -1)
+                    if ((record[`${this.parent.hasChildMapping}`] ||
+             this.parentItems.indexOf(record[`${this.parent.idMapping}`]) !== -1)
              && !(haveChild && !haveChild[parseInt(r.toString(), 10)])) {
-                        if (isNullOrUndefined(result[parseInt(r.toString(), 10)][`${this.parent.parentIdMapping}`])) {
-                            result[parseInt(r.toString(), 10)].level = 0;
+                        if (isNullOrUndefined(record[`${this.parent.parentIdMapping}`])) {
+                            record.level = 0;
                             if (rowDetails.action === 'remoteExpand') {
-                                result[parseInt(r.toString(), 10)].childRecords = [];
-                                result[parseInt(r.toString(), 10)].childRecords = rowDetails.record.childRecords;
+                                record.childRecords = [];
+                                record.childRecords = rowDetails.record.childRecords;
                             }
                         }
                         else {
-                            result[parseInt(r.toString(), 10)].level = rowDetails.record.level;
+                            record.level = rowDetails.record.level;
                         }
                     }
                     else {
                         const parentData: ITreeData = extend({}, rowDetails.record);
                         delete parentData.childRecords;
-                        result[parseInt(r.toString(), 10)].parentItem = parentData;
-                        result[parseInt(r.toString(), 10)].parentUniqueID = rowDetails.record.uniqueID;
+                        record.parentItem = parentData;
+                        record.parentUniqueID = rowDetails.record.uniqueID;
                     }
                 }
                 else {
-                    result[parseInt(r.toString(), 10)].level = rowDetails.record.level + 1;
+                    record.level = rowDetails.record.level + 1;
                     const parentData: ITreeData = extend({}, rowDetails.record);
                     delete parentData.childRecords;
-                    result[parseInt(r.toString(), 10)].parentItem = parentData;
-                    result[parseInt(r.toString(), 10)].parentUniqueID = rowDetails.record.uniqueID;
+                    record.parentItem = parentData;
+                    record.parentUniqueID = rowDetails.record.uniqueID;
                 }
-                result[parseInt(r.toString(), 10)].index = Math.ceil(Math.random() * 1000);
-                result[parseInt(r.toString(), 10)].uniqueID = getUid(this.parent.element.id + '_data_');
-                if (rowDetails.record[`${this.parent.idMapping}`] === result[parseInt(r.toString(), 10)][`${this.parent.idMapping}`]) {
-                    rowDetails.record.uniqueID = result[parseInt(r.toString(), 10)].uniqueID;
+                record.index = Math.ceil(Math.random() * 1000);
+                record.uniqueID = getUid(this.parent.element.id + '_data_');
+                if (rowDetails.record[`${this.parent.idMapping}`] === record[`${this.parent.idMapping}`]) {
+                    rowDetails.record.uniqueID = record.uniqueID;
                 }
-                result[parseInt(r.toString(), 10)].checkboxState = 'uncheck';
-                if (this.parent.enableVirtualization && isNullOrUndefined(result[parseInt(r.toString(), 10)].level)) {
+                record.checkboxState = 'uncheck';
+                if (this.parent.enableVirtualization && isNullOrUndefined(record.level)) {
                     for (let p: number = 0; p < this.parent.grid.currentViewData.length; p++) {
-                        if (this.parent.grid.currentViewData[parseInt(p.toString(), 10)][`${this.parent.idMapping}`] === result[parseInt(r.toString(), 10)][`${this.parent.parentIdMapping}`]) {
-                            result[parseInt(r.toString(), 10)].level = this.parent.grid.currentViewData[parseInt(p.toString(), 10)]['level'] + 1;
+                        if (this.parent.grid.currentViewData[parseInt(p.toString(), 10)][`${this.parent.idMapping}`] === record[`${this.parent.parentIdMapping}`]) {
+                            record.level = this.parent.grid.currentViewData[parseInt(p.toString(), 10)]['level'] + 1;
                         }
                     }
                 }
-                setValue('uniqueIDCollection.' + result[parseInt(r.toString(), 10)].uniqueID, result[parseInt(r.toString(), 10)], this.parent);
+                setValue('uniqueIDCollection.' + record.uniqueID, record, this.parent);
                 // delete result[r].parentItem.childRecords;
-                if ((result[parseInt(r.toString(), 10)][`${this.parent.hasChildMapping}`] ||
-                    this.parentItems.indexOf(result[parseInt(r.toString(), 10)][`${this.parent.idMapping}`]) !== -1)
+                if ((record[`${this.parent.hasChildMapping}`] ||
+                    this.parentItems.indexOf(record[`${this.parent.idMapping}`]) !== -1)
                     && !(haveChild && !haveChild[parseInt(r.toString(), 10)])) {
-                    result[parseInt(r.toString(), 10)].hasChildRecords = true;
+                    record.hasChildRecords = true;
                     if (this.parent.enableVirtualization && !this.parent.loadChildOnDemand) {
                         for (let i: number = 0; i < this.parent[`${remoteCollapsedData}`].length; i++) {
-                            if (result[parseInt(r.toString(), 10)][`${this.parent.idMapping}`] === this.parent[`${remoteCollapsedData}`][parseInt(i.toString(), 10)][`${this.parent.idMapping}`]) {
-                                result[parseInt(r.toString(), 10)].expanded = this.parent[`${remoteCollapsedData}`][parseInt(i.toString(), 10)]['expanded'];
+                            if (record[`${this.parent.idMapping}`] === this.parent[`${remoteCollapsedData}`][parseInt(i.toString(), 10)][`${this.parent.idMapping}`]) {
+                                record.expanded = this.parent[`${remoteCollapsedData}`][parseInt(i.toString(), 10)]['expanded'];
                             }
                         }
-                        if (rowDetails.action === 'collapse' && result[parseInt(r.toString(), 10)][`${this.parent.idMapping}`] !== rowDetails.record[`${this.parent.idMapping}`] && result[parseInt(r.toString(), 10)].expanded !== false) {
-                            result[parseInt(r.toString(), 10)].expanded = true;
+                        if (rowDetails.action === 'collapse' && record[`${this.parent.idMapping}`] !== rowDetails.record[`${this.parent.idMapping}`] && record.expanded !== false) {
+                            record.expanded = true;
                         }
-                        else if (rowDetails.action === 'collapse' && result[parseInt(r.toString(), 10)][`${this.parent.idMapping}`] === rowDetails.record[`${this.parent.idMapping}`]) {
-                            result[parseInt(r.toString(), 10)].expanded = false;
+                        else if (rowDetails.action === 'collapse' && record[`${this.parent.idMapping}`] === rowDetails.record[`${this.parent.idMapping}`]) {
+                            record.expanded = false;
                             this.parent[`${remoteCollapsedData}`].push(rowDetails.record);
                         }
                         else if (rowDetails.action === 'remoteExpand') {
                             for (let i: number = 0; i < this.parent.grid.currentViewData.length; i++) {
-                                if (this.parent.grid.currentViewData[parseInt(i.toString(), 10)][`${this.parent.idMapping}`] === result[parseInt(r.toString(), 10)][`${this.parent.idMapping}`]) {
+                                if (this.parent.grid.currentViewData[parseInt(i.toString(), 10)][`${this.parent.idMapping}`] === record[`${this.parent.idMapping}`]) {
                                     result.splice(r, 1, this.parent.grid.currentViewData[parseInt(i.toString(), 10)]);
                                 }
                             }
-                            if (result[parseInt(r.toString(), 10)][this.parent.idMapping] === rowDetails.record[`${this.parent.idMapping}`]) {
+                            if (record[this.parent.idMapping] === rowDetails.record[`${this.parent.idMapping}`]) {
                                 for (let i: number = 0; i < this.parent[`${remoteCollapsedData}`].length; i++) {
                                     if (rowDetails.record[`${this.parent.idMapping}`] === this.parent[`${remoteCollapsedData}`][parseInt(i.toString(), 10)][`${this.parent.idMapping}`]) {
                                         this.parent[`${remoteCollapsedData}`].splice(i, 1);
                                     }
                                 }
                             }
-                            if (result[parseInt(r.toString(), 10)].expanded !== false) {
-                                result[parseInt(r.toString(), 10)].expanded = true;
+                            if (record.expanded !== false) {
+                                record.expanded = true;
                             }
                         }
                     }
-                    else if (this.parent.enableVirtualization && result[parseInt(r.toString(), 10)][`${this.parent.idMapping}`] === rowDetails.record[`${this.parent.idMapping}`] && rowDetails.action !== 'collapse') {
-                        result[parseInt(r.toString(), 10)].expanded = true;
+                    else if (this.parent.enableVirtualization && record[`${this.parent.idMapping}`] === rowDetails.record[`${this.parent.idMapping}`] && rowDetails.action !== 'collapse') {
+                        record.expanded = true;
                     }
                     else if (!(this.parent.enableVirtualization && !this.parent.loadChildOnDemand)) {
-                        result[parseInt(r.toString(), 10)].expanded = false;
+                        record.expanded = false;
                     }
                 }
-                datas.splice(inx + r + 1, 0, result[parseInt(r.toString(), 10)]);
+                datas.splice(inx + r + 1, 0, record);
             }
             setValue('result', datas, e); setValue('action', 'beforecontentrender', e);
             this.parent.trigger(events.actionComplete, e);

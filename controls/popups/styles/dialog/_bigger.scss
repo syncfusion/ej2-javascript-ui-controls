@@ -4,6 +4,12 @@
   #{if(&, '&', '*')}.e-bigger .e-dialog {
     #{if(&, '&', '*')} .e-dlg-header-content {
       padding: $dialog-bigger-header-content-padding;
+      @if $skin-name == 'bootstrap5.3' {
+        height: 60px;
+      }
+      @if $skin-name == 'tailwind3' {
+        height: 56px;
+      }
       @if $skin-name == 'bootstrap5' {
         line-height: inherit;
       }
@@ -13,9 +19,6 @@
       font-size: $dialog-bigger-header-content-font-size;
       @if $skin-name == 'Material3' {
         line-height: 40px;
-      }
-      @if $skin-name == 'bootstrap5.3' or $skin-name == 'tailwind3' {
-        height: 28px;
       }
     }
 

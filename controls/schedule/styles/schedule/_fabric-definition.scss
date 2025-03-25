@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $schedule-skin: $skin-name !default;
 $schedule-header-bg-color: $neutral-white !default;
 $schedule-header-border-color: $neutral-quintenaryalt !default;
@@ -54,7 +56,7 @@ $schedule-timezone-enable-bgr-height: 70px !default;
 $schedule-appointment-bg-color: $theme-primary !default;
 $schedule-appointment-details-padding: 0 4px !default;
 $schedule-appointment-font-color: $theme-primary-font !default;
-$schedule-appointment-border-color: lighten($schedule-appointment-bg-color, 40%) !default;
+$schedule-appointment-border-color: color.adjust($schedule-appointment-bg-color, $lightness: 40%) !default;
 $schedule-appointment-border-radius: 2px !default;
 $schedule-appointment-selected-border: 1px solid rgba($neutral-black, .5) !default;
 $schedule-appointment-active-border-color: #000 !default;
@@ -259,6 +261,8 @@ $schedule-header-icon-wrapper-bg-color: $schedule-content-bg-color !default;
 $schedule-bgr-date-time-icon-padding-right: 13px !default;
 $schedule-bgr-more-event-close-icon-padding: unset !default;
 $schedule-bgr-tbar-btn-text-font-size: $schedule-header-nrml-font-size !default;
+$schedule-calendar-width: 300px !default;
+$schedule-bgr-calendar-width: 345px !default;
 
 @mixin tbar-btn-animation {
   content: '';

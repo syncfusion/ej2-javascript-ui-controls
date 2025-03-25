@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $ddl-chip-mobile-close-font: 16px !default;
 $ddl-multiselect-skin-name: 'material' !default;
 $ddl-delim-font-size: 14px !default;
@@ -211,16 +213,16 @@ $outline-multiselect-small-chip-font-size: 12px !default;
 $outline-multiselect-bigger-chip-font-size: 14px !default;
 
 $outline-multiselect-chip-bg-color: $grey-300 !default;
-$outline-multiselect-chip-hover-bg-color: darken($grey-300, 4%) !default;
-$outline-multiselect-sel-chip-bg-color: darken($grey-300, 10%) !default;
-$outline-multiselect-sel-hover-chip-bg-color: darken($grey-300, 10%) !default;
+$outline-multiselect-chip-hover-bg-color: color.adjust($grey-300, $lightness: -4%) !default;
+$outline-multiselect-sel-chip-bg-color: color.adjust($grey-300, $lightness: -10%) !default;
+$outline-multiselect-sel-hover-chip-bg-color: color.adjust($grey-300, $lightness: -10%) !default;
 $outline-multiselect-close-icon-bg-color: rgba($grey-light-font, .54) !default;
 $outline-multiselect-close-icon-hover-bg-color: rgba($grey-light-font, .87) !default;
 $outline-multiselect-remains-font-color: rgba($grey-light-font, .6) !default;
 $outline-multiselect-disabled-font-color: rgba($grey-light-font, .38) !default;
 $outline-multiselect-disabled-chip-bg-color: $grey-100 !default;
-$filled-multiselect-chip-bg-color: darken($grey-300, 7%) !default;
-$filled-multiselect-chip-hover-bg-color: darken($grey-300, 7%) !default;
+$filled-multiselect-chip-bg-color: color.adjust($grey-300, $lightness: -7%) !default;
+$filled-multiselect-chip-hover-bg-color: color.adjust($grey-300, $lightness: -7%) !default;
 
 @include export-module('multiselect-material') {
   .e-multiselect.e-input-group.e-checkbox .e-multi-select-wrapper input[type = 'text'] {

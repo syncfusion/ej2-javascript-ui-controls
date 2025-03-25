@@ -1115,6 +1115,22 @@ describe('Filtering module => ', () => {
         it('filter menu not equal Operator', (done: Function) => {
             var dataRow = gridObj.getAllDataRows().length;
             expect(dataRow).toBe(1);
+            actionComplete = (args?: any): void => {
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.clearFiltering(['OrderID']);
+        });
+        it('EJ2-945944-filter menu contains Operator', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.filterByColumn('CustomerID', 'contains', null);
+        });
+        it('EJ2-945944-filter menu equal/notequal Operator with null/undefined/empty cleanup check', (done: Function) => {
+            var filterPredicatesLength = gridObj.filterSettings.columns.length;
+            expect(filterPredicatesLength).toBe(1);
             done();
         });
         afterAll(() => {
@@ -3587,6 +3603,38 @@ describe('EJ2: 916181 => All template is not rendering in React when using the C
         done();
     });
 
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('Code Coverage.', () => {
+    let gridObj: Grid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData.slice(0, 5),
+                allowPaging: true,
+                allowFiltering: true,
+                filterSettings: { type: 'Menu' },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120 },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
+                    { field: 'Freight', headerText: 'Freight', width: 120 },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 120 }
+                ],
+            }, done);
+    });
+    it('filterByColumn method in testing', (done: Function) => {
+        actionComplete = (args?: Object): void => {
+            expect(gridObj.element.querySelectorAll('.e-row').length).toBe(2);
+            done();
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.filterByColumn('OrderID', 'in', [10248, 10249]);
+    });
     afterAll(() => {
         destroy(gridObj);
         gridObj = null;

@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, InventoryList } from '../util/datasource.spec';
-import { Spreadsheet, UsedRangeModel, clearViewer, DialogBeforeOpenEventArgs } from '../../../src/index';
+import { Spreadsheet, UsedRangeModel, clearViewer, DialogBeforeOpenEventArgs, CellModel } from '../../../src/index';
 import { EmitType, getComponent } from '@syncfusion/ej2-base';
 
 
@@ -1646,6 +1646,22 @@ describe('Conditional formatting ->', () => {
             expect(helper.invoke('getCell', [6, 3]).children[0].classList).toContain('e-3arrows-1');
             done();
         });
+        it('Equal to condition does not accept string values in Conditional formatting', (done: Function) => {
+            helper.invoke('conditionalFormat', [{ type: "EqualTo", cFColor: 'RedFT', value: 'Quantity', range: 'D1:D12' }]);
+            expect(helper.invoke('getCell', [0, 3]).style.color).toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [11, 3]).style.color).toBe('');
+            helper.invoke('updateCell', [{ value: '0' }, 'E21']);
+            helper.invoke('conditionalFormat', [{ type: "EqualTo", cFColor: 'RedFT', value: '0', range: 'E1:E13' }]);
+            expect(helper.invoke('getCell', [11, 4]).style.color).toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [12, 4]).style.color).toBe('rgb(156, 0, 85)');
+            helper.invoke('conditionalFormat', [{ type: "EqualTo", cFColor: 'RedFT', value: '1210', range: 'F1:F12' }]);
+            expect(helper.invoke('getCell', [9, 5]).style.color).toBe('rgb(156, 0, 85)');
+            helper.invoke('conditionalFormat', [{ type: "EqualTo", cFColor: 'RedFT', value: '', range: 'G1:G12' }]);
+            expect(helper.invoke('getCell', [0, 6]).style.color).toBe('');
+            expect(helper.invoke('getCell', [1, 6]).style.color).toBe('');
+            expect(helper.invoke('getCell', [11, 6]).style.color).toBe('');
+            done();
+        });
     });
 
     describe('Cf applied for text format ->', () => {
@@ -2512,6 +2528,131 @@ describe('Conditional formatting ->', () => {
         });
     });
 
+    describe('931114 - CF && Notes with undo/redo->', () => {
+        let spreadsheet: any;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply color scale cf ->', (done: Function) => {
+            helper.invoke('selectRange', ['H1:H11']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-colorscales');
+            (getComponent(target.parentElement.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            setTimeout((): void => {
+                helper.getElement('#GYRColorScale').click();
+                expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('rgb(248, 105, 107)');
+                done();
+            });
+        });
+        it('Added Note to H2 cell', (done: Function) => {
+            helper.invoke('selectRange', ['H2']);
+            helper.setAnimationToNone('#spreadsheet_contextmenu');
+            helper.openAndClickCMenuItem(0, 4, [9]);
+            setTimeout(() => {
+                helper.getElements('.e-addNoteContainer')[0].value = 'Note Added';
+                let td: HTMLElement = helper.invoke('getCell', [4, 4]);
+                let coords = td.getBoundingClientRect();
+                helper.triggerMouseAction('mousedown', { x: coords.left + 3, y: coords.top + 2 }, null, td);
+                helper.triggerMouseAction('mouseup', { x: coords.left + 3, y: coords.top + 2 }, document, td);
+                spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[1].cells[7].notes).toBe('Note Added');
+                expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('rgb(248, 105, 107)');
+                done();
+            });
+        });
+        it('Notes with undo/redo->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_undo').click();
+            expect(spreadsheet.sheets[0].rows[1].cells[7].notes).toBeUndefined();
+            expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('rgb(248, 105, 107)');
+            helper.getElement('#' + helper.id + '_redo').click();
+            expect(spreadsheet.sheets[0].rows[1].cells[7].notes).toBe('Note Added');
+            expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('rgb(248, 105, 107)');
+            done();
+        });
+        it('Edited Note in H2 cell', (done: Function) => {
+            helper.invoke('selectRange', ['H2']);
+            helper.setAnimationToNone('#spreadsheet_contextmenu');
+            helper.openAndClickCMenuItem(0, 4, [9]);
+            setTimeout(() => {
+                helper.getElements('.e-addNoteContainer')[0].value = 'Note Edited';
+                let td: HTMLElement = helper.invoke('getCell', [4, 4]);
+                let coords = td.getBoundingClientRect();
+                helper.triggerMouseAction('mousedown', { x: coords.left + 3, y: coords.top + 2 }, null, td);
+                helper.triggerMouseAction('mouseup', { x: coords.left + 3, y: coords.top + 2 }, document, td);
+                spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[1].cells[7].notes).toBe('Note Edited');
+                expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('rgb(248, 105, 107)');
+                done();
+            });
+        });
+        it('Edited notes with undo/redo->', (done: Function) => {
+            helper.getElement('#' + helper.id + '_undo').click();
+            expect(spreadsheet.sheets[0].rows[1].cells[7].notes).toBe('Note Added');
+            expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('rgb(248, 105, 107)');
+            helper.getElement('#' + helper.id + '_redo').click();
+            expect(spreadsheet.sheets[0].rows[1].cells[7].notes).toBe('Note Edited');
+            expect(helper.invoke('getCell', [1, 7]).style.backgroundColor).toBe('rgb(248, 105, 107)');
+            done();
+        });
+    });
+
+    describe('931120 - iconsets CF with merge and unmerge->', () => {
+        let spreadsheet: any;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    conditionalFormats: [
+                        { type: 'GYRColorScale', range: 'G1:G11' },
+                        { type: "ThreeArrows", range: 'H1:H11' }
+                    ],
+                    ranges: [{ dataSource: defaultData }],
+                }, {}]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Merge cf applied cells ->', (done: Function) => {
+            let spreadsheet: Spreadsheet = helper.getInstance();
+            expect(helper.invoke('getCell', [2, 6]).style.backgroundColor).toBe('rgb(252, 183, 122)');
+            expect(helper.invoke('getCell', [2, 7]).children[0].classList).toContain('e-3arrows-3');
+            helper.invoke('merge', ['G2:H4']);
+            expect(spreadsheet.sheets[0].rows[1].cells[6].rowSpan).toBe(3);
+            expect(spreadsheet.sheets[0].rows[1].cells[6].colSpan).toBe(2);
+            expect(helper.invoke('getCell', [5, 6]).style.backgroundColor).toBe('rgb(216, 223, 129)');
+            expect(helper.invoke('getCell', [5, 7]).children[0].classList).toContain('e-3arrows-2');
+            helper.invoke('merge', ['G6:H7', 'Horizontally']);
+            expect(spreadsheet.sheets[0].rows[5].cells[6].rowSpan).toBeUndefined();
+            expect(spreadsheet.sheets[0].rows[5].cells[6].colSpan).toBe(2);
+            expect(helper.invoke('getCell', [9, 6]).style.backgroundColor).toBe('rgb(138, 201, 125)');
+            expect(helper.invoke('getCell', [9, 7]).children[0].classList).toContain('e-3arrows-1');
+            helper.invoke('merge', ['G9:H11', 'Vertically']);
+            expect(spreadsheet.sheets[0].rows[8].cells[6].rowSpan).toBe(3);
+            expect(spreadsheet.sheets[0].rows[8].cells[7].rowSpan).toBe(3);
+            done();
+        });
+        it('Unmerge cf applied cells ->', (done: Function) => {
+            helper.invoke('selectRange', ['G2']);
+            helper.click('#' + helper.id + '_merge');
+            expect(helper.invoke('getCell', [2, 7]).children.length).toBe(0);
+            helper.invoke('selectRange', ['G6:G7']);
+            helper.click('#' + helper.id + '_merge');
+            expect(helper.invoke('getCell', [5, 7]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [6, 7]).children.length).toBe(0);
+            helper.invoke('selectRange', ['G9:H9']);
+            helper.click('#' + helper.id + '_merge');
+            expect(helper.invoke('getCell', [9, 6]).children.length).toBe(0);
+            expect(helper.invoke('getCell', [9, 7]).children.length).toBe(0);
+            done();
+        });
+    });
+
     describe('875102- check the text alignment with databars cf->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({
@@ -2540,6 +2681,95 @@ describe('Conditional formatting ->', () => {
             setTimeout(() => {
                 expect(helper.invoke('getCell', [1, 7]).style.verticalAlign).toBe('middle');
                 expect(helper.invoke('getCell', [1, 7]).querySelector('.e-databar-value').style.alignItems).toBe('center');
+                done();
+            });
+        });
+        it('Check the text decorations with databars', (done: Function) => {
+            helper.invoke('selectRange', ['H3:H5']);
+            helper.click(`#${helper.id}_line-through`);
+            helper.click(`#${helper.id}_underline`);
+            expect(helper.getInstance().sheets[0].rows[2].cells[7].style.textDecoration).toBe('underline line-through');
+            expect(helper.getInstance().sheets[0].rows[3].cells[7].style.textDecoration).toBe('underline line-through');
+            expect(helper.getInstance().sheets[0].rows[4].cells[7].style.textDecoration).toBe('underline line-through');
+            expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(248, 105, 107)');
+            done();
+        });
+    });
+
+    describe('931118- Conditional format with Notes->', () => {
+        let spreadsheet: any;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Add Note to cell', (done: Function) => {
+            helper.invoke('selectRange', ['F2']);
+            helper.setAnimationToNone('#spreadsheet_contextmenu');
+            helper.openAndClickCMenuItem(0, 4, [9]);
+            setTimeout(() => {
+                helper.getElements('.e-addNoteContainer')[0].value = 'Added Note';
+                let td: HTMLElement = helper.invoke('getCell', [4, 4]);
+                let coords = td.getBoundingClientRect();
+                helper.triggerMouseAction('mousedown', { x: coords.left + 3, y: coords.top + 2 }, null, td);
+                helper.triggerMouseAction('mouseup', { x: coords.left + 3, y: coords.top + 2 }, document, td);
+                spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[1].cells[5].notes).toBe('Added Note');
+                done();
+            });
+        });
+        it('Databars cf with notes->', (done: Function) => {
+            helper.invoke('selectRange', ['F1:F11']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-databars');
+            (getComponent(target.parentElement.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            setTimeout(() => {
+                helper.getElement('#RedDataBar').click();
+                expect(spreadsheet.sheets[0].rows[1].cells[5].notes).toBe('Added Note');
+                expect(helper.invoke('getCell', [1, 5]).getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(248, 105, 107)');
+                done();
+            });
+        });
+        it('Notes with clear Content->', (done: Function) => {
+            helper.invoke('selectRange', ['F1:F11']);
+            helper.click('#spreadsheet_clear');
+            helper.click('#spreadsheet_clear-popup ul li:nth-child(3)');
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[1].cells[5].notes).toBe('Added Note');
+                expect(helper.invoke('getCell', [1, 5]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [1, 5]).textContent).toBe('');
+                helper.getElement('#' + helper.id + '_undo').click();
+                expect(spreadsheet.sheets[0].rows[1].cells[5].notes).toBe('Added Note');
+                expect(helper.invoke('getCell', [1, 5]).getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(248, 105, 107)');
+                done();
+            });
+        });
+        it('Edit with notes and Dbars->', (done: Function) => {
+            helper.invoke('selectRange', ['F2']);
+            helper.edit('F2', '180');
+            expect(spreadsheet.sheets[0].rows[1].cells[5].notes).toBe('Added Note');
+            done();
+        });
+        it('Hide and show row with note and cf', function (done) {
+            helper.invoke('selectRange', ['A2']);
+            var spreadsheet = helper.getInstance();
+            spreadsheet.hideRow(1, 1, true);
+            var rowHdr = helper.invoke('getRowHeaderTable').rows[1].cells[0];
+            var rowHdrPanel = helper.invoke('getRowHeaderContent');
+            var offset = rowHdr.getBoundingClientRect();
+            helper.triggerMouseAction('mousemove', { x: offset.top - 0.5, y: offset.left - 1, offsetY: 3 }, rowHdrPanel, rowHdr);
+            helper.triggerMouseAction('mousedown', { x: offset.left - 1, y: offset.top - 0.5, offsetY: 3 }, rowHdrPanel, rowHdr);
+            helper.triggerMouseAction('mousemove', { x: offset.left - 1, y: offset.top + 60, offsetY: 7 }, spreadsheet.element, rowHdr);
+            helper.triggerMouseAction('mouseup', { x: offset.left - 1, y: offset.top + 60, offsetY: 7 }, document, rowHdr);
+            setTimeout(function () {
+                expect(spreadsheet.sheets[0].rows[1].cells[5].notes).toBe('Added Note');
+                helper.invoke('selectRange', ['F2']);
+                helper.edit('F2', '');
+                expect(spreadsheet.sheets[0].rows[1].cells[5].notes).toBe('Added Note');
                 done();
             });
         });
@@ -2618,6 +2848,688 @@ describe('Conditional formatting ->', () => {
             expect(spreadsheet.sheets[0].conditionalFormats.length).toBe(2);
             expect(helper.invoke('getCell', [2, 7]).classList.contains('e-yellowft'));
             done();
+        });
+    });
+
+    describe('920691 - Edited values not updated when note added in cell->', () => {
+        let spreadsheet: any;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    conditionalFormats: [
+                        { type: "BlueDataBar", range: 'H1:H11' },
+                        { type: "ThreeArrows", range: 'G1:G11' }
+                    ],
+                    ranges: [{ dataSource: defaultData }],
+                    rows: [{ index: 0, cells: [{ index: 7, notes: 'Note Added' }] },
+                    { index: 3, cells: [{ index: 7, notes: 'Note Added' }] },
+                    { index: 4, cells: [{ index: 6, notes: 'Note Added' }] }]
+                }, {}]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Edit with filter icon, note and cf ->', (done: Function) => {
+            helper.invoke('selectRange', ['H2']);
+            spreadsheet = helper.getInstance();
+            helper.invoke('applyFilter');
+            expect(helper.invoke('getCell', [0, 7]).children[0].classList).toContain('e-filter-btn');
+            expect(spreadsheet.sheets[0].rows[0].cells[7].notes).toBe('Note Added');
+            expect(helper.invoke('getCell', [3, 7]).getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(90, 138, 198)');
+            expect(spreadsheet.sheets[0].rows[3].cells[7].notes).toBe('Note Added');
+            expect(spreadsheet.sheets[0].rows[4].cells[6].notes).toBe('Note Added');
+            expect(helper.invoke('getCell', [4, 6]).children[0].classList).toContain('e-3arrows-1');
+            helper.edit('H1', 'Edited');
+            expect(spreadsheet.sheets[0].rows[0].cells[7].value).toBe('Edited');
+            expect(helper.invoke('getCell', [0, 7]).textContent).toBe('Edited');
+            helper.edit('H4', '30');
+            expect(spreadsheet.sheets[0].rows[3].cells[7].value).toBe(30);
+            expect(helper.invoke('getCell', [3, 7]).textContent).toBe('30');
+            helper.edit('G5', '20');
+            expect(spreadsheet.sheets[0].rows[4].cells[6].value).toBe(20);
+            expect(helper.invoke('getCell', [4, 6]).textContent).toBe('20');
+            done();
+        });
+    });
+
+    describe('931133- Editing with cf and hyperlink ->', () => {
+        let spreadsheet: any;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    conditionalFormats: [
+                        { type: 'GYRColorScale', range: 'G1:G11' },
+                        { type: "ThreeArrows", range: 'H1:H11' },
+                        { type: "RedDataBar", range: 'G1:G11' }
+                    ],
+                    ranges: [{ dataSource: defaultData }],
+                }, {}]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Checked cf applied ->', (done: Function) => {
+            expect(helper.invoke('getCell', [2, 6]).getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(248, 105, 107)');
+            expect(helper.invoke('getCell', [2, 6]).style.backgroundColor).toBe('rgb(252, 183, 122)');
+            expect(helper.invoke('getCell', [4, 7]).children[0].classList.contains('e-3arrows-2'));
+            done();
+        });
+        it('Insert hyperlink - 1', (done: Function) => {
+            helper.invoke('selectRange', ['G1:G11']);
+            helper.switchRibbonTab(2);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_hyperlink').click();
+            setTimeout(() => {
+                helper.getElements('.e-hyperlink-dlg .e-webpage input')[1].value = 'www.google.com';
+                helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
+                helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+                helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
+                spreadsheet = helper.getInstance();
+                let sheet: any = spreadsheet.sheets[0];
+                expect(sheet.rows[2].cells[6].hyperlink.address).toBe('http://www.google.com');
+                const td: HTMLElement = helper.invoke('getCell', [2, 6]);
+                expect(td.querySelector('.e-hyperlink').textContent).toBe('5');
+                done();
+            });
+        });
+        it('Insert hyperlink - 2', (done: Function) => {
+            helper.invoke('selectRange', ['H1:H11']);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_hyperlink').click();
+            setTimeout(() => {
+                helper.getElements('.e-hyperlink-dlg .e-webpage input')[1].value = 'www.google.com';
+                helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
+                helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+                helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
+                spreadsheet = helper.getInstance();
+                let sheet: any = spreadsheet.sheets[0];
+                expect(sheet.rows[4].cells[7].hyperlink.address).toBe('http://www.google.com');
+                const td: HTMLElement = helper.invoke('getCell', [4, 7]);
+                expect(td.querySelector('.e-hyperlink').textContent).toBe('67');
+                done();
+            });
+        });
+        it('Cell edit', (done: Function) => {
+            helper.switchRibbonTab(1);
+            helper.edit('G3', '10');
+            expect(spreadsheet.sheets[0].rows[2].cells[6].value).toBe(10);
+            expect(helper.invoke('getCell', [2, 6]).getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(248, 105, 107)');
+            expect(helper.invoke('getCell', [2, 6]).style.backgroundColor).toBe('rgb(192, 217, 128)');
+            const td: HTMLElement = helper.invoke('getCell', [2, 6]);
+            expect(td.querySelector('.e-hyperlink').textContent).toBe('10');
+            helper.edit('H5', '50');
+            expect(spreadsheet.sheets[0].rows[4].cells[7].value).toBe(50);
+            expect(helper.invoke('getCell', [4, 7]).children[0].classList.contains('e-3arrows-3'));
+            const td1: HTMLElement = helper.invoke('getCell', [4, 7]);
+            expect(td1.querySelector('.e-hyperlink').textContent).toBe('50');
+            done();
+        });
+    });
+
+    describe('885424- Clear cf based on selected range->', () => {
+        let spreadsheet: any;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply cf - Databars ->', (done: Function) => {
+            helper.invoke('selectRange', ['H1:H11']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-databars');
+            (getComponent(target.parentElement.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            setTimeout(() => {
+                helper.getElement('#RedDataBar').click();
+                expect(helper.invoke('getCell', [1, 7]).getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(248, 105, 107)');
+                expect(helper.invoke('getCell', [5, 7]).getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(248, 105, 107)');
+                done();
+            });
+        });
+        it('Apply cf - color scale ->', (done: Function) => {
+            helper.invoke('selectRange', ['A6:H6']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-colorscales');
+            (getComponent(target.parentElement.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            setTimeout((): void => {
+                helper.getElement('#GYRColorScale').click();
+                expect(helper.invoke('getCell', [5, 2]).style.backgroundColor).toBe('rgb(248, 105, 107)');
+                expect(helper.invoke('getCell', [5, 1]).style.backgroundColor).toBe('rgb(99, 190, 123)');
+                done();
+            });
+        });
+        it('Clear databars cf ->', (done: Function) => {
+            helper.invoke('selectRange', ['H6:H1']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const clearrules: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item[aria-label="Clear Rules"]');
+            (getComponent(clearrules.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: clearrules.getBoundingClientRect().left + 5, y: clearrules.getBoundingClientRect().top + 5 }, document, clearrules);
+            helper.getElement('#cf_cr_cells').click();
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [1, 7]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [5, 7]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [6, 7]).getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(248, 105, 107)');
+                done();
+            });
+        });
+        it('Clear color scale cf ->', (done: Function) => {
+            helper.invoke('clear', [{ type: 'Clear Formats', range: 'D6:A6' }]);
+            expect(helper.invoke('getCell', [5, 2]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [5, 1]).style.backgroundColor).toBe('');
+            done();
+        });
+        it('Clear entire cf ->', (done: Function) => {
+            helper.invoke('selectRange', ['H1']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const clearrules: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item[aria-label="Clear Rules"]');
+            (getComponent(clearrules.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: clearrules.getBoundingClientRect().left + 5, y: clearrules.getBoundingClientRect().top + 5 }, document, clearrules);
+            helper.getElement('#cf_cr_sheet').click();
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [9, 7]).querySelector('.e-databar')).toBeNull();
+                expect(helper.invoke('getCell', [5, 5]).style.backgroundColor).toBe('');
+                done();
+            });
+        });
+    });
+
+    describe('EJ2-877355, EJ2-932574 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    conditionalFormats: [{ type: "Unique", cFColor: "GreenFT", range: 'E1:E20' },
+                    { type: 'BlueDataBar', range: 'G1:G11' }],
+                    ranges: [{ dataSource: defaultData }]
+                }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Checking Unique High light cell rules with empty cells', (done: Function) => {
+            expect(helper.invoke('getCell', [3, 4]).style.backgroundColor).toBe('rgb(198, 239, 206)');
+            expect(helper.invoke('getCell', [3, 4]).style.color).toBe('rgb(0, 97, 0)');
+            expect(helper.invoke('getCell', [12, 4]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [12, 4]).style.color).toBe('');
+            helper.invoke('conditionalFormat', [{ type: 'Unique', cFColor: "GreenFT", range: 'H1:H20' }]);
+            expect(helper.invoke('getCell', [3, 7]).style.backgroundColor).toBe('rgb(198, 239, 206)');
+            expect(helper.invoke('getCell', [3, 7]).style.color).toBe('rgb(0, 97, 0)');
+            expect(helper.invoke('getCell', [12, 7]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [12, 7]).style.color).toBe('');
+            done();
+        });
+
+        it('Selected value from list data validation drop-down is not updated properly with conditional formatting', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            expect(helper.invoke('getCell', [2, 6]).getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(90, 138, 198)');
+            expect(helper.invoke('getCell', [2, 6]).textContent).toBe('5');
+            helper.invoke('addDataValidation', [{ type: 'List', value1: '12,13,14' }, 'G1:G11']);
+            const cell: CellModel = spreadsheet.sheets[0].rows[2].cells[6];
+            expect(JSON.stringify(cell.validation)).toBe('{"type":"List","value1":"12,13,14"}');
+            helper.invoke('selectRange', ['G3']);
+            const td: HTMLElement = helper.invoke('getCell', [2, 6]).children[0];
+            expect(td.classList).toContain('e-validation-list');
+            const coords: ClientRect = td.getBoundingClientRect();
+            helper.triggerMouseAction('mousedown', { x: coords.left, y: coords.top }, document, td);
+            helper.triggerMouseAction('mousedup', { x: coords.left, y: coords.top }, document, td);
+            (td.querySelector('.e-dropdownlist') as any).ej2_instances[0].dropDownClick({ preventDefault: function () { }, target: td.children[0] });
+            setTimeout(() => {
+                helper.click('.e-ddl.e-popup li:nth-child(2)');
+                expect(helper.getInstance().sheets[0].rows[2].cells[6].value).toBe(13);
+                expect(helper.invoke('getCell', [2, 6]).innerText).toBe('13');
+                expect(helper.invoke('getCell', [2, 6]).innerText).not.toBe('1313');
+                done();
+            }, 10);
+        });
+    });
+
+    describe('931145 - Cut/paste action with cf ->', () => {
+        let spreadsheet: any;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    conditionalFormats: [
+                        { type: 'BlueDataBar', range: 'H1:H11' },
+                        { type: 'GreaterThan', cFColor: 'RedFT', value: '10', range: 'H1:H11' },
+                        { type: 'Top10Items', cFColor: 'RedFT', value: '10', range: 'G1:G11' }
+                    ],
+                    ranges: [{ dataSource: defaultData }],
+                }, {}]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Check the conditional format - 1', (done: Function) => {
+            expect(helper.invoke('getCell', [1, 6]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [2, 7]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [2, 7]).getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(90, 138, 198)');
+            done();
+        });
+        it('Cut/paste the cf applied cells - 1->', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            helper.invoke('cut', ['H2:H6']).then(() => {
+                helper.invoke('paste', ['J2']);
+                expect(spreadsheet.sheets[0].conditionalFormats.length).toBe(5);
+                expect(helper.invoke('getCell', [2, 7]).style.backgroundColor).toBe('');
+                expect(helper.getInstance().sheets[0].rows[2].cells[7]).toBeNull();
+                expect(helper.invoke('getCell', [2, 9]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [2, 9]).getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(90, 138, 198)');
+                expect(helper.getInstance().sheets[0].rows[2].cells[9].value.toString()).toBe('50');
+                done();
+            });
+        });
+        it('Undo/Redo action - 1', (done: Function) => {
+            helper.getElement('#' + helper.id + '_undo').click();
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_redo').click();
+                setTimeout((): void => {
+                    helper.getElement('#' + helper.id + '_undo').click();
+                    setTimeout((): void => {
+                        helper.getElement('#' + helper.id + '_redo').click();
+                        setTimeout((): void => {
+                            helper.getElement('#' + helper.id + '_undo').click();
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+        it('Check the conditional format - 2', (done: Function) => {
+            expect(spreadsheet.sheets[0].conditionalFormats.length).toBe(3);
+            expect(helper.invoke('getCell', [2, 7]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            expect(helper.getInstance().sheets[0].rows[2].cells[7].value.toString()).toBe('50');
+            expect(helper.invoke('getCell', [2, 7]).getElementsByClassName('e-databar')[1].style.backgroundColor).toBe('rgb(90, 138, 198)');
+            expect(helper.invoke('getCell', [2, 9]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [2, 9]).getElementsByClassName('e-databar')[1]).toBeUndefined();
+            expect(helper.getInstance().sheets[0].rows[2].cells[9].value).toBe('');
+            done();
+        });
+    });
+
+    describe('Iconset cf with Databar cf ->', () => {
+        let spreadsheet: any;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet(
+                { sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Set cell height', (done: Function) => {
+            spreadsheet = helper.getInstance();
+            spreadsheet.goTo("F2");
+            spreadsheet.setColWidth(260, 5);
+            spreadsheet.setRowHeight(160, 1);
+            let cellEle: HTMLElement = helper.getElements('.e-active-cell')[0];
+            setTimeout((): void => {
+                expect(cellEle.style.height).toEqual('161px');
+                done();
+            });
+        });
+        it('Apply databars', (done: Function) => {
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_conditionalformatting').click();
+                const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-databars');
+                (getComponent(target.parentElement.parentElement, 'menu') as any).animationSettings.effect = 'None';
+                helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+                setTimeout((): void => {
+                    helper.getElement('#OrangeDataBar').click();
+                    let cellEle: HTMLElement = helper.getElements('.e-cf-databar')[0];
+                    setTimeout((): void => {
+                        expect(cellEle.style.height).toEqual('159px');
+                        done();
+                    });
+                });
+            });
+        });
+        it('Apply iconset', (done: Function) => {
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-iconsets');
+            (getComponent(target.parentElement.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            setTimeout((): void => {
+                helper.getElement('#ThreeTrafficLights1').click();
+                let cellEle: HTMLElement = helper.getElements('.e-iconsetspan')[0];
+                setTimeout((): void => {
+                    expect(cellEle.style.height).toBe('159px');
+                    expect(cellEle.parentElement.querySelector('.e-cf-icon-end')).not.toBeNull();
+                    done();
+                });
+            });
+        });
+        it('Apply accounting type', (done: Function) => {
+            helper.getElement('#' + helper.id + '_number_format').click();
+            helper.getElement('#' + helper.id + '_Accounting').click();
+            setTimeout((): void => {
+                let cellEle: HTMLElement = helper.getElements('.e-cf-currency')[0];
+                setTimeout((): void => {
+                    expect(cellEle.style.alignItems).toBe('end');
+                    done();
+                });
+            });
+        });
+        it('Apply align action for top', (done: Function) => {
+            helper.getElement('#' + helper.id + '_vertical_align').click();
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_vertical_align-popup .e-top-icon').click();
+                let cellEle: HTMLElement = helper.getElements('.e-iconsetspan')[0];
+                setTimeout((): void => {
+                    expect(cellEle.parentElement.querySelector('.e-cf-icon-top')).not.toBeNull();
+                    expect(helper.getElements('.e-cf-currency')[0].style.alignItems).toBe('start');
+                    done();
+                });
+            });
+        });
+        it('Apply align action for middle', (done: Function) => {
+            helper.getElement('#' + helper.id + '_vertical_align').click();
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_vertical_align-popup .e-middle-icon').click();
+                let cellEle: HTMLElement = helper.getElements('.e-iconsetspan')[0];
+                setTimeout((): void => {
+                    expect(cellEle.parentElement.querySelector('.e-cf-icon-middle')).not.toBeNull();
+                    expect(helper.getElements('.e-cf-currency')[0].style.alignItems).toBe('center');
+                    done();
+                });
+            });
+        });
+        it('Apply text align action for left', (done: Function) => {
+            helper.getElement('#' + helper.id + '_text_align').click();
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_text_align-popup .e-left-icon').click();
+                let cellEle: HTMLElement = helper.getElements('.e-iconsetspan')[0];
+                setTimeout((): void => {
+                    expect(cellEle.parentElement.style.textAlign).toBe('left');
+                    done();
+                });
+            });
+        });
+        it('Apply text align action for center', (done: Function) => {
+            helper.getElement('#' + helper.id + '_text_align').click();
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_text_align-popup .e-center-icon').click();
+                let cellEle: HTMLElement = helper.getElements('.e-iconsetspan')[0];
+                setTimeout((): void => {
+                    expect(cellEle.parentElement.style.textAlign).toBe('center');
+                    done();
+                });
+            });
+        });
+        it('Apply Clear All', (done: Function) => {
+            helper.click('#' + helper.id + '_clear');
+            helper.click('#spreadsheet_clear-popup ul li:nth-child(1)');
+            setTimeout((): void => {
+                expect(helper.invoke('getCell', [1, 5]).textContent).toBe('');
+                done();
+            });
+        });
+        it('Undo action', (done: Function) => {
+            helper.getElement('#' + helper.id + '_undo').click();
+            setTimeout((): void => {
+                expect(helper.getElements('.e-iconsetspan')[0].parentElement.style.textAlign).toBe('center');
+                done();
+            });
+        });
+        it('Undo action-1', (done: Function) => {
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_undo').click();
+                expect(helper.getElements('.e-iconsetspan')[0].parentElement.style.textAlign).toBe('left');
+                done();
+            });
+        });
+        it('Undo action-2', (done: Function) => {
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_undo').click();
+                expect(helper.getElements('.e-iconsetspan')[0].parentElement.style.textAlign).toBe('');
+                done();
+            });
+        });
+        it('Undo action-3', (done: Function) => {
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_undo').click();
+                let cellEle: HTMLElement = helper.getElements('.e-iconsetspan')[0];
+                expect(cellEle.parentElement.querySelector('.e-cf-icon-top')).not.toBeNull();
+                done();
+            });
+        });
+        it('Undo action-4', (done: Function) => {
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_undo').click();
+                let cellEle: HTMLElement = helper.getElements('.e-iconsetspan')[0];
+                expect(cellEle.parentElement.querySelector('.e-cf-icon-end')).not.toBeNull();
+                done();
+            });
+        });
+        it('Undo action-5', (done: Function) => {
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_undo').click();
+                expect(helper.getElements('.e-cf-currency')[0]).toBeUndefined();
+                done();
+            });
+        });
+        it('Undo action-6', (done: Function) => {
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_undo').click();
+                expect(helper.getElements('.e-iconsetspan')[0]).toBeUndefined();
+                done();
+            });
+        });
+        it('Undo action-7', (done: Function) => {
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_undo').click();
+                expect(helper.getElements('.e-iconsetspan').length).toBe(0);
+                expect(helper.getElements('.e-cf-databar')[0]).toBeUndefined();
+                done();
+            });
+        });
+        it('Redo action', (done: Function) => {
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_redo').click();
+                expect(helper.getElements('.e-cf-databar')).not.toBeNull();
+                done();
+            });
+        });
+        it('Redo action-1', (done: Function) => {
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_redo').click();
+                expect(helper.getElements('.e-iconsetspan').length).toBe(1);
+                done();
+            });
+        });
+        it('Redo action-2', (done: Function) => {
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_redo').click();
+                expect(helper.getElements('.e-cf-currency').length).toBe(1);
+                done();
+            });
+        });
+        it('Redo action-3', (done: Function) => {
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_redo').click();
+                let cellEle: HTMLElement = helper.getElements('.e-iconsetspan')[0];
+                expect(cellEle.parentElement.querySelector('.e-cf-icon-top')).not.toBeNull();
+                done();
+            });
+        });
+        it('Redo action-4', (done: Function) => {
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_redo').click();
+                let cellEle: HTMLElement = helper.getElements('.e-iconsetspan')[0];
+                expect(cellEle.parentElement.querySelector('.e-cf-icon-middle')).not.toBeNull();
+                done();
+            });
+        });
+        it('Redo action-5', (done: Function) => {
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_redo').click();
+                expect(helper.getElements('.e-iconsetspan')[0].parentElement.style.textAlign).toBe('left');
+                done();
+            });
+        });
+        it('Redo action-6', (done: Function) => {
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_redo').click();
+                expect(helper.getElements('.e-iconsetspan')[0].parentElement.style.textAlign).toBe('center');
+                done();
+            });
+        });
+        it('Redo action-7', (done: Function) => {
+            setTimeout((): void => {
+                helper.getElement('#' + helper.id + '_redo').click();
+                expect(helper.invoke('getCell', [1, 5]).textContent).toBe('');
+                done();
+            });
+        });
+    });
+
+    describe('875051- Cf applied for Long date->', () => {
+        let spreadsheet: any;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    conditionalFormats: [
+                        { type: 'Between', value: '"Friday, February 14, 2014", "Wednesday, June 11, 2014"', range: 'B1:B20' },
+                    ],
+                    ranges: [{ dataSource: defaultData }],
+                }, {}]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Checking Between condition->', (done: Function) => {
+            expect(helper.invoke('getCell', [14, 1]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [1, 1]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [2, 1]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [6, 1]).style.backgroundColor).toBe('');
+            done();
+        });
+        it('Number format - Long Date ', (done: Function) => {
+            helper.getElement('#' + helper.id + '_number_format').click();
+            helper.getElement('#' + helper.id + '_LongDate').click();
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [1, 1]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                done();
+            });
+        });
+        it('Apply cf - DateOccurs ->', (done: Function) => {
+            helper.invoke('selectRange', ['B1:B20']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#cf_adateoccuring_dlg').click();
+            setTimeout((): void => {
+                helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
+                const input: HTMLInputElement = helper.getElement('#' + helper.id + ' .e-conditionalformatting-dlg .e-cfmain .e-input') as HTMLInputElement;
+                input.value = 'Monday, June 23, 2014';
+                const evt: Event = document.createEvent('Event'); evt.initEvent('input', true, true); input.dispatchEvent(evt);
+                helper.click(' .e-conditionalformatting-dlg .e-footer-content button:nth-child(1)');
+                expect(helper.invoke('getCell', [13, 1]).style.backgroundColor).toBe('');
+                expect(helper.invoke('getCell', [5, 1]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                done();
+            });
+        });
+        it('Apply cf - Between ->', (done: Function) => {
+            helper.invoke('selectRange', ['B1:B20']);
+            helper.getElement('#' + helper.id + '_conditionalformatting').click();
+            const target: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item');
+            (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+            helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+            helper.getElement('#cf_between_dlg').click();
+            setTimeout((): void => {
+                helper.setAnimationToNone('.e-conditionalformatting-dlg.e-dialog');
+                let Color: any = helper.getElements('.e-conditionalformatting-dlg .e-cfsub .e-dropdownlist')[0];
+                Color.ej2_instances[0].value = 'Green Fill with Dark Green Text';
+                Color.ej2_instances[0].dataBind();
+                helper.getElements('.e-conditionalformatting-dlg .e-cfmain .e-input')[0].value = 'Tuesday, July 22, 2014';
+                const input: HTMLInputElement = helper.getElements('.e-conditionalformatting-dlg .e-cfmain .e-input')[1] as HTMLInputElement;
+                input.value = 'Sunday, November 30, 2014';
+                const evt: Event = document.createEvent('Event'); evt.initEvent('input', true, true); input.dispatchEvent(evt);
+                helper.click(' .e-conditionalformatting-dlg .e-footer-content button:nth-child(1)');
+                expect(helper.invoke('getCell', [6, 1]).style.backgroundColor).toBe('rgb(198, 239, 206)');
+                expect(helper.invoke('getCell', [6, 1]).style.color).toBe('rgb(0, 97, 0)');
+                expect(helper.invoke('getCell', [8, 1]).style.backgroundColor).toBe('rgb(198, 239, 206)');
+                expect(helper.invoke('getCell', [8, 1]).style.color).toBe('rgb(0, 97, 0)');
+                done();
+            });
+        });
+    });
+
+    describe('896806 - CF with clear hyperlink option ->', () => {
+        let spreadsheet: any;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    conditionalFormats: [
+                        { type: "ThreeArrows", range: 'E1:E11' },
+                        { type: 'GreaterThan', cFColor: 'RedFT', value: '10', range: 'E1:E11' },
+                    ],
+                    ranges: [{ dataSource: defaultData }],
+                }, {}]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply hyperlink - 1', (done: Function) => {
+            helper.switchRibbonTab(2);
+            helper.invoke('selectRange', ['E1:E11']);
+            helper.getElementFromSpreadsheet('#' + helper.id + '_hyperlink').click();
+            setTimeout(() => {
+                helper.getElements('.e-hyperlink-dlg .e-webpage input')[1].value = 'www.google.com';
+                helper.triggerKeyEvent('keyup', 88, null, null, null, helper.getElements('.e-hyperlink-dlg .e-webpage input')[1]);
+                helper.setAnimationToNone('.e-hyperlink-dlg.e-dialog');
+                helper.click('.e-hyperlink-dlg .e-footer-content button:nth-child(1)');
+                spreadsheet = helper.getInstance();
+                let sheet: any = spreadsheet.sheets[0];
+                expect(sheet.rows[3].cells[4].hyperlink.address).toBe('http://www.google.com');
+                const td: HTMLElement = helper.invoke('getCell', [3, 4]);
+                expect(td.querySelector('.e-hyperlink').textContent).toBe('15');
+                done();
+            });
+        });
+        it('Clear hyperlink', (done: Function) => {
+            helper.switchRibbonTab(1);
+            expect(helper.invoke('getCell', [3, 4]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [3, 4]).children[0].classList.contains('e-3arrows-3'));
+            helper.invoke('selectRange', ['E2:E6']);
+            setTimeout((): void => {
+                helper.click('#' + helper.id + '_clear');
+                helper.click('#spreadsheet_clear-popup ul li:nth-child(4)');
+                setTimeout((): void => {
+                    spreadsheet = helper.getInstance();
+                    expect(spreadsheet.sheets[0].rows[3].cells[4].hyperlink).toBeUndefined();
+                    expect(helper.invoke('getCell', [3, 4]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                    expect(helper.invoke('getCell', [3, 4]).children[0].classList.contains('e-3arrows-3'));
+                    expect(helper.invoke('getCell', [5, 4]).children[0].classList.contains('e-3arrows-3'));
+                    done();
+                });
+            });
+        });
+        it('Undo action', (done: Function) => {
+            helper.getElement('#' + helper.id + '_undo').click();
+            setTimeout((): void => {
+                spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[3].cells[4].hyperlink.address).toBe('http://www.google.com');
+                expect(helper.invoke('getCell', [3, 4]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [3, 4]).children[0].classList.contains('e-3arrows-3'));
+                done();
+            });
+        });
+        it('Redo action', (done: Function) => {
+            helper.getElement('#' + helper.id + '_redo').click();
+            setTimeout((): void => {
+                spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[3].cells[4].hyperlink).toBeUndefined();
+                expect(helper.invoke('getCell', [3, 4]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+                expect(helper.invoke('getCell', [3, 4]).children[0].classList.contains('e-3arrows-3'));
+                done();
+            });
         });
     });
 });

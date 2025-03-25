@@ -190,7 +190,9 @@ export class RibbonColorPicker {
     public toggle(controlId: string): void {
         const colorPickerObj: ColorPicker = this.getColorPickerObj(controlId);
         if (!colorPickerObj) { return; }
-        colorPickerObj.toggle();
+        if (!colorPickerObj.disabled) {
+            colorPickerObj.toggle();
+        }
     }
     /**
      * Updates the colorpicker properties.

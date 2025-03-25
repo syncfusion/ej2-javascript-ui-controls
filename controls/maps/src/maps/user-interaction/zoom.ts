@@ -83,6 +83,19 @@ export class Zoom {
     private templateCount: number;
     private pinchDistance: number;
     /** @private */
+    public startDistance: number;
+    /** @private */
+    public touchCenter: Point;
+    /** @private */
+    public pinchStartLatLong: object;
+    /** @private */
+    public isCancellation: boolean = false;
+    private pinchTileZoomScale: number = 1;
+    private tileZoomLevel: number = 1;
+    private pinchZoomScale: number = 1;
+    private isPinchZooming: boolean = false;
+
+    /** @private */
     public mouseDownLatLong: object = { x: 0, y: 0 };
     /** @private */
     public mouseMoveLatLong: object = { x: 0, y: 0 };
@@ -275,6 +288,25 @@ export class Zoom {
             position.y - ((y * totalSize) / 100);
     }
 
+    private getTileTranslate(currentLevel: number, type?: string): void {
+        const map: Maps = this.maps;
+        const padding: number = type === 'ZoomOut' ? 10 : (type === 'Reset' && currentLevel > 1) ? 0 : 10;
+        const bounds: Size = map.availableSize;
+        const totalSize: number = Math.pow(2, currentLevel) * 256;
+        let x: number = (bounds.width / 2) - (totalSize / 2);
+        let y: number = (bounds.height / 2) - (totalSize / 2);
+        const position: Point = convertTileLatLongToPoint(
+            new MapLocation(this.pinchStartLatLong['longitude'], this.pinchStartLatLong['latitude']), currentLevel, {x: x, y: y}, true
+        );
+        x -= position.x - (bounds.width / 2);
+        y = y - (position.y - (bounds.height / 2)) + padding;
+        const scale: number = Math.pow(2, currentLevel - 1);
+        map.tileTranslatePoint.x = x;
+        map.tileTranslatePoint.y = y;
+        map.translatePoint.x = (x - (0.01 * this.tileZoomLevel)) / scale;
+        map.translatePoint.y = (y - (0.01 * this.tileZoomLevel)) / scale;
+    }
+
     /**
      * @returns {void}
      * @private
@@ -355,6 +387,12 @@ export class Zoom {
         }
     }
 
+    private tilePinchingProcess (scale: number): void {
+        this.tileZoomLevel = Math.round(scale);
+        this.getTileTranslate(this.tileZoomLevel);
+        this.maps.mapLayerPanel.generateTiles(this.tileZoomLevel, this.maps.tileTranslatePoint, null, null, null, true);
+    }
+
     /**
      * @param {PointerEvent} e - Specifies the vent in the map
      * @returns {void}
@@ -413,47 +451,112 @@ export class Zoom {
                 map.scale = map.previousScale;
             }
         } else {
-            const touchCenter: Point = this.getTouchCenterPoint();
-            const distance: number = Math.sqrt(Math.pow((this.touchMoveList[0].pageX - this.touchMoveList[1].pageX), 2) + Math.pow((this.touchMoveList[0].pageY - this.touchMoveList[1].pageY), 2));
-            let factor: number = map.tileZoomLevel;
+            this.isPinchZooming = true;
+            const touchCenter: Point = this.touchCenter;
+            const touchOnePoint: MapLocation = this.getMousePosition(this.touchMoveList[0].pageX, this.touchMoveList[0].pageY);
+            const touchTwoPoint: MapLocation = this.getMousePosition(this.touchMoveList[1].pageX, this.touchMoveList[1].pageY);
+            const distance: number = Math.sqrt(Math.pow((touchOnePoint.x - touchTwoPoint.x), 2) + Math.pow((touchOnePoint.y - touchTwoPoint.y), 2));
+            const pinchScale: number = distance / this.startDistance;
             if (!isNullOrUndefined(this.pinchDistance)) {
+                let pinchZoomFactor: number = Math.log2(pinchScale * (256 * Math.pow(2, prevLevel)) / 256);
+                pinchZoomFactor = Math.min(map.zoomSettings.maxZoom, Math.max(map.zoomSettings.minZoom, pinchZoomFactor));
+                const scaleFactor: number = this.pinchDistance > distance ? (prevLevel * pinchScale) : pinchZoomFactor;
+                let factor: number = pinchZoomFactor;
+                let isZoomOut: boolean = false;
                 if (this.pinchDistance > distance) {
-                    factor = factor - 1;
+                    factor = (scaleFactor % 1);
+                    isZoomOut = true;
                 } else if (this.pinchDistance < distance) {
-                    factor = factor + 1;
+                    factor = (scaleFactor % 1) + 1;
                 }
-                factor = Math.min(this.maps.zoomSettings.maxZoom, Math.max(this.maps.zoomSettings.minZoom, factor));
-                if (factor !== map.tileZoomLevel) {
-                    this.pinchFactor = factor;
-                    map.previousScale = map.scale;
-                    map.tileZoomLevel = this.pinchFactor;
-                    map.scale = Math.pow(2, map.tileZoomLevel - 1);
-                    this.getTileTranslatePosition(prevLevel, this.pinchFactor, { x: touchCenter.x, y: touchCenter.y }, null);
-                    map.translatePoint.x = (map.tileTranslatePoint.x - (0.01 * map.scale)) / map.scale;
-                    map.translatePoint.y = (map.tileTranslatePoint.y - (0.01 * map.scale)) / map.scale;
-                    isZoomCancelled = this.triggerZoomEvent(prevTilePoint, prevLevel, '');
-                    if (isZoomCancelled) {
-                        map.translatePoint = map.tileTranslatePoint = new Point(0, 0);
-                        map.scale = map.previousScale;
-                        map.tileZoomLevel = prevLevel;
-                        map.zoomSettings.zoomFactor = map.previousScale;
-                    } else {
-                        map.mapLayerPanel.generateTiles(factor, map.tileTranslatePoint);
+                const zoomFactor: number = Math.ceil(scaleFactor);
+                if (zoomFactor > map.zoomSettings.minZoom && zoomFactor <= map.zoomSettings.maxZoom) {
+                    const element: HTMLElement = document.getElementById(map.element.id);
+                    if (element) {
+                        element.style.overflow = 'hidden';
+                    }
+                    this.tileZoomLevel = zoomFactor;
+                    const transformOriginX: number = (touchCenter.x / (map.mapAreaRect.width - map.mapAreaRect.x)) * 100;
+                    const transformOriginY: number = (touchCenter.y / (map.mapAreaRect.height - map.mapAreaRect.y)) * 100;
+                    const tilesParent: HTMLElement = document.getElementById(map.element.id + '_tile_parent');
+                    let copyTilesParent: HTMLElement = document.getElementById(map.element.id + '_tiles');
+                    if (!copyTilesParent) {
+                        copyTilesParent = document.createElement('div');
+                        copyTilesParent.id = map.element.id + '_tiles';
+                        map.element.appendChild(copyTilesParent);
+                        this.copyStyles(tilesParent, copyTilesParent);
+                        copyTilesParent.style.zIndex = '0';
+                    }
+                    copyTilesParent.style.visibility = 'hidden';
+                    tilesParent.style.transformOrigin = `${transformOriginX}% ${transformOriginY}%`;
+                    tilesParent.style.transform = `scale(${factor})`;
+                    const svgElement: HTMLElement = document.getElementById(map.element.id + '_Tile_SVG_Parent');
+                    svgElement.style.transformOrigin = `${transformOriginX}% ${transformOriginY}%`;
+                    svgElement.style.transform = `scale(${factor})`;
+                    if (!this.isCancellation && (0.2 >= scaleFactor % 1 && scaleFactor % 1 >= 0.1 && !isZoomOut) || (scaleFactor % 1 <= 0.9 && isZoomOut)) {
+                        let animateTile: HTMLElement = document.getElementById(map.element.id + '_animates_tiles');
+                        if (!animateTile) {
+                            animateTile = document.createElement('div');
+                            animateTile.id = map.element.id + '_animates_tiles';
+                            animateTile.classList.add(this.tileZoomLevel.toString());
+                            copyTilesParent.appendChild(animateTile);
+                        }
+                        if (animateTile.childElementCount === 0) {
+                            this.pinchZoomScale = isZoomOut ? Math.floor(scaleFactor) : Math.ceil(scaleFactor);
+                            this.tilePinchingProcess(this.pinchZoomScale);
+                            this.isCancellation = true;
+                        }
+                    }
+                    if (this.isCancellation && (scaleFactor % 1 >= 0.99 && !isZoomOut) || (scaleFactor % 1 <= 0.1 && isZoomOut)) {
+                        if (tilesParent.style.transformOrigin !== '' && this.isCancellation) {
+                            tilesParent.style.transformOrigin = '';
+                            tilesParent.style.transform = '';
+                            svgElement.style.transformOrigin = '';
+                            svgElement.style.transform = '';
+                            this.pinchTileZoomScale = isZoomOut ? Math.floor(scaleFactor) : Math.ceil(scaleFactor);
+                            this.getTileTranslate(this.pinchTileZoomScale);
+                            const targetElement: HTMLElement = document.getElementById(map.element.id + '_animated_tiles');
+                            const sourceElement: HTMLElement = document.getElementById(map.element.id + '_animates_tiles');
+                            while (targetElement.firstChild) {
+                                targetElement.removeChild(targetElement.firstChild);
+                            }
+                            Array.from(sourceElement.children).forEach((child: Element) => {
+                                targetElement.appendChild(child.cloneNode(true));
+                            });
+                            document.getElementById(map.element.id + '_animated_tiles')['className'] = this.pinchTileZoomScale.toFixed(0);
+                            if (sourceElement) {
+                                while (sourceElement.firstChild) {
+                                    sourceElement.removeChild(sourceElement.firstChild);
+                                }
+                            }
+                            this.isCancellation = false;
+                            map.mapScaleValue = this.pinchTileZoomScale;
+                            map.scale = Math.pow(2, this.pinchTileZoomScale - 1);
+                            this.applyTransform(map);
+                        }
                     }
                 }
             }
             this.pinchDistance = distance;
         }
-        map.mapScaleValue = zoomCalculationFactor;
-        if (!isZoomCancelled) {
-            this.applyTransform(map);
+        if (!map.isTileMap) {
+            map.mapScaleValue = zoomCalculationFactor;
+            if (!isZoomCancelled) {
+                this.applyTransform(map);
+            }
+            this.triggerZoomComplete(map, prevLevel, '');
         }
-        this.triggerZoomComplete(map, prevLevel, '');
         if (Browser.isDevice) {
             this.removeToolbarOpacity(map.isTileMap ? Math.round(map.tileZoomLevel) : map.scale, map.element.id + '_Zooming_');
         }
     }
 
+    private copyStyles(sourceElement: HTMLElement, targetElement: HTMLElement): void {
+        const sourceStyles: CSSStyleDeclaration = window.getComputedStyle(sourceElement);
+        Array.from(sourceStyles).forEach((style: string) => {
+            targetElement.style[style as string] = sourceStyles.getPropertyValue(style);
+        });
+    }
     private getTouchCenterPoint(): Point {
         const touchList: Point[] = [];
         for (let i: number = 0; i < this.touchMoveList.length; i++) {
@@ -518,6 +621,7 @@ export class Zoom {
                 height: map.availableSize.height,
                 style: 'position: absolute;'
             });
+            (rectSVGObject as HTMLElement).style.position = 'absolute';
             const rectOption: RectOption = new RectOption(
                 map.element.id + '_ZoomRect', this.maps.themeStyle.rectangleZoomFillColor, border, this.maps.themeStyle.rectangleZoomFillOpacity, this.zoomingRect, 0, 0, '', '3'
             );
@@ -600,18 +704,19 @@ export class Zoom {
                                 if (layerElement.children.length > 0 && layerElement.children[0]) {
                                     layerElement.insertBefore(
                                         maps.navigationLineModule.renderNavigation(
-                                            this.currentLayer, maps.tileZoomLevel, this.index
+                                            this.currentLayer, this.isPinchZooming ? this.pinchZoomScale : maps.tileZoomLevel,
+                                            this.index
                                         ),
                                         layerElement.children[1]
                                     );
                                 } else {
-                                    layerElement.appendChild(maps.navigationLineModule.renderNavigation(this.currentLayer, maps.tileZoomLevel, this.index));
+                                    layerElement.appendChild(maps.navigationLineModule.renderNavigation(this.currentLayer, this.isPinchZooming ? this.pinchZoomScale : maps.tileZoomLevel, this.index));
                                 }
                             } else if (maps.isTileMap && (currentEle.id.indexOf('_Polygons_Group') > -1)){
                                 if (this.currentLayer.polygonSettings.polygons.length > 0) {
                                     this.currentLayer.polygonSettings.polygons.map((polygonSettings: PolygonSettingModel, polygonIndex: number) => {
                                         const markerData: Coordinate[] = polygonSettings.points;
-                                        const path: string = calculatePolygonPath(maps, maps.tileZoomLevel, this.currentLayer, markerData);
+                                        const path: string = calculatePolygonPath(maps, this.isPinchZooming ? this.pinchZoomScale : maps.tileZoomLevel, this.currentLayer, markerData);
                                         const element: Element = document.getElementById(maps.element.id + '_LayerIndex_' + this.index + '_PolygonIndex_' + polygonIndex);
                                         if (!isNullOrUndefined(element)) {
                                             element.setAttribute('d', path);
@@ -833,7 +938,7 @@ export class Zoom {
                             const markerID: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
                                 + markerIndex + '_dataIndex_' + dataIndex;
                             const location: Point = (this.maps.isTileMap) ? convertTileLatLongToPoint(
-                                new MapLocation(long, lati), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true
+                                new MapLocation(long, lati), this.isPinchZooming ? this.pinchZoomScale : this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true
                             ) : convertGeoToPoint(lati, long, factor, currentLayers, this.maps);
                             const transPoint: Point = {x: x, y: y};
                             if (eventArgs.template && (!isNaN(location.x) && !isNaN(location.y))) {
@@ -1110,7 +1215,7 @@ export class Zoom {
                     !isNullOrUndefined(marker.dataSource[dataIndex as number]['Latitude']) ? parseFloat(marker.dataSource[dataIndex as number]['Latitude']) : 0;
             const duration: number = this.currentLayer.animationDuration === 0 && animationMode === 'Enable' ? 1000 : this.currentLayer.animationDuration;
             const location: Point = (this.maps.isTileMap) ? convertTileLatLongToPoint(
-                new Point(lng, lat), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true
+                new Point(lng, lat), this.isPinchZooming ? this.pinchZoomScale : this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true
             ) : convertGeoToPoint(lat, lng, factor, layer, this.maps);
             if (this.maps.isTileMap) {
                 if (type === 'Template') {
@@ -2052,6 +2157,7 @@ export class Zoom {
         let pageY: number;
         let target: Element;
         let touches: TouchList = null;
+        this.isPinchZooming = false;
         //eslint-disable-next-line @typescript-eslint/no-unused-vars
         const element: Element = <Element>e.target;
         if (e.type === 'touchstart') {
@@ -2083,6 +2189,16 @@ export class Zoom {
             this.firstMove = true;
             this.pinchFactor = this.maps.scale;
             this.fingers = touches.length;
+        }
+        if (this.maps.isTileMap && this.isTouch && e['touches'].length > 1) {
+            const startTouch: MapLocation = this.getMousePosition(e['touches'][0].pageX, e['touches'][0].pageY);
+            const endTouch: MapLocation = this.getMousePosition(e['touches'][1].pageX, e['touches'][1].pageY);
+            this.startDistance = Math.sqrt(Math.pow((startTouch.x - endTouch.x), 2) + Math.pow((startTouch.y - endTouch.y), 2));
+            this.touchCenter = { x: (startTouch.x + endTouch.x) / 2, y: (startTouch.y + endTouch.y) / 2 };
+            this.pinchStartLatLong = this.maps.pointToLatLong((startTouch.x + endTouch.x) / 2, (startTouch.y + endTouch.y) / 2);
+            this.isCancellation = false;
+            this.pinchTileZoomScale = this.maps.tileZoomLevel;
+            this.pinchDistance = null;
         }
         this.isSingleClick = true;
     }
@@ -2121,14 +2237,14 @@ export class Zoom {
             }
         }
         if (this.isTouch) {
-            if (this.maps.zoomSettings.pinchZooming && touches !== null) {
+            if (this.maps.zoomSettings.enable && this.maps.zoomSettings.pinchZooming && touches !== null) {
                 if (this.firstMove && touches.length === 2) {
                     this.rectZoomingStart = false;
                     this.updateInteraction();
                     this.touchStartList = targetTouches(e);
                 } else if (touches.length === 2 && this.touchStartList.length === 2) {
                     this.touchMoveList = targetTouches(e);
-                    e.preventDefault();
+                    if (e.cancelable) { e.preventDefault(); }
                     this.rectZoomingStart = false;
                     this.performPinchZooming(<PointerEvent>e);
                 }
@@ -2136,7 +2252,7 @@ export class Zoom {
             }
         }
         this.mouseMovePoints = this.getMousePosition(pageX, pageY);
-        if (zoom.enable && this.isPanModeEnabled && this.maps.markerDragId.indexOf('_MarkerIndex_') === -1 && ((Browser.isDevice && touches.length >= 1) || !Browser.isDevice)) {
+        if (!this.isPinchZooming && (zoom.enable && this.isPanModeEnabled && this.maps.markerDragId.indexOf('_MarkerIndex_') === -1 && ((Browser.isDevice && touches.length >= 1) || !Browser.isDevice))) {
             e.preventDefault();
             this.maps.element.style.cursor = 'pointer';
             this.mouseMoveLatLong = { x: pageX, y: pageY };
@@ -2148,7 +2264,7 @@ export class Zoom {
                 this.mouseDownLatLong['y'] = pageY;
             }
         }
-        if (this.isTouch ? (touches !== null && touches.length === 1 && this.rectZoomingStart) : this.rectZoomingStart) {
+        if (!this.isPinchZooming && (this.isTouch ? (touches !== null && touches.length === 1 && this.rectZoomingStart) : this.rectZoomingStart)) {
             e.preventDefault();
             const scale : number = this.maps.isTileMap ? Math.round(this.maps.tileZoomLevel) : Math.round(this.maps.mapScaleValue);
             if (this.maps.zoomSettings.enableSelectionZooming && scale < this.maps.zoomSettings.maxZoom) {
@@ -2173,7 +2289,26 @@ export class Zoom {
         this.touchStartList = [];
         this.touchMoveList = [];
         this.lastScale = 1;
+        this.isCancellation = false;
         this.maps.element.style.cursor = 'auto';
+        if (this.isPinchZooming && this.maps.isTileMap) {
+            this.isPinchZooming = false;
+            const tilesParent: HTMLElement = document.getElementById(this.maps.element.id + '_tile_parent');
+            const svgElement: HTMLElement = document.getElementById(this.maps.element.id + '_Tile_SVG_Parent');
+            tilesParent.style.transformOrigin = '';
+            tilesParent.style.transform = '';
+            svgElement.style.transformOrigin = '';
+            svgElement.style.transform = '';
+            this.maps.tileZoomLevel = this.maps.mapScaleValue = this.maps.zoomSettings.zoomFactor = this.pinchZoomScale;
+            this.maps.scale = Math.pow(2, this.pinchZoomScale - 1);
+            this.tileZoomLevel = Math.round(this.pinchZoomScale);
+            this.getTileTranslate(this.tileZoomLevel);
+            this.maps.mapLayerPanel.generateTiles(this.tileZoomLevel, this.maps.tileTranslatePoint);
+            this.applyTransform(this.maps);
+            if (document.getElementById(this.maps.element.id + '_animates_tiles')) {
+                document.getElementById(this.maps.element.id + '_animates_tiles').remove();
+            }
+        }
         if (this.isPanModeEnabled && this.maps.zoomSettings.enablePanning && !isNullOrUndefined(this.maps.previousPoint) &&
             (!this.maps.isTileMap  ? (this.maps.translatePoint.x !== this.maps.previousPoint.x && this.maps.translatePoint.y !== this.maps.previousPoint.y)
                 : this.isPanningInProgress)) {
@@ -2377,9 +2512,12 @@ export class Zoom {
         this.startTouches = [];
         this.mouseDownLatLong = null;
         this.mouseMoveLatLong = null;
-        this.removeEventListener();
         this.layerCollectionEle = null;
         this.currentLayer = null;
         this.pinchDistance = null;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (!(this.maps as any).refreshing) {
+            this.maps = null;
+        }
     }
 }

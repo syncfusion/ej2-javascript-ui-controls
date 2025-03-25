@@ -785,6 +785,7 @@ describe('GridLayout', () => {
             gridLayOut.removePanel('0');
             expect(gridLayOut.element.style.height).toBe('');
         });
+
         it('Columns less than panels value with space available', () => {
             gridLayOut = new DashboardLayout({
                 columns: 2,

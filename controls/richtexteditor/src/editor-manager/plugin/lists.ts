@@ -11,6 +11,7 @@ import { isIDevice, setEditFrameFocus } from '../../common/util';
 import { isNullOrUndefined, isNullOrUndefined as isNOU, closest } from '@syncfusion/ej2-base';
 import { IAdvanceListItem } from '../../common';
 import { InsertHtml } from './inserthtml';
+import { DOMMethods } from './dom-tree';
 
 /**
  * Lists internal component
@@ -170,7 +171,7 @@ export class Lists {
         }
         const tableElement: HTMLElement = !isNullOrUndefined(startNode) ? startNode.querySelector('TABLE') : null;
         if (!isNOU(startNode) && !isNOU(endNode) && startNode === endNode && startNode.tagName === 'LI' &&
-            startNode.textContent.trim() === '' && !hasMediaElem && isNOU(tableElement)) {
+            startNode.textContent.trim() === '' && !hasMediaElem  && isNOU(tableElement)) {
             if (startNode.innerHTML.indexOf('&nbsp;') >= 0) {
                 return;
             }
@@ -192,13 +193,16 @@ export class Lists {
                 } else {
                     insertTag = createElement('br');
                 }
+                const immediateBlock: Node = this.domNode.getImmediateBlockNode(range.startContainer);
+                const { formattedElement, cursorTarget } = this.applyFormattingFromRange(insertTag, range, immediateBlock, e.enterAction);
+                insertTag = formattedElement;
                 if (!isNOU(parentOfCurrentOLUL) && parentOfCurrentOLUL.nodeName === 'BLOCKQUOTE') {
                     this.parent.observer.notify('blockquote_list_handled', {});
                 }
                 this.parent.domNode.insertAfter(insertTag, startNodeParent);
                 e.event.preventDefault();
-                this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, insertTag, 0);
-                if (startNodeParent.textContent === '' && (startNodeParent.querySelectorAll('audio,video').length === 0 )) {
+                this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, cursorTarget, 0);
+                if (startNodeParent.textContent === '' && (startNodeParent.querySelectorAll('audio,video,table').length === 0 )) {
                     detach(startNodeParent);
                 } else {
                     detach(startNode);
@@ -216,7 +220,42 @@ export class Lists {
         }
         this.handleNestedEnterKeyForLists(e, parentOfCurrentOLUL, startNode, startNodeParent);
     }
-
+    private applyFormattingFromRange(element: HTMLElement, range: Range, blockNode: Node, enterAction: string)
+        : { formattedElement: HTMLElement, cursorTarget: HTMLElement } {
+        let cursorTarget: HTMLElement = element;
+        const formatTags: { tag: string, element: HTMLElement }[] = [];
+        if (blockNode) {
+            let currentNode: Node = range.startContainer;
+            const blockElements: string[] = ['div', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'ul', 'ol', 'table', 'tr', 'td', 'th'];
+            while (currentNode && currentNode !== blockNode) {
+                const nodeName: string = currentNode.nodeName.toLowerCase();
+                if (blockElements.indexOf(nodeName) === -1 && currentNode.nodeType === Node.ELEMENT_NODE) {
+                    formatTags.push({
+                        tag: nodeName,
+                        element: currentNode as HTMLElement
+                    });
+                }
+                currentNode = currentNode.parentNode;
+            }
+            if (formatTags.length > 0) {
+                element = (enterAction === 'BR') ? createElement('DIV') : element;
+                element.innerHTML = '';
+                let currentElement: HTMLElement = element;
+                formatTags.reverse().forEach((format: { tag: string, element: HTMLElement }) => {
+                    const newElement: HTMLElement = createElement(format.tag);
+                    Array.from((format.element as Element).attributes).forEach((attr: Attr) => {
+                        newElement.setAttribute(attr.name, attr.value);
+                    });
+                    currentElement.appendChild(newElement);
+                    currentElement = newElement;
+                });
+                const brElement: HTMLElement = createElement('br');
+                currentElement.appendChild(brElement);
+                cursorTarget = currentElement;
+            }
+        }
+        return { formattedElement: (enterAction === 'BR' && formatTags.length > 0) ? element.firstChild as HTMLElement : element, cursorTarget };
+    }
     private handleNestedEnterKeyForLists(e: IHtmlKeyboardEvent, parentOfCurrentOLUL: HTMLElement, startNode: Element,
                                          startNodeParent: HTMLElement): void {
         let hasIgnoredElement: boolean = false;
@@ -332,7 +371,7 @@ export class Lists {
             if ((!isNOU(parentListItem) && parentListItem.tagName === 'LI' && !isNOU(currentList.previousSibling)) || (!isNOU(prevSibling) && prevSibling.nodeName === 'LI')) {
                 if (!isNOU(nestedList) && (isNOU(prevSibling) || !isNOU(prevSibling))) {
                     e.event.preventDefault();
-                    // Preventing a default content editable div behaviour and handles rearrangement of nested lists when press the backspace while the cursor is at the nested list structure and also redistributes child nodes and maintains cursor position after rearrangement
+                    // Preventing a default content editable div behaviour and Handles rearrangement of nested lists when press the backspace while the cursor is at the nested list structure and also redistributes child nodes and maintains cursor position after rearrangement
                     this.handleNestedListRearrangement(startNode, currentList, parentListItem, prevSibling, nestedList);
                 }
             }
@@ -376,6 +415,43 @@ export class Lists {
             cursorOffset.offset);
     }
 
+    private findPreviousElementForCursor(currentElement: Element): Element {
+        let previousNode: Element = null;
+        // Try to find a previous sibling first
+        if (currentElement.previousElementSibling) {
+            previousNode = currentElement.previousElementSibling;
+        }
+        // If no previous sibling, try the parent (if not the editable element itself)
+        else if (currentElement.parentElement && currentElement.parentElement !== this.parent.editableElement) {
+            previousNode = currentElement.parentElement;
+        }
+        return previousNode;
+    }
+
+    private handleCursorPositioningAfterListRemoval(previousNode: Element): void {
+        if (!previousNode) {
+            return;
+        }
+        // For Safari, explicitly set the cursor position
+        if (this.parent.userAgentData.isSafari()) {
+            const cursorPosition: { node: Node; offset: number } | null = this.parent.nodeSelection.findLastTextPosition(previousNode);
+            if (cursorPosition) {
+                this.parent.nodeSelection.setCursorPoint(
+                    this.parent.currentDocument,
+                    cursorPosition.node as Element,
+                    cursorPosition.offset
+                );
+            } else {
+                // If we can't find a text position, place at the end of the element
+                this.parent.nodeSelection.setCursorPoint(
+                    this.parent.currentDocument,
+                    previousNode,
+                    previousNode.childNodes.length
+                );
+            }
+        }
+    }
+
     private removeList(range: Range, e: IHtmlKeyboardEvent): void{
         let startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
         let endNode: Element = (!isNOU(range.endContainer.parentElement.closest('li')) && range.endContainer.parentElement.closest('li').childElementCount > 1 && range.endContainer.nodeName === '#text') ? range.endContainer as Element :  this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
@@ -395,16 +471,25 @@ export class Lists {
         isNOU(startNode.previousElementSibling) && range.startOffset === 0) ||
         (Browser.userAgent.indexOf('Firefox') !== -1 && range.startContainer === range.endContainer && range.startContainer === this.parent.editableElement &&
         range.startOffset === 0 && range.endOffset === 1)) {
+            // Find where to place the cursor before removing elements for safari
+            let previousNode: Element;
             if (Browser.userAgent.indexOf('Firefox') !== -1) {
+                previousNode =  this.findPreviousElementForCursor(range.commonAncestorContainer.childNodes[0] as Element);
                 detach(range.commonAncestorContainer.childNodes[0]);
             } else if (range.commonAncestorContainer.nodeName === 'LI') {
+                previousNode =  this.findPreviousElementForCursor(range.commonAncestorContainer.parentElement);
                 detach(range.commonAncestorContainer.parentElement);
             } else {
+                previousNode =  this.findPreviousElementForCursor(range.commonAncestorContainer as Element);
                 detach(range.commonAncestorContainer);
             }
+
             e.event.preventDefault();
+            // Handle cursor positioning for safari
+            this.handleCursorPositioningAfterListRemoval(previousNode);
             parentList = (range.startContainer.nodeName === '#text') ? range.startContainer.parentElement.closest('li') : (range.startContainer as HTMLElement).closest('li');
         }
+        let previousNode: Element;
         if (!isNOU(parentList) && (!range.collapsed || (parentList.textContent.trim() === '' && isNOU(parentList.previousElementSibling) && isNOU(parentList.nextElementSibling))) && parentList.textContent === fullContent ){
             range.deleteContents();
             const listItems: NodeListOf<Element> = this.parent.editableElement.querySelectorAll('li');
@@ -417,20 +502,25 @@ export class Lists {
                     });
                 }
                 if ((!listItems[i as number].firstChild || listItems[i as number].textContent.trim() === '') && (listItems[i as number] === startNode || listItems[i as number] === endNode)) {
+                    previousNode = this.findPreviousElementForCursor(listItems[i as number]);
                     listItems[i as number].parentNode.removeChild(listItems[i as number]);
                 }
             }
             this.parent.editableElement.querySelectorAll('ol').forEach((ol: HTMLOListElement) => {
                 if (!ol.firstChild || ol.textContent.trim() === '') {
+                    previousNode = this.findPreviousElementForCursor(ol);
                     ol.parentNode.removeChild(ol);
                 }
             });
             this.parent.editableElement.querySelectorAll('ul').forEach((ul: HTMLUListElement) => {
                 if (!ul.firstChild || ul.textContent.trim() === '') {
+                    previousNode = this.findPreviousElementForCursor(ul);
                     ul.parentNode.removeChild(ul);
                 }
             });
             e.event.preventDefault();
+            // Handle cursor positioning for safari
+            this.handleCursorPositioningAfterListRemoval(previousNode);
         }
     }
     private onKeyUp(e: IHtmlKeyboardEvent): void {
@@ -463,7 +553,6 @@ export class Lists {
         } else if (!isNOU(startNode.closest('UL'))) {
             this.commonLIParent = startNode.closest('UL');
         }
-
         if (!isNOU(listItem) && range.startOffset === 0 && range.endOffset === 0 &&
         isNOU(startNode.previousSibling) && !isNOU(this.commonLIParent) && isNOU(this.commonLIParent.previousSibling) &&
         (isNOU(this.commonLIParent.parentElement.closest('OL')) && isNOU(this.commonLIParent.parentElement.closest('UL')) &&
@@ -474,6 +563,7 @@ export class Lists {
             this.commonLIParent.parentElement.insertBefore(currentElem, this.commonLIParent);
         }
     }
+
     private isAtListStart(startNode: Element, range: Range): boolean {
         if (startNode.nodeName !== 'LI') {
             return false;
@@ -494,6 +584,7 @@ export class Lists {
         }
         return null;
     }
+
     private keyDownHandler(e: IHtmlKeyboardEvent): void {
         if (e.event.which === 13) {
             this.enterList(e);
@@ -713,7 +804,7 @@ export class Lists {
         const siblingListLI: NodeListOf<HTMLLIElement> = (elements as Element)
             .querySelectorAll('li') as NodeListOf<HTMLLIElement>;
         const siblingListLIFirst: Node = this.domNode.contents(siblingListLI[0] as Element)[0];
-        if (siblingListLI.length > 0 && (siblingListLIFirst.nodeName === 'OL' || siblingListLIFirst.nodeName === 'UL')) {
+        if (siblingListLI.length > 0 && (siblingListOL.length <= 1 || siblingListOL[0].childNodes.length > 1) && (siblingListLIFirst.nodeName === 'OL' || siblingListLIFirst.nodeName === 'UL')) {
             firstNode = siblingListLI[0];
         } else {
             firstNodeOL = siblingListOL[0];
@@ -759,7 +850,7 @@ export class Lists {
                 const siblingListLI: NodeListOf<HTMLLIElement> = (elements[i as number] as Element)
                     .querySelectorAll('li') as NodeListOf<HTMLLIElement>;
                 const siblingListLIFirst: Node = this.domNode.contents(siblingListLI[0] as Element)[0];
-                if (siblingListLI.length > 0 && (siblingListLIFirst.nodeName === 'OL' || siblingListLIFirst.nodeName === 'UL')) {
+                if (siblingListLI.length > 0 && (siblingListOL.length <= 1 || siblingListOL[0].childNodes.length > 1) && (siblingListLIFirst.nodeName === 'OL' || siblingListLIFirst.nodeName === 'UL')) {
                     firstNodeLI = siblingListLI[0];
                 } else {
                     firstNode = siblingListOL[0];
@@ -807,7 +898,6 @@ export class Lists {
         }
         return isNested;
     }
-
     private isCursorBeforeTable(range: Range): boolean {
         return range.startOffset === range.endOffset &&
             range.startContainer.childNodes.length > 0 && !isNOU(range.startContainer.childNodes[range.startOffset]) &&
@@ -822,7 +912,6 @@ export class Lists {
         return node.nodeName === 'LI' && !isNOU(node.firstChild) &&
             node.firstChild.nodeName === 'TABLE';
     }
-
     private applyListsHandler(e: IHtmlSubCommands): void {
         let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         if (Browser.userAgent.indexOf('Firefox') !== -1 && range.startContainer === range.endContainer && range.startContainer === this.parent.editableElement) {
@@ -1382,15 +1471,18 @@ export class Lists {
     private getListCursorInfo(range: Range): ListCursorInfo {
         let position: ListCursorPosition;
         let selectionState: ListSelectionState;
+        const domMethods: DOMMethods = new DOMMethods(this.parent.editableElement as HTMLDivElement);
         const startNode: Node = range.startContainer.nodeType === Node.TEXT_NODE ?
-            range.startContainer.parentElement : range.startContainer;
+            domMethods.getTopMostNode(range.startContainer as Text) : range.startContainer;
         const endNode: Node = range.endContainer.nodeType === Node.TEXT_NODE ?
-            range.endContainer.parentElement : range.endContainer;
+            domMethods.getTopMostNode(range.endContainer as Text) : range.endContainer;
         const isSelection: boolean = !range.collapsed;
-        const startList: HTMLLIElement = (startNode as HTMLElement).closest('li');
-        const endList: HTMLLIElement = (endNode as HTMLElement).closest('li');
-        const isNestedStart: boolean = this.checkIsNestedList(startList.closest('ol, ul') as HTMLElement);
-        const isNestedEnd: boolean = this.checkIsNestedList(endList.closest('ol, ul') as HTMLElement);
+        const startList: HTMLLIElement = startNode.nodeType === Node.TEXT_NODE ? startNode.parentElement.closest('li') :
+            (startNode as HTMLElement).closest('li');
+        const endList: HTMLLIElement = endNode.nodeType === Node.TEXT_NODE ? endNode.parentElement.closest('li') :
+            (endNode as HTMLElement).closest('li');
+        const isNestedStart: boolean = startList && startList.closest('ol, ul') ? this.checkIsNestedList(startList.closest('ol, ul') as HTMLElement) : false;
+        const isNestedEnd: boolean = endList && endList.closest('ol, ul') ? this.checkIsNestedList(endList.closest('ol, ul') as HTMLElement) : false;
         const blockNodes: HTMLElement[] = this.parent.domNode.blockNodes() as HTMLElement[];
         const length: number = blockNodes.length;
         const itemType: ListItemType = this.getListSelectionType(isNestedStart ? 'Nested' : 'Parent', isNestedEnd ? 'Nested' : 'Parent');
@@ -1402,9 +1494,9 @@ export class Lists {
             }
             position = 'None';
         } else {
-            if (range.startOffset === 0) {
+            if (range.startOffset === 0 && startNode.previousSibling === null) {
                 position = isNestedStart ? 'StartNested' : 'StartParent';
-            } else if (range.startOffset === startList.textContent.length) {
+            } else if (range.startOffset === startList.textContent.length && startNode.nextSibling === null) {
                 position = isNestedStart ? 'EndNested' : 'EndParent';
             } else {
                 position = isNestedStart ? 'MiddleNested' : 'MiddleParent';

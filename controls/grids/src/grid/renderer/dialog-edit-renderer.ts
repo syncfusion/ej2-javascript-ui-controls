@@ -81,7 +81,8 @@ export class DialogEditRender {
         dialog?: DialogModel, target?: HTMLElement
     }): void {
         const gObj: IGrid = this.parent;
-        this.dialog = this.parent.createElement('div', { id: gObj.element.id + '_dialogEdit_wrapper', styles: 'width: auto' });
+        this.dialog = this.parent.createElement('div', { id: gObj.element.id + '_dialogEdit_wrapper' });
+        this.dialog.style.width = 'auto';
         if (gObj.enableAdaptiveUI) {
             this.dialog.classList.add('e-responsive-dialog');
         }
@@ -232,11 +233,8 @@ export class DialogEditRender {
                 continue;
             }
             const tr: Element = this.parent.createElement('tr', { attrs: { role: 'row' } });
-            const dataCell: HTMLElement = this.parent.createElement('td', {
-                className: literals.rowCell, attrs: {
-                    style: 'text-align:' + (this.parent.enableRtl ? 'right' : 'left') + ';width:190px'
-                }
-            });
+            const dataCell: HTMLElement = this.parent.createElement('td', { className: literals.rowCell });
+            dataCell.style.cssText = `text-align: ${this.parent.enableRtl ? 'right' : 'left'}; width: 190px;`;
             elements[cols[parseInt(i.toString(), 10)].uid].classList.remove('e-input');
             dataCell.appendChild(elements[cols[parseInt(i.toString(), 10)].uid]);
             tr.appendChild(dataCell);

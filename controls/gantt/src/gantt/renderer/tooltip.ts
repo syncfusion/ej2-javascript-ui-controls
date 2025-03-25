@@ -72,7 +72,24 @@ export class Tooltip {
 
         if (args.target.classList.contains('e-header-cell-label')) {
             if (parent.timelineSettings.showTooltip) {
-                argsData.content = this.toolTipObj.content = parent.tooltipModule.getTooltipContent('timeline', data, parent, args) as string | HTMLElement;
+                const tierValue: string = args.target.getAttribute('data-tier');
+                const title: string = args.target.title;
+                const innerContent: string = !isNullOrUndefined(parent.timelineTemplate) ? args.target.getAttribute('value') :
+                    args.target.textContent;
+                const templateContext: Object = {
+                    date: title,
+                    value: innerContent,
+                    tier: tierValue
+                };
+                const timelineTemplateNode: NodeList = parent.tooltipSettings.timeline ? parent.tooltipModule.templateCompiler(
+                    parent.tooltipSettings.timeline, parent, extend({}, templateContext), 'TooltipTaskbarTemplate') : null;
+                const tooltipTemplate: Element = document.createElement('div');
+                if (timelineTemplateNode) {
+                    append(timelineTemplateNode, tooltipTemplate);
+                    argsData.content =  this.toolTipObj.content = tooltipTemplate as HTMLElement;
+                } else {
+                    argsData.content = this.toolTipObj.content = parent.tooltipModule.getTooltipContent('timeline', data, parent, args) as string | HTMLElement;
+                }
             } else {
                 args.cancel = true;
             }
@@ -317,16 +334,16 @@ export class Tooltip {
             }
             const startDate: string = data.startDate ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant(scheduledTask ? 'startDate' : 'subTasksStartDate') +
-                    '</td><td style="padding: 2px;">:</td>' + '<td class = "e-gantt-tooltip-value"> ' + startDateValue + '</td></tr>' : '';
+                    '</td><td class=' + cls.templatePadding + '>:</td>' + '<td class = "e-gantt-tooltip-value"> ' + startDateValue + '</td></tr>' : '';
             const endDate: string = data.endDate ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant(scheduledTask ? 'endDate' : 'subTasksEndDate') +
-                    '</td><td style="padding: 2px;">:</td>' + '<td class = "e-gantt-tooltip-value">' + endDateValue + '</td></tr>' : '';
+                    '</td><td class=' + cls.templatePadding + '>:</td>' + '<td class = "e-gantt-tooltip-value">' + endDateValue + '</td></tr>' : '';
             const duration: string = !isNullOrUndefined(data.duration) ? '<tr><td class = "e-gantt-tooltip-label">' +
-                    this.parent.localeObj.getConstant('duration') + '</td><td style="padding: 2px;">:</td>' +
+                    this.parent.localeObj.getConstant('duration') + '</td><td class=' + cls.templatePadding + '>:</td>' +
                     '<td class = "e-gantt-tooltip-value"> ' + durationValue +
                     '</td></tr>' : '';
             const progress: string = '<tr><td class = "e-gantt-tooltip-label">' +
-                    this.parent.localeObj.getConstant('progress') + '</td><td style="padding: 2px;">:</td><td>' + progressValue +
+                    this.parent.localeObj.getConstant('progress') + '</td><td class=' + cls.templatePadding + '>:</td><td>' + progressValue +
                     '</td></tr>';
             const contentTemp: Function = function (): string {
                 return '<table class = "e-gantt-tooltiptable"><tbody>' +
@@ -556,7 +573,8 @@ export class Tooltip {
      * @returns {NodeList} .
      * @private
      */
-    public templateCompiler(template: string | Function, parent: Gantt, data: IGanttData | PredecessorTooltip, propName: string): NodeList {
+    public templateCompiler(template: string | Function, parent: Gantt, data: IGanttData | PredecessorTooltip
+    | Object, propName: string): NodeList {
         const tooltipFunction: Function = parent.chartRowsModule.templateCompiler(template);
         const templateID: string = parent.chartRowsModule.getTemplateID(propName);
         const templateNode: NodeList = tooltipFunction(extend({ index: 0 }, data), parent, propName, templateID, true);

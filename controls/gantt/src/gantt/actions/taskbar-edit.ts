@@ -442,7 +442,7 @@ export class TaskbarEdit extends DateProcessor {
      */
     public showHideTaskBarEditingElements(element: Element, secondElement: Element, fadeConnectorLine?: boolean): void {
         secondElement = secondElement ? secondElement : this.editElement;
-        let isShowProgressResizer: boolean = this.parent.taskFields.progress ? true : false;
+        const isShowProgressResizer: boolean = this.parent.taskFields.progress ? true : false;
         let isShowConnectorPoints: boolean = true;
         if (this.parent.readOnly) {
             return;
@@ -453,8 +453,8 @@ export class TaskbarEdit extends DateProcessor {
             const parentRecord: IGanttData = this.parent.getParentTask(record.parentItem);
             if (!isNullOrUndefined(parentRecord)) {
                 if (!parentRecord.expanded) {
-                    isShowProgressResizer = false;
                     isShowConnectorPoints = false;
+                    addClass([element], [cls.collapseMultiTaskBar]);
                 }
             }
         }
@@ -465,8 +465,7 @@ export class TaskbarEdit extends DateProcessor {
                 if (isShowProgressResizer) {
                     const progressElement: HTMLElement = (record && record.ganttProperties.segments &&
                                                         record.ganttProperties.segments.length > 0) ?
-                        this.parent.getRowByIndex(this.parent.enableVirtualization ? this.parent.currentViewData.indexOf(record)
-                            : this.parent.flatData.indexOf(record)).
+                        this.parent.getRowByIndex(this.parent.currentViewData.indexOf(record)).
                             querySelectorAll('.' + cls.childProgressResizer)[0] as HTMLElement :
                         element.querySelector('.' + cls.childProgressResizer) as HTMLElement;
                     if (!isNullOrUndefined(progressElement)) {
@@ -505,8 +504,7 @@ export class TaskbarEdit extends DateProcessor {
                 removeClass([secondElement.querySelector('.' + cls.taskBarLeftResizer)], [cls.leftResizeGripper]);
                 removeClass([secondElement.querySelector('.' + cls.taskBarRightResizer)], [cls.rightResizeGripper]);
                 const progressElement: Element = (record && record.ganttProperties.segments && record.ganttProperties.segments.length > 0) ?
-                    this.parent.getRowByIndex(this.parent.enableVirtualization ? this.parent.currentViewData.indexOf(record) :
-                        this.parent.flatData.indexOf(record)) : secondElement;
+                    this.parent.getRowByIndex(this.parent.currentViewData.indexOf(record)) : secondElement;
                 if (progressElement && progressElement.querySelector('.' + cls.childProgressResizer)) {
                     removeClass([progressElement.querySelector('.' + cls.childProgressResizer)], [cls.progressResizeGripper]);
                 }
@@ -602,10 +600,11 @@ export class TaskbarEdit extends DateProcessor {
         }
         if (this.taskBarEditAction === 'ConnectorPointLeftDrag' || this.taskBarEditAction === 'ConnectorPointRightDrag') {
             this.fromPredecessorText = this.taskBarEditAction === 'ConnectorPointLeftDrag' ? 'start' : 'finish';
-            this.parent.connectorLineModule.tooltipTable.innerHTML = this.parent.connectorLineModule.getConnectorLineTooltipInnerTd(
+            this.parent.connectorLineModule.tooltipTable.innerHTML = '';
+            this.parent.connectorLineModule.tooltipTable.appendChild(this.parent.connectorLineModule.getConnectorLineTooltipInnerTd(
                 this.taskBarEditRecord.ganttProperties.taskName,
                 this.fromPredecessorText, '', ''
-            );
+            ));
         }
     }
     private isMouseDragCheck(): void {
@@ -629,7 +628,7 @@ export class TaskbarEdit extends DateProcessor {
     public removeFirstBorder (element: any): void {
         const canremove: boolean = this.parent.rowDragAndDropModule['dropPosition'] === 'bottomSegment';
         if (this.parent.element.getElementsByClassName('e-firstrow-border').length > 0 && element &&
-            (element.getAttribute('data-rowindex') !== 0 || canremove)) {
+            (element.getAttribute('aria-rowindex') - 1 !== 0 || canremove)) {
             this.parent.element.getElementsByClassName('e-firstrow-border')[0].remove();
         }
     }
@@ -663,13 +662,13 @@ export class TaskbarEdit extends DateProcessor {
         let rowElement: HTMLCollection;
         if (this.parent.enableVirtualization) {
             const gridElement: Element = this.parent.treeGrid.getRows().filter((data: Element) => {
-                return data.getAttribute('data-rowindex') === target.getAttribute('data-rowindex');
+                return parseInt(data.getAttribute('aria-rowindex'), 10) - 1 === parseInt(target.getAttribute('aria-rowindex'), 10) - 1;
             })[0];
             const index: number = this.parent.treeGrid.getRows().indexOf(gridElement as HTMLTableRowElement);
             rowElement = this.parent.getRowByIndex(index).children;
         }
         else {
-            rowElement = this.parent.getRowByIndex(parseInt(target.getAttribute('data-rowindex'), 10)).children;
+            rowElement = this.parent.getRowByIndex(parseInt(target.getAttribute('aria-rowindex'), 10) - 1).children;
         }
         if (rowElement) {
             if (this.parent.rowDragAndDropModule['dropPosition'] === 'above') {
@@ -902,11 +901,11 @@ export class TaskbarEdit extends DateProcessor {
                     let droppedTreeGridRowElement: Element;
                     if (this.parent.enableVirtualization) {
                         droppedTreeGridRowElement = this.parent.treeGrid.getRows().filter((data: HTMLTableRowElement) => {
-                            return data.getAttribute('data-rowindex') === chartRowElement.getAttribute('data-rowindex');
+                            return parseInt(data.getAttribute('aria-rowindex'), 10) - 1 === parseInt(chartRowElement.getAttribute('aria-rowindex'), 10) - 1;
                         })[0];
                     }
                     else {
-                        droppedTreeGridRowElement = this.parent.treeGrid.getRows()[parseInt(chartRowElement.getAttribute('data-rowindex'), 10)];
+                        droppedTreeGridRowElement = this.parent.treeGrid.getRows()[parseInt(chartRowElement.getAttribute('aria-rowindex'), 10) - 1];
                     }
                     this.removeFirstBorder(droppedTreeGridRowElement);
                     this.removeLastBorder(droppedTreeGridRowElement);
@@ -951,7 +950,7 @@ export class TaskbarEdit extends DateProcessor {
                             rowElement = this.parent.getRowByIndex(index);
                         }
                         else {
-                            rowElement = this.parent.getRowByIndex(parseInt(droppedTreeGridRowElement.getAttribute('data-rowindex'), 10));
+                            rowElement = this.parent.getRowByIndex(parseInt(droppedTreeGridRowElement.getAttribute('aria-rowindex'), 10) - 1);
                         }
                         const rowIndex: number = getValue('rowIndex', rowElement);
                         const droppedTreeGridRecord: IGanttData = this.parent.flatData[rowIndex as number];
@@ -1381,8 +1380,16 @@ export class TaskbarEdit extends DateProcessor {
                 }
             }
         }
+        let totalWidth: number = 0;
         if (item.segments && item.segments.length > 0) {
             totalTaskWidth = this.splitTasksDuration(item.segments) * this.parent.perDayWidth;
+            totalWidth = item.segments.reduce((width: any, segment: any) => {
+                return width + segment.width;
+            }, 0);
+            totalTaskWidth = totalWidth;
+        }
+        if (progressWidth > totalTaskWidth) {
+            progressWidth = totalTaskWidth;
         }
         return {progressWidth, totalTaskWidth};
     }
@@ -2286,7 +2293,7 @@ export class TaskbarEdit extends DateProcessor {
                     traceParentTaskBar.style.width = (width) + 'px';
                     resizeLine.style.width = (item.width) + 'px';
                 }
-                if (!isNullOrUndefined(traceChildProgressBar)) {
+                if (!isNullOrUndefined(traceChildProgressBar) && !isNullOrUndefined(traceParentProgressBar)) {
                     traceParentProgressBar.style.width = (item.progressWidth) + 'px';
                 }
             } else if (this.taskBarEditAction === 'ParentResizing') {
@@ -2531,8 +2538,9 @@ export class TaskbarEdit extends DateProcessor {
         const ganttRecord: IGanttData = args.data;
         const taskData: ITaskData = ganttRecord.ganttProperties;
         const draggedRecIndex: number = this.parent.flatData.indexOf(ganttRecord);
-        if (this.parent.allowTaskbarDragAndDrop && this.dragMoveY > 0 && ((this.parent.viewType === 'ResourceView' &&
-        !ganttRecord.hasChildRecords) || this.parent.viewType === 'ProjectView')) {
+        if ((this.parent.allowTaskbarDragAndDrop && this.taskBarEditAction === 'ChildDrag' || this.taskBarEditAction === 'ParentDrag' ||
+                this.taskBarEditAction === 'MilestoneDrag' || this.taskBarEditAction === 'ManualParentDrag') && this.dragMoveY > 0 &&
+                ((this.parent.viewType === 'ResourceView' && !ganttRecord.hasChildRecords) || this.parent.viewType === 'ProjectView')) {
             if (this.parent.rowDragAndDropModule) {
                 const flatRecordCol: IGanttData[] = this.parent.currentViewData;
                 if (this.taskBarEditRecord.parentItem && flatRecordCol[this.taskBarEditRecord.parentItem.index] &&
@@ -2550,8 +2558,8 @@ export class TaskbarEdit extends DateProcessor {
                     row = closest(this.droppedTarget, 'tr.' + cls.chartRow);
                 }
                 if (row) {
-                    const recordIndex: number = parseInt(row.getAttribute('data-rowindex'), 10);
-                    droppedRecord = this.parent.flatData[recordIndex as number];
+                    const recordIndex: number = Array.from(this.parent.ganttChartModule.getChartRows()).indexOf(row);
+                    droppedRecord = flatRecordCol[recordIndex as number];
                     const droppedParentRecordIndex: number = this.parent.getRootParent(droppedRecord, 0).index;
                     const draggedParentRecordIndex: number = this.parent.getRootParent(this.taskBarEditRecord, 0).index;
                     const e: Object = {
@@ -2931,10 +2939,11 @@ export class TaskbarEdit extends DateProcessor {
                 this.editTooltip.showHideTaskbarEditTooltip(true, this.segmentIndex);
             }
             if (!isNullOrUndefined(this.editTooltip.toolTipObj)) {
-                this.parent.connectorLineModule.tooltipTable.innerHTML = this.parent.connectorLineModule.getConnectorLineTooltipInnerTd(
+                this.parent.connectorLineModule.tooltipTable.innerHTML = '';
+                this.parent.connectorLineModule.tooltipTable.appendChild(this.parent.connectorLineModule.getConnectorLineTooltipInnerTd(
                     this.parent.editModule.taskbarEditModule.taskBarEditRecord.ganttProperties.taskName,
                     this.parent.editModule.taskbarEditModule.fromPredecessorText, '', ''
-                );
+                ));
                 const table: NodeList = this.parent.connectorLineModule.tooltipTable.querySelector('#toPredecessor').querySelectorAll('td');
                 (table[1] as HTMLElement).innerText = toItem.taskName;
                 (table[2] as HTMLElement).innerText = this.parent.localeObj.getConstant(currentTarget);

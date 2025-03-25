@@ -485,6 +485,10 @@ export class LineBase {
                 if (annotations) {
                     annotations.style.visibility = 'visible';
                 }
+                const stackLabelGroup: HTMLElement = <HTMLElement>document.getElementById(series.chart.element.id + '_StackLabelGroup');
+                if (stackLabelGroup) {
+                    stackLabelGroup.setAttribute('visibility', 'visible');
+                }
                 clipRect.setAttribute('transform', 'translate(0,0)');
                 series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
             }

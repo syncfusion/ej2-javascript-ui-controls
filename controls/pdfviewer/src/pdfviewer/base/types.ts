@@ -164,6 +164,43 @@ export enum AnnotationResizerLocation {
 }
 
 /**
+ * Specifies the type of text extraction result to be returned.
+ * This enum is used to customize the output of text extraction methods and events,
+ * allowing developers to choose whether to retrieve plain text, text with layout information (bounds),
+ * or both. It also includes an option for cases where no text information is applicable.
+ */
+export enum ExtractTextOption {
+    /**
+     * Indicates that no text information is returned.
+     * This option is not applicable for the ExtractText method and is only used
+     * in the extractTextCompleted event when no text data is available.
+     * Use this option when text extraction is not relevant or supported for the given context.
+     */
+    None = 'None',
+
+    /**
+     * Indicates that only plain text is extracted and returned.
+     * This option does not include any additional bounds  information.
+     * Use this option when only the textual content is needed, without any positional or layout details.
+     */
+    TextOnly= 'TextOnly',
+
+    /**
+     * Indicates that text is returned along with layout information, such as bounds or coordinates.
+     * This option does not include plain text and is useful when only positional data is required.
+     * Use this option when you need to know the location or layout of the extracted text but not the text itself.
+     */
+    BoundsOnly= 'BoundsOnly',
+
+    /**
+     * Indicates that both plain text and text with bounds (layout information) are returned.
+     * This is the default behavior, providing both the extracted text and its positional data.
+     * Use this option when you need both the textual content and its layout information for further processing or analysis.
+     */
+    TextAndBounds= 'TextAndBounds'
+}
+
+/**
  * Enum for displaying the signature dialog
  */
 export enum DisplayMode {

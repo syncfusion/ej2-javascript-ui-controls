@@ -27,7 +27,7 @@ export class YearEvent extends TimelineEvent {
             this.parent.dragAndDropModule.setDragArea();
         }
         this.fields = this.parent.eventFields;
-        const elementSelector: string = (this.parent.currentView === 'Year') ? '.' + cls.APPOINTMENT_CLASS :
+        const elementSelector: string = (this.parent.currentView === 'Year') ? '.' + cls.WORK_CELLS_CLASS + ' ' + '.' + cls.APPOINTMENT_CLASS :
             '.' + cls.APPOINTMENT_WRAPPER_CLASS + ',.' + cls.MORE_INDICATOR_CLASS;
         const eventWrappers: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(elementSelector));
         for (const wrapper of eventWrappers) {

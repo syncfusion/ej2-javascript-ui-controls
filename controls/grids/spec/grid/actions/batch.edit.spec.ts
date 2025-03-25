@@ -664,7 +664,7 @@ describe('Batch Editing module', () => {
 
         it('cell save', (done: Function) => {
             //last action check
-            expect(gridObj.focusModule.currentInfo.element.getAttribute('data-colindex')).toBe('1');
+            expect(parseInt(gridObj.focusModule.currentInfo.element.getAttribute('aria-colindex'), 10) - 1).toBe(1);
             let cellSave = (args?: any): void => {
                 expect(gridObj.isEdit).toBeTruthy();
                 gridObj.cellSave = null;
@@ -2998,7 +2998,7 @@ describe('EJ2-852976 - Disabling First Field with allowEditing False Does not Pr
     });
     it('add row', (done: Function) => {
         let batchAdd = (args?: any): void => {
-            expect(args.cell.getAttribute('data-colindex')).toBe('1');            
+            expect(parseInt(args.cell.getAttribute('aria-colindex'), 10) - 1).toBe(1);            
             done();
         };
         gridObj.batchAdd = batchAdd;
@@ -3074,7 +3074,7 @@ describe('Batch editing render with Freeze => ', () => {
     it('tab key with frozen columns', (done: Function) => {
         gridObj.addRecord();
         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
-        expect(gridObj.focusModule.currentInfo.element.getAttribute('data-colindex')).toBe("1");
+        expect(parseInt(gridObj.focusModule.currentInfo.element.getAttribute('aria-colindex'), 10) - 1).toBe(1);
         done();
     });
 
@@ -4721,7 +4721,7 @@ describe('EJ2-837195 - Inline and Batch Edit mode behave differently when column
         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
         gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = 'updated';
         gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
-        expect(gridObj.focusModule.currentInfo.element.getAttribute('data-colindex')).toBe('1');
+        expect(parseInt(gridObj.focusModule.currentInfo.element.getAttribute('aria-colindex'), 10) - 1).toBe(1);
     })
 
     afterAll(() => {

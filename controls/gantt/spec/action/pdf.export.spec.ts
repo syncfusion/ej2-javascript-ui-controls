@@ -5,7 +5,8 @@ import { Gantt, Edit, Toolbar, Selection, ZoomTimelineSettings, Filter, PdfQuery
 import { exportData, image, adventProFont, GanttData1, pdfData1, customZoomingdata, templateData, projectResourcestemplate, virtual1, criticalData1, resourcesData1, resourceCollection1, coulmntemplate, resourceCollectiontemplate1, splitTasks, headerFooter, weekEndData,pdfData, images, milestoneTemplate,editingResourcess, editingDatas, pdfquerycelldata,editingResources,CR911356manualTask, CR912356font, GanttData, adventProFonts1, editingData4, editingResources4, GanttDataPdf, projectNewDatapdf, projectpdfNewData,GanttDatapdf1,segmentprojectNewData,GanttDatapdf,ganttdatamanual, GanttDataIndicator} from '../base/data-source.spec';
 import { PdfExportProperties } from '../../src/gantt/base/interface';
 import { createGantt, destroyGantt } from '../base/gantt-util.spec';
-import { PdfDocument, PdfColor, PdfStandardFont, PdfFontFamily, PdfPen, PdfFontStyle, PdfDashStyle, PdfBorders, PdfTextAlignment } from '@syncfusion/ej2-pdf-export';
+import { PdfDocument, PdfColor, PdfStandardFont, PdfFontFamily, PdfPen, PdfFontStyle, PdfDashStyle, PdfTextAlignment, PdfVerticalAlignment } from '@syncfusion/ej2-pdf-export';
+import { PdfBorders } from '../../src/gantt/export/pdf-base/pdf-borders';
 import { getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PdfTrueTypeFont } from '@syncfusion/ej2-pdf-export';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -14191,3 +14192,354 @@ describe('pdf label issue', () => {
         }
     });
 }); 
+describe('pdfexport with eventmarker and holiday', () => {
+    let ganttObj: Gantt;
+    const data: Object =  [
+        {
+            TaskID: 1,
+            TaskName: 'Product Concept',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: data,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                renderBaseline: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                eventMarkers: [
+                    {
+                        day: '04/10/2019',
+                        cssClass: 'e-custom-event-marker',
+                        label: 'Project approval and kick-off'
+                    }
+                ],
+                holidays: [{
+                    from: "04/04/2019",
+                    to: "04/04/2019",
+                    label: " Public holidays",
+                    cssClass: "e-custom-holiday"
+                
+                },
+                {
+                    from: "04/12/2019",
+                    to: "04/12/2019",
+                    label: " Public holiday",
+                    cssClass: "e-custom-holiday"
+                
+                }],
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                    { field: 'CustomColumn', headerText: 'CustomColumn' }
+                ],
+                allowPdfExport: true,
+                toolbar: ['PdfExport']
+            }, done);
+    });
+    it('pdfexport with eventmarker and holiday', () => {
+        const stringFormat = new PdfStringFormat();
+        stringFormat.alignment = PdfTextAlignment.Right;
+        const vertical = new PdfStringFormat();
+        vertical.lineAlignment = PdfVerticalAlignment.Top;
+        vertical.alignment = PdfTextAlignment.Right;
+        const penColor = new PdfColor(33,82,125); // Black color
+        const penWidth = 1; 
+        // 1px width
+        const pen = new PdfPen(penColor, penWidth); // Create PdfPen instance
+        pen.dashStyle = PdfDashStyle.DashDotDot; // Solid border style
+        const borderWidth = 1;
+        const borderColor = new PdfColor(0,0,0);
+        let pdfpen : PdfPen= new PdfPen(borderColor, borderWidth);
+        let pdfborders: PdfBorders = new PdfBorders();
+        pdfborders.all = pdfpen
+        let exportProperties: PdfExportProperties = {
+            theme:"Bootstrap 4",
+            ganttStyle: {   
+                eventMarker:{ 
+                    label:{
+                        fontFamily: PdfFontFamily.TimesRoman,
+                        fontColor: new PdfColor(97, 97, 97),
+                        fontSize: 9,
+                        format : stringFormat,
+                        fontStyle : PdfFontStyle.Bold,
+                        borderColor : new PdfColor(33, 82, 125),
+                        borders: pdfborders,
+                        padding:new PdfPaddings(2, 2, 2, 2),
+                        fontBrush: new PdfColor(97, 97, 97),
+                    },
+                    lineStyle: pen,
+                    
+                },
+                holiday:{
+                    fontFamily: PdfFontFamily.TimesRoman,
+                    fontSize: 10,
+                    fontStyle : PdfFontStyle.Bold,
+                    borderColor : new PdfColor(97, 97, 97),
+                    backgroundColor: new PdfColor(0,0,0),
+                    fontColor: new PdfColor(97, 97, 97),
+                    padding:new PdfPaddings(2, 2, 2, 2),
+                    format : vertical,
+                    borders: pdfborders
+                }
+                
+            }
+            
+        };
+        ganttObj.pdfExport(exportProperties);
+       });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('pdfexport testcase for code coverage', () => {
+    let ganttObj: Gantt;
+    const data: Object =  [
+        {
+            'TaskID': 1,
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('02/27/2017'),
+            'EndDate': new Date('03/03/2017'),
+            'Progress': '40',
+            'isManual': true,
+          
+            'Children': [
+                { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Progress': '40' },
+                { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true },
+                { 'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40', }
+            ]
+        },
+        {
+            'TaskID': 5,
+            'TaskName': 'Parent Task 2',
+            'StartDate': new Date('03/05/2017'),
+            'EndDate': new Date('03/09/2017'),
+            'Progress': '40',
+            'Predecessor': "1" ,
+            'isManual': true,
+        },
+       
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: data,
+                allowSorting: true,
+                enableContextMenu: true,
+                height: '450px',
+                allowSelection: true,
+                highlightWeekends: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    endDate: 'EndDate',
+                    dependency: 'Predecessor',
+                    child: 'Children',
+                    manual: 'isManual',
+                },
+                taskMode: 'Custom',
+                toolbar: ['PdfExport'],
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowRowDragAndDrop: true,
+                splitterSettings: {
+                    position: "50%",
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                allowFiltering: true,
+                columns: [
+                    { field: 'TaskID', visible: true },
+                    { field: 'TaskName' },
+                    { field: 'isManual' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' }
+                ],
+                validateManualTasksOnLinking: true,
+                treeColumnIndex: 1,
+                allowReordering: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                gridLines: "Both",
+                projectStartDate: new Date('02/20/2017'),
+                projectEndDate: new Date('03/30/2017'),
+            }, done);
+    });
+    it('pdfexport testcase for code coverage', () => {
+        ganttObj.pdfExport();
+       });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('pdfexport testcase for code coverage', () => {
+    let ganttObj: Gantt;
+    const data: Object =  [
+        {
+            'TaskID': 1,
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('02/27/2017'),
+            'EndDate': new Date('03/03/2017'),
+            'Progress': '40',
+            'isManual': true,
+            'Predecessor': "5" ,
+            'Children': [
+                { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Progress': '40' },
+                { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true },
+                { 'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40', }
+            ]
+        },
+        {
+            'TaskID': 5,
+            'TaskName': 'Parent Task 2',
+            'StartDate': new Date('03/05/2017'),
+            'EndDate': new Date('03/09/2017'),
+            'Progress': '40',
+            'isManual': true,
+        },
+       
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: data,
+                allowSorting: true,
+                enableContextMenu: true,
+                height: '450px',
+                allowSelection: true,
+                highlightWeekends: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    endDate: 'EndDate',
+                    dependency: 'Predecessor',
+                    child: 'Children',
+                    manual: 'isManual',
+                },
+                taskMode: 'Custom',
+                toolbar: ['PdfExport'],
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowRowDragAndDrop: true,
+                splitterSettings: {
+                    position: "50%",
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                allowFiltering: true,
+                columns: [
+                    { field: 'TaskID', visible: true },
+                    { field: 'TaskName' },
+                    { field: 'isManual' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' }
+                ],
+                validateManualTasksOnLinking: true,
+                treeColumnIndex: 1,
+                allowReordering: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                gridLines: "Both",
+                projectStartDate: new Date('02/20/2017'),
+                projectEndDate: new Date('03/30/2017'),
+            }, done);
+    });
+    it('pdfexport testcase for code coverage', () => {
+        ganttObj.pdfExport();
+       });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

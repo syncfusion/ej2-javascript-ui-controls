@@ -190,7 +190,7 @@ table .e-cell-select {
 }
 
 .e-content table.e-rte-table th {
-    background-color: #E0E0E0;
+    background-color: rgba(157, 157, 157, .15);
 }
 
 .e-rte-table td,
@@ -230,8 +230,8 @@ th.e-multi-cells-select {
     user-select: none !important;
 }
 
-.e-rte-table.e-dashed-border td,
-.e-rte-table.e-dashed-border th {
+.e-rte-table.e-dashed-border > tbody > tr > td,
+.e-rte-table.e-dashed-border > tbody > tr > th {
     border-style: dashed;
 }
 

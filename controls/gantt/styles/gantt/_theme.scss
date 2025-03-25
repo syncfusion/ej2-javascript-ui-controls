@@ -3,6 +3,41 @@
   border-color: $border-color;
 }
 
+$applies-hover-bg: $theme-name == 'bootstrap5.3' or
+  $theme-name == 'bootstrap5.3-dark' or
+  $theme-name == 'tailwind3' or
+  $theme-name == 'tailwind3-dark' or
+  $skin-name =='fluent2' or
+  $skin-name =='fluent2-dark' or
+  $skin-name == 'Material3' or
+  $skin-name == 'Material3-dark';
+
+@mixin gantt-hover-bg($color) {
+  background-color: $color;
+}
+
+@mixin gantt-hover-frozen-bg($color) {
+  background: $color;
+}
+  
+@mixin gantt-hover-bg-check {
+  @if $applies-hover-bg {
+    @include gantt-hover-bg($gantt-chartrow-hover-bg-color);
+  }
+}
+
+@mixin gantt-hover-frozen-bg-check {
+  @if $applies-hover-bg {
+    @include gantt-hover-frozen-bg($gantt-chartrow-hover-bg-color);
+  }
+}
+
+@mixin gantt-hover-important {
+  @if $applies-hover-bg {
+    background-color: $gantt-chartrow-hover-bg-color !important; /* stylelint-disable-line declaration-no-important */
+  }
+}
+
 @mixin border-styles($back-color,$border-color, $border-radius) {
   background-color: $back-color;
   border: $border-color;
@@ -47,7 +82,6 @@
           background: $content-bg-color-alt2;
           border: solid $border-light;
           border-width: 0 1px;
-          width: 8px;
         }
       }
     }
@@ -94,15 +128,38 @@
     }
 
     .e-gantt-tree-grid-pane {
-      .e-grid.e-gridhover tr[role = 'row']:not(.e-editedrow):hover .e-rowcell:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd),
-      .e-grid.e-gridhover tr[role = 'row']:hover .e-rowdragdrop:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd),
-      .e-grid.e-rtl .e-gridhover tr[role = 'row']:hover .e-rowdragdrop:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd) {
-        background-color: $gantt-chartrow-hover-bg-color;
+      .e-grid.e-gridhover {
+        .e-row:not(.e-disable-gridhover):not(.e-editedrow):hover {
+          .e-rowcell,
+          .e-rowdragdrop {
+            &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd) {
+              @include gantt-hover-bg-check;
+            }
+          }
+        }
+        
+        & .e-row:not(.e-disable-gridhover):not(.e-editedrow):hover {
+          .e-rowcell.e-leftfreeze,
+          .e-rowcell.e-rightfreeze,
+          .e-rowcell.e-unfreeze,
+          .e-rowdragdrop.e-leftfreeze,
+          .e-rowdragdrop.e-rightfreeze,
+          .e-rowdragdrop.e-unfreeze {
+            &:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd) {
+              @include gantt-hover-frozen-bg-check;
+            }
+          }
+        }
+        
+        &:not(.e-rowdrag) .e-row:not(.e-disable-gridhover):not(.e-editedrow):hover .e-rowcell:not(.e-cellselectionbackground):not(.e-active):not(.e-updatedtd) {
+          @include gantt-hover-important;
+        }
       }
-
+      
+    
       .e-grid td.e-active {
         background: $gantt-active-background;
-        opacity: 1;
+        opacity: .9;
       }
 
       .e-grid td.e-cellselectionbackground {
@@ -117,7 +174,7 @@
         td.e-active.e-rightfreeze,
         td.e-active.e-fixedfreeze{
           background: $gantt-active-frozen-background;
-          opacity: 1;
+          opacity: .9;
         }
       }
     }
@@ -200,10 +257,6 @@
           border: 1px solid $gantt-task-label-font-color;
           border-bottom: 0;
           border-top: 0;
-        }
-
-        .e-gantt-child-progressbar {
-          width: $gantt-collapse-progress-width;
         }
 
         .e-collapsed-taskbar-drag {
@@ -340,7 +393,11 @@
 
       .e-gantt-dependency-view-container {
         display: block;
-        z-index: 5;
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+        position: absolute;
+        pointer-events: none;
       }
 
       .e-line {

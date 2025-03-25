@@ -6,7 +6,7 @@ The listview control allows you to select an item or multiple items from a list-
 
 ![ej2-lists](https://ej2.syncfusion.com/products/images/listview/readme.gif)
 
-> This is a commercial product and requires a paid license for possession or use. Syncfusion<sup>®</sup> licensed software, including this control, is subject to the terms and conditions of Syncfusion<sup>®</sup> [EULA](https://www.syncfusion.com/eula/es/?utm_source=npm&utm_campaign=listview). To acquire a license, you can [purchase](https://www.syncfusion.com/sales/products/?utm_source=npm&utm_campaign=listview) or start a free 30-day trial [here](https://www.syncfusion.com/account/manage-trials/start-trials/?utm_source=npm&utm_campaign=listview).
+> This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this control, is subject to the terms and conditions of Syncfusion's [EULA](https://www.syncfusion.com/eula/es/?utm_source=npm&utm_campaign=listview). To acquire a license, you can [purchase](https://www.syncfusion.com/sales/products/?utm_source=npm&utm_campaign=listview) or start a free 30-day trial [here](https://www.syncfusion.com/account/manage-trials/start-trials/?utm_source=npm&utm_campaign=listview).
 
 > A free [community license](https://www.syncfusion.com/products/communitylicense/?utm_source=npm&utm_campaign=listview) is also available for companies and individuals whose organizations have less than $1 million USD in annual gross revenue and five or fewer developers.
 
@@ -28,12 +28,8 @@ npm install @syncfusion/ej2-lists
 
 `Lists` control is also offered in following list of frameworks.
 
-1. [Angular](https://github.com/syncfusion/ej2-angular-ui-components/tree/master/components/lists/?utm_source=npm&utm_campaign=listview)
-2. [React](https://github.com/syncfusion/ej2-react-ui-components/tree/master/components/lists/?utm_source=npm&utm_campaign=listview)
-3. [VueJS](https://github.com/syncfusion/ej2-vue-ui-components/tree/master/components/lists/?utm_source=npm&utm_campaign=listview)
-4. [ASP.NET Core](https://www.syncfusion.com/aspnet-core-ui-controls/listview/?utm_source=npm&utm_campaign=listview)
-5. [ASP.NET MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls/listview/?utm_source=npm&utm_campaign=listview)
-6. [JavaScript (ES5)](https://www.syncfusion.com/javascript-ui-controls/listview/?utm_source=npm&utm_campaign=listview)
+| [<img src="https://ej2.syncfusion.com/github/images/angular-new.svg" height="50" />](https://www.syncfusion.com/angular-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Angular](https://www.syncfusion.com/angular-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/react.svg"  height="50" />](https://www.syncfusion.com/react-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[React](https://www.syncfusion.com/react-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/vue.svg" height="50" />](https://www.syncfusion.com/vue-components?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Vue](https://www.syncfusion.com/vue-components?utm_medium=listing&utm_source=github)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netcore.svg" height="50" />](https://www.syncfusion.com/aspnet-core-ui-controls?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;Core](https://www.syncfusion.com/aspnet-core-ui-controls?utm_medium=listing&utm_source=github)&nbsp;&nbsp; | [<img src="https://ej2.syncfusion.com/github/images/netmvc.svg" height="50" />](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_medium=listing&utm_source=github)<br/>&nbsp;&nbsp;[ASP.NET&nbsp;MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_medium=listing&utm_source=github)&nbsp;&nbsp; | 
+| :-----: | :-----: | :-----: | :-----: | :-----: |
 
 ## Showcase samples
 
@@ -60,7 +56,7 @@ npm install @syncfusion/ej2-lists
 
 Product support is available for through following mediums.
 
-* Creating incident in Syncfusion<sup>®</sup> [Direct-Trac](https://www.syncfusion.com/support/directtrac/incidents/?utm_source=npm&utm_campaign=listview) support system or [Community forum](https://www.syncfusion.com/forums/essential-js2/?utm_source=npm&utm_campaign=listview).
+* Creating incident in Syncfusion [Direct-Trac](https://www.syncfusion.com/support/directtrac/incidents/?utm_source=npm&utm_campaign=listview) support system or [Community forum](https://www.syncfusion.com/forums/essential-js2/?utm_source=npm&utm_campaign=listview).
 * New [GitHub issue](https://github.com/syncfusion/ej2-javascript-ui-controls/issues/new/?utm_source=npm&utm_campaign=listview).
 * Ask your query in [Stack Overflow](https://stackoverflow.com/?utm_source=npm&utm_campaign=listview/?utm_source=npm&utm_campaign=listview) with tag `syncfusion` and `ej2`.
 
@@ -72,4 +68,4 @@ Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-
 
 Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/lists/CHANGELOG.md/?utm_source=npm&utm_campaign=listview)
 
-© Copyright 2024 Syncfusion<sup>®</sup> Inc. All Rights Reserved. The Syncfusion<sup>®</sup> Essential Studio<sup>®</sup> license and copyright applies to this distribution.
+© Copyright 2024 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

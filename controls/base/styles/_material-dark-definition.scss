@@ -1,6 +1,7 @@
+@use 'sass:meta';
 @import 'definition/material-dark.scss';
 
-@if not variable-exists('is-roboto-loaded') {
+@if not meta.variable-exists('is-roboto-loaded') {
   //sass-lint:disable no-url-protocols,no-url-domains
   @import url('https://fonts.googleapis.com/css?family=Roboto:400,500,700');// stylelint-disable-line no-invalid-position-at-import-rule
 }

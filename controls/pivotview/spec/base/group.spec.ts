@@ -330,7 +330,7 @@ describe('Group By Date feature', () => {
             expect(pivotButton[0].id).toBe('PivotGrid_date');
         });
         it('Context menu in column header for number grouping', (done: Function) => {
-            expect(pivotGridObj.element.querySelectorAll('th[data-colindex="1"]')[0].textContent).toBe('27-31');
+            expect(pivotGridObj.element.querySelectorAll('th[aria-colindex="2"]')[0].textContent).toBe('27-31');
             pivotGridObj.lastCellClicked = document.querySelector('.e-columnsheader');
             let cell: HTMLElement = document.querySelector('.e-columnsheader');
             util.triggerMouseEvent(cell, 'contextmenu');
@@ -364,7 +364,7 @@ describe('Group By Date feature', () => {
         it('Check updated number grouping in table', (done: Function) => {
             expect(document.querySelector('.e-group-field-settings') == null).toBeTruthy();
             setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('th[data-colindex="1"]')[0].textContent).toBe('20-29');
+                expect(pivotGridObj.element.querySelectorAll('th[aria-colindex="2"]')[0].textContent).toBe('20-29');
                 pivotGridObj.lastCellClicked = pivotGridObj.element.querySelectorAll('td[aria-colindex="1"]')[2];
                 let cell: HTMLElement = pivotGridObj.element.querySelectorAll('td[aria-colindex="1"]')[2] as HTMLElement;
                 util.triggerMouseEvent(cell, 'contextmenu');
@@ -391,24 +391,24 @@ describe('Group By Date feature', () => {
             expect(document.querySelector('#PivotGrid_grid_cmenu')).toBeTruthy();
             (document.querySelector('#' + pivotGridObj.element.id + '_custom_ungroup') as HTMLElement).click();
             setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('th[data-colindex="1"]')[0].textContent).toBe('20');
+                expect(pivotGridObj.element.querySelectorAll('th[aria-colindex="2"]')[0].textContent).toBe('20');
                 pivotGridObj.enableValueSorting = false;
                 done();
             }, 100);
         });
         it('Create new group from selction 20 keyboard shift + mouse click', function (done) {
-            document.querySelectorAll('th[data-colindex="1"]')[0].dispatchEvent(shiftClick);
+            document.querySelectorAll('th[aria-colindex="2"]')[0].dispatchEvent(shiftClick);
             setTimeout(function () {
                 expect(args.selectedCellsInfo[0].columnHeaders).toBe('20');
-                document.querySelectorAll('th[data-colindex="11"]')[0].dispatchEvent(shiftClick);
+                document.querySelectorAll('th[aria-colindex="12"]')[0].dispatchEvent(shiftClick);
                 done();
             }, 500);
         });
         it('25 keyboard shift + mouse click', function (done) {
             expect(args.selectedCellsInfo[5].columnHeaders).toBe('33');
             setTimeout(function () {
-                pivotGridObj.lastCellClicked = document.querySelectorAll('th[data-colindex="1"]')[0];
-                let cell: HTMLElement = document.querySelectorAll('th[data-colindex="1"]')[0] as HTMLElement;
+                pivotGridObj.lastCellClicked = document.querySelectorAll('th[aria-colindex="2"]')[0];
+                let cell: HTMLElement = document.querySelectorAll('th[aria-colindex="2"]')[0] as HTMLElement;
                 util.triggerMouseEvent(cell, 'contextmenu');
                 done();
             }, 500);
@@ -435,7 +435,7 @@ describe('Group By Date feature', () => {
         it('Check updated new group selected headers in table', (done: Function) => {
             expect(document.querySelector('.e-group-field-settings') == null).toBeTruthy();
             setTimeout(() => {
-                expect(pivotGridObj.element.querySelectorAll('th[data-colindex="1"]')[0].textContent).toBe('.Check');
+                expect(pivotGridObj.element.querySelectorAll('th[aria-colindex="2"]')[0].textContent).toBe('.Check');
                 done();
             }, 100);
         });
@@ -1039,7 +1039,7 @@ describe('Group By Date feature', () => {
                     dataSource: decimalData as IDataSet[],
                     columns: [],
                     valueSortSettings: { headerDelimiter: ' - ' },
-                    values: [{ name: 'Amount', caption: 'Sold Amount' }],
+                    values: [{ name: 'Amount', caption: 'Sold Amount', type: 'PercentageOfParentRowTotal' }],
                     rows: [{ name: 'Sold' }],
                     expandAll: false,
                     filters: [],

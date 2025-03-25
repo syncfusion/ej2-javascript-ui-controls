@@ -479,7 +479,8 @@ export class TextMarkupAnnotation {
     public renderTextMarkupAnnotationsInPage(textMarkupAnnotations: any, pageNumber: number, isImportTextMarkup?: boolean,
                                              isAnnotOrderAction?: boolean): void {
         const canvasId: string = textMarkupAnnotations && textMarkupAnnotations.textMarkupAnnotationType === 'Highlight' ? '_blendAnnotationsIntoCanvas_' : '_annotationCanvas_';
-        const canvas: HTMLElement = this.pdfViewerBase.getElement(canvasId + pageNumber);
+        const canvas: HTMLElement = (canvasId === '_blendAnnotationsIntoCanvas_') ? this.pdfViewerBase.getElement(canvasId + pageNumber) :
+            this.pdfViewerBase.getAnnotationCanvas(canvasId, pageNumber);
         if (isImportTextMarkup) {
             this.renderTextMarkupAnnotations(null, pageNumber, canvas, this.pdfViewerBase.getZoomFactor());
             this.renderTextMarkupAnnotations(textMarkupAnnotations, pageNumber, canvas, this.pdfViewerBase.getZoomFactor(), true);
@@ -632,8 +633,8 @@ export class TextMarkupAnnotation {
                     }
                     switch (type) {
                     case 'Highlight':
-                        this.renderHighlightAnnotation(annotBounds, opacity, color, highlightCanvasContext.context, factor,
-                                                       isPrint, pageNumber);
+                        this.renderHighlightAnnotation(annotBounds, opacity, color, highlightCanvasContext.context,
+                                                       factor, isPrint, pageNumber);
                         break;
                     case 'Strikethrough':
                         this.renderStrikeoutAnnotation(annotBounds, opacity, color, context, factor, pageNumber, isPrint,
@@ -705,7 +706,7 @@ export class TextMarkupAnnotation {
         const context: CanvasRenderingContext2D = (canvas as HTMLCanvasElement).getContext('2d');
         context.setTransform(1, 0, 0, 1, 0, 0);
         context.setLineDash([]);
-        return { context: context, canvas: canvas };
+        return {context: context, canvas: canvas };
     }
 
     private isPrintCanvas(canvas: HTMLElement): any {
@@ -895,47 +896,21 @@ export class TextMarkupAnnotation {
                     newBounds.push(newAnnotation.bounds[parseInt(i.toString(), 10)]);
                 }
                 if (newBounds.length >= 1) {
-                    if (this.pdfViewerBase.clientSideRendering) {
-                        const boundsLength: number = newBounds.length - 1;
-                        x = newBounds.reduce((min: number, rect: any) => (rect.left ? rect.left : rect.Left || 0) < min ?
-                            (rect.left ? rect.left : rect.Left || 0) : min, Infinity);
-                        y = newBounds.reduce((min: number, rect: any) => (rect.top ? rect.top : rect.Top || 0) < min ?
-                            (rect.top ? rect.top : rect.Top || 0) : min, Infinity);
-                        if (rotation180Exists) {
-                            height = newBounds[0].height ? newBounds[0].height : newBounds[0].Height;
-                            width = newBounds.reduce((sum: number, rect: any) => sum + (rect.width ? rect.width : rect.Width || 0), 0);
-                        } else {
-                            width += newBounds[0].width ? newBounds[0].width : newBounds[0].Width;
-                            height = newBounds.reduce((sum: number, rect: any) => sum + (rect.height ? rect.height : rect.Height || 0), 0);
+                    x = newBounds[0].left ? newBounds[0].left : newBounds[0].Left;
+                    y = newBounds[0].top ? newBounds[0].top : newBounds[0].Top;
+                    height = newBounds[0].height ? newBounds[0].height : newBounds[0].Height;
+                    for (let j: number = 0; j < newBounds.length; j++) {
+                        if ((!isNaN(newBounds[parseInt(j.toString(), 10)].width) &&
+                            newBounds[parseInt(j.toString(), 10)].width > 0) || (!isNaN(newBounds[parseInt(j.toString(), 10)].Width) &&
+                            newBounds[parseInt(j.toString(), 10)].Width > 0)) {
+                            width += newBounds[parseInt(j.toString(), 10)].width ?
+                                newBounds[parseInt(j.toString(), 10)].width : newBounds[parseInt(j.toString(), 10)].Width;
                         }
-                    } else {
-                        x = newBounds[0].left ? newBounds[0].left : newBounds[0].Left;
-                        y = newBounds[0].top ? newBounds[0].top : newBounds[0].Top;
-                        height = newBounds[0].height ? newBounds[0].height : newBounds[0].Height;
-                        for (let j: number = 0; j < newBounds.length; j++) {
-                            if ((!isNaN(newBounds[parseInt(j.toString(), 10)].width) &&
-                             newBounds[parseInt(j.toString(), 10)].width > 0) || (!isNaN(newBounds[parseInt(j.toString(), 10)].Width) &&
-                              newBounds[parseInt(j.toString(), 10)].Width > 0)) {
-                                width += newBounds[parseInt(j.toString(), 10)].width ?
-                                    newBounds[parseInt(j.toString(), 10)].width : newBounds[parseInt(j.toString(), 10)].Width;
-                            }
-                        }
-                        if (!newcanvas) {
-                            const canvasId: string = newAnnotation.textMarkupAnnotationType === 'Highlight' ? '_blendAnnotationsIntoCanvas_' : '_annotationCanvas_';
-                            newcanvas = this.pdfViewerBase.getElement(canvasId + newAnnotation.pageNumber);
-                        }
-                        this.drawAnnotationSelectRect(newcanvas, this.getMagnifiedValue(x - 0.5, this.pdfViewerBase.getZoomFactor()),
-                                                      this.getMagnifiedValue(y - 0.5, this.pdfViewerBase.getZoomFactor()),
-                                                      this.getMagnifiedValue(width + 0.5, this.pdfViewerBase.getZoomFactor()),
-                                                      this.getMagnifiedValue(height + 0.5, this.pdfViewerBase.getZoomFactor()), annotation);
-                        newBounds = [];
-                        width = 0;
                     }
-                }
-                if (this.pdfViewerBase.clientSideRendering) {
                     if (!newcanvas) {
                         const canvasId: string = newAnnotation.textMarkupAnnotationType === 'Highlight' ? '_blendAnnotationsIntoCanvas_' : '_annotationCanvas_';
-                        newcanvas = this.pdfViewerBase.getElement(canvasId + newAnnotation.pageNumber);
+                        newcanvas = (canvasId === '_blendAnnotationsIntoCanvas_') ? this.pdfViewerBase.getElement(canvasId + newAnnotation.pageNumber) :
+                            this.pdfViewerBase.getAnnotationCanvas(canvasId, newAnnotation.pageNumber);
                     }
                     this.drawAnnotationSelectRect(newcanvas, this.getMagnifiedValue(x - 0.5, this.pdfViewerBase.getZoomFactor()),
                                                   this.getMagnifiedValue(y - 0.5, this.pdfViewerBase.getZoomFactor()),
@@ -943,7 +918,6 @@ export class TextMarkupAnnotation {
                                                   this.getMagnifiedValue(height + 0.5, this.pdfViewerBase.getZoomFactor()), annotation);
                     newBounds = [];
                     width = 0;
-                    height = 0;
                 }
             }
         }
@@ -1535,11 +1509,12 @@ export class TextMarkupAnnotation {
      * @param {any} measureShapeData - It describes about the measure shape data
      * @param {any} stickyData - It describes about the sticky data
      * @param {any} freeTextData - It describes about the free text data
+     * @param {any} inkData - It describes about the ink data
      * @private
      * @returns {string} - string
      */
     public printAnnotationsInCanvas(textMarkupAnnotations: any, pageIndex: number, stampData: any, shapeData: any,
-                                    measureShapeData: any, stickyData: any, freeTextData: any): string[] {
+                                    measureShapeData: any, stickyData: any, freeTextData: any, inkData: any): string[] {
         const canvas: HTMLCanvasElement = createElement('canvas', { id: this.pdfViewer.element.id + '_print_annotation_layer_' + pageIndex }) as HTMLCanvasElement;
         canvas.style.width = 816 + 'px';
         canvas.style.height = 1056 + 'px';
@@ -1549,15 +1524,17 @@ export class TextMarkupAnnotation {
         const zoomRatio : number = this.pdfViewerBase.getZoomRatio(zoom);
         canvas.height = pageHeight * zoomRatio;
         canvas.width = pageWidth * zoomRatio;
-        const textMarkupannotations: any = this.getAnnotations(pageIndex, null, '_annotations_textMarkup');
         const shapeAnnotation: any = this.getAnnotations(pageIndex, null, '_annotations_shape');
         const measureShapeAnnotation: any = this.getAnnotations(pageIndex, null, '_annotations_shape_measure');
         const stampAnnotation: any = this.getAnnotations(pageIndex, null, '_annotations_stamp');
         const stickyNoteAnnotation: any = this.getAnnotations(pageIndex, null, '_annotations_sticky');
-        if (stampAnnotation || shapeAnnotation || stickyNoteAnnotation || measureShapeAnnotation) {
+        const inkAnnotation: any = this.getAnnotations(pageIndex, null, '_annotations_ink');
+        if (inkAnnotation || stampAnnotation || shapeAnnotation || stickyNoteAnnotation || measureShapeAnnotation) {
             this.pdfViewer.renderDrawing(canvas, pageIndex);
+            this.pdfViewer.annotation.renderAnnotations(pageIndex, null, null, null, canvas, null, null, freeTextData, inkData);
         } else {
-            this.pdfViewer.annotation.renderAnnotations(pageIndex, shapeData, measureShapeData, null, canvas, null, null, freeTextData);
+            this.pdfViewer.annotation.renderAnnotations(pageIndex, shapeData, measureShapeData, null, canvas, null, null, freeTextData,
+                                                        inkData);
             this.pdfViewer.annotation.stampAnnotationModule.renderStampAnnotations(stampData, pageIndex, canvas);
             this.pdfViewer.annotation.stickyNotesAnnotationModule.renderStickyNotesAnnotations(stickyData, pageIndex, canvas);
         }
@@ -1695,6 +1672,33 @@ export class TextMarkupAnnotation {
     }
 
     /**
+     * @param {any} bounds - bounds
+     * @returns {void}
+     * @private
+     */
+    public modifyBoundsProperty(bounds: any): void {
+        if (this.currentTextMarkupAnnotation) {
+            const pageAnnotations: ITextMarkupAnnotation[] = this.modifyAnnotationProperty('Bounds', bounds, null);
+            this.manageAnnotations(pageAnnotations, this.selectTextMarkupCurrentPage);
+            this.pdfViewer.annotationModule.renderAnnotations(this.selectTextMarkupCurrentPage, null, null, null);
+            this.pdfViewerBase.updateDocumentEditedProperty(true);
+            const annotation: any = this.currentTextMarkupAnnotation;
+            const multiPageCollection: ITextMarkupAnnotation[] = this.multiPageCollectionList(annotation);
+            if (multiPageCollection.length > 0) {
+                this.pdfViewer.fireAnnotationPropertiesChange(
+                    this.selectTextMarkupCurrentPage, annotation.annotName, annotation.textMarkupAnnotationType as AnnotationType,
+                    false, false, false, false, annotation.textMarkupContent, annotation.textMarkupStartIndex,
+                    annotation.textMarkupEndIndex, multiPageCollection); this.currentAnnotationIndex = null;
+            } else {
+                this.pdfViewer.fireAnnotationPropertiesChange(
+                    this.selectTextMarkupCurrentPage, annotation.annotName, annotation.textMarkupAnnotationType as AnnotationType,
+                    false, false, false, false, annotation.textMarkupContent, annotation.textMarkupStartIndex,
+                    annotation.textMarkupEndIndex); this.currentAnnotationIndex = null;
+            }
+        }
+    }
+
+    /**
      * @param {string} color - It describes about the color
      * @private
      * @returns {void}
@@ -1787,6 +1791,8 @@ export class TextMarkupAnnotation {
                         pageAnnotations[parseInt(i.toString(), 10)].opacity = value;
                     } else if (property === 'AnnotationSettings') {
                         pageAnnotations[parseInt(i.toString(), 10)].annotationSettings = { isLock: value };
+                    } else if (property === 'Bounds') {
+                        pageAnnotations[parseInt(i.toString(), 10)].bounds = value;
                     } else if (property === 'AnnotationSelectorSettings') {
                         pageAnnotations[parseInt(i.toString(), 10)].annotationSelectorSettings = value;
                     }
@@ -2829,7 +2835,8 @@ export class TextMarkupAnnotation {
     public maintainAnnotationSelection(): void {
         if (this.currentTextMarkupAnnotation) {
             const canvasId: string = this.currentTextMarkupAnnotation.textMarkupAnnotationType === 'Highlight' ? '_blendAnnotationsIntoCanvas_' : '_annotationCanvas_';
-            const canvas: HTMLElement = this.pdfViewerBase.getElement(canvasId + this.selectTextMarkupCurrentPage);
+            const canvas: HTMLElement = (canvasId === '_blendAnnotationsIntoCanvas_') ? this.pdfViewerBase.getElement(canvasId + this.selectTextMarkupCurrentPage) :
+                this.pdfViewerBase.getAnnotationCanvas(canvasId, this.selectTextMarkupCurrentPage);
             if (canvas) {
                 this.selectAnnotation(this.currentTextMarkupAnnotation as ITextMarkupAnnotation, canvas, this.selectTextMarkupCurrentPage);
             }
@@ -2937,8 +2944,7 @@ export class TextMarkupAnnotation {
         if (commentsDivid) {
             document.getElementById(commentsDivid).id = annotationName;
         }
-        const annotationSettings: object =   this.pdfViewer.annotationSettings ?
-            this.pdfViewer.annotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(this.pdfViewer.annotation);
+        const annotationSettings: object =   this.pdfViewer.annotationSettings;
         const isPrint: boolean = this.getIsPrintValue(type);
         const annotation: ITextMarkupAnnotation = {
             textMarkupAnnotationType: type, color: color, opacity: opacity, bounds: bounds, author: author,
@@ -2951,6 +2957,7 @@ export class TextMarkupAnnotation {
             annotationRotation: annotationRotate,
             isLocked: false
         };
+        annotation.annotationSettings = this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);
         if (isMultiSelect) {
             this.multiPageCollection.push(annotation as ITextMarkupAnnotation);
         }
@@ -2997,7 +3004,8 @@ export class TextMarkupAnnotation {
 
     private annotationDivSelect(annotation: any, pageNumber: number): any {
         const canvasId: string = annotation.textMarkupAnnotationType === 'Highlight' ? '_blendAnnotationsIntoCanvas_' : '_annotationCanvas_';
-        const canvas: HTMLElement = this.pdfViewerBase.getElement(canvasId + pageNumber);
+        const canvas: HTMLElement = (canvasId === '_blendAnnotationsIntoCanvas_') ? this.pdfViewerBase.getElement(canvasId + pageNumber) :
+            this.pdfViewerBase.getAnnotationCanvas(canvasId, pageNumber);
         this.selectAnnotation(annotation, canvas, pageNumber);
         if (this.pdfViewer.toolbarModule) {
             if (this.pdfViewer.toolbarModule.annotationToolbarModule && this.pdfViewer.enableAnnotationToolbar) {
@@ -3029,7 +3037,12 @@ export class TextMarkupAnnotation {
     }
 
     private getPageContext(pageNumber: number, canvasId: string): CanvasRenderingContext2D {
-        const canvas: HTMLElement = this.pdfViewerBase.getElement(canvasId + pageNumber);
+        let canvas: HTMLElement;
+        if (canvasId === '_annotationCanvas_') {
+            canvas = this.pdfViewerBase.getAnnotationCanvas(canvasId, pageNumber);
+        } else {
+            canvas = this.pdfViewerBase.getElement(canvasId + pageNumber);
+        }
         let context: CanvasRenderingContext2D = null;
         if (canvas) {
             context = (canvas as HTMLCanvasElement).getContext('2d');
@@ -3251,7 +3264,7 @@ export class TextMarkupAnnotation {
             IsMultiSelect: false,
             IsLocked : annotationObject.isLock ? annotationObject.isLock : false,
             IsLock: annotationObject.isLock ? annotationObject.isLock : false,
-            IsPrint: annotationObject.isPrint ? annotationObject.isPrint : true,
+            IsPrint: !isNullOrUndefined(annotationObject.isPrint) ? annotationObject.isPrint : true,
             ModifiedDate: '',
             Note: '',
             Opacity: annotationObject.opacity ? annotationObject.opacity : 1,

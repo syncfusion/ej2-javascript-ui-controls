@@ -107,8 +107,10 @@ export class Month extends ViewBase implements IRenderer {
     }
 
     private scrollToSelectedDate(): void {
+        const selectedDate: Date = new Date(this.parent.selectedDate);
+        selectedDate.setHours(0, 0, 0, 0);
         const headerCell: HTMLElement = this.element.querySelector('.' + cls.HEADER_CELLS_CLASS + '[data-date="'
-            + this.parent.selectedDate.getTime().toString() + '"]');
+            + selectedDate.getTime().toString() + '"]');
         const content: HTMLElement = this.getContentAreaElement();
         if (!isNullOrUndefined(headerCell)) {
             content.scrollLeft = !this.parent.enableRtl ?

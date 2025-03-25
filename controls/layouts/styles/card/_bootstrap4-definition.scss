@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // Card Base
 
 $card-img-brdr-radious: 50% !default;
@@ -100,15 +102,15 @@ $card-image-title-bg: rgba($black, .35) !default;
 
 $card-action-btn-bg-color: $primary !default;
 $card-action-btn-font-color: $primary-font !default;
-$card-action-btn-border: 1px solid darken($primary, 10%) !default;
-$card-action-btn-hover-bg: darken($primary, 7.5%) !default;
-$card-action-btn-hover-border: 1px solid darken($primary, 10%) !default;
+$card-action-btn-border: 1px solid color.adjust($primary, $lightness: -10%) !default;
+$card-action-btn-hover-bg: color.adjust($primary, $lightness: -7.5%) !default;
+$card-action-btn-hover-border: 1px solid color.adjust($primary, $lightness: -10%) !default;
 $card-action-btn-hover-font: $primary-font !default;
 $card-action-btn-focus-bg: $primary !default;
 $card-action-btn-focus-border: 1px solid $primary !default;
 $card-action-btn-focus-font: $primary-font !default;
-$card-action-btn-pressed-bg: darken($primary, 10%) !default;
-$card-action-btn-pressed-border: 1px solid darken($primary, 12.5%) !default;
+$card-action-btn-pressed-bg: color.adjust($primary, $lightness: -10%) !default;
+$card-action-btn-pressed-border: 1px solid color.adjust($primary, $lightness: -12.5%) !default;
 $card-action-btn-pressed-font: $primary-font !default;
 
 $card-font-color: $gray-900 !default;

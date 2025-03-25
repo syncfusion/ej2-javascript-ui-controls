@@ -2,7 +2,7 @@ import { Chart } from '../chart';
 import { AnimationOptions, Animation, Browser, createElement } from '@syncfusion/ej2-base';
 import {
     textElement, getValueXByPoint, stopTimer, findCrosshairDirection,
-    getValueYByPoint, ChartLocation, withInBounds, removeElement
+    getValueYByPoint, ChartLocation, withInBounds, removeElement, convertHexToColor, colorNameToHex, ColorValue
 } from '../../common/utils/helper';
 
 import { PointData } from '../../common/utils/helper';
@@ -10,6 +10,7 @@ import { PathOption, Rect, Size, TextOption, measureText, SvgRenderer, CanvasRen
 import { Axis } from '../axis/axis';
 import { CrosshairSettingsModel } from '../chart-model';
 import { ChartData } from '../../chart/utils/get-data';
+import { Points, Series } from '../series/chart-series';
 
 
 /**
@@ -31,6 +32,9 @@ export class Crosshair {
     public valueY: number;
     private rx: number = 2;
     private ry: number = 2;
+    private highlightWidth: number = 0;
+    private crosshairLeftOverflow: number = 0;
+    private crosshairRightOverflow: number = 0;
 
     //Module declarations
     private chart: Chart;
@@ -45,7 +49,7 @@ export class Crosshair {
         this.chart = chart;
         this.elementID = this.chart.element.id;
         this.svgRenderer = new SvgRenderer(this.chart.element.id);
-        if (this.chart.crosshair.snapToData) {
+        if (this.chart.crosshair.snapToData || this.chart.crosshair.highlightCategory) {
             this.data = new ChartData(this.chart);
         }
         this.addEventListener();
@@ -91,7 +95,7 @@ export class Crosshair {
         }
         // Tooltip for chart series.
         if (!chart.disableTrackTooltip) {
-            if (withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect)) {
+            if (chart.crosshair.enable && withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect)) {
                 if (chart.startMove || !chart.isTouch) {
                     this.crosshair();
                 }
@@ -142,7 +146,7 @@ export class Crosshair {
                 if (closestData && closestData.point && closestData.point.symbolLocations[0]) {
                     const pointLocation: number = closestData.point.symbolLocations[0][axisCoordinate as string] +
                         closestData.series.clipRect[axisCoordinate as string];
-                    if (chart.crosshair.snapToData) {
+                    if (chart.crosshair.snapToData || chart.crosshair.highlightCategory) {
                         pointLocations.push(pointLocation); // Store point locations for nearest calculation
                         // Calculate the nearest point to the mouse
                         const difference: number = Math.abs(pointLocation - mouseCoordinate);
@@ -156,8 +160,22 @@ export class Crosshair {
             }
         }
         // Use the nearest data point
-        if (chart.crosshair.snapToData && nearestDataPoint) {
+        if ((chart.crosshair.snapToData || chart.crosshair.highlightCategory) && nearestDataPoint) {
             data = nearestDataPoint;
+            chart.crosshairModule.highlightWidth = 0;
+            if (chart.crosshair.highlightCategory && data.series.xAxis.valueType === 'Category') {
+                const clipRectSize: number = chart.isTransposed || chart.requireInvertedAxis ?
+                    chart.chartAxisLayoutPanel.seriesClipRect.height : chart.chartAxisLayoutPanel.seriesClipRect.width;
+                const highlightCategoryWidth: number = clipRectSize / data.series.xAxis.visibleRange.delta;
+                const pointRelativePosition: number = (data.point.xValue - data.series.xAxis.visibleRange.min) /
+                    (data.series.xAxis.visibleRange.max - data.series.xAxis.visibleRange.min);
+                chart.crosshairModule.crosshairLeftOverflow = Math.max(0, (highlightCategoryWidth / 2) -
+                    pointRelativePosition * clipRectSize);
+                chart.crosshairModule.crosshairRightOverflow = Math.max(0, (pointRelativePosition * clipRectSize +
+                    (highlightCategoryWidth / 2)) - clipRectSize);
+                chart.crosshairModule.highlightWidth = Math.max(0, highlightCategoryWidth - chart.crosshairModule.crosshairLeftOverflow -
+                    chart.crosshairModule.crosshairRightOverflow);
+            }
         }
         if (data && data.point) {
             this.data.findMouseValues(data, chart, this);
@@ -172,8 +190,9 @@ export class Crosshair {
      * @private
      */
     public crosshair(): void {
+        const visibleSeriesLength: number = this.chart.series.filter((series: Series) => series.visible).length;
         let seriesVisible: boolean = true;
-        if (this.chart.crosshair.snapToData) {
+        if (this.chart.crosshair.snapToData || this.chart.crosshair.highlightCategory) {
             seriesVisible = this.findMousePoints(this.chart);
         }
         const chart: Chart = this.chart; let horizontalCross: string = ''; let verticalCross: string = '';
@@ -194,26 +213,49 @@ export class Crosshair {
             }
         }
         this.stopAnimation();
-        if ((chart.crosshair.snapToData && this.valueY === undefined) || chart.isCrosshair && chart.tooltip.enable && chart.tooltipModule &&
+        if (visibleSeriesLength === 0 || (chart.crosshair.snapToData && this.valueY === undefined) ||
+            chart.isCrosshair && chart.tooltip.enable && chart.tooltipModule &&
             !withInBounds(chart.tooltipModule.valueX, chart.tooltipModule.valueY, chartRect) ||
             (chart.crosshair.snapToData && !seriesVisible)) {
             return null;
         }
 
-        this.valueX = chart.crosshair.snapToData ? this.valueX :
+        this.valueX = chart.crosshair.snapToData || chart.crosshair.highlightCategory ? this.valueX :
             (chart.tooltip.enable && chart.tooltipModule && chart.tooltipModule.valueX ? chart.tooltipModule.valueX : chart.mouseX);
-        this.valueY = chart.crosshair.snapToData ? this.valueY :
+        this.valueY = chart.crosshair.snapToData || chart.crosshair.highlightCategory ? this.valueY :
             (chart.tooltip.enable && chart.tooltipModule && chart.tooltipModule.valueY ? chart.tooltipModule.valueY : chart.mouseY);
         if (!chart.enableCanvas) {
             crossGroup.setAttribute('opacity', '1');
         }
         if (crosshair.lineType === 'Both' || crosshair.lineType === 'Horizontal') {
-            horizontalCross += 'M ' + chartRect.x + ' ' + this.valueY +
+            if ((chart.crosshair.highlightCategory && this.highlightWidth !== 0) && (chart.isTransposed || chart.requireInvertedAxis)) {
+                const crosshairHighlightWidth: number = this.highlightWidth;
+                chart.crosshairModule.valueY = this.adjustCrosshairPositionForOverflow(this.valueY, true, chart);
+                const y: number = this.valueY - (crosshairHighlightWidth / 2);
+                horizontalCross = 'M ' + chartRect.x + ' ' + y +
+                    ' L ' + (chartRect.x + chartRect.width) + ' ' + y +
+                    ' L ' + (chartRect.x + chartRect.width) + ' ' + (y + crosshairHighlightWidth) +
+                    ' L ' + chartRect.x + ' ' + (y + crosshairHighlightWidth) + ' Z';
+            }
+            else {
+                horizontalCross += 'M ' + chartRect.x + ' ' + this.valueY +
                 ' L ' + (chartRect.x + chartRect.width) + ' ' + this.valueY;
+            }
         }
         if (crosshair.lineType === 'Both' || crosshair.lineType === 'Vertical') {
-            verticalCross += 'M ' + this.valueX + ' ' + chartRect.y +
-                ' L ' + this.valueX + ' ' + (chartRect.y + chartRect.height);
+            if ((chart.crosshair.highlightCategory && this.highlightWidth !== 0) && !chart.requireInvertedAxis) {
+                const crosshairHighlightWidth: number = this.highlightWidth;
+                chart.crosshairModule.valueX = this.adjustCrosshairPositionForOverflow(this.valueX, false, chart);
+                const x: number = this.valueX - (crosshairHighlightWidth / 2);
+                verticalCross = 'M ' + x + ' ' + chartRect.y +
+                    ' L ' + (x + crosshairHighlightWidth) + ' ' + chartRect.y +
+                    ' L ' + (x + crosshairHighlightWidth) + ' ' + (chartRect.y + chartRect.height) +
+                    ' L ' + x + ' ' + (chartRect.y + chartRect.height) + ' Z';
+            }
+            else {
+                verticalCross += 'M ' + this.valueX + ' ' + chartRect.y +
+                    ' L ' + this.valueX + ' ' + (chartRect.y + chartRect.height);
+            }
         }
         if (chart.enableCanvas) {
             if (!axisTooltipGroup) {
@@ -253,17 +295,21 @@ export class Crosshair {
             }
         } else {
             if (crossGroup.childNodes.length === 0) {
+                const horizontalHighlight: boolean = (chart.crosshair.highlightCategory && this.highlightWidth !== 0) &&
+                    (chart.isTransposed || chart.requireInvertedAxis);
+                const verticalHighlight: boolean = (chart.crosshair.highlightCategory && this.highlightWidth !== 0) &&
+                    !chart.requireInvertedAxis;
                 axisTooltipGroup = chart.renderer.createGroup({ 'id': this.elementID + '_crosshair_axis' });
                 options = new PathOption(
-                    this.elementID + '_HorizontalLine', 'none', crosshair.line.width,
-                    crosshair.horizontalLineColor || crosshair.line.color || chart.themeStyle.crosshairLine,
-                    crosshair.opacity, (chart.theme.indexOf('Bootstrap5') > -1 || chart.theme === 'Fluent2HighContrast' || chart.theme.indexOf('Tailwind3') > -1) ? crosshair.dashArray || '2.5' :  crosshair.dashArray, horizontalCross
+                    this.elementID + '_HorizontalLine', horizontalHighlight ? (crosshair.horizontalLineColor || crosshair.line.color) ? this.crosshairLightenColor(crosshair.horizontalLineColor || crosshair.line.color) : chart.themeStyle.crosshairBackground : 'none', horizontalHighlight ? 0 : crosshair.line.width,
+                    horizontalHighlight ? 'none' : crosshair.horizontalLineColor || crosshair.line.color || chart.themeStyle.crosshairLine,
+                    crosshair.opacity, horizontalHighlight ? null : (chart.theme.indexOf('Bootstrap5') > -1 || chart.theme === 'Fluent2HighContrast' || chart.theme.indexOf('Tailwind3') > -1) ? crosshair.dashArray || '2.5' : crosshair.dashArray, horizontalCross
                 );
                 this.renderCrosshairLine(options, crossGroup);
                 options = new PathOption(
-                    this.elementID + '_VerticalLine', 'none', crosshair.line.width,
-                    crosshair.verticalLineColor || crosshair.line.color || chart.themeStyle.crosshairLine,
-                    crosshair.opacity, (chart.theme.indexOf('Bootstrap5') > -1 || chart.theme === 'Fluent2HighContrast' || chart.theme.indexOf('Tailwind3') > -1) ? crosshair.dashArray || '2.5' :  crosshair.dashArray, verticalCross
+                    this.elementID + '_VerticalLine', verticalHighlight ? (crosshair.verticalLineColor || crosshair.line.color) ? this.crosshairLightenColor(crosshair.verticalLineColor || crosshair.line.color) : chart.themeStyle.crosshairBackground : 'none', verticalHighlight ? 0 : crosshair.line.width,
+                    verticalHighlight ? 'none' : crosshair.verticalLineColor || crosshair.line.color || chart.themeStyle.crosshairLine,
+                    crosshair.opacity, verticalHighlight ? null : (chart.theme.indexOf('Bootstrap5') > -1 || chart.theme === 'Fluent2HighContrast' || chart.theme.indexOf('Tailwind3') > -1) ? crosshair.dashArray || '2.5' : crosshair.dashArray, verticalCross
                 );
                 this.renderCrosshairLine(options, crossGroup);
                 crossGroup.appendChild(axisTooltipGroup);
@@ -274,6 +320,39 @@ export class Crosshair {
                 this.renderAxisTooltip(chart, chartRect, <Element>crossGroup.lastChild);
             }
         }
+    }
+
+    /**
+     * Converts a specified color into a semi-transparent RGB string format.
+     *
+     * @param {string} color - The main color in hex format.
+     * @returns {string} - The lightened color in RGBA format with an alpha value of 0.25.
+     */
+    public crosshairLightenColor(color: string): string {
+        const rgbValue: ColorValue = convertHexToColor(colorNameToHex(color));
+        return 'rgb(' + rgbValue.r + ',' + rgbValue.g + ',' + rgbValue.b + ',' + 0.25 + ')';
+    }
+
+    /**
+     * Adjusts the crosshair position to account for any overflow beyond the chart boundaries,
+     * ensuring it stays within visible limits. It handles horizontal and vertical orientations separately.
+     *
+     * @param {number} initialPosition - The initial calculated position of the crosshair before adjustments.
+     * @param {boolean} isHorizontalOrientation - Determines whether the crosshair is oriented horizontally.
+     * @param {Chart} chart - The chart instance containing details on crosshair module and overflow values.
+     * @returns {number} - The adjusted position of the crosshair after accounting for boundary overflow.
+     * @private
+     */
+    private adjustCrosshairPositionForOverflow(initialPosition: number, isHorizontalOrientation: boolean, chart: Chart): number {
+        if (chart.crosshairModule.crosshairLeftOverflow > 0) {
+            initialPosition += isHorizontalOrientation ? -chart.crosshairModule.crosshairLeftOverflow / 2 :
+                chart.crosshairModule.crosshairLeftOverflow / 2;
+        }
+        if (chart.crosshairModule.crosshairRightOverflow > 0) {
+            initialPosition += isHorizontalOrientation ? chart.crosshairModule.crosshairRightOverflow / 2 :
+                -chart.crosshairModule.crosshairRightOverflow / 2;
+        }
+        return initialPosition;
     }
 
     private renderCrosshairLine(options: PathOption, crossGroup: HTMLElement): void {
@@ -383,7 +462,7 @@ export class Crosshair {
                             height += this.elementSize.height / text.length;
                             textElem.children[i as number].setAttribute('x', (rect.x + padding + (chart.enableRtl ? this.elementSize.width : 0) + this.elementSize.width / 2).toString());
                             textElem.children[i as number].setAttribute('y', ((parseInt(textElem.getAttribute('y'), 10) + height).toString()));
-                            textElem.children[i as number].setAttribute('style', 'text-anchor: middle');
+                            (textElem.children[i as number] as HTMLElement).style.textAnchor = 'middle';
                         }
                     }
                     if (this.chart.theme === 'Fluent' || this.chart.theme === 'FluentDark' || this.chart.theme === 'Fabric' || this.chart.theme === 'FabricDark' || this.chart.theme === 'Fluent2HighContrast') {
@@ -396,12 +475,13 @@ export class Crosshair {
                         pathElement.setAttribute('stroke-width', ' ' + borderwidth);
                     }
                     else if (this.chart.theme.indexOf('Fluent2') > -1) {
+                        pathElement.setAttribute('box-shadow', '0px 1.6px 3.6px 0px #00000021, 0px 0.3px 0.9px 0px #0000001A');
+                        pathElement.setAttribute('filter', Browser.isIE ? '' : 'url(#' + shadowId + ')');
                         let shadow: string = '<filter id="' + shadowId + '" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="3"/>';
                         shadow += '<feOffset dx="-1" dy="3.6" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.2"/>';
                         shadow += '</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
                         const defElement: Element = this.chart.renderer.createDefs();
                         defElement.setAttribute('id', this.chart.element.id + 'SVG_tooltip_definition');
-                        pathElement.setAttribute('filter', Browser.isIE ? '' : 'url(#' + shadowId + ')');
                         pathElement.appendChild(defElement);
                         defElement.innerHTML = shadow;
                     }

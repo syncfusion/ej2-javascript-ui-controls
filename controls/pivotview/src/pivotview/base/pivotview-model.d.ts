@@ -1140,6 +1140,12 @@ export interface PivotViewModel extends ComponentModel{
     selected?: EmitType<CellSelectEventArgs>;
 
     /**
+     * @event selecting
+     * @hidden
+     */
+    selecting?: EmitType<CellSelectEventArgs>;
+
+    /**
      * @event cellDeselected
      * @hidden
      */

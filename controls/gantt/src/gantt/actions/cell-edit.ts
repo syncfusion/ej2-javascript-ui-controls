@@ -59,8 +59,7 @@ export class CellEdit {
         if (data.hasChildRecords && !this.parent.allowParentDependency && ((field === taskSettings.endDate &&
             ((!isNullOrUndefined(data[taskSettings.manual]) && data[taskSettings.manual] === false) ||
             this.parent.taskMode === 'Auto')) || field === taskSettings.duration || field === taskSettings.dependency ||
-            field === taskSettings.progress || field === taskSettings.work ||
-            field === taskSettings.type || field === 'taskType')) {
+            field === taskSettings.progress || field === taskSettings.work || field === taskSettings.type || field === 'taskType')) {
             if ((field === taskSettings.dependency && !this.parent.allowParentDependency) || field !== taskSettings.dependency) {
                 args.cancel = true;
             }

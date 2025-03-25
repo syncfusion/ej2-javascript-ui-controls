@@ -58,8 +58,9 @@ export function measureText(textContent: BaseAttributes): Size {
     const svg: SVGElement = window[`${measureElement}`].children[1];
     const text: SVGTextElement = getChildNode(svg)[0] as SVGTextElement;
     text.textContent = textContent.string;
-    text.setAttribute('style', 'font-size:' + textContent.stringSize + 'px; font-family:'
-        + textContent.fontStyle + ';font-weight:');
+    text.style.fontSize = textContent.stringSize + 'px';
+    text.style.fontFamily = textContent.fontStyle;
+    text.style.fontWeight = '';
     const bBox: Size = new Size(0, 0);
     bBox.width = text.getBBox().width;
     bBox.height = text.getBBox().height;
@@ -77,10 +78,26 @@ export function measureText(textContent: BaseAttributes): Size {
  * @private
  */
 // eslint-disable-next-line
-export function setAttribute(element: HTMLElement | SVGElement, attributes: Object): void {
+export function setAttribute(element: HTMLElement | SVGElement, attributes: { [key: string]: any }): void {
     const keys: string[] = Object.keys(attributes);
     for (let i: number = 0; i < keys.length; i++) {
-        element.setAttribute(keys[parseInt(i.toString(), 10)], attributes[keys[parseInt(i.toString(), 10)]]);
+        keys.forEach((key: string) => {
+            // eslint-disable-next-line security/detect-object-injection
+            const value: string | undefined  = attributes[key];
+            if (key === 'style' && typeof value === 'string') {
+                // Handle `style` attributes specifically by splitting and setting them directly
+                const styleProperties: string[]  = value.split(';');
+                styleProperties.forEach((property: string) => {
+                    const [propName, propValue] = property.split(':');
+                    if (propName && propValue) {
+                        (element.style as CSSStyleDeclaration).setProperty(propName.trim(), propValue.trim());
+                    }
+                });
+            } else {
+                // Set other attributes normally
+                element.setAttribute(key, value);
+            }
+        });
     }
 }
 

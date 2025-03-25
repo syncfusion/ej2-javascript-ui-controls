@@ -1,5 +1,5 @@
 import { LayoutViewer, EditRangeStartElementBox, DocumentHelper } from '../viewer';
-import { createElement, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, L10n, isNullOrUndefined, updateCSSText } from '@syncfusion/ej2-base';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { AddUserDialog } from './add-user-dialog';
 import { EnforceProtectionDialog, UnProtectDocumentDialog } from './enforce-protection-dialog';
@@ -103,7 +103,8 @@ export class RestrictEditing {
         this.closeButton.appendChild(closeSpan);
         this.restrictPane.appendChild(headerWholeDiv);
         this.initRestrictEditingPane(localValue);
-        this.documentHelper.optionsPaneContainer.setAttribute('style', 'display:inline-flex;');
+        const cssText: string = 'display:inline-flex;';
+        updateCSSText(this.documentHelper.optionsPaneContainer, cssText);
         this.documentHelper.optionsPaneContainer.insertBefore(this.restrictPane, this.documentHelper.viewerContainer);
     }
     /* eslint-disable  */

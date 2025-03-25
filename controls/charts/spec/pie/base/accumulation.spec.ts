@@ -611,6 +611,13 @@ describe('Checking RTL Behaviour for Title', () => {
         accumulation.isBlazor = true;
         accumulation.refresh();
     });
+    it('Check accumulation chart center x and y', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            expect(accumulation !== null).toBe(true); 
+            done();
+        };
+        accumulation.center.x = '60%';
+    });
   });
   describe('Checking RTL Behaviour for CenterLabel', () => {
     let element: HTMLElement;
@@ -1037,6 +1044,184 @@ describe('Checking RTL Behaviour for Title', () => {
                   args.pattern = 'Pacman'     }
               }
             accumulation.series[0].applyPattern=true
+            accumulation.refresh();
+        });
+        it('Checking title with position - Bottom', (done: Function) => {
+            accumulation.loaded = (args: IAccLoadedEventArgs) => {
+                accumulation.loaded = null;
+                const x: string = document.getElementById('ej2-container1_title').getAttribute('x');
+                const y: string = document.getElementById('ej2-container1_title').getAttribute('y');
+                expect(+x).toBe(300);
+                expect(+y).toBe(365);
+                done();
+            };
+            accumulation.title = 'Pie chart title checking';
+            accumulation.subTitle = 'Sub Title checking';
+            accumulation.titleStyle.position = 'Bottom';
+            accumulation.refresh();
+        });
+        it('Checking title with position - Right', (done: Function) => {
+            accumulation.loaded = (args: IAccLoadedEventArgs) => {
+                accumulation.loaded = null;
+                const x: string = document.getElementById('ej2-container1_title').getAttribute('x');
+                const y: string = document.getElementById('ej2-container1_title').getAttribute('y');
+                expect(+x).toBe(576.5);
+                expect(+y).toBe(200);
+                done();
+            };
+            accumulation.title = 'Pie chart title checking';
+            accumulation.subTitle = 'Sub Title checking';
+            accumulation.titleStyle.position = 'Right';
+            accumulation.refresh();
+        });
+        it('Checking title with position - Left', (done: Function) => {
+            accumulation.loaded = (args: IAccLoadedEventArgs) => {
+                accumulation.loaded = null;
+                const x: string = document.getElementById('ej2-container1_title').getAttribute('x');
+                const y: string = document.getElementById('ej2-container1_title').getAttribute('y');
+                expect(+x).toBe(23.5);
+                expect(+y).toBe(200);
+                done();
+            };
+            accumulation.title = 'Pie chart title checking';
+            accumulation.subTitle = 'Sub Title checking';
+            accumulation.titleStyle.position = 'Left';
+            accumulation.refresh();
+        });
+        it('Checking title with position - Left Near', (done: Function) => {
+            accumulation.loaded = (args: IAccLoadedEventArgs) => {
+                accumulation.loaded = null;
+                const x: string = document.getElementById('ej2-container1_title').getAttribute('x');
+                const y: string = document.getElementById('ej2-container1_title').getAttribute('y');
+                expect(+x).toBe(23.5);
+                expect(+y).toBe(11);
+                done();
+            };
+            accumulation.title = 'Pie chart title checking';
+            accumulation.subTitle = 'Sub Title checking';
+            accumulation.titleStyle.position = 'Left';
+            accumulation.titleStyle.textAlignment = 'Near';
+            accumulation.refresh();
+        });
+        it('Checking title with position - Left Far', (done: Function) => {
+            accumulation.loaded = (args: IAccLoadedEventArgs) => {
+                accumulation.loaded = null;
+                const x: string = document.getElementById('ej2-container1_title').getAttribute('x');
+                const y: string = document.getElementById('ej2-container1_title').getAttribute('y');
+                expect(+x).toBe(23.5);
+                expect(+y).toBe(389);
+                done();
+            };
+            accumulation.title = 'Pie chart title checking';
+            accumulation.subTitle = 'Sub Title checking';
+            accumulation.titleStyle.position = 'Left';
+            accumulation.titleStyle.textAlignment = 'Far';
+            accumulation.refresh();
+        });
+        it('Checking title with position - Right Near', (done: Function) => {
+            accumulation.loaded = (args: IAccLoadedEventArgs) => {
+                accumulation.loaded = null;
+                const x: string = document.getElementById('ej2-container1_title').getAttribute('x');
+                const y: string = document.getElementById('ej2-container1_title').getAttribute('y');
+                expect(+x).toBe(576.5);
+                expect(+y).toBe(11);
+                done();
+            };
+            accumulation.title = 'Pie chart title checking';
+            accumulation.subTitle = 'Sub Title checking';
+            accumulation.titleStyle.position = 'Right';
+            accumulation.titleStyle.textAlignment = 'Near';
+            accumulation.refresh();
+        });
+        it('Checking title with position - Right Far', (done: Function) => {
+            accumulation.loaded = (args: IAccLoadedEventArgs) => {
+                accumulation.loaded = null;
+                const x: string = document.getElementById('ej2-container1_title').getAttribute('x');
+                const y: string = document.getElementById('ej2-container1_title').getAttribute('y');
+                expect(+x).toBe(576.5);
+                expect(+y).toBe(389);
+                done();
+            };
+            accumulation.title = 'Pie chart title checking';
+            accumulation.subTitle = 'Sub Title checking';
+            accumulation.titleStyle.position = 'Right';
+            accumulation.titleStyle.textAlignment = 'Far';
+            accumulation.refresh();
+        });
+        it('Checking title with position - Bottom Far', (done: Function) => {
+            accumulation.loaded = (args: IAccLoadedEventArgs) => {
+                accumulation.loaded = null;
+                const x: string = document.getElementById('ej2-container1_title').getAttribute('x');
+                const y: string = document.getElementById('ej2-container1_title').getAttribute('y');
+                expect(+x).toBe(591);
+                expect(+y).toBe(365);
+                done();
+            };
+            accumulation.title = 'Pie chart title checking';
+            accumulation.subTitle = 'Sub Title checking';
+            accumulation.titleStyle.textAlignment = 'Far';
+            accumulation.titleStyle.position = 'Bottom';
+            accumulation.refresh();
+        });
+        it('Checking title with position - Bottom Near', (done: Function) => {
+            accumulation.loaded = (args: IAccLoadedEventArgs) => {
+                accumulation.loaded = null;
+                const x: string = document.getElementById('ej2-container1_title').getAttribute('x');
+                const y: string = document.getElementById('ej2-container1_title').getAttribute('y');
+                expect(+x).toBe(11);
+                expect(+y).toBe(365);
+                done();
+            };
+            accumulation.title = 'Pie chart title checking';
+            accumulation.subTitle = 'Sub Title checking';
+            accumulation.titleStyle.position = 'Bottom';
+            accumulation.titleStyle.textAlignment = 'Near';
+            accumulation.refresh();
+        });
+        it('Checking title with custom position', (done: Function) => {
+            accumulation.loaded = (args: IAccLoadedEventArgs) => {
+                accumulation.loaded = null;
+                const x: string = document.getElementById('ej2-container1_title').getAttribute('x');
+                const y: string = document.getElementById('ej2-container1_title').getAttribute('y');
+                expect(+x).toBe(150);
+                expect(+y).toBe(150);
+                done();
+            };
+            accumulation.title = 'Pie chart title checking';
+            accumulation.subTitle = 'Sub Title checking';
+            accumulation.titleStyle.position = 'Custom';
+            accumulation.titleStyle.x = 150;
+            accumulation.titleStyle.y = 150;
+            accumulation.refresh();
+        });
+        it('Checking title with left position and rtl', (done: Function) => {
+            accumulation.loaded = (args: IAccLoadedEventArgs) => {
+                accumulation.loaded = null;
+                const x: string = document.getElementById('ej2-container1_title').getAttribute('x');
+                const y: string = document.getElementById('ej2-container1_title').getAttribute('y');
+                expect(+x).toBe(23.5);
+                expect(+y).toBe(11);
+                done();
+            };
+            accumulation.title = 'Pie chart title checking';
+            accumulation.subTitle = 'Sub Title checking';
+            accumulation.titleStyle.position = 'Left';
+            accumulation.enableRtl = true;
+            accumulation.refresh();
+        });
+        it('Checking title with right position and rtl', (done: Function) => {
+            accumulation.loaded = (args: IAccLoadedEventArgs) => {
+                accumulation.loaded = null;
+                const x: string = document.getElementById('ej2-container1_title').getAttribute('x');
+                const y: string = document.getElementById('ej2-container1_title').getAttribute('y');
+                expect(+x).toBe(576.5);
+                expect(+y).toBe(11);
+                done();
+            };
+            accumulation.title = 'Pie chart title checking';
+            accumulation.subTitle = 'Sub Title checking';
+            accumulation.titleStyle.position = 'Right';
+            accumulation.enableRtl = true;
             accumulation.refresh();
         });
     })

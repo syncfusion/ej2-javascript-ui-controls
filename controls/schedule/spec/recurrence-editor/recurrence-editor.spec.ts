@@ -2,6 +2,8 @@
 import { RecurrenceEditor } from '../../src/recurrence-editor/recurrence-editor';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
+import * as util from '../schedule/util.spec'; 
+import { RecurrenceEditorModel } from '../../src';
 /**
  * test case for reccurence editor.
  */
@@ -24,6 +26,28 @@ describe('Recurrence Editor Base Module', () => {
             (this as any).skip(); //Skips test (in Chai)
             return;
         }
+    });
+
+    describe('Client side events', () => {
+        let schObj: RecurrenceEditor;
+        beforeAll(() => {
+            schObj = undefined;
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('recurrence editor events call confirmation', () => {
+            const createdFn: jasmine.Spy = jasmine.createSpy('createdEvent');
+            const destroyedFn: jasmine.Spy = jasmine.createSpy('destroyedEvent');
+            const model: RecurrenceEditorModel = {
+                created: createdFn,
+                destroyed: destroyedFn
+            };
+            schObj = util.createRecurrenceEditor(model);
+            expect(createdFn).toHaveBeenCalledTimes(1);
+            schObj.destroy();
+            expect(destroyedFn).toHaveBeenCalledTimes(1);
+        });
     });
 
     describe('Schedule - recurrence rendering scenario', () => {
@@ -479,33 +503,34 @@ describe('Recurrence Editor Base Module', () => {
     describe('Recurrence Editor - minDate and maxDate property changes', () => {
         let recObj: RecurrenceEditor;
         const elem: HTMLElement = createElement('div', { id: 'RecurrenceEditor' });
-
+    
         beforeAll(() => {
             document.body.appendChild(elem);
             recObj = new RecurrenceEditor();
             recObj.appendTo('#RecurrenceEditor');
         });
-
+    
         afterAll(() => {
             if (recObj) {
                 recObj.destroy();
             }
             remove(elem);
         });
-
+    
         it('should update the minDate of untilDateObj when minDate property changes', () => {
             const newMinDate = new Date(2022, 0, 1);
             recObj.setProperties({ minDate: newMinDate });
             expect((<any>recObj).untilDateObj.min.getTime()).toBe(newMinDate.getTime());
         });
-
+    
         it('should update the maxDate of untilDateObj when maxDate property changes', () => {
             const newMaxDate = new Date(2030, 11, 31);
             recObj.setProperties({ maxDate: newMaxDate });
             expect((<any>recObj).untilDateObj.max.getTime()).toBe(newMaxDate.getTime());
         });
     });
-    
+
+
     /**
      * Method to get selected days
      *

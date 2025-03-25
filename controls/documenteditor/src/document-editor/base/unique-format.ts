@@ -245,6 +245,7 @@ export class WUniqueFormat {
             case 'localeIdFarEast': return 23;
             case 'characterSpacing': return 24;
             case 'scaling': return 25;
+            case 'hidden': return 26;
             case 'underlineColor': return 27;
             case 'fontHintType': return 28;
             default: return 0;
@@ -402,6 +403,9 @@ export class WUniqueFormat {
             return false;
         }
         if (this.isNotEqual('complexScript', source, modifiedProperty, modifiedValue, 2)) {
+            return false;
+        }
+        if (this.isNotEqual('hidden', source, modifiedProperty, modifiedValue, 2)) {
             return false;
         }
         if (this.isNotEqual('fontFamilyFarEast', source, modifiedProperty, modifiedValue, 2)) {

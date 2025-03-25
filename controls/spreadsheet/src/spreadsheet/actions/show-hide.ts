@@ -1,8 +1,8 @@
 import { Spreadsheet } from '../base/index';
-import { spreadsheetDestroyed, IRowRenderer, HideShowEventArgs, ICellRenderer, CellRenderArgs, getChartsIndexes, refreshChartCellModel, isReadOnlyCells, readonlyAlert } from '../common/index';
+import { spreadsheetDestroyed, IRowRenderer, HideShowEventArgs, ICellRenderer, CellRenderArgs, getChartsIndexes, refreshChartCellModel, readonlyAlert } from '../common/index';
 import { autoFit, virtualContentLoaded, completeAction, focus } from '../common/index';
 import { hiddenMerge, updateTableWidth, updateTranslate } from '../common/index';
-import { SheetModel, getCellAddress, isHiddenRow, setRow, setColumn, isHiddenCol, getRangeAddress, getCell, getSheet, ColumnModel, RowModel, getColumn, getRow, ChartModel } from '../../workbook/index';
+import { SheetModel, getCellAddress, isHiddenRow, setRow, setColumn, isHiddenCol, getRangeAddress, getCell, getSheet, ColumnModel, RowModel, getColumn, getRow, ChartModel, isReadOnlyCells } from '../../workbook/index';
 import { beginAction, getCellIndexes, applyCellFormat, CellFormatArgs, CellModel, MergeArgs, refreshChart } from '../../workbook/index';
 import { activeCellMergedRange, setMerge, ExtendedRowModel, getRowHeight, getRangeIndexes, hideShow } from '../../workbook/index';
 import { ActionEventArgs, skipHiddenIdx, isFilterHidden } from '../../workbook/index';
@@ -32,12 +32,18 @@ export class ShowHide {
             const temp: number = args.startIndex;
             args.startIndex = args.endIndex; args.endIndex = temp;
         }
-        let actionArgs: ActionEventArgs;
-        if (args.actionUpdate) {
-            if (isReadOnlyCells(this.parent, getRangeIndexes(sheet.selectedRange))) {
-                this.parent.notify(readonlyAlert, null);
+        if (args.actionUpdate !== undefined) {
+            const range: number[] = args.isCol ? [0, args.startIndex, sheet.rowCount - 1, args.endIndex] :
+                [args.startIndex, 0, args.endIndex, sheet.colCount - 1];
+            if (isReadOnlyCells(this.parent, range)) {
+                if (args.actionUpdate) {
+                    this.parent.notify(readonlyAlert, null);
+                }
                 return;
             }
+        }
+        let actionArgs: ActionEventArgs;
+        if (args.actionUpdate) {
             args.sheetIndex = sheetIndex;
             actionArgs = { eventArgs: args, action: 'hideShow' };
             this.parent.notify(beginAction, actionArgs);
@@ -307,7 +313,7 @@ export class ShowHide {
             }
             const prevChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[] = getChartsIndexes(this.parent);
             for (let i: number = args.startIndex, len: number = args.endIndex; i <= len; i++) {
-                if (!isHiddenRow(sheet, i)) {
+                if (!(args.isFiltering ? isHiddenRow(sheet, i) : isHiddenRow(sheet, i) && !isFilterHidden(sheet, i))) {
                     if (args.startIndex === args.endIndex) {
                         return;
                     }

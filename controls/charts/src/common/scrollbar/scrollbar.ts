@@ -67,6 +67,14 @@ export class ScrollBar {
     public previousStart: number;
     /** @private */
     public previousEnd: number;
+    /** @private */
+    public leftScrollBarCount: number;
+    /** @private */
+    public rightScrollBarCount: number;
+    /** @private */
+    public topScrollBarCount: number;
+    /** @private */
+    public bottomScrollBarCount: number;
 
     private scrollElements: ScrollElements;
 

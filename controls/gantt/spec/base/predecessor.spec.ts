@@ -5,7 +5,7 @@ import { createElement, remove, L10n } from '@syncfusion/ej2-base';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport } from '../../src/index';
 import { destroyGantt, createGantt, triggerMouseEvent } from './gantt-util.spec';
 import { ContextMenuClickEventArgs} from './../../src/gantt/base/interface';
-import { columnTemplateData, data15, editingData13, editingData14, editingData15, editingData16, editingData17, predData1, predData2, predData3, predData4, predData5, predData6, predData8,resourceResourcesUndo,localizationData, CR927012 } from './data-source.spec';
+import { columnTemplateData, data15, editingData13, editingData14, editingData15, editingData16, editingData17, predData1, predData2, predData3, predData4, predData5, predData6, predData8,resourceResourcesUndo,localizationData, CR927012, dataCollection } from './data-source.spec';
 Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport);
 
 
@@ -1999,6 +1999,7 @@ describe('CR:927012-Issue in child-parent predecessor validation on initial rend
         }
     });
 });
+
 describe('Parent predecessor validation without edit settings', () => {
     let ganttObj: Gantt;
     let editingData = [
@@ -2061,7 +2062,7 @@ describe('Parent predecessor validation without edit settings', () => {
                         child: 'subtasks',
                         notes: 'info',
                     },
-                    
+
                     toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Indent', 'Outdent'],
                     gridLines: 'Both',
                     height: '450px',
@@ -2109,3 +2110,56 @@ describe('Parent predecessor validation without edit settings', () => {
         }
     });
 });
+describe('Gantt chart update value by updateRecordByID in Predecessor and taskname  ', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: dataCollection,
+                allowSorting: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency:'Predecessor',
+                    child: 'subtasks',
+
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                'PrevTimeSpan', 'NextTimeSpan'],
+                allowSelection: true,
+                gridLines: "Both",
+                showColumnMenu: false,
+                height: '550px',
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+            }, done);
+    });
+    it('update value by updateRecordByID methods', () => {
+        let data: object = { 
+            TaskID: 1,
+            TaskName: 'Updated by index value',
+            StartDate: new Date('04/02/2024'),
+            Duration: 0,
+            Progress: 50,
+            Predecessor: '100FS-100 days'
+            };
+        ganttObj.updateRecordByID(data);
+        expect(ganttObj.currentViewData[0].ganttProperties.taskName).toBe('Updated by index value');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});	

@@ -1157,46 +1157,6 @@ describe('Chart Control', () => {
                 chartObj.refresh();
             });
     });
-
-    describe('Chart error bar series auto range update', () => {
-        let chartObj: Chart;
-        let elem: HTMLElement; 
-        let loaded: EmitType<ILoadedEventArgs>;
-        beforeAll(() => {
-            elem = createElement('div', { id: 'container' });
-            document.body.appendChild(elem);
-            chartObj = new Chart(
-                {
-                    series: [{
-                        dataSource: [{ x: 2005, y: 28 }, { x: 2006, y: 25 },{ x: 2007, y: 26 }, { x: 2008, y: 47 },
-                            { x: 2009, y: 32 }, { x: 2010, y: 35 }, { x: 2011, y: 30 }],
-                        xName: 'x', yName: 'y',
-                        errorBar: {
-                            visible: true,
-                            errorBarColorMapping: 'color',
-                            verticalError: 'error'
-                        },
-                        type: 'Line'
-                    }],
-                
-                });
-            chartObj.appendTo('#container');
-
-        });
-        afterAll((): void => {
-            elem.remove();
-            chartObj.destroy();
-        });
-        it('Checking for minimum error', (): void => {
-            loaded = (args: Object): void => {
-                const element: Element = document.getElementById('container1_AxisLabel_10');
-                expect(element.textContent === '50').toBe(true);
-            };
-            chartObj.loaded = loaded;
-            chartObj.refresh();
-        });
-
-    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

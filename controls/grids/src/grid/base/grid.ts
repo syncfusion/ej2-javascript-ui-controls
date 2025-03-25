@@ -1,4 +1,4 @@
-import { isNullOrUndefined, setValue, getValue, defaultCurrencyCode } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, setValue, getValue, defaultCurrencyCode, updateCSSText } from '@syncfusion/ej2-base';
 import { Component, ModuleDeclaration, ChildProperty, Browser, closest, extend, TouchEventArgs } from '@syncfusion/ej2-base';
 import { addClass, removeClass, append, remove, classList, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Property, Collection, Complex, Event, NotifyPropertyChanges, INotifyPropertyChanged, L10n } from '@syncfusion/ej2-base';
@@ -12,7 +12,7 @@ import { getRowHeight, setColumnIndex, Global, ispercentageWidth, getNumberForma
 import { setRowElements, resetRowIndex, compareChanges, getCellByColAndRowIndex, performComplexDataOperation } from './util';
 import * as events from '../base/constant';
 import { ReturnType, BatchChanges } from '../base/type';
-import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI, LazyLoadArgs, LoadEventArgs, ContextMenuClickEventArgs, NotifyArgs, ExportHeaders } from './interface';
+import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI, LazyLoadArgs, LoadEventArgs, ContextMenuClickEventArgs, NotifyArgs, ExportHeaders, DetailTemplateDetachArgs } from './interface';
 import {AggregateQueryCellInfoEventArgs, IGrid } from './interface';
 import { IRenderer, IValueFormatter, IFilterOperator, IIndex, RowDataBoundEventArgs, QueryCellInfoEventArgs } from './interface';
 import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, ParentDetails, ContextMenuItemModel } from './interface';
@@ -219,7 +219,7 @@ export class Predicate extends ChildProperty<Predicate> {
      * @default ''
      */
     @Property()
-    public value: string | number | Date | boolean;
+    public value: string | number | Date | boolean | (string | number | Date | boolean)[];
 
     /**
      * If match case set to true, then filter records with exact match or else
@@ -899,6 +899,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private editTemplateFn: Function;
     private editHeaderTemplateFn: Function;
     private editFooterTemplateFn: Function;
+    private columnChooserTemplateFn: Function;
+    private columnChooserHeaderTemplateFn: Function;
+    private columnChooserFooterTemplateFn: Function;
     private detailTemplateFn: Function;
     private sortedColumns: string[];
     private footerElement: Element;
@@ -2632,6 +2635,16 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public lazyLoadGroupCollapse: EmitType<LazyLoadArgs>;
 
     /**
+     * Event triggered before a detail template row is removed from the DOM.
+     *
+     * This event allows executing necessary cleanup operations or additional actions before the detail row is detached.
+     *
+     * @event beforeDetailTemplateDetach
+     */
+    @Event()
+    public beforeDetailTemplateDetach: EmitType<DetailTemplateDetachArgs>;
+
+    /**
      * Constructor for creating the component
      *
      * @param {GridModel} options - specifies the options
@@ -2971,6 +2984,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             LessThanOrEqual: 'Less Than Or Equal',
             GreaterThan: 'Greater Than',
             GreaterThanOrEqual: 'Greater Than Or Equal',
+            In: 'In',
+            NotIn: 'Not In',
             ChooseDate: 'Choose a Date',
             EnterValue: 'Enter the value',
             Copy: 'Copy',
@@ -3214,12 +3229,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (dialogElement) {
             const dialogHolder: Element = dialogElement.querySelector('.e-checkboxlist');
             const maskRowCount: number = Math.floor(dialogHolder.getBoundingClientRect().height / this.getRowHeight());
-            const maskTemplate: string = '<div class="e-ftrchk e-mask-ftrchk" style="width: 100%;">'
-                + '<div class="e-checkbox-wrapper" style="width: 100%;"><input class="e-chk-hidden">'
+            const maskTemplate: string = '<div class="e-ftrchk e-mask-ftrchk">'
+                + '<div class="e-checkbox-wrapper"><input class="e-chk-hidden">'
                 + this.getShimmerTemplate() + this.getShimmerTemplate() + '</div></div>';
             dialogHolder.innerHTML = '';
             for (let i: number = 0; i < maskRowCount; i++) {
                 dialogHolder.innerHTML += maskTemplate;
+                (dialogHolder.querySelector('.e-ftrchk.e-mask-ftrchk') as HTMLElement).style.width = '100%';
+                (dialogHolder.querySelector('.e-checkbox-wrapper') as HTMLElement).style.width = '100%';
                 const maskSpan: Element[] = [].slice.call(dialogHolder
                     .querySelectorAll('.e-mask:not(.e-mask-checkbox-filter-intent):not(.e-mask-checkbox-filter-span-intent)'));
                 maskSpan[0].classList.add('e-mask-checkbox-filter-intent');
@@ -3278,9 +3295,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private createEmptyMaskTable(maskElement: Element, rowCount: number): Element {
         const table: Element = this.createElement('table', { className: 'e-table e-masked-table'});
         const tbody: Element = this.createElement('tbody', { className: 'e-masked-tbody'});
-        const row: Element = this.createElement('tr', { className: 'e-masked-row e-row', attrs: {
-            style: 'height: ' + this.getRowHeight() + 'px;'
-        } });
+        const row: Element = this.createElement('tr', { className: 'e-masked-row e-row' });
+        (row as HTMLElement).style.height = `${this.getRowHeight()}px`;
         const cell: Element = this.createElement('td', { className: 'e-masked-cell e-rowcell' });
         cell.innerHTML = this.getShimmerTemplate();
         row.appendChild(cell);
@@ -3303,9 +3319,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const maskTable: Element = table.cloneNode() as Element;
         maskTable.removeAttribute('role');
         maskTable.removeAttribute('id');
-        (maskTable as HTMLElement).style.position = 'absolute';
-        (maskTable as HTMLElement).style.zIndex = '5';
-        (maskTable as HTMLElement).style.width = table.getBoundingClientRect().width + 'px';
+        updateCSSText(maskTable as HTMLElement, `position: absolute; z-index: 5; width: ${table.getBoundingClientRect().width}px;`);
         if (header && !(this.enableColumnVirtualization && axisDirection === 'X')) {
             (maskTable as HTMLElement).style.transform = 'translate(0px,'
                 + table.querySelector('thead').getBoundingClientRect().height + 'px)';
@@ -3325,7 +3339,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                             frzTd[parseInt(i.toString(), 10)].classList.add('e-freezeleftborder');
                         }
                         frzTd[parseInt(i.toString(), 10)].classList.add('e-leftfreeze');
-                        frzTd[parseInt(i.toString(), 10)].setAttribute('data-colindex', i.toString());
+                        frzTd[parseInt(i.toString(), 10)].setAttribute('aria-colindex', (i + 1).toString());
                         frzTd[parseInt(i.toString(), 10)].style.left  = ((<{ valueX?: number }>columns[parseInt(i.toString(), 10)]).valueX -
                             this.translateX) + 'px';
                     } else if ((frzTd.length - this.frozenRightCount) <= i && columns[parseInt(i.toString(), 10)]) {
@@ -3333,7 +3347,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                             frzTd[parseInt(i.toString(), 10)].classList.add('e-freezerightborder');
                         }
                         frzTd[parseInt(i.toString(), 10)].classList.add('e-rightfreeze');
-                        frzTd[parseInt(i.toString(), 10)].setAttribute('data-colindex', i.toString());
+                        frzTd[parseInt(i.toString(), 10)].setAttribute('aria-colindex', (i + 1).toString());
                         frzTd[parseInt(i.toString(), 10)].style.right  = (this.translateX +
                             (<{ valueX?: number }>columns[parseInt(i.toString(), 10)]).valueX) + 'px';
                     }
@@ -3388,12 +3402,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                         for (let i: number = 0; i < frzTd.length; i++) {
                             if (i < this.frozenLeftCount) {
                                 frzTd[parseInt(i.toString(), 10)].classList.add('e-leftfreeze');
-                                frzTd[parseInt(i.toString(), 10)].setAttribute('data-colindex', i.toString());
+                                frzTd[parseInt(i.toString(), 10)].setAttribute('aria-colindex', (i + 1).toString());
                                 frzTd[parseInt(i.toString(), 10)].style.left = (
                                     (<{ valueX?: number }>columns[parseInt(i.toString(), 10)]).valueX - this.translateX) + 'px';
                             } else if ((frzTd.length - this.frozenRightCount) <= i && columns[parseInt(i.toString(), 10)]) {
                                 frzTd[parseInt(i.toString(), 10)].classList.add('e-rightfreeze');
-                                frzTd[parseInt(i.toString(), 10)].setAttribute('data-colindex', i.toString());
+                                frzTd[parseInt(i.toString(), 10)].setAttribute('aria-colindex', (i + 1).toString());
                                 frzTd[parseInt(i.toString(), 10)].style.right = (this.translateX +
                                     (<{ valueX?: number }>columns[parseInt(i.toString(), 10)]).valueX) + 'px';
                             }
@@ -3457,7 +3471,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const maskRow: Element = row;
         maskRow.removeAttribute('role');
         maskRow.removeAttribute('aria-rowindex');
-        maskRow.removeAttribute('data-rowindex');
         maskRow.removeAttribute('data-uid');
         maskRow.classList.add('e-masked-row');
         (maskRow as HTMLElement).style.height = rowHeight + 'px';
@@ -3472,10 +3485,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             if (this.enableColumnVirtualization && maskCell.classList.contains('e-fixedfreeze')) {
                 removeClass([maskCell], ['e-fixedfreeze', 'e-freezeleftborder', 'e-freezerightborder']);
                 addClass([maskCell], ['e-unfreeze']);
-            }
-            if (!(this.enableColumnVirtualization && (maskCell.classList.contains('e-leftfreeze') ||
-                maskCell.classList.contains('e-rightfreeze')))) {
-                maskCell.removeAttribute('data-colindex');
             }
             maskCell.removeAttribute('aria-colindex');
             maskCell.removeAttribute('index');
@@ -4643,15 +4652,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 const row: Element = closest(ele, '.' + literals.row);
                 if (!isNullOrUndefined(row) && !row.classList.contains('e-addedrow')) {
                     const rowObj: Row<Column> = this.getRowObjectFromUID(row.getAttribute('data-uid'));
-                    const rowIndex: number = parseInt(row.getAttribute(literals.dataRowIndex), 10);
+                    const rowIndex: number = parseInt(row.getAttribute(literals.ariaRowIndex), 10) - 1;
                     args = { row: row, rowData: rowObj.data, rowIndex: rowIndex };
                 }
                 return args;
             }
-            const cellIndex: number = parseInt(cell.getAttribute(literals.dataColIndex), 10);
+            const cellIndex: number = parseInt(cell.getAttribute(literals.ariaColIndex), 10) - 1;
             const row: Element = closest(cell, '.' + literals.row);
             if (!isNullOrUndefined(cell) && !isNaN(cellIndex) && !isNullOrUndefined(row)) {
-                const rowIndex: number = parseInt(row.getAttribute(literals.dataRowIndex), 10);
+                const rowIndex: number = parseInt(row.getAttribute(literals.ariaRowIndex), 10) - 1;
                 const rows: Row<{}>[] = <Row<{}>[]>this.contentModule.getRows();
                 const index: number = cellIndex + this.getIndentCount();
                 const rowsObject: Object = rows.filter((r: Row<{}>) => r.uid === row.getAttribute('data-uid'));
@@ -4743,7 +4752,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             if (rows[parseInt(i.toString(), 10)].classList.contains(literals.row)
                 && (!rows[parseInt(i.toString(), 10)].classList.contains('e-hiddenrow') || includAdd)) {
                 if (this.isCollapseStateEnabled()) {
-                    dRows[parseInt(rows[parseInt(i.toString(), 10)].getAttribute('data-rowindex'), 10)] = rows[parseInt(i.toString(), 10)];
+                    dRows[parseInt(rows[parseInt(i.toString(), 10)].getAttribute('aria-rowindex'), 10) - 1] = rows[parseInt(i.toString(), 10)];
                 } else {
                     dRows.push(rows[parseInt(i.toString(), 10)] as Element);
                 }
@@ -5412,10 +5421,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * Gets a compiled detail row template.
+     * Gets a compiled dialog edit template.
      *
      * @private
-     * @returns {Function}Returns the Edit template
+     * @returns {Function} Returns the Edit template
      */
     public getEditTemplate(): Function {
         return this.editTemplateFn;
@@ -5439,6 +5448,36 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public getEditFooterTemplate(): Function {
         return this.editFooterTemplateFn;
+    }
+
+    /**
+     * Gets a compiled column chooser template.
+     *
+     * @private
+     * @returns {Function} Returns the template
+     */
+    public getColumnChooserTemplate(): Function {
+        return this.columnChooserTemplateFn;
+    }
+
+    /**
+     * Gets a compiled column chooser header template.
+     *
+     * @private
+     * @returns {Function} returns the header template
+     */
+    public getColumnChooserHeaderTemplate(): Function {
+        return this.columnChooserHeaderTemplateFn;
+    }
+
+    /**
+     * Gets a compiled column chooser footer template.
+     *
+     * @private
+     * @returns {Function} Returns the Footer template
+     */
+    public getColumnChooserFooterTemplate(): Function {
+        return this.columnChooserFooterTemplateFn;
     }
 
     /**
@@ -6601,7 +6640,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             return;
         }
         if ((!this.groupSettings.columns.length && !this.isDetail() && !this.isRowDragable()) ||
-            this.getHeaderTable().querySelector('.e-emptycell').getAttribute('indentRefreshed') ||
+            this.getHeaderTable().querySelector('.e-emptycell.e-indentRefreshed') ||
             !this.getContentTable()) {
             return;
         }
@@ -6643,7 +6682,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             applyWidth(i, indentWidth);
         }
         this.isAutoGen = false;
-        this.getHeaderTable().querySelector('.e-emptycell').setAttribute('indentRefreshed', 'true');
+        this.getHeaderTable().querySelector('.e-emptycell').classList.add('e-indentRefreshed');
     }
 
     /**
@@ -6653,7 +6692,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public resetIndentWidth(): void {
         if (this.isDestroyed) { return; }
         if (ispercentageWidth(this)) {
-            this.getHeaderTable().querySelector('.e-emptycell').removeAttribute('indentRefreshed');
+            this.getHeaderTable().querySelector('.e-emptycell').classList.remove('e-indentRefreshed');
             this.widthService.setWidthToColumns();
             this.recalcIndentWidth();
             if (this.autoFit) {
@@ -6917,7 +6956,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             headerIndentCol.forEach((element: HTMLElement) => {
                 element.style.setProperty('width', indentWidthUnitFormat);
             });
-            headerTable.querySelector('.e-emptycell').removeAttribute('indentRefreshed');
+            headerTable.querySelector('.e-emptycell').classList.remove('e-indentRefreshed');
             this.recalcIndentWidth();
         }
     }
@@ -7006,6 +7045,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.editTemplateFn = templateCompiler(this.editSettings.template as string);
         this.editHeaderTemplateFn = templateCompiler(this.editSettings.headerTemplate as string);
         this.editFooterTemplateFn = templateCompiler(this.editSettings.footerTemplate as string);
+        this.columnChooserTemplateFn = templateCompiler(this.columnChooserSettings.template as string);
+        this.columnChooserHeaderTemplateFn = templateCompiler(this.columnChooserSettings.headerTemplate as string);
+        this.columnChooserFooterTemplateFn = templateCompiler(this.columnChooserSettings.footerTemplate as string);
         if (!isNullOrUndefined(this.parentDetails)) {
             const value: string = isNullOrUndefined(this.parentDetails.parentKeyFieldValue) ? 'undefined' :
                 this.parentDetails.parentKeyFieldValue;
@@ -7039,9 +7081,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent) || Browser.isSafari()) {
             this.element.classList.add('e-mac-safari');
         }
-        if (Browser.isDevice && this.adaptiveUIMode === 'Desktop') {
+        if (Browser.isDevice) {
             this.element.classList.add('e-device');
-            this.enableAdaptiveUI = false;
+            if (this.adaptiveUIMode === 'Desktop') {
+                this.enableAdaptiveUI = false;
+            }
         }
         if (this.adaptiveUIMode === 'Mobile' && !(Browser.isDevice || this.rowRenderingMode === 'Vertical')) {
             this.enableAdaptiveUI = false;
@@ -7096,7 +7140,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     private createGridPopUpElement(): void {
-        const popup: Element = this.createElement('div', { className: 'e-gridpopup', styles: 'display:none;' });
+        const popup: HTMLElement = this.createElement('div', { className: 'e-gridpopup' });
+        popup.style.display = 'none';
         const content: Element = this.createElement('div', { className: literals.content, attrs: { tabIndex: '-1' } });
         append([content, this.createElement('div', { className: 'e-uptail e-tail' })], popup);
         content.appendChild(this.createElement('span'));
@@ -7211,7 +7256,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const table: HTMLDivElement = element.classList.contains('e-headercell') ? htable : ctable;
         const ele: string = element.classList.contains('e-headercell') ? 'th' : 'tr';
         table.querySelector(ele).className = element.className;
-        table.querySelector(ele).innerHTML = element.innerHTML;
+        const targetElement: HTMLElement = table.querySelector(ele);
+        targetElement.innerHTML = '';
+        Array.from(element.childNodes).forEach((child: ChildNode) => {
+            targetElement.appendChild(child.cloneNode(true));
+        });
         const width: number = table.querySelector(ele).getBoundingClientRect().width;
         document.body.removeChild(htable);
         document.body.removeChild(ctable);
@@ -7235,7 +7284,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             const elemNames: string[] = ['A', 'BUTTON', 'INPUT'];
             if (element && e.type !== 'mouseout' && !(Browser.isDevice && elemNames.indexOf(tagName) !== -1)) {
                 if (this.getTooltipStatus(element)) {
-                    const col: Column = this.getColumns()[parseInt(element.getAttribute(literals.dataColIndex), 10)] as Column;
+                    const col: Column = this.getColumns()[parseInt(element.getAttribute(literals.ariaColIndex), 10) - 1] as Column;
                     const domSetter: string = col && col.disableHtmlEncode ? 'innerText' : 'innerHTML';
                     const contentDiv: HTMLDivElement = this.createElement('div');
                     if (element.getElementsByClassName('e-headertext').length) {
@@ -8387,7 +8436,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         gridModel.searchSettings.fields = queries.search && queries.search[0]['fields'] || [];
         gridModel.sortSettings.columns = queries.sorted;
         gridModel.columns = this.setHeaderText(gridModel.columns as Column[], include);
-        const form: HTMLFormElement = this.createElement('form', { id: 'ExportForm', styles: 'display:none;' });
+        const form: HTMLFormElement = this.createElement('form', { id: 'ExportForm' });
+        form.style.display = 'none';
         const gridInput: HTMLInputElement = this.createElement('input', { id: 'gridInput', attrs: { name: 'gridModel' } });
         gridInput.value = JSON.stringify(gridModel);
         form.method = 'POST';

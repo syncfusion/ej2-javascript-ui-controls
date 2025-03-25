@@ -3,7 +3,7 @@
  */
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Gantt, Edit, Toolbar, Selection, Filter, ZoomTimelineSettings, CriticalPath } from '../../src/index';
-import { projectData1, projectData, projectNewData1 } from '../base/data-source.spec';
+import { projectData1, projectData, projectNewData1, MT887301, hierarchyData, SelfRefData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, getKeyUpObj } from '../base/gantt-util.spec';
 import { getValue } from '@syncfusion/ej2-base';
 describe('Gantt toolbar support', () => {
@@ -1919,5 +1919,214 @@ describe('Gantt with set toolbar visible false ', () => {
     it('check  toolbar set visible false  ', () => {
         const elementVisible : boolean = ganttObj.toolbarModule.toolbar['tbarEle'][2].classList.contains("e-hidden");
         expect(elementVisible).toBe(true);
+    });
+});
+describe('MT:887301-Issue in Multi taskbar in project view samples', () => {
+    Gantt.Inject(Edit, Toolbar, Selection, Filter);
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: MT887301,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency:'Predecessor',
+                    child: 'subtasks'
+                },
+                enableMultiTaskbar: true,
+                allowTaskbarOverlap: false,
+                showOverAllocation: true,
+                editSettings: {
+                    allowAdding:true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                'PrevTimeSpan', 'NextTimeSpan','ZoomIn', 'ZoomOut', 'ZoomToFit'],
+                allowSelection: true,
+                gridLines: "Both",
+                highlightWeekends: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: 'Progress'
+                },
+                height: '550px',
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Checking rangerContainer line while perform toolbar CollapseAll in multitaskbar mode', () => {
+        let collapseallToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_collapseall') as HTMLElement;
+        triggerMouseEvent(collapseallToolbar, 'click');
+        let rangeContainer: any = ganttObj.element.querySelectorAll('.e-rangecontainer')[0].childNodes[0].childNodes;
+        if (rangeContainer) {
+            expect(rangeContainer.length).toBe(2);
+            expect(rangeContainer[0].classList.contains('e-leftarc')).toBe(true);
+            expect(rangeContainer[1].classList.contains('e-rightarc')).toBe(true);
+        }
+    });
+});
+describe('MT:887301-Issue in Multi taskbar in project view sample-hierarchy data', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt ({
+            dataSource: hierarchyData,
+            allowReordering: true,
+            allowTaskbarOverlap: false,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency:'Predecessor',
+                child: 'subtasks'
+            },
+            enableMultiTaskbar: true,
+            showOverAllocation: true,
+            editSettings: {
+                allowAdding:true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+            'PrevTimeSpan', 'NextTimeSpan','ZoomIn', 'ZoomOut', 'ZoomToFit'],
+            allowSelection: true,
+            gridLines: "Both",
+            highlightWeekends: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            labelSettings: {
+                leftLabel: 'TaskName',
+                taskLabel: 'Progress'
+            },
+            height: '550px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('03/25/2019'),
+            projectEndDate: new Date('05/30/2019')
+        }, done);
+    });
+    it('Checking rangerContainer height with Hierarchy collapseAll action', () => {
+        let collapseallToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_collapseall') as HTMLElement;
+        triggerMouseEvent(collapseallToolbar, 'click');
+        const rangeContainer: any = ganttObj.element.querySelectorAll('.e-rangecontainer')[0].childNodes[0].childNodes;
+        if (rangeContainer) {
+            expect(rangeContainer[0].style.height).toBe('59px');
+            expect(rangeContainer[1].style.height).toBe('59px');
+        }
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('MT:887301-Issue in Multi taskbar in project view samples- Self reference data', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt ({
+            dataSource: SelfRefData,
+            allowTaskbarOverlap: false,
+            highlightWeekends: true,
+            allowSelection: true,
+            treeColumnIndex: 1,
+            enableMultiTaskbar: true,
+            showOverAllocation: true,
+            taskFields: {
+                id: 'taskID',
+                name: 'taskName',
+                startDate: 'startDate',
+                endDate: 'endDate',
+                duration: 'duration',
+                progress: 'progress',
+                dependency: 'predecessor',
+                parentID: 'parentID'
+            },
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            columns: [
+                { field: 'taskID', width: 60 },
+                { field: 'taskName', width: 250 },
+                { field: 'startDate' },
+                { field: 'endDate' },
+                { field: 'duration' },
+                { field: 'predecessor' },
+                { field: 'progress' },
+            ],
+            sortSettings: {
+                columns: [{ field: 'taskID', direction: 'Ascending' }, 
+                { field: 'taskName', direction: 'Ascending' }]
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
+            'PrevTimeSpan', 'NextTimeSpan','ExcelExport', 'CsvExport', 'PdfExport',],
+            gridLines: "Both",
+            timelineSettings: {
+                showTooltip: true,
+                topTier: {
+                    unit: 'Week',
+                    format: 'dd/MM/yyyy'
+                },
+                bottomTier: {
+                    unit: 'Day',
+                    count: 1
+                }
+            },
+            taskbarHeight: 20,
+            rowHeight: 40,
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('01/28/2019'),
+            projectEndDate: new Date('03/10/2019')
+        }, done);
+    });
+    it('Checking rangerContainer height with Self-reference collapseAll action', () => {
+        let collapseallToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_collapseall') as HTMLElement;
+        triggerMouseEvent(collapseallToolbar, 'click');
+        const rangeContainer: any = ganttObj.element.querySelectorAll('.e-rangecontainer')[0].childNodes[0].childNodes;
+        if (rangeContainer) {
+            expect(rangeContainer[0].style.height).toBe('21px');
+            expect(rangeContainer[1].style.height).toBe('21px');
+        }
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
     });
 });

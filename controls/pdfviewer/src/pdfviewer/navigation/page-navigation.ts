@@ -54,7 +54,7 @@ export class Navigation {
     public goToPage(pageNumber: number): void {
         if (pageNumber > 0 && pageNumber <= this.pdfViewerBase.pageCount && this.pdfViewerBase.currentPageNumber !== pageNumber) {
             this.pdfViewerBase.updateScrollTop(pageNumber - 1);
-            if (this.pdfViewer.enableThumbnail) {
+            if (this.pdfViewer.enableThumbnail && this.pdfViewer.thumbnailViewModule) {
                 this.pdfViewer.thumbnailViewModule.updateScrollTopForThumbnail(pageNumber - 1);
             }
         }

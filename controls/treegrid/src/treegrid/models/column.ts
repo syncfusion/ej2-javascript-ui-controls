@@ -5,382 +5,342 @@ import { SortComparer} from '@syncfusion/ej2-grids';
 import { TreeGrid } from '..';
 
 /**
- * Represents TreeGrid `Column` model class.
+ * Represents the "Column" model class for TreeGrid, defining essential properties and functionalities of a column.
  */
 export class Column {
+
     /**
-     * Defines the field name of column which is mapped with mapping name of DataSource.
-     * The bounded columns can be sort, filter etc.,
-     * The `field` name must be a valid JavaScript identifier,
-     * the first character must be an alphabet and should not contain spaces and special characters.
+     * Maps the column to a specific field name in the data source.
+     * Columns with a defined `field` can be used for sorting, filtering, etc.
+     * The `field` name should conform to valid JavaScript identifiers - starting with an alphabet, avoiding spaces and special characters.
      *
      * @default 'undefined'
      */
-
     public field: string;
+
     /**
-     * Defines the header text of column which is used to display in column header.
-     * If `headerText` is not defined, then field name value will be assigned to header text.
+     * Specifies the text displayed in the column header. If not provided, the `field` value will be used.
      *
      * @default 'undefined'
      */
-
     public headerText: string;
 
     /**
-     * Gets the unique identifier value of the column. It is used to get the column object.
+     * Unique identifier for the column, used to reference the column object.
      *
      * @default 'undefined'
      */
-
     public uid: string;
 
-
     /**
-     * If `allowEditing` set to false, then it disables editing of a particular column.
-     * By default all columns are editable.
+     * Allows or disallows editing of the column. Set to `false` to make a column non-editable.
+     * By default, all columns are editable.
      *
      * @default true
      */
-
     public allowEditing: boolean = true;
 
     /**
-     * If `showCheckbox` set to true, then the checkboxes will be displayed in particular column.
+     * When set to `true`, checkboxes are displayed within the column.
      *
      * @default false
      */
-
     public showCheckbox: boolean;
 
     /**
-     * Defines the custom sort comparer function.
-     * The sort comparer function has the same functionality like
-     * [`Array.sort`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort) sort comparer.
-     * {% codeBlock src="grid/sort-comparer-api/index.ts" %}{% endcodeBlock %}
+     * Custom sort comparer function for the column. Similar to the `Array.sort` comparer function.
      */
-
     public sortComparer: SortComparer | string;
 
     /**
-     * If `isPrimaryKey` is set to true, considers this column as the primary key constraint.
+     * Designates this column as a primary key if set to `true`.
      *
      * @default false
      */
     public isPrimaryKey: boolean;
+
     /**
      * @hidden
-     * Defines the commands column template as string or HTML element ID which is used to add
-     * customized command buttons in each cells of the column.
+     * Specifies a template for command buttons in column cells, either as an HTML element ID or a string.
      *
      * @aspType string
      */
     public commandsTemplate: string | Function;
 
     /**
-     * `commands` provides an option to display command buttons in every cell.
-     * The available built-in command buttons are
-     * * Edit - Edit the record.
-     * * Delete - Delete the record.
-     * * Save - Save the record.
-     * * Cancel - Cancel the edit state.
+     * Options for displaying command buttons in each column cell.
+     * Built-in options include:
+     * * Edit - Modify the record.
+     * * Delete - Remove the record.
+     * * Save - Preserve changes to the record.
+     * * Cancel - Undo changes.
      *
      * @default null
      */
     public commands: CommandModel[];
+
     /**
-     * Defines the width of the column in pixels or percentage.
+     * Specifies the column width in pixels or percentage.
      *
      * @default 'undefined'
      */
     public width: string | number;
+
     /**
-     * Defines the type of component for editable.
+     * Defines the editor type for the column.
      *
      * @default 'stringedit'
      */
     public editType: string;
 
     /**
-     * Defines rules to validate data before creating and updating.
+     * Rules for validating data during creation and updation.
      *
      * @default null
      */
     public validationRules: Object;
 
     /**
-     * Defines default values for the component when adding a new record to the TreeGrid.
+     * Default value to use when adding a new record to the TreeGrid.
      *
      * @default null
      */
     public defaultValue: string;
 
     /**
-     * Defines the `IEditCell` object to customize default edit cell.
+     * Customization options for the edit cell.
      *
      * @default {}
      */
     public edit: IEditCell = {};
+
     /**
-     * Defines the cell edit template that used as editor for a particular column.
-     * It accepts either template string or HTML element ID.
+     * Template for the cell editor of this column, either as a string or an HTML element ID.
      *
      * @default null
      * @aspIgnore
      */
     public editTemplate: string | Function;
+
     /**
-     * Defines the filter template/UI that used as filter for a particular column.
-     * It accepts either template string or HTML element ID.
+     * Filter template/UI for the column, either as a string or an HTML element ID.
      *
      * @default null
      * @aspIgnore
      */
     public filterTemplate: string | Function;
+
     /**
-     * If `isIdentity` is set to true, then this column is considered as identity column.
+     * Marks the column as an identity column if set to `true`.
      *
      * @default false
      */
     public isIdentity: boolean;
 
     /**
-     * Defines the minimum Width of the column in pixels or percentage.
+     * Minimum width of the column in pixels or percentage.
      *
      * @default 'undefined'
      */
     public minWidth: string | number;
 
     /**
-     * Defines the maximum width of the column in pixel or percentage, which will restrict resizing beyond this pixel or percentage.
+     * Maximum width of the column in pixels or percentage, preventing resizing beyond this value.
      *
      * @default 'undefined'
      */
     public maxWidth: string | number;
 
     /**
-     * Defines the alignment of the column in both header and content cells.
+     * Alignment for the text in both header and content cells.
      *
      * @default Left
      */
-
     public textAlign: TextAlign;
 
     /**
-     * Defines the cell content's overflow mode. The available modes are
-     * * `Clip` -  Truncates the cell content when it overflows its area.
-     * * `Ellipsis` -  Displays ellipsis when the cell content overflows its area.
-     * * `EllipsisWithTooltip` - Displays ellipsis when the cell content overflows its area
-     * also it will display tooltip while hover on ellipsis applied cell.
+     * Sets how cell content should overflow:
+     * * `Clip` - Truncates overflow content.
+     * * `Ellipsis` - Shows ellipsis for overflow content.
+     * * `EllipsisWithTooltip` - Shows ellipsis with a tooltip on hover when content overflows.
      *
      * @default Ellipsis
      */
     public clipMode: ClipMode;
 
     /**
-     * Define the alignment of column header which is used to align the text of column header.
+     * Text alignment specifically for the column header.
      *
      * @default null
      */
     public headerTextAlign: TextAlign;
 
     /**
-     * If `disableHtmlEncode` is set to true, it encodes the HTML of the header and content cells.
+     * When set to `true`, encodes HTML content in headers and cells to prevent HTML injection.
      *
      * @default true
      */
-
     public disableHtmlEncode: boolean = true;
 
     /**
-     * Defines the data type of the column.
+     * Specifies the data type of the column.
      *
      * @default null
      */
-
     public type: string;
 
     /**
-     * It is used to change display value with the given format and does not affect the original data.
-     * Gets the format from the user which can be standard or custom
-     * [`number`](https://ej2.syncfusion.com/documentation/common/internationalization/#supported-format-string)
-     * and [`date`](https://ej2.syncfusion.com/documentation/common/internationalization/#supported-format-string-1) formats.
+     * Allows display format customization, affecting only the display, not the actual data.
+     * Supported format options for numbers and dates can be provided.
+     *
+     * References for [number](https://ej2.syncfusion.com/documentation/common/internationalization/#supported-format-string)
+     * and [date](https://ej2.syncfusion.com/documentation/common/internationalization#date-formatting) formats.
      *
      * @default null
      * @aspType string
      */
-
     public format: string | NumberFormatOptions | DateFormatOptions;
 
     /**
-     * If `visible` is set to false, hides the particular column. By default, columns are displayed.
+     * Determines column visibility. When set to `false`, the column is hidden. By default, columns are visible.
      *
      * @default true
      */
     public visible: boolean;
 
     /**
-     * Defines the column template that renders customized element in each cell of the column.
-     * It accepts either [template string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals)
-     * or HTML element ID.
+     * Custom element rendering in each column cell. Accepts template strings or HTML element IDs.
      *
      * @default null
      * @aspType string
      */
-
     public template: string | Function;
 
     /**
-     * Defines the header template as string or HTML element ID which is used to add customized element in the column header.
+     * Template for a customized header element, either as a string or an HTML element ID.
      *
      * @default null
      * @aspType string
      */
-
     public headerTemplate: string | Function;
 
     /**
-     * You can use this property to freeze selected columns in treegrid
+     * Freezes the column if set to `true`.
      *
      * @default false
      */
-
     public isFrozen: boolean;
 
     /**
-     * The CSS styles and attributes of the content cells of a particular column can be customized.
+     * Custom styles and attributes for the content cells of the column.
      *
      * @default null
      */
-
     public customAttributes: { [x: string]: Object };
 
     /**
-     * If `displayAsCheckBox` is set to true, it displays the column value as a check box instead of Boolean value.
+     * Displays column values as checkboxes if set to `true`, instead of Boolean values.
      *
      * @default false
      */
-
     public displayAsCheckBox: boolean;
 
     /**
-     * If `allowReordering` set to false, then it disables reorder of a particular column.
-     * By default all columns can be reorder.
+     * Disables column reordering if set to `false`. By default, columns can be reordered.
      *
      * @default true
      */
     public allowReordering: boolean = true;
+
     /**
-     * If `showColumnMenu` set to false, then it disable the column menu of a particular column.
-     * By default column menu will show for all columns
+     * Disables column menu for the column if set to `false`. By default, column menus are enabled for all columns.
      *
      * @default true
      */
-
     public showColumnMenu: boolean = true;
 
     /**
-     * If `allowFiltering` set to false, then it disables filtering option and filter bar element of a particular column.
-     * By default all columns are filterable.
+     * Disables filtering for the column if set to `false`. By default, columns are filterable.
      *
      * @default true
      */
-
     public allowFiltering: boolean = true;
+
     /**
-     * If `allowSorting` set to false, then it disables sorting option of a particular column.
-     * By default all columns are sortable.
+     * Disables sorting for the column if set to `false`. By default, columns are sortable.
      *
      * @default true
      */
     public allowSorting: boolean = true;
 
     /**
-     * If `allowResizing` is set to false, it disables resize option of a particular column.
-     * By default all the columns can be resized.
+     * Disables resizing for the column if set to `false`. By default, columns can be resized.
      *
      * @default true
      */
-
     public allowResizing: boolean = true;
 
     /**
-     * Defines the method which is used to achieve custom formatting from an external function.
-     * This function triggers before rendering of each cell.
+     * Method for applying custom formatting to cell content prior to rendering.
      *
      * @default null
      */
     public formatter: { new(): ITreeGridCellFormatter } | ITreeGridCellFormatter | Function;
 
     /**
-     * Defines the method used to apply custom cell values from external function and display this on each cell rendered.
+     * Method for customizing cell values using an external function, applied during cell rendering.
      *
      * @default null
      */
-
     public valueAccessor: ValueAccessor | string;
 
     /**
-     * Used to render multiple header rows(stacked headers) on the TreeGrid header.
+     * Facilitates multiple header rows (stacked headers) in the TreeGrid header.
      *
      * @default null
      */
-
     public columns: Column[] | string[] | ColumnModel[];
 
     /**
-     * Column visibility can change based on [`Media Queries`](http://cssmediaqueries.com/what-are-css-media-queries.html).
-     * `hideAtMedia` accepts only valid Media Queries.
+     * Adjusts column visibility based on [Media Queries](http://cssmediaqueries.com/what-are-css-media-queries.html). Accepts valid media query strings.
      *
      * @default 'undefined'
      */
     public hideAtMedia: string;
 
     /**
-     * If `showInColumnChooser` set to false, then hide the particular column in column chooser.
-     *  By default all columns are displayed in column Chooser.
+     * Excludes the column from the column chooser if set to `false`. By default, columns are included.
      *
      * @default true
      */
     public showInColumnChooser?: boolean;
 
     /**
-     * The `filterBarTemplate` is used to add a custom component instead of default input component for filter bar.
-     * It have create and read functions.
-     * * create: It is used for creating custom components.
-     * * read: It is used to perform custom filter action.
-     *
+     * Replaces the default input component for the filter bar with a custom component. Contains `create` and `read` functions for component management.
      *
      * @default null
      */
-
     public filterBarTemplate: IFilterUI;
-    /**
-     *  It is used to customize the default filter options for a specific columns.
-     * * type -  Specifies the filter type as menu.
-     * * ui - to render custom component for specific column it has following functions.
-     * * ui.create – It is used for creating custom components.
-     * * ui.read -  It is used for read the value from the component.
-     * * ui.write - It is used to apply component model as dynamically.
-     *
-     *  @default null
-     */
 
-    public filter: IFilter = {};
     /**
-     * If `lockColumn` set to true, then it disables Reordering of a particular column.
-     * The locked column will be moved to first position.
+     * Customize default filter options for a specific column, providing types and UI definitions for custom components.
+     *
+     * @default null
+     */
+    public filter: IFilter = {};
+
+    /**
+     * Locks the column to its position, preventing reordering, if set to `true`. Locked columns appear first.
      *
      * @default false
      */
     public lockColumn: boolean;
 
     /**
-     * defines which side the column need to freeze
-     * The available built-in freeze directions are
-     * * Left - Freeze the column at left side.
-     * * Right - Freeze the column at right side.
-     * * Fixed - Freeze the column at Center.
+     * Dictates the column freeze position. Options include:
+     * * `Left` - Freeze the column on the left.
+     * * `Right` - Freeze the column on the right.
+     * * `Fixed` - Freeze the column in the center.
      *
      * @default null
      */
@@ -393,18 +353,16 @@ export class Column {
     }
 
     /**
-     * Update the State changes reflected for TreeGrid columndirective in react platform.
+     * Reflects state changes for TreeGrid column directives, particularly in React.
      *
-     * @param {Column} column - specifies the column
+     * @param {Column} column - The column to update.
      * @returns {void}
      * @hidden
      */
     private setProperties(column: Column): void {
-        //Angular two way binding
         const keys: string[] = Object.keys(column);
         for (let i: number = 0; i < keys.length; i++) {
             this[keys[parseInt(i.toString(), 10)]] = column[keys[parseInt(i.toString(), 10)]];
-            //Refresh the react columnTemplates on state change
             if (this.parent && this.parent['isReact'] && keys[parseInt(i.toString(), 10)] === 'template') {
                 const refreshReactColumnTemplateByUid: string = 'refreshReactColumnTemplateByUid';
                 this.parent.clipboardModule['treeGridParent'].renderModule[`${refreshReactColumnTemplateByUid}`](this.uid);
@@ -417,86 +375,78 @@ export class Column {
  * Interface for a TreeGrid class Column
  */
 export interface ColumnModel {
+
     /**
-     * Defines the field name of column which is mapped with mapping name of DataSource.
-     * The bounded columns can be sort, filter etc.,
-     * The `field` name must be a valid JavaScript identifier,
-     * the first character must be an alphabet and should not contain spaces and special characters.
+     * Specifies the field name in the data source to which the column is bound. This field is used for operations like sorting and filtering.
+     * The field name must be a valid JavaScript identifier, beginning with a letter and avoiding spaces and special characters.
      *
      * @default 'undefined'
      */
-
     field?: string;
+
     /**
-     * Gets the unique identifier value of the column. It is used to get the object.
+     * Retrieves the unique identifier for the column. This UID is used internally to reference and manipulate the column.
      *
      * @default 'undefined'
      */
     uid?: string;
+
     /**
-     * Defines the header text of column which is used to display in column header.
-     * If `headerText` is not defined, then field name value will be assigned to header text.
+     * Specifies the text displayed in the column header. If omitted, the `field` value is used as the header text.
      *
      * @default 'undefined'
      */
-
     headerText?: string;
 
     /**
-     * Defines the width of the column in pixels or percentage.
+     * Sets the column's width in pixels or as a percentage. This defines how the column will occupy space in the grid.
      *
      * @default 'undefined'
      */
-
     width?: string | number;
 
     /**
-     * Defines the minimum width of the column in pixels or percentage.
+     * Determines the minimum width of the column in pixels or percentage. This ensures the column does not shrink below this size.
      *
      * @default 'undefined'
      */
     minWidth?: string | number;
 
     /**
-     * Defines the sort comparer property.
+     * Provides a custom sort comparer property to control how sorting is handled for this column's data.
      *
      * @default 'undefined'
      */
-
     sortComparer?: SortComparer | string;
 
     /**
-     * Defines the maximum width of the column in pixels or percentage, which will restrict resizing beyond this pixels or percentage.
+     * Defines the maximum allowable width of the column in pixels or as a percentage, preventing resizing beyond this limit.
      *
      * @default 'undefined'
      */
     maxWidth?: string | number;
 
     /**
-     * Defines the alignment of the column in both header and content cells.
+     * Specifies the horizontal alignment for the column content and header. Options include alignment to the left, center, or right.
      *
      * @default Syncfusion.EJ2.Grids.TextAlign.Left
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.TextAlign
      */
-
     textAlign?: TextAlign;
 
     /**
-     * Used to render multiple header rows(stacked headers) on TreeGrid header.
+     * Allows for the creation of stacked headers by using multiple rows in the grid's header.
      *
      * @default null
      */
     columns?: Column[] | string[] | ColumnModel[];
 
     /**
-     * Defines the cell content's overflow mode. The available modes are
-     * ```props
-     * * Clip :- Truncates the cell content when it overflows its area.
-     * * Ellipsis :- Displays ellipsis when the cell content overflows its area.
-     * * EllipsisWithTooltip :- Displays ellipsis when the cell content overflows its area also it will display tooltip while hover on ellipsis applied cell.
-     * ```
-     * also it will display tooltip while hover on ellipsis applied cell.
+     * Determines how overflow content is handled within a cell. Options include:
+     * * `Clip`: Truncates the content.
+     * * `Ellipsis`: Shows ellipsis for overflow.
+     * * `EllipsisWithTooltip`: Shows ellipsis and tooltip on hover.
      *
      * @default Syncfusion.EJ2.Grids.ClipMode.Ellipsis
      * @isEnumeration true
@@ -505,7 +455,7 @@ export interface ColumnModel {
     clipMode?: ClipMode;
 
     /**
-     * Define the alignment of column header which is used to align the text of column header.
+     * Aligns the text in the column header. By default, the alignment corresponds to other content alignments.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -515,91 +465,82 @@ export interface ColumnModel {
     headerTextAlign?: TextAlign;
 
     /**
-     * If `disableHtmlEncode` is set to true, it encodes the HTML of the header and content cells.
+     * If set to `true`, the HTML content within header and content cells is encoded to prevent injection attacks.
      *
      * @default true
      */
-
     disableHtmlEncode?: boolean;
 
     /**
-     * Defines the data type of the column.
+     * Defines the type of data stored in the column, which may be string, number, date, or other types.
      *
      * @default null
      */
-
     type?: string;
 
     /**
-     * If `allowReordering` set to false, then it disables reorder of a particular column.
-     * By default all columns can be reorder.
+     * Enables or disables the reordering of this column via drag-and-drop. Allows for dynamic column adjustments.
      *
      * @default true
      */
     allowReordering?: boolean;
+
     /**
-     * If `allowFiltering` set to false, then it disables filtering option and filter bar element of a particular column.
-     * By default all columns are filterable.
+     * Controls whether the column supports filtering. If set to false, users cannot filter data by this column.
      *
      * @default true
      */
     allowFiltering?: boolean;
+
     /**
-     * If `allowSorting` set to false, then it disables sorting option of a particular column.
-     * By default all columns are sortable.
+     * Specifies whether sorting is enabled for this column. Set to false to prevent sort actions.
      *
      * @default true
      */
     allowSorting?: boolean;
+
     /**
-     * If `showColumnMenu` set to false, then it disable the column menu of a particular column.
-     * By default column menu will show for all columns
+     * Decides if the column menu should be available, providing options for column customization.
      *
      * @default true
      */
     showColumnMenu?: boolean;
 
     /**
-     * If `allowResizing` set to false, it disables resize option of a particular column.
+     * Determines if this column can be resized. If false, the column size is fixed.
      *
      * @default true
      */
     allowResizing?: boolean;
 
     /**
-     * It is used to change display value with the given format and does not affect the original data.
-     * Gets the format from the user which can be standard or custom
-     * [`number`](https://ej2.syncfusion.com/documentation/common/internationalization/#supported-format-string)
-     * and [`date`](https://ej2.syncfusion.com/documentation/common/internationalization/#supported-format-string-1) formats.
+     * Formats the displayed value of the column without affecting the underlying data. Supports standard and custom formats for numbers and dates.
      *
+     * References for [number](https://ej2.syncfusion.com/documentation/common/internationalization/#supported-format-string)
+     * and [date](https://ej2.syncfusion.com/documentation/common/internationalization#date-formatting) formats.
      * @default null
      * @aspType string
      */
-
     format?: string | NumberFormatOptions | DateFormatOptions;
 
     /**
-     * If `visible` is set to false, hides the particular column. By default, columns are displayed.
+     * Toggles the visibility of the column. Set to false to hide the column from view. Columns are visible by default.
      *
      * @default true
      */
     visible?: boolean;
+
     /**
      * @hidden
-     * Defines the commands column template as string or HTML element ID which is used to add
-     * customized command buttons in each cells of the column.
+     * Specifies a string or HTML element ID for templates to add custom command buttons within cells.
      *
      * @aspType string
      */
     commandsTemplate?: string | Function;
 
     /**
-     * `commands` provides an option to display command buttons in every cell.
-     * The available built-in command buttons are
-     * * Edit - Edit the record.
-     * * Delete - Delete the record.
-     * * Save - Save the record.
-     * * Cancel - Cancel the edit state.
+     * Provides built-in command button options for cells. Options include Edit, Delete, Save, and Cancel.
+     * Custom command button implementations are possible.
      *
      * The following code example implements the custom command column.
      * ```html
@@ -625,85 +566,75 @@ export interface ColumnModel {
      * @default null
      */
     commands?: CommandModel[];
+
     /**
-     * Defines the column template that renders customized element in each cell of the column.
-     * It accepts either [template string](https://ej2.syncfusion.com/documentation/common/template-engine/) or HTML element ID.
+     * Customizes the rendering of cell content using either a template string or HTML element ID.
      *
      * @default null
      * @aspType string
      */
-
     template?: string | Function;
 
     /**
-     * Defines the header template as string or HTML element ID which is used to add customized element in the column header.
+     * Customizes the header content with a template, defined as a string or an HTML element ID.
      *
      * @default null
      * @aspType string
      */
-
     headerTemplate?: string | Function;
 
     /**
-     * You can use this property to freeze selected columns in grid.
+     * Allows the column to be frozen, keeping it stationary while scrolling horizontally through the grid.
      *
      * @default false
      */
-
     isFrozen?: boolean;
 
     /**
-     * The CSS styles and attributes of the content cells of a particular column can be customized.
+     * Enables the addition of CSS styles and attributes for the content cells in a particular column.
      *
      * @default null
      */
-
     customAttributes?: { [x: string]: Object };
 
     /**
-     * If `displayAsCheckBox` is set to true, it displays the column value as a check box instead of Boolean value.
+     * Displays the column value as a checkbox instead of a Boolean value when set to `true`.
      *
      * @default false
      */
-
     displayAsCheckBox?: boolean;
 
     /**
-     * Defines the method which is used to achieve custom formatting from an external function.
-     * This function triggers before rendering of each cell.
+     * Allows for custom cell content formatting using an external method, executed prior to rendering.
      *
      * @default null
      */
     formatter?: { new(): ITreeGridCellFormatter } | ITreeGridCellFormatter | Function;
 
     /**
-     * If `showInColumnChooser` set to false, then hide the particular column in column chooser.
-     *  By default all columns are displayed in column Chooser.
+     * Determines whether the column should appear in the Column Chooser. Set to false to exclude it.
      *
      * @default true
      */
     showInColumnChooser?: boolean;
 
     /**
-     * Defines the method used to apply custom cell values from external function and display this on each cell rendered.
+     * Applies custom cell values using an external function, allowing for dynamic display adjustments.
      *
      * @default null
      */
-
     valueAccessor?: ValueAccessor | string;
 
     /**
-     * Column visibility can change based on [`Media Queries`](http://cssmediaqueries.com/what-are-css-media-queries.html).
-     * `hideAtMedia` accepts only valid Media Queries.
+     * Adjusts column visibility based on [Media Queries](http://cssmediaqueries.com/what-are-css-media-queries.html). Accepts valid CSS media query strings for responsive adjustments.
      *
      * @default 'undefined'
      */
     hideAtMedia?: string;
+
     /**
-     * The `filterBarTemplate` is used to add a custom component instead of default input component for filter bar.
-     * It have create and read functions.
-     * * create: It is used for creating custom components.
-     * * read: It is used to perform custom filter action.
+     * Allows for a custom component within the filter bar, facilitating advanced filter interfaces.
+     * Includes create and read functions for custom component management.
      *
      * ```html
      * <div id="TreeGrid"></div>
@@ -728,7 +659,7 @@ export interface ColumnModel {
      *             gridObj.filterByColumn(args.element.id, 'equal', args.element.value);
      *        }
      *     }
-     *  }],
+     * }],
      *   allowFiltering: true
      * });
      * gridObj.appendTo('#TreeGrid');
@@ -737,89 +668,93 @@ export interface ColumnModel {
      * @default null
      */
     filterBarTemplate?: IFilterUI;
+
     /**
-     *  Defines the filter options to customize filtering for the particular column.
+     * Customizes filter options for the column, enabling specialized filtering functionality.
      *
-     *  @default null
+     * @default null
      */
     filter?: IFilter;
+
     /**
-     * If `isPrimaryKey` is set to true, considers this column as the primary key constraint.
+     * Identifies the column as a primary key if set to `true`, enforcing uniqueness.
      *
      * @default false
      */
     isPrimaryKey?: boolean;
+
     /**
-     * If `showCheckbox` set to true, then the checkboxes will be displayed in particular column.
+     * Displays checkboxes in the column when enabled, allowing for selections and certain operations.
      *
      * @default false
      */
     showCheckbox?: boolean;
+
     /**
-     * Defines the type of component for editing.
+     * Specifies the component type used for editing cells within this column.
      *
      * @default 'stringedit'
      */
     editType?: string;
+
     /**
-     * Defines default values for the component when adding a new record to the TreeGrid.
+     * Sets default values when new records are added to the TreeGrid involving this column.
      *
      * @default null
      */
     defaultValue?: string;
 
     /**
-     * Defines the `IEditCell` object to customize default edit cell.
+     * Allows customizing the default edit cell through the `IEditCell` object for more control over editing.
      *
      * @default {}
      */
     edit?: IEditCell;
+
     /**
-     * Defines the cell edit template that used as editor for a particular column.
-     * It accepts either template string or HTML element ID.
+     * Provides a template for editing cells in this column, supporting either a template string or an HTML element ID.
      *
      * @aspIgnore
      */
     editTemplate?: string | Function;
 
     /**
-     * Defines the filter template/UI that is used as filter for a particular column.
-     * It accepts either template string or HTML element ID.
+     * Specifies a custom template or UI for filtering within this column, utilizing either string templates or HTML element IDs.
      *
      * @aspIgnore
      */
     filterTemplate?: string | Function;
 
     /**
-     * If `isIdentity` is set to true, then this column is considered as identity column.
+     * Identifies the column as an identity column in database terms, if set to `true`.
      *
      * @default false
      */
     isIdentity?: boolean;
 
     /**
-     * Defines rules to validate data before creating and updating.
+     * Establishes validation rules to ensure data integrity during creation and updates.
      *
      * @default null
      */
     validationRules?: Object;
+
     /**
-     * If `allowEditing` set to false, then it disables editing of a particular column.
-     * By default all columns are editable.
+     * Controls whether editing is permitted for the column. By default, all columns are editable.
      *
      * @default true
      */
     allowEditing?: boolean;
+
     /**
-     * If `lockColumn` set to true, then it disables Reordering of a particular column.
-     * The locked column will be moved to first position.
+     * Prevents column reordering when set to true, locking the column into a set position.
      *
      * @default false
      */
     lockColumn?: boolean;
 
     /**
-     * Defines which side the column need to freeze
+     * Determines which side (left, right, or center) the column should be frozen on.
      *
      * @default Syncfusion.EJ2.Grids.FreezeDirection.None
      * @isEnumeration true

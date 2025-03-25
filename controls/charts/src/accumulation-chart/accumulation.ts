@@ -5,7 +5,7 @@ import { Property, Component, Complex, Collection, NotifyPropertyChanges, INotif
 import { ModuleDeclaration, Internationalization, Event, EmitType, Browser, EventHandler, Touch } from '@syncfusion/ej2-base';
 import { remove, extend, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { AccumulationChartModel } from './accumulation-model';
-import { Font, Margin, Border, TooltipSettings, CenterLabel, Indexes, Accessibility } from '../common/model/base';
+import { Margin, Border, TooltipSettings, CenterLabel, Indexes, Accessibility, TitleStyleSettings } from '../common/model/base';
 import { AccumulationSeries, AccPoints, PieCenter } from './model/acc-base';
 import { AccumulationType, AccumulationSelectionMode, AccumulationHighlightMode } from './model/enum';
 import { IAccSeriesRenderEventArgs, IAccTextRenderEventArgs } from './model/pie-interface';
@@ -16,12 +16,12 @@ import { IAnnotationRenderEventArgs } from '../chart/model/chart-interface';
 import { load, pointClick } from '../common/model/constants';
 import { pointMove, chartDoubleClick, chartMouseClick, chartMouseDown } from '../common/model/constants';
 import { chartMouseLeave, chartMouseMove, chartMouseUp, resized, beforeResize } from '../common/model/constants';
-import { FontModel, MarginModel, BorderModel, CenterLabelModel, TooltipSettingsModel, IndexesModel, AccessibilityModel } from '../common/model/base-model';
+import { MarginModel, BorderModel, CenterLabelModel, TooltipSettingsModel, IndexesModel, AccessibilityModel, TitleStyleSettingsModel } from '../common/model/base-model';
 import { AccumulationSeriesModel, PieCenterModel } from './model/acc-base-model';
 import { LegendSettings } from '../common/legend/legend';
 import { AccumulationLegend } from './renderer/legend';
 import { LegendSettingsModel } from '../common/legend/legend-model';
-import { ChartLocation, subtractRect, indexFinder, appendChildElement, redrawElement, blazorTemplatesReset, getTextAnchor, stringToNumber, textWrap } from '../common/utils/helper';
+import { ChartLocation, indexFinder, appendChildElement, redrawElement, blazorTemplatesReset, getTextAnchor, stringToNumber, textWrap, subtractRect } from '../common/utils/helper';
 import { RectOption, showTooltip, ImageOption } from '../common/utils/helper';
 import { textElement, createSvg, calculateSize, removeElement, firstToLowerCase, withInBounds } from '../common/utils/helper';
 import { getElement, titlePositionX } from '../common/utils/helper';
@@ -49,7 +49,7 @@ import { DataManager } from '@syncfusion/ej2-data';
 import { Export } from '../chart/print-export/export';
 import { Animation, AnimationOptions, compile as templateComplier} from '@syncfusion/ej2-base';
 import { PrintUtils } from '../common/utils/print';
-import { IAfterExportEventArgs } from '../common/model/interface';
+import { IAfterExportEventArgs, IExportEventArgs } from '../common/model/interface';
 
 /**
  * Represents the AccumulationChart control.
@@ -205,9 +205,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * Options for customizing the appearance of the title, which displays information about the plotted data.
      * Use the `fontFamily`, `size`, `fontStyle`, `fontWeight`, and `color` properties in `Font` to adjust the title's appearance.
      */
-
-    @Complex<FontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, Font)
-    public titleStyle: FontModel;
+    // eslint-disable-next-line max-len
+    @Complex<TitleStyleSettingsModel>({ fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null }, TitleStyleSettings)
+    public titleStyle: TitleStyleSettingsModel;
 
     /**
      * The subtitle is positioned below the main title and provides further details about the data represented in the accumulation chart.
@@ -221,8 +221,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * Options for customizing the appearance of the subtitle, which displays information about the plotted data below the main title.
      * Use the `fontFamily`, `size`, `fontStyle`, `fontWeight`, and `color` properties in `Font` to adjust the subtitle's appearance.
      */
-    @Complex<FontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, Font)
-    public subTitleStyle: FontModel;
+    // eslint-disable-next-line max-len
+    @Complex<TitleStyleSettingsModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, TitleStyleSettings)
+    public subTitleStyle: TitleStyleSettingsModel;
 
     /**
      * The legend provides descriptive information about the data points displayed in the accumulation chart, helping to understand what each point represents.
@@ -722,6 +723,13 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     public resized: EmitType<IAccResizeEventArgs>;
 
     /**
+     * Triggers before the export process begins. This event allows for the customization of export settings before the chart is exported.
+     *
+     * @event beforeExport
+     */
+    @Event()
+    public beforeExport: EmitType<IExportEventArgs>;
+    /**
      * Triggers after the export is completed.
      *
      * @event afterExport
@@ -918,6 +926,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
         this.wireEvents();
         this.element.setAttribute('dir', this.enableRtl ? 'rtl' : 'ltr');
+        (this.element as HTMLElement).style.outline = 'none';
     }
     /**
      * Themeing for chart goes here.
@@ -1034,6 +1043,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         /** Apply the style for chart */
         this.setStyle(<HTMLElement>this.element);
     }
+
     /**
      * Method to set mouse x, y from events.
      *
@@ -1226,12 +1236,6 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             tabColor = '#9e9e9e';
             break;
         }
-        const style: HTMLStyleElement = document.createElement('style');
-        style.setAttribute('id', element.id + 'Keyboard_accumulationchart_focus');
-        style.innerText = '.e-accumulationchart-focused:focus, path[id*=_Series_0_Point_]:focus, text[id*=_title]:focus' +
-        '{outline: none} .e-accumulationchart-focused:focus-visible, path[id*=_Series_0_Point_]:focus-visible, text[id*=_title]:focus-visible' +
-            '{outline: ' + (this.focusBorderWidth + 'px') + ' ' + (this.focusBorderColor || tabColor) + ' solid; margin: ' + (this.focusBorderMargin + 'px') + ';}';
-        document.body.appendChild(style);
     }
 
     /**
@@ -1340,6 +1344,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         if (actionKey !== '') {
             this.chartKeyboardNavigations(e, (e.target as HTMLElement).id, actionKey);
         }
+        if (e.code === 'Tab') {
+            this.removeNavigationStyle();
+        }
         return false;
     }
 
@@ -1370,7 +1377,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
         if (pagingElement) { pagingElement.setAttribute('class', 'e-accumulationchart-focused'); }
 
-
+        this.removeNavigationStyle();
         if (e.code === 'Tab') {
             if (this.previousTargetId !== '') {
                 if (this.previousTargetId.indexOf('_Point_') > -1 && targetId.indexOf('_Point_') === -1) {
@@ -1413,6 +1420,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
                 const currentLegend: Element = legendElement.children[this.currentLegendIndex];
                 this.focusTarget(currentLegend as HTMLElement);
+                this.removeNavigationStyle();
+                this.setNavigationStyle(currentLegend.id);
                 this.previousTargetId = targetId = currentLegend.lastElementChild.id;
                 actionKey = this.highlightMode !== 'None' ? 'ArrowMove' : '';
             }
@@ -1426,6 +1435,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                 this.currentPointIndex = this.getActualIndex(this.currentPointIndex, totalLength);
                 targetId = this.element.id + '_Series_0_Point_' + this.currentPointIndex;
                 this.focusTarget(getElement(targetId) as HTMLElement);
+                this.removeNavigationStyle();
+                this.setNavigationStyle(targetId);
                 actionKey = this.tooltip.enable ? 'ArrowMove' : '';
             }
         }
@@ -1438,6 +1449,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         if (actionKey !== '') {
             this.chartKeyboardNavigations(e, targetId, actionKey);
         }
+        if (e.code === 'Tab') { this.setNavigationStyle(targetId); }
         return false;
     }
 
@@ -1481,7 +1493,38 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             this.element.focus();
         }
     }
+    /**
+     * Handles to set style for key event on the document.
+     *
+     * @param {target} target - element which currently focused.
+     * @returns {void}
+     * @private
+     */
+    private setNavigationStyle(target: string): void {
+        const currentElement: HTMLElement = document.getElementById(target);
+        if (currentElement) {
+            currentElement.style.setProperty('outline', `${this.focusBorderWidth}px solid ${this.focusBorderColor || this.themeStyle.tabColor}`);
+            currentElement.style.setProperty('margin', `${this.focusBorderMargin}px`);
+        }
+    }
 
+    /**
+     * Handles to remove style for key event on the document.
+     *
+     * @returns {void}
+     * @private
+     */
+    private removeNavigationStyle(): void {
+        const currentElement: NodeList = document.querySelectorAll(`path[id*=_Series_0_Point_], [id*=${this.element.id}], [id*=_ChartBorder], text[id*=_title],g[id*=_chart_legend]`);
+        if (currentElement) {
+            currentElement.forEach((element: Node) => {
+                if (element instanceof HTMLElement || element instanceof SVGElement) {
+                    element.style.setProperty('outline', 'none');
+                    element.style.setProperty('margin', '');
+                }
+            });
+        }
+    }
 
     private chartKeyboardNavigations(e: KeyboardEvent, targetId: string, actionKey: string): void {
         this.isLegendClicked = false;
@@ -1543,10 +1586,12 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                 this.isLegendClicked = true;
                 this.accumulationLegendModule.click(e as Event);
                 this.focusChild(document.getElementById(targetId).parentElement);
+                this.setNavigationStyle(document.getElementById(targetId).parentElement.id);
             } else {
                 if (this.accumulationSelectionModule) {
                     this.accumulationSelectionModule.calculateSelectedElements(this, document.getElementById(targetId), 'click');
                 }
+                this.setNavigationStyle(targetId);
             }
             break;
         case 'CtrlP':
@@ -1612,6 +1657,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         if (this.pointClick) {
             this.triggerPointEvent(pointClick, <Element>e.target, e);
         }
+        this.removeNavigationStyle();
         return false;
     }
 
@@ -1801,15 +1847,39 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             subTitleHeight = (measureText(this.subTitle, this.subTitleStyle,
                                           this.themeStyle.chartSubTitleFont).height * this.subTitleCollection.length);
         }
-        subtractRect(
-            this.initialClipRect,
-            new Rect(
-                0, (subTitleHeight + titleHeight),
-                this.margin.right + this.margin.left, this.margin.bottom + this.margin.top
-            )
-        );
+        let left: number = this.margin.left + this.border.width;
+        let width: number = this.availableSize.width - left - this.margin.right - this.border.width;
+        let top: number = this.margin.top + this.border.width;
+        let height: number = this.availableSize.height - top - this.border.width - this.margin.bottom;
+        const marginTotal: number = subTitleHeight + titleHeight;
+        switch (this.titleStyle.position) {
+        case 'Top':
+            left = 0;
+            top = subTitleHeight + titleHeight;
+            width = this.margin.right + this.margin.left;
+            height = this.margin.bottom + this.margin.top;
+            break;
+        case 'Bottom':
+            height -= (marginTotal + this.margin.bottom * 2);
+            break;
+        case 'Left':
+            left += marginTotal;
+            width -= marginTotal;
+            break;
+        case 'Right':
+            width -= marginTotal;
+            break;
+        }
+        if (this.titleStyle.position !== 'Top') {
+            this.initialClipRect = new Rect(left, top, width, height);
+        }
+        else {
+            this.initialClipRect = subtractRect(
+                this.initialClipRect,
+                new Rect(left, top, width, height)
+            );
+        }
         this.calculateLegendBounds();
-
     }
     /**
      * Method to calculate legend bounds for accumulation chart.
@@ -1996,7 +2066,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         if (!this.title) {
             return null;
         }
-        const getAnchor: string = getTextAnchor(this.titleStyle.textAlignment, this.enableRtl);
+        let textAnchor: string = getTextAnchor(this.titleStyle.textAlignment, this.enableRtl);
         const titleSize: Size = measureText(this.title, this.titleStyle, this.themeStyle.chartTitleFont);
         const padding: number = 20;
         const titleHeight: number = this.margin.top + (titleSize.height * 3 / 4);
@@ -2007,15 +2077,50 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         const rect: Rect = new Rect(
             margin.left, 0, this.availableSize.width - margin.left - margin.right, 0
         );
+
+        let positionY: number = this.margin.top + ((titleSize.height) * 3 / 4);
+        let positionX: number = titlePositionX(rect, this.titleStyle || this.themeStyle.chartTitleFont);
+        let rotation: string;
+        const alignment: Alignment = this.titleStyle.textAlignment;
+        const subtitleSize: Size = measureText(this.subTitle, this.subTitleStyle, this.themeStyle.chartSubTitleFont);
+        switch (this.titleStyle.position) {
+        case 'Top':
+            positionX = titlePositionX(rect, this.titleStyle);
+            positionY = titleHeight;
+            break;
+        case 'Bottom':
+            positionX += textAnchor === 'start' ? this.border.width :
+                textAnchor === 'end' ? this.border.width : 0;
+            positionY = this.availableSize.height - this.margin.bottom - subtitleSize.height - (titleSize.height / 2);
+            break;
+        case 'Left':
+            positionX = this.margin.left + ((titleSize.height) * 3 / 4) ;
+            positionY = alignment === 'Near' ? margin.bottom + this.border.width :
+                alignment === 'Far' ? this.availableSize.height - margin.bottom - this.border.width : this.availableSize.height / 2;
+            textAnchor = alignment === 'Near' ? 'end' : alignment === 'Far' ? 'start' : 'middle';
+            textAnchor = this.enableRtl ? (textAnchor === 'end' ? 'start' : textAnchor === 'start' ? 'end' : textAnchor) : textAnchor;
+            rotation = 'rotate(' + -90 + ',' + positionX + ',' + positionY + ')';
+            break;
+        case 'Right':
+            positionX = this.availableSize.width - this.margin.right - ((titleSize.height) * 3 / 4);
+            positionY = alignment === 'Near' ? margin.bottom + this.border.width :
+                alignment === 'Far' ? this.availableSize.height - margin.bottom - this.border.width : this.availableSize.height / 2;
+            textAnchor = alignment === 'Near' ? 'start' : alignment === 'Far' ? 'end' : 'middle';
+            textAnchor = this.enableRtl ? (textAnchor === 'end' ? 'start' : textAnchor === 'start' ? 'end' : textAnchor) : textAnchor;
+            rotation = 'rotate(' + 90 + ',' + positionX + ',' + positionY + ')';
+            break;
+        case 'Custom':
+            positionX = this.titleStyle.x;
+            positionY = this.titleStyle.y;
+            textAnchor = 'middle';
+            break;
+        }
         const options: TextOption = new TextOption(
             this.element.id + '_title',
-            titlePositionX(
-                rect, this.titleStyle
-            ),
-            titleHeight,
-            getAnchor, this.titleCollection, '', 'auto'
+            positionX, positionY,
+            textAnchor, this.titleCollection, rotation, 'auto'
         );
-        const space: number = (this.series[0].type === 'Pie' && this.visibleSeries[0].dataLabel.position === 'Outside' && this.visibleSeries[0].dataLabel.connectorStyle.length) ? stringToNumber(this.visibleSeries[0].dataLabel.connectorStyle.length , this.accBaseModule.radius) : 0;
+        const space: number = (this.series[0].type === 'Pie' && this.visibleSeries[0].dataLabel.position === 'Outside' && this.visibleSeries[0].dataLabel.connectorStyle.length) ? stringToNumber(this.visibleSeries[0].dataLabel.connectorStyle.length, this.accBaseModule.radius) : 0;
         if (!this.subTitle && (this.series[0].type !== 'Funnel' && this.series[0].type !== 'Pyramid')) {
             options.y = parseInt(this.series[0].radius, 10) >= 80 ? options.y :
                 (this.accBaseModule.center.y - this.accBaseModule.radius - padding
@@ -2030,6 +2135,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         );
         if (element) {
             element.setAttribute('tabindex', '0');
+            (element as HTMLElement).style.outline = 'none';
             element.parentNode.insertBefore(element, this.svgObject.children && this.svgObject.children[1]);
         }
         if (this.subTitle) {
@@ -2245,13 +2351,16 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             alignment === 'Center' ? (options.x - maxWidth / 2) : alignment === 'Far' ? options.x - maxWidth : options.x,
             0, maxWidth, 0
         );
+        if (this.titleStyle.position === 'Left') {
+            rect.x = alignment === 'Center' ? (options.x - maxWidth * 0.5) : alignment === 'Far' ? this.margin.left + ((subTitleElementSize.height) * 3 / 4) : (options.x - maxWidth);
+        }
         const subTitleOption: TextOption = new TextOption(
             this.element.id + '_subTitle',
             titlePositionX(
                 rect, this.subTitleStyle
             ),
             options.y * options.text.length + ((subTitleElementSize.height) * 3 / 4) + padding,
-            getTextAnchor(this.subTitleStyle.textAlignment, this.enableRtl), this.subTitleCollection, '', 'auto'
+            getTextAnchor(this.subTitleStyle.textAlignment, this.enableRtl), this.subTitleCollection, options.transform, 'auto'
         );
         textElement(this.renderer, subTitleOption, this.subTitleStyle, this.subTitleStyle.color || this.themeStyle.chartSubTitleFont.color,
                     this.svgObject, false, this.redraw, null, null, null, null, null, null, null, null, this.themeStyle.chartSubTitleFont);
@@ -2318,6 +2427,10 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             if (element) { element.remove(); }
             removeElement('chartmeasuretext');
             this.removeSvg();
+            const highlightElement: HTMLElement = document.getElementById(this.element.id + '_ej2_chart_highlight');
+            if (highlightElement) { highlightElement.remove(); }
+            const selectionElement: HTMLElement = document.getElementById(this.element.id + '_ej2_chart_selection');
+            if (selectionElement) { selectionElement.remove(); }
             this.svgObject = null;
         }
     }
@@ -2494,7 +2607,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                         }
                         if (newProp.series[i as number] && (newProp.series[i as number].dataSource || newProp.series[i as number].yName
                             || newProp.series[i as number].xName || series.type ||
-                            newProp.series[i as number].dataLabel || blazorProp)) {
+                            newProp.series[i as number].dataLabel || series.radius || series.innerRadius ||
+                            series.startAngle || series.endAngle || series.gapRatio || series.neckWidth || series.explode ||
+                            series.neckWidth || series.pyramidMode || series.explodeOffset || series.funnelMode || blazorProp)) {
                             extend(this.changeVisibleSeries(this.visibleSeries, i), series, null, true);
                             seriesRefresh = true;
                         }
@@ -2546,6 +2661,16 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                     if (this.tooltip.template) {
                         this.accumulationTooltipModule.template = this.tooltip.template;
                     }
+                }
+                break;
+            case 'center':
+                if (!isNullOrUndefined(newProp.center.x)) {
+                    this.center.x = newProp.center.x;
+                    update.refreshElements = true;
+                }
+                if (!isNullOrUndefined(newProp.center.y)) {
+                    this.center.y = newProp.center.y;
+                    update.refreshElements = true;
                 }
                 break;
             }

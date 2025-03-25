@@ -3,6 +3,7 @@ import { BaseEventArgs } from '@syncfusion/ej2-base';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import { PopupType, ExcelFormat, View, NavigationDirection } from './type';
 import { ResourcesModel, ViewsModel } from '../models/models';
+import { Worksheets } from '@syncfusion/ej2-excel-export';
 
 /**
  * Interface
@@ -26,6 +27,13 @@ export interface ActionEventArgs extends ToolbarActionArgs {
     changedRecords?: Record<string, any>[];
     /** Returns the appropriate deleted data based on the action. */
     deletedRecords?: Record<string, any>[];
+    /**
+     * A Promise that, when provided, checks for overlapping events on the server.
+     * If the promise resolves with overlapping events, the action (add/update) will be
+     * canceled, and an alert will be displayed to the user.
+     * If no overlapping events are found, the scheduler proceeds with the action.
+     */
+    promise?: Promise<boolean>;
 }
 
 /** @deprecated */
@@ -133,6 +141,7 @@ export interface PopupOpenEventArgs extends BaseEventArgs {
      * * `EditEventInfo`: Denotes the quick popup on the events in responsive mode.
      * * `Editor`: Denotes the detailed editor window.
      * * `EventContainer`: Denotes the more indicator popup.
+     * * `OverlapAlert`: Denotes the popup showing overlap events.
      * * `QuickInfo`: Denotes the quick popup.
      * * `RecurrenceAlert`: Denotes the popup showing recurrence alerts.
      * * `RecurrenceValidationAlert`: Denotes the popup showing recurrence validation alerts.
@@ -153,6 +162,11 @@ export interface PopupOpenEventArgs extends BaseEventArgs {
      *  will be processed based on the `interval` value within the `timeScale` property.
      */
     duration?: number;
+    /**
+     * Returns the collection of appointment data that overlaps with the active time range in the Scheduler.
+     * The `overlapEvents` array includes only the appointments that conflict with the time range of the appointment being created or updated.
+     */
+    overlapEvents?: Record<string, any>[];
 }
 
 /** An interface that holds options to control the popup close action. */
@@ -301,6 +315,28 @@ export interface ScrollOptions {
     timeDelay: number;
 }
 
+/** An interface that holds the properties for the before Excel expoprt event. */
+export interface ExcelExportEventArgs {
+    /** Specifies the Worksheets that will be exported. */
+    worksheets: Worksheets;
+    /** Specifies whether to cancel the export operation. */
+    cancel: boolean;
+}
+
+/** An interface that holds options for the before print event. */
+export interface BeforePrintEventArgs {
+    /**
+     * The HTML element that will be printed.
+     * This element can be modified to customize the print output.
+     */
+    printElement?: HTMLElement
+    /**
+     * Indicates whether to cancel the print operation.
+     * Set to `true` to prevent the schedule from being printed.
+     */
+    cancel?: boolean;
+}
+
 /** An interface that holds export options. */
 export interface ExportOptions {
     /** The fileName denotes the name to be given for the exported file. */
@@ -323,6 +359,26 @@ export interface ExportOptions {
      * By default, csv files are using comma(,) as separator. You can specify this property to change the delimiter in csv file.
      */
     separator?: string;
+}
+
+/** An interface that holds the options for the tooltip event in the Schedule component. */
+export interface TooltipOpenEventArgs {
+    /**
+     * Determines whether the tooltip should be canceled or not.
+     */
+    cancel?: boolean;
+    /**
+     * The data associated with the tooltip.
+     */
+    data?: Record<string, any>;
+    /**
+     * The target element that triggered the tooltip.
+     */
+    target?: HTMLElement;
+    /**
+     * The content to be displayed in the tooltip. Can be an HTMLElement.
+     */
+    content?: HTMLElement;
 }
 
 /** An interface that holds the field name and its header text to export to excel. */

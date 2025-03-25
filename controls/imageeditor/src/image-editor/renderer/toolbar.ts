@@ -393,6 +393,48 @@ export class ToolbarModule {
         case 'heightAspectRatio':
             this.heightAspectRatio(args.value['e']);
             break;
+        case 'cancelPan':
+            this.cancelPan();
+            break;
+        case 'zoomInBtnMouseDownHandler':
+            this.zoomInBtnMouseDownHandler(args.value['event']);
+            break;
+        case 'zoomOutBtnMouseDownHandler':
+            this.zoomOutBtnMouseDownHandler(args.value['event']);
+            break;
+        case 'drawDashedLine':
+            this.drawDashedLine(args.value['context']);
+            break;
+        case 'saveDialogClosed':
+            this.saveDialogClosed(args.value['id']);
+            break;
+        case 'getIndex':
+            this.getIndex(args.value['item']);
+            break;
+        case 'getRectRadius':
+            this.getRectRadius(args.value['text']);
+            break;
+        case 'applyPreviewFilter':
+            this.applyPreviewFilter();
+            break;
+        case 'renderSlider':
+            this.renderSlider(args.value['type'], args.value['isSelect']);
+            break;
+        case 'zoomInBtnClickHandler':
+            this.zoomInBtnClickHandler(args.value['e']);
+            break;
+        case 'zoomOutBtnClickHandler':
+            this.zoomOutBtnClickHandler(args.value['e']);
+            break;
+        case 'getAdjustmentToolbarItem':
+            this.getAdjustmentToolbarItem();
+            break;
+        case 'getFilterToolbarItem':
+            this.getFilterToolbarItem();
+            break;
+        case 'renderCropBtn':
+            this.renderCropBtn();
+            break;
         }
     }
 
@@ -511,9 +553,9 @@ export class ToolbarModule {
     private createContextualToolbar(): void {
         const parent: ImageEditor = this.parent; const id: string = parent.element.id;
         if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.length > 0)) {
-            parent.element.appendChild(parent.createElement('div', { id: id + '_contextualToolbarArea',
-                className: 'e-contextual-toolbar-wrapper e-hide', attrs: { style: 'position: absolute;' }
-            }));
+            const contextualToolbarArea: HTMLElement = parent.createElement('div', { id: id + '_contextualToolbarArea', className: 'e-contextual-toolbar-wrapper e-hide' });
+            contextualToolbarArea.style.position = 'absolute';
+            parent.element.appendChild(contextualToolbarArea);
             const toolbarArea: HTMLElement = document.getElementById(id + '_contextualToolbarArea');
             const toolbar: HTMLElement = parent.createElement('div', { id: id + '_contextualToolbar' });
             toolbarArea.appendChild(toolbar);
@@ -1346,8 +1388,9 @@ export class ToolbarModule {
     private enableDisableCloneBtn(toolbarId: string, obj: Object): void {
         const parent: ImageEditor = this.parent;
         let isDummyTextClick: boolean = false;
+        const width: number = Math.floor(parent.activeObj.activePoint.width);
         if (parent.activeObj.shape && parent.activeObj.shape === 'text' &&
-            parent.activeObj.textSettings.fontSize === 11 && Math.floor(parent.activeObj.activePoint.width) === 55 &&
+            parent.activeObj.textSettings.fontSize === 11 && (width === 55 || (parent.activeObj.textSettings.bold && width === 58)) &&
             Math.floor(parent.activeObj.activePoint.height) === 11) {
             isDummyTextClick = true;
         }
@@ -1511,8 +1554,9 @@ export class ToolbarModule {
         const quality: string[] = ['Good', 'Great', 'Highest'];
         parent.element.appendChild(parent.createElement('div', { id: id + '_saveDialog' }));
         const dialogContent: HTMLElement = parent.createElement('div', {
-            id: id + '_dialogContent', attrs: { style: 'display: flex;' }
+            id: id + '_dialogContent'
         });
+        dialogContent.style.display = 'flex';
         const dialogImgContent: HTMLElement = dialogContent.appendChild(parent.createElement('div', {
             id: id + '_dialogImgContent', className: 'e-ie-dlg-img-content'
         }));
@@ -1923,7 +1967,7 @@ export class ToolbarModule {
         }
         if ((isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Straightening') > -1)) && !Browser.isDevice) {
             toolbarItems.push({ align: 'Center', type: 'Separator' });
-            if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && (parent.toolbar.indexOf('Straighten') > -1 || parent.toolbar.indexOf('Straighten') > -1))) {
+            if (isNullOrUndefined(parent.toolbar) || (parent.toolbar && parent.toolbar.indexOf('Straightening') > -1)) {
                 const spanWidth: HTMLElement = document.createElement('span');
                 spanWidth.innerHTML = this.l10n.getConstant('Straighten');
                 toolbarItems.push({ id: id + '_straightenSpan', cssClass: 'e-ie-straighten-span', template: spanWidth, align: 'Center' });
@@ -3094,7 +3138,7 @@ export class ToolbarModule {
             if (Browser.isDevice) { this.initBottomToolbar(); }
             break;
         case 'shapes':
-            parent.noPushUndo = true;
+            if (!parent.isPublicMethod) { parent.noPushUndo = true; }
             if (Browser.isDevice) {
                 this.initMainToolbar(false, true, true);
             }
@@ -3409,37 +3453,37 @@ export class ToolbarModule {
         if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Default') > -1)) {
             toolbarItems.push({ id: id + '_default', prefixIcon: 'e-icons e-none', cssClass: 'top-icon e-none',
                 tooltipText: this.l10n.getConstant('Default'), align: 'Center',
-                template: '<div class="filter-wrapper" style="box-sizing: content-box;"><canvas id=' + id + '_defaultCanvas' + ' tabindex=0></canvas><div style="text-align:center;"><span>' + this.l10n.getConstant('Default') + '</span></div></div>' });
+                template: '<div class="filter-wrapper"><canvas id=' + id + '_defaultCanvas' + ' tabindex=0></canvas><div><span>' + this.l10n.getConstant('Default') + '</span></div></div>' });
         }
         if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Chrome') > -1)) {
             toolbarItems.push({ id: id + '_chrome', prefixIcon: 'e-icons e-none', cssClass: 'top-icon e-none',
                 tooltipText: this.l10n.getConstant('Chrome'), align: 'Center',
-                template: '<div class="filter-wrapper" style="box-sizing: content-box;"><canvas id=' + id + '_chromeCanvas' + '></canvas><div style="text-align:center;"><span>' + this.l10n.getConstant('Chrome') + '</span></div></div>' });
+                template: '<div class="filter-wrapper"><canvas id=' + id + '_chromeCanvas' + '></canvas><div><span>' + this.l10n.getConstant('Chrome') + '</span></div></div>' });
         }
         if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Cold') > -1)) {
             toolbarItems.push({ id: id + '_cold', prefixIcon: 'e-icons e-none', cssClass: 'top-icon e-none',
                 tooltipText: this.l10n.getConstant('Cold'), align: 'Center',
-                template: '<div class="filter-wrapper" style="box-sizing: content-box;"><canvas id=' + id + '_coldCanvas' + '></canvas><div style="text-align:center;"><span>' + this.l10n.getConstant('Cold') + '</span></div></div>' });
+                template: '<div class="filter-wrapper"><canvas id=' + id + '_coldCanvas' + '></canvas><div><span>' + this.l10n.getConstant('Cold') + '</span></div></div>' });
         }
         if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Warm') > -1)) {
             toolbarItems.push({ id: id + '_warm', prefixIcon: 'e-icons e-none', cssClass: 'top-icon e-none',
                 tooltipText: this.l10n.getConstant('Warm'), align: 'Center',
-                template: '<div class="filter-wrapper" style="box-sizing: content-box;"><canvas id=' + id + '_warmCanvas' + '></canvas><div style="text-align:center;"><span>' + this.l10n.getConstant('Warm') + '</span></div></div>' });
+                template: '<div class="filter-wrapper"><canvas id=' + id + '_warmCanvas' + '></canvas><div><span>' + this.l10n.getConstant('Warm') + '</span></div></div>' });
         }
         if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Grayscale') > -1)) {
             toolbarItems.push({ id: id + '_grayscale', prefixIcon: 'e-icons e-none', cssClass: 'top-icon e-none',
                 tooltipText: this.l10n.getConstant('Grayscale'), align: 'Center',
-                template: '<div class="filter-wrapper" style="box-sizing: content-box;"><canvas id=' + id + '_grayscaleCanvas' + '></canvas><div style="text-align:center;"><span>' + this.l10n.getConstant('Grayscale') + '</span></div></div>' });
+                template: '<div class="filter-wrapper"><canvas id=' + id + '_grayscaleCanvas' + '></canvas><div><span>' + this.l10n.getConstant('Grayscale') + '</span></div></div>' });
         }
         if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Sepia') > -1)) {
             toolbarItems.push({ id: id + '_sepia', prefixIcon: 'e-icons e-none', cssClass: 'top-icon e-none',
                 tooltipText: this.l10n.getConstant('Sepia'), align: 'Center',
-                template: '<div class="filter-wrapper" style="box-sizing: content-box;"><canvas id=' + id + '_sepiaCanvas' + '></canvas><div style="text-align:center;"><span>' + this.l10n.getConstant('Sepia') + '</span></div></div>' });
+                template: '<div class="filter-wrapper"><canvas id=' + id + '_sepiaCanvas' + '></canvas><div><span>' + this.l10n.getConstant('Sepia') + '</span></div></div>' });
         }
         if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Invert') > -1)) {
             toolbarItems.push({ id: id + '_invert', prefixIcon: 'e-icons e-none', cssClass: 'top-icon e-none',
                 tooltipText: this.l10n.getConstant('Invert'), align: 'Center',
-                template: '<div class="filter-wrapper" style="box-sizing: content-box;"><canvas id=' + id + '_invertCanvas' + '></canvas><div style="text-align:center;"><span>' + this.l10n.getConstant('Invert') + '</span></div></div>' });
+                template: '<div class="filter-wrapper"><canvas id=' + id + '_invertCanvas' + '></canvas><div><span>' + this.l10n.getConstant('Invert') + '</span></div></div>' });
         }
         const tempToolbarItems: ItemModel[] = this.processToolbar('center');
         for (let i: number = 0, len: number = tempToolbarItems.length; i < len; i++) {
@@ -4926,7 +4970,7 @@ export class ToolbarModule {
         const aspectRatioHeight: HTMLInputElement = parent.element.querySelector('#' + id + '_resizeHeight');
         const aspectRatioWidth: HTMLElement = parent.element.querySelector('#' + id + '_resizeWidth');
         let isCropSelection: boolean = false;  let panBtn: HTMLElement; let splitWords: string[];
-        let actionType: string; let actionArgs: EditCompleteEventArgs;
+        let actionType: string; let actionArgs: EditCompleteEventArgs; let isRedactClick: boolean = false;
         if (parent.activeObj.shape !== undefined) {splitWords = parent.activeObj.shape.split('-'); }
         if (splitWords === undefined && parent.currObjType.isCustomCrop) {
             isCropSelection = true;
@@ -5200,7 +5244,7 @@ export class ToolbarModule {
                 parent.notify('draw', { prop: 'triggerFrameChange', value: { prevFrameSettings: parent.tempFrameObj, obj: {frameChangeEventArgs: null } }});
                 break;
             case 'redact':
-                parent.currObjType.isRedact = true;
+                parent.currObjType.isRedact = isRedactClick = true;
                 parent.drawingShape = 'redact';
                 if (isNullOrUndefined(parent.activeObj.redactBlur)) {
                     parent.activeObj.redactBlur = 20;
@@ -5213,7 +5257,7 @@ export class ToolbarModule {
                 this.redactSlider(parent.activeObj.redactType);
                 break;
             case 'pixelate':
-                parent.currObjType.isRedact = true;
+                parent.currObjType.isRedact = isRedactClick = true;
                 parent.drawingShape = 'redact';
                 parent.notify('selection', { prop: 'annotate', value: { shape: 'redact' } });
                 if (parent.activeObj.redactType === 'blur') {
@@ -5242,7 +5286,7 @@ export class ToolbarModule {
                 }
                 break;
             case 'redactblur':
-                parent.currObjType.isRedact = true;
+                parent.currObjType.isRedact = isRedactClick = true;
                 parent.drawingShape = 'redact';
                 parent.notify('selection', { prop: 'annotate', value: { shape: 'redact' } });
                 parent.notify('shape', { prop: 'setRedactType', onPropertyChange: false,
@@ -5273,6 +5317,10 @@ export class ToolbarModule {
                             currentText: null, previousFilter: null, isCircleCrop: null}});
                 }
                 break;
+            }
+            if (isRedactClick) {
+                parent.notify('draw', { prop: 'updateTempObjColl'});
+                parent.notify('draw', { prop: 'updateTempPointColl'});
             }
         }
     }

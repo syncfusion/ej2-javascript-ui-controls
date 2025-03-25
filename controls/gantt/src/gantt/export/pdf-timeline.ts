@@ -3,7 +3,9 @@ import { PdfGanttCellStyle} from './../base/interface';
 import {
     PointF, PdfPage, PdfGraphics, PdfColor, PdfPen, PdfBrush, PdfSolidBrush,
     PdfTrueTypeFont, PdfStandardFont, PdfStringFormat, PdfVerticalAlignment,
-    PdfTextAlignment, PdfWordWrapType, PdfFontFamily, PdfBrushes, PdfGraphicsState, RectangleF
+    PdfTextAlignment, PdfWordWrapType, PdfFontFamily, PdfBrushes, PdfGraphicsState, RectangleF,
+    PdfFont,
+    PdfFontStyle
 } from '@syncfusion/ej2-pdf-export';
 import { TimelineDetails, TimelineFormat, IGanttStyle, PdfQueryTimelineCellInfoEventArgs } from '../base/interface';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -11,6 +13,7 @@ import { pixelToPoint, pointToPixel } from '../base/utils';
 import { Gantt } from '../base/gantt';
 import { PdfPaddings } from './pdf-base';
 import { HolidayModel } from '../models/holiday-model';
+import { PdfBorders } from './../export/pdf-base/pdf-borders';
 /**
  */
 export class PdfTimeline {
@@ -33,12 +36,14 @@ export class PdfTimeline {
     public holidayLabel: string;
     public holidayCompleted: boolean = false;
     public holidayNumberOfDays: number;
-    public holidayWidth: number;
+    public holidayWidth: number = 0;
     public detailsTimeline: TimelineDetails ;
     public fitHolidayCompleted: boolean = false;
     public fromDataHoliday: string| Date;
     public timelineWidth: number = 0;
     public lastWidth: number = 0;
+    public fontFamily: PdfFontFamily;
+    private topTierValueLeftPadding: number = 8;
 
     constructor(gantt?: PdfGantt) {
         this.width = 0;
@@ -192,19 +197,7 @@ export class PdfTimeline {
         if (ganttStyle.timeline.padding) {
             timelineStyle.padding = ganttStyle.timeline.padding;
         }
-        let format: PdfStringFormat = new PdfStringFormat();
-        if (isNullOrUndefined(ganttStyle.timeline.format)) {
-            if (isTopTier) {
-                format.lineAlignment = PdfVerticalAlignment.Middle;
-                format.alignment = PdfTextAlignment.Left;
-            } else {
-                format.lineAlignment = PdfVerticalAlignment.Middle;
-                format.alignment = PdfTextAlignment.Center;
-                format.wordWrap = PdfWordWrapType.Character;
-            }
-        } else {
-            format = ganttStyle.timeline.format;
-        }
+        const format: PdfStringFormat = this.initializePdfStringFormat(ganttStyle, isTopTier);
         timelineStyle.format = format;
         const eventArgs: PdfQueryTimelineCellInfoEventArgs = {
             timelineCell: timelineStyle,
@@ -214,18 +207,20 @@ export class PdfTimeline {
             this.parent.trigger('pdfQueryTimelineCellInfo', eventArgs);
         }
         const e: PdfGanttCellStyle = eventArgs.timelineCell;
-        let rectPen: PdfPen;
-        let rectBrush: PdfBrush = new PdfSolidBrush(eventArgs.timelineCell.backgroundColor);
+        let cellBackgroundColor: PdfBrush = new PdfSolidBrush(eventArgs.timelineCell.backgroundColor);
         const nonWorkingDays: number[] = this.parent.nonWorkingDayIndex;
+        let isHoliday : boolean = false;
+        const holidayContainerColor: PdfSolidBrush = new PdfSolidBrush(ganttStyle.holiday.backgroundColor);
         if (this.parent.highlightWeekends && nonWorkingDays.indexOf(days) !== -1 && (this.parent.timelineModule.bottomTier === 'Day' || this.parent.timelineModule.bottomTier === 'None' && this.parent.timelineModule.topTier === 'Day')) {
-            rectBrush = new PdfSolidBrush(new PdfColor(238, 238, 238));
+            cellBackgroundColor = holidayContainerColor;
+            isHoliday = true;
         }
         this.parent.holidays.map((item: HolidayModel) => {
             const fromDate: Date = new Date(item.from);
             const toDate: Date = new  Date(item.to);
             const timelinedate: Date  = new Date(currentDate);
             if (fromDate <= timelinedate && toDate >= timelinedate && (this.parent.timelineModule.bottomTier === 'Day' || (this.parent.timelineModule.bottomTier === 'None' && this.parent.timelineModule.topTier === 'Day'))) {
-                rectBrush = new PdfSolidBrush(new PdfColor(238, 238, 238));
+                cellBackgroundColor = holidayContainerColor;
                 if (fromDate.getTime() === timelinedate.getTime()) {
                     this.holidayWidth = x;
                 }
@@ -234,9 +229,10 @@ export class PdfTimeline {
                     const changeDate: Date  = new Date(item.to);
                     changeDate.setDate(changeDate.getDate() + 1);
                     const day: number = this.parent.dataOperation.getTaskWidth(fromDate, changeDate);
-                    this.holidayNumberOfDays = day / width;
+                    this.holidayNumberOfDays = pixelToPoint(day) / width;
                     this.holidayCompleted = true;
                 }
+                isHoliday = true;
             }
             else if (this.parent.timelineModule.bottomTier !== 'Day') {
                 if (this.detailsTimeline.startDate <= fromDate && this.detailsTimeline.endDate >= fromDate) {
@@ -252,63 +248,88 @@ export class PdfTimeline {
                 }
             }
         });
-        const rectPen1: PdfPen = new PdfPen(eventArgs.timelineCell.borderColor);
+
+        const timelineborder: any = isHoliday && ganttStyle.holiday && ganttStyle.holiday.borders
+            ? ganttStyle.holiday.borders.left
+            : isHoliday && ganttStyle.holiday && ganttStyle.holiday.borderColor
+                ? new PdfPen(ganttStyle.holiday.borderColor)
+                : new PdfPen(eventArgs.timelineCell.borderColor);
         if (!this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
             this.lastWidth = x + width;
         }
-        graphics.drawRectangle(rectPen1, rectBrush, x, y, width, pixelToPoint(height));
-        if (!isTopTier && (this.parent.gridLines === 'Both' || this.parent.gridLines === 'Vertical')) {
-            rectPen = new PdfPen(ganttStyle.chartGridLineColor);
+        const adjustedWidth: number = isHoliday && (ganttStyle.holiday.borderColor || ganttStyle.holiday.borders) ? width - 2 : width;
+        // rectangle for timeline header
+        graphics.drawRectangle(timelineborder, cellBackgroundColor, x, y, adjustedWidth, pixelToPoint(height));
+        const rectPen: PdfPen = (!isTopTier && (this.parent.gridLines === 'Both' || this.parent.gridLines === 'Vertical')) ?
+            new PdfPen(ganttStyle.chartGridLineColor) : null;
+        const gridLineColor: PdfPen = isHoliday && (ganttStyle.holiday.borderColor || ganttStyle.holiday.borders) ?
+            timelineborder : rectPen;
+        // rectangle for chart side timeline
+        graphics.drawRectangle(gridLineColor, cellBackgroundColor, x, y + pixelToPoint(height), adjustedWidth, page.getClientSize().height);
+        let font1: PdfTrueTypeFont | PdfFont = new PdfStandardFont(ganttStyle.fontFamily, e.fontSize, e.fontStyle);
+        if (ganttStyle.font) {
+            font1 = ganttStyle.font;
         }
-        else{
-            rectPen = null;
+        const customizedFont: PdfFont = this.getPdfFont(ganttStyle);
+        if (!isNullOrUndefined(customizedFont)) {
+            font1 = customizedFont;
         }
-        graphics.drawRectangle(rectPen, rectBrush, x, y + pixelToPoint(height), width, page.getClientSize().height);
+        const fontColor: PdfSolidBrush = (ganttStyle.holiday && ganttStyle.holiday.fontColor) ?
+            new PdfSolidBrush(ganttStyle.holiday.fontColor) : new PdfSolidBrush(new PdfColor(0, 0, 0));
+        const fontBrush: PdfPen = (ganttStyle.holiday && ganttStyle.holiday.fontBrush) ?
+            new PdfPen(new PdfColor(ganttStyle.holiday.fontBrush)) : null;
+        let textFormat: PdfStringFormat = new PdfStringFormat();
+        textFormat = (ganttStyle.holiday && ganttStyle.holiday.format) ? ganttStyle.holiday.format : null;
+        let padding: any = { left: 0, right: 0, top: 0, bottom: 0 };
+        if (!isNullOrUndefined(ganttStyle) && !isNullOrUndefined(ganttStyle.holiday) &&
+            !isNullOrUndefined(ganttStyle.holiday.padding)) {
+            padding = ganttStyle.holiday.padding;
+        }
+        let strSize: any;
+        if (!isNullOrUndefined(this.holidayLabel)) {
+            strSize = font1.measureString(this.holidayLabel);
+        }
         if (this.holidayCompleted) {
             const state: PdfGraphicsState = graphics.save();
-            let font1: PdfTrueTypeFont | PdfStandardFont = new PdfStandardFont(ganttStyle.fontFamily, e.fontSize, e.fontStyle);
-            if (ganttStyle.font) {
-                font1 = ganttStyle.font;
-            }
             const fontHieght: number = font1.height;
             const fontSize: number = font1.size;
             graphics.translateTransform(this.holidayWidth + width - ((fontSize / 2) * this.holidayNumberOfDays) -
             fontHieght + (fontHieght / 2) + (width * this.holidayNumberOfDays) / 2, 40);
             graphics.rotateTransform(-90);
-            graphics.translateTransform(-(page.getClientSize().height / 2), -40);
+            graphics.translateTransform(-(page.getClientSize().height / 2),
+                                        -((this.holidayWidth + width + fontSize) / ((this.holidayWidth + width) / width)));
             graphics.drawString(
                 this.holidayLabel,
                 font1,
-                null,
-                PdfBrushes.Black,
-                10,
-                10,
-                null
+                fontBrush,
+                fontColor,
+                5 - (padding.left + padding.right),
+                5 - (padding.top + padding.bottom),
+                strSize.width + 10, strSize.height + 10,
+                textFormat
             );
             graphics.restore(state);
             this.holidayCompleted = false;
         }
         if (this.fitHolidayCompleted) {
-            const  holidayBrush: PdfSolidBrush = new PdfSolidBrush(new PdfColor(238, 238, 238));
-            let font1: PdfTrueTypeFont | PdfStandardFont = new PdfStandardFont(ganttStyle.fontFamily, e.fontSize, e.fontStyle);
-            if (ganttStyle.font) {
-                font1 = ganttStyle.font;
-            }
+            const holidayBrush: PdfSolidBrush = holidayContainerColor;
             const fontSize: number = font1.size;
-            graphics.drawRectangle(null, holidayBrush, x + (width / 2) - fontSize, y +
+            graphics.drawRectangle(gridLineColor, holidayBrush, x + (width / 2) - fontSize, y +
             pixelToPoint(height), fontSize, page.getClientSize().height);
             const state: PdfGraphicsState = graphics.save();
             graphics.translateTransform(x + width + (width / 2) - fontSize, 40);
             graphics.rotateTransform(-90);
-            graphics.translateTransform(-(page.getClientSize().height / 2), -40);
+            graphics.translateTransform(-(page.getClientSize().height / 2),
+                                        -((this.holidayWidth + width + fontSize) / ((this.holidayWidth + width) / width)));
             graphics.drawString(
                 this.holidayLabel,
                 font1,
-                null,
-                PdfBrushes.Black,
-                10,
-                10,
-                null
+                fontBrush,
+                fontColor,
+                5 - (padding.left + padding.right),
+                5 - (padding.top + padding.bottom),
+                strSize.width + 10, strSize.height + 10,
+                textFormat
             );
             graphics.restore(state);
             this.fitHolidayCompleted = false;
@@ -325,11 +346,48 @@ export class PdfTimeline {
         let state = graphics.save();
         graphics.setClip(new RectangleF(x, y, width, pixelToPoint(height)));
         if (isTopTier) {
-            x = x + pLeft + 4;
+            x = x + pLeft + this.topTierValueLeftPadding;
         } else {
             x = x + pLeft;
         }
         graphics.drawString(eventArgs.value, font, null, textBrush, x, y + pTop, pixelToPoint(width), pixelToPoint(height), e.format);
         graphics.restore(state);
+    }
+    /**
+     * Initializes and returns a PdfStringFormat based on the provided Gantt style and tier level.
+     *
+     * @param {IGanttStyle} ganttStyle - The style settings for the Gantt chart which include the timeline format.
+     * @param {boolean} isTopTier - A flag indicating whether the format is for the top tier of the timeline.
+     * @returns {PdfStringFormat} The initialized PdfStringFormat with appropriate line alignment, text alignment,
+     * and word wrap type, as determined by the ganttStyle and isTopTier flag.
+     */
+    private initializePdfStringFormat(ganttStyle: IGanttStyle, isTopTier: boolean): PdfStringFormat {
+        let format: PdfStringFormat = new PdfStringFormat();
+        if (isNullOrUndefined(ganttStyle.timeline.format)) {
+            if (isTopTier) {
+                format.lineAlignment = PdfVerticalAlignment.Middle;
+                format.alignment = PdfTextAlignment.Left;
+            } else {
+                format.lineAlignment = PdfVerticalAlignment.Middle;
+                format.alignment = PdfTextAlignment.Center;
+                format.wordWrap = PdfWordWrapType.Character;
+            }
+        } else {
+            format = ganttStyle.timeline.format;
+        }
+        return format;
+    }
+    private getPdfFont(ganttStyle: IGanttStyle): PdfFont {
+        let font: PdfFont;
+        if (ganttStyle && ganttStyle.holiday && (ganttStyle.holiday.fontSize || ganttStyle.holiday.fontStyle ||
+            ganttStyle.holiday.fontFamily)) {
+            const fontSize: number = ganttStyle.holiday.fontSize ? ganttStyle.holiday.fontSize : 9;
+            const fontFamily: PdfFontFamily = ganttStyle.holiday.fontFamily ?
+                ganttStyle.holiday.fontFamily : this.fontFamily;
+            const fontStyle: PdfFontStyle = ganttStyle.holiday.fontStyle ?
+                ganttStyle.holiday.fontStyle : PdfFontStyle.Regular;
+            font = new PdfStandardFont(fontFamily, fontSize, fontStyle);
+        }
+        return font;
     }
 }

@@ -18,6 +18,15 @@
     @include multicolumn-combobox-styles($multicolumn-margin-top-bigger-value);
   }
 
+  .e-bigger.e-multicolumn-list .e-multicolumn-list-icon .e-spinner-pane .e-spinner-inner svg,
+  .e-bigger .e-multicolumn-list .e-multicolumn-list-icon .e-spinner-pane .e-spinner-inner svg {
+    /* stylelint-disable declaration-no-important */
+    height: 26px !important;
+    width: 26px !important;
+    transform-origin: 13px 13px 13px !important;
+    /* stylelint-enable declaration-no-important */
+  }
+
   .e-bigger.e-small.e-popup,
   .e-bigger.e-small .e-popup,
   .e-bigger .e-small.e-popup,

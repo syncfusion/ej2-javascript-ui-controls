@@ -7080,6 +7080,10 @@ describe('Diagram Control', () => {
             diagram.dataSourceSettings.dataSource = new DataManager(employeeData5);
             done();
         });
+        it('Checking dataSource dynamically-2', (done: Function) => {
+            diagram.dataSourceSettings.dataSource = new DataManager(employeeData68);
+            done();
+        });
     });
 
     describe('Yes and No branch', () => {
@@ -7734,6 +7738,62 @@ describe('Flowchart import and export', () => {
         H -.- J[No]`
         diagram.loadDiagramFromMermaid(data);
         expect(diagram.nodes.length === 10).toBe(true);
+        done();
+    });
+});
+
+describe('Flowchart orientation and layout settings-Dynamic dataSource change', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let items: DataManager = new DataManager(businessStartup, new Query().take(7));
+    beforeAll(() => {
+        ele = createElement('div', { id: 'flowchartorientation' });
+        document.body.appendChild(ele);
+        diagram = new Diagram({
+            width: '100%', height: '900px',
+            layout:{
+                type:'Flowchart',
+                verticalSpacing: 50,
+                horizontalSpacing: 50,
+                orientation: 'LeftToRight',
+                flowchartLayoutSettings:{
+                    yesBranchDirection:'LeftInFlow',
+                    noBranchDirection:'RightInFlow',
+                    yesBranchValues: ["Yes", "True", "Y" ],
+                    noBranchValues: ["No", "None", "False", ]
+                }
+            },
+            dataSourceSettings: { id: 'id', parentId: 'parentId', dataSource: new DataManager(businessStartup)},
+            getNodeDefaults: (obj: NodeModel) => {
+                obj.width =  120;
+                obj.height =  50;
+                  if((obj.shape as FlowShapeModel).shape === 'Decision' || (obj.shape as BpmnShapeModel).shape === 'DataSource'){
+                    obj.height = 80;
+                }
+                return obj;
+            }, getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                connector.type = 'Orthogonal';
+                return connector;
+            }
+        });
+        diagram.appendTo('#flowchartorientation');
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking FlowChart Layout', (done: Function) => {
+        expect(diagram.nodes.length === 14).toBe(true);
+        expect(diagram.connectors.length === 16).toBe(true);
+        done();
+    });
+    it('Changing dataSource dynamically-code coverage', (done: Function) => {
+        diagram.dataSourceSettings = { id: 'empId', parentId: 'parentId', dataSource: new DataManager(employeeData36)};
+        done();
+    });
+    it('Changing LayoutSettings', (done: Function) => {
+        diagram.layout.flowchartLayoutSettings.yesBranchDirection = 'RightInFlow';
+        diagram.dataBind();
         done();
     });
 });

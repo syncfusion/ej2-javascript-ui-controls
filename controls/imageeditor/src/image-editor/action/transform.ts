@@ -1985,12 +1985,15 @@ export class Transform {
 
     private straightenImage(degree: number): void {
         const parent: ImageEditor = this.parent;
+        const isSelection: boolean = parent.activeObj.shape && parent.activeObj.shape.indexOf('crop-') > -1;
         if (parent.toolbar && parent.toolbar.length === 0) {
             parent.notify('draw', { prop: 'select', onPropertyChange: false,
                 value: { type: 'custom', startX: null, startY: null, width: null, height: null } });
         }
         parent.notify('toolbar', { prop: 'performCropTransformClick', value: {shape: null }});
         parent.setStraighten(degree);
-        parent.okBtn();
+        if (!isSelection) {
+            parent.okBtn();
+        }
     }
 }

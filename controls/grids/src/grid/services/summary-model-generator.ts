@@ -126,10 +126,16 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
         //Get the summary column by display
         const sColumn: AggregateColumnModel = summaryRow.columns.filter(
             (scolumn: AggregateColumnModel) => scolumn.columnName === column.field)[0];
-        const attrs: { style: Object, 'e-mappinguid': string, index: number, class?: string } = {
-            'style': { 'textAlign': column.textAlign },
+        const attrs: { 'e-mappinguid': string, index: number, class?: string } = {
             'e-mappinguid': column.uid, index: column.index
         };
+
+        if (column.textAlign) {
+            const alignmentClassMap: { [key in string]?: string } = { right: 'e-rightalign', left: 'e-leftalign', center: 'e-centeralign', justify: 'e-justifyalign' };
+            if (alignmentClassMap[column.textAlign.toLowerCase()]) {
+                attrs.class = alignmentClassMap[column.textAlign.toLowerCase()];
+            }
+        }
 
         if (indent) {
             attrs.class = indent;

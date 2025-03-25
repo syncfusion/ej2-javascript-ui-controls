@@ -300,15 +300,15 @@ export class ExportHelper {
     private processPredecessor(): void {
         if (isNullOrUndefined(this.exportProps.showPredecessorLines) || this.exportProps.showPredecessorLines) {
             this.parent.pdfExportModule.isPdfExport = true;
-            this.parent.predecessorModule.createConnectorLinesCollection();
+            this.parent.predecessorModule.createConnectorLinesCollection(this.flatData);
             this.parent.updatedConnectorLineCollection.forEach((data: IConnectorLineObject) => {
                 const predecessor: PdfGanttPredecessor = this.gantt.predecessor.add();
                 predecessor.parentLeft = data.parentLeft;
                 predecessor.childLeft = data.childLeft;
                 predecessor.parentWidth = data.parentWidth;
                 predecessor.childWidth = data.childWidth;
-                predecessor.parentIndex = data.parentIndex;
-                predecessor.childIndex = data.childIndex;
+                predecessor.parentIndex = this.findIndexUsingParent(this.flatData, data.parentIndex);
+                predecessor.childIndex = this.findIndexUsingParent(this.flatData, data.childIndex);
                 predecessor.rowHeight = data.rowHeight;
                 predecessor.type = data.type;
                 predecessor.milestoneParent = data.milestoneParent;
@@ -327,6 +327,9 @@ export class ExportHelper {
         }
     }
 
+    public findIndexUsingParent(expandedRecord: IGanttData[], parentIndex: number): number {
+        return expandedRecord.findIndex((data: IGanttData) => data.index === parentIndex);
+    }
     private processRecordRow(data: IGanttData): void {
         this.colIndex = 0;
         this.row.level = data.level;

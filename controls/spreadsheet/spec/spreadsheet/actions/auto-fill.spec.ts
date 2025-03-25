@@ -2,7 +2,7 @@ import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
 import { defaultData } from '../util/datasource.spec';
 import { Spreadsheet } from '../../../src/spreadsheet/index';
 import { L10n } from '@syncfusion/ej2-base';
-import { getCell, ProtectSettingsModel, refreshCell, setRow } from "../../../src/index";
+import { CellModel, getCell, ProtectSettingsModel, refreshCell, setRow } from "../../../src/index";
 
 describe('Auto fill ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -2195,6 +2195,15 @@ describe('Auto fill ->', () => {
             expect(spreadsheet.activeSheetIndex).toEqual(0);
             done();
         });
+        it('EJ2-931170 - Data validation applied during autofill with FillFormattingOnly option', (done: Function) => {
+            helper.invoke('addDataValidation', [{ type: 'List', value1: '11,12,13' }, 'H1']);
+            const cell: CellModel = helper.getInstance().sheets[0].rows[0].cells[7];
+            expect(JSON.stringify(cell.validation)).toBe('{"type":"List","value1":"11,12,13"}');
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('autoFill', ['H2:H2', 'H1', 'Down', 'FillFormattingOnly']);
+            expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[1].cells[7].validation).toBe(undefined);
+            done();
+        });
     });
     describe(' AutoFill for date cell ->', () => {
         beforeAll((done: Function) => {
@@ -2312,6 +2321,64 @@ describe('Auto fill ->', () => {
             expect(spreadsheet.sheets[0].rows[11].cells[10].value).toBe(554);
             expect(spreadsheet.sheets[0].rows[11].cells[11].formula).toBe('=SUM(M2:M11)');
             expect(spreadsheet.sheets[0].rows[11].cells[11].value).toBe(554);
+            done();
+        });
+    });
+
+    describe('EJ2-895909 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }, { ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Selection misalignment issue occurs on increasing the font size', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            helper.invoke('cellFormat', [{ fontSize: '22pt' }, 'E2:H2']);
+            expect(spreadsheet.sheets[0].rows[1].height).toBe(38);
+            expect(helper.invoke('getRow', [1]).style.height).toBe('38px');
+            expect(spreadsheet.sheets[0].rows[1].cells[4].style.fontSize).toBe('22pt');
+            helper.invoke('autoFill',['E3:E11','E2:E2','Down','FillSeries']);
+            expect(spreadsheet.sheets[0].rows[2].height).toBe(38);
+            expect(helper.invoke('getRow', [2]).style.height).toBe('38px');
+            expect(spreadsheet.sheets[0].rows[2].cells[4].style.fontSize).toBe('22pt');
+            expect(spreadsheet.sheets[0].rows[3].height).toBe(38);
+            expect(helper.invoke('getRow', [3]).style.height).toBe('38px');
+            expect(spreadsheet.sheets[0].rows[3].cells[4].style.fontSize).toBe('22pt');
+            expect(spreadsheet.sheets[0].rows[4].height).toBe(38);
+            expect(helper.invoke('getRow', [4]).style.height).toBe('38px');
+            expect(spreadsheet.sheets[0].rows[4].cells[4].style.fontSize).toBe('22pt');
+            expect(spreadsheet.sheets[0].rows[5].height).toBe(38);
+            expect(helper.invoke('getRow', [5]).style.height).toBe('38px');
+            expect(spreadsheet.sheets[0].rows[5].cells[4].style.fontSize).toBe('22pt');
+            expect(spreadsheet.sheets[0].rows[6].height).toBe(38);
+            expect(helper.invoke('getRow', [6]).style.height).toBe('38px');
+            expect(spreadsheet.sheets[0].rows[6].cells[4].style.fontSize).toBe('22pt');
+            expect(spreadsheet.sheets[0].rows[7].height).toBe(38);
+            expect(helper.invoke('getRow', [7]).style.height).toBe('38px');
+            expect(spreadsheet.sheets[0].rows[7].cells[4].style.fontSize).toBe('22pt');
+            expect(spreadsheet.sheets[0].rows[8].height).toBe(38);
+            expect(helper.invoke('getRow', [8]).style.height).toBe('38px');
+            expect(spreadsheet.sheets[0].rows[8].cells[4].style.fontSize).toBe('22pt');
+            expect(spreadsheet.sheets[0].rows[9].height).toBe(38);
+            expect(helper.invoke('getRow', [9]).style.height).toBe('38px');
+            expect(spreadsheet.sheets[0].rows[9].cells[4].style.fontSize).toBe('22pt');
+            expect(spreadsheet.sheets[0].rows[10].height).toBe(38);
+            expect(helper.invoke('getRow', [10]).style.height).toBe('38px');
+            expect(spreadsheet.sheets[0].rows[10].cells[4].style.fontSize).toBe('22pt');
+            helper.invoke('autoFill',['Sheet2!A12:A17','Sheet1!E2:E2','Down','CopyCells']);
+            expect(helper.invoke('getRow', [11]).style.height).toBe('20px');
+            expect(spreadsheet.sheets[1].rows[11].cells[0].style.fontSize).toBe('22pt');
+            expect(helper.invoke('getRow', [12]).style.height).toBe('20px');
+            expect(spreadsheet.sheets[1].rows[12].cells[0].style.fontSize).toBe('22pt');
+            expect(helper.invoke('getRow', [13]).style.height).toBe('20px');
+            expect(spreadsheet.sheets[1].rows[13].cells[0].style.fontSize).toBe('22pt');
+            expect(helper.invoke('getRow', [14]).style.height).toBe('20px');
+            expect(spreadsheet.sheets[1].rows[14].cells[0].style.fontSize).toBe('22pt');
+            expect(helper.invoke('getRow', [15]).style.height).toBe('20px');
+            expect(spreadsheet.sheets[1].rows[15].cells[0].style.fontSize).toBe('22pt');
+            expect(helper.invoke('getRow', [16]).style.height).toBe('20px');
+            expect(spreadsheet.sheets[1].rows[16].cells[0].style.fontSize).toBe('22pt');
             done();
         });        
     });
@@ -2525,6 +2592,60 @@ describe('Auto fill ->', () => {
             expect(getCell(3, 11, instance.sheets[0]).formula).toBe('=SUM(#REF!,#REF!,#REF!)');
         });
     });
+    describe(' Autofill with Notes ->', () => {
+        let spreadsheet: any;
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }],
+                rows: [{ index: 1, cells: [{ index: 5, notes: 'Syncfusion' }] }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Apply autoFill', (done: Function) => {
+            helper.invoke('selectRange', ['F2']);
+            const autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
+            let td: HTMLElement = helper.invoke('getCell', [8, 5]);
+            let coords = td.getBoundingClientRect();
+            let autoFillCoords = autoFill.getBoundingClientRect();
+            helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
+            helper.getInstance().selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.right, clientY: autoFillCoords.bottom });
+            helper.getInstance().selectionModule.mouseMoveHandler({ target: td, clientX: coords.left + 1, clientY: coords.top + 1 });
+            helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
+            const instance: any = helper.getInstance();
+            expect(instance.selectionModule.dAutoFillCell).toBe('F2:F2');
+            expect(helper.invoke('getCell', [5, 5]).textContent).toBe('204');
+            helper.click('#spreadsheet_autofilloptionbtn');
+            helper.click('.e-dragfill-ddb ul li:nth-child(1)');
+            expect(helper.invoke('getCell', [5, 5]).textContent).toBe('200');
+            spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].rows[1].cells[5].notes).toBe('Syncfusion');
+            done();
+        });
+        it('Change autoFill option', (done: Function) => {
+            helper.click('#spreadsheet_autofilloptionbtn');
+            helper.click('.e-dragfill-ddb ul li:nth-child(3)');
+            expect(helper.invoke('getCell', [5, 5]).textContent).toBe('300');
+            expect(helper.invoke('getCell', [5, 5]).querySelector('.e-addNoteIndicator')).toBe(null);
+            done();
+        });
+        it('Change autoFill option-1', (done: Function) => {
+            helper.click('#spreadsheet_autofilloptionbtn');
+            helper.click('.e-dragfill-ddb ul li:nth-child(4)');
+            expect(helper.invoke('getCell', [5, 5]).textContent).toBe('204');
+            expect(helper.invoke('getCell', [5, 5]).querySelector('.e-addNoteIndicator')).toBe(null);
+            done();
+        });
+        it('Undo action', () => {
+            helper.getElement('#' + helper.id + '_undo').click();
+            expect(helper.invoke('getCell', [5, 5]).textContent).toBe('300');
+            expect(helper.invoke('getCell', [5, 5]).querySelector('.e-addNoteIndicator')).toBe(null);
+        });
+        it('Redo action', () => {
+            helper.getElement('#' + helper.id + '_redo').click();
+            expect(helper.invoke('getCell', [5, 5]).textContent).toBe('204');
+            expect(helper.invoke('getCell', [5, 5]).querySelector('.e-addNoteIndicator')).toBe(null);
+        });
+    });
     describe(' AutoFill for merged date cell ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
@@ -2631,6 +2752,126 @@ describe('Auto fill ->', () => {
             expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[0].cells[2].validation.value1).toBe('=B2');
             expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[0].cells[2].value.toString()).toBe('0.5239814814814815');
             done();
+        });
+        it('916573- Notes are getting added while selecting the Fill Formatting only option in autofill drop down', (done: Function) => {
+            helper.invoke('selectRange', ['C11']);
+            helper.setAnimationToNone('#spreadsheet_contextmenu');
+            helper.openAndClickCMenuItem(0, 0, [9]);
+            helper.getElements('.e-addNoteContainer')[0].value = 'Syncfusion';
+            helper.getInstance().spreadsheetNoteModule.updateNoteContainer();
+            expect(helper.getInstance().sheets[0].rows[10].cells[2].notes).toBe('Syncfusion');
+            expect(helper.getInstance().sheets[0].rows[10].cells[3].notes).toBeUndefined;
+            expect(helper.getInstance().sheets[0].rows[10].cells[4].notes).toBeUndefined;
+            expect(helper.getInstance().sheets[0].rows[10].cells[5].notes).toBeUndefined;
+            expect(helper.getInstance().sheets[0].rows[10].cells[6].notes).toBeUndefined;
+            expect(helper.getInstance().sheets[0].rows[10].cells[7].notes).toBeUndefined;
+            done();
+        });
+    });
+
+    describe('EJ2-923948 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Time format values are displayed incorrectly when trying to autofill across previous cells in Spreadsheet', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            helper.edit('I12', '1:00:00 AM');
+            expect(spreadsheet.sheets[0].rows[11].cells[8].formattedText).toBe('1:00:00 AM');
+            helper.invoke('autoFill', ['I5:I11', 'I12', 'Up', 'FillSeries']);
+            expect(spreadsheet.sheets[0].rows[10].cells[8].formattedText).toBe('12:00:00 AM');
+            expect(spreadsheet.sheets[0].rows[9].cells[8].formattedText).toBe('11:00:00 PM');
+            expect(spreadsheet.sheets[0].rows[8].cells[8].formattedText).toBe('10:00:00 PM');
+            expect(spreadsheet.sheets[0].rows[7].cells[8].formattedText).toBe('9:00:00 PM');
+            expect(spreadsheet.sheets[0].rows[6].cells[8].formattedText).toBe('8:00:00 PM');
+            helper.invoke('autoFill', ['E12:H12', 'I12', 'Left', 'FillSeries']);
+            expect(spreadsheet.sheets[0].rows[11].cells[7].formattedText).toBe('12:00:00 AM');
+            expect(spreadsheet.sheets[0].rows[11].cells[6].formattedText).toBe('11:00:00 PM');
+            expect(spreadsheet.sheets[0].rows[11].cells[5].formattedText).toBe('10:00:00 PM');
+            expect(spreadsheet.sheets[0].rows[11].cells[4].formattedText).toBe('9:00:00 PM');
+            done();
+        });        
+    });
+
+    describe('EJ2-916365 -> Auto-fill drop-down button is not visible when finite mode is set to true', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                scrollSettings: { isFinite: true },
+                sheets: [{ ranges: [{ dataSource: defaultData }], rowCount: 10 }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Ensuring', (done: Function) => {
+            helper.invoke('selectRange', ['A10']);
+            const autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
+            let td: HTMLElement = helper.invoke('getCell', [0, 10]);
+            let coords = td.getBoundingClientRect();
+            let autoFillCoords = autoFill.getBoundingClientRect();
+            helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
+            const instance: any = helper.getInstance();
+            instance.selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.right, clientY: autoFillCoords.bottom });
+            instance.selectionModule.mouseMoveHandler({ target: td, clientX: coords.left + 1, clientY: coords.top + 1 });
+            helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
+            setTimeout(() => {
+                const virtualable: number = instance.element.querySelector('.e-main-panel .e-sheet-content .e-virtualable').clientHeight;
+                const eleTopPosition: number = instance.element.querySelector('.e-filloption').style.top.split('px')[0];
+                expect(virtualable > (Number(eleTopPosition) + instance.element.querySelector('.e-filloption').clientHeight)).toBeTruthy();
+                done();
+            });
+        });
+    });
+
+    describe('EJ2-943536 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }],
+                    rows: [{ index: 4, cells: [{ index: 7, notes: 'Syncfusion', isNoteEditable: false }] }]
+                }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Duplicate Add Notes entries appear when performing autofill and scrolling down/up.', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('autoFill', ['H6:H10', 'H5:H5', 'Down', 'CopyCells']);
+            let td: HTMLElement;
+            helper.invoke('goTo', ['A100']);
+            setTimeout(() => {
+                helper.invoke('goTo', ['A1']);
+                setTimeout(() => {
+                    td = helper.invoke('getCell', [4, 7]);
+                    expect(td.querySelector('.e-addNoteIndicator')).not.toBeNull();
+                    expect(spreadsheet.sheets[0].rows[4].cells[7].notes).toBe('Syncfusion');
+                    expect(spreadsheet.sheets[0].rows[4].cells[7].isNoteEditable).toBeFalsy();
+                    expect(spreadsheet.sheets[0].rows[5].cells[7].notes).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[5].cells[7].isNoteEditable).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[6].cells[7].notes).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[6].cells[7].isNoteEditable).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[7].cells[7].notes).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[7].cells[7].isNoteEditable).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[8].cells[7].notes).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[8].cells[7].isNoteEditable).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[9].cells[7].notes).toBeUndefined();
+                    expect(spreadsheet.sheets[0].rows[9].cells[7].isNoteEditable).toBeUndefined();
+                    td = helper.invoke('getCell', [5, 7]);
+                    expect(td.querySelector('.e-addNoteIndicator')).toBeNull();
+                    td = helper.invoke('getCell', [6, 7]);
+                    expect(td.querySelector('.e-addNoteIndicator')).toBeNull();
+                    td = helper.invoke('getCell', [7, 7]);
+                    expect(td.querySelector('.e-addNoteIndicator')).toBeNull();
+                    td = helper.invoke('getCell', [8, 7]);
+                    expect(td.querySelector('.e-addNoteIndicator')).toBeNull();
+                    td = helper.invoke('getCell', [9, 7]);
+                    expect(td.querySelector('.e-addNoteIndicator')).toBeNull();
+                    done();
+                });
+            });
         });
     });
 });

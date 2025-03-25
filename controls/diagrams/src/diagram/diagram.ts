@@ -24,7 +24,7 @@ import { PageSettings, ScrollSettings } from './diagram/page-settings';
 import { PageSettingsModel, ScrollSettingsModel } from './diagram/page-settings-model';
 import { DiagramElement } from './core/elements/diagram-element';
 import { ServiceLocator } from './objects/service';
-import { IElement, IDataLoadedEventArgs, ISelectionChangeEventArgs, IElementDrawEventArgs, IMouseWheelEventArgs, ISegmentChangeEventArgs, ILoadEventArgs, ILoadedEventArgs } from './objects/interface/IElement';
+import { IElement, IDataLoadedEventArgs, ISelectionChangeEventArgs, IElementDrawEventArgs, IMouseWheelEventArgs, ISegmentChangeEventArgs, ILoadEventArgs, ILoadedEventArgs, ILayoutUpdatedEventArgs } from './objects/interface/IElement';
 import { IClickEventArgs, ScrollValues, FixedUserHandleClickEventArgs } from './objects/interface/IElement';
 import { ChangedObject, IBlazorTextEditEventArgs, DiagramEventObject, DiagramEventAnnotation } from './objects/interface/IElement';
 import { IBlazorDragLeaveEventArgs } from './objects/interface/IElement';
@@ -150,6 +150,7 @@ import { CustomCursorAction } from './diagram/custom-cursor';
 import { CustomCursorActionModel } from './diagram/custom-cursor-model';
 import { SymbolSizeModel } from './../diagram/objects/preview-model';
 import { LineRouting } from './interaction/line-routing';
+import { AvoidLineOverlapping } from './interaction/line-overlapping';
 import { LineDistribution } from './interaction/line-distribution';
 import { DiagramSettingsModel } from '../diagram/diagram-settings-model';
 import { DiagramSettings } from '../diagram/diagram-settings';
@@ -298,6 +299,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @private
      */
     public lineRoutingModule: LineRouting;
+
+    /**
+     * `avoidLineOverlappingModule` is used to connect the connector's without overlapping
+     *
+     * @private
+     */
+    public avoidLineOverlappingModule: AvoidLineOverlapping;
 
     /**
      * `lineDistributionModule` is used to connect the node's without overlapping in automatic layout
@@ -1515,6 +1523,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     @Event()
     public loaded: EmitType<ILoadedEventArgs>;
 
+    /**
+     * Triggers when the layout rendering process in the diagram has either started or completed.
+     *
+     *  @event
+     */
+    @Event()
+    public layoutUpdated: EmitType<ILayoutUpdatedEventArgs>;
+
     //private variables
     /** @private */
     public preventDiagramUpdate: boolean;
@@ -1621,7 +1637,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public realActions: RealAction;
     /** @private */
-    public previousSelectedObject: (NodeModel | ConnectorModel)[];
+    public previousSelectedObject: (NodeModel | ConnectorModel | AnnotationModel)[];
     public canLayout: boolean = true;
     public cancelPositionChange: boolean = false;
     private isRefreshed: boolean = false;
@@ -1636,7 +1652,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private previousNodeCollection: NodeModel[] = [];
     private previousConnectorCollection: ConnectorModel[] = [];
     private crudDeleteNodes: Object[] = [];
-    private previousSelectedObjects: (NodeModel | ConnectorModel)[] = [];
+    private previousSelectedObjects: (NodeModel | ConnectorModel | AnnotationModel)[] = [];
     // Group update to server when BlazorAction is isGroupAction;
     private blazorAddorRemoveCollection: (NodeModel | ConnectorModel)[] = [];
     private blazorRemoveIndexCollection: number[] = [];
@@ -1646,6 +1662,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public selectedObject: { helperObject: NodeModel, actualObject: NodeModel } = { helperObject: undefined, actualObject: undefined };
     /** @private */
     public deleteDependentConnector: boolean = true;
+    /** @private */
+    public scaleValue: number = 1;
+    public routedConnectors: string[] = [];
     /** @private */
     public pathDataStorage: Map<string, PointModel[]> = new Map();
     // To check current action is undo or redo
@@ -2330,9 +2349,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             const changeConnectors: Object[] = [];
             //Removed isBlazor code.
             // EJ2-65876 - Exception occurs on line routing injection module
-            if ((this.connectors as ConnectorModel).sourceID !== (this.connectors as ConnectorModel).targetID) {
-                this.lineRoutingModule.lineRouting(this);
-            }
+            //934719 - Line Routing is never executed during initial rendering
+            this.lineRoutingModule.lineRouting(this);
             // Removed isBlazor code.
         } else if (this.constraints & DiagramConstraints.LineRouting) {
             console.warn('[WARNING] :: Module "LineRouting" is not available in Diagram component! You either misspelled the module name or forgot to load it.');
@@ -2562,6 +2580,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 args: []
             });
         }
+        if (this.constraints & DiagramConstraints.AvoidLineOverlapping) {
+            modules.push({
+                member: 'AvoidLineOverlapping',
+                args: [this]
+            });
+        }
         if ((this.layout && (this.layout.type === 'ComplexHierarchicalTree' || this.layout.type === 'HierarchicalTree')) || (this.layout.arrangement === 'Linear' || (this.layout.enableRouting))) {
             modules.push({
                 member: 'LineDistribution',
@@ -2689,7 +2713,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * @param {NodeModel | ConnectorModel} oldValue - Defines the old value
      *
      */
-    public select(objects: (NodeModel | ConnectorModel)[], multipleSelection?: boolean, oldValue?: (NodeModel | ConnectorModel)[]): void {
+    public select(objects: (NodeModel | ConnectorModel | AnnotationModel)[],
+                  multipleSelection?: boolean, oldValue?: (NodeModel | ConnectorModel | AnnotationModel)[]): void {
         //Removed isBlazor code.
         if (objects != null) {
             this.commandHandler.selectObjects(objects, multipleSelection, oldValue);
@@ -3996,6 +4021,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 connector = this.connectors[parseInt(i.toString(), 10)] as Connector;
                 connector.segments = [];
                 this.connectorPropertyChange(connector, {} as Connector, { segments: connector.segments } as Connector);
+                if (this.avoidLineOverlappingModule) {
+                    this.avoidLineOverlappingModule.removeConnector(connector);
+                }
             }
             this.protectPropertyChange(false);
         }
@@ -5053,6 +5081,23 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
 
         this.tooltipObject.close();
+        if (obj && obj.id !== 'helper' && this.lineRoutingModule && (this.constraints & DiagramConstraints.LineRouting) &&
+            (obj instanceof Node) && (this.layout.type !== 'ComplexHierarchicalTree')) {
+            const INFLATE_MARGIN: number = 40;
+            const nodeBounds: Rect = getBounds(obj.wrapper);
+            nodeBounds.Inflate(INFLATE_MARGIN);
+
+            const nearbyObjects: Array<NodeModel | ConnectorModel> = this.spatialSearch.findObjects(nodeBounds);
+            if (this.avoidLineOverlappingModule) {
+                this.avoidLineOverlappingModule.removeConnectors(nearbyObjects);
+            }
+            this.lineRoutingModule.renderVirtualRegion(this, true);
+            for (const item of nearbyObjects) {
+                if (item instanceof Connector && item.type === 'Orthogonal') {
+                    this.lineRoutingModule.refreshConnectorSegments(this, item, true);
+                }
+            }
+        }
     }
     /* tslint:enable */
 
@@ -5531,6 +5576,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         const canEnableRouting: boolean = this.layout.enableRouting && this.layout.type === 'ComplexHierarchicalTree';
         const viewPort: PointModel = { x: this.scroller.viewPortWidth, y: this.scroller.viewPortHeight };
         if (this.layout.type !== 'None') {
+            if (this.organizationalChartModule || this.mindMapChartModule || this.radialTreeModule || this.symmetricalLayoutModule
+                || this.complexHierarchicalTreeModule || this.flowchartLayoutModule) {
+                // Trigger the layoutUpdated event with the state set to 'Started' and the current layout type.
+                const args: ILayoutUpdatedEventArgs = { state: 'Started', type: this.layout.type };
+                this.triggerEvent(DiagramEvent.layoutUpdated, args);
+            }
+
             //Bug 862601: Connectors are not rendered properly with lineRouting and lineDistribution enables during doLayout process.
             //Removed initLineDistribution method call here and added it below after the complex hierarchical tree doLayout process.
             if (this.organizationalChartModule) {
@@ -5670,6 +5722,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if ((this.diagramActions & DiagramAction.Render) && this.layout.enableRouting) {
             this.refreshRoutingConnectors();
         }
+        if (update) {
+            // Trigger the layoutUpdated event with the state set to 'Completed' and the current layout type.
+            const args: ILayoutUpdatedEventArgs = { state: 'Completed', type: this.layout.type };
+            this.triggerEvent(DiagramEvent.layoutUpdated, args);
+        }
+
         return ((this.blazorActions & BlazorAction.expandNode) ? layout : true);
     }
     //Bug 877799: Optimize the routing segment distance while using enableRouting in layout.
@@ -7418,6 +7476,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         const commonStyle: string = 'position:absolute;top:0px;left:0px;overflow:hidden;pointer-events:none;';
         const container: HTMLElement = document.getElementById(this.element.id);
         const bounds: ClientRect = container.getBoundingClientRect();
+        //Task 918932: Provide diagram control in powerapps- phase2
+        this.setScaleFromElement(bounds, container);
+        this.modifyBounds(bounds);
         const scrollerSize: number = getScrollerWidth();
         this.scroller.scrollerWidth = scrollerSize;
         this.scroller.setViewPortSize(bounds.width, bounds.height);
@@ -7438,6 +7499,46 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.renderNativeLayer(bounds, commonStyle);
         this.renderAdornerLayer(bounds, commonStyle);
         this.renderHiddenUserHandleTemplateLayer(bounds);
+    }
+    /**
+     * @private
+     * @param { ClientRect } bounds - provide the bounds value
+     * @param { HTMLElement } container - provide the container value
+     * @returns { void }
+     *
+     */
+    public setScaleFromElement(bounds: ClientRect, container: HTMLElement): void {
+        const width: number = bounds.width / container.clientWidth;
+        this.scaleValue = width;
+    }
+    /**
+     * @private
+     * @returns { void }
+     * @param { any } bounds - provide the bounds value
+     */
+    public modifyBounds(bounds: any): void {
+        const scale: number = this.scaleValue;
+        bounds.x = bounds.x / scale;
+        bounds.y = bounds.y / scale;
+        bounds.width = bounds.width / scale;
+        bounds.height = bounds.height / scale;
+    }
+    /**
+     * @private
+     * @returns { number } - Returns offset value
+     * @param { number } offset - provide the offset value
+     * @param { boolean } isTooltipOffset - provide the isTooltipOffset value
+     *
+     */
+    public modifyClientOffset(offset: number, isTooltipOffset?: boolean): number {
+        const scale: number = this.scaleValue;
+        let value: number = 0;
+        if (isTooltipOffset) {
+            value = offset * scale;
+        } else {
+            value = offset / scale;
+        }
+        return value;
     }
 
     private renderAdornerLayer(bounds: ClientRect, commonStyle: string): void {
@@ -7850,7 +7951,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             while (currentLayer.zIndexTable[currentLayer.objectZIndex + 1]) {
                 (layer as Layer).objectZIndex++;
             }
-            obj.zIndex = ++currentLayer.objectZIndex;
+            // obj.zIndex = ++currentLayer.objectZIndex;
+            this.setIndex (layer as Layer, obj as NodeModel | ConnectorModel);
         } else {
             const index: number = (obj.zIndex !== null ? obj.zIndex : currentLayer.objectZIndex + 1);
             if (currentLayer.zIndexTable[parseInt(index.toString(), 10)]) {
@@ -7868,6 +7970,60 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                     j++;
                 }
+            }
+        }
+    }
+
+    private setIndex(layer: Layer, obj: NodeModel | ConnectorModel): void {
+        // Helper function to assign object zIndex and increment the objectZIndex of layer
+        const assignZIndex: any = (element: NodeModel | ConnectorModel): void => {
+            element.zIndex = ++layer.objectZIndex;
+            if ((element.shape.type === 'Bpmn' && (element.shape as BpmnShape).activity &&
+                (element.shape as BpmnShape).activity.subProcess && (element.shape as BpmnShape).activity.subProcess.processes &&
+                (element.shape as BpmnShape).activity.subProcess.processes.length)) {
+                const processArray: string[] = (element.shape as BpmnShape).activity.subProcess.processes;
+                processArray.forEach((processId: string) => {
+                    const processess: (NodeModel | ConnectorModel) = this.nameTable[`${processId}`];
+                    if (processess) {
+                        processess.zIndex = ++layer.objectZIndex;
+                    }
+                });
+            }
+        };
+        // Function to handle updating zIndex for child elements
+        const updateChildIndex: any = (childId: string): void => {
+            // Find if the child is a node or a connector
+            const childNode: NodeModel = this.nodes.find((node: NodeModel) => node.id === childId);
+            const childConnector: ConnectorModel = this.connectors.find((connector: ConnectorModel) => connector.id === childId);
+            if (childNode) {
+                if (childNode.children && childNode.children.length > 0) {
+                    // Recursively update the z-index for children of group nodes
+                    this.setIndex(layer, childNode);
+                } else {
+                    // Assign zIndex to non-group child node
+                    assignZIndex(childNode);
+                }
+            } else if (childConnector) {
+                // Assign zIndex to child connector
+                assignZIndex(childConnector);
+            }
+        };
+        // check object is present in current layer
+        const currentLayerObject: string = layer.objects.find((object: string) => object === obj.id);
+        if (currentLayerObject) {
+            if (obj instanceof Node) {
+                // Assign zIndex to group or standalone node
+                assignZIndex(obj);
+
+                if (obj.shape.type !== 'SwimLane' && obj.children && obj.children.length > 0) {
+                    // Update zIndex for each child if there are children
+                    for (let k: number = 0; k < obj.children.length; k++) {
+                        updateChildIndex(obj.children[parseInt(k.toString(), 10)]);
+                    }
+                }
+            } else {
+                // Assign zIndex to a connector
+                assignZIndex(obj);
             }
         }
     }
@@ -8500,7 +8656,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 (this.bpmnModule).bpmnTextAnnotationConnector = [];
             }
             (this.bpmnModule).bpmnTextAnnotationConnector.push(connector);
+            let shadowSet: boolean = (node.constraints & NodeConstraints.Shadow) !== 0;
+            let allowMovingSet: boolean = (node.constraints & NodeConstraints.AllowMovingOutsideLane) !== 0;
             node.constraints = NodeConstraints.Default & ~(NodeConstraints.OutConnect | NodeConstraints.InConnect);
+            if (shadowSet) {
+                node.constraints |= NodeConstraints.Shadow;
+            }
+            if (allowMovingSet) {
+                node.constraints |= NodeConstraints.AllowMovingOutsideLane;
+            }
             this.isProtectedOnChange = oldProtectOnChange;
         }
     }
@@ -9039,9 +9203,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         objects = objects.concat(this.nodes);
         objects = objects.concat(this.connectors);
         let type: string;
+        let greaterIndex: number;
+        if ((obj as Node).children) {
+            greaterIndex = this.commandHandler.findMaxZIndex(obj as Node);
+        }
+        else {
+            greaterIndex = obj.zIndex;
+        }
         if (obj.zIndex !== Number.MIN_VALUE) {
             for (let i: number = 0; i < objects.length; i++) {
-                if (objects[parseInt(i.toString(), 10)].zIndex > obj.zIndex) {
+                if (objects[parseInt(i.toString(), 10)].zIndex > greaterIndex) {
                     if (obj.shape.type === 'HTML' || obj.shape.type === 'Native') {
                         type = obj.shape.type === 'HTML' ? 'html' : 'native';
                     }
@@ -10800,33 +10971,43 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     //To execute the selection of elements on clicking tab key
     private navigateItems(tabCommand: boolean): void {
         let currentSelectedNodeIndex: number = 0;
+        const lastZIndex: number = (this.activeLayer as Layer).objectZIndex;
         let selectedItems: (NodeModel | ConnectorModel)[] = [];
+        let selectables: (NodeModel | ConnectorModel)[] = [];
         selectedItems = selectedItems.concat(this.selectedItems.nodes, this.selectedItems.connectors);
+        selectables = selectables.concat(this.nodes, this.connectors);
         if (selectedItems.length > 0) {
             currentSelectedNodeIndex = selectedItems[0].zIndex + (tabCommand ? 1 : -1);
         }
         else {
-            currentSelectedNodeIndex = tabCommand ? 0 : this.nodes.length + this.connectors.length - 1;
+            currentSelectedNodeIndex = tabCommand ? 0 : lastZIndex;
         }
         if (currentSelectedNodeIndex < 0) {
-            currentSelectedNodeIndex = this.nodes.length + this.connectors.length - 1;
-        } else if (currentSelectedNodeIndex === this.nodes.length + this.connectors.length) {
+            currentSelectedNodeIndex = lastZIndex;
+        } else if (currentSelectedNodeIndex > lastZIndex) {
             currentSelectedNodeIndex = 0;
         }
-        for (let i: number = 0; i < this.nodes.length; i++) {
-            if (currentSelectedNodeIndex === this.nodes[parseInt(i.toString(), 10)].zIndex) {
-                const nextNode: NodeModel = this.nodes[parseInt(i.toString(), 10)];
-                this.clearSelection();
-                this.select([nextNode]);
+        let isSelected: boolean = false;
+        do {
+            for (let i: number = 0; i < selectables.length; i++) {
+                const nextObject: (NodeModel | ConnectorModel) = selectables[parseInt(i.toString(), 10)];
+                if (currentSelectedNodeIndex === nextObject.zIndex) {
+                    this.clearSelection();
+                    this.select([nextObject]);
+                    isSelected = true;
+                    break; // Exit the loop once a node or connector is selected
+                }
+            }
+            if (!isSelected) {
+                if (tabCommand) {
+                    currentSelectedNodeIndex++;  // If no selection has been made, increment currentSelectedNodeIndex for Tab command
+                }
+                else {
+                    currentSelectedNodeIndex--;  // If no selection has been made, decrement currentSelectedNodeIndex for shift + Tab
+                }
             }
         }
-        for (let j: number = 0; j < this.connectors.length; j++) {
-            if (currentSelectedNodeIndex === this.connectors[parseInt(j.toString(), 10)].zIndex) {
-                const nextConnector: ConnectorModel = this.connectors[parseInt(j.toString(), 10)];
-                this.clearSelection();
-                this.select([nextConnector]);
-            }
-        }
+        while (!isSelected);
     }
 
     /**
@@ -11453,7 +11634,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             } else {
                 actualObject.wrapper.offsetX = node.offsetX;
-            } update = true;
+            }
+            update = true;
             updateConnector = true;
             offsetChanged = true;
         }
@@ -11472,7 +11654,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             } else {
                 actualObject.wrapper.offsetY = node.offsetY;
-            } update = true;
+            }
+            update = true;
             updateConnector = true;
             offsetChanged = true;
         }
@@ -11555,8 +11738,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             updateConnector = true;
             offsetChanged = true;
         }
-        if ((((node.shape !== undefined && (node.shape.type === undefined)) || node.width !== undefined
-            || node.height !== undefined || node.style !== undefined) && actualObject.shape.type === 'Bpmn' && this.bpmnModule)) {
+        if ((((node.shape !== undefined && (node.shape.type === undefined)) || node.width !== undefined || node.height !== undefined ||
+            node.style !== undefined) && actualObject.shape.type === 'Bpmn' && this.bpmnModule)) {
             update = true;
             updateConnector = true;
             this.bpmnModule.updateBPMN(node, oldObject, actualObject, this);
@@ -12162,7 +12345,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.updateConnectorProperties(this.nameTable[actualObject.outEdges[parseInt(k.toString(), 10)]]);
             }
         }
-        if (actualObject.parentId && this.nameTable[actualObject.parentId]) {
+        // Bug: 909563 - Max Call Stack exception upon dragging group's child connector end point
+        if (!(actualObject instanceof Connector) && actualObject.parentId && this.nameTable[actualObject.parentId]) {
             this.updateConnectorEdges(this.nameTable[actualObject.parentId]);
         }
     }
@@ -12499,6 +12683,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     for (const child of obj.children) {
                         this.updateElementVisibility(this.nameTable[`${child}`].wrapper, this.nameTable[`${child}`], visible);
                     }
+                }
+                if ((obj.shape.type === 'Bpmn') && (obj.shape as BpmnShapeModel).shape === 'TextAnnotation' && this.diagramActions) {
+                    const connector: Connector = this.nameTable[obj.inEdges[0]];
+                    const oldValue: boolean = connector.visible;
+                    connector.visible = visible;
+                    this.connectorPropertyChange(connector, { visible: oldValue } as Connector, { visible: visible } as Connector);
                 }
                 //ports
                 if (obj.ports) {

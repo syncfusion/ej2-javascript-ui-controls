@@ -993,21 +993,25 @@ export class PolygonSetting extends ChildProperty<PolygonSettings> {
 export class PolygonSettings extends ChildProperty<PolygonSettings> {
     /**
      * Gets or sets the properties of all the polygon shapes that will be displayed in a layer.
+     * {% codeBlock src='maps/polygonSettingsPolygons/index.md' %}{% endcodeBlock %}
      */
     @Collection<PolygonSettingModel>([], PolygonSetting)
     public polygons: PolygonSettingModel[];
     /**
      * Gets or sets the properties for selecting polygon shapes in a map layer.
+     * {% codeBlock src='maps/polygonSettingsSelectionSettings/index.md' %}{% endcodeBlock %}
      */
     @Complex<SelectionSettingsModel>({}, SelectionSettings)
     public selectionSettings: SelectionSettingsModel;
     /**
      * Gets or sets the properties for highlighting polygon shapes in a map layer.
+     * {% codeBlock src='maps/polygonSettingsHighlightSettings/index.md' %}{% endcodeBlock %}
      */
     @Complex<HighlightSettingsModel>({}, HighlightSettings)
     public highlightSettings: HighlightSettingsModel;
     /**
      * Specifies the properties such as visibility, fill, border and text style to customize the tooltip.
+     * {% codeBlock src='maps/polygonSettingsTooltipSettings/index.md' %}{% endcodeBlock %}
      */
     @Complex<PolygonTooltipSettingsModel>({}, PolygonTooltipSettings)
     public tooltipSettings: PolygonTooltipSettingsModel;

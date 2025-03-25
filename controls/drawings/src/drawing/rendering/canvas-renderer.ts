@@ -3,8 +3,8 @@ import { PointModel } from './../primitives/point-model';
 import { pathSegmentCollection, getRectanglePath, processPathData } from './../utility/path-util';
 // import { overFlow } from './../utility/base-util';
 import { createHtmlElement } from './../utility/dom-util';
-import { PathSegment, StyleAttributes, ImageAttributes, ImageEntry } from './canvas-interface';
-import { RectAttributes, PathAttributes, TextAttributes, SubTextElement, TextBounds } from './canvas-interface';
+import { PathSegment, StyleAttributes, ImageAttributes } from './canvas-interface';
+import { RectAttributes, PathAttributes, TextAttributes, SubTextElement, TextBounds, ImageEntry } from './canvas-interface';
 import { DrawingElement } from '../core/elements/drawing-element';
 import { DrawingRenderer } from './renderer';
 
@@ -15,7 +15,7 @@ import { DrawingRenderer } from './renderer';
 /** @private */
 export class CanvasRenderer {
      /** @private */
-    public imageList: Record<string, ImageEntry[]> = {};
+     public imageList: Record<string, ImageEntry[]> = {};
     /**   @private  */
     public static getContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
         return canvas.getContext('2d');
@@ -415,7 +415,8 @@ export class CanvasRenderer {
                 }             
                 this.imageList[canvasId].push(newImageEntry);
                 image.onload = () => {
-                    var annotationID:string = alignOptions.id.split('_content')[0];
+                    const lastIndex: number = alignOptions.id.lastIndexOf('_content')
+                    const annotationID:string = lastIndex !== -1 ? alignOptions.id.substring(0, lastIndex) : alignOptions.id;
                     var annotationObject: boolean = true; 
                     if (annotationCallback !== undefined && !annotationCallback(annotationID)) {
                         annotationObject = false; 
@@ -431,7 +432,7 @@ export class CanvasRenderer {
                           proxy.updateImageList(existingImageIndex, proxy.imageList, canvasIdValue);
                           ctx.drawImage(image, x, y, width, height);
                         }
-                        proxy.updateCanvasList(proxy.imageList, canvasIdValue); 
+                        proxy.updateCanvasList(proxy.imageList, canvasIdValue);
                       }
                     }
                 };
@@ -454,7 +455,7 @@ export class CanvasRenderer {
           delete imageList[canvasId];
       }
     }
-
+    
     // text utility
     private loadImage(
         ctx: CanvasRenderingContext2D, obj: ImageAttributes, canvas: HTMLCanvasElement, pivotX: number, pivotY: number, annotationCallback?:(annotationID: string) => boolean, annotationType?: string):

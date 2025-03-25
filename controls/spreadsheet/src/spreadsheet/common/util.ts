@@ -1,7 +1,7 @@
 import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent, detach, isNullOrUndefined, removeClass, extend, isUndefined } from '@syncfusion/ej2-base';
 import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions, completeAction } from './index';
 import { HideShowEventArgs, invalidData, refreshFilterCellsOnResize } from './../common/index';
-import { Cell, CellUpdateArgs, ColumnModel, duplicateSheet, getSheetIndex, getSheetIndexFromAddress, getSheetIndexFromId, getSheetNameFromAddress, hideShow, isReadOnly, moveSheet, protectsheetHandler, refreshChartSize, refreshRibbonIcons, replace, replaceAll, setLinkModel, setLockCells, updateSheetFromDataSource } from '../../workbook/index';
+import { Cell, CellUpdateArgs, ColumnModel, duplicateSheet, getSheetIndex, getSheetIndexFromAddress, getSheetIndexFromId, getSheetNameFromAddress, hideShow, MergeArgs, moveSheet, protectsheetHandler, refreshChartSize, refreshRibbonIcons, replace, replaceAll, setLinkModel, setLockCells, updateSheetFromDataSource } from '../../workbook/index';
 import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj, removeDataValidation } from './index';
 import { Spreadsheet, removeSheetTab, rowHeightChanged, initiateFilterUI, deleteChart, IRenderer } from '../index';
 import { SheetModel, getColumnsWidth, getSwapRange, CellModel, CellStyleModel, CFArgs, RowModel, isImported } from '../../workbook/index';
@@ -387,9 +387,36 @@ export function setPosition(
                 }
                 let removeEle: Element;
                 ranges.forEach((rng: number[]): void => {
-                    content = rng[2] < frozenRow && rng[3] < frozenCol ? parent.getSelectAllContent() :
-                        (rng[2] < frozenRow ? parent.getColumnHeaderContent() : (rng[3] < frozenCol ?
-                            parent.getRowHeaderContent() : parent.getMainContent() as HTMLElement));
+                    let zIndex: string;
+                    if (rng[2] < frozenRow && rng[3] < frozenCol) {
+                        content =  parent.getSelectAllContent();
+                    } else {
+                        if (frozenRow || frozenCol) {
+                            const selectAllEle: HTMLElement = parent.getSelectAllContent();
+                            if (selectAllEle) {
+                                zIndex = selectAllEle.style.zIndex;
+                            }
+                        }
+                        if (rng[2] < frozenRow) {
+                            content = parent.getColumnHeaderContent();
+                        } else if (rng[3] < frozenCol) {
+                            content = parent.getRowHeaderContent();
+                        } else {
+                            content = parent.getMainContent();
+                            if (frozenRow && !zIndex) {
+                                const colHdrEle: HTMLElement = parent.getColumnHeaderContent();
+                                if (colHdrEle) {
+                                    zIndex = colHdrEle.style.zIndex;
+                                }
+                            }
+                            if (frozenCol && !zIndex) {
+                                const rowHdrEle: HTMLElement = parent.getRowHeaderContent();
+                                if (rowHdrEle) {
+                                    zIndex = rowHdrEle.style.zIndex;
+                                }
+                            }
+                        }
+                    }
                     let rangeEle: HTMLElement;
                     if (cls === 'e-copy-indicator' || cls === 'e-range-indicator') {
                         rangeEle = ele.cloneNode(true) as HTMLElement; content.appendChild(rangeEle);
@@ -440,6 +467,13 @@ export function setPosition(
                         }
                         if (removeCls) {
                             rangeEle.classList.remove(cls);
+                        }
+                    }
+                    if (frozenRow || frozenCol) {
+                        if (zIndex) {
+                            rangeEle.style.zIndex = zIndex;
+                        } else if (rangeEle.style.zIndex) {
+                            rangeEle.style.zIndex = '';
                         }
                     }
                     locateElem(
@@ -1302,7 +1336,7 @@ export function updateAction(
         cellEvtArgs = options.eventArgs as CellSaveEventArgs;
         cellSaveArgs = { element: cellEvtArgs.element, value: cellEvtArgs.value,
             oldValue: cellEvtArgs.oldValue, address: cellEvtArgs.address, displayText: cellEvtArgs.displayText,
-            formula: cellEvtArgs.formula, originalEvent: cellEvtArgs.originalEvent };
+            formula: cellEvtArgs.formula, originalEvent: cellEvtArgs.originalEvent, format: cellEvtArgs.format };
         cellValue = cellSaveArgs.formula ? { formula: cellSaveArgs.formula } : { value: cellSaveArgs.value };
         spreadsheet.updateCellInfo(cellValue, cellSaveArgs.address, false, options.eventArgs, isRedo);
         if (isRedo === true) {
@@ -1318,7 +1352,7 @@ export function updateAction(
                 spreadsheet as Workbook, spreadsheet.getActiveSheet(), { rowIdx: cellIndexes[0], colIdx: cellIndexes[1], preventEvt: true,
                     cell: { notes: options.eventArgs.notes }});
             spreadsheet.serviceLocator.getService<ICellRenderer>('cell').refreshRange(
-                getIndexesFromAddress(eventArgs.address), false, false, true, false, isImported(spreadsheet));
+                getIndexesFromAddress(eventArgs.address), false, false, true, true, isImported(spreadsheet));
         }
         break;
     case 'cellDelete':
@@ -1331,12 +1365,14 @@ export function updateAction(
                 const style: CellStyleModel = {};
                 Object.assign(style, eventArgs.style, null, true);
                 eventArgs.style.border = undefined;
-                spreadsheet.notify(setCellFormat, { style: eventArgs.style, refreshRibbon: true, range: eventArgs.range });
+                spreadsheet.notify(setCellFormat, { style: eventArgs.style, refreshRibbon: true, range: eventArgs.range,
+                    onActionUpdate: true, isUndoRedo: true });
                 eventArgs.style.border = style.border;
                 spreadsheet.setBorder(eventArgs.style, eventArgs.range, eventArgs.borderType);
                 eventArgs.style = style;
             } else {
-                spreadsheet.notify(setCellFormat, { style: eventArgs.style, refreshRibbon: true, range: eventArgs.range });
+                spreadsheet.notify(setCellFormat, { style: eventArgs.style, refreshRibbon: true, range: eventArgs.range,
+                    onActionUpdate: true, isUndoRedo: true });
             }
             getUpdateUsingRaf((): void => spreadsheet.selectRange(spreadsheet.getActiveSheet().selectedRange));
         } else {
@@ -1472,7 +1508,7 @@ export function updateAction(
                 insertModel, <InsertDeleteModelArgs>{ model: sheet, start: options.eventArgs.index, end: options.eventArgs.index +
                     (options.eventArgs.model.length - 1), modelType: options.eventArgs.modelType, checkCount: isRedo === undefined ?
                     options.eventArgs.sheetCount : null, activeSheetIndex: options.eventArgs.activeSheetIndex, isUndoRedo: true,
-                insertType: options.eventArgs.insertType, isFromUpdateAction: isFromUpdateAction });
+                insertType: options.eventArgs.insertType, isFromUpdateAction: isFromUpdateAction, isRedo: isRedo });
         }
         break;
     case 'delete':
@@ -1489,7 +1525,8 @@ export function updateAction(
                 insertModel, <InsertDeleteModelArgs>{ model: sheet, start: options.eventArgs.deletedModel, modelType:
                     options.eventArgs.modelType, columnCellsModel: options.eventArgs.deletedCellsModel, definedNames:
                     options.eventArgs.definedNames, activeSheetIndex: options.eventArgs.activeSheetIndex, isUndoRedo: true,
-                insertType: options.eventArgs.modelType === 'Row' ? 'above' : 'before', conditionalFormats: options.eventArgs.conditionalFormats, prevAction: options.action  });
+                insertType: options.eventArgs.modelType === 'Row' ? 'above' : 'before',
+                conditionalFormats: options.eventArgs.conditionalFormats, prevAction: options.action, freezePane: eventArgs.freezePane  });
         } else {
             spreadsheet.notify(
                 deleteModel, <InsertDeleteModelArgs>{ model: sheet, start: options.eventArgs.startIndex,
@@ -1522,7 +1559,18 @@ export function updateAction(
                 Object.assign(model[rIdx as number].cells[cIdx as number], eventArgs.model[rIdx as number].cells[cIdx as number]);
             }
         }
-        spreadsheet.notify(setMerge, options.eventArgs);
+        if (isRedo === false && eventArgs.mergeCollection) {
+            let mergeItem: MergeArgs;
+            for (let i: number = 0; i < eventArgs.mergeCollection.length; i++) {
+                mergeItem = { range: null };
+                Object.assign(mergeItem, eventArgs);
+                mergeItem.range = eventArgs.mergeCollection[i as number];
+                spreadsheet.notify(setMerge, mergeItem);
+            }
+        }
+        else {
+            spreadsheet.notify(setMerge, options.eventArgs);
+        }
         if (spreadsheet.calculationMode === 'Manual' && isRedo &&
             spreadsheet.getActiveSheet().isSheetCalculated) {
             for (let i: number = 0; i < eventArgs.model.length; i++) {
@@ -1619,7 +1667,7 @@ export function updateAction(
         break;
     case 'insertChart':
         if (isRedo === false) {
-            spreadsheet.notify(deleteChart, { id: eventArgs.id, range: eventArgs.range, isUndoRedo: true });
+            spreadsheet.notify(deleteChart, { id: eventArgs.id, range: eventArgs.posRange || eventArgs.range, isUndoRedo: true });
         } else {
             const chartOptions: ChartModel[] = [{
                 type: eventArgs.type, theme: eventArgs.theme,
@@ -1627,19 +1675,23 @@ export function updateAction(
                 range: eventArgs.range, id: eventArgs.id, height: eventArgs.height, width: eventArgs.width, top: eventArgs.top,
                 left: eventArgs.left
             }];
-            spreadsheet.notify(
-                setChart, { chart: chartOptions, isUndoRedo: false, range: eventArgs.posRange });
+            spreadsheet.notify(setChart, {
+                chart: chartOptions, isUndoRedo: false, range: eventArgs.posRange || eventArgs.range, isInitCell: true, isRedo: true
+            });
         }
         break;
     case 'deleteChart':
         if (isRedo === false) {
             const chartOpts: ChartModel[] = [{
                 type: eventArgs.type, theme: eventArgs.theme, markerSettings: eventArgs.markerSettings,
-                isSeriesInRows: eventArgs.isSeriesInRows, range: eventArgs.range, id: eventArgs.id,
-                height: eventArgs.height, width: eventArgs.width, top: eventArgs.top, left: eventArgs.left
+                dataLabelSettings: eventArgs.dataLabelSettings, title: eventArgs.title,
+                legendSettings: eventArgs.legendSettings, primaryXAxis: eventArgs.primaryXAxis,
+                primaryYAxis: eventArgs.primaryYAxis, isSeriesInRows: eventArgs.isSeriesInRows,
+                range: eventArgs.range, id: eventArgs.id, height: eventArgs.height,
+                width: eventArgs.width, top: eventArgs.top, left: eventArgs.left
             }];
             spreadsheet.notify(
-                setChart, { chart: chartOpts, isUndoRedo: false, range: eventArgs.posRange });
+                setChart, { chart: chartOpts, isUndoRedo: false, range: eventArgs.posRange, isInitCell: true, isUndo: true });
         } else {
             spreadsheet.notify(deleteChart, { id: eventArgs.id, range: eventArgs.range, isUndoRedo: true });
         }
@@ -1901,18 +1953,19 @@ export function getLines(text: string, colwidth: number, style: CellStyleModel, 
         if (lines > 1) {
             splitTextArr = txt.split('-');
             if (splitTextArr.length > 1) {
-                splitTextArr.forEach((splitText: string) => {
+                const lastIdx: number = splitTextArr.length - 1;
+                splitTextArr.forEach((splitText: string, index: number) => {
                     lWidth = 0; cWidth = 0;
                     if (!hypenWidth) { hypenWidth = getTextWidth('-', style, parentStyle); }
                     width = getTextWidth(splitText, style, parentStyle);
-                    if (splitTextArr[splitTextArr.length - 1] !== splitText) {
+                    if (index < lastIdx) {
                         width += hypenWidth;
                     }
                     lines = (prevWidth + width) / colwidth;
                     if (lines >= 1) {
-                        calculateCount(splitText, splitTextArr[splitTextArr.length - 1] !== splitText);
+                        calculateCount(splitText, index !== lastIdx);
                     } else {
-                        if (splitTextArr[splitTextArr.length - 1] === splitText && textArr[textArr.length - 1] !== txt) {
+                        if (index === lastIdx && textArr[textArr.length - 1] !== txt) {
                             addSpace(prevWidth + width);
                         }
                         prevWidth += width;
@@ -1941,8 +1994,9 @@ export function getLines(text: string, colwidth: number, style: CellStyleModel, 
  * @param {number} colIdx - Specify the column index.
  * @param {SheetModel} sheet - Specify the sheet.
  * @returns {number} - get border width.
+ * @hidden
  */
-function getBorderWidth(rowIdx: number, colIdx: number, sheet: SheetModel): number {
+export function getBorderWidth(rowIdx: number, colIdx: number, sheet: SheetModel): number {
     let width: number = 0;
     const cell: CellModel = getCell(rowIdx, colIdx, sheet, null, true);
     const rightSideCell: CellModel = getCell(rowIdx, colIdx + 1, sheet, null, true);
@@ -2337,26 +2391,25 @@ export function getChartsIndexes(context?: Spreadsheet): { chart: ChartModel, ch
 }
 
 /**
- * Checks whether a specific range of cells is read-only or not.
+ * Checks if the given range string represents a valid column range.
  *
- * @param {Spreadsheet} parent - The spreadsheet instance.
- * @param {number[]} rangeIndexes - The range indexes to check.
- * @returns {boolean} - Returns true if any of the cells is read-only, otherwise false.
+ * @param {string} range - The range string to validate.
+ * @returns {boolean} - Returns `true` if the range is a valid column range, otherwise `false`.
  * @hidden
  */
-export function isReadOnlyCells(parent: Spreadsheet, rangeIndexes?: number[]): boolean {
-    const sheet: SheetModel = parent.getActiveSheet(); let hasReadOnlyCell: boolean;
-    const address: number[] = !isNullOrUndefined(rangeIndexes) ? rangeIndexes : getSwapRange(getRangeIndexes(sheet.selectedRange));
-    for (let row: number = address[0]; row <= address[2]; row++) {
-        for (let col: number = address[1]; col <= address[3]; col++) {
-            const cell: CellModel = getCell(row, col, sheet);
-            if (isReadOnly(cell, getColumn(sheet, col), getRow(sheet, row))) {
-                hasReadOnlyCell = true;
-                break;
-            }
-        }
-    }
-    return hasReadOnlyCell;
+export function isColumnRange(range: string): boolean {
+    return /^[A-Za-z]+:[A-Za-z]+$/.test(range);
+}
+
+/**
+ * Checks if the given range string represents a valid row range.
+ *
+ * @param {string} range - The range string to validate.
+ * @returns {boolean} - Returns `true` if the range is a valid row range, otherwise `false`.
+ * @hidden
+ */
+export function isRowRange(range: string): boolean {
+    return /^[0-9]+:[0-9]+$/.test(range);
 }
 
 /**

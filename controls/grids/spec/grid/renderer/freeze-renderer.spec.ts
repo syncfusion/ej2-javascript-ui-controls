@@ -416,12 +416,12 @@ describe('Freeze render module', () => {
     //         gridObj.selectRow(4);
     //     });
     //     it('Ensure deleteRow method', (done: Function) => {
-    //         selectedRowIndex = parseInt(gridObj.getSelectedRows()[0].getAttribute('data-rowindex'), 10);
+    //         selectedRowIndex = parseInt(gridObj.getSelectedRows()[0].getAttribute('aria-rowindex'), 10) - 1;
     //         let batchDelete = (args: Object) => {
     //             // expect(gridObj.getMovableRows()[3].classList.contains('e-hiddenrow')).toBeTruthy();
     //             // expect(gridObj.getFrozenDataRows().length).toBe(gridObj.currentViewData.length - 1);
     //             // expect(gridObj.getMovableDataRows().length).toBe(gridObj.currentViewData.length - 1);
-    //             //selectedRowIndex = parseInt(gridObj.getSelectedRows()[0].getAttribute('data-rowindex'), 10);
+    //             //selectedRowIndex = parseInt(gridObj.getSelectedRows()[0].getAttribute('aria-rowindex'), 10) - 1;
     //             //expect(selectedRowIndex).toBe(3);
     //             gridObj.editModule.batchCancel();
     //             gridObj.batchDelete = null;
@@ -434,12 +434,12 @@ describe('Freeze render module', () => {
     //         gridObj.selectRow(4);
     //     });
     //     it('Ensure deleteRecord method', (done: Function) => {
-    //         selectedRowIndex = parseInt(gridObj.getSelectedRows()[0].getAttribute('data-rowindex'), 10);
+    //         selectedRowIndex = parseInt(gridObj.getSelectedRows()[0].getAttribute('aria-rowindex'), 10) - 1;
     //         let batchDelete = (args: Object) => {
     //             // expect(gridObj.getMovableRows()[3].classList.contains('e-hiddenrow')).toBeTruthy();
     //             // expect(gridObj.getFrozenDataRows().length).toBe(gridObj.currentViewData.length - 1);
     //             // expect(gridObj.getMovableDataRows().length).toBe(gridObj.currentViewData.length - 1);
-    //             //selectedRowIndex = parseInt(gridObj.getSelectedRows()[0].getAttribute('data-rowindex'), 10);
+    //             //selectedRowIndex = parseInt(gridObj.getSelectedRows()[0].getAttribute('aria-rowindex'), 10) - 1;
     //             //expect(selectedRowIndex).toBe(3);
     //             gridObj.editModule.batchCancel();
     //             gridObj.batchDelete = null;
@@ -450,7 +450,7 @@ describe('Freeze render module', () => {
     //     });
     //     it('Ensure getFrozenRowByIndex', () => {
     //         // let frozenRow: Element = gridObj.getFrozenRowByIndex(2);
-    //         // let rowindex: number = parseInt(frozenRow.getAttribute('data-rowindex'), 10);
+    //         // let rowindex: number = parseInt(frozenRow.getAttribute('aria-rowindex'), 10) - 1;
     //         // expect(rowindex).toBe(2);
     //     });
     //     afterAll(() => {

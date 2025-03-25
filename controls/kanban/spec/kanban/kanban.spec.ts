@@ -2174,6 +2174,44 @@ describe('Kanban base module', () => {
         });
     });
 
+    describe('926242: Script Error Occurs and Header Row Becomes Disabled in Swimlane Sample After Scrolling and Toggling Options', () => {
+        let kanbanObj: Kanban;
+        beforeAll((done: DoneFn) => {
+            const model: KanbanModel = {
+                keyField: 'Status',
+                height: 500,
+                columns: [
+                    { headerText: 'Backlog', keyField: 'Open', showAddButton: true, isExpanded: false },
+                    { headerText: 'In Progress', keyField: 'InProgress' },
+                    { headerText: 'Testing', keyField: 'Testing' },
+                    { headerText: 'Done', keyField: 'Close' }
+                ],
+                cardSettings: {
+                    contentField: 'Summary',
+                    headerField: 'Id'
+                },
+                swimlaneSettings: {
+                    keyField: 'Assignee',
+                    enableFrozenRows: true,
+                    showItemCount: true
+                }
+            };
+            kanbanObj = util.createKanban(model, kanbanData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(kanbanObj);
+        });
+
+        it('Check freeze row', () => {
+            const contentArea: HTMLElement = document.querySelector('.e-kanban-content');
+            util.triggerScrollEvent(contentArea, 5000);
+            kanbanObj.swimlaneSettings.showItemCount = false;
+            util.triggerScrollEvent(contentArea, 2000);
+            expect(kanbanObj.scrollPosition.content.top).toEqual(2000);
+        });
+    });
+
     describe('EJ2-52138 - Undefined key field data source', () => {
         let kanbanObj: Kanban;
         beforeAll((done: DoneFn) => {

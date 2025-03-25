@@ -22,9 +22,9 @@ export function renderAdornerLayer(
         const pageBound: DOMRect | ClientRect = nextElement.getBoundingClientRect();
         const svgAdornerSvg: SVGElement = createSvg(pdfViewer.element.id + index + '_diagramAdorner_svg', pageBound.width, pageBound.height);
         svgAdornerSvg.setAttribute('class', 'e-adorner-layer' + index);
-        svgAdornerSvg.setAttribute('style', 'pointer-events:none;');
+        svgAdornerSvg.style.pointerEvents = 'none';
         pdfViewer.adornerSvgLayer = createSvgElement('g', { 'id': pdfViewer.element.id + index + '_diagramAdorner' }) as SVGSVGElement;
-        pdfViewer.adornerSvgLayer.setAttribute('style', ' pointer-events: all; ');
+        pdfViewer.adornerSvgLayer.style.pointerEvents = 'all';
         svgAdornerSvg.appendChild(pdfViewer.adornerSvgLayer);
         divElement.appendChild(svgAdornerSvg);
         divElement.style.width = pageBound.width + 'px';

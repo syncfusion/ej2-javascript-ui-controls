@@ -459,20 +459,18 @@ export class MapsTooltip {
      * @private
      */
     public removeEventListener(): void {
-        if (this.maps) {
-            if (this.maps.isDestroyed) {
-                return;
-            }
-            if (this.maps.tooltipDisplayMode === 'DoubleClick') {
-                this.maps.off('dblclick', this.renderTooltip);
-            } else if (this.maps.tooltipDisplayMode === 'Click') {
-                this.maps.off(Browser.touchEndEvent, this.mouseUpHandler);
-            } else {
-                this.maps.off(Browser.touchMoveEvent, this.renderTooltip);
-            }
-            this.maps.off(Browser.touchCancelEvent, this.removeTooltip);
-            this.maps.element.removeEventListener('contextmenu', this.removeTooltip);
+        if (this.maps.isDestroyed) {
+            return;
         }
+        if (this.maps.tooltipDisplayMode === 'DoubleClick') {
+            this.maps.off('dblclick', this.renderTooltip);
+        } else if (this.maps.tooltipDisplayMode === 'Click') {
+            this.maps.off(Browser.touchEndEvent, this.mouseUpHandler);
+        } else {
+            this.maps.off(Browser.touchMoveEvent, this.renderTooltip);
+        }
+        this.maps.off(Browser.touchCancelEvent, this.removeTooltip);
+        this.maps.element.removeEventListener('contextmenu', this.removeTooltip);
     }
     /**
      * Get module name.
@@ -495,6 +493,8 @@ export class MapsTooltip {
             removeElement(this.maps.element.id + '_mapsTooltip');
         }
         this.svgTooltip = null;
-        this.maps = null;
+        if (!(this.maps as any).refreshing) {
+            this.maps = null;
+        }
     }
 }

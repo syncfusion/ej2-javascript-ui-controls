@@ -281,7 +281,7 @@ export class PdfTreeGridCell {
             if (this.finishedDrawingCell) {
                 temp = (this.remainingString === '') ? this.remainingString : this.value as string;
                 /* eslint-disable-next-line */
-                graphics.drawString(temp, customisedFont, textPen, customisedBrush, (innerLayoutArea.x + leftAdjustment) + (!isNullOrUndefined(this.image) ? this.image.width : 0), this.isHeaderCell ? innerLayoutArea.y - 16 : innerLayoutArea.y, (innerLayoutArea.width - leftAdjustment - padding), (innerLayoutArea.height - padding), this.style.format);
+                graphics.drawString(temp, customisedFont, textPen, customisedBrush, (innerLayoutArea.x + leftAdjustment + (this.isHeaderCell && imageBounds.width ? imageBounds.width + 8 : 0)), this.isHeaderCell ? innerLayoutArea.y - 16 : innerLayoutArea.y, (innerLayoutArea.width - leftAdjustment - padding), (innerLayoutArea.height - padding), this.style.format);
             } else {
                 /* eslint-disable-next-line */
                 graphics.drawString(this.remainingString, customisedFont, textPen, customisedBrush, (innerLayoutArea.x + leftAdjustment), this.isHeaderCell ? innerLayoutArea.y - 16 : innerLayoutArea.y, this.style.format);

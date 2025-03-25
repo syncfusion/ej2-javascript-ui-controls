@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $pivotgrid-skin: 'material-dark' !default;
 $pivotgrid-active-color: $accent !default;
 $pivotgrid-primary-color: $primary !default;
@@ -85,7 +87,7 @@ $pivotgrid-header-selection-color: $grey-dark-font !default;
 $pivotgrid-menubar-height: 40px !default;
 $pivotgrid-bigger-menubar-height: 52px !default;
 $pivotgrid-sort-wrapper-padding-size: 10px !default;
-$pivotgrid-sort-select-background-color: mix($grey-dark-font, $grey-700, 18%) !default;
+$pivotgrid-sort-select-background-color: color.mix($grey-dark-font, $grey-700, 18%) !default;
 $pivotgrid-sort-select-border-color: transparent !default;
 $pivotgrid-sort-select-color: $grey-dark-font !default;
 $pivotgrid-group-chart-values-dropdown-margin: 0 !default;

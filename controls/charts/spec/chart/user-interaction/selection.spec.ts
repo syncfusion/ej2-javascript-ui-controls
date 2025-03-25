@@ -1506,6 +1506,23 @@ describe('Point color mapping chart highlight and selection', function () {
         chartObj.highlightPattern = 'Circle';
         chartObj.refresh();
     });
+    it('Point color mapping chart line series legend higlighted', function (done) {
+        loaded = function () {
+            const element1: HTMLElement = document.getElementById(id + '_chart_legend_g_1');
+            trigger.mousemovetEvent(element1, 0, 0);
+            expect(document.getElementById(id + '_chart' + '_legend_shape_1').getAttribute('class') === (id + '_ej2_chart_highlight_series_1')).toBe(true);
+            expect(document.getElementById(id + '_chart' + '_legend_shape_0').getAttribute('class') === (id + '_ej2_deselected')).toBe(true);
+            const element2: HTMLElement = document.getElementById(id + '0_AxisLabel_1');
+            trigger.mousemovetEvent(element2, 0, 0);
+            done();
+        };
+        chartObj.loaded = loaded;
+        chartObj.series[0].type = 'Line';
+        chartObj.series[1].type = 'Line';
+        chartObj.highlightMode = 'Point';
+        chartObj.highlightPattern = 'Circle';
+        chartObj.refresh();
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
@@ -1707,6 +1724,7 @@ describe('Point color mapping chart highlight and selection', function () {
         it('Chart selection checking index elements', (done: Function) => {
             loaded = (args: ILoadedEventArgs) => {
                 args.chart.selectionModule.findElements( args.chart, args.chart.series[0], {series: 0, point:0}, 'element'  );
+                args.chart.selectionModule.findElements( args.chart, args.chart.series[0], {series: 0, point:0}  );
                 expect (chartContainer !== null).toBe(true);
                 done();
             };
@@ -1745,6 +1763,7 @@ describe('Point color mapping chart highlight and selection', function () {
                 let element = document.getElementById('ej2Container_Series_0')
                 args.chart.selectionModule.performSelection({ series: 0, point: 0 }, args.chart, element);
                 expect(chartContainer !== null).toBe(true);
+                args.chart.selectionModule.performSelection({ series: 0, point: NaN }, args.chart, element, true);
                 done();
             };
             chartObj.selectionMode = 'Point';

@@ -5,6 +5,7 @@ import * as CONSTANT from './../base/constant';
 import { detach, Browser, isNullOrUndefined as isNOU, createElement, closest } from '@syncfusion/ej2-base';
 import { InsertMethods } from './insert-methods';
 import { updateTextNode, nestedListCleanUp, scrollToCursor } from './../../common/util';
+import { ImageOrTableCursor } from '../../common';
 
 /**
  * Insert a HTML Node or Text
@@ -75,9 +76,25 @@ export class InsertHtml {
         range.startContainer === range.endContainer;
         const isCollapsed: boolean = range.collapsed;
         const nodes: Node[] = this.getNodeCollection(range, nodeSelection, node);
-        const closestParentNode: Node = (node.nodeName.toLowerCase() === 'table') ? (!isNOU(nodes[0]) ? this.closestEle(nodes[0].parentNode, editNode) : range.startContainer) : nodes[0];
+        let closestParentNode: Node = (node.nodeName.toLowerCase() === 'table') ? (!isNOU(nodes[0]) ? this.closestEle(nodes[0].parentNode, editNode) : range.startContainer) : nodes[0];
+        if (closestParentNode && closestParentNode.nodeName === 'BR'){
+            closestParentNode = closestParentNode.parentNode;
+        }
         if (closestParentNode && closestParentNode.nodeName === 'LI' && node.nodeName.toLowerCase() === 'table') {
-            this.insertTableInList(range, node as HTMLTableElement, closestParentNode, nodes[0], nodeCutter);
+            if (nodes.length === 0) {
+                const tableCursor: ImageOrTableCursor   = nodeSelection.processedTableImageCursor(range);
+                if (tableCursor.startName === 'TABLE' || tableCursor.endName === 'TABLE') {
+                    const tableNode: HTMLElement = tableCursor.start ? tableCursor.startNode : tableCursor.endNode;
+                    nodes.push(tableNode);
+                }
+            }
+            const lastclosestParentNode: HTMLElement = this.closestEle(nodes[nodes.length - 1].parentNode, editNode) as HTMLElement;
+            this.insertTableInList(
+                range, node as HTMLTableElement,
+                closestParentNode,
+                nodes[0], nodeCutter,
+                lastclosestParentNode,
+                editNode as HTMLElement);
             return;
         }
         if (isCursor && range.startContainer.textContent === '' && range.startContainer.nodeName !== 'BR' && enterAction !== 'BR' && node.nodeName !== '#text' && !isNOU((node as HTMLElement).children[0]) && !isNOU((node as HTMLElement).children[0].tagName) && (node as HTMLElement).children[0].tagName === 'IMG' && (node as HTMLElement).children.length === 1) {
@@ -99,7 +116,7 @@ export class InsertHtml {
             if (nodes.length === 1 || (node.nodeName.toLowerCase() === 'table' && (preNode as HTMLElement).childElementCount === 0)) {
                 nodeSelection.setSelectionContents(docElement, preNode);
                 range = nodeSelection.getRange(docElement);
-            } else {
+            } else if (parentNode && parentNode.nodeName !== 'LI') {
                 let lasNode: Node = nodeCutter.GetSpliceNode(range, nodes[nodes.length - 1].parentElement as HTMLElement);
                 lasNode = isNOU(lasNode) ? preNode : lasNode;
                 nodeSelection.setSelectionText(docElement, preNode, lasNode, 0, (lasNode.nodeType === 3) ?
@@ -107,7 +124,7 @@ export class InsertHtml {
                 range = nodeSelection.getRange(docElement);
             }
             if (range.startContainer.parentElement.closest('ol,ul') !== null && range.endContainer.parentElement.closest('ol,ul') !== null) {
-                nestedListCleanUp(range);
+                nestedListCleanUp(range, parentNode);
             } else {
                 range.extractContents();
             }
@@ -140,7 +157,7 @@ export class InsertHtml {
             } else {
                 let previousNode: Node = null;
                 while (parentNode !== editNode && parentNode.firstChild &&
-                    (parentNode.textContent.trim() === '')) {
+                    (parentNode.textContent.trim() === '') && parentNode.nodeName !== 'LI') {
                     const parentNode1: Node = parentNode.parentNode;
                     previousNode = parentNode;
                     parentNode = parentNode1;
@@ -151,7 +168,9 @@ export class InsertHtml {
                 if (parentNode.firstChild && ((parentNode as HTMLElement) !== editNode ||
                 (node.nodeName === 'TABLE' && isCursor && parentNode === range.startContainer &&
                 parentNode === range.endContainer))) {
-                    if (parentNode.textContent.trim() === '' && (parentNode as HTMLElement) !== editNode) {
+                    if (parentNode.textContent.trim() === '' && parentNode !== editNode  && parentNode.nodeName === 'LI') {
+                        parentNode.appendChild(node);
+                    } else if (parentNode.textContent.trim() === '' && (parentNode as HTMLElement) !== editNode) {
                         InsertMethods.AppendBefore(node as HTMLElement, parentNode as HTMLElement, false);
                         detach(parentNode);
                     } else {
@@ -171,27 +190,34 @@ export class InsertHtml {
                 nodeSelection.setSelectionText(docElement, node, node, 0, node.textContent.length);
             }
         } else {
-            range.deleteContents();
-            if (isCursor && range.startContainer.textContent === '' && range.startContainer.nodeName !== 'BR') {
-                (range.startContainer as HTMLElement).innerHTML = '';
-            }
-            if (Browser.isIE) {
-                const frag: DocumentFragment = docElement.createDocumentFragment();
-                frag.appendChild(node); range.insertNode(frag);
-            } else if (range.startContainer.nodeType === 1 && range.startContainer.nodeName.toLowerCase() === 'hr'
-            && range.endContainer.nodeName.toLowerCase() === 'hr') {
-                const paraElem: Element = (range.startContainer as  HTMLElement).nextElementSibling;
-                if (paraElem) {
-                    if (paraElem.querySelector('br')) {
-                        detach(paraElem.querySelector('br'));
-                    }
-                    paraElem.appendChild(node);
-                }
+            const liElement: HTMLElement = !isNOU(closestParentNode) ? closest(closestParentNode, 'li') as HTMLElement : null;
+            if ((!isNOU(closestParentNode) && (closestParentNode.nodeName === 'TD' || closestParentNode.nodeName === 'TH')) && !isNOU(liElement) && !isCursor) {
+                range.extractContents();
+                liElement.appendChild(node);
+                this.removeEmptyNextLI(liElement);
             } else {
-                if (range.startContainer.nodeName === 'BR') {
-                    range.startContainer.parentElement.insertBefore(node,  range.startContainer);
+                range.deleteContents();
+                if (isCursor && range.startContainer.textContent === '' && range.startContainer.nodeName !== 'BR') {
+                    (range.startContainer as HTMLElement).innerHTML = '';
+                }
+                if (Browser.isIE) {
+                    const frag: DocumentFragment = docElement.createDocumentFragment();
+                    frag.appendChild(node); range.insertNode(frag);
+                } else if (range.startContainer.nodeType === 1 && range.startContainer.nodeName.toLowerCase() === 'hr'
+                    && range.endContainer.nodeName.toLowerCase() === 'hr') {
+                    const paraElem: Element = (range.startContainer as HTMLElement).nextElementSibling;
+                    if (paraElem) {
+                        if (paraElem.querySelector('br')) {
+                            detach(paraElem.querySelector('br'));
+                        }
+                        paraElem.appendChild(node);
+                    }
                 } else {
-                    range.insertNode(node);
+                    if (range.startContainer.nodeName === 'BR') {
+                        range.startContainer.parentElement.insertBefore(node, range.startContainer);
+                    } else {
+                        range.insertNode(node);
+                    }
                 }
             }
             if (node.nodeType !== 3 && node.childNodes.length > 0) {
@@ -206,6 +232,16 @@ export class InsertHtml {
         }
         if (!isNOU(editNode) && scrollHeight < editNode.scrollHeight && node.nodeType === 1 && (node.nodeName === 'IMG' || !isNOU((node as HTMLElement).querySelector('img')))) {
             scrollToCursor(docElement, editNode as HTMLElement);
+        }
+    }
+
+    private static removeEmptyNextLI(liElement: HTMLElement): void {
+        let nextLiElement: HTMLElement = !isNOU(liElement.nextElementSibling as HTMLElement)
+            ? liElement.nextElementSibling as HTMLElement : null;
+        while (nextLiElement && nextLiElement.nodeName === 'LI' && nextLiElement.innerHTML.trim() === '') {
+            detach(nextLiElement);
+            nextLiElement = !isNOU(liElement.nextElementSibling as HTMLElement)
+                ? liElement.nextElementSibling as HTMLElement : null;
         }
     }
 
@@ -300,7 +336,7 @@ export class InsertHtml {
                     }
                     const rangeElement: Node = closest(nearestAnchor, 'span');
                     rangeElement.appendChild(tempSpan);
-                } else if (nodes[0].nodeName === '#text' && nodes[0].nodeValue.includes('\u200B') && !isNOU(nodes[0].parentElement) && !isNOU(nodes[0].parentElement.previousElementSibling) && nodes[0].parentElement.previousElementSibling.classList.contains('e-mention-chip')) {
+                } else if (nodes[0] && nodes[0].nodeName === '#text' && nodes[0].nodeValue.includes('\u200B') && !isNOU(nodes[0].parentElement) && !isNOU(nodes[0].parentElement.previousElementSibling) && nodes[0].parentElement.previousElementSibling.classList.contains('e-mention-chip')) {
                     range.startContainer.parentElement.insertAdjacentElement('afterend', tempSpan);
                 } else {
                     range.insertNode(tempSpan);
@@ -400,6 +436,7 @@ export class InsertHtml {
                 }
             }
         }
+
         if (lastSelectionNode && lastSelectionNode.nodeName === 'TABLE') {
             const pTag: HTMLElement = createElement('p');
             pTag.appendChild(createElement('br'));
@@ -651,7 +688,7 @@ export class InsertHtml {
             }
         } else if (range.startContainer === editNode && !isNOU(range.startContainer.childNodes[range.endOffset]) &&
         range.startContainer.childNodes[range.endOffset].nodeName === 'TABLE') {
-            range.startContainer.insertBefore(node, range.startContainer.childNodes[range.endOffset]);
+            range.startContainer.appendChild(node);
         } else if (range.startContainer === range.endContainer && range.startContainer.nodeType !== 3
                 && node.firstChild.nodeName === 'HR') {
             if ((range.startContainer as HTMLElement).classList.contains('e-content') || range.startContainer.nodeName === 'BODY') {
@@ -781,7 +818,8 @@ export class InsertHtml {
         elm.innerHTML = innerElement;
     }
 
-    private static findDetachEmptyElem(element: Element, ignoreBlockNodes: boolean = false): HTMLElement {
+    private static findDetachEmptyElem(element: Element,
+                                       ignoreBlockNodes: boolean = false): HTMLElement {
         let removableElement: HTMLElement;
         if (!isNOU(element.parentElement)) {
             const hasNbsp: boolean = element.parentElement.textContent.length > 0 && element.parentElement.textContent.match(/\u00a0/g)
@@ -800,7 +838,7 @@ export class InsertHtml {
         return removableElement;
     }
 
-    private static removeEmptyElements(element: HTMLElement, ignoreBlockNodes: boolean = false, emptyElement: Element = null): void {
+    private static removeEmptyElements(element: HTMLElement, ignoreBlockNodes: boolean = false, emptyElemet: Element = null): void {
         const emptyElements: NodeListOf<Element> = element.querySelectorAll(':empty');
         const filteredEmptyElements: Element[] = Array.from(emptyElements).filter((element: Element) => {
             const tagName: string = element.tagName.toLowerCase();
@@ -808,7 +846,6 @@ export class InsertHtml {
             const meaningfulEmptyTags: string[] = ['td', 'th', 'textarea', 'input', 'img', 'video', 'audio', 'br', 'hr', 'iframe'];
             return !element.closest('svg') && !element.closest('canvas') && !(meaningfulEmptyTags.indexOf(tagName) > -1);
         });
-
         for (let i: number = 0; i < filteredEmptyElements.length; i++) {
             let lineWithDiv: boolean = true;
             const currentEmptyElem: HTMLElement = filteredEmptyElements[i as number] as HTMLElement;
@@ -821,9 +858,10 @@ export class InsertHtml {
                 detach(colGroup);
                 continue;
             }
-            const isEmptyElement: boolean = !isNOU(emptyElement) && currentEmptyElem === emptyElement;
+            const isEmptyElement: boolean = !isNOU(emptyElemet) && currentEmptyElem === emptyElemet;
             if (CONSTANT.SELF_CLOSING_TAGS.indexOf(currentEmptyElem.tagName.toLowerCase()) < 0 && lineWithDiv && !isEmptyElement) {
-                const detachableElement: HTMLElement = this.findDetachEmptyElem(currentEmptyElem, ignoreBlockNodes);
+                const detachableElement: HTMLElement = this.findDetachEmptyElem(
+                    currentEmptyElem, ignoreBlockNodes);
                 if (!isNOU(detachableElement) && !(detachableElement.nodeType === Node.ELEMENT_NODE && detachableElement.nodeName.toUpperCase() === 'TEXTAREA')) {
                     detach(detachableElement);
                 }
@@ -848,27 +886,38 @@ export class InsertHtml {
         return null;
     }
     private static insertTableInList(range: Range, insertNode: HTMLTableElement,
-                                     parentNode: Node, currentNode: Node, nodeCutter: NodeCutter): void {
-        if (range.collapsed) {
-            const isStart: boolean = range.startOffset === 0;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const isEnd: boolean = (range.startContainer.textContent as any).trimEnd().length === range.startOffset;
-            if (isStart || isEnd) {
-                if (isStart) {
-                    InsertMethods.AppendBefore(insertNode, currentNode as HTMLElement, false);
-                } else {
-                    InsertMethods.AppendBefore(insertNode, currentNode as HTMLElement, true);
-                }
-            } else {
-                const preNode: Node = nodeCutter.SplitNode(range, parentNode as HTMLElement, true);
-                const sibNode: Node = preNode.previousSibling;
-                sibNode.appendChild(insertNode);
-            }
-        } else {
+                                     parentNode: Node, currentNode: Node,
+                                     nodeCutter: NodeCutter, lastclosestParentNode: HTMLElement, editNode: HTMLElement): void {
+        const totalLi: number = !isNOU(closest(parentNode, 'ul,ol')) ? closest(parentNode, 'ul,ol').querySelectorAll('li').length : 0;
+        const preNode: HTMLElement = nodeCutter.SplitNode(range, parentNode as HTMLElement, true);
+        const sibNode: HTMLElement = preNode.previousElementSibling as HTMLElement;
+        const nextSibNode: HTMLElement = !isNOU(lastclosestParentNode) ? closest(lastclosestParentNode, 'li') as HTMLElement : null;
+        const nextElementSiblingValue: string = !isNOU(nextSibNode) ? nextSibNode.innerHTML : null;
+        if (!isNOU(sibNode) && !isNOU(closest(sibNode, 'ol,ul')) && closest(sibNode, 'ol,ul').querySelectorAll('li').length > totalLi) {
+            sibNode.appendChild(insertNode);
             range.deleteContents();
-            parentNode.appendChild(insertNode);
+            if (preNode.childNodes.length > 0) {
+                this.moveChildNodes(preNode, sibNode);
+            }
+            if ((parentNode !== lastclosestParentNode) && !isNOU(nextElementSiblingValue)
+                && nextElementSiblingValue !== nextSibNode.innerHTML) {
+                this.moveChildNodes(nextSibNode, sibNode);
+            }
         }
+        else {
+            range.deleteContents();
+            preNode.insertBefore(insertNode, preNode.firstChild);
+            if (parentNode !== lastclosestParentNode) {
+                this.moveChildNodes(lastclosestParentNode, parentNode as HTMLElement);
+            }
+        }
+        this.removeEmptyNextLI(closest(insertNode, 'li') as HTMLElement);
         insertNode.classList.add('ignore-table');
+    }
+    private static moveChildNodes(source: HTMLElement, target: HTMLElement): void {
+        while (!isNOU(source) && !isNOU(source.firstChild)) {
+            target.appendChild(source.firstChild);
+        }
     }
     private static alignCheck (editNode: HTMLElement): void {
         const spanAligns: NodeListOf<Element> = editNode.querySelectorAll('span[style*="text-align"]');

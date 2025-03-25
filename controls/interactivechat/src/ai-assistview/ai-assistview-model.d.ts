@@ -1,5 +1,5 @@
 import { EventHandler, INotifyPropertyChanged, Property, NotifyPropertyChanges, Collection, EmitType, Event, remove, L10n } from '@syncfusion/ej2-base';import { ChildProperty, getUniqueID, isNullOrUndefined as isNOU, BaseEventArgs, Complex, removeClass, addClass } from '@syncfusion/ej2-base';import { InputEventArgs, TextArea } from '@syncfusion/ej2-inputs';import { ItemModel, Toolbar, ClickEventArgs } from '@syncfusion/ej2-navigations';import { InterActiveChatBase, ToolbarSettings, ToolbarItem, ToolbarItemClickedEventArgs } from '../interactive-chat-base/interactive-chat-base';import { ToolbarItemModel, ToolbarSettingsModel } from '../interactive-chat-base/interactive-chat-base-model';
-import {AssistViewType,PromptRequestEventArgs,PromptChangedEventArgs} from "./ai-assistview";
+import {AssistViewType,PromptRequestEventArgs,PromptChangedEventArgs,StopRespondingEventArgs} from "./ai-assistview";
 import {InterActiveChatBaseModel} from "../interactive-chat-base/interactive-chat-base-model";
 
 /**
@@ -395,5 +395,13 @@ export interface AIAssistViewModel extends InterActiveChatBaseModel{
      * @event 'promptChanged'
      */
     promptChanged?: EmitType<PromptChangedEventArgs>;
+
+    /**
+     * Triggers when the 'Stop Responding' button is clicked while a prompt request is in progress.
+     * This event allows users to handle stopping the response generation and update the UI accordingly.
+     *
+     * @event stopRespondingClick
+     */
+    stopRespondingClick?: EmitType<StopRespondingEventArgs>;
 
 }

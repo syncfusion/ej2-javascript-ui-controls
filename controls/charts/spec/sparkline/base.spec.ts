@@ -280,6 +280,24 @@ describe('Sparkline Component Base Spec', () => {
             };
             sparkline.refresh();
         });
+        it('Checking sparkline chartKeyDown', () => {
+            sparkline.loaded = (args: ISparklineLoadedEventArgs) => {
+                args.sparkline.loaded = null;
+                let element: any = getIdElement(id);
+                args.sparkline.getActualIndex(-1, 10);
+                args.sparkline.getActualIndex(-50, 25);
+                args.sparkline.setTabIndex(null, null);
+                let keyElement = document.getElementById(id + 'Keyboard_sparkline_focus');
+                if (keyElement) { keyElement.remove(); }
+                args.sparkline.destroy();
+                let trigger: MouseEvents = new MouseEvents();
+                let events: any = <KeyboardEvent>trigger.onTouchEnd(element, 100, 100, 100, 100, 100, 100);
+                events.code = 'Tab';
+                args.sparkline.chartKeyDown(events);
+                expect(element !== null).toBe(true);
+            };
+            sparkline.refresh();
+        });
     });
     it('memory leak', () => {
         profile.sample();

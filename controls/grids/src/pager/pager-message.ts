@@ -31,8 +31,10 @@ export class PagerMessage implements IRender {
      */
     public render(): void {
         const div: Element = createElement('div', { className: 'e-parentmsgbar' });
-        this.pageNoMsgElem = createElement('span', { className: 'e-pagenomsg', styles: 'textalign:right' });
-        this.pageCountMsgElem = createElement('span', { className: 'e-pagecountmsg', styles: 'textalign:right' });
+        this.pageNoMsgElem = createElement('span', { className: 'e-pagenomsg' });
+        this.pageNoMsgElem.style.textAlign = 'right';
+        this.pageCountMsgElem = createElement('span', { className: 'e-pagecountmsg' });
+        this.pageCountMsgElem.style.textAlign = 'right';
         append([this.pageNoMsgElem, this.pageCountMsgElem], div);
         this.pagerModule.element.appendChild(div);
         this.refresh();
@@ -118,7 +120,7 @@ export class PagerMessage implements IRender {
         return str;
     }
 
-    private isValidLocale(locale: any): boolean {
+    private isValidLocale(locale: string): boolean {
         try {
             new Intl.NumberFormat(locale);
             return true;

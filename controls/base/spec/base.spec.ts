@@ -301,7 +301,6 @@ describe('Library', (): void => {
         });
     });
 
-
     describe('change detection inside of onproperty', (): void => {
         it('inside property change', () => {
             let obj: DemoClass = new DemoClass(ele);

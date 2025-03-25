@@ -131,9 +131,9 @@ export class Sort {
                 if (dlgArgs.cancel) {
                     openArgs.cancel = true;
                 } else {
+                    dialogInst.dialogInstance.content = dlgArgs.content;
                     focus(this.parent.element);
                 }
-                dialogInst.dialogInstance.content = dlgArgs.content;
             }
         });
         this.parent.hideSpinner();
@@ -168,9 +168,11 @@ export class Sort {
                 this.parent.trigger('dialogBeforeOpen', dlgArgs);
                 if (dlgArgs.cancel) {
                     args.cancel = true;
+                } else {
+                    dialogInst.dialogInstance.content = this.customSortContent();
+                    dialogInst.dialogInstance.dataBind();
+                    focus(this.parent.element);
                 }
-                dialogInst.dialogInstance.content = this.customSortContent(); dialogInst.dialogInstance.dataBind();
-                focus(this.parent.element);
             },
             buttons: [{
                 buttonModel: { content: l10n.getConstant('Ok'), isPrimary: true },

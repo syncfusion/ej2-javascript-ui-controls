@@ -2748,7 +2748,7 @@ describe('Code Coverage => ', () => {
         });
     });
 
-    describe('Code Coverage - Group - enableInfiniteScrolling expandCollapseRows => ', () => {
+    describe('Code Coverage - Group enableInfiniteScrolling childGrid => ', () => {
         let gridObj: Grid;
         beforeAll((done: Function) => {
             gridObj = createGrid(
@@ -2779,6 +2779,37 @@ describe('Code Coverage => ', () => {
 
         it('Case 1', () => {
             (gridObj.element.querySelector('.e-detailrowcollapse') as HTMLElement).click();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    describe('Code Coverage - Group - enableInfiniteScrolling expandCollapseRows => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData.slice(0, 10),
+                    allowGrouping: true,
+                    allowSorting: true,
+                    height: 400,
+                    groupSettings: { columns: ['CustomerID'] },
+                    enableInfiniteScrolling: true,
+                    infiniteScrollSettings: { enableCache: true },
+                    editSettings: {allowAdding: true},
+                    columns: [
+                        { field: 'OrderID', textAlign: 'Right', width: 100, headerText: "Order ID" },
+                        { field: 'CustomerID', width: 120, minWidth: '100', headerText: "Customer ID" },
+                        { field: 'Freight', textAlign: 'Right', width: 110, format: 'C2', headerText: "Freight" },
+                    ]
+                }, done);
+        });
+
+        it('Case 1', () => {
+            gridObj.addRecord();
         });
 
         it('Case 2', () => {

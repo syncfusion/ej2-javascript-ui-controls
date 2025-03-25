@@ -6,7 +6,7 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';import { ITreeDat
 export interface RowDropSettingsModel {
 
     /**
-     * Defines the ID of droppable component on which row drop should occur.
+     * Specifies the ID of the droppable component where rows can be dragged and dropped. Ensures that the row drop operation targets the correct component within the application.
      *
      * @default null
      */

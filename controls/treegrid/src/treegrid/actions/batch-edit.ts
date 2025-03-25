@@ -277,7 +277,7 @@ export class BatchEdit {
             focusModule.getContent().matrix.current = [actualIndex, focusModule.getContent().matrix.current[1]];
             if (this.parent.editModule['isAddedRowByMethod'] && !isNullOrUndefined(this.parent.editModule['addRowIndex']) && !this.parent.editModule['isAddedRowByContextMenu']) {
                 const newlyAddedRecords: ITreeData[] = this.parent.getBatchChanges()['addedRecords'];
-                const index: number = parseInt(this.parent.getContentTable().getElementsByClassName('e-insertedrow')[newlyAddedRecords.length - 1].getAttribute('data-rowindex'), 10);
+                const index: number = parseInt(this.parent.getContentTable().getElementsByClassName('e-insertedrow')[newlyAddedRecords.length - 1].getAttribute('aria-rowindex'), 10) - 1;
                 this.batchRecords.splice(index, 0, newlyAddedRecords[newlyAddedRecords.length - 1]);
             }
         }
@@ -305,7 +305,7 @@ export class BatchEdit {
             childs = findChildrenRecords(data);
             uid = this.parent.getSelectedRows()[0].getAttribute('data-uid');
         }
-        const parentRowIndex: number = parseInt(this.parent.grid.getRowElementByUID(uid).getAttribute('data-rowindex'), 10);
+        const parentRowIndex: number = parseInt(this.parent.grid.getRowElementByUID(uid).getAttribute('aria-rowindex'), 10) - 1;
         if (childs.length){
             const totalCount: number = parentRowIndex + childs.length; const firstChildIndex: number = parentRowIndex + 1;
             for (let i: number = firstChildIndex; i <= totalCount; i++) {
@@ -340,8 +340,8 @@ export class BatchEdit {
     }
     private updateRowIndex(): void {
         const rows: Element[] = this.parent.grid.getDataRows();
-        for (let i: number = 0 ; i < rows.length; i++) {
-            rows[parseInt(i.toString(), 10)].setAttribute('data-rowindex', i.toString());
+        for (let i: number = 0; i < rows.length; i++) {
+            rows[parseInt(i.toString(), 10)].setAttribute('aria-rowindex', (i + 1).toString());
         }
     }
     private updateChildCount(records: Object[]): void {
@@ -460,7 +460,7 @@ export class BatchEdit {
                 if (this.parent.editModule['isAddedRowByMethod'] && addRecords.length && !isNullOrUndefined(this.parent.editModule['addRowIndex']) && !this.parent.editModule['isAddedRowByContextMenu']) {
                     addRecords.reverse();
                     for (let i: number = 0; i < addRecords.length; i++) {
-                        const index: number = parseInt(this.parent.getContentTable().getElementsByClassName('e-insertedrow')[parseInt(i.toString(), 10)].getAttribute('data-rowindex'), 10);
+                        const index: number = parseInt(this.parent.getContentTable().getElementsByClassName('e-insertedrow')[parseInt(i.toString(), 10)].getAttribute('aria-rowindex'), 10) - 1;
                         data.splice(index, 0, addRecords[parseInt(i.toString(), 10)]);
                     }
                 }
@@ -594,8 +594,15 @@ export class BatchEdit {
 
     private nextCellIndex(args: NotifyArgs): void {
         const index: string = 'index'; const rowIndex: string = 'rowIndex';
+        const batchChanges : any = this.parent.getBatchChanges();
+        const deletedRecords : any = batchChanges.deletedRecords;
         if (this.parent.getSelectedRows().length) {
-            args[`${index}`] = this.parent.getSelectedRows()[0][`${rowIndex}`];
+            if (this.isAdd && deletedRecords.length > 0) {
+                args[`${index}`] = this.parent.getSelectedRecords()[0][`${index}`];
+            }
+            else {
+                args[`${index}`] = this.parent.getSelectedRows()[0][`${rowIndex}`];
+            }
         }
         else {
             args[`${index}`] = this.batchIndex;

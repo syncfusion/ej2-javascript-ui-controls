@@ -2,17 +2,25 @@
 
 ## [Unreleased]
 
-## 28.2.12 (2025-03-19)
+## 29.1.33 (2025-03-25)
+
+### DropDownButton
+
+#### Bug Fixes
+
+- `#F65779` - The issue with the "Split button click event trigger for dropdown arrow click and key down action of popup" has been resolved.
+  
+## 28.1.33 (2024-12-12)
 
 ### DropDownButton
 
 #### Features
 
-- The DropDownButton now includes a  `Template supports` embedding custom layouts, controls, or components, allowing for flexible integration of text, buttons, images, and icons to enhance user-friendliness.
+- The DropDownButton component now includes a  `Template support` embedding custom layouts, controls, or components, allowing for flexible integration of text, buttons, images, and icons to enhance user-friendliness.
 
-- The DropDownButton component now includes a `PopupWidth` property, enabling users to define the width of its `popup`, providing enhanced design flexibility.
+- The DropDownButton component now includes a `PopupWidth` property, allowing `users` to define the width of the `dropdown popup`. This feature offers greater design flexibility.
 
-- The DropDownButton component now includes the `AnimationSettings` feature, enabling users to customize `popup` animations by controlling the duration, easing, and effects. This enhancement improves visual appeal, ensures smooth transitions, and provides a consistent interactive experience.
+- The DropDownButton component now includes the `AnimationSettings` feature, which allows `users` to customize `submenu` animations by controlling the duration, easing, and effects. This enhancement improves visual dynamics, ensures smooth transitions, and provides a consistent interactive experience.
 
 ### DropDownButton
 

@@ -1,3 +1,4 @@
+@use 'sass:color';
 @import '../context-menu/theme-mixin.scss';
 @include export-module('menu-theme') {
   .e-menu-wrapper,
@@ -278,8 +279,8 @@
 
       &:hover {
         @if $skin-name == 'bootstrap4' {
-          background: darken($gray-600, 7.5%);
-          border: 1px inset darken($gray-600, 10%);
+          background: color.adjust($gray-600, $lightness: -7.5%);
+          border: 1px inset color.adjust($gray-600, $lightness: -10%);
 
           & .e-icons {
             color: $menu-icon-focussed-color;
@@ -301,8 +302,8 @@
 
       &:focus {
         @if $skin-name == 'bootstrap4' {
-          background: darken($gray-600, 7.5%);
-          border-color: darken($gray-600, 10%);
+          background: color.adjust($gray-600, $lightness: -7.5%);
+          border-color: color.adjust($gray-600, $lightness: -10%);
 
           & .e-icons {
             color: $menu-icon-focussed-color;
@@ -321,8 +322,8 @@
 
       &:active {
         @if $skin-name == 'bootstrap4' {
-          background: darken($gray-600, 7.5%);
-          border: 1px inset darken($gray-600, 10%);
+          background: color.adjust($gray-600, $lightness: -7.5%);
+          border: 1px inset color.adjust($gray-600, $lightness: -10%);
         }
         @else if $skin-name == 'tailwind3' {
           background: $secondary-bg-color-pressed;

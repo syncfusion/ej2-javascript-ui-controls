@@ -1,13 +1,13 @@
 import { createElement, Browser, isNullOrUndefined, isBlazor, SanitizeHtmlHelper, ChildProperty, Property } from '@syncfusion/ej2-base';
 import { CheckBox } from '@syncfusion/ej2-buttons';
-import { PdfViewer, PdfViewerBase, AjaxHandler, TileRenderingSettingsModel, IPdfRectBounds } from '../index';
+import { PdfViewer, PdfViewerBase, AjaxHandler, TileRenderingSettingsModel, IPdfRectBounds, ExtractTextOption } from '../index';
 import { DocumentTextCollectionSettingsModel, RectangleBoundsModel, SearchResultModel } from '../pdfviewer-model';
 import { createSpinner, showSpinner, hideSpinner } from '../index';
 import { Rect } from '@syncfusion/ej2-drawings';
 import { PdfPage } from '@syncfusion/ej2-pdf';
 import { AutoComplete } from '@syncfusion/ej2-dropdowns';
 import { regex } from '@syncfusion/ej2-inputs';
-import { TaskPriorityLevel } from '../base/pdfviewer-utlis';
+import { PdfViewerUtils, TaskPriorityLevel } from '../base/pdfviewer-utlis';
 const searchTextCollection: any = [];
 /**
  * TextSearch module
@@ -40,7 +40,10 @@ export class TextSearch {
      * @private
      */
     public searchCount: number = 0;
-    private currentOccurrence: number = 0;
+    /**
+     * @private
+     */
+    public currentOccurrence: number = 0;
     private pdfViewer: PdfViewer;
     private pdfViewerBase: PdfViewerBase;
     private searchBox: HTMLElement;
@@ -49,17 +52,39 @@ export class TextSearch {
     private searchIndex: number = 0;
     private currentSearchIndex: number = 0;
     private startIndex: number = null;
-    private searchPageIndex: number = null;
+    /**
+     * @private
+     */
+    public searchPageIndex: number = null;
     private startSearchPageIndex: number = null;
     private searchString: string = null;
     private isMatchCase: boolean = false;
     private isMultiSearch: boolean = false;
     private isSingleSearch: boolean = false;
+    private findTextDocumentCollection: any[] = [];
     private searchAutocompleteObj: AutoComplete;
     private searchRequestHandler: AjaxHandler = null;
+    private textSearchHandleRequest: AjaxHandler = null;
+    /**
+     * @private
+     */
+    public isTextSearchHandled: boolean = false;
+    private textSearchOpen: boolean = false;
+    /**
+     * @private
+     */
+    public programaticalSearch: boolean = false;
+    /**
+     * @private
+     */
+    public isFiltering: boolean = false;
     private textContents: Array<string[]> = [];
-    private searchMatches: Array<any[]> = [];
+    /**
+     * @private
+     */
+    public searchMatches: Array<any[]> = [];
     private multiSearchCounts: { [Key: string]: number } = {};
+    private getSearchTextDetails: {[key: number]: { Bounds: {[boundsKey: number] : {Bounds: any[]}}, pageOccurrence: number }} = {};
     private searchedPages: number[] = [];
     private isPrevSearch: boolean = false;
     private isExactMatch: boolean = false;
@@ -155,6 +180,10 @@ export class TextSearch {
                 this.initiateSearch(event.itemData.SearchString);
             },
             filtering: (event: any) => {
+                if (!this.isDocumentTextCollectionReady) {
+                    this.resetVariablesTextSearch();
+                    this.clearAllOccurrences();
+                }
                 this.isSelectedFromPopup = false;
                 if (this.searchCountEle) {
                     this.searchCountEle.innerHTML = '';
@@ -169,6 +198,9 @@ export class TextSearch {
                     this.showLoadingIndicator(false);
                 }
                 this.searchString = '';
+                if (this.documentTextCollection.length === this.pdfViewerBase.pageCount) {
+                    this.isDocumentTextCollectionReady = true;
+                }
                 const updateInterval: any = setInterval(() => {
                     if (this.documentTextCollection.length === this.pdfViewerBase.pageCount) {
                         event.updateData(this.autompleteDataSource, null);
@@ -202,7 +234,22 @@ export class TextSearch {
                         this.isSingleSearch = true;
                         this.isExactMatch = this.isSelectedFromPopup;
                         this.isMultiSearch = false;
-                        this.initiateTextSearch((this.searchInput as HTMLInputElement).value);
+                        if (!this.isDocumentTextCollectionReady && this.pdfViewerBase.clientSideRendering) {
+                            if ((this.searchInput as HTMLInputElement).value !== '' && (this.searchInput as HTMLInputElement).value !== this.searchString) {
+                                this.isTextSearchHandled = false;
+                                this.searchCount = 0;
+                                this.searchIndex = 0;
+                                this.searchPageIndex = 0;
+                                this.textSearchWhileLoading((this.searchInput as HTMLInputElement).value, this.isMatchCase);
+                                this.searchString = (this.searchInput as HTMLInputElement).value;
+                            }
+                            if (this.isTextSearchHandled) {
+                                this.nextSearch();
+                            }
+                        }
+                        else {
+                            this.initiateTextSearch((this.searchInput as HTMLInputElement).value);
+                        }
                         if (this.searchCount === 0 && !this.isMessagePopupOpened &&
                             this.documentTextCollection.length === this.pdfViewerBase.pageCount) {
                             this.onMessageBoxOpen();
@@ -338,6 +385,213 @@ export class TextSearch {
         }
     }
 
+    private textSearchWhileLoading(searchWord: string, isMatchCase: boolean, startIndex?: number, endIndex?: number,
+                                   isFirstResult?: boolean, isCompleted?: boolean): void {
+        let endPage: number = endIndex ? endIndex : 100;
+        let isPagesCompleted: boolean = isCompleted ? isCompleted : false;
+        if (endPage >= this.pdfViewerBase.pageCount) {
+            endPage = this.pdfViewerBase.pageCount;
+            isPagesCompleted = true;
+        }
+        if (!this.pdfViewerBase.clientSideRendering) {
+            // eslint-disable-next-line
+            const proxy: TextSearch = this;
+            const jsonObject: object = { text: searchWord, matchCase: isMatchCase, documentId: this.pdfViewerBase.getDocumentId(), hashId: this.pdfViewerBase.hashId, action: 'SearchTextPdf', elementId: this.pdfViewer.element.id, uniqueId: this.pdfViewerBase.documentId, startIndex: startIndex ? startIndex : 0, endIndex: endPage, isCompleted: isPagesCompleted, isRequestsend: !isNullOrUndefined(isFirstResult) ? isFirstResult : true };
+            this.textSearchHandleRequest = new AjaxHandler(this.pdfViewer);
+            this.textSearchHandleRequest.url = this.pdfViewer.serviceUrl + '/' + 'SearchTextPdf';
+            this.textSearchHandleRequest.responseType = 'json';
+            this.textSearchHandleRequest.send(jsonObject);
+            this.textSearchHandleRequest.onSuccess = function (result: any): void {
+                let data: any = result.data;
+                if (data) {
+                    try {
+                        proxy.searchTextAfteresult(data.resultPages, data.totalSearchCount, data.searchWord, data.matchCase, (data.isRequestsend.toLowerCase() === 'true'), (data.isCompleted.toLowerCase() === 'true'), data.endIndex);
+                    }
+                    catch (error) {
+                        data = null;
+                    }
+                }
+            };
+        }
+        if (this.pdfViewerBase.clientSideRendering) {
+            this.pdfViewerBase.pdfViewerRunner.addTask({
+                message: 'searchText',
+                zoomFactor: this.pdfViewerBase.getZoomFactor(),
+                searchWord: searchWord,
+                matchCase: isMatchCase,
+                startIndex: startIndex ? startIndex : 0,
+                endIndex: endPage,
+                isCompleted: isPagesCompleted,
+                isRequestsend: !isNullOrUndefined(isFirstResult) ? isFirstResult : false
+            }, TaskPriorityLevel.Medium);
+        }
+    }
+
+    /**
+     * @param {any} resultPages - Result of the text search word
+     * @param {number} totalSearchCount - Search count of the word
+     * @param {string} searchWord - Word that given for the text search
+     * @param {boolean} matchCase - It gives about the match case
+     * @param {boolean} isFirstResult - It gives first result from the request
+     * @param {boolean} isCompleted - It gives the search complete indication
+     * @param {number} endIndex - It describes end pageindex of the result
+     * @private
+     * @returns {void}
+     */
+    public searchTextAfteresult(resultPages: any, totalSearchCount: any, searchWord: string, matchCase: boolean, isFirstResult?: boolean,
+                                isCompleted?: boolean, endIndex?: number): void {
+        if (totalSearchCount === 0 && this.searchCount === 0) {
+            if (isCompleted) {
+                this.isTextSearchHandled = true;
+                this.pdfViewerBase.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No Matches'));
+                this.showLoadingIndicator(false);
+            }
+        }
+        else {
+            if (this.isSingleSearch && this.searchString === searchWord && this.isMatchCase === matchCase && (this.textSearchOpen ||
+                this.programaticalSearch)) {
+                this.isTextSearchHandled = true;
+                const details: any = this.getSearchTextDetails;
+                this.getSearchTextDetails = {...details, ...resultPages};
+                this.hightlightSearchedTexts(this.searchPageIndex, isFirstResult);
+                if (isCompleted) {
+                    this.showLoadingIndicator(false);
+                }
+                else {
+                    this.showLoadingIndicator(true);
+                }
+                this.searchCount = this.searchCount + totalSearchCount;
+                if (!isFirstResult) {
+                    this.currentOccurrence = 1;
+                    this.searchedOccurrences.push(this.currentOccurrence);
+                    if (this.searchedOccurrences.length === 1) {
+                        this.pdfViewer.fireTextSearchStart(this.searchString, this.isMatchCase);
+                    }
+                }
+                this.searchCountEle.style.display = 'inline-block';
+                this.getSearchCountText();
+                this.updateLoadingIndicator();
+            }
+        }
+        if (!isCompleted && this.searchString === searchWord && (this.textSearchOpen || this.programaticalSearch)) {
+            this.textSearchWhileLoading(searchWord, matchCase, endIndex, endIndex + 100, (this.searchCount !== 0) ? true : false,
+                                        isCompleted);
+        }
+    }
+
+    private updateLoadingIndicator(): void {
+        const loadingIndicator: any = document.getElementById(this.pdfViewer.element.id + '_textSearchLoadingIndicator');
+        loadingIndicator.style.left = this.searchInputContainer.clientWidth - 46 + 'px';
+    }
+
+    /**
+     * @param {number} pageNumber - It decribes the search pageIndex value
+     * @param {boolean} isPageChange - It describes the first result highlight
+     * @param {boolean} isSearchCompleted - It describes the text search has been completed or not.
+     * @private
+     * @returns {void}
+     */
+    public hightlightSearchedTexts(pageNumber?: number, isPageChange?: boolean, isSearchCompleted?: boolean): void {
+        this.clearAllOccurrences();
+        let elementIdCount: number;
+        const keys: number[] = [];
+        for (const key in this.getSearchTextDetails) {
+            if (Object.prototype.hasOwnProperty.call(this.getSearchTextDetails, key)) {
+                keys.push(parseInt(key, 10));
+            }
+        }
+        keys.sort((a: number, b: number) => a - b);
+        if (!isNullOrUndefined(pageNumber)) {
+            let previous: number = keys[keys.length - 1];
+            let next: number = keys[0];
+            for (let i: number = 0; i < keys.length; i++) {
+                if (keys[parseInt(i.toString(), 10)] < pageNumber) {
+                    previous = keys[parseInt(i.toString(), 10)];
+                } else if (keys[parseInt(i.toString(), 10)] > pageNumber) {
+                    next = keys[parseInt(i.toString(), 10)];
+                    break;
+                }
+            }
+            if (!this.getSearchTextDetails[parseInt(pageNumber.toString(), 10)]) {
+                pageNumber = next;
+            }
+            if ((this.searchIndex + 1) > this.getSearchTextDetails[parseInt(pageNumber.toString(), 10)].pageOccurrence ||
+                this.searchIndex < 0) {
+                if ((this.searchIndex + 1) > this.getSearchTextDetails[parseInt(pageNumber.toString(), 10)].pageOccurrence) {
+                    pageNumber = ((pageNumber + 1) === keys[keys.length - 1]) ? 0 : next;
+                    this.searchIndex = 0;
+                }
+                if (this.searchIndex < 0) {
+                    pageNumber = ((pageNumber - 1) === -1) ? keys[keys.length - 1] : previous;
+                    this.searchIndex = (this.getSearchTextDetails[parseInt(pageNumber.toString(), 10)].pageOccurrence - 1);
+                }
+            }
+        }
+        for (const key in this.getSearchTextDetails) {
+            if (Object.prototype.hasOwnProperty.call(this.getSearchTextDetails, key)) {
+                const value: any = this.getSearchTextDetails[parseInt(key.toString(), 10)];
+                let idSearchIndexCount: number = 0;
+                // eslint-disable-next-line guard-for-in
+                for (const boundsKey in value.Bounds) {
+                    if (Object.prototype.hasOwnProperty.call(value.Bounds, boundsKey)) {
+                        const bounds: any = value.Bounds[parseInt(boundsKey.toString(), 10)];
+                        for (let i: number = 0; i < bounds.length; i++) {
+                            const leftValue: number = (this.pdfViewerBase.clientSideRendering === true) ?
+                                bounds[parseInt(i.toString(), 10)].Left :
+                                this.pdfViewerBase.ConvertPointToPixel(bounds[parseInt(i.toString(), 10)].Left);
+                            const topValue: number = (this.pdfViewerBase.clientSideRendering === true) ?
+                                bounds[parseInt(i.toString(), 10)].Top :
+                                this.pdfViewerBase.ConvertPointToPixel(bounds[parseInt(i.toString(), 10)].Top);
+                            const heightValue: number = (this.pdfViewerBase.clientSideRendering === true) ?
+                                bounds[parseInt(i.toString(), 10)].Height :
+                                this.pdfViewerBase.ConvertPointToPixel(bounds[parseInt(i.toString(), 10)].Height);
+                            const widthValue: number = (this.pdfViewerBase.clientSideRendering === true) ?
+                                bounds[parseInt(i.toString(), 10)].Width :
+                                this.pdfViewerBase.ConvertPointToPixel(bounds[parseInt(i.toString(), 10)].Width);
+                            let pageIndex: number = null;
+                            if (isNullOrUndefined(isSearchCompleted)) {
+                                pageIndex = pageNumber ? pageNumber : keys[0];
+                            }
+                            else {
+                                if (isSearchCompleted) {
+                                    pageIndex = null;
+                                }
+                            }
+                            if ((this.searchIndex === idSearchIndexCount) && pageIndex === Number(key)) {
+                                elementIdCount = idSearchIndexCount;
+                                if ((!isNullOrUndefined(isPageChange) && !isPageChange) || isNullOrUndefined(isPageChange)) {
+                                    this.pdfViewerBase.updateScrollTop(Number(key));
+                                }
+                                const idString: string = '_searchtext_' + Number(key) + '_' + idSearchIndexCount;
+                                let element: any;
+                                if (bounds.length <= 1 || i === 0) {
+                                    element = document.getElementById(this.pdfViewer.element.id + idString);
+                                }
+                                else {
+                                    element = document.getElementById(this.pdfViewer.element.id + idString + '_' + i);
+                                }
+                                if (element) {
+                                    element.parentElement.removeChild(element);
+                                }
+                                this.searchPageIndex = Number(key);
+                                this.createSearchTextDiv(idSearchIndexCount, Number(key), heightValue, widthValue, topValue, leftValue, 'e-pv-search-text-highlight', false, 0, i);
+                            }
+                            else {
+                                this.createSearchTextDiv(idSearchIndexCount, Number(key), heightValue, widthValue, topValue, leftValue, 'e-pv-search-text-highlightother', false, 0, i);
+                            }
+                        }
+                    }
+                    idSearchIndexCount++;
+                }
+            }
+        }
+        if ((!isNullOrUndefined(isPageChange) && !isPageChange) || isNullOrUndefined(isPageChange)) {
+            const element: HTMLElement = this.pdfViewerBase.getElement('_searchtext_' + this.searchPageIndex + '_' + elementIdCount);
+            const scrollPoint: any = { y: -100, x: -100 };
+            this.scrollToSearchStr(element, scrollPoint);
+        }
+    }
+
     /**
      * @private
      * @returns {void}
@@ -373,6 +627,7 @@ export class TextSearch {
         if (!isNullOrUndefined(this.searchBox)) {
             if (isShow) {
                 this.searchBox.style.display = 'block';
+                this.textSearchOpen = true;
             } else {
                 this.searchBox.style.display = 'none';
                 (this.searchInput as HTMLInputElement).value = '';
@@ -380,6 +635,7 @@ export class TextSearch {
                 if (this.pdfViewer.toolbarModule) {
                     this.pdfViewer.toolbarModule.isTextSearchBoxDisplayed = false;
                 }
+                this.textSearchOpen = false;
             }
             this.onTextSearchClose();
         }
@@ -395,16 +651,20 @@ export class TextSearch {
             this.startSearchPageIndex = this.searchPageIndex;
         }
         if (this.isTextSearch) {
-            this.initSearch(this.searchPageIndex, true);
-            this.highlightOthers();
+            if (this.currentOccurrence !== 0) {
+                this.initSearch(this.searchPageIndex, true);
+                this.highlightOthers();
+            }
         }
     }
 
-    private calculateSearchCount(inputString: string): void {
+    private calculateSearchCount(inputString: string, documentTextCollection: any): void {
         this.searchCount = 0;
-        this.currentOccurrence = 0;
-        this.resetVariables();
-        this.searchIndex = 0;
+        if (!this.isTextSearchHandled) {
+            this.currentOccurrence = 0;
+            this.resetVariables();
+            this.searchIndex = 0;
+        }
         if (!inputString || inputString.trim() === '') {
             if (this.searchCountEle) {
                 this.searchCountEle.innerHTML = '';
@@ -425,8 +685,9 @@ export class TextSearch {
                     continue;
                 }
                 let wordCount: number = 0;
-                for (let i: number = 0; i < this.documentTextCollection.length; i++) {
-                    const documentIndex: any = this.documentTextCollection[parseInt(i.toString(), 10)][parseInt(i.toString(), 10)];
+                for (let i: number = 0; i < documentTextCollection.length; i++) {
+                    const pageIndex: number = parseInt(Object.keys(documentTextCollection[parseInt(i.toString(), 10)])[0], 10);
+                    const documentIndex: any = documentTextCollection[parseInt(i.toString(), 10)][parseInt(pageIndex.toString(), 10)];
                     let pageTextData: string = documentIndex.pageText ? documentIndex.pageText : documentIndex.PageText;
                     if (!this.isMatchCase) {
                         pageTextData = pageTextData.toLowerCase();
@@ -448,10 +709,10 @@ export class TextSearch {
             return;
         }
         const wordCounts: { [key: string]: number } = {};
-        for (let i: number = 0; i < this.documentTextCollection.length; i++) {
-            const documentIndex: any = this.documentTextCollection[parseInt(i.toString(), 10)][parseInt(i.toString(), 10)];
+        for (let i: number = 0; i < documentTextCollection.length; i++) {
+            const pageIndex: number = parseInt(Object.keys(documentTextCollection[parseInt(i.toString(), 10)])[0], 10);
+            const documentIndex: any = documentTextCollection[parseInt(i.toString(), 10)][parseInt(pageIndex.toString(), 10)];
             let pageTextData: string = documentIndex.pageText ? documentIndex.pageText : documentIndex.PageText;
-            const pageIndex: number = i;
             let multiSearch: string = (pageTextData.replace((/(\s\r\n)/gm), ' ')).replace((/(\r\n)/gm), ' ');
             let Multiline: string = (pageTextData.replace((/(\s\r\n)/gm), '  ')).replace((/(\r\n)/gm), ' ');
             let specialCharcterSearch: string = multiSearch.replace(/[^a-zA-Z0-9]+/g, ' ');
@@ -608,14 +869,18 @@ export class TextSearch {
         if (this.isSingleSearch) {
             if (this.searchCountEle) {
                 if (this.searchedOccurrences.indexOf(this.currentOccurrence + 1) === -1) {
-                    this.searchedOccurrences.push(this.currentOccurrence + 1);
+                    if (!this.isTextSearchHandled) {
+                        this.searchedOccurrences.push(this.currentOccurrence + 1);
+                    }
                 }
                 this.adjustInputContainerWidth();
             }
             if (this.searchedOccurrences.length === 1) {
                 this.pdfViewer.fireTextSearchStart(this.searchString, this.isMatchCase);
             }
-            this.currentOccurrence += 1;
+            if (!this.isTextSearchHandled) {
+                this.currentOccurrence += 1;
+            }
         } else {
             if (this.searchAutocompleteObj) {
                 this.autompleteDataSource = transformedData;
@@ -671,7 +936,8 @@ export class TextSearch {
         }
         this.isSingleSearch = isMobileSearch ? isMobileSearch : this.isSingleSearch;
         if (inputString !== this.searchString || this.isLastOccurrenceCompleted) {
-            this.calculateSearchCount(inputString);
+            this.isTextSearchHandled = false;
+            this.calculateSearchCount(inputString, this.documentTextCollection);
             this.isInitialSearch = true;
             this.isLastOccurrenceCompleted = false;
             if (this.currentOccurrence === 0) {
@@ -680,10 +946,14 @@ export class TextSearch {
         }
         if (inputString !== this.searchString || this.searchPageIndex === null || this.startSearchPageIndex === null) {
             this.isTextSearch = false;
-            this.searchPageIndex = this.pdfViewerBase.currentPageNumber - 1;
-            this.startSearchPageIndex = this.searchPageIndex;
+            if (!this.isTextSearchHandled) {
+                this.searchPageIndex = this.pdfViewerBase.currentPageNumber - 1;
+                this.startSearchPageIndex = this.searchPageIndex;
+            }
         }
-        this.clearAllOccurrences();
+        if (!this.isTextSearchHandled) {
+            this.clearAllOccurrences();
+        }
         if (inputString !== '' && !this.isMultiSearch && this.isSingleSearch && this.searchCount > 0) {
             if (this.searchMatches[this.searchPageIndex] && inputString === this.searchString) {
                 if (this.searchMatches[this.searchPageIndex].length === 0) {
@@ -715,13 +985,19 @@ export class TextSearch {
             clearInterval(this.intervalId);
         }
         const checkDocumentTextCollection: () => void = (): void => {
-            this.showLoadingIndicator(true);
+            if (!this.isTextSearchHandled) {
+                this.showLoadingIndicator(true);
+            }
             if (this.documentTextCollection.length === pageCount) {
                 clearInterval(this.intervalId);
                 this.isDocumentTextCollectionReady = true;
+                this.calculateSearchCount((this.searchInput as HTMLInputElement).value, this.documentTextCollection);
+                this.getSearchTextDetails = {};
                 this.showLoadingIndicator(false);
                 this.intervalId = null;
-                this.handleSearchAfterTextCollectionReady(inputString, isMobileSearch);
+                if (!this.isTextSearchHandled) {
+                    this.handleSearchAfterTextCollectionReady(inputString, isMobileSearch);
+                }
             }
             if (isMobileSearch) {
                 if (this.pdfViewerBase.navigationPane) {
@@ -744,7 +1020,9 @@ export class TextSearch {
             this.isSearchText = true;
             this.searchPageIndex = this.pdfViewerBase.currentPageNumber - 1;
             this.isTextSearchEventTriggered = false;
-            this.showLoadingIndicator(true);
+            if (!this.isTextSearchHandled) {
+                this.showLoadingIndicator(true);
+            }
             if (this.pdfViewer.isExtractText) {
                 if (this.isTextRetrieved) {
                     for (let i: number = 0; i < this.pdfViewerBase.pageCount; i++) {
@@ -757,9 +1035,11 @@ export class TextSearch {
                     }
                 }
             }
-            this.searchPageIndex = this.findNextPageWithText(this.searchPageIndex, true);
-            this.initSearch(this.searchPageIndex, false);
-            this.highlightOthers();
+            if (!this.isTextSearchHandled) {
+                this.searchPageIndex = this.findNextPageWithText(this.searchPageIndex, true);
+                this.initSearch(this.searchPageIndex, false);
+                this.highlightOthers();
+            }
         }
     }
 
@@ -768,82 +1048,108 @@ export class TextSearch {
         this.isTextSearch = true;
         this.isSearchText = false;
         let isCountIncreased: boolean = false;
-        if (this.searchString) {
-            this.clearAllOccurrences();
-            if (this.currentOccurrence !== 0) {
-                this.searchIndex = this.searchIndex + 1;
-            }
-            else {
-                this.searchIndex = 0;
-                this.currentOccurrence += 1;
-                isCountIncreased = true;
-                this.getSearchCountText();
-                if (this.searchedOccurrences.indexOf(this.currentOccurrence) === -1) {
-                    this.searchedOccurrences.push(this.currentOccurrence);
-                }
-                if (this.searchedOccurrences.length === 1) {
-                    this.pdfViewer.fireTextSearchStart(this.searchString, this.isMatchCase);
-                }
-            }
-            if (this.searchMatches[this.searchPageIndex]) {
-                if (this.searchIndex >= this.searchMatches[this.searchPageIndex].length) {
-                    this.searchIndex = 0;
-                    this.searchPageIndex = this.findNextPageWithText(this.searchPageIndex);
-                    if (this.pdfViewerBase.pageCount > 1) {
-                        this.initSearch(this.searchPageIndex, false);
-                    } else {
-                        this.initSearch(this.searchPageIndex, true);
-                        if (!this.isMessagePopupOpened) {
-                            this.onMessageBoxOpen();
-                        }
-                        this.pdfViewerBase.updateScrollTop(this.searchPageIndex);
+        if (this.isDocumentTextCollectionReady) {
+            if (this.searchString) {
+                this.clearAllOccurrences();
+                if (this.currentOccurrence !== 0) {
+                    this.searchIndex = this.searchIndex + 1;
+                    if (this.areAllOccurencesSearched() && !this.isMessagePopupOpened) {
+                        this.onMessageBoxOpen();
                     }
-                    this.showLoadingIndicator(true);
-                } else {
-                    this.highlightSearchedTexts(this.searchPageIndex, false, undefined);
-                    const element: HTMLElement = this.pdfViewerBase.getElement('_searchtext_' + this.searchPageIndex + '_' + this.searchIndex);
-                    if (!isNullOrUndefined(element)) {
-                        const isScroll: boolean = this.isScrollPages(element);
-                        if (isScroll) {
+                }
+                else {
+                    this.searchIndex = 0;
+                    this.currentOccurrence += 1;
+                    isCountIncreased = true;
+                    this.getSearchCountText();
+                    if (this.searchedOccurrences.indexOf(this.currentOccurrence) === -1) {
+                        this.searchedOccurrences.push(this.currentOccurrence);
+                    }
+                    if (this.searchedOccurrences.length === 1) {
+                        this.pdfViewer.fireTextSearchStart(this.searchString, this.isMatchCase);
+                    }
+                }
+                if (this.searchMatches[this.searchPageIndex]) {
+                    if (this.searchIndex >= this.searchMatches[this.searchPageIndex].length) {
+                        this.searchIndex = 0;
+                        this.searchPageIndex = this.findNextPageWithText(this.searchPageIndex);
+                        if (this.pdfViewerBase.pageCount > 0) {
+                            this.initSearch(this.searchPageIndex, false);
+                        } else {
+                            this.initSearch(this.searchPageIndex, true);
+                            if (!this.isMessagePopupOpened) {
+                                this.onMessageBoxOpen();
+                            }
                             this.pdfViewerBase.updateScrollTop(this.searchPageIndex);
                         }
+                        this.showLoadingIndicator(true);
+                    } else {
+                        this.highlightSearchedTexts(this.searchPageIndex, false, undefined);
+                        const element: HTMLElement = this.pdfViewerBase.getElement('_searchtext_' + this.searchPageIndex + '_' + this.searchIndex);
+                        if (!isNullOrUndefined(element)) {
+                            const isScroll: boolean = this.isScrollPages(element);
+                            if (isScroll) {
+                                this.pdfViewerBase.updateScrollTop(this.searchPageIndex);
+                            }
+                        }
+                        this.showLoadingIndicator(false);
                     }
-                    this.showLoadingIndicator(false);
-                }
-                this.highlightOthers(true);
-                if (this.areAllOccurencesSearched() && !this.isMessagePopupOpened) {
-                    this.onMessageBoxOpen();
-                }
-                if (this.currentOccurrence <= this.searchCount  && !this.isMessagePopupOpened) {
-                    if (this.currentOccurrence === this.searchCount) {
-                        this.currentOccurrence = 1;
-                    }
-                    else{
-                        if (!isCountIncreased) {
-                            this.currentOccurrence = (this.currentOccurrence + 1);
+                    this.highlightOthers(true);
+                    if (this.currentOccurrence <= this.searchCount && !this.isMessagePopupOpened) {
+                        if (this.currentOccurrence === this.searchCount) {
+                            this.currentOccurrence = 1;
+                        }
+                        else {
+                            if (!isCountIncreased) {
+                                this.currentOccurrence = (this.currentOccurrence + 1);
+                            }
+                        }
+                        if (this.searchCountEle && this.isSingleSearch) {
+                            this.getSearchCountText();
+                            if (this.searchedOccurrences.indexOf(this.currentOccurrence) === -1) {
+                                this.searchedOccurrences.push(this.currentOccurrence);
+                            }
+                            this.adjustInputContainerWidth();
                         }
                     }
-                    if (this.searchCountEle && this.isSingleSearch) {
-                        this.getSearchCountText();
-                        if (this.searchedOccurrences.indexOf(this.currentOccurrence) === -1) {
-                            this.searchedOccurrences.push(this.currentOccurrence);
-                        }
-                        this.adjustInputContainerWidth();
+                } else if (!this.searchMatches[this.searchPageIndex] && !this.isMessagePopupOpened) {
+                    if (this.pdfViewerBase.pageCount > 1) {
+                        this.initSearch(this.searchPageIndex, false);
                     }
-                }
-            } else if (!this.searchMatches[this.searchPageIndex]) {
-                if (this.pdfViewerBase.pageCount > 1) {
-                    this.initSearch(this.searchPageIndex, false);
+                } else {
+                    if (!this.isMessagePopupOpened) {
+                        this.initiateTextSearch((this.searchInput as HTMLInputElement).value);
+                    }
                 }
             } else {
                 this.initiateTextSearch((this.searchInput as HTMLInputElement).value);
             }
-        } else {
-            this.initiateTextSearch((this.searchInput as HTMLInputElement).value);
+            const element: HTMLElement = this.pdfViewerBase.getElement('_searchtext_' + this.searchPageIndex + '_' + this.searchIndex);
+            if (!isNullOrUndefined(element)) {
+                this.scrollToSearch(element);
+            }
         }
-        const element: HTMLElement = this.pdfViewerBase.getElement('_searchtext_' + this.searchPageIndex + '_' + this.searchIndex);
-        if (!isNullOrUndefined(element)) {
-            this.scrollToSearch(element);
+        else {
+            this.clearAllOccurrences();
+            if (this.areAllOccurencesSearched()) {
+                this.onMessageBoxOpen();
+            }
+            if (!this.isMessagePopupOpened) {
+                if (this.currentOccurrence !== 0) {
+                    this.searchIndex = this.searchIndex + 1;
+                }
+                if (this.currentOccurrence + 1 > this.searchCount) {
+                    this.currentOccurrence = 1;
+                }
+                else {
+                    this.currentOccurrence = this.currentOccurrence + 1;
+                }
+                if (this.searchedOccurrences.indexOf(this.currentOccurrence) === -1) {
+                    this.searchedOccurrences.push(this.currentOccurrence);
+                }
+                this.getSearchCountText();
+                this.hightlightSearchedTexts(this.searchPageIndex);
+            }
         }
     }
 
@@ -883,46 +1189,74 @@ export class TextSearch {
         this.isPrevSearch = true;
         this.isTextSearch = true;
         this.isSearchText = false;
-        if (this.searchString) {
-            this.clearAllOccurrences();
-            this.searchIndex = this.searchIndex - 1;
-            if (this.currentOccurrence === 0) {
-                this.currentOccurrence = this.searchCount + 1;
-            }
-            if (this.searchIndex < 0) {
-                this.searchPageIndex = this.findPreviousPageWithText();
-                this.initSearch(this.searchPageIndex, false);
-                this.showLoadingIndicator(true);
+        if (this.isDocumentTextCollectionReady) {
+            if (this.searchString) {
+                this.clearAllOccurrences();
+                this.searchIndex = this.searchIndex - 1;
+                if (this.currentOccurrence === 0) {
+                    this.currentOccurrence = this.searchCount + 1;
+                }
+                if (this.areAllOccurencesSearched() && !this.isMessagePopupOpened) {
+                    this.onMessageBoxOpen();
+                }
+                if (!this.isMessagePopupOpened) {
+                    if (this.searchIndex < 0) {
+                        this.searchPageIndex = this.findPreviousPageWithText();
+                        this.initSearch(this.searchPageIndex, false);
+                        this.showLoadingIndicator(true);
+                    } else {
+                        this.highlightSearchedTexts(this.searchPageIndex, false, undefined);
+                        this.showLoadingIndicator(false);
+                    }
+                    this.highlightOthers(true);
+                }
+                if (this.currentOccurrence - 1 >= 0 && !this.isMessagePopupOpened) {
+                    if (this.currentOccurrence - 1 === 0) {
+                        this.currentOccurrence = this.searchCount;
+                    } else {
+                        this.currentOccurrence = this.currentOccurrence - 1;
+                    }
+                    if (this.searchCountEle && this.isSingleSearch) {
+                        this.getSearchCountText();
+                        if (this.searchedOccurrences.indexOf(this.currentOccurrence) === -1) {
+                            this.searchedOccurrences.push(this.currentOccurrence);
+                        }
+                        if (this.searchedOccurrences.length === 1) {
+                            this.pdfViewer.fireTextSearchStart(this.searchString, this.isMatchCase);
+                        }
+                        this.adjustInputContainerWidth();
+                    }
+                }
             } else {
-                this.highlightSearchedTexts(this.searchPageIndex, false, undefined);
-                this.showLoadingIndicator(false);
+                this.searchIndex = this.searchIndex - 1;
+                this.searchPageIndex = ((this.searchPageIndex - 1) < 0) ? (this.pdfViewerBase.pageCount - 1) : this.searchPageIndex - 1;
+                const inputString: string = (this.searchInput as HTMLInputElement).value;
+                this.textSearch(inputString);
             }
-            this.highlightOthers(true);
-            if (this.areAllOccurencesSearched() && !this.isMessagePopupOpened) {
+        }
+        else {
+            this.clearAllOccurrences();
+            if (this.areAllOccurencesSearched()) {
                 this.onMessageBoxOpen();
             }
-            if (this.currentOccurrence - 1 >= 0 && !this.isMessagePopupOpened) {
-                if (this.currentOccurrence - 1 === 0) {
+            if (!this.isMessagePopupOpened) {
+                if (this.currentOccurrence !== 0) {
+                    this.searchIndex = this.searchIndex - 1;
+                }
+                if ((this.currentOccurrence - 1) <= 0) {
                     this.currentOccurrence = this.searchCount;
-                } else {
+                    const pageNum: any = Object.keys(this.getSearchTextDetails).pop();
+                    this.pdfViewerBase.updateScrollTop(Number(pageNum));
+                }
+                else {
                     this.currentOccurrence = this.currentOccurrence - 1;
                 }
-                if (this.searchCountEle && this.isSingleSearch) {
-                    this.getSearchCountText();
-                    if (this.searchedOccurrences.indexOf(this.currentOccurrence) === -1) {
-                        this.searchedOccurrences.push(this.currentOccurrence);
-                    }
-                    if (this.searchedOccurrences.length === 1) {
-                        this.pdfViewer.fireTextSearchStart(this.searchString, this.isMatchCase);
-                    }
-                    this.adjustInputContainerWidth();
+                if (this.searchedOccurrences.indexOf(this.currentOccurrence) === -1) {
+                    this.searchedOccurrences.push(this.currentOccurrence);
                 }
+                this.getSearchCountText();
+                this.hightlightSearchedTexts(this.searchPageIndex);
             }
-        } else {
-            this.searchIndex = this.searchIndex - 1;
-            this.searchPageIndex = ((this.searchPageIndex - 1) < 0) ? (this.pdfViewerBase.pageCount - 1) : this.searchPageIndex - 1;
-            const inputString: string = (this.searchInput as HTMLInputElement).value;
-            this.textSearch(inputString);
         }
         const element: HTMLElement = this.pdfViewerBase.getElement('_searchtext_' + this.searchPageIndex + '_' + this.searchIndex);
         if (!isNullOrUndefined(element)) {
@@ -1164,7 +1498,7 @@ export class TextSearch {
                     this.searchIndex = this.searchMatches[parseInt(pageIndex.toString(), 10)].length - 1;
                 }
                 if ((this.pdfViewerBase.currentPageNumber - 1) !== this.searchPageIndex) {
-                    if (this.searchMatches.length > 0 && (this.searchIndex === 0 || this.searchIndex === -1) &&
+                    if (this.searchMatches.length > 0 && (this.searchIndex === -1) &&
                         (this.searchPageIndex) === this.currentSearchIndex) {
                         if (!this.isMessagePopupOpened && !this.isSearchText) {
                             this.onMessageBoxOpen();
@@ -1433,14 +1767,14 @@ export class TextSearch {
                     if (i === this.searchIndex && pageIndex === this.searchPageIndex) {
                         for (let j: number = 0; j < ArrayReturns.length; j++) {
                             className = 'e-pv-search-text-highlight';
-                            this.searchString = ArrayReturns[parseInt(j.toString(), 10)].trim();
-                            this.addDivForSearch(i, pageIndex, characterBounds, this.searchString.length, className, j);
+                            this.addDivForSearch(i, pageIndex, characterBounds, (ArrayReturns[parseInt(j.toString(), 10)].trim()).length,
+                                                 className, j);
                         }
                     } else {
                         for (let j: number = 0; j < ArrayReturns.length; j++) {
                             className = 'e-pv-search-text-highlightother';
-                            this.searchString = ArrayReturns[parseInt(j.toString(), 10)].trim();
-                            this.addDivForSearch(i, pageIndex, characterBounds, this.searchString.length, className, j);
+                            this.addDivForSearch(i, pageIndex, characterBounds, (ArrayReturns[parseInt(j.toString(), 10)].trim()).length,
+                                                 className, j);
                         }
                     }
                 }
@@ -1567,7 +1901,8 @@ export class TextSearch {
             const topDifference: number = (top < charBound.Y) ? (charBound.Y - top) : (top - charBound.Y);
             height = (height > (topDifference + charBound.Height)) ? height : (topDifference + charBound.Height);
             //some RTL character calculated width is zero and width difference value calculated from Y possition difference in the same line.
-            let widthDifference: number = characterBounds[initial - 1].Y - characterBounds[parseInt(initial.toString(), 10)].Y;
+            let widthDifference: number = initial > 0 ? characterBounds[initial - 1].Y
+                - characterBounds[parseInt(initial.toString(), 10)].Y : 0;
             for (let j: number = (initial + queryLength) - 1; j >= initial; j--) {
                 charBound = characterBounds[parseInt(j.toString(), 10)];
                 if (charBound.Width === 0) {
@@ -1920,7 +2255,7 @@ export class TextSearch {
                             mediaBoxRect: mediaBoxRect
                         }, TaskPriorityLevel.High);
                     }
-                    this.pdfViewerBase.pdfViewerRunner.onMessage(function (event: any): void {
+                    this.pdfViewerBase.pdfViewerRunner.onMessage('imageRenderedSearch,renderTileImageSearch', function (event: any): void {
                         switch (event.data.message) {
                         case 'imageRenderedSearch':
                             if (event.data.message === 'imageRenderedSearch') {
@@ -2177,40 +2512,52 @@ export class TextSearch {
 
     private pdfTextSearchRequestOnSuccess(data: any, proxy: TextSearch, startIndex: number, endIndex: number): void {
         if (data.documentTextCollection && data.uniqueId === proxy.pdfViewerBase.documentId) {
-            proxy.pdfViewer.fireAjaxRequestSuccess(this.pdfViewer.serverActionSettings.renderTexts, data);
-            if (proxy.documentTextCollection && proxy.documentTextCollection.length > 0) {
-                if (((proxy.pdfViewer as any).isVue) && !((proxy.pdfViewer as any).isVue3)) {
-                    proxy.documentTextCollection = proxy.orderPdfTextCollections(JSON.parse(`[${JSON.stringify(proxy.documentTextCollection).slice(1, -1)},${JSON.stringify(data.documentTextCollection).slice(1, -1)}]`));
-                }
-                else {
-                    proxy.documentTextCollection = data.documentTextCollection.concat(proxy.documentTextCollection);
-                    proxy.documentTextCollection = proxy.orderPdfTextCollections(proxy.documentTextCollection);
+            if (!data.isNeedToRender) {
+                proxy.pdfViewer.fireAjaxRequestSuccess(this.pdfViewer.serverActionSettings.renderTexts, data);
+                proxy.documentTextCollection = this.updateDocumentCollection(proxy.documentTextCollection, data.documentTextCollection);
+                const pageCount: number = proxy.pdfViewerBase.pageCount;
+                if (endIndex !== pageCount) {
+                    startIndex = endIndex;
+                    endIndex = endIndex + 50;
+                    if (endIndex >= pageCount) {
+                        endIndex = pageCount;
+                    }
+                    proxy.createRequestForGetPdfTexts(startIndex, endIndex);
+                } else {
+                    proxy.isTextRetrieved = true;
+                    proxy.pdfViewer.pdfRendererModule.documentTextCollection = [];
+                    proxy.pdfViewer.fireTextExtractionCompleted(proxy.documentTextCollection);
+                    if (proxy.isTextSearched && proxy.searchString.length > 0) {
+                        proxy.textSearch(proxy.searchString);
+                        proxy.isTextSearched = false;
+                    }
                 }
             } else {
-                if (((proxy.pdfViewer as any).isVue) && !((proxy.pdfViewer as any).isVue3)) {
-                    proxy.documentTextCollection = JSON.parse(`[${JSON.stringify(data.documentTextCollection).slice(1, -1)}]`);
-                }
-                else {
-                    proxy.documentTextCollection = data.documentTextCollection;
-                }
-            }
-            const pageCount: number = proxy.pdfViewerBase.pageCount;
-            if (endIndex !== pageCount) {
-                startIndex = endIndex;
-                endIndex = endIndex + 50;
-                if (endIndex >= pageCount) {
-                    endIndex = pageCount;
-                }
-                proxy.createRequestForGetPdfTexts(startIndex, endIndex);
-            } else {
-                proxy.isTextRetrieved = true;
-                proxy.pdfViewer.fireTextExtractionCompleted(proxy.documentTextCollection);
-                if (proxy.isTextSearched && proxy.searchString.length > 0) {
-                    proxy.textSearch(proxy.searchString);
-                    proxy.isTextSearched = false;
-                }
+                proxy.findTextDocumentCollection = this.updateDocumentCollection(proxy.findTextDocumentCollection,
+                                                                                 data.documentTextCollection);
+                proxy.pdfViewer.pdfRendererModule.documentTextCollection = [];
             }
         }
+    }
+
+    private updateDocumentCollection(textCollection: any, eventDataCollection: any): any {
+        if (textCollection && textCollection.length > 0) {
+            if (((this.pdfViewer as any).isVue) && !((this.pdfViewer as any).isVue3)) {
+                textCollection = this.orderPdfTextCollections(JSON.parse(`[${JSON.stringify(textCollection).slice(1, -1)},${JSON.stringify(eventDataCollection).slice(1, -1)}]`));
+            }
+            else {
+                textCollection = eventDataCollection.concat(textCollection);
+                textCollection = this.orderPdfTextCollections(textCollection);
+            }
+        } else {
+            if (((this.pdfViewer as any).isVue) && !((this.pdfViewer as any).isVue3)) {
+                textCollection = JSON.parse(`[${JSON.stringify(eventDataCollection).slice(1, -1)}]`);
+            }
+            else {
+                textCollection = eventDataCollection;
+            }
+        }
+        return textCollection;
     }
 
     private orderPdfTextCollections(oldCollection: any): any {
@@ -2283,7 +2630,7 @@ export class TextSearch {
                 this.isTextSearch = true;
             }
         }
-        if (this.isTextSearch) {
+        if (this.isTextSearch && this.isDocumentTextCollectionReady) {
             this.resetVariables();
             this.clearAllOccurrences();
             const inputString: string = (this.searchInput as HTMLInputElement).value;
@@ -2303,6 +2650,11 @@ export class TextSearch {
         this.searchedPages = [];
         this.searchMatches = [];
         this.searchedOccurrences = [];
+    }
+
+    public resetVariablesTextSearch(): void {
+        this.getSearchTextDetails = {};
+        this.isTextSearchHandled = false;
     }
 
     private searchKeypressHandler = (event: KeyboardEvent): void => {
@@ -2362,10 +2714,12 @@ export class TextSearch {
     }
 
     private nextButtonOnClick = (event: Event): void => {
+        this.searchString = (this.searchInput as HTMLInputElement).value;
         this.nextSearch();
     };
 
     private prevButtonOnClick = (event: Event): void => {
+        this.searchString = (this.searchInput as HTMLInputElement).value;
         this.prevSearch();
     };
 
@@ -2411,7 +2765,7 @@ export class TextSearch {
         }
         this.currentOccurrence = this.searchCount;
         this.isLastOccurrenceCompleted = true;
-        if (this.currentOccurrence === this.searchCount){
+        if (this.currentOccurrence === this.searchCount) {
             this.currentOccurrence = 0;
         }
         if (this.searchCountEle && this.isSingleSearch) {
@@ -2421,6 +2775,15 @@ export class TextSearch {
         this.searchedPages = [];
         this.searchedOccurrences = [];
         this.searchIndex = 0;
+        if (!this.programaticalSearch) {
+            if (!this.isDocumentTextCollectionReady) {
+                this.hightlightSearchedTexts(undefined, true, true);
+            }
+            else {
+                this.highlightAfterComplete();
+            }
+        }
+        this.searchString = '';
         this.searchPageIndex = this.startSearchPageIndex;
         if (isNullOrUndefined(this.searchPageIndex)) {
             this.pdfViewerBase.updateScrollTop(0);
@@ -2432,6 +2795,51 @@ export class TextSearch {
     }
 
     /**
+     * @private
+     * @returns {void}
+     */
+    public highlightAfterComplete(): void {
+        for (let k: number = 0; k < this.searchMatches.length; k++) {
+            if (this.searchMatches[parseInt(k.toString(), 10)] && this.searchMatches[parseInt(k.toString(), 10)].length > 0) {
+                const matches: any = this.searchMatches[parseInt(k.toString(), 10)];
+                const className: string = 'e-pv-search-text-highlightother';
+                const characterBounds: any = this.pdfViewerBase.textLayer.characterBound[parseInt(k.toString(), 10)];
+                if (characterBounds && matches !== undefined) {
+                    for (let i: number = 0; i < matches.length; i++) {
+                        if ((matches[parseInt(i.toString(), 10)].length)) {
+                            const documentIndex: any = this.documentTextCollection[parseInt(k.toString(), 10)][parseInt(k.toString(), 10)];
+                            let pageTextData: any = documentIndex.pageText ? documentIndex.pageText : documentIndex.PageText;
+                            let searchString: string = (this.searchInput as HTMLInputElement).value;
+                            if (!this.isMatchCase) {
+                                searchString = searchString.toLowerCase();
+                                pageTextData = pageTextData.toLowerCase();
+                            }
+                            const arrayReturns: any = this.correctLinetext(searchString, null, pageTextData);
+                            for (let j: number = 0; j < arrayReturns.length; j++) {
+                                let idString: string;
+                                if (j === 0) {
+                                    idString = '_searchtext_' + k + '_' + i;
+                                }
+                                else {
+                                    idString = '_searchtext_' + k + '_' + i + '_' + j;
+                                }
+                                if (!this.pdfViewerBase.getElement(idString)) {
+                                    this.addDivForSearch(i, k, characterBounds, (arrayReturns[parseInt(j.toString(), 10)].trim()).length,
+                                                         className, j);
+                                }
+                            }
+                        }
+                        if (isNullOrUndefined(matches[parseInt(i.toString(), 10)].length)) {
+                            this.addDivForSearch(i, k, characterBounds, (this.searchInput as HTMLInputElement).value.length, className,
+                                                 undefined);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Searches the target text in the PDF document and highlights the occurrences in the pages
      *
      * @param  {string} searchText - Specifies the searchText content
@@ -2439,18 +2847,47 @@ export class TextSearch {
      * @returns {void}
      */
     public searchText(searchText: string, isMatchCase: boolean): void {
-        if (searchText && searchText.length > 0 && searchText[searchText.length - 1] === ' ') {
-            searchText = searchText.slice(0, searchText.length - 1);
+        if (this.documentTextCollection.length === this.pdfViewerBase.pageCount) {
+            this.isDocumentTextCollectionReady = true;
         }
-        if (this.pdfViewer.enableHtmlSanitizer && searchText) {
-            searchText = SanitizeHtmlHelper.sanitize(searchText);
+        else {
+            const updateInterval: any = setInterval(() => {
+                if (this.documentTextCollection.length === this.pdfViewerBase.pageCount) {
+                    clearInterval(updateInterval);
+                    this.calculateSearchCount(searchText, this.documentTextCollection);
+                    this.getSearchTextDetails = {};
+                    this.isDocumentTextCollectionReady = true;
+                }
+            }, 1000);
         }
-        this.searchString = searchText;
-        this.isMatchCase = isMatchCase;
-        this.searchIndex = 0;
-        this.isSingleSearch = true;
-        this.calculateSearchCount(searchText);
-        this.textSearch(searchText);
+        if (this.isDocumentTextCollectionReady || !this.pdfViewerBase.clientSideRendering) {
+            if (searchText && searchText.length > 0 && searchText[searchText.length - 1] === ' ') {
+                searchText = searchText.slice(0, searchText.length - 1);
+            }
+            if (this.pdfViewer.enableHtmlSanitizer && searchText) {
+                searchText = SanitizeHtmlHelper.sanitize(searchText);
+            }
+            this.searchString = searchText;
+            this.isMatchCase = isMatchCase;
+            this.searchIndex = 0;
+            this.programaticalSearch = true;
+            this.isSingleSearch = true;
+            this.isTextSearchHandled = false;
+            this.calculateSearchCount(searchText, this.documentTextCollection);
+            this.textSearch(searchText);
+        }
+        else {
+            if (this.searchString !== searchText) {
+                this.isSingleSearch = true;
+                this.searchString = searchText;
+                this.isMatchCase = isMatchCase;
+                this.searchIndex = 0;
+                this.searchCount = 0;
+                this.searchPageIndex = 0;
+                this.programaticalSearch = true;
+                this.textSearchWhileLoading(searchText, isMatchCase);
+            }
+        }
     }
 
     /**
@@ -2520,15 +2957,111 @@ export class TextSearch {
         this.isMatchCase = isMatchCase;
         const searchTerms: string[] = Array.isArray(searchText) ? searchText : [searchText];
         const searchResults: Record<string, SearchResultModel[]> = {};
-        const startIndex: number = (pageIndex !== null && pageIndex !== undefined) ? pageIndex : 0;
-        const endIndex: number = (pageIndex !== null && pageIndex !== undefined) ? pageIndex + 1 : this.documentTextCollection.length;
+        const startIndex: number = !isNullOrUndefined(pageIndex) ? pageIndex : 0;
+        const endIndex: number = !isNullOrUndefined(pageIndex) ? pageIndex + 1 : this.documentTextCollection.length;
+        const fetchTextCollection: any = (endIndex: number) =>
+            this.documentTextCollection[parseInt(endIndex.toString(), 10)] ?
+                this.documentTextCollection[parseInt(endIndex.toString(), 10)][parseInt(endIndex.toString(), 10)] : null;
+        const documentTextCollection: any = fetchTextCollection(endIndex - 1);
+        let findTextResult: any = [];
+        if (documentTextCollection && documentTextCollection.TextData.length > 0) {
+            findTextResult = this.getSearchResults(searchText, searchTerms, searchResults, startIndex, endIndex,
+                                                   this.documentTextCollection);
+        }
+        return findTextResult;
+    }
+
+    /**
+     * Searches for the specified text within the document and returns the bounding rectangles of the matched text. The search can be case-sensitive based on the provided parameters. If a specific page index is provided, it returns the bounding rectangles for that page; otherwise, it returns the bounding rectangles for all pages in the document where the text was found.
+     *
+     * @param {string} searchText - The text string to search for.
+     * @param {boolean} isMatchCase - If true, performs a case-sensitive search; otherwise, performs a case-insensitive search.
+     * @param {number} [pageIndex] - Optional page index to limit the search to a specific page.
+     * @returns {Promise<SearchResultModel[]>} -  A Promise that resolves to an array of `SearchResult` objects. Each object contains the page index and an array of bounds representing the locations of the search text found on that page.
+     */
+    public findTextAsync(searchText: string, isMatchCase: boolean, pageIndex?: number): Promise<SearchResultModel[]>;
+    /**
+     * Searches for an array of strings within the document and returns the bounding rectangles for each occurrence. The search can be case-sensitive based on the provided parameters. If a specific page index is provided, it returns the bounding rectangles for these search strings on that page; otherwise, it returns the bounding rectangles for all pages in the document where the strings were found.
+     *
+     * @param {string[]} searchText - An array of text strings to search for.
+     * @param {boolean} isMatchCase - If true, performs a case-sensitive search; otherwise, performs a case-insensitive search.
+     * @param {number} [pageIndex] - Optional page index to limit the search to a specific page.
+     * @returns {Promise<Record<string, SearchResultModel[]>>} -  A Promise that resolves to an object where each key is a search text string, and each value is an array of `SearchResult` objects. Each `SearchResult` object contains the page index and an array of bounds representing the locations of that search text on the corresponding page.
+     */
+    // eslint-disable-next-line max-len
+    public findTextAsync(searchText: string[], isMatchCase: boolean, pageIndex?: number): Promise<Record<string, SearchResultModel[]>>;
+    /**
+     * Searches for the specified text or an array of strings within the document and returns the bounding rectangles for each occurrence. The search can be case-sensitive based on the provided parameters. If a specific page index is provided, it returns the bounding rectangles for these search strings on that page; otherwise, it returns the bounding rectangles for all pages in the document where the strings were found.
+     *
+     * @param  {string | string[]} searchText - Specifies the search text content. If an array is passed, it will search for multiple texts.
+     * @param  {boolean} isMatchCase - If set to true, it will consider match case during the search.
+     * @param  {number} [pageIndex] - Optional parameter to specify a particular page to search in the document.
+     * @returns {Promise<SearchResultModel[] | Record<string, SearchResultModel[]>>} - If `searchText` is a string, the method returns a Promise that resolves to an array of `SearchResult` objects, where each object contains the page index and an array of bounds representing the locations of the search text found on that page. If `searchText` is an array of strings, it returns a Promise that resolves to an object, where each key is a search text string, and each value is an array of `SearchResult` objects. Each `SearchResult` object contains the page index and an array of bounds representing the locations of that search text on the corresponding page.
+     */
+    public findTextAsync(searchText: string | string[], isMatchCase: boolean, pageIndex?: number
+    ): Promise<SearchResultModel[] | Record<string, SearchResultModel[]>> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const proxy: any = this;
+        this.isMatchCase = isMatchCase;
+        this.pdfViewer.pdfRenderer.searchResults = {};
+        const searchTerms: string | string[] = Array.isArray(searchText) ? searchText : [searchText];
+        const searchResults: any = {};
+        const startIndex: number = pageIndex ? pageIndex : 0;
+        const endIndex: number = !isNullOrUndefined(pageIndex) ? pageIndex + 1 : this.pdfViewerBase.pageCount;
+        const jsonObject: object = { pageStartIndex: startIndex, pageEndIndex: endIndex, documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId, action: 'RenderPdfTexts', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId };
+        if (this.pdfViewerBase.jsonDocumentId) {
+            (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;
+        }
+        const requestType: string = 'pdfTextSearchRequest';
+        if (this.pdfViewer.extractTextOption === ExtractTextOption.None ||
+            this.pdfViewer.extractTextOption === ExtractTextOption.TextOnly) {
+            return new Promise((resolve: Function, reject: Function): void => {
+                const processPage: any = (i: number, msg: string) => {
+                    proxy.pdfViewerBase.pdfViewerRunner.addTask({
+                        pageIndex: i,
+                        message: msg,
+                        zoomFactor: proxy.pdfViewer.magnificationModule.zoomFactor,
+                        isTextNeed: true,
+                        isLayout: true,
+                        isSkipCharacterBounds: false,
+                        isNeedToRender: true,
+                        jsonObject: jsonObject,
+                        isRenderText: true,
+                        requestType: requestType
+                    }, TaskPriorityLevel.Medium);
+                    proxy.pdfViewerBase.pdfViewerRunner.onMessage(msg, (event: any) => {
+                        if ((event.data.message.indexOf('extractText') !== -1)) {
+                            proxy.pdfViewer.pdfRendererModule.textExtractionOnmessage(event, null, null);
+                            if (event.data.pageIndex + 1 === endIndex) {
+                                resolve(this.getSearchResults(searchText, searchTerms, searchResults, startIndex, endIndex,
+                                                              proxy.findTextDocumentCollection));
+                                proxy.findTextDocumentCollection = [];
+                            }
+                        }
+                    });
+                };
+                const msg: string = 'extractText_' + PdfViewerUtils.createGUID();
+                for (let i: number = startIndex; i < endIndex; i++) {
+                    processPage(i, msg);
+                }
+            });
+        } else {
+            return Promise.resolve(this.getSearchResults(searchText, searchTerms, searchResults, startIndex, endIndex,
+                                                         proxy.documentTextCollection));
+        }
+    }
+
+    private getSearchResults(searchText: string | string[], searchTerms: string[], searchResults: Record<string, SearchResultModel[]>,
+                             startIndex: number, endIndex: number, documentCollection: any):
+        Record<string, SearchResultModel[]> | SearchResultModel[] {
         for (const term of searchTerms) {
-            this.calculateSearchCount(term);
+            this.calculateSearchCount(term, documentCollection);
             searchResults[`${term}`] = [];
             for (let i: number = startIndex; i < endIndex; i++) {
                 const matches: any = this.searchMatches[parseInt(i.toString(), 10)];
                 if (!matches) { continue; }
-                const documentIndex: any = this.documentTextCollection[parseInt(i.toString(), 10)][parseInt(i.toString(), 10)];
+                const pageIndex: number = parseInt(Object.keys(documentCollection[parseInt(i.toString(), 10)])[0], 10);
+                const documentIndex: any = documentCollection[parseInt(i.toString(), 10)][parseInt(pageIndex.toString(), 10)];
                 const characterBounds: any = documentIndex.textData ? documentIndex.textData : documentIndex.TextData;
                 if (!characterBounds) { continue; }
                 const pageResult: SearchResultModel = { pageIndex: i, bounds: [] };
@@ -2542,12 +3075,20 @@ export class TextSearch {
                 }
             }
         }
-        return Array.isArray(searchText) ? searchResults : searchResults[`${searchText}`];
-
+        return Array.isArray(searchText) ? searchResults : searchResults[searchText as string];
     }
 
-    // eslint-disable-next-line max-len
-    private calculateTextBounds(searchText: string, matchIndex: any, characterBounds: any): IPdfRectBounds {
+    /**
+     * Calculates the bounding rectangle for a given search text within the PDF based on character bounds.
+     *
+     * @param {string} searchText - The text string for which to calculate the bounding rectangle.
+     * @param {any} matchIndex - The starting index of the match within the character bounds array.
+     * @param {any} characterBounds - An array containing the bounds of each character on the page.
+     * @private
+     * @returns {IPdfRectBounds} - The calculated bounding rectangle, specifying the position and dimensions
+     *                             (x, y, width, height) of the highlighted text area on the PDF page.
+     */
+    public calculateTextBounds(searchText: string, matchIndex: any, characterBounds: any): IPdfRectBounds {
         const startBound: any = characterBounds[parseInt(matchIndex.toString(), 10)].Bounds;
         const left: any = startBound.X;
         const top: any = startBound.Y;

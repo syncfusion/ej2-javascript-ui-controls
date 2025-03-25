@@ -2585,7 +2585,7 @@ describe('Gantt dialog module', () => {
        it('edit dialogue shimmer effect', () => {
            ganttObj.actionComplete = (args: any): void => {
                if (args.requestType === "openEditDialog") {
-                   expect(document.getElementsByClassName('e-table e-masked-table').length).toBe(2);
+                   expect(document.getElementsByClassName('e-table e-masked-table').length).toBe(1);
                }
            }
            ganttObj.openEditDialog(2);
@@ -2595,7 +2595,7 @@ describe('Gantt dialog module', () => {
        it('add dialogue shimmer effect', () => {
            ganttObj.actionComplete = (args: any): void => {
                if (args.action === "OpenDialog") {
-                   expect(document.getElementsByClassName('e-table e-masked-table').length).toEqual(2);
+                   expect(document.getElementsByClassName('e-table e-masked-table').length).toEqual(1);
                }
            };
            let add: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_add') as HTMLElement;
@@ -2647,7 +2647,7 @@ describe('Gantt dialog module', () => {
            triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
            ganttObj.actionComplete = (args: any): void => {
                if (args.requestType === "openEditDialog") {
-                   expect(document.getElementsByClassName('e-table e-masked-table').length).toEqual(2);
+                   expect(document.getElementsByClassName('e-table e-masked-table').length).toEqual(1);
                    let cancelRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
                    triggerMouseEvent(cancelRecord, 'click');
                }
@@ -13833,8 +13833,8 @@ describe('Add new record with notes value', () => {
             destroyGantt(ganttObj);
         }
     });
-});
-describe('Dialog editing - With task name has -', () => {
+ });   
+ describe('Dialog editing - With task name has -', () => {
     let ganttObj: Gantt;
     beforeAll((done: Function) => {
         ganttObj = createGantt({

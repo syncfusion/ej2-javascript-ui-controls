@@ -211,7 +211,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      */
     public freezeModule: Freeze;
     /**
-     * Gets or sets the number of frozen rows.
+     * Specifies the number of rows that should remain visible and fixed at the top of the TreeGrid during scrolling.
+     *
+     * This feature helps improve readability in data-heavy grids by keeping the header rows or key rows visible.
      *
      * @default 0
      */
@@ -219,20 +221,19 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public frozenRows: number;
 
     /**
-     * Gets or sets the number of frozen columns.
+     * Specifies the number of columns that should remain visible and fixed on the left side of the TreeGrid during horizontal scrolling.
+     *
+     * This feature ensures key columns, such as identifiers, stay visible while users scroll through data.
      *
      * @default 0
      */
     @Property(0)
     public frozenColumns: number;
     /**
-     *  Defines the mode of clip. The available modes are,
-     * ```props
-     * * Clip :- Truncates the cell content when it overflows its area.
-     * * Ellipsis :- Displays ellipsis when the cell content overflows its area.
-     * * EllipsisWithTooltip :- Displays ellipsis when the cell content overflows its area,
-     * ```
-     * also it will display the tooltip while hover on ellipsis is applied.
+     * Defines the options for printing the TreeGrid.
+     * The available print modes are:
+     * * `AllPages`: Prints all pages of the TreeGrid.
+     * * `CurrentPage`: Prints only the current page of the TreeGrid.
      *
      * @default Syncfusion.EJ2.Grids.ClipMode.Ellipsis
      * @aspType Syncfusion.EJ2.Grids.ClipMode
@@ -318,7 +319,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public parentIdMapping: string;
 
     /**
-     * Specifies whether to load all the rows in collapsed state when the TreeGrid is rendered for the first time.
+     * Specifies whether to load all rows in a collapsed state when the TreeGrid is initially rendered.
+     *
+     * This setting is particularly useful when dealing with large datasets, as it helps enhance loading performance by
+     * reducing initial data rendering.
      *
      * @default false
      */
@@ -334,7 +338,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public expandStateMapping: string;
 
     /**
-     * If `allowRowDragAndDrop` is set to true, you can drag and drop treegrid rows at another treegrid.
+     * If `allowRowDragAndDrop` is set to true, row reordering functionality is enabled, allowing rows to be dragged
+     * and dropped within the TreeGrid or across TreeGrids.
+     *
+     * This feature enables users to reorganize data dynamically via drag-and-drop operations.
      *
      * @default false
      */
@@ -352,7 +359,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     @Property([])
     public dataSource: Object | DataManager;
     /**
-     * Defines the external [`Query`](https://ej2.syncfusion.com/documentation/data/api-query.html)
+     * Defines the external [Query](https://ej2.syncfusion.com/documentation/data/api-query.html)
      * that will be executed along with data processing.
      *
      * @default null
@@ -365,11 +372,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     @Property()
     public cloneQuery: Query;
     /**
-     * Defines the print modes. The available print modes are
-     * ```props
-     * * AllPages :- Prints all pages of the TreeGrid.
-     * * CurrentPage :- Prints the current page of the TreeGrid.
-     * ```
+     * Defines the options for printing the TreeGrid.
+     * The available print modes are:
+     * * `AllPages`: Prints all pages of the TreeGrid.
+     * * `CurrentPage`: Prints only the current page of the TreeGrid.
      *
      * @default Syncfusion.EJ2.Grids.PrintMode.AllPages
      * @isEnumeration true
@@ -464,7 +470,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * If `showColumnMenu` set to true, then it will enable the column menu options in each columns.
      *
-     * > Check the [`Column menu`](../../treegrid/columns/#column-menu/) for its configuration.
+     * > Check the [Column menu](../../treegrid/columns/#column-menu/) for its configuration.
      *
      * @default false
      */
@@ -502,7 +508,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public sortSettings: SortSettingsModel;
     /**
      * Configures the TreeGrid aggregate rows.
-     * > Check the [`Aggregates`](../../treegrid/aggregates/aggregates) for its configuration.
+     * > Check the [Aggregates](../../treegrid/aggregates/aggregates) for its configuration.
      *
      * @default []
      */
@@ -578,14 +584,13 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     @Property()
     public toolbarTemplate: string | Function;
     /**
-     * Defines the mode of TreeGrid lines. The available modes are,
-     * ```props
-     * * Both :- Displays both horizontal and vertical TreeGrid lines.
-     * * None :- No TreeGrid lines are displayed.
-     * * Horizontal :- Displays the horizontal TreeGrid lines only.
-     * * Vertical :- Displays the vertical TreeGrid lines only.
-     * * Default :- Displays TreeGrid lines based on the theme.
-     * ```
+     * Defines how TreeGrid content lines are displayed, determining the visibility of vertical and horizontal lines.
+     *
+     * * `Both`: Displays both horizontal and vertical grid lines.
+     * * `None`: Hides both horizontal and vertical grid lines.
+     * * `Horizontal`: Displays only horizontal grid lines.
+     * * `Vertical`: Displays only vertical grid lines.
+     * * `Default`: Adjusts line visibility based on the theme.
      *
      * @default Syncfusion.EJ2.Grids.GridLine.Default
      * @isEnumeration true
@@ -638,7 +643,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * or HTML element ID.
      * > * The row template must be a table row.
      *
-     * > Check the [`Row Template`](../../treegrid/row) customization.
+     * > Check the [Row Template](../../treegrid/row) customization.
      *
      * @aspType string
      */
@@ -667,7 +672,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public rowHeight: number;
     /**    
      * If `enableAltRow` is set to true, the TreeGrid will render with `e-altrow` CSS class to the alternative tr elements.   
-     * > Check the [`AltRow`](../../treegrid/row/#styling-alternate-rows/) to customize the styles of alternative rows.
+     * > Check the [AltRow](../../treegrid/row/#styling-alternate-rows/) to customize the styles of alternative rows.
      *
      * @default true 
      */
@@ -759,48 +764,92 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     @Property(false)
     public enableVirtualization: boolean;
     /**
-     * If `enableColumnVirtualization` set to true, then the Tree Grid will render only the columns visible within the view-port
-     * and load subsequent columns on horizontal scrolling. This helps to load large dataset of columns in Tree Grid.
+     * Enables column virtualization in the TreeGrid. When set to `true`, only columns visible within the viewport are rendered.
+     * Additional columns are loaded as you horizontally scroll. This is beneficial for rendering large datasets efficiently.
      *
      * @default false
      */
     @Property(false)
     public enableColumnVirtualization: boolean;
     /**
-     * Specifies whether to display or remove the untrusted HTML values in the TreeGrid component.
-     * If `enableHtmlSanitizer` is set to true, then it will sanitize any suspected untrusted strings and scripts before rendering them.
+     * Determines whether to sanitize untrusted HTML content in the TreeGrid. If `true`, potentially harmful HTML strings
+     * and scripts are sanitized before rendering to protect against XSS attacks.
      *
      * @default false
      */
     @Property(false)
     public enableHtmlSanitizer: boolean;
     /**
-     * If `enableInfiniteScrolling` set to true, then the data will be loaded in TreeGrid when the scrollbar reaches the end.
-     * This helps to load large dataset in TreeGrid.
+     * Enables infinite scrolling in the TreeGrid. When set to `true`, additional data is loaded as the scrollbar
+     * reaches the end. Useful for handling large datasets.
      *
      * @default false
-     * @deprecated
      */
     @Property(false)
     public enableInfiniteScrolling: boolean;
     /**
-     * Configures the infinite scroll settings.
+     * Configures settings for infinite scrolling.
      *
      * @default { enableCache: false, maxBlocks: 5, initialBlocks: 5 }
-     * @deprecated
      */
     @Complex<InfiniteScrollSettingsModel>({}, InfiniteScrollSettings)
     public infiniteScrollSettings: InfiniteScrollSettingsModel;
     /**
-     * `columnQueryMode`provides options to retrieves data from the data source.Their types are
-     * * `All`: It retrieves whole data source.
-     * * `Schema`: retrieves data for all the defined columns in TreeGrid from the data source.
-     * * `ExcludeHidden`: retrieves data only for visible columns of TreeGrid from the data Source.
+     * Specifies how data is retrieved from the data source for the TreeGrid.
+     * The available modes are:
+     * * `All`: Retrieve the entire data source.
+     * * `Schema`: Retrieve data only for defined columns.
+     * * `ExcludeHidden`: Retrieve data only for visible columns in the TreeGrid.
      *
      * @default All
      */
     @Property('All')
     public columnQueryMode: ColumnQueryModeType;
+
+    /**
+     * If `allowSelection` is set to true, selection of (highlight row) TreeGrid records by clicking is allowed.
+     *
+     * @default true
+     */
+    @Property(true)
+    public allowSelection: boolean;
+
+    /**
+     * Specifies the index of the row to be selected upon initial rendering.
+     * Also retrieves the index of the currently selected row.
+     *
+     * @default -1
+     */
+    @Property(-1)
+    public selectedRowIndex: number;
+
+    /**
+     * Configures the selection behavior.
+     *
+     * @default {mode: 'Row', cellSelectionMode: 'Flow', type: 'Single'}
+     */
+    @Complex<SelectionSettingsModel>({}, SelectionSettings)
+    public selectionSettings: SelectionSettingsModel;
+
+    /**
+     * Enables exporting the TreeGrid to an Excel file if set to true.
+     *
+     * > Check the [ExcelExport](../../treegrid/excel-export/) documentation for more details.
+     *
+     * @default false
+     */
+    @Property(false)
+    public allowExcelExport: boolean;
+
+    /**
+     * Enables exporting the TreeGrid to a PDF file if set to true.
+     *
+     * > Check the [PdfExport](../../treegrid/pdf-export/) documentation for more details.
+     *
+     * @default false
+     */
+    @Property(false)
+    public allowPdfExport: boolean;
     /**
      * Triggers when the component is created.
      *
@@ -808,50 +857,57 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Event()
     public created: EmitType<Object>;
+
     /**
-     * This event allows customization of TreeGrid properties before rendering.
+     * Allows customization of TreeGrid properties before rendering.
      *
      * @event load
      */
     @Event()
     public load: EmitType<Object>;
+
     /**
-     * Triggers while expanding the TreeGrid record
+     * Triggers while a TreeGrid record is expanding.
      *
      * @event expanding
      */
     @Event()
     public expanding: EmitType<RowExpandingEventArgs>;
+
     /**
-     * Triggers after the record is expanded
+     * Triggers after a TreeGrid record is expanded.
      *
      * @event expanded
      */
     @Event()
     public expanded: EmitType<RowExpandedEventArgs>;
+
     /**
-     * Triggers while collapsing the TreeGrid record
+     * Triggers while a TreeGrid record is collapsing.
      *
      * @event collapsing
      */
     @Event()
     public collapsing: EmitType<RowCollapsingEventArgs>;
+
     /**
-     * Triggers after the record is collapsed.
+     * Triggers after a TreeGrid record is collapsed.
      *
      * @event collapsed
      */
     @Event()
     public collapsed: EmitType<RowCollapsedEventArgs>;
+
     /**
-     * Triggers when cell is saved.
+     * Triggers when a cell is being saved.
      *
      * @event cellSave
      */
     @Event()
     public cellSave: EmitType<CellSaveArgs>;
+
     /**
-     * Triggers when cell is saved.
+     * Triggers after a cell is saved.
      *
      * @event cellSaved
      */
@@ -859,79 +915,98 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public cellSaved: EmitType<CellSaveArgs>;
 
     /* eslint-disable */
-  /**
-   * Triggers when TreeGrid actions such as sorting, filtering, paging etc., starts.
-   * @event actionBegin
-   */
-  @Event()
-  public actionBegin: EmitType<PageEventArgs | FilterEventArgs | SortEventArgs | SearchEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs>;
-  
-  /**
-   * Triggers when TreeGrid actions such as sorting, filtering, paging etc. are completed.
-   * @event actionComplete
-   */
+    
+    /**
+     * Triggers when TreeGrid actions like sorting, filtering, paging, etc., start.
+     *
+     * @event actionBegin
+     */
+    @Event()
+    public actionBegin: EmitType<PageEventArgs | FilterEventArgs | SortEventArgs | SearchEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs>;
 
-  @Event()
-  public actionComplete: EmitType<PageEventArgs | FilterEventArgs | SortEventArgs| SearchEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs>;
+    /**
+     * Triggers when TreeGrid actions like sorting, filtering, paging, etc., are completed.
+     *
+     * @event actionComplete
+     */
+    @Event()
+    public actionComplete: EmitType<PageEventArgs | FilterEventArgs | SortEventArgs | SearchEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs>;
 
-  /** 
-   * Triggers before the record is to be edit.
-   * @event beginEdit
-   */
-  @Event()
-  public beginEdit: EmitType<BeginEditArgs>;
-  /** 
-   * Triggers when records are added in batch mode.
-   * @event batchAdd
-   */
-  @Event()
-  public batchAdd: EmitType<BatchAddArgs>;
-  /** 
-   * Triggers when records are deleted in batch mode.
-   * @event batchDelete
-   */
-  @Event()
-  public batchDelete: EmitType<BatchDeleteArgs>;
-  /** 
-   * Triggers before records are added in batch mode.
-   * @event batchCancel
-   */
-  @Event()
-  public batchCancel: EmitType<BatchCancelArgs>;
-  /** 
-   * Triggers before records are added in batch mode.
-   * @event beforeBatchAdd
-   */
-  @Event()
-  public beforeBatchAdd: EmitType<BeforeBatchAddArgs>;
-  /** 
-   * Triggers before records are deleted in batch mode.
-   * @event beforeBatchDelete
-   */
-  @Event()
-  public beforeBatchDelete: EmitType<BeforeBatchDeleteArgs>;
-  /** 
-   * Triggers before records are saved in batch mode.
-   * @event beforeBatchSave
-   */
-  @Event()
-  public beforeBatchSave: EmitType<BeforeBatchSaveArgs>;
-  /** 
-   * Triggers when the cell is being edited.
-   * @event cellEdit
-   */
+    /**
+     * Triggers before a record is edited.
+     *
+     * @event beginEdit
+     */
+    @Event()
+    public beginEdit: EmitType<BeginEditArgs>;
+
+    /**
+     * Triggers when records are added in batch mode.
+     *
+     * @event batchAdd
+     */
+    @Event()
+    public batchAdd: EmitType<BatchAddArgs>;
+
+    /**
+     * Triggers when records are deleted in batch mode.
+     *
+     * @event batchDelete
+     */
+    @Event()
+    public batchDelete: EmitType<BatchDeleteArgs>;
+
+    /**
+     * Triggers before records are cancelled in batch mode.
+     *
+     * @event batchCancel
+     */
+    @Event()
+    public batchCancel: EmitType<BatchCancelArgs>;
+
+    /**
+     * Triggers before records are added in batch mode.
+     *
+     * @event beforeBatchAdd
+     */
+    @Event()
+    public beforeBatchAdd: EmitType<BeforeBatchAddArgs>;
+
+    /**
+     * Triggers before records are deleted in batch mode.
+     *
+     * @event beforeBatchDelete
+     */
+    @Event()
+    public beforeBatchDelete: EmitType<BeforeBatchDeleteArgs>;
+
+    /**
+     * Triggers before records are saved in batch mode.
+     *
+     * @event beforeBatchSave
+     */
+    @Event()
+    public beforeBatchSave: EmitType<BeforeBatchSaveArgs>;
+
+    /**
+     * Triggers when a cell is being edited.
+     *
+     * @event cellEdit
+     */
     @Event()
     public cellEdit: EmitType<CellEditArgs>;
-  /* eslint-enable */
+
+    /* eslint-enable */
     /**
-     * Triggers when any TreeGrid action failed to achieve the desired results.
+     * Triggers when any TreeGrid action fails to achieve the desired results.
      *
      * @event actionFailure
      */
     @Event()
     public actionFailure: EmitType<FailureEventArgs>;
+
     /**
-     * Triggers when data source is populated in the TreeGrid.
+     * Triggers when the data source is populated in the TreeGrid.
      *
      * @event dataBound
      */
@@ -939,8 +1014,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public dataBound: EmitType<Object>;
 
     /**
-     * Triggers when the TreeGrid data is added, deleted and updated.
-     * Invoke the done method from the argument to start render after edit operation.
+     * Triggers when data in the TreeGrid is added, deleted, or updated.
+     * Invoke the done method from the argument to start rendering after an edit operation.
      *
      * @event dataSourceChanged
      * @deprecated
@@ -949,8 +1024,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public dataSourceChanged: EmitType<DataSourceChangedEventArgs>;
 
     /**
-     * Triggers when the TreeGrid actions such as Sorting, Paging etc., are done.
-     * In this event,the current view data and total record count should be assigned to the `dataSource` based on the action performed.
+     * Triggers when TreeGrid actions such as sorting, paging, etc., are completed.
+     * The current view data and total record count should be assigned to the dataSource based on the action performed.
      *
      * @event dataStateChange
      * @deprecated
@@ -959,7 +1034,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public dataStateChange: EmitType<DataStateChangeEventArgs>;
 
     /**
-     * Triggers when record is double clicked.
+     * Triggers when a record is double-clicked.
      *
      * @event recordDoubleClick
      */
@@ -968,72 +1043,68 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggered every time a request is made to access row information, element, or data.
-     * This will be triggered before the row element is appended to the TreeGrid element.
+     * This event is triggered before the row element is appended to the TreeGrid element.
      *
      * @event rowDataBound
      */
     @Event()
     public rowDataBound: EmitType<RowDataBoundEventArgs>;
+
     /**
-     * Triggers after detail row expands.
-     * > This event triggers at initial expand.
+     * Triggers after a detail row expands. This event triggers initially during the first expand.
      *
      * @event detailDataBound
      */
     @Event()
     public detailDataBound: EmitType<DetailDataBoundEventArgs>;
+
     /**
      * Triggered every time a request is made to access cell information, element, or data.
-     * This will be triggered before the cell element is appended to the TreeGrid element.
+     * This event is triggered before the cell element is appended to the TreeGrid element.
      *
      * @event queryCellInfo
      */
     @Event()
     public queryCellInfo: EmitType<QueryCellInfoEventArgs>;
+
     /**
-     * If `allowSelection` is set to true, it allows selection of (highlight row) TreeGrid records by clicking it.
+     * Triggers before row selection occurs.
      *
-     * @default true
+     * @event rowSelecting
      */
-    @Property(true)
-    public allowSelection: boolean;
-    /**
-     * Triggers before row selection occurs.
-     *
-     * @event rowSelecting
-     */
     @Event()
     public rowSelecting: EmitType<RowSelectingEventArgs>;
 
     /**
-     * Triggers after a row is selected.
+     * Triggers after a row is selected.
      *
-     * @event rowSelected
-     */
+     * @event rowSelected
+     */
     @Event()
     public rowSelected: EmitType<RowSelectEventArgs>;
 
     /**
-     * Triggers before deselecting the selected row.
+     * Triggers before the selected row is deselected.
      *
-     * @event rowSelected
+     * @event rowDeselecting
      * @deprecated
-     */
+     */
     @Event()
     public rowDeselecting: EmitType<RowDeselectEventArgs>;
 
     /**
-     * Triggers when a selected row is deselected.
+     * Triggers when a selected row is deselected.
      *
-     * @event rowDeselected
-     */
+     * @event rowDeselected
+     */
     @Event()
     public rowDeselected: EmitType<RowDeselectEventArgs>;
+
     /**
-     * Triggered for stacked header.
+     * Triggered for accessing header information.
      *
-     * @event headerCellInfo
-     */
+     * @event headerCellInfo
+     */
     @Event()
     public headerCellInfo: EmitType<HeaderCellInfoEventArgs>;
 
@@ -1044,42 +1115,43 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Event()
     public cellSelecting: EmitType<CellSelectingEventArgs>;
+
     /**
-     * Triggers before column menu opens.
+     * Triggers before the column menu opens.
      *
      * @event columnMenuOpen
      * @deprecated
      */
     @Event()
     public columnMenuOpen: EmitType<ColumnMenuOpenEventArgs>;
+
     /**
-     * Triggers when click on column menu.
+     * Triggers when there is a click on the column menu.
      *
      * @event columnMenuClick
      */
     @Event()
     public columnMenuClick: EmitType<MenuEventArgs>;
 
-
     /**
-     * Triggers after a cell is selected.
+     * Triggers after a cell is selected.
      *
-     * @event cellSelected
-     */
+     * @event cellSelected
+     */
     @Event()
     public cellSelected: EmitType<CellSelectEventArgs>;
 
     /**
-     * Triggers before the selected cell is deselecting.
+     * Triggers before a selected cell is deselected.
      *
-     * @event cellDeselecting
+     * @event cellDeselecting
      * @deprecated
-     */
+     */
     @Event()
     public cellDeselecting: EmitType<CellDeselectEventArgs>;
 
     /**
-     * Triggers when a particular selected cell is deselected.
+     * Triggers when a selected cell is deselected.
      *
      * @event cellDeselected
      * @deprecated
@@ -1088,7 +1160,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public cellDeselected: EmitType<CellDeselectEventArgs>;
 
     /**
-     * Triggers when column resize starts.
+     * Triggers when column resizing starts.
      *
      * @event resizeStart
      * @deprecated
@@ -1097,230 +1169,183 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public resizeStart: EmitType<ResizeArgs>;
 
     /**
-     * Triggers on column resizing.
+     * Triggers during column resizing.
      *
      * @event resizing
-     * @deprecated
      */
     @Event()
     public resizing: EmitType<ResizeArgs>;
 
     /**
-     * Triggers when column resize ends.
+     * Triggers when column resizing ends.
      *
      * @event resizeStop
-     * @deprecated
      */
     @Event()
     public resizeStop: EmitType<ResizeArgs>;
 
     /**
-     * Triggers when column header element drag (move) starts.
+     * Triggers when column header dragging begins.
      *
      * @event columnDragStart
-     * @deprecated
      */
     @Event()
     public columnDragStart: EmitType<ColumnDragEventArgs>;
 
     /**
-     * Triggers when column header element is dragged (moved) continuously.
+     * Triggers continuously while the column header is being dragged.
      *
      * @event columnDrag
-     * @deprecated
      */
     @Event()
     public columnDrag: EmitType<ColumnDragEventArgs>;
 
     /**
-     * Triggers when a column header element is dropped on the target column.
+     * Triggers when a column header is dropped onto the target column.
      *
      * @event columnDrop
-     * @deprecated
      */
     @Event()
     public columnDrop: EmitType<ColumnDragEventArgs>;
+
     /**
-     * Triggers when the check box state change in checkbox column.
+     * Triggers when the state of a checkbox changes in a checkbox column.
      *
      * @event checkboxChange
-     * @deprecated
      */
     @Event()
     public checkboxChange: EmitType<CheckBoxChangeEventArgs>;
 
     /**
-     * Triggers after print action is completed.
+     * Triggers after the print action has been completed.
      *
      * @event printComplete
-     * @deprecated
      */
     @Event()
     public printComplete: EmitType<PrintEventArgs>;
+
     /**
-     * Triggers before the print action starts.
+     * Triggers before the print action begins.
      *
      * @event beforePrint
-     * @deprecated
      */
     @Event()
     public beforePrint: EmitType<PrintEventArgs>;
+
     /**
-     * Triggers when toolbar item is clicked.
+     * Triggers when a toolbar item is clicked.
      *
      * @event toolbarClick
      */
     @Event()
     public toolbarClick: EmitType<ClickEventArgs>;
+
     /**
-     * Triggers before data is bound to Tree Grid.
+     * Triggers before data is bound to the TreeGrid.
      *
      * @event beforeDataBound
      */
     @Event()
     public beforeDataBound: EmitType<BeforeDataBoundArgs>;
+
     /**
-     * Triggers before context menu opens.
+     * Triggers before the context menu opens.
      *
      * @event contextMenuOpen
-     * @deprecated
      */
     @Event()
     public contextMenuOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
 
     /**
-     * Triggers when click on context menu.
+     * Triggers when an item in the context menu is clicked.
      *
      * @event contextMenuClick
      */
     @Event()
     public contextMenuClick: EmitType<MenuEventArgs>;
+
     /**
-     * Triggers before TreeGrid copy action.
+     * Triggers before the TreeGrid copy action is initiated.
      *
      * @event beforeCopy
-     * @deprecated
      */
     @Event()
     public beforeCopy: EmitType<BeforeCopyEventArgs>;
+
     /**
-     * Triggers before TreeGrid paste action.
+     * Triggers before the TreeGrid paste action is initiated.
      *
      * @event beforePaste
-     * @deprecated
      */
     @Event()
     public beforePaste: EmitType<BeforePasteEventArgs>;
+
     /**
-     * Triggers when row elements are dragged (moved) continuously.
+     * Triggers continuously while row elements are being dragged.
      *
      * @event rowDrag
-     * @deprecated
      */
     @Event()
     public rowDrag: EmitType<RowDragEventArgs>;
+
     /**
-     * Triggers when row element’s drag(move) starts.
+     * Triggers when row element dragging starts.
      *
      * @event rowDragStart
-     * @deprecated
      */
     @Event()
     public rowDragStart: EmitType<RowDragEventArgs>;
+
     /**
-     * Triggers when row element’s before drag(move).
+     * Triggers just before the row element dragging begins.
      *
      * @event rowDragStartHelper
-     * @deprecated
      */
     @Event()
     public rowDragStartHelper: EmitType<RowDragEventArgs>;
+
     /**
-     * Triggers when row elements are dropped on the target row.
+     * Triggers when a row element is dropped onto the target row.
      *
      * @event rowDrop
-     * @deprecated
      */
     @Event()
     public rowDrop: EmitType<RowDragEventArgs>;
 
     /**
-     * The `selectedRowIndex` allows you to select a row at initial rendering.
-     * You can also get the currently selected row index.
+     * Triggers before each cell is exported to a PDF document, allowing customization of cells.
      *
-     * @default -1
+     * @event pdfQueryCellInfo
      */
-    @Property(-1)
-    public selectedRowIndex: number;
-
-    /**
-     * Configures the selection settings.
-     *
-     * @default {mode: 'Row', cellSelectionMode: 'Flow', type: 'Single'}
-     */
-    @Complex<SelectionSettingsModel>({}, SelectionSettings)
-    public selectionSettings: SelectionSettingsModel;
-
-    /**
-     * If `allowExcelExport` set to true, then it will allow the user to export treegrid to Excel file.
-     *
-     * > Check the [`ExcelExport`](../../treegrid/excel-export/) to configure exporting document.
-     *
-     * @default false
-     */
-    @Property(false)
-    public allowExcelExport: boolean;
-    /**
-     * If `allowPdfExport` set to true, then it will allow the user to export treegrid to Pdf file.
-     *
-     * > Check the [`Pdfexport`](../../treegrid/pdf-export/) to configure the exporting document.
-     *
-     * @default false
-     */
-    @Property(false)
-    public allowPdfExport: boolean;
-    /**
-     * Triggers before exporting each cell to PDF document.
-     * You can also customize the PDF cells.
-     *
-     * @event pdfQueryCellInfo
-     * @deprecated
-     */
     @Event()
     public pdfQueryCellInfo: EmitType<PdfQueryCellInfoEventArgs>;
 
     /**
-     * Triggers before exporting each header cell to PDF document.
-     * You can also customize the PDF cells.
+     * Triggers before each header cell is exported to a PDF document, allowing customization of cells.
      *
      * @event pdfHeaderQueryCellInfo
-     * @deprecated
      */
     @Event()
     public pdfHeaderQueryCellInfo: EmitType<PdfHeaderQueryCellInfoEventArgs>;
 
     /**
-     * Triggers before exporting each cell to Excel file.
-     * You can also customize the Excel cells.
+     * Triggers before each cell is exported to an Excel file, allowing customization of cells.
      *
      * @event excelQueryCellInfo
-     * @deprecated
      */
     @Event()
     public excelQueryCellInfo: EmitType<ExcelQueryCellInfoEventArgs>;
 
     /**
-     * Triggers before exporting each header cell to Excel file.
-     * You can also customize the Excel cells.
+     * Triggers before each header cell is exported to an Excel file, allowing customization of cells.
      *
      * @event excelHeaderQueryCellInfo
-     * @deprecated
      */
     @Event()
     public excelHeaderQueryCellInfo: EmitType<ExcelHeaderQueryCellInfoEventArgs>;
 
     /**
-     * Triggers before TreeGrid data is exported to Excel file.
+     * Triggers before TreeGrid data is exported to an Excel file.
      *
      * @event beforeExcelExport
      */
@@ -1328,16 +1353,15 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public beforeExcelExport: EmitType<Object>;
 
     /**
-     * Triggers after TreeGrid data is exported to Excel file.
+     * Triggers after TreeGrid data is exported to an Excel file.
      *
      * @event excelExportComplete
-     * @deprecated
      */
     @Event()
     public excelExportComplete: EmitType<ExcelExportCompleteArgs>;
 
     /**
-     * Triggers before TreeGrid data is exported to PDF document.
+     * Triggers before TreeGrid data is exported to a PDF document.
      *
      * @event beforePdfExport
      */
@@ -1345,21 +1369,20 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public beforePdfExport: EmitType<Object>;
 
     /**
-     * Triggers after TreeGrid data is exported to PDF document.
+     * Triggers after TreeGrid data is exported to a PDF document.
      *
      * @event pdfExportComplete
-     * @deprecated
      */
     @Event()
     public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     /**
-     * Export TreeGrid data to Excel file(.xlsx).
+     * Exports the TreeGrid data to an Excel file (.xlsx).
      *
-     * @param  {ExcelExportProperties | TreeGridExcelExportProperties} excelExportProperties - Defines the export properties of the Tree Grid.
-     * @param  {boolean} isMultipleExport - Define to enable multiple export.
-     * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
-     * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
-     * @returns {Promise<any>} - Returns promise object of export action
+     * @param {ExcelExportProperties | TreeGridExcelExportProperties} excelExportProperties - The properties used to configure the Excel export.
+     * @param {boolean} isMultipleExport - Indicates whether multiple exporting is enabled.
+     * @param {workbook} workbook - The workbook instance used for multiple exports.
+     * @param {boolean} isBlob - If set to true, the result will be returned as blob data.
+     * @returns {Promise<any>} - Returns a promise that resolves with the result of the export action.
      */
     /* eslint-disable */
     public excelExport(
@@ -1369,13 +1392,13 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         return this.excelExportModule.Map(excelExportProperties, isMultipleExport, workbook, isBlob, false);
     }
     /**
-     * Export TreeGrid data to CSV file.
+     * Exports the TreeGrid data to a CSV file.
      *
-     * @param  {ExcelExportProperties} excelExportProperties - Defines the export properties of the TreeGrid.
-     * @param  {boolean} isMultipleExport - Define to enable multiple export.
-     * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
-     * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
-     * @returns {Promise<any>} - Returns promise object of export action
+     * @param {ExcelExportProperties} excelExportProperties - The properties used to configure the CSV export.
+     * @param {boolean} isMultipleExport - Indicates whether multiple exporting is enabled.
+     * @param {workbook} workbook - The workbook instance used for multiple exports.
+     * @param {boolean} isBlob - If set to true, the result will be returned as blob data.
+     * @returns {Promise<any>} - Returns a promise that resolves with the result of the export action.
      */
     /* eslint-disable */
     public csvExport(
@@ -1385,13 +1408,13 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         return this.excelExportModule.Map(excelExportProperties, isMultipleExport, workbook, isBlob, true);
     }
     /**
-     * Export TreeGrid data to PDF document.
+     * Exports the TreeGrid data to a PDF document.
      *
-     * @param {PdfExportProperties | TreeGridPdfExportProperties} pdfExportProperties - Defines the export properties of the Tree Grid.
-     * @param {boolean} isMultipleExport - Define to enable multiple export.
-     * @param {Object} pdfDoc - Defined the Pdf Document if multiple export is enabled.
-     * @param {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
-     * @returns {Promise<any>} - Returns promise object of export action
+     * @param {PdfExportProperties | TreeGridPdfExportProperties} pdfExportProperties - The properties used to configure the PDF export.
+     * @param {boolean} isMultipleExport - Indicates whether multiple exporting is enabled.
+     * @param {Object} pdfDoc - The PDF document instance used for multiple exports.
+     * @param {boolean} isBlob - If set to true, the result will be returned as blob data.
+     * @returns {Promise<any>} - Returns a promise that resolves with the result of the export action.
      */
     public pdfExport(
         pdfExportProperties?: PdfExportProperties | TreeGridPdfExportProperties,
@@ -1400,9 +1423,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Sends a post request to export tree grid to excel file in server side.
+     * Sends a POST request to export the TreeGrid to an Excel file on the server side.
      *
-     * @param  {string} url - Pass URL for server side excel export action.
+     * @param {string} url - The URL for the server-side Excel export action.
      * @returns {void}
      */
     public serverExcelExport(url: string): void {
@@ -1410,9 +1433,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.exportTreeGrid(url);
     }
     /**
-     * Sends a post request to export tree grid to pdf file in server side.
+     * Sends a POST request to export the TreeGrid to a PDF document on the server side.
      *
-     * @param  {string} url - Pass URL for server-side pdf export action.
+     * @param {string} url - The URL for the server-side PDF export action.
      * @returns {void}
      */
     public serverPdfExport(url: string): void {
@@ -1421,9 +1444,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Sends a Post request to export Tree Grid to CSV file in server side.
+     * Sends a POST request to export the TreeGrid to a CSV file on the server side.
      *
-     * @param  {string} url - Pass URL for server-side csv export action.
+     * @param {string} url - The URL for the server-side CSV export action.
      * @returns {void}
      */
     public serverCsvExport(url: string): void {
@@ -1451,7 +1474,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         treeGridModel.searchSettings.fields = queries.search && queries.search[0]['fields'] || [];
         treeGridModel.sortSettings.columns = queries.sorted;
         treeGridModel.columns = this.setHeaderText(treeGridModel.columns as Column[], include);
-        const form: HTMLFormElement = this.createElement('form', { id: 'ExportForm', styles: 'display:none;' });
+        const form: HTMLFormElement = this.createElement('form', { id: 'ExportForm' });
+        form.style.display = 'none';
         const treeGridInput: HTMLInputElement = this.createElement('input', { id: 'treeGridInput', attrs: { name: 'treeGridModel' } });
         treeGridInput.value = JSON.stringify(treeGridModel);
         form.method = 'POST';
@@ -1549,11 +1573,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Sorts a column with the given options.
+     * Sorts a column with the specified options.
      *
-     * @param {string} columnName - Defines the column name to be sorted.
-     * @param {SortDirection} direction - Defines the direction of sorting field.
-     * @param {boolean} isMultiSort - Specifies whether the previous sorted columns are to be maintained.
+     * @param {string} columnName - The name of the column to be sorted.
+     * @param {SortDirection} direction - The direction of the sorting operation.
+     * @param {boolean} isMultiSort - Specifies whether previous sorted columns should be maintained during sorting.
      * @returns {void}
      */
     public sortByColumn(columnName: string, direction: SortDirection, isMultiSort?: boolean): void {
@@ -1563,7 +1587,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Clears all the sorted columns of the TreeGrid.
+     * Clears all the sorted columns in the TreeGrid.
      *
      * @returns {void}
      */
@@ -1574,9 +1598,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Remove sorted column by field name.
+     * Removes the sorted state from a column specified by the field name.
      *
-     * @param {string} field - Defines the column field name to remove sort.
+     * @param {string} field - The field name of the column from which the sort state should be removed.
      * @returns {void}
      * @hidden
      */
@@ -1589,11 +1613,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
 
 
     /**
-     * Searches TreeGrid records using the given key.
-     * You can customize the default search option by using the
-     * [`searchSettings`](./#searchsettings/).
+     * Searches for TreeGrid records using a specified search string.
+     * Customize the search behavior through the [searchSettings](./#searchsettings/).
      *
-     * @param  {string} searchString - Defines the key.
+     * @param {string} searchString - The string used as the search key.
      * @returns {void}
      */
     public search(searchString: string): void {
@@ -1601,15 +1624,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Changes the column width to automatically fit its content to ensure that the width shows the content without wrapping/hiding.
-     * > * This method ignores the hidden columns.
-     * > * Uses the `autoFitColumns` method in the `dataBound` event to resize at initial rendering.
+     * Adjusts column widths to fit their content, ensuring content is displayed without wrapping or truncation.
+     * - Hidden columns are ignored by this method.
+     * - Use the `autoFitColumns` method during the `dataBound` event for initial rendering.
      *
-     * @param  {string |string[]} fieldNames - Defines the column names.
+     * @param {string | string[]} fieldNames - The name(s) of the column(s) to be auto-fitted.
      * @returns {void}
-     *
-     *
-     *
      */
     public autoFitColumns(fieldNames?: string | string[]): void {
         this.resizeModule.autoFitColumns(fieldNames);
@@ -1617,10 +1637,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Changes the TreeGrid column positions by field names.
+     * Reorders TreeGrid columns by specifying their field names.
      *
-     * @param  {string} fromFName - Defines the origin field name.
-     * @param  {string} toFName - Defines the destination field name.
+     * @param {string | string[]} fromFName - The field name(s) of the column(s) to be moved.
+     * @param {string} toFName - The destination field name to place the moved columns.
      * @returns {void}
      */
     public reorderColumns(fromFName: string | string[], toFName: string): void {
@@ -1641,9 +1661,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * By default, prints all the pages of the TreeGrid and hides the pager.
-     * > You can customize print options using the
-     * [`printMode`](./#printmode).
+     * Prints all the pages of the TreeGrid and hides the pager by default.
+     * Customize print options using the [printMode](./#printmode).
      *
      * @returns {void}
      */
@@ -1790,7 +1809,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Binding events to the element while component creation.
+     * Attaches event handlers to the necessary elements during the component's initialization.
      *
      * @hidden
      * @returns {void}
@@ -1810,9 +1829,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
     /**
-     * To provide the array of modules needed for component rendering
+     * Provides a list of the modules that are required for rendering the TreeGrid component.
      *
-     * @returns {ModuleDeclaration[]} - Returns TreeGrid modules collection
+     * This method is essential for ensuring that all dependent modules are loaded and available
+     * during the component's lifecycle, enabling full functionality.
+     *
+     * @returns {ModuleDeclaration[]} - Returns an array of the required TreeGrid module declarations.
      * @hidden
      */
     public requiredModules(): ModuleDeclaration[] {
@@ -2128,7 +2150,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         if (this.enableVirtualization && !isNullOrUndefined(this.detailTemplate)) {
             failureCases.push('Virtual scrolling is not compatible with the detail template');
         }
-        if ((this.frozenColumns > 0 || this.columnModel.filter((col: any) => col.isFrozen) || this.frozenRows > 0)
+        if ((this.frozenColumns > 0 || this.frozenRows > 0 || this.columnModel.filter((col: any) => col.isFrozen))
             && (!isNullOrUndefined(this.detailTemplate) || !isNullOrUndefined(this.rowTemplate))) {
             failureCases.push('Frozen rows and columns are not supported with the Detail template and row template.');
         }
@@ -2137,9 +2159,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
         if (this.allowSelection && !isNullOrUndefined(this.rowTemplate)) {
             failureCases.push('Selection is not supported in RowTemplate');
-        }
-        if (this.treeColumnIndex < 0) {
-            failureCases.push('For showing tree structure it is must to set the TreeColumnIndex value.');
         }
         if (this.treeColumnIndex >= this.columns.length) {
             failureCases.push('TreeColumnIndex value should not exceed the total column count.');
@@ -2166,9 +2185,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 failureCases.push('Only one column can have the ShowCheckbox option enabled.');
             }
         }
-        const alignColumn: any = this.columnModel.filter((col: any) => col.textAlign === 'Right' && col.field === this.columnModel[this.treeColumnIndex].field);
-        if (alignColumn.length !== 0) {
-            failureCases.push('TextAlign right for the tree column is not applicable.');
+        let alignColumn: any;
+        if (this.treeColumnIndex !== null && this.treeColumnIndex !== -1) {
+            alignColumn = this.columnModel.filter((col: any) => col.textAlign === 'Right' && col.field === this.columnModel[this.treeColumnIndex].field);
+            if (alignColumn.length !== 0) {
+                failureCases.push('TextAlign right for the tree column is not applicable.');
+            }
         }
         if (failureCases.length > 0) {
             const failureEventArgs: any = {
@@ -2205,7 +2227,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             this.flatData = data;
             this.flatData.filter((e: ITreeData) => {
                 setValue('uniqueIDCollection.' + e.uniqueID, e, this);
-                if (e.level === 0) {
+                if (e.level === 0 && !this.parentData.some((record: ITreeData) => (record as ITreeData).uniqueID === e.uniqueID)) {
                     this.parentData.push(e);
                 }
             });
@@ -2336,16 +2358,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             this.trigger(events.rowDeselecting, args);
         };
         this.grid.rowSelected = (args: RowDeselectEventArgs): void => {
-            if (this.enableVirtualization && args.isHeaderCheckboxClicked &&
-            this.grid.currentViewData.length !== this.grid.selectionModule.selectedRowIndexes.length) {
-                const updateRowSelection : string = 'updateRowSelection';
-                for (let i: number = 0; i < this.getRows().length; i++) {
-                    if (this.getRows()[parseInt(i.toString(), 10)].getElementsByClassName('e-frame e-icons e-uncheck').length) {
-                        this.grid.selectionModule[`${updateRowSelection}`](this.getRows()[parseInt(i.toString(), 10)],
-                                                                           (this.getCurrentViewRecords()[parseInt(i.toString(), 10)] as
-                                                                            ITreeData).index);
-                    }
-                }
+            if (this.enableVirtualization) {
+                (this as any).virtualScrollModule.updateSelection(args);
             }
             this.selectedRowIndex = this.grid.selectedRowIndex;
             this.notify(events.rowSelected, args);
@@ -3085,6 +3099,15 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         return gridColumnCollection;
     }
 
+    private lastRowCellBorderUpdated(): void {
+        const rows: NodeListOf<HTMLTableRowElement> = this.getContentTable().querySelectorAll('tr.e-row');
+        const visibleRows: HTMLTableRowElement[] = Array.from(rows).filter((row: HTMLTableRowElement): boolean => !row.classList.contains('e-childrow-hidden'));
+        if (visibleRows.length > 0) {
+            const lastVisibleRow: HTMLTableRowElement = visibleRows[visibleRows.length - 1];
+            this.lastRowBorder(lastVisibleRow, true);
+        }
+    }
+
     /**
      * Called internally if any of the property value changed.
      *
@@ -3269,7 +3292,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Destroys the component (detaches/removes all event handlers, attributes, classes, and empties the component element).
+     * Destroys the TreeGrid component by detaching event handlers,
+     * removing attributes and classes, and clearing the component's DOM elements.
+     *
+     * This method ensures that all resources used by the TreeGrid are properly released
+     * and the component is cleaned up from the DOM to prevent memory leaks.
      *
      * @method destroy
      * @returns {void}
@@ -3306,7 +3333,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Update the TreeGrid model
+     * Updates the TreeGrid model and ensures that the underlying Grid's data model is in sync with TreeGrid.
+     * This method binds current data and settings to the TreeGrid.
      *
      * @method dataBind
      * @returns {void}
@@ -3326,7 +3354,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Get the properties to be maintained in the persisted state.
+     * Retrieves the properties of the TreeGrid that should be retained and persisted between sessions.
+     *
+     * The method ensures that user preferences and important settings like paging, sorting, filtering,
+     * column configurations, etc., are preserved and can be restored when the component is re-initialized.
      *
      * @returns {string} - Returns persist properties details
      * @hidden
@@ -3421,7 +3452,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Returns TreeGrid rows
+     * Retrieves all the TreeGrid row elements.
+     *
+     * This method is useful for accessing the HTML representation of the rows for further manipulation or inspection.
      *
      * @returns {HTMLTableRowElement[]} - Returns row elements collection
      */
@@ -3430,7 +3463,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Gets the pager of the TreeGrid.
+     * Obtains the pager element of the TreeGrid.
+     *
+     * The pager enables navigation between pages when the TreeGrid displays paginated data.
      *
      * @returns {Element} - Returns pager element
      */
@@ -3439,12 +3474,14 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Adds a new record to the TreeGrid. Without passing parameters, it adds empty rows.
-     * > `editSettings.allowEditing` should be true.
+     * Adds a new record to the TreeGrid at the specified position or default location.
      *
-     * @param {Object} data - Defines the new add record data.
-     * @param {number} index - Defines the row index to be added.
-     * @param {RowPosition} position - Defines the new row position to be added.
+     * @param {Object} data - Object containing the data for the new record. If omitted, an empty row is added.
+     * @param {number} index - The index at which the new row should be added.
+     * @param {RowPosition} position - Specifies the position of the new row (e.g., before, after or child).
+     *
+     * > Requires `editSettings.allowAdding` to be true.
+     *
      * @returns {void}
      */
     public addRecord(data?: Object, index?: number,  position?: RowPosition): void {
@@ -3455,7 +3492,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
     /**
-     * Cancels edited state.
+     * Cancels the current edit operation on the TreeGrid.
+     *
+     * This method discards changes made to the row and exits the edit mode without saving.
      *
      * @returns {void}
      */
@@ -3465,7 +3504,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
     /**
-     * Saves the cell that is currently edited. It does not save the value to the DataSource.
+     * Saves the current cell value changes without committing to the data source.
+     *
+     * This operation persists the changes in the UI but not in the underlying data model.
      *
      * @returns {void}
      */
@@ -3475,7 +3516,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
     /**
-     * To update the specified cell by given value without changing into edited state.
+     * Updates the value of a specific cell directly, bypassing the edit mode.
+     *
+     * This method provides a quick way to update the UI and data without user interaction.
      *
      * @param {number} rowIndex Defines the row index.
      * @param {string} field Defines the column field.
@@ -3488,10 +3531,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
     /**
-     * To update the specified row by given values without changing into edited state.
+     * Updates a specific row with given values directly, skipping the edit state.
      *
-     * @param {number} index Defines the row index.
-     * @param {Object} data Defines the data object to be updated.
+     * This method allows for bulk updates of row data programmatically.
+     *
+     * @param {number} index - The index of the row to update.
+     * @param {Object} data - The data object containing updated field values.
      * @returns {void}
      */
     public updateRow(index: number, data: Object): void {
@@ -3507,12 +3552,13 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Delete a record with Given options. If fieldName and data is not given then TreeGrid will delete the selected record.
-     * > `editSettings.allowDeleting` should be true.
+     * Deletes a record based on specified criteria or the selected record if none specified.
      *
-     * @param {string} fieldName - Defines the primary key field, 'Name of the column'.
-     * @param {Object} data - Defines the JSON data of the record to be deleted.
+     * @param {string} fieldName - The name of the primary key field.
+     * @param {Object} data - The data object representing the record to delete.
      * @returns {void}
+     *
+     * > Requires `editSettings.allowDeleting` to be true.
      */
     public deleteRecord(fieldName?: string, data?: Object): void {
         if ((isNullOrUndefined(fieldName) && (isNullOrUndefined(data)) || (this.getSelectedRecords().length <= 0))) {
@@ -3525,9 +3571,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * To edit any particular row by TR element.
+     * Initiates editing for a specific row using its HTML element.
      *
-     * @param {HTMLTableRowElement} row - Defines the table row to be edited.
+     * This allows for manual control of which row enters edit mode through the UI.
+     *
+     * @param {HTMLTableRowElement} row - The table row element to enter into edit mode.
      * @returns {void}
      */
     public startEdit(row?: HTMLTableRowElement): void {
@@ -3537,10 +3585,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * To edit any particular cell using row index and cell index.
+     * Begins editing of a specific cell using row and field indices.
      *
-     * @param {number} rowIndex - Defines row index to edit a particular cell.
-     * @param {string} field - Defines the field name of the column to perform cell edit.
+     * Customers can programmatically specify which cell to edit without user input.
+     *
+     * @param {number} rowIndex - The index of the row containing the cell.
+     * @param {string} field - The field name of the cell to edit.
      * @returns {void}
      */
     public editCell(rowIndex?: number, field?: string): void {
@@ -3550,10 +3600,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Enables or disables ToolBar items.
+     * Enables or disables specified ToolBar items within the TreeGrid.
      *
-     * @param {string[]} items - Defines the collection of itemID of ToolBar items.
-     * @param {boolean} isEnable - Defines the items to be enabled or disabled.
+     * This facilitates dynamic control of toolbar actions based on application logic.
+     *
+     * @param {string[]} items - Array of ToolBar item IDs to enable or disable.
+     * @param {boolean} isEnable - Boolean flag to determine whether to enable (true) or disable (false) items.
      * @returns {void}
      */
     public enableToolbarItems(items: string[], isEnable: boolean): void {
@@ -3564,7 +3616,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
 
 
     /**
-     * If TreeGrid is in editable state, you can save a record by invoking endEdit.
+     * Commits the edits made to a record in edit mode, updating the data source.
+     *
+     * Use this method to finalize changes for rows in edit mode, ensuring persistence.
      *
      * @returns {void}
      */
@@ -3575,10 +3629,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Column chooser can be displayed on screen by given position(X and Y axis).
+     * Displays the column chooser at a specified screen position.
      *
-     * @param {number} x - Defines the X axis.
-     * @param {number} y - Defines the Y axis.
+     * Useful for customizing the visibility of columns interactively via the UI.
+     *
+     * @param {number} x - The X-axis position of the column chooser.
+     * @param {number} y - The Y-axis position of the column chooser.
      * @returns {void}
      */
     public openColumnChooser(x?: number, y?: number): void {
@@ -3588,9 +3644,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Delete any visible row by TR element.
+     * Deletes a visible row from the TreeGrid using its HTML element.
      *
-     * @param {HTMLTableRowElement} tr - Defines the table row element.
+     * Apply this method when handling row deletions through DOM manipulations.
+     *
+     * @param {HTMLTableRowElement} tr - The table row element to remove.
      * @returns {void}
      */
     public deleteRow(tr: HTMLTableRowElement): void {
@@ -3600,21 +3658,24 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Get the names of the primary key columns of the TreeGrid.
+     * Retrieves the primary key field names used in the TreeGrid.
      *
-     * @returns {string[]} - Returns primary key collection
+     * This information is crucial for identifying and manipulating unique rows.
+     *
+     * @returns {string[]} - Returns an array of primary key field names.
      */
     public getPrimaryKeyFieldNames(): string[] {
         return this.grid.getPrimaryKeyFieldNames();
     }
 
     /**
-     * Updates particular cell value based on the given primary key value.
-     * > Primary key column must be specified using `columns.isPrimaryKey` property.
+     * Updates the value of a specific cell using its primary key for identification.
      *
-     * @param {string| number} key - Specifies the PrimaryKey value of dataSource.
-     * @param {string } field - Specifies the field name which you want to update.
-     * @param {string | number | boolean | Date} value - To update new value for the particular cell.
+     * Useful for targeted updates that leverage unique identifiers to ensure accuracy.
+     *
+     * @param {string| number} key - The primary key value of the row containing the cell.
+     * @param {string} field - The field name of the cell to update.
+     * @param {string | number | boolean | Date} value - The new value to assign to the specified cell.
      * @returns {void}
      */
     public setCellValue(key: string | number, field: string, value: string | number | boolean | Date): void {
@@ -3626,11 +3687,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Updates and refresh the particular row values based on the given primary key value.
-     * > Primary key column must be specified using `columns.isPrimaryKey` property.
+     * Updates the data for a specific row identified by its primary key and refreshes the display.
      *
-     *  @param {string| number} key - Specifies the PrimaryKey value of dataSource.
-     *  @param {Object} rowData - To update new data for the particular row.
+     * Important for keeping the displayed data consistent with the source database or dataset.
+     *
+     * @param {string| number} key - The primary key value of the row to update.
+     * @param {Object} rowData - The new data to apply to the row.
      * @returns {void}
      */
     public setRowData(key: string | number, rowData?: ITreeData): void {
@@ -3668,9 +3730,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Navigates to the specified target page.
+     * Navigates to a specified page number within the TreeGrid pagination.
      *
-     * @param  {number} pageNo - Defines the page number to navigate.
+     * This can be used to programmatically change the page being viewed,
+     * allowing for scripted navigation through data.
+     *
+     * @param {number} pageNo - The page number to navigate to. Must be within valid page range.
      * @returns {void}
      */
     public goToPage(pageNo: number): void {
@@ -3680,9 +3745,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Defines the text of external message.
+     * Updates the external message displayed within the pager component.
      *
-     * @param  {string} message - Defines the message to update.
+     * This is useful for showing custom messages or additional information
+     * related to the data set or pagination status.
+     *
+     * @param {string} message - The custom message to display in the pager.
      * @returns {void}
      */
     public updateExternalMessage(message: string): void {
@@ -3692,21 +3760,27 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Gets a cell by row and column index.
+     * Retrieves a cell element based on its row and column indices in the TreeGrid.
      *
-     * @param  {number} rowIndex - Specifies the row index.
-     * @param  {number} columnIndex - Specifies the column index.
-     * @returns {Element} - Returns cell element in grid content
+     * This method is helpful for accessing cell-level elements for custom
+     * operations or styling.
+     *
+     * @param {number} rowIndex - The index of the row containing the cell.
+     * @param {number} columnIndex - The index of the column containing the cell.
+     * @returns {Element} - Returns the HTML element of the specified cell.
      */
     public getCellFromIndex(rowIndex: number, columnIndex: number): Element {
         return this.grid.getCellFromIndex(rowIndex, columnIndex);
     }
 
     /**
-     * Gets a Column by column name.
+     * Retrieves a column object by the column's field name.
      *
-     * @param  {string} field - Specifies the column name.
-     * @returns {Column} - Returns tree grid column
+     * This is typically used for obtaining the details of a column for
+     * configuration or data manipulation purposes.
+     *
+     * @param {string} field - The field name of the column.
+     * @returns {Column} - Returns the column object corresponding to the field.
      */
     public getColumnByField(field: string): Column {
         return iterateArrayOrObject<Column, Column>(<Column[]>this.columnModel, (item: Column) => {
@@ -3718,10 +3792,13 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Gets a column by UID.
+     * Fetches a column object using the column's unique identifier (UID).
      *
-     * @param  {string} uid - Specifies the column UID.
-     * @returns {Column} - Returns tree grid column
+     * Useful in scenarios where columns do not have unique field names but
+     * are uniquely identifiable via UID.
+     *
+     * @param {string} uid - The unique identifier for the column.
+     * @returns {Column} - Returns the column object for the given UID.
      */
     public getColumnByUid(uid: string): Column {
         let Columns: Column[] = this.initialRender ? <Column[]>this.grid.columns : <Column[]>this.columns;
@@ -3738,37 +3815,48 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Gets the collection of column fields.
+     * Retrieves the names of all column fields in the TreeGrid.
      *
-     * @returns {string[]} - Returns column field name as collection
+     * This method provides a list of field names useful for dynamic operations
+     * or configuration where fields need to be enumerated or manipulated.
+     *
+     * @returns {string[]} - Returns an array of column field names.
      */
     public getColumnFieldNames(): string[] {
         return this.grid.getColumnFieldNames();
     }
 
     /**
-     * Gets the footer div of the TreeGrid.
+     * Retrieves the footer content element of the TreeGrid, usually for styling or custom manipulation.
      *
-     * @returns {Element} - Returns footer content div element
+     * This can be used to access the footer for adding custom functionality
+     * or styling purposes to enhance user interaction at the bottom of the grid.
+     *
+     * @returns {Element} - Returns the footer content HTML element.
      */
     public getFooterContent(): Element {
         return this.grid.getFooterContent();
     }
 
     /**
-     * Gets the footer table element of the TreeGrid.
+     * Acquires the footer table element of the TreeGrid for layout management.
      *
-     * @returns {Element} - Returns footer content table element
+     * Useful for manipulating the table's structure or style beneath the grid content.
+     *
+     * @returns {Element} - Returns the footer table HTML element.
      */
     public getFooterContentTable(): Element {
         return this.grid.getFooterContentTable();
     }
 
     /**
-     * Shows a column by its column name.
+     * Shows one or more columns based on the specified column names.
      *
-     * @param  {string|string[]} keys - Defines a single or collection of column names.
-     * @param  {string} showBy - Defines the column key either as field name or header text.
+     * This is useful for dynamically adjusting the visibility of columns
+     * based on user actions or application logic.
+     *
+     * @param {string|string[]} keys - A single column name or an array of column names to show.
+     * @param {string} showBy - Key to determine visibility either as field name or header text.
      * @returns {void}
      */
     public showColumns(keys: string | string[], showBy?: string): void {
@@ -3777,10 +3865,13 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Hides a column by column name.
+     * Hides one or more columns based on the specified column names.
      *
-     * @param  {string|string[]} keys - Defines a single or collection of column names.
-     * @param  {string} hideBy - Defines the column key either as field name or header text.
+     * Utilized to dynamically reduce the visibility of columns based on
+     * user roles or preferences.
+     *
+     * @param {string|string[]} keys - A single column name or an array of column names to hide.
+     * @param {string} hideBy - Key to evaluate columns either as field name or header text.
      * @returns {void}
      */
     public hideColumns(keys: string | string[], hideBy?: string): void {
@@ -3789,40 +3880,51 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Gets a column header by column name.
+     * Retrieves a column header element based on the field name of the column.
      *
-     * @param  {string} field - Specifies the column name.
-     * @returns {Element} - Returns column header element
+     * This method helps to directly manipulate headers, such as applying custom styles.
+     *
+     * @param {string} field - The field name of the desired column.
+     * @returns {Element} - Returns the HTML element of the column header.
      */
     public getColumnHeaderByField(field: string): Element {
         return this.grid.getColumnHeaderByField(field);
     }
 
     /**
-     * Gets a column header by column index.
+     * Acquires the column header element using the column's index.
      *
-     * @param  {number} index - Specifies the column index.
-     * @returns {Element} - Returns column header element
+     * Suitable for situations where direct column index is available
+     * and header access is needed for operations.
+     *
+     * @param {number} index - The index of the column.
+     * @returns {Element} - Returns the HTML element of the specified column header.
      */
     public getColumnHeaderByIndex(index: number): Element {
         return this.grid.getColumnHeaderByIndex(index);
     }
 
     /**
-     * Gets a column header by UID.
+     * Retrieves a column header element utilizing the column's UID.
      *
-     * @param {string} uid - Specifies the column uid.
-     * @returns {Element} - Returns column header element
+     * Useful for precision access to header elements when UIDs are used
+     * uniquely to manage column identities.
+     *
+     * @param {string} uid - The UID of the column.
+     * @returns {Element} - Returns the HTML element of the column header.
      */
     public getColumnHeaderByUid(uid: string): Element {
         return this.grid.getColumnHeaderByUid(uid);
     }
 
     /**
-     * Gets a column index by column name.
+     * Determines the column index by the specified field name.
      *
-     * @param  {string} field - Specifies the column name.
-     * @returns {number} - Returns column index
+     * Helpful in converting field names to indices for operations that require
+     * numeric input for array or collection indexing.
+     *
+     * @param {string} field - The field name of the column.
+     * @returns {number} - Returns the index of the column.
      */
     public getColumnIndexByField(field: string): number {
         return this.grid.getColumnIndexByField(field);
@@ -3842,20 +3944,26 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Gets a column index by UID.
+     * Determines the column index based on the unique identifier (UID).
      *
-     * @param  {string} uid - Specifies the column UID.
-     * @returns {number} - Returns column index
+     * This can be crucial in scenarios that involve dynamic column management
+     * where UID provides an accurate reference.
+     *
+     * @param {string} uid - The UID of the column.
+     * @returns {number} - Returns the column index.
      */
     public getColumnIndexByUid(uid: string): number {
         return this.grid.getColumnIndexByUid(uid);
     }
 
     /**
-     * Gets the columns from the TreeGrid.
+     * Fetches a collection of columns from the TreeGrid optionally refreshing the column model.
      *
-     * @param {boolean} isRefresh - Defined whether to update DOM
-     * @returns {Column[]} - Returns treegrid columns collection
+     * Use this method to retrieve and optionally refresh the list of columns
+     * to ensure up-to-date configurations and settings.
+     *
+     * @param {boolean} isRefresh - Determines whether to refresh the grid's column model.
+     * @returns {Column[]} - Returns an array of TreeGrid column objects.
      */
     public getColumns(isRefresh?: boolean): Column[] {
         this.updateColumnModel(this.grid.getColumns(isRefresh));
@@ -3918,9 +4026,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Gets the content div of the TreeGrid.
+     * Retrieves the main content area of the TreeGrid.
      *
-     * @returns {Element} - Return tree grid content element
+     * This method allows access to the main content DIV, which can
+     * be used for layout adjustments or adding custom elements.
+     *
+     * @returns {Element} - Returns the TreeGrid content HTML element.
      */
     public getContent(): Element {
         return this.grid.getContent();
@@ -3953,18 +4064,24 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Gets the content table of the TreeGrid.
+     * Retrieves the content table element of the TreeGrid.
      *
-     * @returns {Element} - Returns content table element
+     * This table contains the main data display area, allowing for
+     * interaction and data manipulation directly within the TreeGrid.
+     *
+     * @returns {Element} - Returns the HTML element representing the content table.
      */
     public getContentTable(): Element {
         return this.grid.getContentTable();
     }
 
     /**
-     * Gets all the TreeGrid's data rows.
+     * Obtains all data row elements from the TreeGrid, excluding summary rows.
      *
-     * @returns {Element[]} - Returns row elements
+     * Provides a way to access the visual representation of data for purposes
+     * like custom formatting or event binding.
+     *
+     * @returns {Element[]} - Returns an array of data row elements.
      */
     public getDataRows(): Element[] {
         const dRows: Element[] = []; const rows: Element[] = this.grid.getDataRows();
@@ -3977,9 +4094,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Get current visible data of TreeGrid.
+     * Retrieves the current set of records that are visible in the TreeGrid view.
      *
-     * @returns {Object[]} - Returns current view records
+     * This method excludes any summary rows to focus on the main data set
+     * currently being viewed by the user.
+     *
+     * @returns {Object[]} - Returns an array of the current view records.
      * @isGenericType true
      */
     public getCurrentViewRecords(): Object[] {
@@ -3987,9 +4107,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         return this.grid.currentViewData.filter((e: Object) => isNullOrUndefined(e[`${isSummaryRow}`]));
     }
     /**
-     * Gets the added, edited,and deleted data before bulk save to the DataSource in batch mode.
+     * Collects data changes (added, edited, and deleted) that have not been saved in batch mode.
      *
-     * @returns {Object} - Returns batch changes
+     * This allows you to view pending changes awaiting a commit to the data source.
+     *
+     * @returns {Object} - Returns an object detailing batch changes.
      */
     public getBatchChanges(): Object {
         return this.grid.editModule.getBatchChanges();
@@ -3997,57 +4119,73 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
 
 
     /**
-     * Gets the header div of the TreeGrid.
+     * Retrieves the header content element of the TreeGrid.
      *
-     * @returns {Element} - Returns Header content element
+     * Mainly used for interacting with the header section, which includes
+     * column headers and any applied header styling or events.
+     *
+     * @returns {Element} - Returns the HTML element for header content.
      */
     public getHeaderContent(): Element {
         return this.grid.getHeaderContent();
     }
 
     /**
-     * Gets the header table element of the TreeGrid.
+     * Retrieves the header table element of the TreeGrid.
      *
-     * @returns {Element} - Return header table element
+     * This method is useful for direct access to the table structure
+     * where column headers are defined.
+     *
+     * @returns {Element} - Returns the HTML element for the header table.
      */
     public getHeaderTable(): Element {
         return this.grid.getHeaderTable();
     }
 
     /**
-     * Gets a row by index.
+     * Fetches a specific row element based on its index in the TreeGrid.
      *
-     * @param  {number} index - Specifies the row index.
-     * @returns {Element} - Returns row element
+     * This provides a way to directly access and manipulate a row using its index.
+     *
+     * @param {number} index - The index of the desired row.
+     * @returns {Element} - Returns the HTML element of the specified row.
      */
     public getRowByIndex(index: number): Element {
         return this.grid.getRowByIndex(index);
     }
 
     /**
-     * Get a row information based on cell
+     * Provides detailed information about a row based on a specified target element.
      *
-     * @param {Element | EventTarget} target - Target row element
-     * @returns {RowInfo} - Returns row information in a JSON object
+     * Integral for retrieving metadata such as row index or data object
+     * when working with events or complex tree structures.
+     *
+     * @param {Element | EventTarget} target - The target element or event triggering the request.
+     * @returns {RowInfo} - Returns an object containing row information.
      */
     public getRowInfo(target: Element | EventTarget): RowInfo {
         return this.grid.getRowInfo(target);
     }
 
     /**
-     * Gets UID by column name.
+     * Finds the unique identifier (UID) for a column based on its field name.
      *
-     * @param  {string} field - Specifies the column name.
-     * @returns {string} - Returns unique id based on column field name given
+     * UIDs are essential for precise identification and manipulation within complex grids.
+     *
+     * @param {string} field - The field name of the column.
+     * @returns {string} - Returns the unique identifier for the specified column.
      */
     public getUidByColumnField(field: string): string {
         return this.grid.getUidByColumnField(field);
     }
 
     /**
-     * Gets the visible columns from the TreeGrid.
+     * Retrieves all the columns that are currently set to be visible within the TreeGrid.
      *
-     * @returns {Column[]} - Returns visible columns collection
+     * Helps in understanding the user's current view and can be used to dynamically
+     * adjust the visible columns.
+     *
+     * @returns {Column[]} - Returns an array of visible column objects.
      */
     public getVisibleColumns(): Column[] {
         const cols: Column[] = [];
@@ -4060,7 +4198,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * By default, TreeGrid shows the spinner for all its actions. You can use this method to show spinner at your needed time.
+     * Displays a loading spinner overlay across the TreeGrid for any data action or long-running process.
+     *
+     * This can be manually invoked to indicate processing, enhancing user experience by providing feedback.
      *
      * @returns {void}
      */
@@ -4068,7 +4208,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         showSpinner(this.element);
     }
     /**
-     * Manually shown spinner needs to hide by `hideSpinnner`.
+     * Hides a manually shown loading spinner overlay from the TreeGrid.
+     *
+     * Ensures that any long-running process indication is removed after completion
+     * to manage user interface aesthetics.
      *
      * @returns {void}
      */
@@ -4076,7 +4219,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         hideSpinner(this.element);
     }
     /**
-     * Refreshes the TreeGrid header and content.
+     * Refreshes the visual appearance and data of the TreeGrid, updating header and content.
+     *
+     * This is crucial for synchronizing the displayed data with the underlying data source,
+     * ensuring the view reflects current data.
      *
      * @returns {void}
      */
@@ -4097,18 +4243,24 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Get the records of checked rows.
+     * Retrieves the records associated with rows that have their checkboxes checked.
      *
-     * @returns {Object[]} - Returns records that has been checked
+     * Facilitates operations that require information about specifically selected or
+     * interacted rows within the grid.
+     *
+     * @returns {Object[]} - Returns an array of checked row data objects.
      * @isGenericType true
      */
     public getCheckedRecords(): Object[] {
         return this.selectionModule.getCheckedrecords();
     }
     /**
-     * Get the visible records corresponding to rows visually displayed.
+     * Retrieves currently visible records according to the TreeGrid's visual state.
      *
-     * @returns {Object[]} - Returns visible records based on collapse state of rows
+     * It considers row expansion and collapse states to return only those records
+     * that a user can currently interact with.
+     *
+     * @returns {Object[]} - Returns visible records reflecting the TreeGrid's current view.
      * @isGenericType true
      */
     public getVisibleRecords(): Object[] {
@@ -4126,18 +4278,24 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         return visibleRecords;
     }
     /**
-     * Get the indexes of checked rows.
+     * Retrieves the indices of rows that have their checkboxes checked.
      *
-     * @returns {number[]} - Returns checked row indexes
+     * This can assist in programatically assessing which rows have been selected
+     * by checkbox interaction for further processing.
+     *
+     * @returns {number[]} - Returns an array of indices corresponding to checked rows.
      */
     public getCheckedRowIndexes(): number[] {
         return this.selectionModule.getCheckedRowIndexes();
     }
 
     /**
-     * Checked the checkboxes using rowIndexes.
+     * Selects rows in the TreeGrid using row indices, checking their associated checkboxes.
      *
-     * @param {number[]} indexes - row indexes
+     * This method provides automation for selecting or highlighting specific rows,
+     * useful in scenarios needing pre-selection or default selections.
+     *
+     * @param {number[]} indexes - An array of row indices to be marked as selected.
      * @returns {void}
      */
     public selectCheckboxes(indexes: number[]): void {
@@ -4146,9 +4304,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
 
 
     /**
-     * Refreshes the TreeGrid column changes.
+     * Updates and refreshes the TreeGrid's column definitions and layout.
      *
-     * @param {boolean} refreshUI - Defined whether to refresh the DOM
+     * Ensures that the latest column settings are displayed, either refreshing the UI
+     * or adjusting internal configurations to match current data or configuration updates.
+     *
+     * @param {boolean} refreshUI - A flag indicating whether the DOM should be updated.
      * @returns {void}
      */
     public refreshColumns(refreshUI?: boolean): void {
@@ -4176,7 +4337,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.setProperties({treeColumnIndex: treeIndex}, true);
     }
     /**
-     * Refreshes the TreeGrid header.
+     * Refreshes the header section of the TreeGrid to reflect any structural or data changes.
+     *
+     * This method is useful when there are dynamic updates or layout adjustments
+     * needed in the header portion to ensure it aligns with current grid data or settings.
      *
      * @returns {void}
      */
@@ -4228,12 +4392,15 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
     /**
-     * Expands child rows
+     * Expands the specified parent row within the TreeGrid to reveal its nested data.
      *
-     * @param {HTMLTableRowElement} row - Expands the given row
-     * @param {Object} record - Expands the given record
-     * @param {Object} key - Primary key value
-     * @param {number} level - Specifies the hierarchical level of the record
+     * This method is useful for programmatically expanding rows to display their
+     * hierarchical children, providing detailed views for nested data structures.
+     *
+     * @param {HTMLTableRowElement} row - The table row element that should be expanded.
+     * @param {Object} record - Optional. Represents the data record associated with the row to be expanded.
+     * @param {Object} key - Optional. The primary key value that uniquely identifies the record.
+     * @param {number} level - Optional. Indicates the hierarchical level of the record within the TreeGrid.
      * @returns {void}
      */
     public expandRow(row: HTMLTableRowElement, record?: Object, key?: Object, level?: number): void {
@@ -4248,7 +4415,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         if (isNullOrUndefined(row) && isNullOrUndefined(record)) {
             return;
         }
-        if (!isNullOrUndefined(row) && row.cells[0].classList.contains('e-lastrowcell')) {
+        if (!isNullOrUndefined(row) && row.cells && row.cells[0].classList.contains('e-lastrowcell')) {
             this.lastRowBorder(row, false);
         }
         if (this.isExpandAll && !isRemoteData(this)) {
@@ -4289,7 +4456,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
 
     // Internal method to handle the rows expand
     private expandRows(row: HTMLTableRowElement, record: Object, parentRec: Object): void {
-        const initialTotalRecordsCount: number = this.grid.totalDataRecordsCount;
         this.expandCollapse('expand', row, record);
         const children: string = 'Children';
         if (!(isRemoteData(this) && !isOffline(this)) && (!isCountRequired(this) || !isNullOrUndefined(record[`${children}`]))) {
@@ -4334,11 +4500,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             });
         } else if (isNullOrUndefined(record) && !isNullOrUndefined(row)) {
             if (this.detailTemplate) {
-                record = <ITreeData>this.grid.getCurrentViewRecords()[row.getAttribute('data-rowindex')];
+                record = <ITreeData>this.grid.getCurrentViewRecords()[parseInt(row.getAttribute('aria-rowindex'), 10) - 1];
             } else {
                 if (this.enableVirtualization && (this.isCollapseAll || this.isExpandAll) ) {
                     if (row.rowIndex === -1) {
-                        record = <ITreeData>this.grid.getCurrentViewRecords()[parseInt(row.getAttribute('data-rowindex'), 10)];
+                        record = <ITreeData>this.grid.getCurrentViewRecords()[parseInt(row.getAttribute('aria-rowindex'), 10) - 1];
                     }
                     else {
                         record = <ITreeData>this.grid.getCurrentViewRecords()[row.rowIndex];
@@ -4348,18 +4514,27 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                     record = <ITreeData>this.grid.getCurrentViewRecords()[row.rowIndex];
                 }
                 else {
-                    record = <ITreeData>this.grid.getCurrentViewRecords()[parseInt(row.getAttribute('data-rowindex'), 10)];
+                    record = <ITreeData>this.grid.getCurrentViewRecords()[parseInt(row.getAttribute('aria-rowindex'), 10) - 1];
                 }
             }
         }
         return record;
     }
     /**
-     * Collapses child rows
+     * Collapses the specified parent row in the TreeGrid.
      *
-     * @param {HTMLTableRowElement} row - Collapse the given row
-     * @param {Object} record - Collapse the given record
-     * @param {Object} key - Primary key value
+     * This method collapses the row associated with the provided HTMLTableRowElement,
+     * hiding any of its displayed child rows. It is typically used to manage the
+     * visibility of hierarchical data within a tree structure.
+     *
+     * @param {HTMLTableRowElement} row - The HTMLTableRowElement representing the parent row
+     *                                    whose child rows are to be collapsed.
+     * @param {Object} record - (Optional) The data record associated with the row being collapsed.
+     *                            This can be used to access or manipulate the underlying data
+     *                            when collapsing the row.
+     * @param {Object} key - (Optional) The primary key value of the record. It can be used to identify
+     *                         the target record uniquely when collapsing the row, especially in cases
+     *                         where the row or record data needs to be referenced or logged.
      * @returns {void}
      */
     public collapseRow(row: HTMLTableRowElement, record?: Object, key?: Object): void {
@@ -4445,9 +4620,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Expands the records at specific hierarchical level
+     * Expands all the records at the specified hierarchical level within the TreeGrid.
      *
-     * @param {number} level - Expands the parent rows at given level
+     * This method is useful for visually expanding data at a certain depth, making
+     * all parent rows visible at the given level and their child rows accessible.
+     *
+     * @param {number} level - The hierarchical level at which parent rows should be expanded.
      * @returns {void}
      */
     public expandAtLevel(level: number): void {
@@ -4467,9 +4645,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Expands the records by given primary key value
+     * Expands a specific record identified by the provided primary key value.
      *
-     * @param {Object} key - Expands the parent rows with given primary key value
+     * This method is useful for expanding particular node in the TreeGrid when
+     * the parent rows need to be targeted individually by their unique key.
+     *
+     * @param {Object} key - The primary key value of the record to be expanded.
      * @returns {void}
      */
     public expandByKey(key: Object): void {
@@ -4520,9 +4701,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         return obj;
     }
     /**
-     * Collapses the records at specific hierarchical level
+     * Collapses all the records at the specified hierarchical level within the TreeGrid.
      *
-     * @param {number} level - Define the parent row level which needs to be collapsed
+     * This function helps in hiding child rows for all parent nodes at a given level,
+     * effectively reducing the visible depth of the hierarchical structure.
+     *
+     * @param {number} level - The hierarchical level at which parent rows should be collapsed.
      * @returns {void}
      */
     public collapseAtLevel(level: number): void {
@@ -4542,9 +4726,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Collapses the records by given primary key value
+     * Collapses a specific record identified by the provided primary key value.
      *
-     * @param {Object} key - Collapses the parent rows with given primary key value
+     * This method is useful for collapsing particular node in the TreeGrid when
+     * the parent rows need to be targeted individually by their unique key.
+     *
+     * @param {Object} key - The primary key value of the record to be collapsed.
      * @returns {void}
      */
     public collapseByKey(key: Object): void {
@@ -4582,7 +4769,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Expands All the rows
+     * Expands all rows in the TreeGrid, making the full hierarchy visible.
+     *
+     * This method should be used with caution on large datasets, as it makes
+     * all nodes and their child rows visible, which might affect performance.
      *
      * @returns {void}
      */
@@ -4593,10 +4783,22 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
         this.isExpandedEventTriggered = false;
         this.isExpandingEventTriggered = false;
+        if (this.editSettings.mode === 'Batch') {
+            const obj: string = 'dialogObj'; const showDialog: string = 'showDialog';
+            if ((this.getBatchChanges()[this.changedRecords].length || this.getBatchChanges()[this.deletedRecords].length ||
+            this.getBatchChanges()[this.addedRecords].length) && this.editSettings.showConfirmDialog) {
+                const dialogObj: Dialog = this.grid.editModule[`${obj}`];
+                this.grid.editModule[`${showDialog}`]('CancelEdit', dialogObj);
+                return;
+            }
+        }
         this.expandCollapseAll('expand');
     }
     /**
-     * Collapses All the rows
+     * Collapses all rows in the TreeGrid, hiding all child rows and leaving only parent nodes visible.
+     *
+     * This method can be used to quickly minimize the view to only top-level data,
+     * which is helpful for summarizing or performing broad overviews of the dataset.
      *
      * @returns {void}
      */
@@ -4607,6 +4809,15 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
         this.isCollapsedEventTriggered = false;
         this.isCollapsingEventTriggered = false;
+        if (this.editSettings.mode === 'Batch') {
+            const obj: string = 'dialogObj'; const showDialog: string = 'showDialog';
+            if ((this.getBatchChanges()[this.changedRecords].length || this.getBatchChanges()[this.deletedRecords].length ||
+            this.getBatchChanges()[this.addedRecords].length) && this.editSettings.showConfirmDialog) {
+                const dialogObj: Dialog = this.grid.editModule[`${obj}`];
+                this.grid.editModule[`${showDialog}`]('CancelEdit', dialogObj);
+                return;
+            }
+        }
         this.expandCollapseAll('collapse');
     }
     private expandCollapseAll(action: string): void {
@@ -4625,7 +4836,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
         this.isExpandAll = true;
         this.isCollapseAll = true;
-        if (((this.allowPaging && this.pageSettings.pageSizeMode === 'All') || this.enableVirtualization || this.enableInfiniteScrolling) && !isRemoteData(this)) {
+        if (((this.allowPaging && (this.pageSettings.pageSizeMode === 'All' || this.pageSettings.pageSizeMode === 'Root')) || this.enableVirtualization || this.enableInfiniteScrolling) && !isRemoteData(this)) {
             this.flatData.filter((e: ITreeData) => {
                 if (e.hasChildRecords) {
                     e.expanded = action === 'collapse' ? false : true;
@@ -4684,12 +4895,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             rowIndex = this.grid.currentViewData.indexOf(record);
             row = gridRows[parseInt(rowIndex.toString(), 10)];
         } else {
-            rowIndex = +row.getAttribute('data-rowindex');
+            rowIndex = +row.getAttribute('aria-rowindex') - 1;
         }
         if (!isNullOrUndefined(row)) {
             row.setAttribute('aria-expanded', action === 'expand' ? 'true' : 'false');
         }
-        if (((this.allowPaging && this.pageSettings.pageSizeMode === 'All') || this.enableVirtualization) && !isRemoteData(this)
+        if (((this.allowPaging && (this.pageSettings.pageSizeMode === 'All' || this.pageSettings.pageSizeMode === 'Root')) || this.enableVirtualization) && !isRemoteData(this)
             && !isCountRequired(this)) {
             this.notify(events.localPagedExpandCollapse, {action: action, row: row, record: record});
         } else {
@@ -4698,6 +4909,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 displayAction = 'e-childrow-visible';
                 if (!isChild) {
                     record.expanded = true;
+                    this.flatData.forEach(function (e: ITreeData): void {
+                        e.expanded = e.uniqueID === record.uniqueID && e.expanded !== record.expanded ? record.expanded : e.expanded;
+                    });
                     this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
                 }
                 if (!isNullOrUndefined(row)) {
@@ -4718,6 +4932,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 displayAction = 'e-childrow-hidden';
                 if (!isChild || isCountRequired(this)) {
                     record.expanded = false;
+                    this.flatData.forEach(function (e: ITreeData): void {
+                        e.expanded = e.uniqueID === record.uniqueID && e.expanded !== record.expanded ? record.expanded : e.expanded;
+                    });
                     this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
                 }
                 if (!isNullOrUndefined(row)) {
@@ -4974,7 +5191,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             }
             if (!isNullOrUndefined(rows[parseInt(i.toString(), 10)]) && !this.allowPaging && !(this.enableVirtualization
                 || this.enableInfiniteScrolling || isRemoteData(this) || isCountRequired(this))) {
-                gridRowsObject[rows[parseInt(i.toString(), 10)].rowIndex].visible = displayAction !== 'e-childrow-hidden' ? true : false;
+                if (!isNullOrUndefined(gridRowsObject[rows[parseInt(i.toString(), 10)].rowIndex])) {
+                    gridRowsObject[rows[parseInt(i.toString(), 10)].rowIndex].visible = displayAction !== 'e-childrow-hidden' ? true : false;
+                }
                 const parentRecord: ITreeData[] = currentViewData.filter((e: ITreeData) => {
                     return e.uniqueID === currentRecord[0].parentUniqueID;
                 });
@@ -5129,29 +5348,6 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         }
         return value;
     }
-
-    /**
-     * Updates the rows and cells
-     *
-     * @param {Object[]} records - Updates the given records
-     * @param {HTMLTableRowElement[]} rows - Updates the given rows
-     * @param {number} index -  Updates the given cell index
-     * @returns {void}
-     */
-    private updateRowAndCellElements(records: Object[], rows: HTMLTableRowElement[], index: number): void {
-        for (let i: number = 0; i < records.length; i++) {
-            this.renderModule.cellRender({
-                data: records[parseInt(i.toString(), 10)], cell: rows[parseInt(i.toString(), 10)].cells[parseInt(index.toString(), 10)] ,
-                column: this.grid.getColumns()[this.treeColumnIndex],
-                requestType: 'rowDragAndDrop'
-            });
-            if (this['action'] === 'indenting' || this['action'] === 'outdenting') {
-                this.renderModule.RowModifier({
-                    data: records[parseInt(i.toString(), 10)], row: rows[parseInt(i.toString(), 10)]
-                });
-            }
-        }
-    }
     /**
      * @hidden
      * @returns {void}
@@ -5159,6 +5355,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public addListener(): void {
         this.on('updateResults', this.updateResultModel, this);
         this.grid.on('initial-end', this.afterGridRender, this);
+        this.grid.on('last-rowcell-border-updated', this.lastRowCellBorderUpdated, this);
     }
     private updateResultModel(returnResult: BeforeDataBoundArgs): void {
         this.dataResults = <ReturnOption>returnResult;
@@ -5171,20 +5368,22 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         if (this.isDestroyed) { return; }
         this.off('updateResults', this.updateResultModel);
         this.grid.off('initial-end', this.afterGridRender);
+        this.grid.off('last-rowcell-border-updated', this.lastRowCellBorderUpdated);
     }
     /**
-     * Filters TreeGrid row by column name with the given options.
+     * Filters the TreeGrid rows based on a specified column and filter criteria.
      *
-     * @param  {string} fieldName - Defines the field name of the column.
-     * @param  {string} filterOperator - Defines the operator to filter records.
-     * @param  {string | number | Date | boolean} filterValue - Defines the value used to filter records.
-     * @param  {string} predicate - Defines the relationship between one filter query and another by using AND or OR predicate.
-     * @param  {boolean} matchCase - If match case is set to true, the TreeGrid filters the records with exact match. if false, it filters
-     * case insensitive records (uppercase and lowercase letters are treated the same).
-     * @param  {boolean} ignoreAccent - If ignoreAccent is set to true,
-     * then filter ignores diacritic characters or accents while filtering.
-     * @param  {string} actualFilterValue - Defines the actual filter value for filter column.
-     * @param  {string} actualOperator - Defines the actual filter operator for filter column.
+     * This method allows for dynamic filtering against column data using various
+     * operators and values, supporting case-sensitive filtering and accent sensitivity.
+     *
+     * @param {string} fieldName - The name of the column to apply the filter on.
+     * @param {string} filterOperator - The operator used to perform the filter (e.g., 'equals', 'startswith').
+     * @param {string | number | Date | boolean } filterValue - The value to filter against.
+     * @param {string} predicate - The logical operator ('AND'/'OR') to combine this filter with others.
+     * @param {boolean} matchCase - If true, the filter performs a case-sensitive match.
+     * @param {boolean} ignoreAccent - If true, the filter ignores diacritical marks.
+     * @param {string} actualFilterValue - The original value used for filtering, useful for distinguishing displayed and actual values.
+     * @param {string} actualOperator - The actual operator that is applied when different from the displayed operator.
      * @returns {void}
      */
     public filterByColumn(
@@ -5196,7 +5395,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         );
     }
     /**
-     * Clears all the filtered rows of the TreeGrid.
+     * Clears all filters applied to the TreeGrid, restoring the view to show all records.
+     *
+     * This method is useful for resetting the grid to its unfiltered state.
      *
      * @returns {void}
      */
@@ -5215,10 +5416,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.grid.removeFilteredColsByField(field, isClearFilterBar);
     }
     /**
-     * Selects a row by given index.
+     * Selects a row in the TreeGrid by its index.
      *
-     * @param  {number} index - Defines the row index.
-     * @param  {boolean} isToggle - If set to true, then it toggles the selection.
+     * Use this method to highlight a specific row; useful for programmatically navigating data.
+     *
+     * @param {number} index - Index of the row to select.
+     * @param {boolean} isToggle - If true, toggles the selection state of the row.
      * @returns {void}
      */
     public selectRow(index: number, isToggle?: boolean): void {
@@ -5226,9 +5429,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Selects a collection of rows by indexes.
+     * Selects multiple rows in the TreeGrid given an array of row indexes.
      *
-     * @param  {number[]} rowIndexes - Specifies the row indexes.
+     * Useful for batch operations where multiple row selections are necessary.
+     *
+     * @param {number[]} rowIndexes - Array of row index numbers to select.
      * @returns {void}
      */
     public selectRows(rowIndexes: number[]): void {
@@ -5236,7 +5441,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Deselects the current selected rows and cells.
+     * Deselects all selected rows and cells within the TreeGrid.
+     *
+     * Resets the selection state of the grid, which is useful after bulk operations.
      *
      * @returns {void}
      */
@@ -5248,39 +5455,47 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Copy the selected rows or cells data into clipboard.
+     * Copies the data of selected rows or cells to the clipboard.
      *
-     * @param {boolean} withHeader - Specifies whether the column header text needs to be copied along with rows or cells.
+     * This method supports including headers for better context when pasting elsewhere.
+     *
+     * @param {boolean} withHeader - (Optional) If true, includes column headers in the copied data.
      * @returns {void}
      */
     public copy(withHeader?: boolean): void {
         this.clipboardModule.copy(withHeader);
     }
     /**
-     * Paste data from clipboard to selected cells.
+     * Pastes data into the selected cells from the clipboard.
      *
-     * @param {boolean} data - Specifies the date for paste.
-     * @param {boolean} rowIndex - Specifies the row index.
-     * @param {boolean} colIndex - Specifies the column index.
+     * Automatically places the pasted data starting from the specified indices.
+     *
+     * @param {string} data - The clipboard data to paste.
+     * @param {number} rowIndex - The starting row index for pasting.
+     * @param {number} colIndex - The starting column index for pasting.
      * @returns {void}
      */
     public paste(data: string, rowIndex: number, colIndex: number): void {
         this.clipboardModule.paste(data, rowIndex, colIndex);
     }
     /**
-     * Selects a cell by the given index.
+     * Selects a cell by its index position in the TreeGrid.
      *
-     * @param  {IIndex} cellIndex - Defines the row and column indexes.
-     * @param  {boolean} isToggle - If set to true, then it toggles the selection.
+     * Useful for navigating or highlighting specific data cells within the grid.
+     *
+     * @param {IIndex} cellIndex - An object specifying the row and column indexes.
+     * @param {boolean} isToggle - (Optional) If true, toggles the selection state of the cell.
      * @returns {void}
      */
     public selectCell(cellIndex: IIndex, isToggle?: boolean): void {
         this.grid.selectCell(cellIndex, isToggle);
     }
     /**
-     * Gets the collection of selected rows.
+     * Retrieves the currently selected rows.
      *
-     * @returns {Element[]} - Returns selected row elements collection
+     * Useful for obtaining the selected data elements for downstream processing.
+     *
+     * @returns {Element[]} - An array of Element objects representing the selected rows.
      */
     public getSelectedRows(): Element[] {
         return this.grid.getSelectedRows();
@@ -5514,48 +5729,63 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Gets the collection of selected row indexes.
+     * Retrieves the indexes of the currently selected rows in the TreeGrid.
      *
-     * @returns {number[]} - Returns selected rows index collection
+     * This method is useful when you need to perform actions based on the selected rows,
+     * such as retrieving data or changing the selection.
+     *
+     * @returns {number[]} - An array of numbers representing the indexes of selected rows.
      */
     public getSelectedRowIndexes(): number[] {
         return this.grid.getSelectedRowIndexes();
     }
 
     /**
-     * Gets the collection of selected row and cell indexes.
+     * Retrieves the indexes of the selected cells within the selected rows.
      *
-     * @returns {ISelectedCell[]} - Returns selected cell's index details
+     * This can be useful for handling cell-specific operations, such as
+     * applying styles or editing values programmatically.
+     *
+     * @returns {ISelectedCell[]} - An array of objects representing the selected cells' indexes.
      */
     public getSelectedRowCellIndexes(): ISelectedCell[] {
         return this.grid.getSelectedRowCellIndexes();
     }
 
     /**
-     * Gets the collection of selected records.
+     * Retrieves the data records corresponding to the currently selected rows.
+     *
+     * This method provides the full record data for the selected rows,
+     * which is useful for data manipulation or extraction operations.
      *
      * @isGenericType true
-     * @returns {Object[]} - Returns selected records collection
+     * @returns {Object[]} - An array of data objects representing the selected records.
      */
     public getSelectedRecords(): Object[] {
         return this.grid.getSelectedRecords();
     }
 
     /**
-     * Gets the data module.
+     * Obtains the data handling modules used by the TreeGrid.
      *
-     * @returns {{baseModule: Data, treeModule: DataManipulation}}: Returns grid and treegrid data module
+     * This includes both the base data module for standard grid operations and the tree module
+     * for handling hierarchical data, giving complete access to data management capabilities.
+     *
+     * @returns {{baseModule: Data, treeModule: DataManipulation}} - An object containing both grid and tree data modules.
      */
     public getDataModule(): {baseModule: Data, treeModule: DataManipulation} {
         return {baseModule: this.grid.getDataModule(), treeModule: this.dataModule};
     }
 
     /**
-     * Reorder the rows based on given indexes and position
+     * Reorders rows in the TreeGrid based on specified source indexes and a target position.
      *
-     * @param {number[]} fromIndexes - Source indexes of rows
-     * @param {number} toIndex - Destination index of row
-     * @param {string} position - Defines drop position as above or below or child
+     * This functionality allows for dynamic rearrangement of rows, such as moving selected
+     * rows to a new position as siblings or children.
+     *
+     * @param {number[]} fromIndexes - An array indicating the source indexes of the rows to be moved.
+     * @param {number} toIndex - The target index where the rows should be moved.
+     * @param {string} position - The position relative to the target index ('above', 'below', 'child').
      * @returns {void}
      */
     public reorderRows(fromIndexes: number[], toIndex: number, position: string): void {
@@ -5565,9 +5795,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Indents the record to one level of hierarchy. Moves the selected row as the last child of its previous row.
+     * Indents a specified record, promoting it to one level deeper in the hierarchy.
      *
-     * @param {Object} record – specifies the record to do indented
+     * This function moves the selected row to become the last child of its preceding row,
+     * altering the visual and hierarchical data structure.
+     *
+     * @param {Object} record - (Optional) The record to be indented. If omitted, the currently selected row is used.
      * @returns {void}
      */
     public indent(record?: Object): void {
@@ -5578,9 +5811,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Outdent the record to one level of hierarchy. Moves the selected row as sibling to its parent row.
+     * Outdents a specified record, moving it one level up in the hierarchy.
      *
-     * @param {Object} record – specifies the record to do outdented
+     * This method repositions the selected row to be a sibling of its parent, impacting
+     * its display and the hierarchical relationships within the TreeGrid.
+     *
+     * @param {Object} record - (Optional) The record to be outdented. If omitted, the currently selected row is used.
      * @returns {void}
      */
     public outdent(record?: Object): void {

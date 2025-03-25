@@ -151,7 +151,7 @@ export class Page {
     }
 
     private updatePageSize(pageingDetails: {result: ITreeData[], count: number}) : void {
-        const updateSize: number = pageingDetails.result.length;
+        const updateSize: number = pageingDetails.count;
         const gridPagerModule: GridPage = this.parent.grid.pagerModule;
         if (this.parent.pageSettings.pageSizes === true) {
             if (gridPagerModule.pagerObj.pagerdropdownModule['dropDownListObject'].value === gridPagerModule.pagerObj.getLocalizedLabel('All')) {

@@ -1,3 +1,6 @@
+@use 'sass:color';
+@use 'sass:meta';
+@use 'sass:list';
 @import '../common/mixin.scss';
 
 $white: #fff !default;
@@ -96,16 +99,16 @@ $msg-success-close-icon-color-alt2: $white !default;
 
 $msg-warning-color: #856404 !default;
 $msg-warning-bg-color: #fff3cd !default;
-$msg-warning-border-color: lighten($yellow, 35%) !default;
-$msg-warning-color-alt1: darken($yellow, 25%) !default;
+$msg-warning-border-color: color.adjust($yellow, $lightness: 35%) !default;
+$msg-warning-color-alt1: color.adjust($yellow, $lightness: -25%) !default;
 $msg-warning-bg-color-alt1: transparent !default;
 $msg-warning-border-color-alt1: $yellow !default;
 $msg-warning-color-alt2: $gray-900 !default;
 $msg-warning-bg-color-alt2: $msg-warning-border-color-alt1 !default;
 $msg-warning-border-color-alt2: $msg-warning-border-color-alt1 !default;
 
-$msg-warning-icon-color: darken($yellow, 25%) !default;
-$msg-warning-icon-color-alt1: darken($yellow, 25%) !default;
+$msg-warning-icon-color: color.adjust($yellow, $lightness: -25%) !default;
+$msg-warning-icon-color-alt1: color.adjust($yellow, $lightness: -25%) !default;
 $msg-warning-icon-color-alt2: $black !default;
 
 $msg-warning-close-icon-color: $dark !default;

@@ -1,5 +1,5 @@
 import { getRangeIndexes, ChartModel, getSwapRange, getRangeAddress } from '../common/index';
-import { SheetModel, setCell, getSheetIndex, Workbook, CellModel, getCell, getSheetIndexFromId, getSheet } from '../base/index';
+import { SheetModel, setCell, getSheetIndex, Workbook, CellModel, getCell, getSheetIndexFromId } from '../base/index';
 import { setChart, initiateChart, deleteChartColl, refreshChartSize, focusChartBorder, getChartRowIdxFromClientY, getChartColIdxFromClientX, refreshChartCellOnInit } from '../common/event';
 import { closest, isNullOrUndefined, getComponent, isUndefined, getUniqueID } from '@syncfusion/ej2-base';
 
@@ -36,8 +36,8 @@ export class WorkbookChart {
     }
 
     private setChartHandler(args: {
-        chart: ChartModel[], isInitCell?: boolean, isUndoRedo?: boolean, isCut?: boolean,
-        isPaste?: boolean, dataSheetIdx?: number, range?: string, sheetId?: number
+        chart: ChartModel[], isInitCell?: boolean, isUndoRedo?: boolean, isCut?: boolean, isPaste?: boolean,
+        dataSheetIdx?: number, range?: string, sheetId?: number, isUndo?: boolean, isRedo?: boolean
     }): void {
         let i: number = 0;
         let rangeIdx: number[] = [];
@@ -52,7 +52,10 @@ export class WorkbookChart {
                         chart[i as number] = {
                             range: chart[i as number].range, id: getUniqueID('e_spreadsheet_chart'), theme: chart[i as number].theme,
                             isSeriesInRows: chart[i as number].isSeriesInRows, type: chart[i as number].type,
-                            markerSettings: chart[i as number].markerSettings
+                            markerSettings: chart[i as number].markerSettings,
+                            title: chart[i as number].title, legendSettings: chart[i as number].legendSettings,
+                            primaryXAxis: chart[i as number].primaryXAxis, primaryYAxis: chart[i as number].primaryYAxis,
+                            dataLabelSettings: chart[i as number].dataLabelSettings
                         };
                     }
                 }
@@ -101,20 +104,31 @@ export class WorkbookChart {
                     dataSheetIdx: args.dataSheetIdx, range: args.range, isPaste: args.isPaste
                 });
                 this.parent.chartColl.push(chartModel);
-                if (!args.isInitCell || args.isPaste) {
-                    const sheetIdx: number = args.sheetId === undefined ? ((chartModel.range && chartModel.range.lastIndexOf('!') > 0) ?
-                        getSheetIndex(this.parent, chartModel.range.substring(0, chartModel.range.lastIndexOf('!'))) : this.parent.activeSheetIndex) :
-                        getSheetIndexFromId(this.parent, args.sheetId);
-                    const chartRowIdx: { clientY: number, isImage?: boolean } = { clientY: chartModel.top, isImage: true };
-                    const chartColIdx: { clientX: number, isImage?: boolean } = { clientX: chartModel.left, isImage: true };
-                    this.parent.notify(getChartRowIdxFromClientY, chartRowIdx); this.parent.notify(getChartColIdxFromClientX, chartColIdx);
-                    const sheet: SheetModel = isUndefined(sheetIdx) ? this.parent.getActiveSheet() : this.parent.sheets[sheetIdx as number];
-                    const cell: CellModel = getCell(chartRowIdx.clientY, chartColIdx.clientX, sheet);
+                if (!args.isInitCell || args.isPaste || args.isUndo || args.isRedo) {
+                    let sheetIdx: number; let rowIdx: number; let colIdx: number;
+                    if (args.range && (args.isUndo || args.isRedo)) {
+                        sheetIdx = getSheetIndex(this.parent, args.range.substring(0, args.range.lastIndexOf('!')));
+                        const range: number[] = getSwapRange(getRangeIndexes(args.range));
+                        rowIdx = range[0]; colIdx = range[1];
+                    } else {
+                        sheetIdx = args.sheetId === undefined
+                            ? ((chartModel.range && chartModel.range.lastIndexOf('!') > 0)
+                                ? getSheetIndex(this.parent, chartModel.range.substring(0, chartModel.range.lastIndexOf('!')))
+                                : this.parent.activeSheetIndex) : getSheetIndexFromId(this.parent, args.sheetId);
+                        const chartRowIdx: { clientY: number, isImage?: boolean } = { clientY: chartModel.top, isImage: true };
+                        const chartColIdx: { clientX: number, isImage?: boolean } = { clientX: chartModel.left, isImage: true };
+                        this.parent.notify(getChartRowIdxFromClientY, chartRowIdx);
+                        this.parent.notify(getChartColIdxFromClientX, chartColIdx);
+                        rowIdx = chartRowIdx.clientY; colIdx = chartColIdx.clientX;
+                    }
+                    const sheet: SheetModel = isUndefined(sheetIdx) ? this.parent.getActiveSheet()
+                        : this.parent.sheets[sheetIdx as number];
+                    const cell: CellModel = getCell(rowIdx, colIdx, sheet);
                     if (!this.parent.isPrintingProcessing) {
                         if (cell && cell.chart) {
                             cell.chart.push(chartModel);
                         } else {
-                            setCell(chartRowIdx.clientY, chartColIdx.clientX, sheet, { chart: [chartModel] }, true);
+                            setCell(rowIdx, colIdx, sheet, { chart: [chartModel] }, true);
                         }
                     }
                 }

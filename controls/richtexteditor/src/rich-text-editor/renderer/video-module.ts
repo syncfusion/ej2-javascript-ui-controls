@@ -1,4 +1,4 @@
-import { addClass, Ajax, Browser, closest, detach, EventHandler, formatUnit, isNullOrUndefined as isNOU, isNullOrUndefined, KeyboardEventArgs, L10n, removeClass } from '@syncfusion/ej2-base';
+import { addClass, Ajax, Browser, closest, detach, EventHandler, formatUnit, isNullOrUndefined as isNOU, isNullOrUndefined, KeyboardEventArgs, L10n, MouseEventArgs, removeClass } from '@syncfusion/ej2-base';
 import { Button, RadioButton } from '@syncfusion/ej2-buttons';
 import { BeforeUploadEventArgs, FileInfo, InputEventArgs, MetaData, ProgressEventArgs, RemovingEventArgs, SelectedEventArgs, TextBox, Uploader, UploadingEventArgs } from '@syncfusion/ej2-inputs';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -8,7 +8,7 @@ import { NodeSelection } from '../../selection/selection';
 import * as classes from '../base/classes';
 import * as events from '../base/constant';
 import { RenderType } from '../base/enum';
-import { AfterMediaDeleteEventArgs, IDropDownItemModel, IImageNotifyArgs, IRenderer, IRichTextEditor, IShowPopupArgs, IToolbarItemModel, IVideoCommandsArgs, NotifyArgs, OffsetPosition, ResizeArgs } from '../base/interface';
+import { AfterMediaDeleteEventArgs, IDropDownItemModel, IImageNotifyArgs, IRenderer, IRichTextEditor, IShowPopupArgs, IToolbarItemModel, IVideoCommandsArgs, NotifyArgs, OffsetPosition, ResizeArgs, SlashMenuItemSelectArgs} from '../base/interface';
 import { convertToBlob, dispatchEvent, hasClass, parseHtml } from '../base/util';
 import { RendererFactory } from '../services/renderer-factory';
 import { ServiceLocator } from '../services/service-locator';
@@ -260,10 +260,10 @@ export class Video {
         let heightVal: string = isNullOrUndefined(this.changedHeightValue) && (selectNode.style.height.toString() === 'auto' ||
             selectNode.style.height !== '') ? selectNode.style.height : !isNullOrUndefined(this.changedHeightValue) ?
                 this.changedHeightValue : (parseInt(selectNode.getClientRects()[0].height.toString(), 10)).toString();
-        if (selectNode.style.width === '') {
+        if (selectNode.style.width === '' && isNullOrUndefined(this.changedWidthValue)) {
             widthVal = 'auto';
         }
-        if (selectNode.style.height === '') {
+        if (selectNode.style.height === '' && isNullOrUndefined(this.changedHeightValue)) {
             heightVal = 'auto';
         }
         this.changedWidthValue = null;
@@ -306,8 +306,8 @@ export class Video {
             proxy.parent.formatter.saveData();
         }
         const dialogEle: Element = proxy.dialogObj.element;
-        this.changedWidthValue = this.inputWidthValue;
-        this.changedHeightValue = this.inputHeightValue;
+        this.changedWidthValue = this.inputWidthValue === 'px' ? null : this.inputWidthValue;
+        this.changedHeightValue = this.inputHeightValue === 'px' ? null : this.inputHeightValue;
         const width: string = (dialogEle.querySelector('.e-vid-width') as HTMLInputElement).value;
         const height: string = (dialogEle.parentElement.querySelector('.e-vid-height') as HTMLInputElement).value;
         proxy.parent.formatter.process(
@@ -412,7 +412,7 @@ export class Video {
                 }
             }
         }
-        if ((e.target as HTMLElement).tagName === 'VIDEO' || this.isEmbedVidElem((e.target as HTMLElement))) {
+        if ((e.target as HTMLElement).tagName === 'VIDEO' || this.isEmbedVidElem((e.target as HTMLElement)) && !this.parent.userAgentData.isSafari()) {
             e.preventDefault();
         }
     }
@@ -724,17 +724,23 @@ export class Video {
                 if (this.contentModule.getEditPanel().querySelector('.e-vid-resize')) {
                     this.removeResizeEle();
                 }
-                this.parent.formatter.editorManager.nodeSelection.setSelectionText(
-                    this.contentModule.getDocument(), prev, prev, prev.textContent.trim().length, prev.textContent.trim().length);
                 removeClass([selectParentEle[0] as HTMLElement], classes.CLS_VID_FOCUS);
-                this.quickToolObj.videoQTBar.hidePopup();
+                if (this.quickToolObj && this.quickToolObj.videoQTBar) {
+                    this.quickToolObj.videoQTBar.hidePopup();
+                }
             }
         }
         if (originalEvent.ctrlKey && (originalEvent.keyCode === 89 || originalEvent.keyCode === 90)) {
             this.undoStack({ subCommand: (originalEvent.keyCode === 90 ? 'undo' : 'redo') });
         }
         if (originalEvent.keyCode === 8 || originalEvent.keyCode === 46) {
-            if (selectNodeEle && selectNodeEle[0] && (selectNodeEle[0].nodeName === 'VIDEO' || this.isEmbedVidElem(selectNodeEle[0] as HTMLElement)) && selectNodeEle.length < 1) {
+            if (selectNodeEle && selectNodeEle[0] &&
+                ((selectNodeEle[0].nodeName === 'VIDEO' || this.isEmbedVidElem(selectNodeEle[0] as HTMLElement)) ||
+                (originalEvent.keyCode === 46 && (selectNodeEle[0].nextSibling as HTMLElement) &&
+                ((selectNodeEle[0].nextSibling as HTMLElement).className === 'e-video-wrap' || this.isEmbedVidElem(selectNodeEle[0].nextSibling as HTMLElement))) ||
+                (originalEvent.keyCode === 8 && (selectNodeEle[0].previousSibling as HTMLElement) &&
+                ((selectNodeEle[0].previousSibling as HTMLElement).className === 'e-video-wrap' || this.isEmbedVidElem(selectNodeEle[0].previousSibling as HTMLElement)))) &&
+                selectNodeEle.length <= 2) {
                 if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection)) {
                     save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
                 }
@@ -784,6 +790,9 @@ export class Video {
                 } else if (range.startContainer.nodeType === 1 && ((range.startContainer as HTMLElement).classList &&
                     (range.startContainer as HTMLElement).classList.contains(classes.CLS_VIDEOWRAP))) {
                     detach(range.startContainer as HTMLElement);
+                } else if (range.startContainer.nodeType ===  1 &&
+                    !isNOU((range.startContainer as HTMLElement).querySelector('.e-video-wrap')) && originalEvent.code === 'Delete') {
+                    detach((range.startContainer as HTMLElement).querySelector('.e-video-wrap'));
                 }
             }
             break;
@@ -806,7 +815,11 @@ export class Video {
         removeClass(videoFocusNodes, classes.CLS_VID_FOCUS);
     }
 
-    private openDialog(isInternal?: boolean, event?: KeyboardEventArgs, selection?: NodeSelection, ele?: Node[], parentEle?: Node[]): void {
+    private openDialog(
+        isInternal?: boolean,
+        event?: KeyboardEventArgs | MouseEventArgs,
+        selection?: NodeSelection, ele?: Node[], parentEle?: Node[]
+    ): void {
         let range: Range;
         let save: NodeSelection;
         let selectNodeEle: Node[];
@@ -836,8 +849,12 @@ export class Video {
         }
     }
 
-    private showDialog(): void {
-        this.openDialog(false);
+    private showDialog(args?: SlashMenuItemSelectArgs): void {
+        if (!isNOU(args.originalEvent)) {
+            this.openDialog(false, args.originalEvent as MouseEventArgs);
+        } else {
+            this.openDialog(false);
+        }
     }
     private closeDialog(): void {
         if (this.dialogObj) { this.dialogObj.hide({ returnValue: true } as Event); }
@@ -1139,8 +1156,8 @@ export class Video {
     }
 
     private isEmbedVidElem(target: HTMLElement): boolean {
-        if ((target && target.nodeType !== 3 && target.nodeName !== 'BR' && (target.classList && (target.classList.contains(classes.CLS_VIDEOWRAP) || target.classList.contains(classes.CLS_VID_CLICK_ELEM)))) ||
-        (target && target.nodeName === 'IFRAME')) {
+        if ((target && target.nodeType !== 3 && target.nodeName !== 'BR' && (target.classList && (target.classList.contains(classes.CLS_VIDEOWRAP) || target.classList.contains(classes.CLS_VID_CLICK_ELEM) ||
+        target.classList.contains('e-embed-video-wrap')))) || (target && target.nodeName === 'IFRAME')) {
             return true;
         } else {
             return false;

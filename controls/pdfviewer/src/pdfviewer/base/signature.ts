@@ -2280,7 +2280,7 @@ export class Signature {
                 };
             }
             const obj: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
-            const canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentAnnotation.pageIndex);
+            const canvass: any = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', currentAnnotation.pageIndex);
             this.pdfViewer.renderDrawing(canvass as any, currentAnnotation.pageIndex);
             if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
                 this.pdfViewer.select([obj.id]);
@@ -2392,7 +2392,8 @@ export class Signature {
                                                     annot.shapeAnnotationType, annot.bounds, annot.opacity,
                                                     annot.strokeColor, annot.thickness, annot.data);
                 }
-                const canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentAnnotation.pageIndex);
+                const canvasPageIndex: number = currentAnnotation.pageIndex ? currentAnnotation.pageIndex : currentAnnotation.PageNumber;
+                const canvass: any = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', canvasPageIndex);
                 this.pdfViewer.renderDrawing(canvass as any, annot.pageIndex);
                 this.storeSignatureData(annot.pageIndex, annot);
                 this.pdfViewerBase.currentSignatureAnnot = null;

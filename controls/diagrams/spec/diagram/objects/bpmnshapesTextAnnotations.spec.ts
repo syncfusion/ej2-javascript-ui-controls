@@ -1019,8 +1019,8 @@ describe('Diagram Control', () => {
                                 },
                                 height: 600,
                                 children: [
-
-
+                                   
+                                   
                                 ],
                             },
                             {
@@ -1045,7 +1045,7 @@ describe('Diagram Control', () => {
                                     }
                                 ],
                             },
-
+                           
                         ],
                         phases: [
                             {
@@ -1090,7 +1090,7 @@ describe('Diagram Control', () => {
             mouseEvents.mouseDownEvent(diagramCanvas, thumbBounds1.x + (thumbBounds1.width/2), thumbBounds1.y + (thumbBounds1.height/2));
             mouseEvents.mouseMoveEvent(diagramCanvas, thumbBounds1.x + (thumbBounds1.width/2), thumbBounds1.y + 75);
             mouseEvents.mouseUpEvent(diagramCanvas, thumbBounds1.x + (thumbBounds1.width/2), thumbBounds1.y + 75);
-
+    
             const thumb2 = document.getElementById('resizeNorth');
             const thumbBounds2: any = thumb2.getBoundingClientRect();
             mouseEvents.mouseOverEvent(diagramCanvas);
@@ -1116,7 +1116,7 @@ describe('Diagram Control', () => {
             mouseEvents.mouseDownEvent(diagramCanvas, eastBounds.x + (eastBounds.width / 2), eastBounds.y + (eastBounds.height / 2));
             mouseEvents.mouseMoveEvent(diagramCanvas, eastBounds.x + 75, eastBounds.y + (eastBounds.height / 2));
             mouseEvents.mouseUpEvent(diagramCanvas, eastBounds.x + 75, eastBounds.y + (eastBounds.height / 2));
-
+        
             // WestSide
             const resizeWest = document.getElementById('resizeWest');
             const westBounds: any = resizeWest.getBoundingClientRect();
@@ -1147,7 +1147,7 @@ describe('Diagram Control', () => {
             mouseEvents.mouseDownEvent(diagramCanvas, northEastBounds.x + (northEastBounds.width / 2), northEastBounds.y + (northEastBounds.height / 2));
             mouseEvents.mouseMoveEvent(diagramCanvas, northEastBounds.x - 100, northEastBounds.y + 100);
             mouseEvents.mouseUpEvent(diagramCanvas, northEastBounds.x - 100, northEastBounds.y + 100);
-
+        
             // NorthWest
             const resizeNorthWest = document.getElementById('resizeNorthWest');
             const northWestBounds: any = resizeNorthWest.getBoundingClientRect();
@@ -1181,7 +1181,7 @@ describe('Diagram Control', () => {
             mouseEvents.mouseDownEvent(diagramCanvas, southEastBounds.x + (southEastBounds.width / 2), southEastBounds.y + (southEastBounds.height / 2));
             mouseEvents.mouseMoveEvent(diagramCanvas, southEastBounds.x + 50, southEastBounds.y + 50);
             mouseEvents.mouseUpEvent(diagramCanvas, southEastBounds.x + 50, southEastBounds.y + 50);
-
+        
             // SouthWest
             const resizeSouthWest = document.getElementById('resizeSouthWest');
             const southWestBounds: any = resizeSouthWest.getBoundingClientRect();
@@ -1197,7 +1197,7 @@ describe('Diagram Control', () => {
             expect(southWestOldOffsetX > southWestNewOffsetX && southWestOldOffsetY < southWestNewOffsetY).toBe(true);
             done();
         });
-
+        
         it('Text annotation-parent-resize inside swimlane', (done: Function) => {
             const diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             let dataObjectElement = document.getElementById('dataObject_groupElement');
@@ -1225,7 +1225,7 @@ describe('Diagram Control', () => {
             mouseEvents.mouseDownEvent(diagramCanvas, eastBounds.x + (eastBounds.width / 2), eastBounds.y + (eastBounds.height / 2));
             mouseEvents.mouseMoveEvent(diagramCanvas, eastBounds.x + 25, eastBounds.y + (eastBounds.height / 2));
             mouseEvents.mouseUpEvent(diagramCanvas, eastBounds.x + 25, eastBounds.y + (eastBounds.height / 2));
-
+        
             // WestSide
             const resizeWest = document.getElementById('resizeWest');
             const westBounds: any = resizeWest.getBoundingClientRect();
@@ -1238,5 +1238,6 @@ describe('Diagram Control', () => {
             expect(eastOldOffsetX < eastNewOffsetX && westOldOffsetX > westNewOffsetX).toBe(true);
             done();
         });
+
     });
 });

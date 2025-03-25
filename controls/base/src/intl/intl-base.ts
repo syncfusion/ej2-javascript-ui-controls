@@ -1261,7 +1261,7 @@ export namespace IntlBase {
         const daynum: number = Math.floor((date.getTime() - newYear.getTime() -
             (date.getTimezoneOffset() - newYear.getTimezoneOffset()) * 60000) / 86400000) + 1;
         if (day < 4) {
-            weeknum = Math.floor((daynum + day - firstDayOfWeek -  1) / 7) + 1;
+            weeknum = Math.floor((daynum + day - firstDayOfWeek - 1) / 7) + 1;
             if (weeknum > 52) {
                 const nYear: Date = new Date(date.getFullYear() + 1, 0, 1);
                 let nday: number = nYear.getDay();

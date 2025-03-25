@@ -264,7 +264,12 @@ export class SvgRenderer implements IRenderer {
 export function setAttributeSvg(svg: SVGElement, attributes: Object): void {
     let keys: string[] = Object.keys(attributes);
     for (let i: number = 0; i < keys.length; i++) {
-        svg.setAttribute(keys[parseInt(i.toString(), 10)], attributes[keys[parseInt(i.toString(), 10)]]);
+        if (keys[parseInt(i.toString(), 10)] === 'style') {
+            svg.style.cssText = attributes[keys[parseInt(i.toString(), 10)]];
+        }
+        else {
+            svg.setAttribute(keys[parseInt(i.toString(), 10)], attributes[keys[parseInt(i.toString(), 10)]]);
+        }
     }
 }
 /** @private */

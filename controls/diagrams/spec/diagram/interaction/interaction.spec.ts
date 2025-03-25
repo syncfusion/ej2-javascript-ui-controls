@@ -1393,6 +1393,106 @@ describe('Diagram Control', () => {
         });
     });
 
+    describe('Testing resizing - With Aspect Ratio', () =>{
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagrams' });
+            document.body.appendChild(ele);
+            let selArray: (NodeModel | ConnectorModel)[] = [];
+            let node1: NodeModel = {
+                id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 300,
+                minHeight: 80,
+                constraints: NodeConstraints.Default | NodeConstraints.AspectRatio,
+            };
+            let node2:NodeModel={
+                id:'node2', width: 100, height: 100, offsetX: 600, offsetY: 300,
+                minWidth:80,
+                constraints: NodeConstraints.Default | NodeConstraints.AspectRatio,
+            };
+            let node3:NodeModel={
+                id:'node3', width: 100, height: 100, offsetX: 300, offsetY: 600,
+                maxHeight:120,
+                constraints: NodeConstraints.Default | NodeConstraints.AspectRatio,
+            };
+            let node4:NodeModel={
+                id:'node4', width: 100, height: 100, offsetX: 600, offsetY: 600,
+                maxWidth:130,
+                constraints: NodeConstraints.Default | NodeConstraints.AspectRatio,
+            };         
+            diagram = new Diagram({
+                width: 900, height: 550, nodes: [node1,node2,node3,node4]
+            });
+            diagram.appendTo('#diagrams');
+            selArray.push(diagram.nodes[0]);
+            diagram.select(selArray);
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking single node resizing - top center', (done : Function)=>{
+            //debugger;
+            diagram.clearSelection();
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            
+            let offsetLeft: number = diagram.element.offsetLeft;
+            let offsetTop: number = diagram.element.offsetTop;
+            //reducing size
+            let topCenter: PointModel = (diagram.nodes[0] as NodeModel).wrapper.bounds.topCenter;
+            mouseEvents.clickEvent(diagramCanvas, 300, 300);
+            mouseEvents.dragAndDropEvent(diagramCanvas, topCenter.x + offsetLeft, topCenter.y + offsetTop - 1, topCenter.x, topCenter.y + 10 + offsetTop - 1);
+            // mouseEvents.mouseDownEvent(diagramCanvas, 300, 250);
+            // mouseEvents.mouseMoveEvent(diagramCanvas, 300, 260);
+            // mouseEvents.mouseUpEvent(diagramCanvas, 300, 260);
+            expect(diagram.nodes[0].height==90).toBe(true);
+            done();
+        });
+        it('Checking single node resizing - left center',(done: Function)=>{
+            diagram.clearSelection();
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let offsetLeft: number = diagram.element.offsetLeft;
+            let offsetTop: number = diagram.element.offsetTop;
+            //reducing size
+            let leftCenter: PointModel = (diagram.nodes[1] as NodeModel).wrapper.bounds.middleLeft;
+            mouseEvents.clickEvent(diagramCanvas, 600, 300);
+            mouseEvents.dragAndDropEvent(diagramCanvas, leftCenter.x + offsetLeft , leftCenter.y - 1 + offsetTop, leftCenter.x + 20 + offsetLeft, leftCenter.y + offsetTop -1);
+            expect(diagram.nodes[1].width==80).toBe(true);
+            done();
+        });   
+        // it('Checking single node resizing - bottom center', (done : Function)=>{  
+        //     diagram.clearSelection();
+        //     let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        //     let offsetLeft: number = diagram.element.offsetLeft;
+        //     let offsetTop: number = diagram.element.offsetTop;
+        //     //increasing size
+        //     let bottomCenter: PointModel = (diagram.nodes[2] as NodeModel).wrapper.bounds.bottomCenter;
+        //     mouseEvents.clickEvent(diagramCanvas, 300, 600);
+        //     mouseEvents.dragAndDropEvent(diagramCanvas, bottomCenter.x + offsetLeft, bottomCenter.y + offsetTop - 1, bottomCenter.x, bottomCenter.y + 30 + offsetTop - 1);
+        //     expect(diagram.nodes[2].height==120).toBe(true);
+        //     done();
+        //});
+        it('Checking single node resizing - right center',(done: Function)=>{
+            diagram.clearSelection();
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let offsetLeft: number = diagram.element.offsetLeft;
+            let offsetTop: number = diagram.element.offsetTop;
+            //increasing size
+            let leftCenter: PointModel = (diagram.nodes[3] as NodeModel).wrapper.bounds.middleRight;
+            mouseEvents.clickEvent(diagramCanvas, 600, 600);
+            mouseEvents.dragAndDropEvent(diagramCanvas, leftCenter.x + offsetLeft, leftCenter.y + offsetTop - 1, leftCenter.x + 50, leftCenter.y + offsetTop - 1);
+            expect(diagram.nodes[3].width==130).toBe(true);
+            done();
+        });  
+    });
+
     describe('Testing Rotation - Multiple selection', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

@@ -15,6 +15,7 @@ import * as util from '../base/util';
  */
 export class InlineEdit {
     private parent: Schedule;
+    private inlineInputEle: HTMLInputElement | null;
 
     constructor(parent: Schedule) {
         this.parent = parent;
@@ -82,7 +83,8 @@ export class InlineEdit {
             else {
                 subject = args.data[this.parent.eventFields.subject];
             }
-            inlineSubject = createElement('input', { className: cls.INLINE_SUBJECT_CLASS, attrs: { value: subject } }) as HTMLInputElement;
+            inlineSubject = this.inlineInputEle =
+                createElement('input', { className: cls.INLINE_SUBJECT_CLASS, attrs: { value: subject } }) as HTMLInputElement;
             if (closest(args.element, '.' + cls.MORE_POPUP_WRAPPER_CLASS)) {
                 args.element.insertBefore(inlineSubject, subEle);
             } else if (['Agenda', 'MonthAgenda'].indexOf(this.parent.currentView) > -1) {
@@ -204,8 +206,7 @@ export class InlineEdit {
         return saveObj;
     }
 
-    public documentClick(): void {
-        const target: HTMLInputElement = this.parent.element.querySelector('.' + cls.INLINE_SUBJECT_CLASS) as HTMLInputElement;
+    public documentClick(target: HTMLInputElement): void {
         if (target && target.value !== '') {
             this.inlineCrudActions(target as HTMLTableCellElement & HTMLInputElement);
         }
@@ -238,7 +239,8 @@ export class InlineEdit {
         });
         const inlineDetails: HTMLElement = createElement('div', { className: cls.APPOINTMENT_DETAILS });
         inlineAppointmentElement.appendChild(inlineDetails);
-        const inline: HTMLElement = createElement('input', { className: cls.INLINE_SUBJECT_CLASS });
+        const inline: HTMLInputElement = this.inlineInputEle =
+            createElement('input', { className: cls.INLINE_SUBJECT_CLASS }) as HTMLInputElement;
         inlineDetails.appendChild(inline);
         if (inlineData) {
             this.parent.eventBase.applyResourceColor(inlineAppointmentElement, inlineData, 'backgroundColor');
@@ -249,9 +251,15 @@ export class InlineEdit {
     public removeInlineAppointmentElement(): void {
         const inlineAppointment: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.INLINE_APPOINTMENT_CLASS));
         if (inlineAppointment.length > 0) {
-            inlineAppointment.forEach((node: Element) => remove(node));
+            inlineAppointment.forEach((node: Element) => {
+                const inlineSubject: HTMLElement = node.querySelector('.' + cls.INLINE_SUBJECT_CLASS);
+                if (!isNullOrUndefined(inlineSubject)) {
+                    inlineSubject.blur();
+                }
+                remove(node);
+            });
         }
-        const inlineSubject: Element = this.parent.element.querySelector('.' + cls.INLINE_SUBJECT_CLASS);
+        const inlineSubject: HTMLInputElement | null = this.getInlineElement();
         if (inlineSubject) {
             const appointmentSubject: Element = closest(inlineSubject, '.' + cls.APPOINTMENT_CLASS);
             const subject: Element = appointmentSubject.querySelector('.' + cls.SUBJECT_CLASS);
@@ -260,9 +268,15 @@ export class InlineEdit {
             }
             remove(inlineSubject);
         }
+        this.inlineInputEle = null;
+    }
+
+    public getInlineElement(): HTMLInputElement | null {
+        return this.inlineInputEle;
     }
 
     public destroy(): void {
+        this.inlineInputEle = null;
         this.parent.off(events.inlineClick, this.inlineEdit);
     }
 

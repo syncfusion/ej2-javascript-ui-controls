@@ -4176,7 +4176,7 @@ describe('CR 898103 - Add milestone-', () => {
         expect(ganttObj.currentViewData.length).toBe(1);
     });
 });
-describe('Convert milestone to task using context menu 1', () => {
+describe('Convert milestone to task using context menu', () => {
     let ganttObj: Gantt;
     const projectNewData = [
         {
@@ -4273,7 +4273,7 @@ describe('Convert milestone to task using context menu 1', () => {
         expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(1);
     });
 });
-describe('Convert milestone to task using context menu - 2', () => {
+describe('Convert milestone to task using context menu', () => {
     let ganttObj: Gantt;
     const projectNewData = [
         {

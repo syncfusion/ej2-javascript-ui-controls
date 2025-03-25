@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $de-ctnr-height: calc(100%) !default;
 $de-ctnr-tlbr-height: 72px !default;
 $de-ctnr-tlbt-height-big: 81px !default;
@@ -145,10 +147,10 @@ $de-prop-btn-bg-color: $content-bg-color !default;
 $de-toggle-btn-color: $icon-color !default;
 $de-pageweb-toggle-color: $content-bg-color-alt3 !default;
 $e-de-pagenumber-bg: $content-bg-color;
-$de-toggle-border-color: darken($secondary-bg-color, 12.5%) !default;
-$de-toggle-hover-color: darken($secondary-bg-color, 7.5%) !default;
-$de-toggle-border-hover-color: darken($secondary-bg-color, 10%) !default;
-$de-toggle-disabled-color: lighten($secondary-bg-color, 65%);
+$de-toggle-border-color: color.adjust($secondary-bg-color, $lightness: -12.5%) !default;
+$de-toggle-hover-color: color.adjust($secondary-bg-color, $lightness: -7.5%) !default;
+$de-toggle-border-hover-color: color.adjust($secondary-bg-color, $lightness: -10%) !default;
+$de-toggle-disabled-color: color.adjust($secondary-bg-color, $lightness: 65%);
 $e-de-bzr-button-border-color: $white !default;
 $e-de-bzr-button-active-font-color: $content-text-color !default;
 $de-white-color: $white !default;

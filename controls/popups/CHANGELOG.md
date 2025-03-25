@@ -2,36 +2,6 @@
 
 ## [Unreleased]
 
-## 28.2.9 (2025-03-04)
-
-### Popup
-
-#### Bug Fixes
-
-- `#I688364` - Fixed an issue with the positioning issue of the Multi select component popup while enabling the RTL mode.
-
-## 28.1.39 (2024-01-14)
-
-### Dialog
-
-#### Bug Fixes
-
-- `#I674340` - Fixed an issue where the Dialog primary button click event was triggered even when the button was disabled.
-
-## 28.1.38 (2025-01-07)
-
-### Tooltip
-
-#### Bug Fixes
-
-- `#I661900` - Resolved console error when dynamically using `OpenDelay` with delay for the Tooltip component.
-
-### Popup
-
-#### Bug Fixes
-
-- `#I664758` - Fixed an issue with the positioning of the dropdownlist popup.
-
 ## 21.1.35 (2023-03-23)
 
 ### Tooltip

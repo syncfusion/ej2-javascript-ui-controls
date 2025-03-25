@@ -1,6 +1,7 @@
 /**
  * Dialog renderer spec 
  */
+import { ENTERKEY_EVENT_INIT, TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT } from '../../constant.spec';
 import { RichTextEditor } from './../../../src/index';
 import { renderRTE, destroy } from "./../render.spec";
 
@@ -308,5 +309,52 @@ describe('Dialog Position Testing', () => {
             expect(parseInt(dialog.style.top)).toBeGreaterThan(120);
             done();
         }, 400);
+    });
+});
+
+describe('946028: File Manager Toolbar Opens New Folder Dialog Instead of File Manager View Panel After Using Keyboard.', ()=> {
+    let editor: RichTextEditor;
+    beforeAll(()=> {
+        editor = renderRTE( {
+            fileManagerSettings: {
+                enable: true, path: '/Pictures/Food',
+                ajaxSettings: {
+                    url: 'https://ej2-aspcore-service.azurewebsites.net/api/FileManager/FileOperations',
+                    getImageUrl: 'https://ej2-aspcore-service.azurewebsites.net/api/FileManager/GetImage',
+                    uploadUrl: 'https://ej2-aspcore-service.azurewebsites.net/api/FileManager/Upload',
+                    downloadUrl: 'https://ej2-aspcore-service.azurewebsites.net/api/FileManager/Download'
+                }
+            },
+            toolbarSettings: {
+                items: ['FileManager']
+            },
+            value: '<p>The Rich Text Editor</p>'
+        })
+    });
+    afterAll(()=> {
+        destroy(editor);
+    });
+    it('Should not focus the File manager toolbar button on render.', (done: DoneFn)=> {
+        editor.focusIn();
+        const range: Range = new Range();
+        range.setStart(editor.inputElement.firstChild.firstChild, 0);
+        range.collapse(true);
+        editor.selectRange(range);
+        const toolbarFocusShortcutDown: KeyboardEvent = new KeyboardEvent('keydown', TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT);
+        const toolbarFocusShortcutUp: KeyboardEvent = new KeyboardEvent('keyup', TOOLBAR_FOCUS_SHORTCUT_EVENT_INIT);
+        editor.inputElement.dispatchEvent(toolbarFocusShortcutDown);
+        editor.inputElement.dispatchEvent(toolbarFocusShortcutUp);
+        setTimeout(() => {
+            const enterKeyDownEvent: KeyboardEvent =  new KeyboardEvent('keydown', ENTERKEY_EVENT_INIT);
+            const enterKeyUpEvent: KeyboardEvent = new KeyboardEvent('keyup', ENTERKEY_EVENT_INIT);
+            editor.getToolbarElement()
+            document.activeElement.dispatchEvent(enterKeyDownEvent);
+            (document.activeElement as HTMLElement).click()
+            document.activeElement.dispatchEvent(enterKeyUpEvent);
+            setTimeout(() => {
+                expect(document.activeElement.closest('.e-richtexteditor')).toBe(editor.element);
+                done();
+            }, 100);
+        }, 100);
     });
 });

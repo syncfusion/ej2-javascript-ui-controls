@@ -303,7 +303,7 @@ export class StickyNotesAnnotation {
             if (canvas) {
                 proxy.pdfViewer.renderDrawing(canvas as any, pageIndex);
             } else {
-                const canvass: any = document.getElementById(proxy.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
+                const canvass: any = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', pageIndex);
                 proxy.pdfViewer.renderDrawing(canvass as any, pageIndex);
             }
             if (Browser.isDevice) {
@@ -3488,7 +3488,7 @@ export class StickyNotesAnnotation {
             Icon: 'Comment',
             IsCommentLock: false,
             IsLock: annotationObject.isLock ? annotationObject.isLock : false,
-            IsPrint: annotationObject.isPrint ? annotationObject.isPrint : true,
+            IsPrint: !isNullOrUndefined(annotationObject.isPrint) ? annotationObject.isPrint : true,
             ModifiedDate: '',
             Note: '',
             Opacity: annotationObject.opacity ? annotationObject.opacity : 1,

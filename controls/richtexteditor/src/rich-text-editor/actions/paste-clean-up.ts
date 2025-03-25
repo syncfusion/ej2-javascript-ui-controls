@@ -1262,7 +1262,7 @@ export class PasteCleanup {
             allowedStyleValue = allowedStyleValueArray.join(';').trim() === '' ?
                 allowedStyleValueArray.join(';') : allowedStyleValueArray.join(';') + ';';
             if (allowedStyleValue) {
-                styleElement[i as number].setAttribute('style', allowedStyleValue);
+                styleElement[i as number].style.cssText += allowedStyleValue;
             }
         }
         return clipBoardElem;

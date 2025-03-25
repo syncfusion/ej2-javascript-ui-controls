@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, Property, Event, Animation, Collection, append } from '@syncfusion/ej2-base';import { EventHandler, EmitType, Browser, Internationalization, getDefaultDateObject, cldrData, L10n } from '@syncfusion/ej2-base';import { getValue, compile, extend, isNullOrUndefined, NotifyPropertyChanges, INotifyPropertyChanged, Complex } from '@syncfusion/ej2-base';import { getElement, removeClass, addClass, classList, remove, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';import { HeaderRenderer } from '../renderer/header-renderer';import { Scroll } from '../actions/scroll';import { ScheduleTouch } from '../actions/touch';import { KeyboardInteraction } from '../actions/keyboard';import { Data } from '../actions/data';import { View, CurrentAction, ReturnType, WeekRule, NavigationDirection } from '../base/type';import { EventBase } from '../event-renderer/event-base';import { InlineEdit } from '../event-renderer/inline-edit';import { QuickPopups } from '../popups/quick-popups';import { EventTooltip } from '../popups/event-tooltip';import { EventWindow } from '../popups/event-window';import { Render } from '../renderer/renderer';import { Day } from '../renderer/day';import { Week } from '../renderer/week';import { WorkWeek } from '../renderer/work-week';import { Month } from '../renderer/month';import { Year } from '../renderer/year';import { Agenda } from '../renderer/agenda';import { MonthAgenda } from '../renderer/month-agenda';import { TimelineViews } from '../renderer/timeline-view';import { TimelineMonth } from '../renderer/timeline-month';import { TimelineYear } from '../renderer/timeline-year';import { WorkHours } from '../models/work-hours';import { TimeScale } from '../models/time-scale';import { QuickInfoTemplates } from '../models/quick-info-templates';import { HeaderRows } from '../models/header-rows';import { Crud } from '../actions/crud';import { Resize } from '../actions/resize';import { DragAndDrop } from '../actions/drag';import { VirtualScroll } from '../actions/virtual-scroll';import { WorkCellInteraction } from '../actions/work-cells';import { WorkHoursModel, ViewsModel, EventSettingsModel, GroupModel, ResourcesModel, TimeScaleModel, ToolbarItemModel } from '../models/models';import { QuickInfoTemplatesModel, HeaderRowsModel } from '../models/models';import { EventSettings } from '../models/event-settings';import { Group } from '../models/group';import { Resources } from '../models/resources';import { ICalendarExport } from '../exports/calendar-export';import { ICalendarImport } from '../exports/calendar-import';import { ExcelExport } from '../exports/excel-export';import { Print } from '../exports/print';import { IRenderer, ActionEventArgs, NavigatingEventArgs, CellClickEventArgs, RenderCellEventArgs, ScrollCss, TimezoneFields, BeforePasteEventArgs } from '../base/interface';import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, DragEventArgs, ResizeEventArgs } from '../base/interface';import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs, ExportOptions, SelectEventArgs } from '../base/interface';import { ViewsData, PopupCloseEventArgs, HoverEventArgs, MoreEventsClickArgs, ScrollEventArgs, CallbackFunction } from '../base/interface';import { CalendarUtil, Gregorian, Islamic, CalendarType } from '../../common/calendar-util';import { ResourceBase } from '../base/resource';import { Timezone, timezoneData } from '../timezone/timezone';import { RecurrenceEditor } from '../../recurrence-editor/recurrence-editor';import * as events from '../base/constant';import * as cls from '../base/css-constant';import * as util from '../base/util';import { ToolbarItem } from '../models/toolbar';
+import { Component, ModuleDeclaration, Property, Event, Animation, Collection, append } from '@syncfusion/ej2-base';import { EventHandler, EmitType, Browser, Internationalization, getDefaultDateObject, cldrData, L10n } from '@syncfusion/ej2-base';import { getValue, compile, extend, isNullOrUndefined, NotifyPropertyChanges, INotifyPropertyChanged, Complex } from '@syncfusion/ej2-base';import { getElement, removeClass, addClass, classList, remove, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';import { HeaderRenderer } from '../renderer/header-renderer';import { Scroll } from '../actions/scroll';import { ScheduleTouch } from '../actions/touch';import { KeyboardInteraction } from '../actions/keyboard';import { Data } from '../actions/data';import { View, CurrentAction, ReturnType, WeekRule, NavigationDirection } from '../base/type';import { EventBase } from '../event-renderer/event-base';import { InlineEdit } from '../event-renderer/inline-edit';import { QuickPopups } from '../popups/quick-popups';import { EventTooltip } from '../popups/event-tooltip';import { EventWindow } from '../popups/event-window';import { Render } from '../renderer/renderer';import { Day } from '../renderer/day';import { Week } from '../renderer/week';import { WorkWeek } from '../renderer/work-week';import { Month } from '../renderer/month';import { Year } from '../renderer/year';import { Agenda } from '../renderer/agenda';import { MonthAgenda } from '../renderer/month-agenda';import { TimelineViews } from '../renderer/timeline-view';import { TimelineMonth } from '../renderer/timeline-month';import { TimelineYear } from '../renderer/timeline-year';import { WorkHours } from '../models/work-hours';import { TimeScale } from '../models/time-scale';import { QuickInfoTemplates } from '../models/quick-info-templates';import { HeaderRows } from '../models/header-rows';import { Crud } from '../actions/crud';import { Resize } from '../actions/resize';import { DragAndDrop } from '../actions/drag';import { VirtualScroll } from '../actions/virtual-scroll';import { WorkCellInteraction } from '../actions/work-cells';import { WorkHoursModel, ViewsModel, EventSettingsModel, GroupModel, ResourcesModel, TimeScaleModel, ToolbarItemModel } from '../models/models';import { QuickInfoTemplatesModel, HeaderRowsModel } from '../models/models';import { EventSettings } from '../models/event-settings';import { Group } from '../models/group';import { Resources } from '../models/resources';import { ICalendarExport } from '../exports/calendar-export';import { ICalendarImport } from '../exports/calendar-import';import { ExcelExport } from '../exports/excel-export';import { Print } from '../exports/print';import { IRenderer, ActionEventArgs, NavigatingEventArgs, CellClickEventArgs, RenderCellEventArgs, ScrollCss, TimezoneFields, ExcelExportEventArgs, BeforePasteEventArgs, TooltipOpenEventArgs } from '../base/interface';import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, DragEventArgs, ResizeEventArgs } from '../base/interface';import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs, ExportOptions, SelectEventArgs } from '../base/interface';import { ViewsData, PopupCloseEventArgs, HoverEventArgs, MoreEventsClickArgs, ScrollEventArgs, CallbackFunction, BeforePrintEventArgs } from '../base/interface';import { CalendarUtil, Gregorian, Islamic, CalendarType } from '../../common/calendar-util';import { ResourceBase } from '../base/resource';import { Timezone, timezoneData } from '../timezone/timezone';import { RecurrenceEditor } from '../../recurrence-editor/recurrence-editor';import * as events from '../base/constant';import * as cls from '../base/css-constant';import * as util from '../base/util';import { ToolbarItem } from '../models/toolbar';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -53,6 +53,38 @@ export interface ScheduleModel extends ComponentModel{
      * @default true
      */
     allowSwiping?: boolean;
+
+    /**
+     * Specifies whether overlapping appointments are allowed within the same time slot in the Scheduler.
+     *
+     * @remarks
+     * When set to `false`, the Scheduler enforces restrictions to prevent creating or displaying overlapping appointments within the same time duration.
+     * This setting includes the following limitations:
+     *
+     * - **Initial Loading**: The alert for overlapping appointments will not display during the initial load. Overlapping events will be ignored in rendering, including occurrences.
+     *
+     * - **Dynamic Add/Edit**: When adding or editing events dynamically, overlapping validation is performed. If an overlap is detected for a single event, an alert will be shown, and the event will not be saved.
+     *
+     * For recurring events, an alert will be displayed, and the event will not be saved. To save recurring events while ignoring overlapping occurrences, trigger the `PopupOpen` event. The `Data` field will contain the parent recurrence data, and the `overlapEvents` field will contain the overlap events. Using these details, users can include exceptions in the recurrence events and save them with the `addEvent` method.
+     *
+     * - **Out-of-Date-Range Events**: The `allowOverlap` setting only prevents overlaps for events within the current view date range. To validate overlap events outside the current date range, use the `actionBegin` event to send a request to the server for validation and return a promise-based response. Assign this promise response to the `promise` field in `ActionEventArgs` to handle asynchronous server validation.
+     *
+     * @default true
+     */
+    allowOverlap?: boolean;
+
+    /**
+     * Specifies the number of additional rows or columns to render outside the visible area during virtual scrolling.
+     * This property helps in achieving smoother scrolling by pre-loading data just outside the visible region.
+     *
+     * @remarks
+     * The default value is 3. Increasing this value can result in smoother scrolling but may impact performance
+     * with larger datasets. Decreasing it can improve performance but may cause more frequent data fetches during scrolling.
+     * This property only takes effect when `allowVirtualScrolling` is enabled for the current view.
+     *
+     * @default 3
+     */
+    overscanCount?: number;
 
     /**
      * To render the custom toolbar items, the `toolbarItems` property can be used. It contains built-in and custom toolbar items.
@@ -873,5 +905,26 @@ export interface ScheduleModel extends ComponentModel{
      * @event 'beforePaste'
      */
     beforePaste?: EmitType<BeforePasteEventArgs>;
+
+    /**
+     * Triggers when the print event is called.
+     *
+     * @event 'beforePrint'
+     */
+    beforePrint?: EmitType<BeforePrintEventArgs>;
+
+    /**
+     * Triggers before the Excel export process begins.
+     *
+     * @event 'excelExport'
+     */
+    excelExport?: EmitType<ExcelExportEventArgs>;
+
+    /**
+     * Triggers before the tooltip is rendered.
+     *
+     * @event 'tooltipOpen'
+     */
+    tooltipOpen?: EmitType<TooltipOpenEventArgs>;
 
 }

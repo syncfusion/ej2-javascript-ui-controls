@@ -196,6 +196,60 @@ export interface FontModel {
 }
 
 /**
+ * Interface for a class StackLabelsFont
+ */
+export interface StackLabelsFontModel {
+
+    /**
+     * Specifies the style of the text.
+     *
+     * @default 'Normal'
+     */
+    fontStyle?: string;
+
+    /**
+     * Specifies the size of the text.
+     *
+     * @default '16px'
+     */
+    size?: string;
+
+    /**
+     * Specifies the font weight of the text.
+     *
+     * @default 'Normal'
+     */
+    fontWeight?: string;
+
+    /**
+     * Specifies the color of the text.
+     *
+     * @default ''
+     */
+    color?: string;
+
+    /**
+     * Specifies the alignment of the text.
+     *
+     * @default 'Center'
+     */
+    textAlignment?: Alignment;
+
+    /**
+     * Specifies the font family for the text.
+     */
+    fontFamily?: string;
+
+    /**
+     * Specifies the opacity level for the text.
+     *
+     * @default 1
+     */
+    opacity?: number;
+
+}
+
+/**
  * Interface for a class CenterLabel
  */
 export interface CenterLabelModel {
@@ -508,6 +562,22 @@ export interface TooltipSettingsModel {
      */
     enableHighlight?: boolean;
 
+    /**
+     * Enables or disables the display of tooltips for the nearest data point to the cursor.
+     *
+     * @default false.
+     */
+
+    showNearestTooltip?: boolean;
+
+    /**
+     * Specifies whether to display the header line in the tooltip.
+     *
+     * @default true
+     */
+
+    showHeaderLine?: boolean;
+
 }
 
 /**
@@ -526,7 +596,7 @@ export interface EmptyPointSettingsModel {
     /**
      * Options to customize the border for empty points in the series, including color and width.
      *
-     * @default "{color: 'transparent', width: 0}"
+     * @default "{color: '', width: 0}"
      */
 
     border?: BorderModel;
@@ -790,6 +860,40 @@ export interface titleSettingsModel {
      * Options to improve accessibility for chart title and subtitle elements.
      */
     accessibility?: AccessibilityModel;
+
+}
+
+/**
+ * Interface for a class TitleStyleSettings
+ */
+export interface TitleStyleSettingsModel extends FontModel{
+
+    /**
+     * Defines the position for the chart title and subtitle.
+     * The available options are:
+     * * Top: Displays the title and subtitle at the top of the accumulation chart.
+     * * Left: Displays the title and subtitle at the left of the accumulation chart.
+     * * Bottom: Displays the title and subtitle at the bottom of the accumulation chart.
+     * * Right: Displays the title and subtitle at the right of the accumulation chart.
+     * * Custom: Displays the title and subtitle based on the specified x and y values.
+     *
+     * @default 'Top'
+     */
+    position?: TitlePosition;
+
+    /**
+     * Defines the X coordinate for the accumulation chart title and subtitle.
+     *
+     * @default 0
+     */
+    x?: number;
+
+    /**
+     * Defines the Y coordinate for the accumulation chart title and subtitle.
+     *
+     * @default 0
+     */
+    y?: number;
 
 }
 
@@ -1095,6 +1199,22 @@ export interface StockTooltipSettingsModel {
      */
 
     position?: TooltipPosition;
+
+    /**
+     * Enables or disables the display of tooltips for the nearest data point to the cursor.
+     *
+     * @default false.
+     */
+
+    showNearestTooltip?: boolean;
+
+    /**
+     * Specifies whether to display the header line in the tooltip.
+     *
+     * @default true
+     */
+
+    showHeaderLine?: boolean;
 
 }
 

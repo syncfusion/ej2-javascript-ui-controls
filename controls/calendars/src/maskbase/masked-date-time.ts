@@ -993,6 +993,11 @@ export class MaskedDateTime {
         this.previousHiddenMask = this.hiddenMask;
         this.previousValue = inputValue;
         this.parent.updateInputValue(inputValue);
+        if (this.parent.strictMode && (this.dayTypeCount !== 0 || this.monthTypeCount !== 0)) {
+            this.isLeadingZero = false;
+        }
+        this.dayTypeCount = 0;
+        this.monthTypeCount = 0;
     }
 
     public destroy(): void {

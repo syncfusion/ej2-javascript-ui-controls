@@ -273,7 +273,7 @@ export class DataMatrixGenerator extends Component<HTMLElement> implements INoti
                 this.barcodeCanvas.setAttribute('width', String(this.element.offsetWidth));
                 break;
             case 'backgroundColor':
-                this.barcodeCanvas.setAttribute('style', 'background:' + newProp.backgroundColor);
+                this.barcodeCanvas.style.background = newProp.backgroundColor;
                 break;
             }
 

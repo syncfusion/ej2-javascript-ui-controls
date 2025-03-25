@@ -70,7 +70,10 @@
                 > * {
                     border-radius: 0px;
                 }
-                margin-bottom: -1px;
+                & {
+                    margin-bottom: -1px;
+                }
+
             }
         }
     }

@@ -111,13 +111,13 @@ export function getData(
                                         if (i === dateValueForSpecificColIdx) {
                                             cellProp = { value: getValueFromFormat(context, cell, sRow, i, true) };
                                             if (cellProp.value && typeof cellProp.value === 'string') {
-                                                if (isNumber(cellProp.value)) {
+                                                if (isNumber(cellProp.value) && !cell.value.toString().includes('\n')) {
                                                     if (!cell.format || cell.format !== '@') {
                                                         cellProp.value = parseFloat(cellProp.value);
                                                     }
                                                 } else if (!cell.format) {
                                                     autoDetectFormatFn(cell);
-                                                    if (isNumber(cell.value)) {
+                                                    if (isNumber(cell.value) && !cell.value.toString().includes('\n')) {
                                                         cellProp.value =  parseFloat(cell.value);
                                                     }
                                                 }
@@ -126,6 +126,10 @@ export function getData(
                                         } else {
                                             cells[key as string] = cell;
                                         }
+                                    }
+                                    if (cell && ((!!cell.rowSpan && cell.rowSpan !== 1) || (!!cell.colSpan && cell.colSpan !== 1))) {
+                                        data = [{ throwMergeAlert: true } as unknown as { [key: string]: CellModel }];
+                                        return;
                                     }
                                 }
                                 if (i === indexes[3] && Object.keys(cells).length) {

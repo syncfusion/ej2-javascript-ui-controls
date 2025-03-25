@@ -638,12 +638,14 @@ describe('MultiColumnComboBox control', () => {
             let clickEvent: MouseEvent = document.createEvent('MouseEvents');
             clickEvent.initEvent('mousedown', true, true);
             (multiColObj as any).inputObj.buttons[0].dispatchEvent(clickEvent);
-            expect((multiColObj as any).inputWrapper.classList.contains('e-input-focus')).toBe(true);
-            (multiColObj as any).inputObj.buttons[0].dispatchEvent(clickEvent);
             setTimeout(() => {
                 expect((multiColObj as any).inputWrapper.classList.contains('e-input-focus')).toBe(true);
-                done();
-            }, 500);
+                (multiColObj as any).inputObj.buttons[0].dispatchEvent(clickEvent);
+                setTimeout(() => {
+                    expect((multiColObj as any).inputWrapper.classList.contains('e-input-focus')).toBe(true);
+                    done();
+                }, 500);
+            }, 600);
         });
         // it('Focus when document click', (done) => {
         //     multiColObj = new MultiColumnComboBox({
@@ -3125,6 +3127,59 @@ describe('MultiColumnComboBox control', () => {
                 expect((multiColObj as any).inputEle.value).toBe('Andrew');
                 done();
             }, 1200);
+        });
+    });
+    describe('Spinner functionality', () => {
+        let multiColObj: MultiColumnComboBox;
+        let element: HTMLInputElement;
+
+        beforeEach((): void => {
+            element = <HTMLInputElement>createElement('input', { id: 'multicolumn-combobox' });
+            document.body.appendChild(element);
+        });
+
+        afterEach((): void => {
+            if (multiColObj) {
+                multiColObj.destroy();
+                multiColObj = undefined;
+            }
+            remove(element);
+        });
+
+        it('should add and remove spinner element on showSpinner and hideSpinner calls', (done) => {
+            let dataSource = new DataManager({
+                url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Customers',
+                adaptor: new ODataV4Adaptor,
+                crossDomain: true
+            });
+            multiColObj = new MultiColumnComboBox({
+                dataSource: dataSource,
+                fields: { text: 'ContactName', value: 'CustomerID' },
+                columns: [{ field: 'ContactName', header: 'ContactName', width: 120 },
+                          { field: 'CustomerID', width: 140, header: 'Customer ID' }]
+            });
+            multiColObj.appendTo(element);
+            (multiColObj as any).showHideSpinner(true);
+            let spinnerElement = element.parentElement.querySelector('.e-spinner-pane');
+            expect(spinnerElement).not.toBeNull();
+            expect(spinnerElement.classList.contains('e-spin-show')).toBe(true);
+            setTimeout(() => {
+                (multiColObj as any).showHideSpinner(false);
+                expect(spinnerElement.classList.contains('e-spin-hide')).toBe(true);
+                done();
+            }, 1200);
+        });
+
+        it('should not have spinner element for local data', () => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: languageData,
+                fields: { text: 'text', value: 'id' },
+                columns: [{ field: 'text', header: 'Text' }, { field: 'id', header: 'ID' }]
+            });
+            multiColObj.appendTo(element);
+            let spinnerElement = element.parentElement.querySelector('.e-spinner-pane');
+            expect(spinnerElement).not.toBeNull();
+            expect(spinnerElement.classList.contains('e-spin-hide')).toBe(true);
         });
     });
 });

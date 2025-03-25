@@ -1,7 +1,7 @@
-import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventArgs, Ajax } from '@syncfusion/ej2-base';
+import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventArgs, Ajax, MouseEventArgs } from '@syncfusion/ej2-base';
 import { Browser, closest, removeClass, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import {
-    IAudioCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, AfterMediaDeleteEventArgs } from '../base/interface';
+    IAudioCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, AfterMediaDeleteEventArgs, SlashMenuItemSelectArgs } from '../base/interface';
 import { IRichTextEditor, IImageNotifyArgs, NotifyArgs, IShowPopupArgs } from '../base/interface';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
@@ -16,7 +16,7 @@ import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { RenderType } from '../base/enum';
 import { dispatchEvent, hasClass, convertToBlob } from '../base/util';
 import { DialogRenderer } from './dialog-renderer';
-import { isIDevice, isSafari } from '../../common/util';
+import { isIDevice } from '../../common/util';
 
 /**
  * `Audio` module is used to handle audio actions.
@@ -222,7 +222,12 @@ export class Audio {
             this.undoStack({ subCommand: (originalEvent.keyCode === 90 ? 'undo' : 'redo') });
         }
         if (originalEvent.keyCode === 8 || originalEvent.keyCode === 46) {
-            if (selectNodeEle && this.isAudioElem(selectNodeEle[0] as HTMLElement) && selectNodeEle.length < 1) {
+            if (selectNodeEle && (this.isAudioElem(selectNodeEle[0] as HTMLElement) ||
+                (originalEvent.keyCode === 46 && (selectNodeEle[0].nextSibling as HTMLElement) &&
+                this.isAudioElem(selectNodeEle[0].nextSibling as HTMLElement)) ||
+                (originalEvent.keyCode === 8 && (selectNodeEle[0].previousSibling as HTMLElement) &&
+                this.isAudioElem(selectNodeEle[0].previousSibling as HTMLElement))) &&
+                selectNodeEle.length <= 2) {
                 if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection))
                 {save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument()); }
                 originalEvent.preventDefault();
@@ -287,7 +292,10 @@ export class Audio {
         removeClass(audioFocusNodes, classes.CLS_AUD_FOCUS);
     }
 
-    private openDialog(isInternal?: boolean, event?: KeyboardEventArgs, selection?: NodeSelection, ele?: Node[], parentEle?: Node[]): void {
+    private openDialog(
+        isInternal?: boolean, event?: KeyboardEventArgs | MouseEventArgs,
+        selection?: NodeSelection, ele?: Node[], parentEle?: Node[]
+    ): void {
         let range: Range;
         let save: NodeSelection;
         let selectNodeEle: Node[];
@@ -317,8 +325,12 @@ export class Audio {
         }
     }
 
-    private showDialog(): void {
-        this.openDialog(false);
+    private showDialog(args?: SlashMenuItemSelectArgs): void {
+        if (!isNOU(args.originalEvent)) {
+            this.openDialog(false, args.originalEvent as MouseEventArgs);
+        } else {
+            this.openDialog(false);
+        }
     }
 
     private closeDialog(): void {
@@ -402,7 +414,7 @@ export class Audio {
                 }
             }
         }
-        if (this.isAudioElem(e.target as HTMLElement) && !isSafari()) {
+        if (this.isAudioElem(e.target as HTMLElement) && !this.parent.userAgentData.isSafari()) {
             this.audEle = (e.target as HTMLElement).querySelector('audio') as HTMLAudioElement;
             e.preventDefault();
         }
@@ -897,7 +909,7 @@ export class Audio {
             if (proxy.parent.editorMode === 'HTML' && isNullOrUndefined(
                 closest(
                     // eslint-disable-next-line
-                    (this as IImageNotifyArgs).selection.range.startContainer.parentNode, '[id=' + "'" + proxy.contentModule.getPanel().id + "'" + ']'))) {
+                    (this as IImageNotifyArgs).selection.range.startContainer.parentNode, '[id=' + "'" + proxy.contentModule.getPanel().id + "'" + ']')) && !(proxy.parent.iframeSettings.enable)) {
                 (proxy.contentModule.getEditPanel() as HTMLElement).focus();
                 const range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.contentModule.getDocument());
                 (this as IImageNotifyArgs).selection = proxy.parent.formatter.editorManager.nodeSelection.save(

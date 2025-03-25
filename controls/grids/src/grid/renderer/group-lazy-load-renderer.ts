@@ -328,7 +328,8 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
 
     private actionComplete(args: NotifyArgs): void {
         if (!args.cancel && args.requestType !== 'columnstate' && args.requestType !== 'beginEdit'
-            && args.requestType !== 'delete' && args.requestType !== 'save' && args.requestType !== 'reorder') {
+            && args.requestType !== 'delete' && args.requestType !== 'save' && args.requestType !== 'reorder'
+            && args.requestType !== 'infiniteScroll') {
             this.scrollReset();
         }
     }
@@ -1258,7 +1259,7 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         const tr: Element[] = [].slice.call(this.parent.getContent().getElementsByClassName(literals.row));
         let row: Element;
         for (let i: number = 0; !isNullOrUndefined(index) && i < tr.length; i++) {
-            if (tr[parseInt(i.toString(), 10)].getAttribute(literals.dataRowIndex) === index.toString()) {
+            if (parseInt(tr[parseInt(i.toString(), 10)].getAttribute(literals.ariaRowIndex).toString(), 10) - 1 === index) {
                 row = tr[parseInt(i.toString(), 10)];
                 break;
             }

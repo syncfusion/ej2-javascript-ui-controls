@@ -71,7 +71,8 @@ export class DateFilterUI implements IFilterMUI {
         this.datePickerObj.appendTo(this.inputElem);
     }
 
-    public write(args: { column: Column, target: Element, parent: IGrid, filteredValue: number | string | Date | boolean }): void {
+    public write(args: { column: Column, target: Element, parent: IGrid,
+        filteredValue: number | string | Date | boolean | (string | number | boolean | Date)[] }): void {
         const dateuiObj: DatePicker | DateTimePicker = (<EJ2Intance>document.querySelector('#dateui-' + args.column.uid)).ej2_instances[0];
         dateuiObj.value = !isNullOrUndefined(args.filteredValue) ? new Date(args.filteredValue as string) as Date : null as Date;
     }

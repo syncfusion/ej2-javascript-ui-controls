@@ -16,11 +16,15 @@
     }
 
     @if $skin-name == 'fluent2' or $theme-name == 'bootstrap5.3' or $theme-name == 'bootstrap5.3-dark' {
-      border-radius: 4px;
+      & {
+        border-radius: 4px;
+      }
     }
     @if $skin-name == 'tailwind3' {
-      font-weight: $font-weight-medium;
-      border-radius: 6px;
+      & {
+        font-weight: $font-weight-medium;
+        border-radius: 6px;
+      }
     }
 
     &.e-listboxtool-container .e-list-wrap {

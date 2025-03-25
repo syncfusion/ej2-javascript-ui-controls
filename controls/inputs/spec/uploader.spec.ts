@@ -142,9 +142,9 @@ describe('Uploader Control', () => {
 
         (uploadObj as any).onSelectFiles(eventArgs as any);
         expect((uploadObj as any).clearButton.hasAttribute('disabled')).toBe(false);
-
+        
         uploadObj.upload([uploadObj.filesData[0]]);
-
+        
         setTimeout(() => {
             const progressEvent = new ProgressEvent('progress', { loaded: 50, total: 100 });
             (uploadObj as any).uploadInProgress(progressEvent, uploadObj.filesData[0]);
@@ -4048,7 +4048,7 @@ describe('Uploader Control', () => {
                 uploadObj.remove([uploadObj.filesData[0]]);
                 setTimeout(() => {
                     expect(RemovingCallback).toHaveBeenCalledTimes(1);
-                    //expect(SuccessCallback).toHaveBeenCalledTimes(2);
+                    expect(SuccessCallback).toHaveBeenCalledTimes(2);
                     done();
                 }, 1500);
             }, 1500);

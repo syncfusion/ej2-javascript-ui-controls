@@ -85,7 +85,7 @@
                 trigger.mousemoveEvent(element, 0, 0, 200, 200);
                 element = document.getElementById('pie_Series_0_Point_6');
                 trigger.mousemoveEvent(element, 0, 0, 200, 200);
-                 expect(document.getElementsByClassName(highlight + '0' +'_point_6').length === 3).toBe(true);
+                 expect(document.getElementsByClassName(highlight + '0' +'_point_6').length === 4).toBe(true);
                  done();
              };
              accumulation.highlightMode = 'Point';
@@ -294,7 +294,7 @@
                 accumulation.loaded = null;
                 element = document.getElementById('pie_chart_legend_shape_1');
                 trigger.mousemoveEvent(element, 0, 0, 200, 200);
-                expect(document.getElementsByClassName(highlight + '0'+'_point_1').length === 2).toBe(true);
+                expect(document.getElementsByClassName(highlight + '0'+'_point_1').length === 3).toBe(true);
                 done();
             };
             accumulation.legendSettings.toggleVisibility = false;
@@ -318,7 +318,7 @@
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 element = document.getElementById('pie_datalabel_Series_0_text_0');
                 trigger.mousemoveEvent(element, 0, 0, 200, 200);
-                expect(document.getElementsByClassName(highlight + '0'+'_point_0').length === 2).toBe(true);
+                expect(document.getElementsByClassName(highlight + '0'+'_point_0').length === 3).toBe(true);
                 done();
             };
             accumulation.highlightMode = 'Point';
@@ -334,7 +334,7 @@
                 trigger.mousemoveEvent(element, 0, 0, 200, 200);
                 element = document.getElementById('pie_Series_0_Point_6');
                 trigger.mousemoveEvent(element, 0, 0, 200, 200);
-                expect(document.getElementsByClassName(highlight + '0'+'_point_6').length === 3).toBe(true);
+                expect(document.getElementsByClassName(highlight + '0'+'_point_6').length === 4).toBe(true);
                 done();
             };
             accumulation.series[0].innerRadius = '0%';
@@ -372,7 +372,7 @@
             accumulation.loaded = (args: IAccLoadedEventArgs) => {
                 element = document.getElementById('pie_datalabel_Series_0_text_0');
                 trigger.mousemoveEvent(element, 0, 0, 200, 200);
-                expect(document.getElementsByClassName(highlight + '0'+'_point_0').length === 2).toBe(true);
+                expect(document.getElementsByClassName(highlight + '0'+'_point_0').length === 3).toBe(true);
                 done();
             };
             accumulation.highlightMode = 'Point';

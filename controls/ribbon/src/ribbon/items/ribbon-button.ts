@@ -115,7 +115,9 @@ export class RibbonButton {
         const buttonEle: HTMLElement = getItemElement(this.parent, controlId);
         if (!buttonEle) { return; }
         const buttonObj: Button = getComponent(buttonEle, Button);
-        buttonObj.click();
+        if (!buttonObj.disabled) {
+            buttonObj.click();
+        }
     }
     /**
      * Updates the button properties.

@@ -1,7 +1,7 @@
 import { LayoutViewer, DocumentHelper, TableOfContentsSettings, ParagraphWidget, HistoryInfo } from '../index';
 import { TextSearchResults } from './text-search-results';
 import { TextSearchResult } from './text-search-result';
-import { createElement, isNullOrUndefined, L10n, classList, initializeCSPTemplate } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, L10n, classList, initializeCSPTemplate, updateCSSText } from '@syncfusion/ej2-base';
 import { FindOption } from '../../base/types';
 import { TextPosition } from '../selection/selection-helper';
 import { HelperMethods } from '../editor/editor-helper';
@@ -544,15 +544,14 @@ export class OptionsPane {
         this.documentHelper.owner.searchModule.addFindResultView(this.results);
         this.resultsListBlock.style.display = 'block';
         this.resultContainer.style.display = 'block';
-        let lists: string[] = this.documentHelper.owner.findResultsList;
-        let text: string = '';
-        for (let i: number = 0; i < lists.length; i++) {
-            text += lists[i];
-        }
+        let lists: HTMLElement[] = this.documentHelper.owner.findResultsList;
         let resultsContainerHeight = this.optionsPane.offsetHeight - this.findTab.offsetHeight;
         this.resultsListBlock.style.height = resultsContainerHeight + 'px';
         this.clearFocusElement();
-        this.resultsListBlock.innerHTML = text;
+        this.resultsListBlock.innerHTML = '';
+        for (let i: number = 0; i < lists.length; i++) {
+            this.resultsListBlock.appendChild(lists[i]);
+        }
         for (let i: number = 0; i < this.resultsListBlock.children.length; i++) {
             this.focusedElement.push(this.resultsListBlock.children[i] as HTMLElement);
         }
@@ -686,14 +685,12 @@ export class OptionsPane {
             this.resultsListBlock.style.display = 'block';
             let resultsContainerHeight: number = this.optionsPane.offsetHeight - this.findTab.offsetHeight;
             this.resultsListBlock.style.height = resultsContainerHeight + 'px';
-            let list: string[] = this.documentHelper.owner.findResultsList;
-            let text: string = '';
+            let list: HTMLElement[] = this.documentHelper.owner.findResultsList;
             this.clearFocusElement();
             this.resultsListBlock.innerHTML = '';
             for (let i: number = 0; i < list.length; i++) {
-                text += list[i];
+                this.resultsListBlock.appendChild(list[i]);
             }
-            this.resultsListBlock.innerHTML = text;
             for (let i: number = 0; i < this.resultsListBlock.children.length; i++) {
                 this.focusedElement.push(this.resultsListBlock.children[i] as HTMLElement);
             }
@@ -1304,7 +1301,7 @@ export class OptionsPane {
                     } else {
                         optionsPaneContainerStyle = 'display:inline-flex;';
                     }
-                    this.documentHelper.optionsPaneContainer.setAttribute('style', optionsPaneContainerStyle);
+                    updateCSSText(this.documentHelper.optionsPaneContainer, optionsPaneContainerStyle);
                     this.documentHelper.optionsPaneContainer.insertBefore(this.documentHelper.owner.optionsPaneModule.optionsPane, this.documentHelper.viewerContainer);
                 }
                 this.optionsPane.style.display = 'block';

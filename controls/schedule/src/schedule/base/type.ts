@@ -51,13 +51,14 @@ export type ReturnType = { result: Record<string, any>[], count: number, aggrega
  * Editor :- Denotes the detailed editor window.
  * EventContainer :- Denotes the more indicator popup.
  * QuickInfo :- Denotes the quick popup.
+ * OverlapAlert :- Denotes the popup showing overlap events.
  * RecurrenceAlert :- Denotes the popup showing recurrence alerts.
  * RecurrenceValidationAlert :- Denotes the popup showing recurrence validation alerts.
  * ValidationAlert :- Denotes the popup showing validation alerts.
  * ViewEventInfo :- Denotes the quick popup on the cells in responsive mode.
  * ```
  */
-export type PopupType = 'Editor' | 'EventContainer' | 'QuickInfo' | 'RecurrenceAlert' | 'DeleteAlert' | 'ViewEventInfo' | 'EditEventInfo' | 'ValidationAlert' | 'RecurrenceValidationAlert';
+export type PopupType = 'Editor' | 'EventContainer' | 'QuickInfo' | 'RecurrenceAlert' | 'DeleteAlert' | 'ViewEventInfo' | 'EditEventInfo' | 'ValidationAlert' | 'RecurrenceValidationAlert' | 'OverlapAlert';
 
 /**
  * An enum that holds the header row type in the timeline scheduler.

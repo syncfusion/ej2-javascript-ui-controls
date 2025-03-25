@@ -143,8 +143,8 @@ export class BatchEdit {
     protected dblClickHandler(e: MouseEvent): void {
         const target: Element = parentsUntil(e.target as Element, literals.rowCell);
         const tr: Element = parentsUntil(e.target as Element, literals.row);
-        const rowIndex: number = tr && parseInt(tr.getAttribute(literals.dataRowIndex), 10);
-        const colIndex: number = target && parseInt(target.getAttribute(literals.dataColIndex), 10);
+        const rowIndex: number = tr && parseInt(tr.getAttribute(literals.ariaRowIndex), 10) - 1;
+        const colIndex: number = target && parseInt(target.getAttribute(literals.ariaColIndex), 10) - 1;
         if (!isNullOrUndefined(target) && !isNullOrUndefined(rowIndex) && !isNaN(colIndex)
             && !target.parentElement.classList.contains(literals.editedRow) &&
                 (this.parent.getColumns()[parseInt(colIndex.toString(), 10)] as Column).allowEditing) {
@@ -179,7 +179,7 @@ export class BatchEdit {
             return;
         }
         let [rowIndex, cellIndex]: number[] = e.container.indexes;
-        const actualIndex: number = e.element.getAttribute('data-colindex') ? parseInt(e.element.getAttribute('data-colindex'), 10) : cellIndex;
+        const actualIndex: number = e.element.getAttribute('aria-colindex') ? parseInt(e.element.getAttribute('aria-colindex'), 10) - 1 : cellIndex;
         if (actualIndex !== cellIndex) {
             cellIndex = actualIndex;
         }
@@ -485,7 +485,7 @@ export class BatchEdit {
                 delete beforeBatchDeleteArgs.row;
             } else {
                 if (data) {
-                    index = parseInt((beforeBatchDeleteArgs.row as Element).getAttribute(literals.dataRowIndex), 10);
+                    index = parseInt((beforeBatchDeleteArgs.row as Element).getAttribute(literals.ariaRowIndex), 10) - 1;
                 }
                 for (let i: number = 0; i < selectedRows.length; i++) {
                     const uniqueid: string = selectedRows[parseInt(i.toString(), 10)].getAttribute('data-uid');
@@ -527,12 +527,10 @@ export class BatchEdit {
         const dataObjects: Row<Column>[] = gObj.getRowsObject().filter((row: Row<Column>) => !row.isDetailRow);
         for (let i: number = 0, j: number = 0, len: number = rows.length; i < len; i++) {
             if (rows[parseInt(i.toString(), 10)].classList.contains(literals.row) && !rows[parseInt(i.toString(), 10)].classList.contains('e-hiddenrow')) {
-                rows[parseInt(i.toString(), 10)].setAttribute(literals.dataRowIndex, j.toString());
                 rows[parseInt(i.toString(), 10)].setAttribute(literals.ariaRowIndex, (j + 1).toString());
                 dataObjects[parseInt(i.toString(), 10)].index = j;
                 j++;
             } else {
-                rows[parseInt(i.toString(), 10)].removeAttribute(literals.dataRowIndex);
                 rows[parseInt(i.toString(), 10)].removeAttribute(literals.ariaRowIndex);
                 dataObjects[parseInt(i.toString(), 10)].index = -1;
             }
@@ -689,7 +687,7 @@ export class BatchEdit {
         this.isAdd = isAdd;
         let visibleRows: Element[] = gObj.getDataRows();
         visibleRows = visibleRows.filter((row: HTMLElement) => row.style.display !== 'none' && !row.classList.contains('e-childrow-hidden'));
-        const lastRowIndex: number = parseInt(visibleRows[visibleRows.length - 1].getAttribute('data-rowindex'), 10);
+        const lastRowIndex: number = parseInt(visibleRows[visibleRows.length - 1].getAttribute('aria-rowindex'), 10) - 1;
         const checkEdit: boolean = gObj.isEdit && !(this.cellDetails.column.field === field
             && (this.cellDetails.rowIndex === index && lastRowIndex !== index && this.prevEditedBatchCell));
         if (gObj.editSettings.allowEditing) {
@@ -743,7 +741,7 @@ export class BatchEdit {
             // cellEditArgs.columnObject.index = isNullOrUndefined(cellEditArgs.columnObject.index) ? 0 : cellEditArgs.columnObject.index;
             this.cellDetails = {
                 rowData: rowData, column: col, value: cellEditArgs.value, isForeignKey: cellEditArgs.isForeignKey, rowIndex: index,
-                cellIndex: parseInt((cellEditArgs.cell as HTMLTableCellElement).getAttribute(literals.dataColIndex), 10),
+                cellIndex: parseInt((cellEditArgs.cell as HTMLTableCellElement).getAttribute(literals.ariaColIndex), 10) - 1,
                 foreignKeyData: cellEditArgs.foreignKeyData
             };
             if (cellEditArgs.cell.classList.contains('e-updatedtd')) {
@@ -888,7 +886,7 @@ export class BatchEdit {
         }
         if (this.parent.isRowDragable()) { cIdx++; }
         for (let m: number = 0; m < cells.length; m++) {
-            const colIndex: number = parseInt(cells[parseInt(m.toString(), 10)].getAttribute(literals.dataColIndex), 10);
+            const colIndex: number = parseInt(cells[parseInt(m.toString(), 10)].getAttribute(literals.ariaColIndex), 10) - 1;
             if (colIndex === index - cIdx) {
                 return m;
             }
@@ -931,7 +929,7 @@ export class BatchEdit {
                             break;
                         }
                         else if (insertedRows[parseInt(i.toString(), 10)].querySelectorAll('td:not(.e-hide)')[this.validationColObj[parseInt(j.toString(), 10)].cellIdx].innerHTML === '') {
-                            this.editCell(parseInt(insertedRows[parseInt(i.toString(), 10)].getAttribute('data-rowindex'), 10), this.validationColObj[parseInt(j.toString(), 10)].field);
+                            this.editCell(parseInt(insertedRows[parseInt(i.toString(), 10)].getAttribute('aria-rowindex'), 10) - 1, this.validationColObj[parseInt(j.toString(), 10)].field);
                             if (this.validateFormObj()) {
                                 this.saveCell();
                             }

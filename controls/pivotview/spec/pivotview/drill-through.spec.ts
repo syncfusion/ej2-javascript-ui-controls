@@ -83,7 +83,7 @@ describe('- Drill Through', () => {
             }, 300);
         });
         it('click balance', (done: Function) => {
-            document.querySelectorAll('th[aria-colindex="2"]')[0].querySelector('.e-headertext').dispatchEvent(event);
+            document.querySelectorAll('th[aria-colindex="2"]')[1].querySelector('.e-headertext').dispatchEvent(event);
             setTimeout(() => {
                 expect(document.querySelectorAll('.e-drillthrough-dialog').length).toBe(0);
                 pivotGridObj.isAdaptive = true;
@@ -319,7 +319,7 @@ describe('- Drill Through', () => {
                 document.querySelectorAll('.e-spin-up')[0].dispatchEvent(new Event('mouseup', { bubbles: true }));
                 document.getElementById('PivotGrid_drillthroughgrid_update').dispatchEvent(new Event('click', { bubbles: true }));
                 document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0].dispatchEvent(new Event('click', { bubbles: true }));
-                expect(document.querySelectorAll('.e-drillthrough-grid td[data-colindex="1"]')[0].textContent).toBe('389040.42');
+                expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="2"]')[0].textContent).toBe('389040.42');
                 done();
             }, 1000);
         });

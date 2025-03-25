@@ -710,3 +710,24 @@ export type LegendLayout =
     'Vertical' |
     /** The legend items are arranged automatically based on the legend's bounds. */
     'Auto';
+
+/**
+ * Defines the possible positions for the scrollbar in a chart.
+ * Available options are:
+ * * `PlaceNextToAxisLine`: Default position, places the scrollbar next to the axis line.
+ * * `Top`: Places the scrollbar at the top of the chart.
+ * * `Bottom`: Places the scrollbar at the bottom of the chart.
+ * * `Left`: Places the scrollbar on the left side of the chart.
+ * * `Right`: Places the scrollbar on the right side of the chart.
+ */
+export type ScrollbarPosition =
+    /** Places the scrollbar next to the axis line (default). */
+    'PlaceNextToAxisLine' |
+    /** Places the scrollbar at the top of the chart. Only applicable for horizontal scrollbar */
+    'Top' |
+    /** Places the scrollbar at the bottom of the chart. Only applicable for horizontal scrollbar */
+    'Bottom' |
+    /** Places the scrollbar on the left side of the chart. Only applicable for vertical scrollbar. */
+    'Left' |
+    /** Places the scrollbar on the right side of the chart. Only applicable for vertical scrollbar. */
+    'Right';

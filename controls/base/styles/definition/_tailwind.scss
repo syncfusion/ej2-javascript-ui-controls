@@ -1,3 +1,6 @@
+@use 'sass:color';
+@use 'sass:meta';
+@use 'sass:list';
 @import '../common/mixin.scss';
 
 $black: #000;
@@ -409,7 +412,7 @@ $rating-selected-disabled-color: $cool-gray-400 !default;
 $rating-unrated-disabled-color: $cool-gray-200 !default;
 $rating-selected-hover-color: $primary !default;
 $rating-unrated-hover-color: $cool-gray-700 !default;
-$rating-pressed-color: darken($primary, 15%) !default;
+$rating-pressed-color: color.adjust($primary, $lightness: -15%) !default;
 
 $font-icon-8: 8px !default;
 $font-icon-9: 9px !default;

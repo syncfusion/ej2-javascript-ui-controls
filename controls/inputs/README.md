@@ -224,7 +224,31 @@ The [JavaScript OTP Input](https://www.syncfusion.com/javascript-ui-controls/js-
 * [Styling modes](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-inputs-npm#/fluent2/otp-input/api.html) - Offer built-in styling options such as underline, outline, or fill.
 * [Placeholders](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-inputs-npm#/fluent2/otp-input/api.html) - Allow setting a hint character for each input field, indicating the expected value.
 * [Separators](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-inputs-npm#/fluent2/otp-input/api.html) - Specify a character to be placed between input fields. 
-* [Customization](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-inputs-npm#/fluent2/otp-input/api.html) - Allows customizing the default appearance, including input field styling, input length, and more.
+* [Customization](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-inputs-npm#/fluent2/otp-input/api.html) - Allows customizing the default appearance, including input field styling, input length, and more. 
+
+### JavaScript SpeechToText
+
+The [JavaScript SpeechToText](https://www.syncfusion.com/javascript-ui-controls/js-speech-to-text?utm_source=npm&utm_medium=listing&utm_campaign=javascript-inputs-npm) control provides seamless voice-to-text conversion in the web applications. It features real-time transcription with interim results, multilingual recognition, customizable buttons and tooltips, and error handling, ensuring an intuitive and accessible speech recognition experience.
+
+<p align="center">
+  <a href="https://ej2.syncfusion.com/documentation/speech-to-text/getting-started/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-inputs-npm">Getting Started</a> .
+  <a href="https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-inputs-npm#/fluent2/speech-to-text/default.html">Online demos</a> .
+  <a href="https://www.syncfusion.com/javascript-ui-controls/js-speech-to-text?utm_source=npm&utm_medium=listing&utm_campaign=javascript-inputs-npm">Learn more</a>
+</p>
+
+<p align="center">
+<img alt="JavaScript SpeechToText Control" src="https://raw.githubusercontent.com/SyncfusionExamples/nuget-img/master/javascript/javascript-speech-to-text.png">
+</p>
+
+Explore the demo [here](https://ej2.syncfusion.com/demos/?utm_source=npm&utm_medium=listing&utm_campaign=javascript-inputs-npm#/fluent2/speech-to-text/default.html)
+
+### Key Features
+
+* **Real-time transcription**: Instantly captures spoken input and converts it into text ensuring smooth speech recognition.
+* **Interim results**: Provides partial transcriptions as the user speaks, offering dynamic real-time experience before updates before finalizing the text.
+* **Multilingual recognition**: Supports multiple languages and regional variations, allowing users to transcribe speech in their preferred language.
+* **Tooltips**: Displays informative tooltips for start and stop actions, guiding users throughout the speech recognition process.
+* **Appearance**: Supports predefined styles and allows customization of content and icons to meet the application design and user preferences.
 
 <p align="center">
 Trusted by the world's leading companies
@@ -270,10 +294,10 @@ Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-contr
 
 ## License and copyright
 
-> This is a commercial product and requires a paid license for possession or use. Syncfusion<sup>®</sup> licensed software, including this component, is subject to the terms and conditions of Syncfusion<sup>®</sup> [EULA](https://www.syncfusion.com/eula/es/). To acquire a license for 80+ [JavaScript UI controls](https://www.syncfusion.com/javascript-ui-controls), you can [purchase](https://www.syncfusion.com/sales/products) or [start a free 30-day trial](https://www.syncfusion.com/account/manage-trials/start-trials).
+> This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this component, is subject to the terms and conditions of Syncfusion's [EULA](https://www.syncfusion.com/eula/es/). To acquire a license for 80+ [JavaScript UI controls](https://www.syncfusion.com/javascript-ui-controls), you can [purchase](https://www.syncfusion.com/sales/products) or [start a free 30-day trial](https://www.syncfusion.com/account/manage-trials/start-trials).
 
 > A [free community license](https://www.syncfusion.com/products/communitylicense) is also available for companies and individuals whose organizations have less than $1 million USD in annual gross revenue and five or fewer developers.
 
 See [LICENSE FILE](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/license/?utm_source=npm&utm_campaign=input) for more info.
 
-&copy; Copyright 2024 Syncfusion<sup>®</sup> Inc. All Rights Reserved. The Syncfusion<sup>®</sup> Essential Studio<sup>®</sup> license and copyright applies to this distribution.
+&copy; Copyright 2024 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

@@ -430,9 +430,15 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 }
                 ul.appendChild(li);
             });
+            if ((this as any).isReact) {
+                this.renderReactTemplates();
+            }
         } else {
             for (let i: number = 0; i < items.length; i++) {
                 item = items[i as number];
+                if (this.enableHtmlSanitizer) {
+                    item.text = SanitizeHtmlHelper.sanitize(item.text);
+                }
                 const tempItem: string = item.text;
                 li = this.createElement('li', {
                     innerHTML: item.url ? '' : tempItem,
@@ -511,8 +517,14 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     }
 
     private createAnchor(item: ItemModel): HTMLElement {
-        const tempItem: string = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(item.text) : item.text;
-        return this.createElement('a', { className: 'e-menu-text e-menu-url', innerHTML: tempItem, attrs: { 'href': item.url } });
+        const tempItem: string = item.text;
+        const anchor: HTMLElement = this.createElement('a', { className: 'e-menu-text e-menu-url', attrs: { 'href': item.url } });
+        if (this.enableHtmlSanitizer) {
+            anchor.textContent = tempItem;
+        } else {
+            anchor.innerHTML = tempItem;
+        }
+        return anchor;
     }
 
     private initialize(): void {
@@ -724,6 +736,9 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     public keyBoardHandler(e: KeyboardEventArgs): void {
         if (e.target === this.element && (e.keyCode === 9 || (!e.altKey && e.keyCode === 40) || e.keyCode === 38)) {
             return;
+        }
+        if (e.target && ((e.target as Element).classList.contains('e-item') || ((e.target as Element).parentElement && (e.target as Element).parentElement.classList.contains('e-split-btn-wrapper'))) && e.keyCode === 13) {
+            e.preventDefault();
         }
         switch (e.keyCode) {
         case 38:
@@ -962,7 +977,11 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 this.element.setAttribute('aria-expanded', 'false');
                 this.element.removeAttribute('aria-owns');
                 if (focusEle) {
-                    focusEle.focus();
+                    if (!this.isSafari()) {
+                        focusEle.focus();
+                    } else {
+                        focusEle.focus({ preventScroll: true });
+                    }
                 }
                 const closeArgs: OpenCloseMenuEventArgs = { element: ul, items: this.items };
                 this.trigger('close', closeArgs);

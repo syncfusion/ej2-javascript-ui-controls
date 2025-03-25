@@ -72,11 +72,7 @@ export class LinkCommand {
             }
             if (!isNOU(e.item.text) && e.item.text !== '') {
                 linkText = anchorEle.innerText;
-                if (anchorEle.firstChild.nodeName === '#text') {
-                    anchorEle.innerText =  e.item.text;
-                } else {
-                    (anchorEle.firstChild as HTMLElement).innerText =  e.item.text;
-                }
+                anchorEle.innerText =  e.item.text;
             }
             if (!isNOU(e.item.target)) {
                 anchorEle.setAttribute('target', e.item.target);

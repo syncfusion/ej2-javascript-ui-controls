@@ -1,7 +1,7 @@
 /*! PdfViewer's high contrast theme override definitions and variables */
 $pv-background: $bg-base-0 !default;
 $pv-control-border-color: $border-default !default;
-$pv-viewer-border-width: 0 1px 1px 1px !default;
+$pv-viewer-border-width: 0 1px 1px 0 !default;
 $pv-viewer-border-style: solid !default;
 $pv-control-position: relative !default;
 $pv-control-overflow: auto !default;
@@ -187,7 +187,7 @@ $pv-sidebar-toolbar-bottom: 0 !default;
 $pv-sidebar-toolbar-background: $bg-base-0 !default;
 $pv-sidebar-toolbar-position: $pv-page-div-position !default;
 $pv-sidebar-toolbar-border:  0 solid $border-default !default;
-$pv-sidebar-toolbar-border-width:  0 0 1px 1px !default;
+$pv-sidebar-toolbar-border-width:  0 1px 1px 1px !default;
 $pv-sidebar-content-top: 48px !default;
 $pv-sidebar-content-bottom: 0 !default;
 $pv-sidebar-content-overflow: auto !default;
@@ -278,7 +278,7 @@ $pv-thumbnail-image-height: 126px !default;
 $pv-thumbnail-image-background-color: $bg-base-0 !default;
 $pv-thumbnail-image-background-clip: content-box !default;
 $pv-thumbnail-hover-border-radius: 2px !default;
-$pv-thumbnail-hover-padding: 5px !default;
+$pv-thumbnail-hover-padding: 6px !default;
 $pv-thumbnail-hover-cursor: pointer !default;
 $pv-thumbnail-hover-border: 1px solid $border-alt !default;
 $pv-thumbnail-hover-box-shadow: 0 0 3px 0 rgba($shadow, .25) !default;

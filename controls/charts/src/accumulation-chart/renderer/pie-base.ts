@@ -3,7 +3,7 @@
  */
 import { Animation, AnimationOptions, animationMode, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { AccumulationChart } from '../accumulation';
-import { stringToNumber, ChartLocation, degreeToLocation, getAnimationFunction, getElement } from '../../common/utils/helper';
+import { stringToNumber, ChartLocation, degreeToLocation, getAnimationFunction, getElement, markerAnimate } from '../../common/utils/helper';
 import { Rect } from '@syncfusion/ej2-svg-base';
 import { animationComplete } from '../../common/model/constants';
 import { AccumulationLabelPosition } from '../model/enum';
@@ -368,7 +368,7 @@ export class PieBase extends AccumulationBase {
                     { series: series, accumulation: this.accumulation, chart: this.accumulation });
                 const datalabelGroup: Element = getElement(this.accumulation.element.id + '_datalabel_Series_' + series.index);
                 if (datalabelGroup) {
-                    (datalabelGroup as HTMLElement).style.visibility = this.accumulation.isDestroyed ? 'hidden' : 'visible';
+                    markerAnimate(datalabelGroup, series.animation.delay, series.animation.duration, series, null, null, false);
                 }
                 (groupElement as HTMLElement).style.cssText = '';
                 const annotationElement: HTMLElement = <HTMLElement>getElement(this.accumulation.element.id + '_Annotation_Collections');
@@ -378,6 +378,5 @@ export class PieBase extends AccumulationBase {
             }
         });
     }
-
 
 }

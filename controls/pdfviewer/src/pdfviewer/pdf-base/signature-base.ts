@@ -112,7 +112,7 @@ export class SignatureBase {
                                 graphics.translateTransform(left, top);
                             }
                             const colors: PdfPen = new PdfPen(color, width);
-                            colors._width = thickness;
+                            colors._width = this.convertPixelToPoint(thickness);
                             if (stampObjects.length > 0) {
                                 let dataPath: PdfPath = new PdfPath();
                                 for (let j: number = 0; j < stampObjects.length; j++) {

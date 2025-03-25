@@ -58,7 +58,6 @@
       }
 
       .e-toolbar-item.e-active .e-tbar-btn.e-btn {
-        padding: $rte-big-active-tb-item-btn-padding;
         @if $skin-name == 'FluentUI' {
           border-radius: 0;
         }
@@ -66,12 +65,6 @@
       .e-dropdown-btn .e-rte-color-content {
         padding-top: $rte-big-dropdown-btn-color-content-padding;
         height: $rte-big-dropdown-btn-color-content-height;
-      }
-    }
-
-    @if $skin-name == 'bootstrap5' {
-      .e-toolbar-extended .e-toolbar-item.e-active .e-tbar-btn.e-btn {
-        padding: 0 8px;
       }
     }
   }

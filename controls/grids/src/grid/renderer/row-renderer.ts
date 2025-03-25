@@ -430,7 +430,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
         }
         if (row.cells.length) {
             for (let i: number = cellIdx; i < row.cells.length; i++) {
-                const cell: Element = eventArg.row.querySelector('.e-rowcell[data-colindex="' + row.cells[parseInt(i.toString(), 10)].index + '"]');
+                const cell: Element = eventArg.row.querySelector('.e-rowcell[aria-colindex="' + (row.cells[parseInt(i.toString(), 10)].index + 1) + '"]');
                 if (cell) {
                     removeClass([cell], ['e-selectionbackground', 'e-active']);
                 }
@@ -457,8 +457,8 @@ export class RowRenderer<T> implements IRowRenderer<T> {
     /* eslint-enable */
     public buildAttributeFromRow(tr: Element, row: Row<T>): void {
         const attr: IRow<T> & { 'class'?: string[] } = {};
-        const prop: { 'rowindex'?: string; 'dataUID'?: string, 'ariaSelected'?: string }
-            = { 'rowindex': literals.dataRowIndex, 'dataUID': 'data-uid', 'ariaSelected': 'aria-selected' };
+        const prop: { 'dataUID'?: string, 'ariaSelected'?: string }
+            = { 'dataUID': 'data-uid', 'ariaSelected': 'aria-selected' };
         const classes: string[] = [];
 
         if (row.isDataRow) {
@@ -479,7 +479,6 @@ export class RowRenderer<T> implements IRowRenderer<T> {
 
         if (!isNullOrUndefined(row.index)) {
             attr[literals.ariaRowIndex] = row.index + 1;
-            attr[prop.rowindex] = row.index;
         }
 
         if (row.rowSpan) {

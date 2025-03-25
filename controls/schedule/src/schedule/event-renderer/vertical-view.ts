@@ -515,7 +515,7 @@ export class VerticalEvent extends EventBase {
                 const widthAdjustment: number = (<Record<string, any>>record.data).isRight ? 0 :
                     this.parent.currentView === 'Day' ? 4 : 7;
                 if (allDayDifference >= 0) {
-                    appWidth = (allDayDifference * 100) - widthAdjustment;
+                    appWidth = (allDayDifference * 100) - (!this.parent.activeViewOptions.allowOverlap ? 0 : widthAdjustment);
                 }
                 if (isNullOrUndefined(this.renderedAllDayEvents[parseInt(resource.toString(), 10)])) {
                     this.renderedAllDayEvents[parseInt(resource.toString(), 10)] = [];
@@ -605,7 +605,7 @@ export class VerticalEvent extends EventBase {
                 appointmentElement = this.createAppointmentElement(eventObj, false, record.isSpanned as Record<string, any>, resource);
             }
             setStyleAttribute(appointmentElement, {
-                'width': (this.parent.eventSettings.enableMaxHeight ? '100%' : tempData.appWidth),
+                'width': (this.parent.eventSettings.enableMaxHeight || !this.parent.activeViewOptions.allowOverlap ? '100%' : tempData.appWidth),
                 'height': appHeight + 'px', 'top': topValue + 'px'
             });
             const iconHeight: number = appointmentElement.querySelectorAll('.' + cls.EVENT_INDICATOR_CLASS).length * 15;

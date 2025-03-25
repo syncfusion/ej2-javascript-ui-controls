@@ -4,7 +4,7 @@ import { ITreeData } from '../base';
 import * as events from '../base/constant';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
-import { isCountRequired, isRemoteData } from '../utils';
+import { isCountRequired } from '../utils';
 /**
  * RowModelGenerator is used to generate grid data rows.
  *
@@ -39,7 +39,8 @@ export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
         if (!isNullOrUndefined(notifyArgs.virtualInfo)) {
             if (notifyArgs.virtualInfo.direction !== 'right' && notifyArgs.virtualInfo.direction !== 'left') {
                 if (!((this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
-                && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent) || isRemoteData(this.parent))) {
+                && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent))
+                || notifyArgs.virtualInfo.blockIndexes.length === 1) {
                     notifyArgs.virtualInfo.blockIndexes = info.blockIndexes;
                 }
             } else {
@@ -47,7 +48,7 @@ export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
             }
         }
         if ((this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
-        && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent) || isRemoteData(this.parent)) {
+        && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent)) {
             return super.generateRows(data, notifyArgs);
         } else {
             if (!isNullOrUndefined(notifyArgs.requestType) && notifyArgs.requestType.toString() === 'collapseAll') {
@@ -66,7 +67,7 @@ export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
         const clear: boolean = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'reorder',
             'save', 'delete'].some((value: string) => action === value);
         if ((this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
-        && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent) || isRemoteData(this.parent)) {
+        && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent)) {
             const model: string = 'model';
             const currentPage: number = this[`${model}`].currentPage;
             if (clear) {

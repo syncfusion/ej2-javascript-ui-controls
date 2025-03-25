@@ -2,67 +2,19 @@
 
 ## [Unreleased]
 
-## 28.2.12 (2025-03-19)
-
-### TimePicker
-
-#### Bug Fixes
-
-- `#F196127` - Fixed an issue where the change event was not triggered correctly upon the second update of time using the keyboard.
+## 29.1.33 (2025-03-25)
 
 ### DatePicker
 
-#### Bug Fixes
+#### New Features
 
-- `#FD65170` - Fixed an issue where the day of the week value was not displayed correctly when using `ccc` in the date format.
+- The DatePicker allows users to input date values in various valid formats, enhancing the user experience by offering flexibility in specifying date formats for parsing. A new API called `inputFormats` has been introduced to handle custom date input formats, allowing users to specify the expected format(s) for parsing date values. For example, `InputFormats = 'new string[] { "dd/MM/yyyy", "MM/dd/yyyy", "yyyy-MM-dd" }'`.
 
 ### DateTimePicker
 
-#### Bug Fixes
+#### New Features
 
-- `#FD65170` - Fixed an issue where the day of the week value was not displayed correctly when using `ccc` in the date format.
-
-## 28.2.9 (2025-03-04)
-
-### DateRangePicker
-
-#### Bug Fixes
-
-- `#I40705` - Fixed issue where the selected date was incorrect when setting the Start and Depth properties in the DateRangePicker to `Year`.
-
-## 28.2.7 (2025-02-25)
-
-### DatePicker
-
-#### Bug Fixes
-
-- `#I688316` - Fixed an issue where the month was not updating correctly when typing quickly.
-
-## 28.1.41 (2025-01-21)
-
-### DatePicker
-
-#### Bug Fixes
-
-- `#I675886` - Fixed an issue where values were not updated correctly when a mask was configured.
-
-## 28.1.39 (2024-01-14)
-
-### DateRangePicker
-
-#### Bug Fixes
-
-- `#I666998` - Fixed an issue where the start and end date selection was not maintained in the popup.
-
-## 28.1.37 (2024-12-31)
-
-### DateRangePicker
-
-#### Bug Fixes
-
-- `#I664732` - Fixed an issue where the overlay was displayed even when the popup was prevented from opening in mobile mode.
-
-- `#I664735` - Removed unnecessary conditional code for adding CSS classes based on device type.
+- The DateTimePicker allows users to input date and time values in various valid formats, enhancing the user experience by offering flexibility in specifying date and time formats for parsing. A new API called `inputFormats` has been introduced to handle custom date and time input formats, allowing users to specify the expected format(s) for parsing date and time values. For example, `InputFormats='new string[] { "dd/MM/yyyy hh:mm", "MM/dd/yyyy HH:mm", "yyyy-MM-dd hh mm tt" }'`.
 
 ## 19.3.46 (2021-10-19)
 

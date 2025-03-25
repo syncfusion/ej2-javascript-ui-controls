@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $cmenu-back-icon: '\e728' !default;
 $cmenu-back-icon-margin: 12px !default;
 $cmenu-bigger-caret-font-size: 12px !default;
@@ -17,7 +19,7 @@ $cmenu-disable-text: $gray-600 !default;
 $cmenu-font-size: 14px !default;
 $cmenu-font-weight: normal !default;
 $cmenu-icon-margin-right: 8px !default;
-$cmenu-li-bgcolor: darken($gray-100, 2%) !default;
+$cmenu-li-bgcolor: color.adjust($gray-100, $lightness: -2%) !default;
 $cmenu-li-border-color: $gray-200 !default;
 $cmenu-li-border-style: solid !default;
 $cmenu-li-border-width: 1px !default;

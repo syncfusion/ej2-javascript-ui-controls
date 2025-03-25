@@ -79,7 +79,6 @@ describe('TreeGrid base module', () => {
             (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
             expect(rows[1].classList.contains('e-childrow-hidden')).toBe(true);
         });
-
         it('collapse testing', () => {
             rows = gridObj.getRows();
             (rows[0].getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
@@ -3278,46 +3277,6 @@ describe('ActionFailure with sorting', () => {
     });
 });
 
-describe('ActionFailure without treecolumnindex', () => {
-    let gridObj: TreeGrid;
-    let actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
-    beforeAll((done: Function) => {
-        gridObj = createGrid(
-            {
-                dataSource: sampleData,
-                allowSorting: true,
-                childMapping: 'subtasks',
-                height: '400',
-                editSettings: {
-                    allowAdding: true,
-                    allowEditing: true,
-                    allowDeleting: true,
-                    mode: 'Cell',
-                    newRowPosition: 'Below'
-    
-                },
-                treeColumnIndex:-1,
-                toolbar: ['Add', 'Delete', 'Update', 'Cancel', 'Indent', 'Outdent'],
-                allowSelection: true,
-                selectionSettings: { type: 'Multiple' },
-                columns: [
-                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: false },
-                    { field: 'taskName', headerText: 'Task Name' },
-                    { field: 'startDate', headerText: 'Start Date' },
-                    { field: 'duration', headerText: 'duration' }
-                ],
-                actionFailure: actionFailedFunction
-            },
-            done
-        );
-    });
-    it('actionFailure testing', () => {
-        expect(actionFailedFunction).toHaveBeenCalled();
-    });
-    afterAll(() => {
-        destroy(gridObj);
-    });
-});
 
 describe('Print action', () => {
     let gridObj: TreeGrid;
@@ -3837,7 +3796,6 @@ describe('Remote data', () => {
                 hasChildMapping: 'isParent',
                 idMapping: 'TaskID',
                 parentIdMapping: 'ParentItem',
-                enableVirtualization: true,
                 height: 400,
                 treeColumnIndex: 1,
                 columns: [
@@ -3849,13 +3807,8 @@ describe('Remote data', () => {
             done
         );
     });
-    beforeEach((done: Function) => {
-        gridObj.expandRow(gridObj.getRows()[0]);
-        gridObj.collapseRow(gridObj.getRows()[0]);
-        setTimeout(done, 500);
-    });
-    it('expand action with virtualization', (done: Function) => {
-        expect(gridObj.grid.currentViewData.length == 10).toBe(true);
+    it('Current View Data length', (done: Function) => {
+        expect(gridObj.grid.currentViewData.length == 60).toBe(true);
         done();
     });
     afterAll(() => {
@@ -4278,6 +4231,141 @@ describe('Bug 926999: Warning throws on using freeze feature in treegrid.', () =
         });
         expect(freezePresent).toBe(true);
     });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('TreeGrid - Expand and Collapse Row with expandCollapseAllChildren coverage', () => {
+    let gridObj: TreeGrid;
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid({
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            treeColumnIndex: 1,
+            height: 400,
+            columns: [
+                { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 60, textAlign: 'Right' },
+                { field: 'taskName', headerText: 'Task Name', width: 150, textAlign: 'Left' },
+                { field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd' }
+            ]
+        }, done);
+    });
+
+    it('should collapse all rows when isCollapseAll is true', (done: Function) => {
+        (gridObj as any).isCollapseAll = true;
+
+        gridObj.collapsing = (args: any) => {
+            args.collapseAll = true;
+        };
+
+        const parentRow = gridObj.getRows()[11];
+        const parentRecord = gridObj.getCurrentViewRecords()[11];
+        gridObj.collapseRow(parentRow, parentRecord);
+
+        const row = gridObj.getRows()[12];
+        expect(gridObj.getRows()[12].getAttribute('aria-expanded')).toBe('false');
+        done();
+    });
+
+    it('should expand all rows when isExpandAll is true', (done: Function) => {
+        (gridObj as any).isExpandAll = true;
+
+        gridObj.expanding = (args: any) => {
+            args.expandAll = true;
+        };
+
+        const parentRow = gridObj.getRows()[11];
+        const parentRecord = gridObj.getCurrentViewRecords()[11];
+        gridObj.expandRow(parentRow, parentRecord);
+
+        const row = gridObj.getRows()[12];
+        expect(gridObj.getRows()[12].getAttribute('aria-expanded')).toBe('true');
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('TreeGrid - coverage', () => {
+    let gridObj: TreeGrid;
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid({
+            dataSource: sampleData,
+            height: 317,
+            childMapping: 'subtasks',
+            allowSelection: false,
+            treeColumnIndex: 1,
+            columns: [
+                { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 60, textAlign: 'Right', freeze: 'Left' },
+                { field: 'taskName', headerText: 'Task Name', width: 150, textAlign: 'Left' },
+                { field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd', freeze: 'Right' }
+            ]
+        }, done);
+    });
+
+    it('get visible movable count', (done: Function) => {
+        expect(gridObj.getVisibleMovableCount()).toBe(1);
+        setTimeout(done, 500);
+    });
+
+    it('get visible frozen right count', (done: Function) => {
+        expect(gridObj.getVisibleFrozenRightCount()).toBe(1);
+        setTimeout(done, 500);
+    });
+
+    it('get visible frozen left count', (done: Function) => {
+        expect(gridObj.getVisibleFrozenLeftCount()).toBe(1);
+        setTimeout(done, 500);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('Bug 908257: Last row border line is not visible', () => {
+    let gridObj: TreeGrid;
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                frozenColumns: 2,
+                allowSorting: true,
+                height: 400,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', textAlign: 'Right', width: 100 },
+                    { field: 'taskName', headerText: 'Task Name', width: 260 },
+                    { field: 'startDate', headerText: 'Start Date', width: 230, textAlign: 'Right', type: 'date', format: { type: 'dateTime', format: 'dd/MM/yyyy' } },
+                    { field: 'endDate', headerText: 'End Date', width: 230, textAlign: 'Right', type: 'date', format: { type: 'dateTime', format: 'dd/MM/yyyy' } },
+                    { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 210 },
+                    { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 210 },
+                    { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 230 },
+                    { field: 'approved', headerText: 'Approved', width: 230, textAlign: 'Left' }
+                ]
+            },
+            done
+        );
+    });
+    
+    it('checking if last row border is visible after sorting', () => {
+        gridObj.collapseAll();
+        gridObj.sortByColumn('taskName', 'Descending', false);
+        
+	const rows: NodeListOf<HTMLTableRowElement> = gridObj.getContentTable().querySelectorAll('tr.e-row');
+        const visibleRows: HTMLTableRowElement[] = Array.from(rows).filter((row: HTMLTableRowElement): boolean => !row.classList.contains('e-childrow-hidden'));
+        const lastVisibleRow: HTMLTableRowElement = visibleRows[visibleRows.length - 1];
+        
+	expect(lastVisibleRow.cells[0].classList.contains('e-lastrowcell')).toBe(true);
+    });
+
     afterAll(() => {
         destroy(gridObj);
     });

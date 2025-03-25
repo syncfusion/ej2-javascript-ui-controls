@@ -112,6 +112,22 @@ export const BACKSPACE_EVENT_INIT: KeyboardEventInit = {
     repeat: false,
 } as EventInit;
 
+export const DELETE_EVENT_INIT: KeyboardEventInit = {
+    bubbles: true,
+    key: "Delete",
+    cancelable: true,
+    view: window,
+    keyCode: 46,
+    which: 46,
+    code: "Delete",
+    location: 0,
+    altKey: false,
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: false,
+    repeat: false,
+} as EventInit;
+
 export const SPACE_EVENT_INIT: KeyboardEventInit = {
     bubbles: true,
     key: " ",
@@ -199,6 +215,13 @@ export const BASIC_MOUSE_EVENT_INIT: MouseEventInit = {
     detail: 0,
 } as EventInit;
 
+export const BASIC_CONTEXT_MENU_EVENT_INIT: MouseEventInit = {
+    bubbles: true,
+    cancelable: true,
+    view: window,
+    which: 3,
+    button: 3,
+} as EventInit;
 
 export const SHIFT_ARROW_LEFT_EVENT_INIT: EventInit = {
     bubbles: true,

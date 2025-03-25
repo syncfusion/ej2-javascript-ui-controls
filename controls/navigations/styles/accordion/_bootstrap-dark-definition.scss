@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $acrdn-skin: 'bootstrap' !default;
 $acrdn-header-font-weight: normal !default;
 $acrdn-icon-font-size: $font-size !default;
@@ -78,8 +80,8 @@ $acrdn-bg-color: $grey-base !default;
 $acrdn-default-bg-color: $acrdn-bg-color !default;
 $acrdn-content-color: $grey-dark-font !default;
 $acrdn-header-focus-bg: transparent !default;
-$acrdn-header-font: lighten($brand-primary, 15%) !default;
-$acrdn-icon-color: lighten($brand-primary, 15%) !default;
+$acrdn-header-font: color.adjust($brand-primary, $lightness: 15%) !default;
+$acrdn-icon-color: color.adjust($brand-primary, $lightness: 15%) !default;
 $acrdn-selected-header-font-color: $grey-dark-font !default;
 $acrdn-selected-icon-color: $grey-light-font !default;
 $acrdn-item-border-color: $grey-99 !default;

@@ -1,3 +1,6 @@
+@use 'sass:color';
+@use 'sass:meta';
+@use 'sass:list';
 @import '../common/mixin.scss';
 
 $black: #000;
@@ -80,7 +83,7 @@ $primary-light: $cyan-600 !default;
 $primary-lighter: $cyan-800 !default;
 
 $content-bg-color: $cool-gray-800 !default;
-$content-bg-color-alt1: lighten($cool-gray-800, 2%) !default;
+$content-bg-color-alt1: color.adjust($cool-gray-800, $lightness: -2%) !default;
 $content-bg-color-alt2: $cool-gray-700 !default;
 $content-bg-color-alt3: $cool-gray-600 !default;
 $content-bg-color-alt4: $cool-gray-500 !default;
@@ -97,7 +100,7 @@ $overlay-bg-color: rgba($cool-gray-500, .75) !default;
 $content-text-color: $white !default;
 $content-text-color-alt1: $cool-gray-300 !default;
 $content-text-color-alt2: $cool-gray-400 !default;
-$content-text-color-alt3: lighten($cool-gray-500, 12%) !default;
+$content-text-color-alt3: color.adjust($cool-gray-500, $lightness: -12%) !default;
 $content-text-color-hover: $white !default;
 $content-text-color-pressed: $white !default;
 $content-text-color-focus: $white !default;
@@ -411,7 +414,7 @@ $rating-selected-disabled-color: $cool-gray-500 !default;
 $rating-unrated-disabled-color: $cool-gray-700 !default;
 $rating-selected-hover-color: $primary !default;
 $rating-unrated-hover-color: $cool-gray-400 !default;
-$rating-pressed-color: lighten($primary, 15%) !default;
+$rating-pressed-color: color.adjust($primary, $lightness: -15%) !default;
 
 $font-icon-8: 8px !default;
 $font-icon-9: 9px !default;

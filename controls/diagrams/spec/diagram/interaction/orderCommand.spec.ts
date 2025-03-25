@@ -753,7 +753,7 @@ describe('Diagram Control', () => {
             let diagram_layer = document.getElementById("diagram_diagramLayer");
             expect((diagram_layer.firstChild as HTMLElement).id === "connector1_groupElement").toBe(true);
             expect((diagram_layer.lastChild as HTMLElement).id === "connector2_groupElement").toBe(true);
-            expect((diagram_layer.childNodes[2] as HTMLElement).id === "node2_groupElement").toBe(true);
+            expect((diagram_layer.childNodes[1] as HTMLElement).id === "nodegroup_groupElement").toBe(true);
             done();
         });
     });
@@ -895,7 +895,7 @@ describe('SendToBack and BringToFront of native nodes', () => {
         diagram.select([diagram.nodes[0]]);
         diagram.bringToFront();
         diagram.sendBackward();
-        expect(diagram.nodes[0].zIndex === 4).toBe(true);
+        expect(diagram.nodes[0].zIndex === 10).toBe(true);
         done();
     });
 });
@@ -940,14 +940,14 @@ describe('Order commands for Multiple selection', () => {
     it('Multi-select the nodes and perform bringToFront', (done: Function) => {
         diagram.select([diagram.nodes[0], diagram.nodes[1]]);
         diagram.bringToFront();
-        expect(diagram.nodes[0].zIndex === 3 && diagram.nodes[1].zIndex === 5).toBe(true);
+        expect(diagram.nodes[0].zIndex === 3 && diagram.nodes[1].zIndex === 4).toBe(true);
         done();
     });
 
     it('Multi-select the nodes and perform sendToBack', (done: Function) => {
         diagram.select([diagram.nodes[0], diagram.nodes[1]]);
         diagram.sendToBack();
-        expect(diagram.nodes[0].zIndex === 1 && diagram.nodes[1].zIndex === -1).toBe(true);
+        expect(diagram.nodes[0].zIndex === 0 && diagram.nodes[1].zIndex === 1).toBe(true);
         done();
     });
 });
@@ -1085,7 +1085,7 @@ describe('Task 871044: Revamp Order Commands for Group Node', () => {
        let curGroupZindex = group1.zIndex;
        expect(preGroupZindex === 6 && curGroupZindex === -1).toBe(true);
        diagram.bringToFront();
-       expect(group1.zIndex === 10).toBe(true);
+       expect(group1.zIndex === 12).toBe(true);
        done();
     });
     it('Group-order commands sendBackword and BringForward', (done: Function) => {
@@ -1094,9 +1094,9 @@ describe('Task 871044: Revamp Order Commands for Group Node', () => {
         diagram.select([group1]);
         diagram.sendBackward();
         let curGroupZindex = group1.zIndex;
-        expect(preGroupZindex === 10 && curGroupZindex === 4).toBe(true);
+        expect(preGroupZindex === 12 && curGroupZindex === 6).toBe(true);
         diagram.moveForward();
-        expect(group1.zIndex === 10).toBe(true);
+        expect(group1.zIndex === 12).toBe(true);
         done();
      });
      it('Group-order commands second group sendBackword and BringForward', (done: Function) => {
@@ -1105,11 +1105,11 @@ describe('Task 871044: Revamp Order Commands for Group Node', () => {
         diagram.select([group2]);
         diagram.moveForward();
         let curGroupZindex = group2.zIndex;
-        expect(preGroupZindex === 7 && curGroupZindex === 13).toBe(true);
+        expect(preGroupZindex === 9 && curGroupZindex === 15).toBe(true);
         diagram.moveForward();
-        expect(group2.zIndex === 13).toBe(true);
+        expect(group2.zIndex === 15).toBe(true);
         diagram.sendBackward();
-        expect(group2.zIndex === 7).toBe(true);
+        expect(group2.zIndex === 9).toBe(true);
         done();
      });
      it('Group-order commands second group sendToBack and BringToFront', (done: Function) => {
@@ -1118,11 +1118,11 @@ describe('Task 871044: Revamp Order Commands for Group Node', () => {
         diagram.select([group2]);
         diagram.sendToBack();
         let curGroupZindex = group2.zIndex;
-        expect(preGroupZindex === 7 && curGroupZindex === 2).toBe(true);
+        expect(preGroupZindex === 9 && curGroupZindex === -1).toBe(true);
         diagram.bringToFront();
-        expect(group2.zIndex === 13).toBe(true);
+        expect(group2.zIndex === 15).toBe(true);
         diagram.bringToFront();
-        expect(group2.zIndex === 13).toBe(true);
+        expect(group2.zIndex === 15).toBe(true);
         done();
      });
      it('Group-order commands normal nodes sendToBack and BringToFront', (done: Function) => {
@@ -1131,11 +1131,11 @@ describe('Task 871044: Revamp Order Commands for Group Node', () => {
         diagram.select([node3]);
         diagram.bringToFront();
         let curZindex = node3.zIndex;
-        expect(preZindex === 3 && curZindex === 14).toBe(true);
+        expect(preZindex === 2 && curZindex === 18).toBe(true);
         diagram.sendToBack();
-        expect(node3.zIndex === 3).toBe(true);
+        expect(node3.zIndex === 2).toBe(true);
         diagram.bringToFront();
-        expect(node3.zIndex === 14).toBe(true);
+        expect(node3.zIndex === 18).toBe(true);
         done();
      });
      it('Group-order commands normal nodes sendBackward and BringForward', (done: Function) => {
@@ -1143,11 +1143,11 @@ describe('Task 871044: Revamp Order Commands for Group Node', () => {
         diagram.select([node4]);
         diagram.moveForward();
         let curZindex = node4.zIndex;
-        expect(curZindex === 11).toBe(true);
+        expect(curZindex === 15).toBe(true);
         diagram.moveForward();
-        expect(node4.zIndex === 15).toBe(true);
+        expect(node4.zIndex === 19).toBe(true);
         diagram.sendBackward();
-        expect(node4.zIndex === 11).toBe(true);
+        expect(node4.zIndex === 15).toBe(true);
         done();
      });
 });

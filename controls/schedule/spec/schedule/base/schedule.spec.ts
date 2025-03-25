@@ -419,6 +419,48 @@ describe('Schedule base module', () => {
     
     describe('Views and current view', () => {
         let schObj: Schedule;
+        beforeAll(() => {
+            const model: ScheduleModel = {
+                height: '600px',
+                selectedDate: new Date(2023, 0, 15), 
+                views: [
+                    { option: 'Day', isSelected: true },
+                    { option: 'Agenda' },
+                    { option: 'Week' },
+                    { option: 'TimelineWeek' },
+                    { option: 'Year' },
+                    { option: 'TimelineYear' },
+                    { option: 'Month' },
+                    { option: 'TimelineMonth' }
+                ],
+            };
+            schObj = util.createSchedule(model, []);
+        });
+        afterEach((): void => {
+            util.destroy(schObj);
+        });
+        it('Check the getViewDates method using current view', function () {
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-day');
+            const initialDateRangeText = schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML;
+            schObj.element.focus();
+            (schObj.headerModule.element.querySelector('.e-toolbar-item.e-next .e-tbar-btn')as HTMLElement).click();
+            const newDateRangeText = schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML;
+            expect(newDateRangeText).not.toEqual(initialDateRangeText);
+            const dateCollection = schObj.getViewDates();
+            expect(newDateRangeText).toEqual(schObj.getDateRangeText(dateCollection));
+            const newDate = new Date(schObj.selectedDate.getTime()); 
+            const containsNewDate = dateCollection.some(date => 
+              date.getDate() === newDate.getDate() &&
+              date.getMonth() === newDate.getMonth() &&
+              date.getFullYear() === newDate.getFullYear()
+            );
+            expect(containsNewDate).toBe(true);
+          });
+          
+    });
+
+    describe('Views and current view', () => {
+        let schObj: Schedule;
         beforeEach((): void => {
             schObj = undefined;
             document.body.appendChild(createElement('div', { id: 'Schedule' }));

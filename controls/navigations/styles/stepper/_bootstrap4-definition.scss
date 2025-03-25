@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $stepper-ol-padding: 0 !default;
 $stepper-step-radius: 9999px !default;
 $stepper-step-width: 32px !default;
@@ -68,5 +70,5 @@ $step-error-completed-color: $danger !default;
 $step-error-completed-bg-color: $danger !default;
 $step-hover-color: $gray-200 !default;
 $step-active-color: $gray-300 !default;
-$step-selected-hover-color: darken($primary, 10%) !default;
-$step-selected-active-color: darken($primary, 10%) !default;
+$step-selected-hover-color: color.adjust($primary, $lightness: -10%) !default;
+$step-selected-active-color: color.adjust($primary, $lightness: -10%) !default;

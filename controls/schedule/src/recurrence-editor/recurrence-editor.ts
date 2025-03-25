@@ -27,6 +27,7 @@ const MONETHEXPANDERWRAPPER: string = 'e-month-expander';
 const MONETHEXPANDWRAPPER: string = 'e-month-expand-wrapper';
 const MONTHEXPANDERELEMENT: string = 'e-month-expander-element';
 const MONTHEXPANDERCHECKBOXWRAPPER: string = 'e-month-expander-checkbox-wrapper';
+const REPEATONWEEKSELECTOR: string = 'e-repeat-on-week-selector';
 const FORMLEFT: string = 'e-form-left';
 const FORMRIGHT: string = 'e-form-right';
 const MONTHDAYWRAPPER: string = 'e-month-day';
@@ -238,6 +239,22 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
      */
     @Event()
     public change: EmitType<RecurrenceEditorChangeEventArgs>;
+
+    /**
+     * Triggers when the component is created.
+     *
+     * @event 'created'
+     */
+    @Event()
+    public created: EmitType<Object>;
+
+    /**
+     * Triggers when the component is destroyed.
+     *
+     * @event 'destroyed'
+     */
+    @Event()
+    public destroyed: EmitType<Object>;
 
     /**
      * Constructor for creating the widget
@@ -837,7 +854,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
             this.localeObj.getConstant('on') + '" />' +
             '</div></td></tr>' +
             '<tr><td>' +
-            '<div class="' + INPUTWARAPPER + ' ' + MONTHEXPANDERCHECKBOXWRAPPER + '" style="min-width: 30px;margin-bottom:18px;">' +
+            '<div class="' + INPUTWARAPPER + ' ' + MONTHEXPANDERCHECKBOXWRAPPER + ' ' + REPEATONWEEKSELECTOR + '">' +
             '<input class="' + MONTHEXPANNDERELEM + '"title="' + this.localeObj.getConstant('monthExpander') + '" type="radio">' +
             '</div></td>' +
             '<td><div class="' + INPUTWARAPPER + ' ' + WEEKPOSITION + '" >' +

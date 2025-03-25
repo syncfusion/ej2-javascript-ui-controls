@@ -1328,4 +1328,106 @@ class HelloWorld
             }, 100, done);
         });
     });
+    describe('AIAssistView - Streaming support', () => {
+        afterEach(() => {
+            if (aiAssistView) aiAssistView.destroy();
+        });
+    
+        it('should handle streaming response as string in promptRequest event', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({
+                promptRequest: (args: PromptRequestEventArgs) => {
+                    args.cancel = false;
+                    aiAssistView.addPromptResponse('Partial response chunk ', false);
+                    setTimeout(() => {
+                        aiAssistView.addPromptResponse('Final response', true);
+                        const responseElem: HTMLElement = aiAssistViewElem.querySelector('.e-output');
+                        expect(responseElem.textContent).not.toContain('Partial response chunk');
+                        expect(responseElem.textContent).toContain('Final response');
+                        done();
+                    }, 50);
+                }
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            aiAssistView.executePrompt('Stream this prompt');
+        });
+    
+        it('should handle streaming response as string on instance method call', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({});
+            aiAssistView.appendTo(aiAssistViewElem);
+            aiAssistView.executePrompt('Stream this prompt');
+    
+            aiAssistView.addPromptResponse('First part of streaming response', false);
+            setTimeout(() => {
+                aiAssistView.addPromptResponse('Second part of streaming response', false);
+                setTimeout(() => {
+                    aiAssistView.addPromptResponse('End of stream', true);
+                    const responseElem: HTMLElement = aiAssistViewElem.querySelector('.e-output');
+                    expect(responseElem.textContent).not.toContain('First part of streaming response');
+                    expect(responseElem.textContent).not.toContain('Second part of streaming response');
+                    expect(responseElem.textContent).toContain('End of stream');
+                    done();
+                }, 50);
+            }, 50);
+        });
+    
+        it('should handle object input to addPromptResponse as chunk', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({});
+            aiAssistView.appendTo(aiAssistViewElem);
+            aiAssistView.executePrompt('Stream this prompt');
+            
+            aiAssistView.addPromptResponse({ prompt: 'Stream this prompt', response: 'Partial', isResponseHelpful: null }, false);
+            
+            setTimeout(() => {
+                const responseItem: HTMLElement = aiAssistViewElem.querySelector('.e-output');
+                expect(responseItem.textContent).toContain('Partial');
+                
+                aiAssistView.addPromptResponse({ prompt: 'Stream this prompt', response: ' Complete', isResponseHelpful: null }, true);
+                
+                setTimeout(() => {
+                    expect(responseItem.textContent).not.toContain('Partial Complete');
+                    expect(responseItem.textContent).toContain(' Complete');
+                    done();
+                }, 50);
+            }, 50);
+        });
+
+        it('check suggestion element on edit icon click', (done: DoneFn) => {
+            aiAssistView = new AIAssistView({
+                prompts: [{
+                    prompt: 'How can i assist you?',
+                    response: 'I can help you with that.'
+                }],
+                promptSuggestions: ['How can i assist you?', 'Can i help you with something?'],
+                promptRequest: (args: PromptRequestEventArgs) => {
+                    args.cancel = false;
+                    setTimeout(() => {
+                        aiAssistView.addPromptResponse('Partial response chunk ', false);
+                        aiAssistView.addPromptResponse('Final response', true);
+                        const suggestionsElem: HTMLElement = aiAssistViewElem.querySelector('.e-suggestions');
+                        const responseElems: NodeListOf<HTMLDivElement> = aiAssistViewElem.querySelectorAll('.e-output');
+                        expect(responseElems[1].textContent).toContain('Final response');
+                        expect(suggestionsElem.hidden).toBe(false);
+                        done();
+                    }, 50);
+                }
+            });
+            aiAssistView.appendTo(aiAssistViewElem);
+            const suggestionsElem: HTMLElement = aiAssistViewElem.querySelector('.e-suggestions');
+            expect(suggestionsElem.hidden).toBe(false);
+            const toolbarItems: NodeList = aiAssistViewElem.querySelectorAll('.e-prompt-toolbar .e-toolbar-item');
+            expect(toolbarItems).not.toBeNull();
+            const editItem: HTMLElement = (toolbarItems[0] as HTMLElement).querySelector('button');
+            expect(editItem).not.toBeNull();
+            editItem.click();
+            setTimeout(() => {
+                const textAreaElem: HTMLTextAreaElement = aiAssistView.element.querySelector('.e-footer textarea');
+                expect(textAreaElem.value).toEqual('How can i assist you?');
+                const sendBtnElem: HTMLButtonElement = aiAssistView.element.querySelector('.e-footer .e-assist-send.e-icons');
+                expect(sendBtnElem).not.toBeNull();
+                expect(sendBtnElem.classList.contains('disabled')).toEqual(false);
+                sendBtnElem.click();
+                expect(suggestionsElem.hidden).toBe(true);
+            }, 100);
+        });
+    });
 });

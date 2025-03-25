@@ -651,7 +651,7 @@ describe('Find & Replace ->', () => {
             };
             helper.triggerKeyNativeEvent(71, true);
             setTimeout(() => {
-                expect(helper.getElementFromSpreadsheet('.e-goto-dlg.e-dialog')).not.toBeNull(); 
+                expect(helper.getElementFromSpreadsheet('.e-goto-dlg.e-dialog')).toBeNull(); 
                 done();
             });
         });
@@ -664,7 +664,7 @@ describe('Find & Replace ->', () => {
             setTimeout(() => {
                 helper.click('.e-findtool-dlg .e-findRib-more');
                 setTimeout(() => {
-                    expect(helper.getElementFromSpreadsheet('.e-find-dlg.e-dialog')).not.toBeNull(); 
+                    expect(helper.getElementFromSpreadsheet('.e-find-dlg.e-dialog')).toBeNull(); 
                     done();
                 });
             });
@@ -1092,14 +1092,39 @@ describe('Find & Replace ->', () => {
                             helper.triggerKeyEvent('keyup', 88, null, null, null, replaceTxtBox);
                             setTimeout(() => {
                                 helper.click('.e-find-dlg .e-btn-replace');
-                                helper.setAnimationToNone('.e-find-dlg.e-dialog');
-                                helper.click('.e-find-dlg .e-dlg-closeicon-btn');
                                 expect(helper.getInstance().sheets[0].rows[1].cells[0].value).toBe('Casual Shoes');
                                 done();
                             });
                         });
                     });
                 });
+            });
+            it('Replace formula value checking', (done: Function) => {
+                helper.invoke('updateCell', [{ formula: '=SUM(D2:H2)' }, 'I2']);
+                const sheet: any = helper.getInstance().sheets[0];
+                expect(sheet.rows[1].cells[8].formula).toBe('=SUM(D2:H2)');
+                expect(sheet.rows[1].cells[8].value).toBe(241);
+                const findInput: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
+                findInput.value = '241';
+                const replaceInput: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-replaceInp') as HTMLInputElement;
+                replaceInput.value = '1000';
+                helper.click('.e-find-dlg .e-btn-replaceAll');
+                expect(sheet.rows[1].cells[8].formula).toBe('=SUM(D2:H2)');
+                expect(sheet.rows[1].cells[8].value).toBe(241);
+                expect(helper.getElementFromSpreadsheet('.e-replace-alert-span').textContent).toBe('0 matches replaced with 1000');
+                setTimeout(() => {
+                    helper.click(`#${helper.id}_undo`);
+                    expect(sheet.rows[1].cells[8].formula).toBe('=SUM(D2:H2)');
+                    expect(sheet.rows[1].cells[8].value).toBe(241);
+                    expect(helper.getElementFromSpreadsheet('.e-replace-alert-span').textContent).toBe('0 matches replaced with 241');
+                    helper.click(`#${helper.id}_redo`);
+                    expect(sheet.rows[1].cells[8].formula).toBe('=SUM(D2:H2)');
+                    expect(sheet.rows[1].cells[8].value).toBe(241);
+                    expect(helper.getElementFromSpreadsheet('.e-replace-alert-span').textContent).toBe('0 matches replaced with 1000');
+                    helper.setAnimationToNone('.e-find-dlg.e-dialog');
+                    helper.click('.e-find-dlg .e-dlg-closeicon-btn');
+                    done();
+                }, 50);
             });
         });
         describe('EJ2-869788 ->', () => {
@@ -1333,6 +1358,60 @@ describe('Find & Replace ->', () => {
                 helper.triggerKeyNativeEvent(13, false, true, findTxtBox, 'keyup');
                 setTimeout(() => {
                     expect(helper.getInstance().activeSheetIndex).toEqual(0);
+                    done();
+                });
+            });
+        });
+        it('Replaced value not updated in formula bar', (done: Function) => {
+            helper.invoke('selectRange', ['F10']);
+            helper.edit('F10', '1210');
+            helper.click('#' + helper.id + '_findbtn');
+            setTimeout(() => {
+                helper.click('.e-findtool-dlg .e-findRib-more');
+                setTimeout(() => {
+                    const findInput: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-findNext') as HTMLInputElement;
+                    const replaceInput: HTMLInputElement = helper.getElementFromSpreadsheet('.e-find-dlg .e-text-replaceInp') as HTMLInputElement;
+                    findInput.value = '1210';
+                    replaceInput.value = '65.667';
+                    helper.triggerKeyEvent('keyup', 88, null, null, null, findInput);
+                    helper.triggerKeyEvent('keyup', 88, null, null, null, replaceInput);
+                    setTimeout(() => {
+                        helper.click('.e-find-dlg .e-btn-replaceAll');
+                        setTimeout(() => {
+                            const activeCellValue = helper.invoke('getCell', [9, 5]).textContent;
+                            const formulaBarValue = (helper.getElement('#' + helper.id + '_formula_input') as HTMLInputElement).value;
+                            expect(activeCellValue).toBe('65.667');
+                            expect(formulaBarValue).toBe('65.667');
+                            done();
+                        }, 50);
+                    });
+                });
+            });
+        });
+    });
+
+    describe('916357 -> Rows and columns are not rendered properly when infinite mode is set to true.', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ colCount: 27, rowCount: 100, ranges: [{ dataSource: defaultData }] }],
+                    scrollSettings: {enableVirtualization: true, isFinite: true }
+                }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Value check', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].rowCount).toBe(100);
+            expect(spreadsheet.sheets[0].colCount).toBe(27);
+            helper.triggerKeyNativeEvent(71, true);
+            setTimeout(() => {
+                helper.setAnimationToNone('.e-goto-dlg.e-dialog');
+                const goToText: HTMLInputElement = helper.getElementFromSpreadsheet('.e-goto-dlg .e-text-goto') as HTMLInputElement;
+                goToText.value = 'A101';
+                helper.click('.e-goto-dlg .e-btn-goto-ok');
+                setTimeout(() => {
+                    expect(helper.getElement('.e-finite-alert-dlg.e-dialog') === null).toBeFalsy();
                     done();
                 });
             });

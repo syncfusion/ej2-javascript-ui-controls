@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 /*! FileManager's material theme wise override definitions and variables */
 $fm-skin-name: 'material-dark' !default;
 $fe-bc-font-size: 14px !default;
@@ -28,7 +30,7 @@ $fe-focus-border-color: rgba($grey-white, .1) !default;
 $fe-bc-color: $grey-dark-font !default;
 $fe-bc-link-color: $accent !default;
 $fe-bc-hover-bg-color: rgba($grey-white, .1) !default;
-$fe-bc-hover-font-color: lighten($accent, 10%) !default;
+$fe-bc-hover-font-color: color.adjust($accent, $lightness: 10%) !default;
 $fe-grid-header-bg-color: $grey-dark !default;
 $fe-grid-type-color: rgba($grey-dark-font, .7) !default;
 $fe-grid-text-color: $grey-dark-font !default;

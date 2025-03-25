@@ -75,7 +75,7 @@ export interface GanttModel extends ComponentModel{
      * Specifies whether to update offset value on a task for all the predecessor edit actions.
      *
      * @default true
-     * @deprecated This method is deprecated. Use `updateOffsetOnTaskbarEdit` this property instead.
+     * @deprecated This method is deprecated from Vol 2 2024 release. Use `updateOffsetOnTaskbarEdit` this property instead.
      * @aspIgnore
      */
     UpdateOffsetOnTaskbarEdit?: boolean;
@@ -383,7 +383,6 @@ export interface GanttModel extends ComponentModel{
      * To show notes column cell values inside the cell or in tooltip.
      *
      * @default false
-     * @deprecated
      */
     showInlineNotes?: boolean;
 
@@ -773,7 +772,6 @@ export interface GanttModel extends ComponentModel{
     /**
      * Triggers before Gantt data is exported to Excel file.
      *
-     * @deprecated
      * @event beforeExcelExport
      */
     beforeExcelExport?: EmitType<Object>;
@@ -781,7 +779,6 @@ export interface GanttModel extends ComponentModel{
     /**
      * Triggers after Gantt data is exported to Excel file.
      *
-     * @deprecated
      * @event excelExportComplete
      */
     excelExportComplete?: EmitType<ExcelExportCompleteArgs>;
@@ -790,7 +787,6 @@ export interface GanttModel extends ComponentModel{
      * Triggers before exporting each cell to Excel file.
      * You can also customize the Excel cells.
      *
-     * @deprecated
      * @event excelQueryCellInfo
      */
     excelQueryCellInfo?: EmitType<ExcelQueryCellInfoEventArgs>;
@@ -799,7 +795,6 @@ export interface GanttModel extends ComponentModel{
      * Triggers before exporting each header cell to Excel file.
      * You can also customize the Excel cells.
      *
-     * @deprecated
      * @event excelHeaderQueryCellInfo
      */
     excelHeaderQueryCellInfo?: EmitType<ExcelHeaderQueryCellInfoEventArgs>;
@@ -808,7 +803,6 @@ export interface GanttModel extends ComponentModel{
      * Triggers when row elements are dragged (moved) continuously.
      *
      * @event rowDrag
-     * @deprecated
      */
     rowDrag?: EmitType<RowDragEventArgs>;
 
@@ -816,7 +810,6 @@ export interface GanttModel extends ComponentModel{
      * Triggers when row element’s drag(move) starts.
      *
      * @event rowDragStart
-     * @deprecated
      */
     rowDragStart?: EmitType<RowDragEventArgs>;
 
@@ -950,7 +943,6 @@ export interface GanttModel extends ComponentModel{
     /**
      * Triggers when column resize starts.
      *
-     * @deprecated
      * @event resizeStart
      */
     resizeStart?: EmitType<ResizeArgs>;
@@ -958,7 +950,6 @@ export interface GanttModel extends ComponentModel{
     /**
      * Triggers on column resizing.
      *
-     * @deprecated
      * @event resizing
      */
     resizing?: EmitType<ResizeArgs>;
@@ -966,7 +957,6 @@ export interface GanttModel extends ComponentModel{
     /**
      * Triggers when column resize ends.
      *
-     * @deprecated
      * @event resizeStop
      */
     resizeStop?: EmitType<ResizeArgs>;
@@ -995,7 +985,6 @@ export interface GanttModel extends ComponentModel{
     /**
      * Triggers when column header element drag (move) starts.
      *
-     * @deprecated
      * @event columnDragStart
      */
     columnDragStart?: EmitType<ColumnDragEventArgs>;
@@ -1003,7 +992,6 @@ export interface GanttModel extends ComponentModel{
     /**
      * Triggers when column header element is dragged (moved) continuously.
      *
-     * @deprecated
      * @event columnDrag
      */
     columnDrag?: EmitType<ColumnDragEventArgs>;
@@ -1011,7 +999,6 @@ export interface GanttModel extends ComponentModel{
     /**
      * Triggers when a column header element is dropped on the target column.
      *
-     * @deprecated
      * @event columnDrop
      */
     columnDrop?: EmitType<ColumnDragEventArgs>;
@@ -1040,7 +1027,6 @@ export interface GanttModel extends ComponentModel{
     /**
      * Triggers before deselecting the selected row.
      *
-     * @deprecated
      * @event rowDeselecting
      */
     rowDeselecting?: EmitType<RowDeselectEventArgs>;
@@ -1069,7 +1055,6 @@ export interface GanttModel extends ComponentModel{
     /**
      * Triggers before the selected cell is deselecting.
      *
-     * @deprecated
      * @event cellDeselecting
      */
     cellDeselecting?: EmitType<CellDeselectEventArgs>;
@@ -1077,7 +1062,6 @@ export interface GanttModel extends ComponentModel{
     /**
      * Triggers when a particular selected cell is deselected.
      *
-     * @deprecated
      * @event cellDeselected
      */
     cellDeselected?: EmitType<CellDeselectEventArgs>;
@@ -1106,7 +1090,6 @@ export interface GanttModel extends ComponentModel{
     /**
      * Triggers before column menu opens.
      *
-     * @deprecated
      * @event columnMenuOpen
      */
     columnMenuOpen?: EmitType<ColumnMenuOpenEventArgs>;
@@ -1142,7 +1125,6 @@ export interface GanttModel extends ComponentModel{
     /**
      * This event will be triggered when click on taskbar element.
      *
-     * @deprecated
      * @event onTaskbarClick
      */
     onTaskbarClick?: EmitType<ITaskbarClickEventArgs>;
@@ -1150,7 +1132,6 @@ export interface GanttModel extends ComponentModel{
     /**
      * This event will be triggered when double click on record.
      *
-     * @deprecated
      * @event recordDoubleClick
      */
     recordDoubleClick?: EmitType<RecordDoubleClickEventArgs>;
@@ -1158,7 +1139,6 @@ export interface GanttModel extends ComponentModel{
     /**
      * This event will be triggered when mouse move on Gantt.
      *
-     * @deprecated
      * @event onMouseMove
      */
     onMouseMove?: EmitType<IMouseMoveEventArgs>;
@@ -1167,7 +1147,6 @@ export interface GanttModel extends ComponentModel{
      * Triggers before Gantt data is exported to PDF document.
      *
      * @event beforePdfExport
-     * @deprecated
      */
     beforePdfExport?: EmitType<Object>;
 
@@ -1175,7 +1154,6 @@ export interface GanttModel extends ComponentModel{
      * Triggers after TreeGrid data is exported to PDF document.
      *
      * @event pdfExportComplete
-     * @deprecated
      */
     pdfExportComplete?: EmitType<Object>;
 
@@ -1183,7 +1161,6 @@ export interface GanttModel extends ComponentModel{
      * Triggers before exporting each cell to PDF document. You can also customize the PDF cells.
      *
      * @event pdfQueryCellInfo
-     * @deprecated
      */
     pdfQueryCellInfo?: EmitType<PdfQueryCellInfoEventArgs>;
 
@@ -1191,7 +1168,6 @@ export interface GanttModel extends ComponentModel{
      * Triggers before exporting each taskbar to PDF document. You can also customize the taskbar.
      *
      * @event pdfQueryTaskbarInfo
-     * @deprecated
      */
     pdfQueryTaskbarInfo?: EmitType<Object>;
 
@@ -1199,7 +1175,6 @@ export interface GanttModel extends ComponentModel{
      * Triggers before exporting each cell to PDF document. You can also customize the PDF cells.
      *
      * @event pdfQueryTimelineCellInfo
-     * @deprecated
      */
     pdfQueryTimelineCellInfo?: EmitType<PdfQueryTimelineCellInfoEventArgs>;
 
@@ -1207,7 +1182,6 @@ export interface GanttModel extends ComponentModel{
      * Triggers before exporting each header cell to PDF document. You can also customize the PDF cells.
      *
      * @event pdfColumnHeaderQueryCellInfo
-     * @deprecated
      */
     pdfColumnHeaderQueryCellInfo?: EmitType<PdfColumnHeaderQueryCellInfoEventArgs>;
 

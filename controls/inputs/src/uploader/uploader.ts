@@ -3965,10 +3965,12 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     }
     private getFilesInArray(files: FileInfo | FileInfo[]): FileInfo[] {
         let uploadFiles: FileInfo[] = [];
-        if (files instanceof Array) {
-            uploadFiles = files;
-        } else {
-            uploadFiles.push(files);
+        if (files) {
+            if (files instanceof Array) {
+                uploadFiles = files;
+            } else {
+                uploadFiles.push(files);
+            }
         }
         return uploadFiles;
     }

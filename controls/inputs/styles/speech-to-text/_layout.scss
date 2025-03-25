@@ -1,0 +1,59 @@
+@include export-module('speechtotext-layout') {
+  .e-speech-to-text.e-btn {
+    align-items: center;
+    border-radius: $stt-border-radius;
+    display: inline-flex;
+    font-size: $stt-font-size;
+    min-width: $stt-min-width;
+    min-height: $stt-min-height;
+    padding: $stt-padding;
+    &.e-round {
+      width: $stt-round-width;
+      height: $stt-round-height;
+      padding: 0;
+    }
+    .e-btn-icon {
+      font-size: $stt-font-size;
+      @if ($skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'material3') {
+        line-height: 2px;
+        width: 2em;
+      }
+      @if ($skin-name == 'bootstrap5.3' or $skin-name == 'fabric') {
+        margin-top: 1px;
+      }
+      @if ($skin-name == 'bootstrap5') {
+        margin-top: 0;
+      }
+      @if ($skin-name == 'FluentUI' or $skin-name == 'fabric-dark') {
+        margin-top: -1px;
+      }
+      @if ($skin-name == 'fluent2') {
+        margin-top: 2px;
+      }
+    }
+    &:disabled {
+      pointer-events: none;
+    }
+    &.e-listening-state {
+      animation: listening 1.2s infinite;
+    }
+  }
+
+  .e-speech-to-text.e-round {
+    .e-btn-icon {
+      font-size: $stt-btn-font-size;
+    }
+  }
+
+  @keyframes listening {
+    0% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: .5;
+    }
+  }
+}

@@ -142,7 +142,7 @@ export class InkAnnotation {
         const zoom: number = this.pdfViewerBase.getZoomFactor();
         this.inkAnnotationInitialZoom = zoom;
         const ratio: number = this.pdfViewerBase.getWindowDevicePixelRatio();
-        const canvas: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
+        const canvas: any = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', pageIndex);
         const context: any = canvas.getContext('2d');
         const thickness: number = this.pdfViewer.inkAnnotationSettings.thickness ? this.pdfViewer.inkAnnotationSettings.thickness : 1;
         const opacity: number = this.pdfViewer.inkAnnotationSettings.opacity ? this.pdfViewer.inkAnnotationSettings.opacity : 1;
@@ -422,6 +422,7 @@ export class InkAnnotation {
                     } else {
                         isPrint = this.pdfViewer.inkAnnotationSettings.isPrint;
                     }
+                    isPrint = !isNullOrUndefined(currentAnnotation.IsPrint) ? currentAnnotation.IsPrint : true;
                     if (currentAnnotation.IsLocked) {
                         isLock = currentAnnotation.IsLocked;
                     }
@@ -447,7 +448,8 @@ export class InkAnnotation {
                         isCommentLock: currentAnnotation.IsCommentLock
                     };
                     this.pdfViewer.add(annot as PdfAnnotationBase);
-                    const canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentAnnotation.pageIndex);
+                    const canvasPageIndex: any = currentAnnotation.pageIndex ? currentAnnotation.pageIndex : currentAnnotation.PageNumber;
+                    const canvass: any = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', canvasPageIndex);
                     this.pdfViewer.renderDrawing(canvass as any, annot.pageIndex);
                     this.pdfViewer.annotationModule.storeAnnotations(annot.pageIndex, annot, '_annotations_ink');
                     if (this.isAddAnnotationProgramatically) {
@@ -784,7 +786,7 @@ export class InkAnnotation {
             ExistingCustomData: null,
             IsCommentLock: false,
             IsLock: annotationObject.isLock ? annotationObject.isLock : false,
-            IsPrint: annotationObject.isPrint ? annotationObject.isPrint : true,
+            IsPrint: !isNullOrUndefined(annotationObject.isPrint) ? annotationObject.isPrint : true,
             ModifiedDate: '',
             Note: '',
             Opacity: annotationObject.opacity ? annotationObject.opacity : 1,

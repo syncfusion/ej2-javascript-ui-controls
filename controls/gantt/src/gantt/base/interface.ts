@@ -1,7 +1,7 @@
 import { PdfTreeGridCell } from './../export/pdf-base/pdf-grid-table';
 import { PdfBorders } from './../export/pdf-base/pdf-borders';
 import { ColumnModel } from './../models/column';
-import { PointF, PdfColor, PdfFontFamily, PdfFontStyle, PdfStringFormat, PdfTrueTypeFont, PdfStandardFont, PdfTextWebLink, PdfImage  } from '@syncfusion/ej2-pdf-export';
+import { PointF, PdfColor, PdfFontFamily, PdfFontStyle, PdfStringFormat, PdfTrueTypeFont, PdfStandardFont, PdfTextWebLink, PdfImage, PdfPen  } from '@syncfusion/ej2-pdf-export';
 import {
     ContextMenuType, PdfPageSize, PageOrientation, ExportType, PdfTheme, TaskType, ContentType, PdfPageNumberType, PdfDashStyle,
     PdfHAlign, PdfVAlign
@@ -1044,8 +1044,17 @@ export interface IGanttStyle {
     footer?: PdfGanttCellStyle;
     /** Defines the font of the theme. */
     font?: PdfTrueTypeFont;
+    /** Defines the event marker customization to rely with theme. */
+    eventMarker?: PdfEventMarkerStyle;
+    /** Defines the holidays customization to rely with theme. */
+    holiday?: PdfGanttCellStyle;
 }
-
+export interface PdfEventMarkerStyle {
+    /** Defines the event marker label style */
+    label?: PdfGanttCellStyle;
+    /** Defines the event marker line style */
+    lineStyle?: PdfPen;
+}
 export interface PdfQueryTimelineCellInfoEventArgs {
     /** Defines the timeline cell */
     timelineCell?: PdfGanttCellStyle;

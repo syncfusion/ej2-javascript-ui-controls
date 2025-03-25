@@ -401,3 +401,18 @@ export let rotatedLabels: Object[] = [{ x: "Alfreds FutterkisteObere Str. 57", y
 { x: "LINO-DelicatesesAve. 5 de Mayo Porlamar", y: 673.81, size: null, fill: null },
 { x: "Lonesome Pine Restaurant89 Chiaroscuro Rd.", y: 79.86, size: null, fill: null },
 { x: "Magazzini Alimentari RiunitiVia Ludovico il Moro 22", y: 469.75, size: null, fill: null }];
+
+export let highlightData: Object[] = [
+    { x: 'Jan', y: 5.2,  y1: 1.5 },   { x: 'Feb', y: 5.7,  y1: 1.6 },
+    { x: 'Mar', y: 8.7,  y1: 3.3 },   { x: 'Apr', y: 13.9, y1: 5.9 },
+    { x: 'May', y: 18.2, y1: 10.5 },  { x: 'Jun', y: 21.4, y1: 13.5 },
+    { x: 'Jul', y: 25,   y1: 14.5 },  { x: 'Aug', y: 26.4, y1: 14.4 },
+    { x: 'Sep', y: 22.8, y1: 11.5 },  { x: 'Oct', y: 17.5, y1: 8.7 },
+    { x: 'Nov', y: 12.1, y1: 4.7 },   { x: 'Dec', y: 7.6,  y1: 2.6 }
+];
+
+export let highlightAxesData: Object[] = [
+    { x: 'Jan', y: 5.2 },   { x: 'Feb', y: 5.7 },
+    { x: 'Mar', y: 8.7 },   { x: 'Apr', y: 13.9 },
+    { x: 'May', y: 18.2 },  { x: 'Jun', y: 21.4 }
+];

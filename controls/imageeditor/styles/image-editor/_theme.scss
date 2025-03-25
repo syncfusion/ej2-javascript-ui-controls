@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 @include export-module('image-editor-theme') {
   .e-image-editor {
     background: $image-editor-background;
@@ -83,7 +85,7 @@
               border: 2px solid #fff !important; /* stylelint-disable-line declaration-no-important */
             }
             @else if $skin-name == 'bootstrap4' {
-              $color-rgba: rgba(mix(lighten($btn-focus-bgcolor, 50%), $btn-focus-border-color, 15%), .5);
+              $color-rgba: rgba(color.mix(color.adjust($btn-focus-bgcolor, $lightness: 50%), $btn-focus-border-color, 15%), .5);
               box-shadow: 0 0 0 .25em $color-rgba !important; /* stylelint-disable-line declaration-no-important */
             }
             @else if $skin-name == 'bootstrap5' {

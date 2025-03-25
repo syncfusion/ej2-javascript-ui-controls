@@ -113,7 +113,7 @@ $schedule-tbar-bgr-min-height: 54px !default;
 $schedule-tbar-border-bottom-size: 1px solid $border-light !default;
 $schedule-tbar-box-shadow: 0 1px 2px rgba($black, .15) !default;
 $schedule-tbar-box-shadow-bottom-margin: 3px !default;
-$schedule-tbar-min-height: 38px !default;
+$schedule-tbar-min-height: 40px !default;
 $schedule-tbar-down-arrow-font-size: $text-base !default;
 $schedule-tbar-down-arrow-margin-top: 4px !default;
 $schedule-tbar-default-icon-color: $icon-color !default;
@@ -264,6 +264,8 @@ $schedule-bgr-date-time-icon-padding-right: 13px !default;
 $schedule-bgr-more-event-close-icon-padding: unset !default;
 $schedule-bgr-tbar-btn-text-font-size: $schedule-header-nrml-font-size !default;
 $schedule-header-icon-wrapper-bg-color: $schedule-content-bg-color !default;
+$schedule-calendar-width: 260px !default;
+$schedule-bgr-calendar-width: 306px !default;
 
 @mixin tbar-btn-animation {
   content: '';

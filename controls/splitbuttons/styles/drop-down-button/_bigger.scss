@@ -20,8 +20,13 @@
         padding: $drop-down-btn-vertical-bigger-padding;
       }
       .e-btn-icon {
-        @if $skin-name == 'tailwind3' {
-          font-size: $drop-down-btn-icon-font-size-bigger;
+        @if $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI' or $skin-name == 'tailwind' or $skin-name == 'tailwind3' or $skin-name == 'Material3' or $skin-name == 'bootstrap5.3' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'highcontrast' {
+          font-size: $drop-down-btn-small-icon-font-size-bigger;
+        }
+      }
+      .e-btn-icon.e-caret {
+        @if $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'FluentUI' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5.3' or $skin-name == 'bootstrap5' or $skin-name == 'Material3' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4' or $skin-name == 'highcontrast' or $skin-name == 'fluent2' {
+          font-size: $drop-down-btn-small-caret-icon-font-size-bigger;
         }
       }
     }
@@ -53,7 +58,6 @@
   #{if(&, '&', '*')}.e-bigger.e-dropdown-popup ul {
     box-shadow: $drop-down-btn-parent-ul-box-shadow;
     font-size: $drop-down-btn-bigger-font-size;
-    max-width: $drop-down-btn-bigger-max-width;
     min-width: $drop-down-btn-bigger-min-width;
     padding: $drop-down-btn-ul-bigger-padding;
     @if $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {

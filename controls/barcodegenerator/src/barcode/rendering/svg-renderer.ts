@@ -19,7 +19,7 @@ export class BarcodeSVGRenderering implements IBarcodeRenderer {
     // eslint-disable-next-line
     public renderRootElement(attribute: Object, backGroundColor: string, ): HTMLElement {
         const canvasObj: HTMLElement = createSvgElement('svg', attribute) as HTMLElement;
-        canvasObj.setAttribute('style', 'background:' + backGroundColor);
+        canvasObj.style.background = backGroundColor;
         return canvasObj;
     }
 
@@ -42,7 +42,7 @@ export class BarcodeSVGRenderering implements IBarcodeRenderer {
         rect.setAttribute('width', attribute.width.toString());
         rect.setAttribute('height', attribute.height.toString());
         rect.setAttribute('fill', attribute.color);
-        rect.setAttribute('style', 'shape-rendering: crispEdges');
+        (rect.style as any)['shapeRendering'] = 'crispEdges';
         svg.appendChild(rect);
         return svg;
     }

@@ -390,8 +390,10 @@ export class WorkbookFindAndReplace {
         let startRow: number = 0; let endColumn: number = sheet.usedRange.colIndex; let startColumn: number = 0;
         const addressCollection: string[] = [];
         const triggerEvent: boolean = args.isAction;
+        const activeCellIdx: number[] = getCellIndexes(sheet.activeCell);
         const eventArgs: ReplaceAllEventArgs & FindOptions = { addressCollection: addressCollection, cancel: false, ...args };
-        const updateAsync: (cellValue: string, index: number) => void = (cellValue: string, index: number): void => {
+        let replaceCount: number = 0;
+        const updateAsync: (val: string, index: number, cell: CellModel) => void = (val: string, index: number, cell: CellModel): void => {
             if (requestAnimationFrame) {
                 requestAnimationFrame(() => {
                     if (!eventArgs.cancel && eventArgs.addressCollection[index as number]) {
@@ -399,32 +401,40 @@ export class WorkbookFindAndReplace {
                             eventArgs.addressCollection[index as number].lastIndexOf('!') + 1));
                         const sheetIndex: number = getSheetIndexFromAddress(this.parent, eventArgs.addressCollection[index as number]);
                         updateCell(
-                            this.parent, this.parent.sheets[sheetIndex as number], { cell: { value: cellValue }, rowIdx: indexes[0],
+                            this.parent, this.parent.sheets[sheetIndex as number], { cell: { value: val }, rowIdx: indexes[0],
                                 uiRefresh: true, checkCF: true, colIdx: indexes[1], valChange: true,
                                 skipFormatCheck: (<{ skipFormatCheck?: boolean }>args).skipFormatCheck });
+                        if (activeCellIdx[0] === indexes[0] && activeCellIdx[1] === indexes[1]) {
+                            this.parent.notify(
+                                'formulaBarOperation', { action: 'refreshFormulabar',
+                                    cell: getCell(indexes[0], indexes[1], this.parent.sheets[sheetIndex as number], false, true) });
+                        }
                         if (index === eventArgs.addressCollection.length - 1 && triggerEvent) {
                             this.parent.notify('actionComplete', { action: 'replaceAll', eventArgs: eventArgs });
                         }
                     }
                 });
             } else {
-                this.parent.updateCellDetails({ value: cellValue }, eventArgs.addressCollection[index as number],
-                                              undefined, undefined, true);
+                this.parent.updateCellDetails(
+                    { value: val }, eventArgs.addressCollection[index as number], undefined, undefined, true);
+            }
+            if (!cell.formula) {
+                replaceCount++;
             }
         };
-        const checkMatch: (cellval: string) => boolean = (cellval: string): boolean => {
+        const checkMatch: (cellval: string, cell: CellModel) => boolean = (cellval: string, cell: CellModel): boolean => {
             let matchFound: boolean;
             if (cellval) {
                 if (args.isCSen) {
                     if (args.isEMatch) {
                         if (cellval === args.value) {
-                            updateAsync(args.replaceValue, addressCollection.length);
+                            updateAsync(args.replaceValue, addressCollection.length, cell);
                             addressCollection.push(sheet.name + '!' + getCellAddress(startRow, startColumn));
                             matchFound = true;
                         }
                     } else {
                         if (cellval.indexOf(args.value) > -1) {
-                            updateAsync(cellval.replace(args.value, args.replaceValue), addressCollection.length);
+                            updateAsync(cellval.replace(args.value, args.replaceValue), addressCollection.length, cell);
                             addressCollection.push(sheet.name + '!' + getCellAddress(startRow, startColumn));
                             matchFound = true;
                         }
@@ -432,7 +442,7 @@ export class WorkbookFindAndReplace {
                 } else {
                     if (args.isEMatch) {
                         if (cellval.toLowerCase() === args.value) {
-                            updateAsync(args.replaceValue, addressCollection.length);
+                            updateAsync(args.replaceValue, addressCollection.length, cell);
                             addressCollection.push(sheet.name + '!' + getCellAddress(startRow, startColumn));
                             matchFound = true;
                         }
@@ -442,7 +452,7 @@ export class WorkbookFindAndReplace {
                             args.value || cellval === args.value || val.indexOf(args.value) > -1) {
                             const regExp: RegExpConstructor = RegExp;
                             regX = new regExp(args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
-                            updateAsync(cellval.replace(regX, args.replaceValue), addressCollection.length);
+                            updateAsync(cellval.replace(regX, args.replaceValue), addressCollection.length, cell);
                             addressCollection.push(sheet.name + '!' + getCellAddress(startRow, startColumn));
                             matchFound = true;
                         }
@@ -478,9 +488,9 @@ export class WorkbookFindAndReplace {
                             }
                             displayText = this.getDisplayText(
                                 cell, startRow, startColumn, localeObj).toString();
-                            if (!checkMatch(displayText) && cell.format && !isCustomDateTime(cell.format, true) &&
+                            if (!checkMatch(displayText, cell) && cell.format && !isCustomDateTime(cell.format, true) &&
                                 !displayText.includes('%')) {
-                                checkMatch(this.getCellVal(row.cells[startColumn as number], localeObj));
+                                checkMatch(this.getCellVal(row.cells[startColumn as number], localeObj), cell);
                             }
                         }
                     }
@@ -490,10 +500,10 @@ export class WorkbookFindAndReplace {
         if (addressCollection.length && triggerEvent) {
             this.parent.notify('actionBegin', { action: 'beforeReplaceAll', eventArgs: eventArgs });
             if (!eventArgs.cancel) {
-                this.parent.notify(replaceAllDialog, { count: eventArgs.addressCollection.length, replaceValue: eventArgs.replaceValue });
+                this.parent.notify(replaceAllDialog, { count: replaceCount, replaceValue: eventArgs.replaceValue });
             }
         } else {
-            this.parent.notify(replaceAllDialog, { count: eventArgs.addressCollection.length, replaceValue: eventArgs.replaceValue });
+            this.parent.notify(replaceAllDialog, { count: replaceCount, replaceValue: eventArgs.replaceValue });
         }
     }
     private getDisplayText(cell: CellModel, rowIdx: number, colIdx: number, localeObj: LocaleNumericSettings): string {

@@ -2475,6 +2475,27 @@ describe('Chart Control Series', () => {
             chartObj.tooltip.enable= true;
             chartObj.refresh();
         });
+        it('checking with line series tooltip enableHighlight', (done: Function) => {
+            chartObj.loaded = (args: Object): void => {
+                const dataLabel: Element = document.getElementById('container_Series_0_Point_2_Symbol');
+                const series: Series = chartObj.series[0] as Series;
+                const chartArea: Element = document.getElementById('container_ChartAreaBorder');
+                y = series.points[2].regions[0].y + parseFloat(chartArea.getAttribute('y')) + element.offsetTop;
+                x = series.points[2].regions[0].x + parseFloat(chartArea.getAttribute('x')) + element.offsetLeft;
+                trigger.mousemovetEvent(dataLabel, Math.ceil(x), Math.ceil(y));
+                const tooltip: Element = document.getElementById('container_tooltip');
+                expect(tooltip != null).toBe(true);
+                chartObj.tooltipModule.currentPoints = [];
+                chartObj.tooltipModule.removeHighlight();
+                done();
+            };
+            chartObj.crosshair.enable = false;
+            chartObj.isTransposed = true;
+            chartObj.crosshair.snapToData = false;
+            chartObj.tooltip.enable = true;
+            chartObj.tooltip.enableHighlight = true;
+            chartObj.refresh();
+        });
     });
     it('memory leak', () => {
         profile.sample();

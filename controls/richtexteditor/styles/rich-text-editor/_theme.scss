@@ -146,6 +146,11 @@
             border-radius: 4px;
           }
         }
+        @if $skin-name == 'bootstrap5.3' {
+          .e-toolbar-item .e-tbar-btn:focus .e-icons {
+            color: $rte-icons-color;
+          }
+        }
       }
     }
     .e-toolbar-wrapper {

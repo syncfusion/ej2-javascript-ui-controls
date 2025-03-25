@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 //default
 /* stylelint-disable */
 $treeview-font-size: 14px !default;
@@ -16,14 +18,14 @@ $treeview-item-active-bg: $primary !default;
 $treeview-icon-active-color: $primary-font !default;
 $treeview-text-active-color: $primary-font !default;
 $treeview-item-active-border-color: $primary !default;
-$treeview-item-hover-bg: darken($gray-100,2%) !default;
+$treeview-item-hover-bg: color.adjust($gray-100, $lightness: -2%) !default;
 $treeview-icon-hover-color: $gray-700 !default;
 $treeview-text-hover-color: $gray-900 !default;
-$treeview-item-hover-border-color: darken( $gray-100, 2%)!default;
-$treeview-item-active-hover-bg: darken($primary,7.5%)!default;
+$treeview-item-hover-border-color: color.adjust( $gray-100, $lightness: -2%)!default;
+$treeview-item-active-hover-bg: color.adjust($primary, $lightness: -7.5%)!default;
 $treeview-icon-active-hover-color: $primary-font !default;
 $treeview-text-active-hover-color: $primary-font !default;
-$treeview-item-active-hover-border-color: darken($primary,7.5%) !default;
+$treeview-item-active-hover-border-color: color.adjust($primary, $lightness: -7.5%) !default;
 $treeview-text-disable-color:  $gray-600 !default;
 $treeview-icon-disable-color: $gray-600  !default;
 $treeview-drag-line-bg: $primary !default;

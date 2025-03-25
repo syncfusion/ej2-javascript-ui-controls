@@ -713,12 +713,19 @@ export class PageOrganizer {
                                                       proxy.pdfViewer.serverActionSettings.renderThumbnail);
             };
         } else {
+            const jsonObject: object = { documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId,
+                elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId };
+            const isTextNeed: boolean = proxy.pdfViewer.textSearch ? true : false;
             for (let pageIndex: number = startIndex; pageIndex < previewLimit; pageIndex++) {
                 this.pdfViewerBase.pdfViewerRunner.addTask({
                     startIndex: startIndex,
                     endIndex: previewLimit,
                     pageIndex: pageIndex,
-                    message: 'renderPreviewTileImage'
+                    message: 'renderPreviewTileImage',
+                    isTextNeed: isTextNeed,
+                    jsonObject: jsonObject,
+                    isRenderText: isTextNeed,
+                    requestType: isTextNeed ? 'pdfTextSearchRequest' : ''
                 }, TaskPriorityLevel.Low);
             }
         }

@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $de-padding-half: 6px;
 $de-padding-half-bigger: 8px;
 $de-padding-full: 12px;
@@ -513,7 +515,7 @@ $de-numbering-list-line-color: $icon-color !default;
 $de-numbering-list-span-color: $icon-color !default;
 $de-numbering-list-border-color: $border !default;
 $de-numbering-list-background-color: $content-bg-color !default;
-$de-style-btn-bg-color:  darken($secondary-bg-color, 7.5%) !default;
+$de-style-btn-bg-color:  color.adjust($secondary-bg-color, $lightness: -7.5%) !default;
 $de-prop-btn-icon-clr: $icon-color;
 $de-cmt-selection: $primary !default;
 $de-cmt-selection-rslv: rgba($de-cmt-selection, .5) !default;

@@ -586,7 +586,8 @@ export class UrlAdaptor extends Adaptor {
                     fields: temp.fieldNames,
                     operator: temp.operator,
                     key: temp.searchKey,
-                    ignoreCase: temp.ignoreCase
+                    ignoreCase: temp.ignoreCase,
+                    ignoreAccent: temp.ignoreAccent
                 },
                 query));
         }
@@ -707,7 +708,9 @@ export class UrlAdaptor extends Adaptor {
             if (ds && !ds.timeZoneHandling) {
                 DataUtil.timeZoneHandling = false;
             }
-            data = DataUtil.parse.parseJson(data);
+            if (!ds.enableCache) {
+                data = DataUtil.parse.parseJson(data);
+            }
             DataUtil.timeZoneHandling = handleTimeZone;
         }
         const requests: { pvtData?: Object, data?: string } = request;
@@ -1879,7 +1882,7 @@ export class ODataV4Adaptor extends ODataAdaptor {
      */
     public onPredicate(predicate: Predicate, query: Query | boolean, requiresCast?: boolean): string {
         let returnValue: string = '';
-        const val: string | number | Date | boolean | Predicate | Predicate[] = predicate.value;
+        const val: string | number | Date | boolean | Predicate | Predicate[] | (string | number | boolean | Date)[] = predicate.value;
         const isDate: boolean = val instanceof Date;
 
         if (query instanceof Query) {

@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $range-bg-color:  $content-bg-color !default;
 $range-primary-color: $theme-primary !default;
 $range-primary-font-color: $neutral-white !default;
@@ -7,7 +9,7 @@ $range-font-color: $theme-primary !default;
 $range-active-icon-color: $active-icon-color !default;
 $range-active-state-icon-color: $theme-primary-font !default;
 $range-hover-color: $neutral-light !default;
-$range-hover-content-color: darken($range-hover-color, 15%) !default;
+$range-hover-content-color: color.adjust($range-hover-color, $lightness: -15%) !default;
 $range-today-color: $alert-bg !default;
 $range-calendar-today-color: $theme-light-font !default;
 $range-lg-day-header-format-width: 100% !default;

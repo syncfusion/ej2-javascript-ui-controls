@@ -54,6 +54,14 @@ export interface DatePickerModel extends CalendarModel{
     format?: string | FormatObject;
 
     /**
+     * Specifies an array of acceptable date input formats for parsing user input.
+     *
+     * @default null
+     * @aspType string[]
+     */
+    inputFormats?: string[] | FormatObject[];
+
+    /**
      * Specifies the component to be disabled or not.
      *
      * @default true

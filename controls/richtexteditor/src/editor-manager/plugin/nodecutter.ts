@@ -100,7 +100,7 @@ export class NodeCutter {
                 if (firstChild.childNodes[i as number].nodeName === 'IMG' || (firstChild.childNodes[i as number].nodeName === 'SPAN' &&
                 ((firstChild.childNodes[i as number] as HTMLElement).classList.contains('e-video-wrap') ||
                 (firstChild.childNodes[i as number] as HTMLElement).classList.contains('e-embed-video-wrap') ||
-                (firstChild.childNodes[i as number] as HTMLElement).classList.contains('e-audio-wrap')))) {
+                (firstChild.childNodes[i as number] as HTMLElement).classList.contains('e-audio-wrap'))) || firstChild.childNodes[i as number].nodeName === 'TABLE') {
                     result = false;
                 }
             }

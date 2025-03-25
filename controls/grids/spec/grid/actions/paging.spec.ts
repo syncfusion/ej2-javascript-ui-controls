@@ -962,7 +962,7 @@ describe('BUG-830382 - Page count is not increased while adding new records if t
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
-                    dataSource: data.slice(0,15),
+                    dataSource: data.slice(0, 15),
                     pageSettings: {pageSizes: true, pageSize: 5},
                     allowFiltering: true,
                     allowPaging: true,
@@ -1068,7 +1068,7 @@ describe('BUG-830382 - Page count is not increased while adding new records if t
             gridObj = null;
         });
     });
-    
+
     describe('EJ2-922763: Grid Pager with custom pageSizes displays all records on a single page after clearing the filter', function () {
         let gridObj: Grid;
         beforeAll(function (done) {

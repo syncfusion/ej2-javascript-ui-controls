@@ -91,15 +91,17 @@ export class WorkbookConditionalFormat {
         const allowActionComplete: boolean = cfRule && cfRule[cfRule.length - 1] && cfRule[cfRule.length - 1].action !== 'autofillWithCF';
         if (args.isUndo) {
             if (args.updatedCFModel) {
-                let idx: number;
                 args.updatedCFModel.forEach((cf: ConditionalFormatModel): void => {
-                    idx = cfRule.indexOf(cf);
-                    if (idx > -1) {
-                        cfRule.splice(idx, 1);
+                    for (let i: number = 0; i < cfRule.length; i++) {
+                        if (cfRule[i as number].type === cf.type && cfRule[i as number].cFColor === cf.cFColor &&
+                            cfRule[i as number].range === cf.range && cfRule[i as number].value === cf.value) {
+                            cfRule.splice(i, 1);
+                            break;
+                        }
                     }
                 });
             }
-            cfRule.splice(cfRule.length, 0, ...args.oldCFModel);
+            cfRule.push(...args.oldCFModel.map((item: ConditionalFormatModel) => Object.assign({}, item)));
             this.parent.notify(applyCF, <ApplyCFArgs>{ cfModel: args.oldCFModel, isAction: true });
             if (args.sheetIdx !== this.parent.activeSheetIndex) {
                 this.parent.notify(goto, { address: sheet.name + '!' + args.range });
@@ -112,6 +114,7 @@ export class WorkbookConditionalFormat {
         let cf: ConditionalFormat; let cfRange: string[]; let cfIdx: number[]; let newRange: string[];
         let left: boolean; let right: boolean; let top: boolean; let bottom: boolean; let range: string;
         let idx: number[] = args.range && (typeof args.range === 'string' ? getRangeIndexes(args.range) : args.range);
+        idx = idx ? getSwapRange(idx) : idx;
         args.oldCFModel = []; args.updatedCFModel = [];
         const updatedCFModel: ConditionalFormatModel[] = [];
         const oldRange: string[] = [];

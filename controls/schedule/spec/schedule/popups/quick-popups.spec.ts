@@ -2920,11 +2920,11 @@ describe('Quick Popups', () => {
     describe('Quick popup and more popup behavior in Schedule rendered inside Dialog', () => {
         let schObj: Schedule;
         let dialogObj: Dialog;
-
+    
         beforeAll((done: DoneFn) => {
             const dialogElement = createElement('div', { id: 'defaultDialog' });
             document.body.appendChild(dialogElement);
-
+    
             const dialogModel: DialogModel = {
                 header: 'Dialog with Schedule',
                 target: document.body,
@@ -2974,7 +2974,7 @@ describe('Quick Popups', () => {
             dialogObj.appendTo(dialogElement);
             dialogObj.show();
         });
-
+    
         afterAll(() => {
             if (schObj) {
                 util.destroy(schObj);
@@ -2983,7 +2983,7 @@ describe('Quick Popups', () => {
                 dialogObj.destroy();
             }
         });
-
+    
         it('should open and close the quick popup while navigating views', () => {
             const workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             workCell.click();

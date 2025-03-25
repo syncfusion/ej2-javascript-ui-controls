@@ -1010,8 +1010,8 @@
     box-sizing: border-box;
   }
 
-  .e-rte-table.e-dashed-border td,
-  .e-rte-table.e-dashed-border th {
+  .e-rte-table.e-dashed-border > tbody > tr > td,
+  .e-rte-table.e-dashed-border > tbody > tr > th {
     border-style: dashed;
   }
 

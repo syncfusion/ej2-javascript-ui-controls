@@ -231,7 +231,7 @@ export class QuickToolbar {
         if (!this.escapeKeyPressed && this.tableQTBar && !hasClass(this.tableQTBar.element, 'e-popup-close') && document.body.contains(this.tableQTBar.element)) {
             this.tableQTBar.hidePopup();
         }
-        if (!this.escapeKeyPressed && !isNOU(this.parent) && this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
+        if (!isNOU(this.parent) && this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             this.hideInlineQTBar();
         }
         this.escapeKeyPressed = false;
@@ -509,7 +509,6 @@ export class QuickToolbar {
         this.parent.on(events.renderQuickToolbar, this.renderQuickToolbars, this);
         this.parent.on(events.preventQuickToolbarClose, this.preventQuickToolbarClose, this);
     }
-
     private preventQuickToolbarClose(args: BeforeOpenCloseMenuEventArgs): void {
         const editorBaseId: string = this.parent.getID();
         const dropDownPopup: string[] = [editorBaseId + '_quick_Display-popup', editorBaseId + '_quick_Align-popup',
@@ -521,7 +520,6 @@ export class QuickToolbar {
             this.escapeKeyPressed = true;
         }
     }
-
     private onKeyDown(e: NotifyArgs): void {
         const args: KeyboardEvent = e.args as KeyboardEvent;
         if (args.which === 8 || args.which === 46) {

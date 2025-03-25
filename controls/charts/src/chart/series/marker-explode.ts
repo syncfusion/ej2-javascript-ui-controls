@@ -1,4 +1,4 @@
-import { drawSymbol, ChartLocation} from '../../common/utils/helper';
+import { drawSymbol, ChartLocation, pathAnimation} from '../../common/utils/helper';
 import { PathOption, Size } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 import { Border } from '../../common/model/base';
@@ -110,6 +110,15 @@ export class MarkerExplode extends ChartData {
             if (data.point && explodeSeries && chart.isPointMouseDown) {
                 (<PointData[]>this.currentPoints).push(data);
             }
+            if (this.currentPoints.length === 0 && data.point && !explodeSeries && !isNullOrUndefined(previous) &&
+                previous.point !== data.point) {
+                this.removeHighlightedMarker(previous.series as Series, previous.point as Points);
+                this.previousPoints = <PointData[]>extend([], data, null, true);
+            }
+            if (chart.tooltip.showNearestTooltip && this.chart.tooltipModule && this.chart.tooltipModule.currentPoints && (explodeSeries || (series.type === 'Pareto' && series.paretoOptions.marker.visible)) &&
+                this.currentPoints.length === 0 && withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect)) {
+                this.currentPoints = this.chart.tooltipModule.currentPoints;
+            }
         } else {
             if (!withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect)) {
                 return null;
@@ -209,6 +218,10 @@ export class MarkerExplode extends ChartData {
         }
         const symbolId: string = this.elementId + '_Series_' + series.index + '_Point_' + point.index + '_Trackball' +
             (index ? index : '');
+        if (getElement(symbolId + '_1') && getElement(symbolId + '_1').getAttribute('e-animate')) {
+            Animation.stop(getElement(symbolId + '_1') as HTMLElement);
+            remove(getElement(symbolId + '_1'));
+        }
         const size: Size = new Size(
             (marker.width || seriesMarker.width) + 3,
             (marker.height || seriesMarker.height) + 3
@@ -224,7 +237,7 @@ export class MarkerExplode extends ChartData {
         const markerElement: Element = document.getElementById(this.elementId + '_Series_' + series.index + '_Point_' +
             point.index + '_Symbol');
         if (!isNullOrUndefined(markerElement)) {
-            markerElement.setAttribute('visibility', 'hidden');
+            markerElement.setAttribute('visibility', 'visible');
         }
         if (this.chart.enableCanvas) {
             const trackElement: HTMLElement = document.getElementById(this.chart.element.id + '_Secondary_Element');
@@ -264,8 +277,13 @@ export class MarkerExplode extends ChartData {
             else {
                 this.chart.svgObject.appendChild(symbol);
             }
+            if (point.symbolLocations.length > 1 && series.marker.visible && (series.type !== 'Bubble' && series.type !== 'Scatter')) {
+                this.trackballAnimate(symbol, 0, this.animationDuration(), series, point.index, location, false, false);
+            }
         }
-        this.doAnimation(series, point, false);
+        if (point.symbolLocations.length < 2 && series.marker.visible) {
+            this.doAnimation(series, point, false);
+        }
     }
 
     /**
@@ -278,6 +296,9 @@ export class MarkerExplode extends ChartData {
      * @private
      */
     public doAnimation(series: Series, point: Points, endAnimate: boolean = false): void {
+        if (series.type === 'Bubble' || series.type === 'Scatter') {
+            return;
+        }
         const duration: number = this.animationDuration();
         const delay: number = 0;
         const rectElements: HTMLCollectionOf<Element> = document.getElementsByClassName(this.elementId + '_EJ2-Trackball_Series_' + series.index + '_Point_' + point.index);
@@ -300,14 +321,14 @@ export class MarkerExplode extends ChartData {
      * @param {ChartLocation} point - The location of the point to animate.
      * @param {boolean} isLabel - Flag to indicate if the animated element is a label.
      * @param {boolean} [endAnimate=false] - Flag to indicate if the animation is ending.
+     * @param {boolean} [isRemove=false] - Flag to indicate if element need to remove.
      * @returns {void}
      * @private
      */
     public trackballAnimate(
         elements: Element, delays: number, durations: number, series: Series,
-        pointIndex: number, point: ChartLocation, isLabel: boolean, endAnimate: boolean
+        pointIndex: number, point: ChartLocation, isLabel: boolean, endAnimate: boolean, isRemove?: boolean
     ): void {
-
         const centerX: number = point.x;
         const centerY: number = point.y;
         const clipX: number = (series.type !== 'Polar' && series.type !== 'Radar') ? series.clipRect.x : 0;
@@ -315,15 +336,34 @@ export class MarkerExplode extends ChartData {
         // let height: number = 0;
         //(<HTMLElement>elements).style.visibility = 'hidden';
         const transform: string = elements.getAttribute('transform');
-        new Animation({}).animate(<HTMLElement>elements, {
+        const scaleX: number = (series.marker.width / (series.marker.width + 3));
+        const scaleY: number = (series.marker.height / (series.marker.height + 3));
+        const scaleValue: number = Math.min(scaleX, scaleY);
+        if (!isRemove) {
+            elements.setAttribute(
+                'transform',
+                `translate(${centerX + clipX} ${centerY + clipY}) scale(${scaleValue}) translate(${-centerX} ${-centerY})`
+            );
+        }
+        new Animation({}).animate(elements as HTMLElement, {
             duration: durations,
             delay: delays,
             progress: (args: AnimationOptions): void => {
+                args.element.style.animation = '';
                 if (args.timeStamp > args.delay) {
-                    args.element.style.visibility = 'visible';
-                    // height = ((args.timeStamp - args.delay) / args.duration);
-                    elements.setAttribute('transform', 'translate(' + (centerX + clipX)
-                         + ' ' + (centerY + clipY) + ') scale(1) translate(' + (-centerX) + ' ' + (-centerY) + ')');
+                    if (!series.visible && isRemove) {
+                        remove(elements);
+                        return;
+                    }
+                    const progress: number = args.timeStamp / args.duration;
+                    const currentScale: number = isRemove
+                        ? Math.max(scaleValue, 1 - ((1 - scaleValue) * progress))
+                        : Math.min(1, scaleValue + ((1 - scaleValue) * progress));
+
+                    elements.setAttribute(
+                        'transform',
+                        `translate(${centerX + clipX} ${centerY + clipY}) scale(${currentScale}) translate(${-centerX} ${-centerY})`
+                    );
                 }
             },
             end: () => {
@@ -332,8 +372,7 @@ export class MarkerExplode extends ChartData {
                 if (!isLabel && (pointIndex === series.points.length - 1)) {
                     series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
                 }
-
-                if (endAnimate) {
+                if (isRemove || endAnimate) {
                     remove(elements);
                 }
 
@@ -360,8 +399,17 @@ export class MarkerExplode extends ChartData {
                 if (elements[1]) { elements[1].remove(); }
                 if (elements[0]) { elements[0].remove(); }
             }
-            for (let i: number = 0, len: number = trackballElements.length; i < len; i++) {
-                remove(trackballElements[0]);
+            for (let i: number = trackballElements.length - 1; i >= 0; i--) {
+                if (!series.marker.visible || trackballElements[i as number] && trackballElements[i as number].id[trackballElements[i as number].id.length - 1] === '0') {
+                    remove(trackballElements[i as number]);
+                }
+            }
+            for (let i: number = trackballElements.length - 1; i >= 0; i--) {
+                if (trackballElements[i as number] && trackballElements[i as number].id[trackballElements[i as number].id.length - 1] === '1' && (series.type !== 'Bubble' && series.type !== 'Scatter') && series.marker.visible) {
+                    trackballElements[i as number].setAttribute('opacity', markerElement ? markerElement.getAttribute('opacity') : trackballElements[i as number].getAttribute('opacity'));
+                    this.trackballAnimate(trackballElements[i as number], 0, this.animationDuration()
+                        , series, point.index, point.symbolLocations[i as number], null, null, true);
+                }
             }
             if (!isNullOrUndefined(markerElement)) {
                 markerElement.setAttribute('visibility', 'visible');

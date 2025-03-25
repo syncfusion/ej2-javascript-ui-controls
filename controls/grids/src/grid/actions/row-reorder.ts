@@ -1,5 +1,5 @@
 import { MouseEventArgs, Draggable, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { removeClass } from '@syncfusion/ej2-base';
+import { removeClass, updateCSSText } from '@syncfusion/ej2-base';
 import { remove, closest as closestElement, classList, BlazorDragEventArgs, extend } from '@syncfusion/ej2-base';
 import { IGrid, NotifyArgs, EJ2Intance, IPosition, RowDragEventArgs } from '../base/interface';
 import { parentsUntil, removeElement, getPosition, addRemoveActiveClasses, isActionPrevent } from '../base/util';
@@ -49,10 +49,10 @@ export class RowDD {
             target = parentsUntil(target as Element, 'e-rowcell');
         }
         const visualElement: HTMLElement = this.parent.createElement('div', {
-            className: 'e-cloneproperties e-draganddrop e-grid e-dragclone',
-            styles: 'height:"auto", z-index:2, width:' + gObj.element.offsetWidth
+            className: 'e-cloneproperties e-draganddrop e-grid e-dragclone'
         });
-        const table: Element = this.parent.createElement('table', { styles: 'width:' + gObj.element.offsetWidth, attrs: { role: 'grid' } });
+        visualElement.style.height = 'auto';
+        const table: Element = this.parent.createElement('table', { attrs: { role: 'grid' } });
         const tbody: Element = this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
 
         if (document.getElementsByClassName('e-griddragarea').length ||
@@ -63,7 +63,8 @@ export class RowDD {
         }
         if (gObj.rowDropSettings.targetID &&
             gObj.selectionSettings.mode === 'Row' && gObj.selectionSettings.type === 'Single') {
-            gObj.selectRow(parseInt((this.draggable.currentStateTarget as Element).parentElement.getAttribute(literals.dataRowIndex), 10));
+            gObj.selectRow(parseInt((this.draggable.currentStateTarget as Element).parentElement
+                .getAttribute(literals.ariaRowIndex), 10) - 1);
         }
         this.startedRow = closestElement(target as Element, 'tr').cloneNode(true) as HTMLTableRowElement;
         if (this.parent.isFrozenGrid()) {
@@ -91,8 +92,8 @@ export class RowDD {
         if (!(gObj.enableInfiniteScrolling && gObj.infiniteScrollSettings.enableCache)) {
             this.removeCell(this.startedRow, literals.gridChkBox);
         }
-        const exp: RegExp = new RegExp('e-active', 'g'); //high contrast issue
-        this.startedRow.innerHTML = this.startedRow.innerHTML.replace(exp, '');
+        const activeCells: NodeListOf<Element> = this.startedRow.querySelectorAll('.e-active');
+        activeCells.forEach((cell: Element) => cell.classList.remove('e-active'));
         tbody.appendChild(this.startedRow);
         if (gObj.getSelectedRowIndexes().length > 1 && this.startedRow.hasAttribute('aria-selected')) {
             const dropCountEle: HTMLElement = this.parent.createElement('span', {
@@ -142,7 +143,7 @@ export class RowDD {
         this.processArgs(target);
         gObj.trigger(events.rowDragStart, {
             rows: this.rows, target: e.target,
-            draggableType: 'rows', fromIndex: parseInt(this.rows[0].getAttribute(literals.dataRowIndex), 10),
+            draggableType: 'rows', fromIndex: parseInt(this.rows[0].getAttribute(literals.ariaRowIndex), 10) - 1,
             data: (this.rowData[0] && Object.keys(this.rowData[0]).length > 0) ? this.rowData as Object[] : this.currentViewData()
         });
         this.dragStartData = this.rowData;
@@ -207,10 +208,10 @@ export class RowDD {
             if (this.isDropGrid.element.querySelector('.e-emptyrow')) {
                 this.dragTarget = 0;
             } else {
-                this.dragTarget = parseInt(trElement.getAttribute('data-rowindex'), 10);
+                this.dragTarget = parseInt(trElement.getAttribute('aria-rowindex'), 10) - 1;
             }
         } else {
-            this.dragTarget = parseInt(this.startedRow.getAttribute('data-rowindex'), 10);
+            this.dragTarget = parseInt(this.startedRow.getAttribute('aria-rowindex'), 10) - 1;
         }
 
         if (gObj.rowDropSettings.targetID) {
@@ -239,14 +240,14 @@ export class RowDD {
                     this.updateScrollPostion(e.event);
                 }
                 if (((this.isOverflowBorder || this.parent.frozenRows > this.dragTarget) &&
-                    (parseInt(this.startedRow.getAttribute(literals.dataRowIndex), 10) !== this.dragTarget || this.istargetGrid))
+                    (parseInt(this.startedRow.getAttribute(literals.ariaRowIndex), 10) - 1 !== this.dragTarget || this.istargetGrid))
                     || (this.istargetGrid && trElement && this.isDropGrid.getRowByIndex(this.isDropGrid.getCurrentViewRecords().length - 1).
                         getAttribute('data-uid') === trElement.getAttribute('data-uid'))) {
                     this.moveDragRows(e, this.startedRow, trElement);
                 } else {
                     let islastRowIndex: boolean;
                     if (this.parent.enableVirtualization) {
-                        islastRowIndex = trElement && parseInt(trElement.getAttribute(literals.dataRowIndex), 10) ===
+                        islastRowIndex = trElement && parseInt(trElement.getAttribute(literals.ariaRowIndex), 10) - 1 ===
                             this.parent.renderModule.data.dataManager.dataSource.json.length - 1;
                     } else {
                         const rowIndex: number = this.parent.enableInfiniteScrolling && this.parent.infiniteScrollSettings.enableCache &&
@@ -353,7 +354,7 @@ export class RowDD {
         const args: RowDropEventArgs = {
             target: target, draggableType: 'rows',
             cancel: false,
-            fromIndex: parseInt(this.rows[0].getAttribute(literals.dataRowIndex), 10),
+            fromIndex: parseInt(this.rows[0].getAttribute(literals.ariaRowIndex), 10) - 1,
             dropIndex: this.dragTarget, rows: this.rows,
             data: (Object.keys(this.dragStartData[0]).length > 0) ? this.dragStartData as Object[] : this.currentViewData()
         };
@@ -372,7 +373,7 @@ export class RowDD {
                     selectedIndexes.length !== this.parent.getCurrentViewRecords().length) {
                     this.reorderRows(selectedIndexes, args.dropIndex);
                 } else {
-                    this.reorderRows([parseInt(this.startedRow.getAttribute(literals.dataRowIndex), 10)], this.dragTarget);
+                    this.reorderRows([parseInt(this.startedRow.getAttribute(literals.ariaRowIndex), 10) - 1], this.dragTarget);
                 }
                 this.dragTarget = null;
                 if (!gObj.rowDropSettings.targetID) {
@@ -483,7 +484,7 @@ export class RowDD {
 
     private refreshRowTarget( args: RowDropEventArgs): Element {
         const gObj: IGrid = this.parent;
-        let targetIdx: number = parseInt(args.target.parentElement.getAttribute(literals.dataRowIndex), 10);
+        let targetIdx: number = parseInt(args.target.parentElement.getAttribute(literals.ariaRowIndex), 10) - 1;
         if (gObj.enableVirtualization && gObj.allowGrouping && gObj.groupSettings.columns.length) {
             targetIdx = this.parent.getDataRows().indexOf(args.target.parentElement);
         }
@@ -518,7 +519,7 @@ export class RowDD {
         const rowObjects: Row<Column>[] = this.parent.getRowsObject();
         const currentViewData: Object[] = this.parent.getCurrentViewRecords();
         for (let i: number = 0, len: number = tr.length; i < len; i++) {
-            const index: number = parseInt(tr[parseInt(i.toString(), 10)].getAttribute(literals.dataRowIndex), 10);
+            const index: number = parseInt(tr[parseInt(i.toString(), 10)].getAttribute(literals.ariaRowIndex), 10) - 1;
             rowObj[parseInt(i.toString(), 10)] = rowObjects[parseInt(index.toString(), 10)];
             recordobj[parseInt(i.toString(), 10)] = currentViewData[parseInt(index.toString(), 10)];
         }
@@ -571,7 +572,7 @@ export class RowDD {
             const indexes: number[] = [];
             if (this.parent.filterSettings.columns.length || this.parent.sortSettings.columns.length) {
                 for (let i: number = 0, len: number = args.rows.length; i < len; i++) {
-                    indexes.push(parseInt(args.rows[parseInt(i.toString(), 10)].getAttribute(literals.dataRowIndex), 10));
+                    indexes.push(parseInt(args.rows[parseInt(i.toString(), 10)].getAttribute(literals.ariaRowIndex), 10) - 1);
                 }
                 this.selectedRowColls = indexes;
             }
@@ -584,7 +585,7 @@ export class RowDD {
     private currentViewData(): object[] {
         const selectedIndexes: number[] = this.parent.getSelectedRowIndexes();
         const currentVdata: object[] = [];
-        const fromIdx: number = parseInt(this.startedRow.getAttribute(literals.dataRowIndex), 10);
+        const fromIdx: number = parseInt(this.startedRow.getAttribute(literals.ariaRowIndex), 10) - 1;
         for (let i: number = 0, n: number = selectedIndexes.length; i < n; i++) {
             const currentV: string = 'currentViewData';
             currentVdata[parseInt(i.toString(), 10)] = this.parent[`${currentV}`][selectedIndexes[parseInt(i.toString(), 10)]];
@@ -788,7 +789,7 @@ export class RowDD {
                 removeClass(node.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'), ['e-dragborder']);
             }
             let rowElement: HTMLElement[] = [];
-            let targetRowIndex: number = parseInt(targetRow.getAttribute(literals.dataRowIndex), 10);
+            let targetRowIndex: number = parseInt(targetRow.getAttribute(literals.ariaRowIndex), 10) - 1;
             if (targetRow && targetRowIndex === 0 &&
                 !(this.isNewRowAdded() && this.parent.editSettings.newRowPosition === 'Top')) {
                 if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
@@ -817,7 +818,7 @@ export class RowDD {
             } else if (this.parent.rowDropSettings.targetID && targetRow) {
                 element = this.isDropGrid.getRowByIndex(targetRowIndex - 1);
                 rowElement = [].slice.call(element.querySelectorAll('.e-rowcell,.e-rowdragdrop,.e-detailrowcollapse'));
-            } else if (targetRow && parseInt(startedRow.getAttribute(literals.dataRowIndex), 10) > targetRowIndex) {
+            } else if (targetRow && parseInt(startedRow.getAttribute(literals.ariaRowIndex), 10) - 1 > targetRowIndex) {
                 if (this.parent.enableVirtualization && this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
                     targetRowIndex = this.parent.getDataRows().indexOf(targetRow);
                 }
@@ -869,7 +870,7 @@ export class RowDD {
     private removeLastRowBorder(element: Element): void {
         let islastRowIndex: boolean;
         if (this.parent.enableVirtualization) {
-            islastRowIndex = element && parseInt(element.getAttribute(literals.dataRowIndex), 10) !==
+            islastRowIndex = element && parseInt(element.getAttribute(literals.ariaRowIndex), 10) - 1 !==
                 this.parent.renderModule.data.dataManager.dataSource.json.length - 1;
         } else {
             const rowIndex: number = this.parent.enableInfiniteScrolling && this.parent.infiniteScrollSettings.enableCache &&
@@ -923,7 +924,7 @@ export class RowDD {
     }
 
     private getTargetIdx(targetRow: Element): number {
-        return targetRow ? parseInt(targetRow.getAttribute(literals.dataRowIndex), 10) : 0;
+        return targetRow ? parseInt(targetRow.getAttribute(literals.ariaRowIndex), 10) - 1 : 0;
     }
 
     private singleRowDrop(e: { target: HTMLTableRowElement, droppedElement: HTMLElement }): void {
@@ -1054,7 +1055,7 @@ export class RowDD {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private processArgs(target: Element): void {
         const gObj: IGrid = this.parent;
-        const dragIdx: number = parseInt(this.startedRow.getAttribute(literals.dataRowIndex), 10);
+        const dragIdx: number = parseInt(this.startedRow.getAttribute(literals.ariaRowIndex), 10) - 1;
         if ((gObj.getSelectedRecords().length > 0 && this.startedRow.cells[0].classList.contains('e-selectionbackground') === false)
             || gObj.getSelectedRecords().length === 0) {
             if (gObj.enableInfiniteScrolling && gObj.infiniteScrollSettings.enableCache) {

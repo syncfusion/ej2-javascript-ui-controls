@@ -2,21 +2,7 @@
 
 ## [Unreleased]
 
-## 28.2.12 (2025-03-19)
-
-### TreeView
-
-#### Bug Fixes
-
-- `#I694965` - Resolved an issue where the parent node check state was not maintained in nested data after filtering when Select All was used in the `DropdownTree` component.
-
-## 28.2.11 (2025-03-11)
-
-### ContextMenu
-
-#### Bug Fixes
-
-- `#I625957` - The issue with the "enableItems" and "insertAfter" methods not functioning correctly when the "enableScrolling" property of the context menu is enabled has been resolved.
+## 29.1.33 (2025-03-25)
 
 ### Menu
 
@@ -29,6 +15,12 @@
 #### Bug Fixes
 
 - `#I689782` - An issue with the toolbar focus style not being applied in Tailwind 3 and Fluent 2 themes while using keyboard navigation in the Mac Safari browser has been resolved.
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I694965` - Resolved an issue where the parent node check state was not maintained in nested data after filtering when Select All was used in the `DropdownTree` component.
 
 ## 28.2.6 (2025-02-18)
 

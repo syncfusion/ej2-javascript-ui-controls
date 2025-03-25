@@ -1033,7 +1033,7 @@ describe('Collapse root parent for custom task mode', () => {
             "nodeType": 10000,
             "hasSubNodes": true,
             "parentID": null,
-          
+
             "isManual" : true,
             "baselineStartDate": "2024-10-15T05:00:00.000Z",
             "baselineEndDate": "2024-10-24T05:00:00.000Z",

@@ -240,9 +240,8 @@ describe('Bullet Chart Scale', () => {
             bullet.refresh();
         });
         it('chart tooltip format checking with keyboard navigation', (done: Function) => {
-            bullet.element.id=''
-            bullet.theme='Fluent'
-            bullet.targetColor=null;
+            bullet.theme = 'Fluent'
+            bullet.targetColor = null;
             segement = document.getElementById(sliceid);
             trigger.keyboardEvent('keydown', segement, 'Space', 'Space');
             trigger.keyboardEvent('keyup', segement, 'ArrowUp', 'ArrowUp');
@@ -250,11 +249,16 @@ describe('Bullet Chart Scale', () => {
             trigger.keyboardEvent('keyup', segement, 'ArrowDown', 'ArrowDown');
             trigger.keyboardEvent('keyup', segement, 'ArrowLeft', 'ArrowLeft');
             trigger.keyboardEvent('keyup', segement, 'ArrowRight', 'ArrowRight');
-            trigger.keyboardEvent('keyup', segement, 'Tab', 'Tab');
+            bullet.isReact = true;
+            trigger.keyboardEvent('mousedown', segement, 'Tab', 'Tab');
+            trigger.keyboardEvent('mouseleave', segement, 'Tab', 'Tab');
             expect(segement !== null).toBe(true);
+            const mousedownEvent: MouseEvent = new MouseEvent('mousedown', { bubbles: true, clientX: 0, clientY: 0 });
+            segement.dispatchEvent(mousedownEvent);
             done();
+            bullet.element.id = '';
             bullet.dataLabel = { enable: true };
-            bullet.orientation='Horizontal';
+            bullet.orientation = 'Horizontal';
             bullet.loaded = loaded;
             bullet.refresh();
             bullet.resizeBound();

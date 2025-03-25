@@ -1,4 +1,4 @@
-import { addClass, Browser, closest, createElement, detach, EventHandler, formatUnit, isNullOrUndefined as isNOU, KeyboardEventArgs, L10n, removeClass, select } from '@syncfusion/ej2-base';
+import { addClass, Browser, closest, createElement, detach, EventHandler, formatUnit, isNullOrUndefined as isNOU, KeyboardEventArgs, L10n, MouseEventArgs, removeClass, select } from '@syncfusion/ej2-base';
 import { Button, ChangeEventArgs, CheckBox } from '@syncfusion/ej2-buttons';
 import { BeforeUploadEventArgs, FileInfo, InputEventArgs, MetaData, ProgressEventArgs, RemovingEventArgs, SelectedEventArgs, SuccessEventArgs, TextBox, Uploader, UploadingEventArgs } from '@syncfusion/ej2-inputs';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -10,7 +10,7 @@ import { NodeSelection } from '../../selection/selection';
 import * as classes from '../base/classes';
 import * as events from '../base/constant';
 import { ImageInputSource, RenderType } from '../base/enum';
-import { ActionBeginEventArgs, ActionCompleteEventArgs, AfterImageDeleteEventArgs, ICssClassArgs, IDropDownItemModel, IImageCommandsArgs, IImageNotifyArgs, ImageDropEventArgs, ImageSuccessEventArgs, IRenderer, IRichTextEditor, IShowPopupArgs, IToolbarItemModel, NotifyArgs, OffsetPosition, ResizeArgs, ImageFailedEventArgs } from '../base/interface';
+import { ActionBeginEventArgs, ActionCompleteEventArgs, AfterImageDeleteEventArgs, ICssClassArgs, IDropDownItemModel, IImageCommandsArgs, IImageNotifyArgs, ImageDropEventArgs, ImageSuccessEventArgs, IRenderer, IRichTextEditor, IShowPopupArgs, IToolbarItemModel, NotifyArgs, OffsetPosition, ResizeArgs, ImageFailedEventArgs, SlashMenuItemSelectArgs} from '../base/interface';
 import { convertToBlob, dispatchEvent, hasClass, parseHtml } from '../base/util';
 import { RendererFactory } from '../services/renderer-factory';
 import { ServiceLocator } from '../services/service-locator';
@@ -252,6 +252,8 @@ export class Image {
         this.parent.trigger(events.resizeStop, args);
         this.parent.formatter.editorManager.observer.on(events.checkUndo, this.undoStack, this);
         this.parent.formatter.saveData();
+        EventHandler.remove(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing);
+        EventHandler.remove(this.contentModule.getDocument(), Browser.touchEndEvent, this.resizeEnd);
     }
 
     private resizeStart(e: PointerEvent | TouchEvent, ele?: Element): void {
@@ -837,7 +839,11 @@ export class Image {
         removeClass(imgFocusNodes, classes.CLS_IMG_FOCUS);
     }
 
-    private openDialog(isInternal?: boolean, event?: KeyboardEventArgs, selection?: NodeSelection, ele?: Node[], parentEle?: Node[]): void {
+    private openDialog(
+        isInternal?: boolean,
+        event?: KeyboardEventArgs | MouseEventArgs,
+        selection?: NodeSelection, ele?: Node[], parentEle?: Node[]
+    ): void {
         let range: Range;
         let save: NodeSelection;
         let selectNodeEle: Node[];
@@ -879,8 +885,12 @@ export class Image {
             });
         }
     }
-    private showDialog(): void {
-        this.openDialog(false);
+    private showDialog(args?: SlashMenuItemSelectArgs): void {
+        if (!isNOU(args.originalEvent)) {
+            this.openDialog(false, args.originalEvent as MouseEventArgs);
+        } else {
+            this.openDialog(false);
+        }
         this.setCssClass({cssClass: this.parent.getCssClass()});
     }
     private closeDialog(): void {
@@ -1204,7 +1214,13 @@ export class Image {
                     subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
                 });
             this.dialogObj.hide({ returnValue: false } as Event);
-            this.parent.inputElement.focus({ preventScroll: true });
+            if (this.parent.iframeSettings.enable) {
+                this.parent.inputElement.focus({ preventScroll: true });
+            }
+            else {
+                (e.selectNode[0] as HTMLElement).focus({ preventScroll: true });
+            }
+            e.selection.restore();
         }
     }
     private handleKeyDown(): void {
@@ -1403,6 +1419,8 @@ export class Image {
         if (!isNOU(this.dialogObj)) {
             const imgSizeHeader: string = this.i10n.getConstant('imageSizeHeader');
             const linkUpdate: string = this.i10n.getConstant('dialogUpdate');
+            this.changedHeightValue = null;
+            this.changedWidthValue = null;
             const dialogContent: HTMLElement = this.imgsizeInput(e);
             const selectObj: IImageNotifyArgs = { args: e.args, selfImage: this, selection: e.selection, selectNode: e.selectNode };
             this.dialogObj.setProperties({
@@ -1698,7 +1716,7 @@ export class Image {
         const previousSubCommand: string = ((this as IImageNotifyArgs).args as ActionBeginEventArgs).item.subCommand;
         ((this as IImageNotifyArgs).args as ActionBeginEventArgs).item.subCommand = (e.target as HTMLElement).innerHTML === 'Update' ? 'Replace' : ((this as IImageNotifyArgs).args as ActionBeginEventArgs).item.subCommand;
         if (!isNOU(proxy.uploadUrl) && proxy.uploadUrl.url !== '') {
-            proxy.uploadUrl.cssClass = (((this as IImageNotifyArgs).selectParent && ((this as IImageNotifyArgs).selectParent[0] as HTMLElement).classList.contains('e-imgbreak') === true)) ? classes.CLS_IMGBREAK : (proxy.parent.insertImageSettings.display === 'inline' ?
+            proxy.uploadUrl.cssClass = (((this as IImageNotifyArgs).selectParent && ((this as IImageNotifyArgs).selectParent[0] as HTMLElement).classList && ((this as IImageNotifyArgs).selectParent[0] as HTMLElement).classList.contains('e-imgbreak') === true)) ? classes.CLS_IMGBREAK : (proxy.parent.insertImageSettings.display === 'inline' ?
                 classes.CLS_IMGINLINE : classes.CLS_IMGBREAK);
             proxy.dialogObj.hide({ returnValue: false } as Event);
             if (proxy.dialogObj !== null) {
@@ -1957,7 +1975,11 @@ export class Image {
             success: (e: ImageSuccessEventArgs) => {
                 e.detectImageSource = ImageInputSource.Uploaded;
                 this.parent.trigger(events.imageUploadSuccess, e, (e: ImageSuccessEventArgs) => {
-                    if (!isNOU(this.parent.insertImageSettings.path)) {
+                    let isReplaceWithoutRemovalAction: boolean = false;
+                    if (!isNOU(previousFileInfo) && previousFileInfo.name !== e.file.name && e.operation.toLocaleLowerCase() === 'remove') {
+                        isReplaceWithoutRemovalAction = true;
+                    }
+                    if (!isNOU(this.parent.insertImageSettings.path) && !isReplaceWithoutRemovalAction) {
                         const url: string = this.parent.insertImageSettings.path + (e).file.name;
                         // Update the URL of the previously uploaded image
                         if (!isNOU(previousFileInfo) && (e as SuccessEventArgs).operation === 'upload') {

@@ -1,16 +1,16 @@
-import { Spreadsheet, locale, dialog, mouseDown, renderFilterCell, initiateFilterUI, FilterInfoArgs, getStartEvent, duplicateSheetOption, focus, getChartsIndexes, refreshChartCellModel, ExtendedSpreadsheet, isReadOnlyCells, readonlyAlert } from '../index';
+import { Spreadsheet, locale, dialog, mouseDown, renderFilterCell, initiateFilterUI, FilterInfoArgs, getStartEvent, duplicateSheetOption, focus, getChartsIndexes, refreshChartCellModel, ExtendedSpreadsheet, readonlyAlert } from '../index';
 import { reapplyFilter, filterCellKeyDown, DialogBeforeOpenEventArgs, ExtendedPredicateModel, refreshFilterRange, createNoteIndicator } from '../index';
-import { getFilteredColumn, cMenuBeforeOpen, filterByCellValue, clearFilter, getFilterRange, applySort, updateSortCollection } from '../index';
-import { SortOptions, SortDescriptor, LocaleNumericSettings, FilterPredicateOptions, applyPredicates, isHiddenRow } from '../../workbook/index';
+import { getFilteredColumn, cMenuBeforeOpen, filterByCellValue, clearFilter, getFilterRange, applySort } from '../index';
+import { SortOptions, SortDescriptor, LocaleNumericSettings, FilterPredicateOptions, applyPredicates, isHiddenRow, isReadOnlyCells } from '../../workbook/index';
 import { checkIsNumberAndGetNumber } from '../../workbook/common/internalization';
-import { filterRangeAlert, setFilteredCollection, beforeDelete, sheetsDestroyed, initiateFilter, duplicateSheetFilterHandler, moveSheetHandler } from '../../workbook/common/event';
+import { filterRangeAlert, setFilteredCollection, beforeDelete, sheetsDestroyed, initiateFilter, duplicateSheetFilterHandler, moveSheetHandler, updateSortCollection } from '../../workbook/common/event';
 import { FilterCollectionModel, getRangeIndexes, ColumnModel, beforeInsert, parseLocaleNumber, ChartModel } from '../../workbook/index';
 import { getIndexesFromAddress, getSwapRange, getColumnHeaderText, CellModel, getDataRange, isCustomDateTime } from '../../workbook/index';
 import { getData, Workbook, getTypeFromFormat, getCell, getCellIndexes, getRangeAddress, getSheet, inRange } from '../../workbook/index';
 import { SheetModel, sortImport, clear, getColIndex, SortCollectionModel, setRow, ExtendedRowModel, hideShow } from '../../workbook/index';
 import { beginAction, FilterOptions, BeforeFilterEventArgs, FilterEventArgs, ClearOptions, getValueFromFormat } from '../../workbook/index';
 import { isFilterHidden, isNumber, DateFormatCheckArgs, checkDateFormat, isDateTime, dateToInt, getFormatFromType } from '../../workbook/index';
-import { getComponent, EventHandler, isUndefined, isNullOrUndefined, Browser, KeyboardEventArgs, removeClass } from '@syncfusion/ej2-base';
+import { getComponent, EventHandler, isUndefined, isNullOrUndefined, Browser, KeyboardEventArgs, removeClass, IntlBase, cldrData } from '@syncfusion/ej2-base';
 import { L10n, detach, classList, getNumericObject } from '@syncfusion/ej2-base';
 import { Internationalization } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
@@ -398,16 +398,17 @@ export class Filter {
      * @param {number} sheetIdx - Specify the sheet index.
      * @param {boolean} isCut - Specify the bool value.
      * @param {boolean} preventRefresh - Specify the preventRefresh.
+     * @param {boolean} clearAction - Specify the current action is clear or not.
      * @returns {void} - Removes all the filter related collections for the active sheet.
      */
-    private removeFilter(sheetIdx: number, isCut?: boolean, preventRefresh?: boolean): void {
+    private removeFilter(sheetIdx: number, isCut?: boolean, preventRefresh?: boolean, clearAction?: boolean): void {
         const filterOption: { range: number[], allowHeaderFilter?: boolean } = this.filterRange.get(sheetIdx);
         const range: number[] = filterOption.range.slice();
         const allowHeaderFilter: boolean = filterOption.allowHeaderFilter;
         const rangeAddr: string = getRangeAddress(range);
         let args: { [key: string]: Object };
         if (!isCut) {
-            args = { action: 'filter', eventArgs: { range: rangeAddr, sheetIndex: sheetIdx, cancel: false } };
+            args = { action: 'filter', eventArgs: { range: rangeAddr, sheetIndex: sheetIdx, cancel: false }, isClearAction: clearAction };
             this.parent.notify(beginAction, args);
             if ((args.eventArgs as { cancel: boolean }).cancel) {
                 return;
@@ -415,6 +416,15 @@ export class Filter {
             delete (args.eventArgs as { cancel: boolean }).cancel;
         }
         if (this.filterCollection.get(sheetIdx).length || preventRefresh) {
+            if (this.filterCollection.get(sheetIdx).length && clearAction) {
+                const newArgs: { [key: string]: Object } = {
+                    action: 'filter',
+                    eventArgs: {
+                        range: rangeAddr, sheetIndex: sheetIdx, predicates: [], previousPredicates: this.filterCollection.get(sheetIdx)
+                    }, isClearAction: clearAction
+                };
+                this.parent.notify(completeAction, newArgs);
+            }
             this.clearFilterHandler({ preventRefresh: preventRefresh, sheetIndex: sheetIdx });
         }
         this.filterRange.delete(sheetIdx);
@@ -1122,7 +1132,11 @@ export class Filter {
                             } else {
                                 const parsedNumVal: number = intl.parseNumber(val.trim(), { format: 'n' });
                                 if (isNumber(parsedNumVal)) {
-                                    val = parsedNumVal;
+                                    if (/^(\(\d+\)|\d+)$/.test(val.trim())) {
+                                        val = -parsedNumVal;
+                                    } else {
+                                        val = parsedNumVal;
+                                    }
                                 } else {
                                     const checkVal: string = val.trim();
                                     const dateEventArgs: DateFormatCheckArgs = { value: checkVal, cell: { value: checkVal } };
@@ -1281,8 +1295,15 @@ export class Filter {
         let groupedData: { [key: string]: Object }[] = [];
         let otherData: { [key: string]: Object }[] = [];
         let value: string; let month: string; let day: number; let date: Date; let mId: string; let dId: string; let monthNum: number;
-        const months: string[] = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October',
+        let months: string[] = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October',
             'November', 'December'];
+        if (this.parent.locale !== 'en-US') {
+            const formats: { months?: object } = IntlBase.getDependables(cldrData, this.parent.locale, null).dateObject;
+            const monthObj: Object[] = formats.months['stand-alone'] ? formats.months['stand-alone'].wide : {};
+            if (Object.keys(monthObj).length === 12) {
+                months = Object.keys(monthObj).map(Number).map((key: number) => monthObj[key as number]) as string[];
+            }
+        }
         let grpObj: { [key: string]: Object };
         let indeterminate: boolean =  false;
         const sheet: SheetModel = this.parent.getActiveSheet();
@@ -1592,7 +1613,9 @@ export class Filter {
         }
         const addr: string = `${sheet.name}!${totalRange.address}`;
         const fullAddr: string = getRangeAddress(fullRange);
-        const col: { type: string, isDateAvail: boolean, isMultiFormattedCol?: boolean } = this.getColumnType(sheet, colIndex - 1, range);
+        const col: {
+            type: string, isDateAvail: boolean, isMultiFormattedCol?: boolean
+        } = this.getColumnType(sheet, colIndex - 1, range, true);
         const type: string = col.type;
         let templateColData: { [key: string]: Object }[];
         const isDateCol: boolean = type === 'date' || col.isDateAvail;
@@ -1844,7 +1867,24 @@ export class Filter {
             return;
         }
         if (args.action === 'filtering') {
-            predicates = predicates.concat(args.filterCollection);
+            const processWildcards: Function = (filterCollection: PredicateModel[]): PredicateModel[] => {
+                return filterCollection.map((predicate: PredicateModel) => {
+                    if (predicate && typeof predicate.value === 'string' && predicate.value.includes('*')) {
+                        if (predicate.value.startsWith('*') && predicate.value.endsWith('*')) {
+                            predicate.value = predicate.value.split('*').join('');
+                            predicate.operator = 'contains';
+                        } else if (predicate.value.endsWith('*')) {
+                            predicate.value = predicate.value.split('*').join('');
+                            predicate.operator = 'startswith';
+                        } else if (predicate.value.startsWith('*')) {
+                            predicate.value = predicate.value.split('*').join('');
+                            predicate.operator = 'endswith';
+                        }
+                    }
+                    return predicate;
+                });
+            };
+            predicates = predicates.concat(processWildcards(args.filterCollection));
         }
         this.filterCollection.set(sheetIdx, predicates);
         const options: FilterPredicateOptions = this.getPredicates(predicates);
@@ -2003,15 +2043,17 @@ export class Filter {
      * @param {SheetModel} sheet - Specify the sheet.
      * @param {number} colIndex - Specify the colindex
      * @param {number[]} range - Specify the range.
+     * @param {boolean} isFilterDialog - Indicates whether the filter dialog UI is open.
      * @returns {string} - Gets the column type to pass it into the excel filter options.
      */
     private getColumnType(
-        sheet: SheetModel, colIndex: number, range: number[]): { type: string, isDateAvail: boolean, isMultiFormattedCol: boolean } {
+        sheet: SheetModel, colIndex: number, range: number[], isFilterDialog?: boolean
+    ): { type: string, isDateAvail: boolean, isMultiFormattedCol: boolean } {
         let num: number = 0; let str: number = 0; let date: number = 0; const time: number = 0; let cell: CellModel;
         let formatOption: { type?: string }; let format: string; let isMultiFormattedCol: boolean;
         for (let i: number = range[0]; i <= range[2]; i++) {
             cell = getCell(i, colIndex, sheet);
-            if (cell) {
+            if (cell && !(isFilterDialog && !(cell.value || Number(cell.value) === 0))) {
                 if (cell.format && cell.format !== 'General') {
                     const type: string = getTypeFromFormat(cell.format).toLowerCase();
                     switch (type) {
@@ -2618,7 +2660,7 @@ export class Filter {
         if (this.filterRange.has(info.sheetIndex)) {
             const indexes: number[] = this.filterRange.get(info.sheetIndex).range.slice();
             if (inRange(info.indices, indexes[0], indexes[1]) && inRange(info.indices, indexes[0], indexes[3])) {
-                this.removeFilter(info.sheetIndex);
+                this.removeFilter(info.sheetIndex, null, null, true);
             }
         }
     }
@@ -2648,7 +2690,24 @@ export class Filter {
         }
     }
 
-    private updateSortCollectionHandler(args: { sortOptions?: SortOptions }): void {
+    private updateSortCollectionHandler(args: {
+        sortOptions?: SortOptions, isDuplicate?: boolean, curSheetIndex?: number, newSheetIndex?: number
+    }): void {
+        if (args.isDuplicate) {
+            if (this.parent.sortCollection && this.parent.sortCollection.length > 0) {
+                const newSortCollection: SortCollectionModel[] = [];
+                for (let j: number = 0; j < this.parent.sortCollection.length; j++) {
+                    const sortCol: SortCollectionModel = this.parent.sortCollection[j as number];
+                    if (sortCol.sheetIndex === args.curSheetIndex) {
+                        const updatedSortCol: SortCollectionModel = Object.assign({}, sortCol);
+                        updatedSortCol.sheetIndex = args.newSheetIndex;
+                        newSortCollection.push(updatedSortCol);
+                    }
+                }
+                this.parent.sortCollection.push(...newSortCollection);
+            }
+            return;
+        }
         const sheet: SheetModel = this.parent.getActiveSheet();
         const sheetIdx: number = this.parent.activeSheetIndex;
         const filterRange: { useFilterRange: boolean, range: number[], allowHeaderFilter?: boolean } = this.filterRange.get(sheetIdx);

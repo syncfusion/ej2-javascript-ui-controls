@@ -725,13 +725,15 @@ export class SvgRenderer implements IRenderer {
 
         }
         const point: PointModel = cornersPointsBeforeRotation(element).topLeft;
-        htmlElement.setAttribute(
-            'style', 'height:' + (element.actualSize.height) + 'px; width:' + (element.actualSize.width) +
-            'px;left:' + point.x + 'px; top:' + point.y + 'px;' +
-            'position:absolute;transform:rotate(' + (element.rotateAngle + element.parentTransform) + 'deg);' +
-            'pointer-events:' + (value ? 'all' : 'none')
-            + ';visibility:' + ((element.visible) ? 'visible' : 'hidden') + ';opacity:' + element.style.opacity + ';'
-        );
+        htmlElement.style.height = element.actualSize.height + 'px';
+        htmlElement.style.width = element.actualSize.width + 'px';
+        htmlElement.style.left = point.x + 'px';
+        htmlElement.style.top = point.y + 'px';
+        htmlElement.style.position = 'absolute';
+        htmlElement.style.transform = `rotate(${element.rotateAngle + element.parentTransform}deg)`;
+        htmlElement.style.pointerEvents = value ? 'all' : 'none';
+        htmlElement.style.visibility = element.visible ? 'visible' : 'hidden';
+        htmlElement.style.opacity = element.style.opacity.toString();
     }
 
 
@@ -766,8 +768,9 @@ export class SvgRenderer implements IRenderer {
         if (clipPath) {
             nativeElement.removeChild(clipPath);
         }
-        nativeElement.setAttribute('style', 'visibility:' +
-            ((element.visible) ? 'visible' : 'hidden') + ';opacity:' + element.style.opacity + ';');
+        nativeElement.style.visibility = element.visible ? 'visible' : 'hidden';
+        nativeElement.style.opacity = element.style.opacity ? element.style.opacity.toString() : '1';
+
         this.setNativTransform(element, nativeElement, height, width);
         if (element.scale === 'Slice') {
             this.drawClipPath(element, nativeElement, height, width, parentSvg);

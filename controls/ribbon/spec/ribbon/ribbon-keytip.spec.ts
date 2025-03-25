@@ -1380,7 +1380,70 @@ describe('Ribbon', () => {
             document.body.dispatchEvent((new KeyboardEvent('keydown',{'key':'z'})));
             document.body.dispatchEvent((new KeyboardEvent('keydown',{'key':'r'})));
             expect(document.querySelector('#ribbon_tab_collapsebutton').classList.contains('e-ribbon-expand-btn')).toBe(true);                           
-        });    
+        });
+        it('for disabled items', () => {
+            ribbon = new Ribbon({
+                enableKeyTips: true,
+                tabs: [{
+                    id: "tab1",
+                    header: "Home",
+                    keyTip: "H",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "split-item",
+                                keyTip: "P",
+                                disabled: true,
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large,
+                                splitButtonSettings: {
+                                    content: 'Header',
+                                    items: [{ text: 'Insert Header', id:  'insert'}, { text: 'Edit Header' }, { text: 'Remove Header' }]
+                                }
+                            },{
+                                id: "checkbox-item",
+                                keyTip: "R",
+                                disabled: true,
+                                type: RibbonItemType.CheckBox,
+                                checkBoxSettings: {
+                                    label: 'Ruler',
+                                    checked: false,
+                                }
+                            },{
+                                id: "colorpicker-item",
+                                keyTip: "C",
+                                disabled: true,
+                                type: RibbonItemType.ColorPicker,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            document.body.dispatchEvent((new KeyboardEvent('keydown', { altKey: true, key: 'Meta' })));
+            expect(document.querySelector('#tab1_keytip') !== null).toBe(true);
+            document.body.dispatchEvent((new KeyboardEvent('keydown', { 'key': 'h' })));
+            expect(document.querySelector('#split-item_keytip') !== null).toBe(true);
+            document.body.dispatchEvent((new KeyboardEvent('keydown', { 'key': 'p' })));
+            expect(document.querySelector('#split-item_dropdownbtn-popup').classList.contains('e-popup-close')).toBe(true);
+            document.body.dispatchEvent((new KeyboardEvent('keydown', { altKey: true, key: 'Meta' })));
+            expect(document.querySelector('#tab1_keytip') !== null).toBe(true);
+            document.body.dispatchEvent((new KeyboardEvent('keydown', { 'key': 'h' })));
+            expect(document.querySelector('#checkbox-item_keytip') !== null).toBe(true);
+            document.body.dispatchEvent((new KeyboardEvent('keydown', { 'key': 'r' })));
+            expect(ribbon.element.querySelector('#checkbox-item_container').querySelector('.e-frame').classList.contains('e-check')).toBe(false);
+            document.body.dispatchEvent((new KeyboardEvent('keydown', { altKey: true, key: 'Meta' })));
+            expect(document.querySelector('#tab1_keytip') !== null).toBe(true);
+            document.body.dispatchEvent((new KeyboardEvent('keydown', { 'key': 'h' })));
+            expect(document.querySelector('#colorpicker-item_keytip') !== null).toBe(true);
+            document.body.dispatchEvent((new KeyboardEvent('keydown', { 'key': 'c' })));
+            expect(document.querySelector('.e-colorpicker-popup.e-ribbon-control').classList.contains('e-popup-close')).toBe(true);
+        });
         it('removes for tab when Esc key pressed', () => {
             ribbon = new Ribbon({
                 enableKeyTips: true,

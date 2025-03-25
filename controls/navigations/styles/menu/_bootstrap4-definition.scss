@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $menu-bigger-caret-font-size: 12px !default;
 $menu-bigger-caret-li-padding: 35px !default;
 $menu-bigger-caret-right: 15px !default;
@@ -32,7 +34,7 @@ $menu-li-height: 30px !default;
 $menu-li-padding: 0 12px !default;
 $menu-li-text-indent: 12px !default;
 $menu-li-right-padding: 12px !default;
-$menu-li-selection-bgcolor: darken($gray-100, 2%) !default;
+$menu-li-selection-bgcolor: color.adjust($gray-100, $lightness: -2%) !default;
 $menu-li-selected-outline: 0 solid $menu-li-selection-bgcolor !default;
 $menu-li-selection-font-color: $primary-font !default;
 $menu-ul-header-padding: $menu-ul-padding !default;
@@ -40,7 +42,7 @@ $menu-separator-padding: 0 !default;
 $menu-icon-font-size: 14px !default;
 $menu-icon-bigger-font-size: 16px !default;
 $menu-seperator-border-color: $gray-200 !default;
-$menu-selected-color: darken($primary, 15%) !default;
+$menu-selected-color: color.adjust($primary, $lightness: -15%) !default;
 $menu-sub-ul-bgcolor: $primary-font !default;
 $menu-sub-li-border-color: $gray-100 !default;
 $menu-ul-bgcolor: transparent !default;

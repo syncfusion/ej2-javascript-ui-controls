@@ -5,6 +5,8 @@ import { createElement, detach, isNullOrUndefined, selectAll, Browser } from '@s
 import { EditorManager } from '../../../src/editor-manager/index';
 import { destroy, renderRTE } from '../../rich-text-editor/render.spec';
 import { RichTextEditor } from '../../../src';
+import { CustomUserAgentData } from '../../../src/common/user-agent';
+import { BACKSPACE_EVENT_INIT } from '../../constant.spec';
 
 function setCursorPoint(element: Element, point: number) {
     let range: Range = document.createRange();
@@ -718,78 +720,6 @@ describe ('left indent testing', () => {
                 editorObj.execCommand("Lists", 'OL', null);
                 expect((editorObj.nodeSelection.range.startContainer as HTMLElement).classList.contains('startfocus')).toBe(true);
             });
-            afterAll(() => {
-                detach(elem);
-            });
-        });
-
-        describe('941259 - Auto List Conversion - Space Key Press Tests', () => {
-            let elem: HTMLElement;
-            let editorObj: EditorManager;
-            let editNode: HTMLElement;
-            let startNode: Node;
-            let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 32 } };
-
-            beforeEach(() => {
-                elem = createElement('div', {
-                    id: 'dom-node',
-                    innerHTML: `<div id="content-edit">
-                                    <ol><li class="olNode">1.</li></ol>
-                                    <ul><li class="ulNode">1.</li></ul>
-                                    <ul><li class="ulNode-star">*</li></ul>
-                                    <ol><li class="olNode-star">*</li></ol>
-                                </div>`
-                });
-                document.body.appendChild(elem);
-                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
-                editNode = editorObj.editableElement as HTMLElement;
-            });
-
-            afterEach(() => {
-                detach(elem);
-            });
-
-            it('Should not change the OL list when "1." is pressed at the start of OL\'s LI content', () => {
-                startNode = editNode.querySelector('.olNode').childNodes[0];
-                setCursorPoint(startNode as Element, 2);
-                editNode.focus();
-                keyBoardEvent.event.shiftKey = false;
-                keyBoardEvent.action = 'space';
-                keyBoardEvent.event.which = 32;
-                (editorObj as any).editorKeyDown(keyBoardEvent);
-                expect(editNode.querySelector('.olNode').parentElement.tagName).toBe('OL');
-            });
-
-            it('Should change UL to OL when "1." is pressed at the start of UL’s LI content', () => {
-                startNode = editNode.querySelector('.ulNode').childNodes[0];
-                setCursorPoint(startNode as Element, 2);
-                editNode.focus();
-                keyBoardEvent.action = 'space';
-                keyBoardEvent.event.which = 32;
-                (editorObj as any).editorKeyDown(keyBoardEvent);
-                expect(editNode.querySelector('.ulNode').parentElement.tagName).toBe('OL'); // Expected change
-            });
-
-            it('Should not change the UL list when "*" is pressed at the start of UL\'s LI content', () => {
-                startNode = editNode.querySelector('.ulNode-star').childNodes[0];
-                setCursorPoint(startNode as Element, 1);
-                editNode.focus();
-                keyBoardEvent.action = 'space';
-                keyBoardEvent.event.which = 32;
-                (editorObj as any).editorKeyDown(keyBoardEvent);
-                expect(editNode.querySelector('.ulNode-star').parentElement.tagName).toBe('UL');
-            });
-
-            it('Should change OL to UL when "*" is pressed at the start of OL’s LI content', () => {
-                startNode = editNode.querySelector('.olNode-star').childNodes[0];
-                setCursorPoint(startNode as Element, 1);
-                editNode.focus();
-                keyBoardEvent.action = 'space';
-                keyBoardEvent.event.which = 32;
-                (editorObj as any).editorKeyDown(keyBoardEvent);
-                expect(editNode.querySelector('.olNode-star').parentElement.tagName).toBe('UL'); // Expected change
-            });
-
             afterAll(() => {
                 detach(elem);
             });
@@ -1868,6 +1798,78 @@ describe ('left indent testing', () => {
             });
         });
 
+        describe('941259 - Auto List Conversion - Space Key Press Tests', () => {
+            let elem: HTMLElement;
+            let editorObj: EditorManager;
+            let editNode: HTMLElement;
+            let startNode: Node;
+            let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 32 } };
+       
+            beforeEach(() => {
+                elem = createElement('div', {
+                    id: 'dom-node',
+                    innerHTML: `<div id="content-edit">
+                                    <ol><li class="olNode">1.</li></ol>
+                                    <ul><li class="ulNode">1.</li></ul>
+                                    <ul><li class="ulNode-star">*</li></ul>
+                                    <ol><li class="olNode-star">*</li></ol>
+                                </div>`
+                });
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+       
+            afterEach(() => {
+                detach(elem);
+            });
+       
+            it('Should not change the OL list when "1." is pressed at the start of OL\'s LI content', () => {
+                startNode = editNode.querySelector('.olNode').childNodes[0];
+                setCursorPoint(startNode as Element, 2);
+                editNode.focus();
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'space';
+                keyBoardEvent.event.which = 32;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelector('.olNode').parentElement.tagName).toBe('OL');
+            });
+       
+            it('Should change UL to OL when "1." is pressed at the start of UL’s LI content', () => {
+                startNode = editNode.querySelector('.ulNode').childNodes[0];
+                setCursorPoint(startNode as Element, 2);
+                editNode.focus();
+                keyBoardEvent.action = 'space';
+                keyBoardEvent.event.which = 32;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelector('.ulNode').parentElement.tagName).toBe('OL'); // Expected change
+            });
+       
+            it('Should not change the UL list when "*" is pressed at the start of UL\'s LI content', () => {
+                startNode = editNode.querySelector('.ulNode-star').childNodes[0];
+                setCursorPoint(startNode as Element, 1);
+                editNode.focus();
+                keyBoardEvent.action = 'space';
+                keyBoardEvent.event.which = 32;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelector('.ulNode-star').parentElement.tagName).toBe('UL');
+            });
+       
+            it('Should change OL to UL when "*" is pressed at the start of OL’s LI content', () => {
+                startNode = editNode.querySelector('.olNode-star').childNodes[0];
+                setCursorPoint(startNode as Element, 1);
+                editNode.focus();
+                keyBoardEvent.action = 'space';
+                keyBoardEvent.event.which = 32;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(editNode.querySelector('.olNode-star').parentElement.tagName).toBe('UL'); // Expected change
+            });
+       
+            afterAll(() => {
+                detach(elem);
+            });
+        });
+
         describe('872830 - Space key press cursor position test ', () => {
             let elem: HTMLElement;
             let innerValue: string = `<div id="content-edit"><p>RTE Content</p><p class="selectNode">1.</p><div>`;
@@ -2072,7 +2074,7 @@ describe ('left indent testing', () => {
                 expect(editNode.querySelectorAll('p').length === 1).toBe(true);
             });
         });
-        
+
         describe('Backspace key press at the start of the list when no content is previous to the list', () => {
             let elem: HTMLElement;
             let innerValue: string = `<div id="content-edit"><ol><li id="firstli">first</li><li>second</li><li>third﻿﻿<br></li></ol><div>`;
@@ -2118,6 +2120,67 @@ describe ('left indent testing', () => {
                 detach(elem);
             });
         });
+
+        describe('Safari cursor positioning after list removal', () => {
+            let editorObj: EditorManager;
+            let editNode: HTMLElement;
+            let elem: HTMLElement;
+            let startNode: HTMLElement;
+            let defaultUA: string = navigator.userAgent;
+            let safari: string = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15";
+            let keyBoardEvent: any = {
+                callBack: function () { },
+                event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 8 }
+            };
+            let innerValue: string = `<div id="content-edit" contenteditable="true"><p>Some text before the list</p><ol><li id="firstli">First item</li><li id="secondli">Second item</li><li id="thirdli">Third item</li></ol></div>`;
+        
+            beforeEach(() => {
+                elem = createElement('div', {
+                    id: 'dom-node',
+                    innerHTML: innerValue
+                });
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                Browser.userAgent = safari;
+                editorObj.userAgentData = new CustomUserAgentData(Browser.userAgent, true);
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+        
+            afterEach(() => {
+                detach(elem);
+                Browser.userAgent = defaultUA;
+                editorObj.userAgentData = new CustomUserAgentData(Browser.userAgent, false);
+            });
+        
+            it('cursor position testing when whole list is selected and press backspace in Safari', () => {
+                startNode = editNode.querySelector('#firstli');
+                endNode = editNode.querySelector('#thirdli');
+                setCursorPoint(startNode.firstChild as Element, 0);
+                editorObj.nodeSelection.setSelectionText(document, startNode.childNodes[0], endNode.childNodes[0], 0, 10);
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'backspace';
+                keyBoardEvent.event.which = 8;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(window.getSelection().getRangeAt(0).startOffset === 25).toBe(true);
+            });
+
+            it('cursor position testing when partial list is selected and press backspace in Safari', () => {
+                innerValue = `<div id="content-edit" contenteditable="true"><p>Some text before the list</p><ol><li id="firstli">First item</li><li id="secondli">Second item</li><li id="thirdli">Third item</li></ol></div>`
+                startNode = editNode.querySelector('#secondli');
+                endNode = editNode.querySelector('#thirdli');
+                setCursorPoint(startNode.firstChild as Element, 0);
+                editorObj.nodeSelection.setSelectionText(document, startNode.childNodes[0], endNode.childNodes[0], 0, 10);
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'backspace';
+                keyBoardEvent.event.which = 8;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                expect(window.getSelection().getRangeAt(0).startOffset === 10).toBe(true);
+            });
+
+            afterAll(() => {
+                detach(elem);
+            });
+        })
 
         describe('Backspace key press testing in list', () => {
             let elem: HTMLElement;
@@ -2935,7 +2998,7 @@ describe ('left indent testing', () => {
             expect(window.getSelection().getRangeAt(0).startContainer.parentElement.innerHTML === 'list 2.1list 1.1').toBe(true);
             expect(editorObj.inputElement.querySelector("OL").childNodes.length === 3).toBe(true);
             done();
-          });
+        });
     });
 
     describe('939650 - List is created at the last cell of the table instead of the intended position in Mac Safari browser', () => {
@@ -3068,7 +3131,44 @@ describe ('left indent testing', () => {
             detach(elem);
         });
     });
-
+    describe('942860 - Rich Text Editor - Inline Code Formatting Reverts in Nested Lists', () => {
+        let editorObj: RichTextEditor;
+        beforeAll(() => {
+            editorObj = renderRTE({
+                toolbarSettings: {
+                    items: ['OrderedList', 'UnorderedList']
+                },
+                value: `<ol>
+                  <li>test 2</li>
+                  <li>t<span style="background-color: rgb(255, 255, 0);"><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><strong><em><span style="text-decoration: underline;"><span style="text-decoration: line-through;">est 3</span></span></em></strong></span></span></li><li><span style="background-color: rgb(255, 255, 0);"><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><strong><em><span style="text-decoration: underline;"><span style="text-decoration: line-through;" class="targetElem"><br></span></span></em></strong></span></span></li>
+                </ol>`
+            });
+        });
+        afterAll((done) => {
+            destroy(editorObj);
+            done();
+        });
+        it('Should retain formatting when pressing enter key at the last list item', (done) => {
+            let startNode = editorObj.inputElement.querySelector('.targetElem');
+            editorObj.formatter.editorManager.nodeSelection.setCursorPoint(document, startNode, 0);
+            let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+            keyBoardEvent.code = 'Enter';
+            keyBoardEvent.action = 'enter';
+            keyBoardEvent.which = 13;
+            (editorObj as any).keyDown(keyBoardEvent);
+            expect(editorObj.inputElement.querySelector('OL').nextElementSibling != null).toBe(true);
+            expect((editorObj as any).inputElement.querySelector('OL').nextElementSibling.innerHTML === `<span style="background-color: rgb(255, 255, 0);"><span style="color: rgb(255, 0, 0); text-decoration: inherit;"><strong><em><span style="text-decoration: underline;"><span style="text-decoration: line-through;" class="targetElem"><br></span></span></em></strong></span></span>`).toBe(true);
+            editorObj.enterKey = 'BR';
+            editorObj.dataBind();
+            editorObj.value = `<ol><li>Rich text Editor</li><li><br></li></ol>`;
+            editorObj.dataBind();
+            editorObj.formatter.editorManager.nodeSelection.setCursorPoint(document, editorObj.inputElement.querySelectorAll('OL LI')[1], 0);
+            (editorObj as any).keyDown(keyBoardEvent);
+            expect(editorObj.inputElement.innerHTML === '<ol><li>Rich text Editor</li></ol><br>').toBe(true);
+            expect(editorObj.inputElement.querySelector('OL').nextElementSibling.nodeName === 'BR').toBe(true);
+            done();
+        });
+    });
     describe('EJ2-941211 - Numbered List Not Applied Properly After Reverting Bullet List', () => {
         let editorObj: EditorManager;
         let editNode: HTMLElement;
@@ -3095,6 +3195,89 @@ describe ('left indent testing', () => {
         });
         afterAll(() => {
             detach(elem);
+        });
+    });
+
+    describe('Tab key press testing in nested list', function () {
+        let elem: HTMLElement;
+        const innerValue: string = "<div id=\"content-edit\"><ul><li>Basic features&nbsp;&nbsp;&nbsp;&nbsp; include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</li><li class=\"focusNode\">The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.</li></ul></div>";
+        let editorObj: EditorManager;
+        let editNode: HTMLElement;
+        let startNode: HTMLElement;
+        let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9 } };
+    
+        beforeEach(function () {
+            elem = createElement('div', {
+                id: 'dom-node', innerHTML: innerValue
+            });
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") as HTMLElement });
+            editNode = editorObj.editableElement as HTMLElement;
+        });
+    
+        afterEach(function () {
+           detach(elem);
+        });
+    
+        it('Tab key press sequence testing', function () {
+            startNode = editNode.querySelector('.focusNode') as HTMLElement;
+            setCursorPoint(startNode, 0);
+            keyBoardEvent.action = 'tab';
+            keyBoardEvent.event.which = 9;
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            startNode = editNode.querySelector('li') as HTMLElement;
+            setCursorPoint(startNode, 0);
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            expect(editNode.innerText).toEqual('Basic features     include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.\nThe toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.');
+        });
+    
+        afterAll(function () {
+           detach(elem);
+        });
+    });
+    
+
+    describe('945493 - Backspace on second line of first list reverts the list.', ()=> {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn)=> {
+            editor = renderRTE({
+                value: `<ul><li><span>Content</span><br><span>Second Content</span><br></li><li>Second list content</li></ul>`
+            });
+            done();
+        });
+        afterEach((done: DoneFn)=> {
+            destroy(editor);
+            done();
+        });
+        it('Should perform backspace action on first line of the first list item.', (done: DoneFn)=> {
+            editor.focusIn();
+            const range: Range = new Range();
+            range.setStart(editor.inputElement.querySelector('li').firstChild.firstChild, 0);
+            range.collapse(true);
+            editor.selectRange(range);
+            const backspaceEvent: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            expect(editor.inputElement.querySelectorAll('li').length).toBe(2);
+            editor.inputElement.dispatchEvent(backspaceEvent);
+            setTimeout(() => {
+                expect(editor.inputElement.querySelectorAll('li').length).toBe(1);
+                done();
+            }, 100);
+        });
+
+        it('Should not perform backspace action on second line of the first list item.', (done: DoneFn)=> {
+            editor.focusIn();
+            const range: Range = new Range();
+            range.setStart(editor.inputElement.querySelector('li').childNodes[2].firstChild, 0);
+            range.collapse(true);
+            editor.selectRange(range);
+            const backspaceEvent: KeyboardEvent = new KeyboardEvent('keydown', BACKSPACE_EVENT_INIT);
+            expect(editor.inputElement.querySelectorAll('li').length).toBe(2);
+            editor.inputElement.dispatchEvent(backspaceEvent);
+            setTimeout(() => {
+                expect(editor.inputElement.querySelectorAll('li').length).toBe(2);
+                done();
+            }, 100);
         });
     });
 });

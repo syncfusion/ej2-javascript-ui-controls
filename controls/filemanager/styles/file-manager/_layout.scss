@@ -163,7 +163,6 @@
 
       .e-toolbar-items .e-toolbar-item .e-dropdown-btn.e-btn.e-tbar-btn {
         border: 0;
-        box-shadow: none;
         @if $fm-skin-name != 'tailwind3' {
           font-weight: normal;
         }
@@ -194,6 +193,13 @@
         &:focus {
           border: $fe-tb-ddb-border;
           padding: $fe-tb-ddb-btn-hvr-padding;
+
+          @if $fm-skin-name == 'bootstrap5.3' {
+            .e-btn-icon,
+            .e-tbar-btn-text {
+              color: $secondary-text-color-hover;
+            }
+          }
         }
       }
 

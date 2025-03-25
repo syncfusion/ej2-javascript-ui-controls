@@ -95,7 +95,6 @@ export class Marker extends MarkerExplode {
             this.chart.trigger(pointRender, argsData);
             point.color = argsData.fill;
         }
-        point.color = argsData.fill;
         if (!argsData.cancel) {
             let y: Object;
             if (series.type === 'RangeArea' || series.type === 'RangeColumn' || series.drawType === 'RangeColumn'

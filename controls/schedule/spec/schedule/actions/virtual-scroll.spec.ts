@@ -422,6 +422,113 @@ describe('Virtual scroll', () => {
         });
     });
 
+    describe('check overScanCount property', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '550px', width: '750px', currentView: 'Month',
+                views: [
+                    { option: 'Day' },
+                    { option: 'Week', allowVirtualScrolling: true, overscanCount: 4 },
+                    { option: 'Month', allowVirtualScrolling: true, overscanCount: 4 }
+                ],
+                group: { byDate: true, resources: ['Rooms', 'Owners'] },
+                resources: [{
+                    field: 'RoomId', title: 'Room', name: 'Rooms',
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' },
+                        { RoomText: 'ROOM 3', Id: 3, RoomColor: '#56ca85' }
+                    ],
+                    textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
+                }, {
+                    field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                        { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 3, OwnerColor: '#f8a398' },
+                        { OwnerText: 'Sara', Id: 9, OwnerGroupId: 2, OwnerColor: '#7499e1' }
+                    ],
+                    textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId',
+                    colorField: 'OwnerColor'
+                }],
+                selectedDate: new Date(2018, 4, 1)
+            };
+            schObj = createSchedule(model, timelineResourceData, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('Month view - checking initial load with content rendering', () => {
+            const currentView: HTMLElement = schObj.element.querySelector('.e-toolbar-item.e-active-view');
+            expect(currentView.classList.contains('e-month')).toEqual(true);
+            expect(schObj.element.querySelector('.e-month-view').classList).toContain('e-virtual-scroll');
+            const headerWrap: HTMLElement = schObj.element.querySelector('.e-date-header-wrap tbody');
+            expect(headerWrap.lastElementChild.children.length).toEqual(63);
+            expect(headerWrap.querySelector('tr').childElementCount).toEqual(7);
+            const conWrap: HTMLElement = schObj.element.querySelector('.e-content-wrap');
+            expect(conWrap.querySelector('tbody').firstElementChild.children.length).toEqual(27);
+            expect(schObj.resourceBase.lastResourceLevel.length).toEqual(9);
+            expect(schObj.resourceBase.renderedResources.length).toEqual(9);
+            expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(22);
+            expect(schObj.element.querySelectorAll('.e-more-indicator').length).toEqual(1);
+            expect(conWrap.scrollLeft).toEqual(0);
+            expect(conWrap.lastElementChild.className).toEqual('e-virtual-track');
+            expect((conWrap.querySelector('.e-virtual-track') as HTMLElement).style.width).toEqual('2268px');
+        });
+
+        it('Month view - checking content area rendering after scroll action', () => {
+            const conWrap: HTMLElement = schObj.element.querySelector('.e-content-wrap');
+            const headerWrap: HTMLElement = schObj.element.querySelector('.e-date-header-wrap');
+            triggerScrollEvent(conWrap, conWrap.scrollTop, 1000);
+            expect(conWrap.scrollLeft).toEqual(1000);
+            expect((conWrap.querySelector('.e-virtual-track') as HTMLElement).style.width).toEqual('2268px');
+            expect((conWrap.querySelector('.e-content-table') as HTMLElement).style.transform).toEqual('translateX(972px)');
+            expect(headerWrap.scrollLeft).toEqual(1000);
+            expect(conWrap.querySelector('tr').childElementCount).toEqual(27);
+            expect(schObj.resourceBase.lastResourceLevel.length).toEqual(9);
+            expect(schObj.resourceBase.renderedResources.length).toEqual(9);
+            schObj.currentView = 'Week';
+            schObj.dataBind();
+        });
+
+        it('Week view - checking initial load content rendering', () => {
+            const currentView: HTMLElement = schObj.element.querySelector('.e-toolbar-item.e-active-view');
+            expect(currentView.classList.contains('e-week')).toEqual(true);
+            expect(schObj.element.querySelector('.e-week-view').classList).toContain('e-virtual-scroll');
+            const headerWrap: HTMLElement = schObj.element.querySelector('.e-date-header-wrap tbody');
+            expect(headerWrap.lastElementChild.children.length).toEqual(63);
+            expect(headerWrap.querySelector('tr').childElementCount).toEqual(7);
+            const conWrap: HTMLElement = schObj.element.querySelector('.e-content-wrap');
+            expect(conWrap.querySelector('tbody').firstElementChild.children.length).toEqual(27);
+            expect(schObj.resourceBase.lastResourceLevel.length).toEqual(9);
+            expect(schObj.resourceBase.renderedResources.length).toEqual(9);
+            expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(12);
+            expect(conWrap.scrollLeft).toEqual(0);
+            expect(conWrap.lastElementChild.className).toEqual('e-virtual-track');
+            expect((conWrap.querySelector('.e-virtual-track') as HTMLElement).style.width).toEqual('2268px');
+        });
+
+        it('Week view - checking content area rendering after scroll action', () => {
+            const conWrap: HTMLElement = schObj.element.querySelector('.e-content-wrap');
+            const headerWrap: HTMLElement = schObj.element.querySelector('.e-date-header-wrap');
+            triggerScrollEvent(conWrap, conWrap.scrollTop, 1000);
+            expect(conWrap.scrollLeft).toEqual(1000);
+            expect((conWrap.querySelector('.e-virtual-track') as HTMLElement).style.width).toEqual('2268px');
+            expect((conWrap.querySelector('.e-content-table') as HTMLElement).style.transform).toEqual('translateX(972px)');
+            expect(headerWrap.scrollLeft).toEqual(1000);
+            expect(conWrap.querySelector('tr').childElementCount).toEqual(27);
+            expect(schObj.resourceBase.lastResourceLevel.length).toEqual(9);
+            expect(schObj.resourceBase.renderedResources.length).toEqual(9);
+        });
+    });
+
     describe('vertical view', () => {
         let schObj: Schedule;
         beforeAll((done: DoneFn) => {

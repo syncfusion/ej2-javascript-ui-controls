@@ -2,45 +2,14 @@
 
 ## [Unreleased]
 
-## 28.2.4 (2025-02-04)
+## 29.1.33 (2025-03-25)
 
 ### Tree Grid
 
-#### Bug Fixes
+#### Features
 
-- `I679426` - Resolved a selection issue when adding a record after sorting the records
-
-## 28.1.39 (2024-01-14)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I661832` - Collapsed records are now displayed properly in the viewport for last set of records when virtualization is enabled.
-
-## 28.1.37 (2024-12-31)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I662513` - Resolved a script error that occurred when scrolling in the virtualization sample with `allowSelection` set to `false`.
-- `#I664039` - Resolved a console warning that occurred on using freeze feature in treegrid.
-- `#I662225` - The `ClipMode` property with `EllipsisWithTooltip` is now shown properly for child records.
-- `#I656160` - Fixed the scrolling issue experienced when using the [LoadChildOnDemand](https://helpej2.syncfusion.com/documentation/api/treegrid/#loadchildondemand) functionality.
-
-## 28.1.35 (2024-12-18)
-
-### Tree Grid
-
-#### Bug Fixes
-
-- `#I641521` - Keyboard selection with down key navigation now working properly when virtualization is enabled.
-- `#I641521`,`#I643607` - `SelectRow` and `selectedRowIndex` now navigates properly to the selected records  when virtualization is enabled.
-
-### Tree Grid
-
-## 28.1.33 (2024-12-12)
+- `#I651431` - The Tree Grid now supports enhanced `in` and `not in` filters, allowing users to filter multiple values in a column using a multiselect checkbox. Explore the demo [here](https://ej2.syncfusion.com/demos/#/tailwind3/tree-grid/filter-menu.html).
+- Enhanced the EJ2 Tree Grid performance by removing unnecessary attributes and inline styles, ensuring a leaner HTML structure for faster rendering and improved responsiveness.
 
 ### Tree Grid
 

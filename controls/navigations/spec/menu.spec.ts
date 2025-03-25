@@ -1044,7 +1044,7 @@ describe('Menu', () => {
         afterEach(() => {
             menu.destroy();
         });
-    
+
         it('should handle enter key on scroll navigation', () => {
             document.body.appendChild(ul);
             const items: MenuItemModel[] = [
@@ -1078,6 +1078,4 @@ describe('Menu', () => {
             (menu as any).keyBoardHandler(keyEventArgs);
         });
     });
-
-    
 });

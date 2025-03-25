@@ -3,8 +3,9 @@ import { ChildProperty, prepend, Collection, getUniqueID, Complex, isNullOrUndef
 import { formatUnit, addClass, removeClass, NumberFormatOptions, DateFormatOptions, Event, EmitType, AnimationModel, Animation, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { Input, InputObject } from '@syncfusion/ej2-inputs';
 import { DataManager, Query, Group } from '@syncfusion/ej2-data';
-import { Popup } from '@syncfusion/ej2-popups';
+import { Popup, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { Grid, Resize, FailureEventArgs, VirtualScroll, Group as GridGroup, Edit, Sort, GridColumnModel } from '@syncfusion/ej2-grids';
+
 import { MultiColumnComboBoxModel } from './multi-column-combo-box-model';
 import { ColumnModel, FieldSettingsModel, GridSettingsModel } from './multi-column-combo-box-model';
 
@@ -898,6 +899,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
     public change: EmitType<ChangeEventArgs>;
 
     /* Private variables */
+    private dropdownElement: HTMLElement;
     private inputEle: HTMLInputElement;
     private inputObj: InputObject;
     private inputWrapper: HTMLElement;
@@ -923,6 +925,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
     private isInitialRender: boolean;
     private remoteDataLength: number;
     private selectedRowIndex: number;
+    private isShowSpinner: boolean = true;
     private hiddenElement: HTMLSelectElement;
 
     /**
@@ -995,8 +998,8 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
     }
 
     protected render(): void {
-        this.renderGrid();
         this.renderInput();
+        this.renderGrid();
         this.popupDiv = this.createElement('div', { className: CONTENT });
         this.popupDiv.appendChild(this.gridEle);
         this.setHTMLAttributes();
@@ -1043,6 +1046,12 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
             allowResizing: this.gridSettings.allowResizing,
             allowMultiSorting: this.sortType.toString().toLowerCase() === 'multiplecolumns' && this.allowSorting,
             rowTemplate: this.itemTemplate,
+            beforeDataBound: () => {
+                if (this.dataSource instanceof DataManager && this.isShowSpinner) {
+                    this.showHideSpinner(true);
+                    this.isShowSpinner = false;
+                }
+            },
             dataBound: () => { this.onDataBound(); },
             actionFailure: (args: FailureEventArgs) => { this.onActionFailure(args); },
             actionBegin: (args: { [key: string]: Object }) => { this.trigger('actionBegin', args); },
@@ -1064,7 +1073,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                 }
             }
         });
-        this.gridEle = this.createElement('div', { id: getUniqueID('grid'), className: MULTICOLUMNGRID });
+        this.gridEle = this.createElement('div', { id: `${this.element.id}_${getUniqueID('grid')}`, className: MULTICOLUMNGRID });
         this.updateGroupByField();
         if (gridColumns.length > 0) {
             // Set first column as primary key to avoid PRIMARY KEY MISSING warning.
@@ -1075,6 +1084,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                 SortOrder.Ascending : SortOrder.Descending }] };
         }
         this.gridObj.appendTo(this.gridEle);
+        if (!isNOU(this.value) || !isNOU(this.text) || !isNOU(this.index)) { this.initValue(null, null, true); }
     }
 
     private handleActionComplete(args: { [key: string]: Object }): void {
@@ -1224,6 +1234,16 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
             const firstRowEle: Element = rowElements[0];
             firstRowEle.classList.add('e-row-focus');
         }
+        if (this.dataSource instanceof DataManager) {
+            setTimeout((): void => {
+                this.showHideSpinner(false);
+            });
+        }
+    }
+
+    private showHideSpinner(isShow: boolean): void {
+        if (isShow) { showSpinner(this.dropdownElement); }
+        else { hideSpinner(this.dropdownElement); }
     }
 
     private onActionFailure(args: FailureEventArgs): void {
@@ -1294,7 +1314,10 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
             this.element.appendChild(this.inputWrapper);
         }
         this.setElementWidth(this.width);
-        if (!isNOU(this.value) || !isNOU(this.text) || !isNOU(this.index)) { this.initValue(null, null, true); }
+        this.dropdownElement = this.inputWrapper.querySelector('.e-input-group-icon.e-multicolumn-list-icon.e-icons');
+        createSpinner({
+            target: this.dropdownElement
+        });
     }
 
     private setElementWidth(inputWidth: string | number): void {
@@ -1323,9 +1346,19 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                     this.setProperties({ readonly: true }, true);
                     this.dataBind();
                     break;
-                case 'style':
-                    this.inputWrapper.setAttribute('style', htmlAttributes[htmlAttr as string]);
+                case 'style': {
+                    const styles: string = htmlAttributes[htmlAttr as string];
+                    this.inputWrapper.style.cssText = '';
+                    if (styles) {
+                        styles.split(';').forEach((styleProperty: string) => {
+                            const [property, value] = styleProperty.split(':').map((part: string) => part.trim());
+                            if (property && value) {
+                                this.inputWrapper.style.setProperty(property, value);
+                            }
+                        });
+                    }
                     break;
+                }
                 default: {
                     const defaultAttr: string[] = ['title', 'id', 'placeholder', 'role', 'autocomplete', 'autocapitalize', 'spellcheck', 'minlength', 'maxlength'];
                     const validateAttr: string[] = ['name', 'required'];
@@ -1811,7 +1844,6 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         (dataSource as DataManager).executeQuery(query).then((e: Object) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const dataLists: { [key: string]: Object }[] = (e as any).result;
-            const dataLength: number = dataLists.length;
             filteredData = dataLists.filter(
                 (item: { [key: string]: Object }) => this.filterData(item, filterType, inputValue, fields));
             this.updateGridDataSource(filteredData);
@@ -2103,6 +2135,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                                     oldDataSource: Object | DataManager | DataResult): void {
         if (this.gridObj) {
             let dataLength: number;
+            this.isShowSpinner = true;
             this.gridObj.dataSource = newDataSource;
             const isRemoteData: boolean = oldDataSource instanceof DataManager;
             if (isRemoteData) {
@@ -2173,7 +2206,6 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                     if ((this.value || this.text || this.index)) {
                         this.gridObj.selectRow(this.selectedRowIndex);
                     }
-                    this.focusIn(e);
                 }
                 const contentEle: Element = this.gridObj.getContent();
                 if (contentEle) {
@@ -2328,6 +2360,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         this.footer = null;
         this.noRecord = null;
         this.hiddenElement = null;
+        this.dropdownElement = null;
         super.destroy();
     }
 

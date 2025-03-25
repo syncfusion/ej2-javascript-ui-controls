@@ -847,6 +847,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
         }
         this.element.setAttribute('role', 'region');
         this.element.setAttribute('tabindex', '0');
+        (this.element as HTMLElement).style.outline = 'none';
         this.element.setAttribute('aria-label', this.description || this.title + '. Syncfusion interactive chart.');
         if (!(this.element.classList.contains('e-chart-focused'))) {
             this.element.setAttribute('class', this.element.getAttribute('class') + ' e-chart-focused');
@@ -1426,6 +1427,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
                 );
             if (element) {
                 element.setAttribute('tabindex', '0');
+                (element as HTMLElement).style.outline = 'none';
                 element.setAttribute('class', 'e-chart-focused');
             }
             if (this.subTitle) {
@@ -1653,13 +1655,34 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
     private setTheme(): void {
         /** Set theme */
         this.themeStyle = get3DThemeColor(this.theme);
-        if (!(document.getElementById(this.element.id + 'Keyboard_chart_focus'))) {
-            const style: HTMLStyleElement = document.createElement('style');
-            style.setAttribute('id', (<HTMLElement>this.element).id + 'Keyboard_chart_focus');
-            style.innerText = '.e-chart-focused:focus, path[class*=_ej2_chart_selection_series]:focus,' +
-                'path[id*=-point-]:focus, text[id*=-chart-title]:focus {outline: none } .e-chart-focused:focus-visible, path[class*=_ej2_chart_selection_series]:focus-visible,' +
-                'path[id*=-point-]:focus-visible, text[id*=-chart-title]:focus-visible {outline: 1.5px ' + this.themeStyle.tabColor + ' solid}';
-            document.body.appendChild(style);
+    }
+
+    /**
+     * Handles to set style for key event on the document.
+     *
+     * @param {target} target - element which currently focused.
+     * @returns {void}
+     * @private
+     */
+    private setNavigationStyle(target: string): void {
+        const currentElement: HTMLElement = document.getElementById(target);
+        if (currentElement) { currentElement.style.setProperty('outline', `1.5px solid ${this.themeStyle.tabColor}`); }
+    }
+
+    /**
+     * Handles to remove style for key event on the document.
+     *
+     * @returns {void}
+     * @private
+     */
+    private removeNavigationStyle(): void {
+        const currentElement: NodeList = document.querySelectorAll(`[id*=_Point_], [id*=${this.element.id}], [id*=_ChartBorder], text[id*=_ChartTitle],g[id*=_chart_legend],  text[id*=_ChartSubTitle], div[id*=_Annotation]`);
+        if (currentElement) {
+            currentElement.forEach((element: Node) => {
+                if (element instanceof HTMLElement || element instanceof SVGElement) {
+                    element.style.setProperty('outline', 'none');
+                }
+            });
         }
     }
 
@@ -1890,6 +1913,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
                 },
                 timeInterval);
         }
+        this.removeNavigationStyle();
         this.notify('click', e);
         return false;
     }
@@ -2256,6 +2280,9 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public chartKeyDown(e: KeyboardEvent): boolean {
         let actionKey: string = '';
+        if (e.code === 'Tab') {
+            this.removeNavigationStyle();
+        }
         if (e.code === 'Space') {
             e.preventDefault();
         }
@@ -2296,7 +2323,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
         const seriesElement: HTMLElement = getElement(this.element.id + '-svg-0-region-series-0-point-0') as HTMLElement;
         const legendElement: HTMLElement = getElement(this.element.id + '_chart_legend_translate_g') as HTMLElement;
         const pagingElement: HTMLElement = getElement(this.element.id + '_chart_legend_pageup') as HTMLElement;
-
+        this.removeNavigationStyle();
         if (titleElement) { titleElement.setAttribute('class', 'e-chart-focused'); }
         if (seriesElement) {
             let className: string = seriesElement.getAttribute('class');
@@ -2368,6 +2395,8 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
 
                 const currentLegend: Element = legendElement[this.currentLegendIndex];
                 this.focusChild(currentLegend as HTMLElement);
+                this.removeNavigationStyle();
+                this.setNavigationStyle(currentLegend.id);
                 targetId = currentLegend.children[1].id;
                 actionKey = this.highlightMode !== 'None' ? 'ArrowMove' : '';
             }
@@ -2396,6 +2425,8 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                 }
                 targetId = this.focusChild(currentPoint as HTMLElement);
+                this.removeNavigationStyle();
+                this.setNavigationStyle(currentPoint.id);
                 actionKey = this.tooltip.enable || this.highlightMode !== 'None' ? 'ArrowMove' : '';
             }
         }
@@ -2408,6 +2439,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
         if (actionKey !== '') {
             this.chartKeyboardNavigations(e, targetId, actionKey);
         }
+        if (e.code === 'Tab') { this.setNavigationStyle(targetId); }
         return false;
     }
 
@@ -2518,6 +2550,8 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
      */
     private chartKeyboardNavigations(e: KeyboardEvent, targetId: string, actionKey: string): void {
         this.isLegendClicked = false;
+        this.removeNavigationStyle();
+        this.setNavigationStyle(targetId);
         switch (actionKey) {
         case 'Tab':
         case 'ArrowMove':
@@ -2576,8 +2610,12 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
                 this.isLegendClicked = true;
                 this.legend3DModule.click(e as Event);
                 this.focusChild(document.getElementById(targetId).parentElement);
+                this.setNavigationStyle(document.getElementById(targetId).parentElement.id);
             } else {
-                this.selection3DModule.calculateSelectedElements(document.getElementById(targetId), 'click');
+                if (this.selection3DModule) {
+                    this.selection3DModule.calculateSelectedElements(document.getElementById(targetId), 'click');
+                }
+                this.setNavigationStyle(targetId);
             }
             break;
         case 'CtrlP':
@@ -2828,6 +2866,10 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
         removeElement(this.element.id + 'Keyboard_chart_focus');
         removeElement(this.element.id + '_ej2_chart_highlight');
         removeElement('chartmeasuretext');
+        const highlightElement: HTMLElement = document.getElementById(this.element.id + '_ej2_chart_highlight');
+        if (highlightElement) { highlightElement.remove(); }
+        const selectionElement: HTMLElement = document.getElementById(this.element.id + '_ej2_chart_selection');
+        if (selectionElement) { selectionElement.remove(); }
         /**
          * To fix react timeout destroy issue.
          */

@@ -44,6 +44,7 @@ export class CandleSeries extends ColumnBase {
                 (point.xValue + sideBySideInfo.median),
                 <number>Math.min(<number>point.high, <number>point.low), series
             );
+
             if (!series.chart.requireInvertedAxis) {
                 tickRegion.x -= borderWidth / 2;
                 tickRegion.width = borderWidth;
@@ -59,6 +60,7 @@ export class CandleSeries extends ColumnBase {
                 (point.xValue + sideBySideInfo.end),
                 <number>Math.min(<number>point.open, <number>point.close), series
             );
+
             direction = this.getPathString(tickRegion, centerRegion, series);
             const argsData: IPointRenderEventArgs = this.triggerPointRenderEvent(series, point);
 
@@ -113,11 +115,11 @@ export class CandleSeries extends ColumnBase {
                 return <string>series.bearFillColor || series.chart.themeStyle.bearFillColor;
             } else {
                 return <number>previousPoint.close > <number>point.close ? <string>series.bullFillColor
-                    || series.chart.themeStyle.bullFillColor : <string>series.bearFillColor || series.chart.themeStyle.bearFillColor;
+                || series.chart.themeStyle.bullFillColor : <string>series.bearFillColor || series.chart.themeStyle.bearFillColor;
             }
         } else {
             return <number>point.open > <number>point.close ? <string>series.bullFillColor || series.chart.themeStyle.bullFillColor :
-                <string>series.bearFillColor || series.chart.themeStyle.bearFillColor;
+            <string>series.bearFillColor || series.chart.themeStyle.bearFillColor;
         }
     }
 

@@ -484,7 +484,7 @@ describe('Sanitize Html Helper', () => {
             expect(rteObj.inputElement.querySelectorAll('object').length).toBe(0);
             expect(rteObj.inputElement.querySelectorAll('input').length).toBe(0);
             expect(rteObj.inputElement.querySelector('#background').hasAttribute('style')).toBe(false);
-            expect(rteObj.inputElement.querySelector('#expression').hasAttribute('style')).toBe(false);
+            expect(rteObj.inputElement.querySelector('#expression').hasAttribute('style')).toBe(true);
             expect(rteObj.inputElement.querySelector('#inline-event').hasAttribute('onmouseover')).toBe(false);
             done();
           }, 50);

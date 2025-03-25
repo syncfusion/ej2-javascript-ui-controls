@@ -1,10 +1,10 @@
 import { closest, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/spreadsheet';
-import { ribbonClick, inView, setMaxHgt, getMaxHgt, WRAPTEXT, setRowEleHeight, rowHeightChanged, isReadOnlyCells, readonlyAlert } from '../common/index';
+import { ribbonClick, inView, setMaxHgt, getMaxHgt, WRAPTEXT, setRowEleHeight, rowHeightChanged, readonlyAlert } from '../common/index';
 import { completeAction, BeforeWrapEventArgs, getLines, getExcludedColumnWidth, getTextHeightWithBorder } from '../common/index';
 import { positionAutoFillElement, colWidthChanged, getLineHeight, updateWrapCell, ExtendedSpreadsheet } from '../common/index';
-import { SheetModel, getCell, CellModel, wrap as wrapText, wrapEvent, getRow, getRowsHeight, Workbook, ApplyCFArgs, applyCF, RowModel } from '../../workbook/index';
+import { SheetModel, getCell, CellModel, wrap as wrapText, wrapEvent, getRow, getRowsHeight, Workbook, ApplyCFArgs, applyCF, RowModel, isReadOnlyCells } from '../../workbook/index';
 import { getRowHeight, getAddressFromSelectedRange, beginAction, isHiddenRow, isHiddenCol } from '../../workbook/index';
 
 
@@ -48,7 +48,7 @@ export class WrapText {
     private wrapTextHandler(
         args: {
             range: number[], wrap: boolean, sheet: SheetModel, initial: boolean, td: Element, row: HTMLElement,
-            hRow: HTMLElement, isCustomHgt?: boolean, isPublic?: boolean, outsideViewport?: boolean
+            hRow: HTMLElement, isCustomHgt?: boolean, isPublic?: boolean, outsideViewport?: boolean, isOtherAction?: boolean
         }): void {
         if (args.initial || inView(this.parent, args.range, true)) {
             if (args.isPublic && isReadOnlyCells(this.parent, args.range)) { return; }
@@ -58,7 +58,7 @@ export class WrapText {
             let ele: HTMLElement; let cell: CellModel; let colwidth: number; let maxHgt: number; let hgt: number;
             let isCustomHgt: boolean; let rowCustomHeight: boolean; let lineHgt: number; let row: RowModel; let visibleRow: boolean;
             const frozenRow: number = this.parent.frozenRowCount(args.sheet);
-            let isLessStandardHgt: boolean; let filterRange: number[];
+            let isLessStandardHgt: boolean; let filterRange: number[]; let hyperlinkEle: HTMLElement;
             if (!isNullOrUndefined(args.sheet.standardHeight) && args.sheet.standardHeight < 20) {
                 isLessStandardHgt = true;
             } else {
@@ -97,7 +97,7 @@ export class WrapText {
                     if (!(isCustomHgt || isMerge)) {
                         colwidth = getExcludedColumnWidth(args.sheet, i, j, cell.colSpan > 1 ? j + cell.colSpan - 1 : j);
                         let displayText: string = this.parent.getDisplayText(cell).toString();
-                        if (ele && displayText.indexOf('\n') < 0) {
+                        if (this.parent.isEdit && ele && displayText.indexOf('\n') < 0) {
                             const editElem: HTMLElement = this.parent.element.querySelector('.e-spreadsheet-edit');
                             if (editElem) {
                                 if (editElem.textContent.indexOf('\n') > -1) {
@@ -109,6 +109,12 @@ export class WrapText {
                             if (args.wrap) {
                                 if (ele && ele.classList.contains('e-alt-unwrap')) {
                                     ele.classList.remove('e-alt-unwrap');
+                                    if (displayText.includes('\n')) {
+                                        hyperlinkEle = ele.querySelector('.e-hyperlink');
+                                        if (hyperlinkEle && !hyperlinkEle.innerText.includes('\n')) {
+                                            hyperlinkEle.innerText = displayText;
+                                        }
+                                    }
                                 }
                                 let lines: number; let n: number = 0; let p: number;
                                 if (displayText.indexOf('\n') > -1) {
@@ -134,8 +140,17 @@ export class WrapText {
                                 }
                                 setMaxHgt(args.sheet, i, j, hgt);
                             } else {
-                                if (ele && displayText.indexOf('\n') > -1) {
-                                    ele.classList.add('e-alt-unwrap');
+                                if (ele) {
+                                    if (displayText.indexOf('\n') > -1) {
+                                        ele.classList.add('e-alt-unwrap');
+                                    }
+                                    hyperlinkEle = ele.querySelector('.e-hyperlink');
+                                    if (hyperlinkEle) {
+                                        const hyperlinkText: string = hyperlinkEle.innerText;
+                                        if (hyperlinkText.includes('\n')) {
+                                            hyperlinkEle.innerText = hyperlinkText.split('\n').join(' ');
+                                        }
+                                    }
                                 }
                                 hgt = getTextHeightWithBorder(
                                     this.parent, i, j, args.sheet, cell.style || this.parent.cellStyle, 1, lineHgt);
@@ -148,8 +163,8 @@ export class WrapText {
                         }
                         if (j === args.range[3]) {
                             const prevHgt: number = getRowHeight(args.sheet, i);
-                            if ((args.wrap && maxHgt > 20 && getMaxHgt(args.sheet, i) <= maxHgt) || ((!args.wrap || !displayText) &&
-                                getMaxHgt(args.sheet, i) < prevHgt && prevHgt > 20)) {
+                            if ((args.wrap && (args.isOtherAction ? maxHgt >= 20 : maxHgt > 20) && getMaxHgt(args.sheet, i) <= maxHgt) ||
+                                ((!args.wrap || !displayText) && getMaxHgt(args.sheet, i) < prevHgt && prevHgt > 20)) {
                                 if (prevHgt !== maxHgt) {
                                     if (ele) {
                                         setRowEleHeight(this.parent, args.sheet, maxHgt, i, args.row, args.hRow, visibleRow);

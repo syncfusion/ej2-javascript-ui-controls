@@ -933,9 +933,11 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 this.tooltipEle = this.createElement('div', {
                     className: TOOLTIP_WRAP + ' ' + POPUP_ROOT + ' ' + POPUP_LIB, attrs: {
                         role: 'tooltip', 'aria-hidden': 'false', 'id': this.ctrlId + '_content'
-                    }, styles: 'width:' +
-                        formatUnit(this.width) + ';height:' + formatUnit(this.height) + ';position:absolute;'
+                    }
                 });
+                this.tooltipEle.style.width = formatUnit(this.width);
+                this.tooltipEle.style.height =  formatUnit(this.height);
+                this.tooltipEle.style.position = 'absolute';
                 this.tooltipBeforeRender(target, this);
                 this.tooltipAfterRender(target, e, showAnimation, this);
             } else {

@@ -1571,3 +1571,60 @@ describe('905629:Indent/outdent was not working properly with editing', () => {
     destroy(TreeGridObj);
   });
 });
+
+describe('Drag and drop with detailTemplate', () => {
+  let TreeGridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    TreeGridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        detailTemplate: 'Test',
+        treeColumnIndex: 1,
+        height: 450,
+        allowRowDragAndDrop: true,
+        columns: [
+          { field: "taskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
+          { field: 'taskName', headerText: 'taskName', width: 60 },
+          { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
+          { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
+        ],
+      }, done);
+  });
+  it('detail Template with rowDD action', () => {
+    expect(TreeGridObj.rowDropSettings.targetID).toBe(undefined);
+    const dragRowElem: Element = TreeGridObj.getRowByIndex(2).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+    const dropRowElem: Element = TreeGridObj.getRowByIndex(1).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+    const dragClient: any = dragRowElem.getBoundingClientRect();
+    const dropClient: any = dropRowElem.getBoundingClientRect();
+    TreeGridObj.selectRow(2);
+    dragRowElem.classList.add('e-rowcell');
+    (TreeGridObj.grid.rowDragAndDropModule as any).draggable.currentStateTarget = dragRowElem;
+    TreeGridObj.rowDrop = function(args: any){
+      this.rowDragAndDropModule.dropPosition = 'middleSegment';
+    };
+    (TreeGridObj.grid.rowDragAndDropModule as any).helper({
+      target: TreeGridObj.getContentTable().querySelector('tr'),
+      sender: { clientX: 10, clientY: 10, target: dragRowElem }
+    });
+    const dropClone: HTMLElement = TreeGridObj.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+    (TreeGridObj.grid.rowDragAndDropModule as any).dragStart({
+      target: dragRowElem,
+      event: { clientX: dragClient.x, clientY: dragClient.y, target: dragRowElem }
+    });
+    (TreeGridObj.grid.rowDragAndDropModule as any).drag({
+      target: dropRowElem,
+      event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+    });
+    (TreeGridObj.grid.rowDragAndDropModule as any).dragStop({
+      target: dropRowElem,
+      element: TreeGridObj.getContentTable(),
+      helper: dropClone,
+      event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+    });
+  });
+
+  afterAll(() => {
+    destroy(TreeGridObj);
+  });
+});

@@ -37,6 +37,8 @@ export class DataLabel {
     private errorHeight: number = 0;
     private chartBackground: string;
     private extraSpace: number;
+    /** @private */
+    public dataLabelRectCollection: { [id: string]: Rect } = {};
     /**
      * Constructor for the data label module.
      *
@@ -178,6 +180,7 @@ export class DataLabel {
         let shapeRect: HTMLElement;
         let isDataLabelOverlap: boolean = false;
         const dataLabelElement: Element[] = [];
+        let startLocation: ChartLocation;
         dataLabel.angle = dataLabel.labelIntersectAction === 'Rotate90' ? 90 : dataLabel.angle;
         dataLabel.enableRotation = dataLabel.labelIntersectAction === 'Rotate90' ? true : dataLabel.enableRotation;
         const angle: number = degree = dataLabel.angle;
@@ -215,10 +218,10 @@ export class DataLabel {
                         const actualRect: Rect = new Rect(rect.x + clip.x, rect.y + clip.y, rect.width, rect.height);
                         //let notOverlapping: boolean;
                         if (dataLabel.enableRotation) {
-                            const rectCoordinates: ChartLocation[] = this.getRectanglePoints(rect);
+                            const rectCoordinates: ChartLocation[] = this.getRectanglePoints(actualRect);
                             rectCenterX = rect.x + (rect.width / 2);
                             rectCenterY = (rect.y + (rect.height / 2));
-                            isDataLabelOverlap = (dataLabel.labelIntersectAction === 'Rotate90' || angle === -90) ? false : this.isDataLabelOverlapWithChartBound(rectCoordinates, this.chart, clip);
+                            isDataLabelOverlap = (dataLabel.labelIntersectAction === 'Rotate90' || angle === -90) ? false : this.isDataLabelOverlapWithChartBound(rectCoordinates, this.chart, { x: 0, y: 0, width: 0, height: 0 });
                             if (!isDataLabelOverlap) {
                                 this.chart.rotatedDataLabelCollections.push(rectCoordinates);
                                 const currentPointIndex: number = this.chart.rotatedDataLabelCollections.length - 1;
@@ -239,6 +242,10 @@ export class DataLabel {
                             isDataLabelOverlap = isCollide(rect, this.chart.dataLabelCollections, clip);
                         }
                         if ((!isDataLabelOverlap || dataLabel.labelIntersectAction === 'None')) {
+                            const dataLabelShapeElement: Element = getElement(this.commonId + point.index + '_TextShape_' + i);
+                            if (dataLabelShapeElement) {
+                                startLocation = { x: +dataLabelShapeElement.getAttribute('x'), y: +dataLabelShapeElement.getAttribute('y') };
+                            }
                             this.chart.dataLabelCollections.push(actualRect);
                             if (this.isShape) {
                                 shapeRect = this.chart.renderer.drawRectangle(
@@ -249,7 +256,8 @@ export class DataLabel {
                                     ),
                                     new Int32Array([clip.x, clip.y])) as HTMLElement;
                                 if (series.shapeElement) {
-                                    series.shapeElement.appendChild(shapeRect);
+                                    appendChildElement(this.chart.enableCanvas, series.shapeElement, shapeRect, this.chart.redraw,
+                                                       true, 'x', 'y', startLocation);
                                 }
                             }
                             // Checking the font color
@@ -291,6 +299,15 @@ export class DataLabel {
                                 series.textElement, false, this.chart.redraw, true, false, series.chart.duration, series.clipRect, null,
                                 null, this.chart.enableCanvas, null, this.chart.themeStyle.datalabelFont, new ChartLocation(xValue, yValue)
                             ));
+                            if (this.isShape && dataLabel.enableRotation) {
+                                shapeRect.setAttribute('transform', 'rotate(' + dataLabel.angle + ', ' + xValue + ', ' + yValue + ')');
+                            }
+                            if (this.chart.stackLabels.visible && series.type.indexOf('Stacking') > -1) {
+                                this.dataLabelRectCollection = !this.dataLabelRectCollection ? {}
+                                    : this.dataLabelRectCollection;
+                                this.dataLabelRectCollection[this.commonId + ((series.removedPointIndex !== null && series.removedPointIndex <= point.index) ? (point.index + 1) : point.index) + '_Text_' + i] = actualRect;
+                                this.dataLabelRectCollection[this.commonId + point.index + '_TextShape_' + i] = actualRect;
+                            }
                             if (series.removedPointIndex !== null && series.removedPointIndex <= point.index) {
                                 (series.textElement.lastChild as HTMLElement).id = this.commonId + point.index + '_Text_' + i;
                             }
@@ -305,6 +322,165 @@ export class DataLabel {
             }
         }
         return dataLabelElement;
+    }
+
+    /**
+     * Renders the stack labels for the chart.
+     *
+     * This method is responsible for displaying cumulative total values on stacked chart segments.
+     *
+     * @returns {void}
+     */
+    public renderStackLabels(): void {
+        const stackLabelGroup: Element = this.chart.renderer.createGroup({ id: `${this.chart.element.id}_StackLabelGroup` });
+        this.chart.seriesElements.appendChild(stackLabelGroup);
+        const positivePoints: { [xValue: string]: Points } = {};
+        const negativePoints: { [xValue: string]: Points } = {};
+        if (this.chart.visibleSeries && this.chart.visibleSeries.length > 0) {
+            for (let seriesIndex: number = this.chart.visibleSeries.length - 1; seriesIndex >= 0; seriesIndex--) {
+                const series: Series = this.chart.visibleSeries[seriesIndex as number];
+                if (series.animation.enable && this.chart.animateSeries) {
+                    stackLabelGroup.setAttribute('visibility', 'hidden');
+                }
+                if (series.visible && series.points && series.points.length > 0) {
+                    for (let pointIndex: number = 0; pointIndex < series.points.length; pointIndex++) {
+                        const point: Points = series.points[pointIndex as number];
+                        const pointXValueAsKey: string = String(point.x);
+                        if (!positivePoints[pointXValueAsKey as string] && series.stackedValues.endValues[pointIndex as number] > 0
+                            && point.visible) {
+                            positivePoints[pointXValueAsKey as string] = point;
+                        }
+                        if (!negativePoints[pointXValueAsKey as string] && series.stackedValues.endValues[pointIndex as number] < 0
+                            && point.visible) {
+                            negativePoints[pointXValueAsKey as string] = point;
+                        }
+                    }
+                }
+            }
+        }
+        let stackLabelIndex: number = 0;
+        [positivePoints, negativePoints].forEach((points: { [xValue: string]: Points }, index: number) => {
+            if (points) {
+                let totalValue: number = 0;
+                let currentPoint: Points;
+                Object.keys(points).forEach((pointXValueAsKey: string) => {
+                    const positiveValue: number = (points[pointXValueAsKey as string].series as Series)
+                        .stackedValues.endValues[points[pointXValueAsKey as string].index];
+                    const negativeValue: number = negativePoints[pointXValueAsKey as string] ?
+                        (negativePoints[pointXValueAsKey as string].series as Series).stackedValues.
+                            endValues[negativePoints[pointXValueAsKey as string].index] : 0;
+                    if (index === 0) {
+                        // Handle positive points
+                        totalValue = positiveValue + negativeValue;
+                        currentPoint = points[pointXValueAsKey as string];
+                    } else if (!positivePoints[pointXValueAsKey as string]) {
+                        // Handle negative points only if no corresponding positive point
+                        totalValue = positiveValue;
+                        currentPoint = points[pointXValueAsKey as string];
+                    }
+                    if (currentPoint && currentPoint.symbolLocations[0]) {
+                        const series: Series = currentPoint.series as Series;
+                        const symbolLocation: ChartLocation = currentPoint.symbolLocations[0];
+                        const labelFormat: string = this.chart.stackLabels.format;
+                        let stackLabeltext: string = (totalValue % 1 === 0)
+                            ? totalValue.toFixed(0)
+                            : (totalValue.toFixed(2).slice(-1) === '0' ? totalValue.toFixed(1) : totalValue.toFixed(2));
+                        if (labelFormat) {
+                            const customLabelFormat: boolean = labelFormat.match('{value}') !== null;
+                            stackLabeltext = customLabelFormat
+                                ? labelFormat.replace('{value}', stackLabeltext.toString())
+                                : this.chart.intl.getNumberFormat({
+                                    format: labelFormat,
+                                    useGrouping: this.chart.useGroupingSeparator
+                                })(totalValue);
+                        }
+                        const textSize: Size = measureText(stackLabeltext, this.chart.stackLabels.font
+                            , this.chart.themeStyle.datalabelFont);
+                        // Define padding to maintain a consistent gap from the symbol location values
+                        const padding: number = 10;
+                        const backgroundColor: string = this.chart.stackLabels.fill === 'transparent' && this.chartBackground === 'transparent' ? ((this.chart.theme.indexOf('Dark') > -1 || this.chart.theme.indexOf('HighContrast') > -1) ? 'black' : 'white') : this.chart.stackLabels.fill !== 'transparent' ? this.chart.stackLabels.fill : this.chartBackground;
+                        const rgbValue: ColorValue = convertHexToColor(colorNameToHex(backgroundColor));
+                        const contrast: number = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
+                        const alignmentValue: number = textSize.width + this.chart.stackLabels.border.width
+                            + this.chart.stackLabels.margin.left + this.chart.stackLabels.margin.right - padding / 2;
+                        const yOffset: number = this.chart.requireInvertedAxis ? padding / 2 :
+                            (this.chart.primaryYAxis.isInversed ? (index === 0 ? (textSize.height + padding / 2) : -padding)
+                                : (index === 0 ? -padding : (textSize.height + padding / 2)));
+                        let xOffset: number = this.chart.requireInvertedAxis ?
+                            ((this.chart.primaryYAxis.isInversed ? (index === 0 ? -(padding + textSize.width / 2) :
+                                (padding + textSize.width / 2)) : (index === 0 ? (padding + textSize.width / 2) :
+                                -(padding + textSize.width / 2)))) : 0;
+                        xOffset += this.chart.stackLabels.font.textAlignment === 'Far' ? alignmentValue :
+                            (this.chart.stackLabels.font.textAlignment === 'Near' ? -alignmentValue : 0);
+                        const xPosition: number = Math.max(series.clipRect.x + textSize.width,
+                                                           Math.min(xOffset + series.clipRect.x + symbolLocation.x, series.clipRect.x
+                                + series.clipRect.width - textSize.width));
+                        const yPosition: number = Math.max(
+                            series.clipRect.y + textSize.height,
+                            Math.min(
+                                yOffset + series.clipRect.y + symbolLocation.y -
+                                ((this.chart.stackLabels.angle > 0 && !this.chart.requireInvertedAxis) ? textSize.width / 2 : 0),
+                                series.clipRect.y + series.clipRect.height - textSize.height
+                            )
+                        );
+                        const rect: Rect = new Rect(
+                            xPosition - textSize.width / 2 - this.chart.stackLabels.margin.left,
+                            yPosition - textSize.height - this.chart.stackLabels.margin.top,
+                            textSize.width + (this.chart.stackLabels.margin.left + this.chart.stackLabels.margin.right),
+                            textSize.height + padding / 2 + (this.chart.stackLabels.margin.top + this.chart.stackLabels.margin.bottom)
+                        );
+                        const shapeRect: Element = this.chart.renderer.drawRectangle(
+                            new RectOption(
+                                `${this.chart.element.id}StackLabel_TextShape_${stackLabelIndex}`,
+                                this.chart.stackLabels.fill, this.chart.stackLabels.border, null, rect, this.chart.stackLabels.rx,
+                                this.chart.stackLabels.ry, '', null
+                            ),
+                            new Int32Array([symbolLocation.x, symbolLocation.y])) as HTMLElement;
+                        shapeRect.setAttribute('transform', `rotate(${this.chart.stackLabels.angle}, ${xPosition}, ${yPosition})`);
+                        stackLabelGroup.appendChild(shapeRect);
+                        textElement(
+                            this.chart.renderer,
+                            new TextOption(
+                                `${this.chart.element.id}_StackLabel_${stackLabelIndex}`, xPosition, yPosition, 'middle', stackLabeltext,
+                                `rotate(${this.chart.stackLabels.angle}, ${xPosition}, ${yPosition})`, 'auto', this.chart.stackLabels.angle
+                            ), this.chart.stackLabels.font, (this.chart.stackLabels.font.color || (this.chart.theme === 'Bootstrap5' ? '#212529' : this.chart.theme === 'Bootstrap5Dark' ? '#DEE2E6' : ((contrast >= 128) ?
+                                this.chart.theme.indexOf('Tailwind3') > -1 ? '#111827' : 'black' : this.chart.theme.indexOf('Tailwind3') > -1 ? '#FFFFFF' : 'white')))
+                            , stackLabelGroup, null, this.chart.redraw, true,
+                            null, this.chart.duration, series.clipRect, null, null, this.chart.enableCanvas
+                            , null, this.chart.themeStyle.datalabelFont, null
+                        );
+                        if (series.type === 'StackingLine' || series.type === 'StackingArea') {
+                            document.querySelectorAll(
+                                `[id^="${this.chart.element.id}_Series_${series.index}_Point_${currentPoint.index}_Text_"], 
+                                [id^="${this.chart.element.id}_Series_${series.index}_Point_${currentPoint.index}_TextShape_"]`
+                            ).forEach((element: Element) => {
+                                if (element.id) {
+                                    (element as HTMLElement).style.visibility = 'hidden';
+                                    element.setAttribute('data-collide', 'true');
+                                }
+                            });
+                        }
+                        for (const dataLabelID in this.dataLabelRectCollection) {
+                            if (Object.prototype.hasOwnProperty.call(this.dataLabelRectCollection, dataLabelID)) {
+                                const dataLabelRect: Rect = this.dataLabelRectCollection[dataLabelID as string];
+                                if (dataLabelRect) {
+                                    const isCollided: boolean = isCollide(rect, [dataLabelRect], { x: 0, y: 0, height: 0, width: 0 });
+                                    if (isCollided) {
+                                        const dataLabelElement: Element = document.getElementById(dataLabelID);
+                                        if (dataLabelElement) {
+                                            (dataLabelElement as HTMLElement).style.visibility = 'hidden';
+                                            dataLabelElement.setAttribute('data-collide', 'true');
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                    stackLabelIndex++;
+                });
+            }
+        });
     }
 
     /**
@@ -925,13 +1101,13 @@ export class DataLabel {
                 location = new ChartLocation(
                     (+tempElement.getAttribute('x')) + ((+tempElement.getAttribute('width')) / 2),
                     (+tempElement.getAttribute('y')) + ((+tempElement.getAttribute('height')) / 2));
-                markerAnimate(tempElement, delay, duration, series, null, location, true);
+                markerAnimate(tempElement, delay, series.animation.duration, series, null, location, true);
                 if (shapeElements[i as number]) {
                     tempElement = shapeElements[i as number] as HTMLElement;
                     location = new ChartLocation(
                         (+tempElement.getAttribute('x')) + ((+tempElement.getAttribute('width')) / 2),
                         (+tempElement.getAttribute('y')) + ((+tempElement.getAttribute('height')) / 2));
-                    markerAnimate(tempElement, delay, duration, series, null, location, true);
+                    markerAnimate(tempElement, delay, series.animation.duration, series, null, location, true);
                 }
             }
         }

@@ -44,4 +44,12 @@ export interface TooltipSettingsModel {
      */
     editing?: string | Function;
 
+    /**
+     * Defines template for timeLine tooltip element.
+     *
+     * @default null
+     * @aspType string
+     */
+    timeline?: string | Function;
+
 }

@@ -5,6 +5,9 @@
     max-width: $calendar-bigger-max-width;
     min-width: $calendar-bigger-min-width;
     padding: $calendar-popup-bigger-padding;
+    @if $skin-name == 'fluent2' {
+      min-height: $calendar-bigger-min-height;
+    }
 
     #{if(&, '&', '*')}.e-calendar-day-header-lg {
       max-width: $calendar-lg-day-header-format-max-width;

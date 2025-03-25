@@ -1,6 +1,6 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
-import { ExtendedRowModel, SheetModel, Spreadsheet, getColumnWidth, getRangeAddress  } from '../../../src/index';
+import { ExtendedRowModel, SheetModel, Spreadsheet, getColumnWidth, getRangeAddress, setCellFormat } from '../../../src/index';
 import { SpreadsheetModel } from '../../../src/spreadsheet/index';
 
 describe('Resize ->', () => {
@@ -60,6 +60,33 @@ describe('Resize ->', () => {
             helper.triggerMouseAction('dblclick', { x: offset.left + 1, y: offset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
             setTimeout(() => {
                 expect(spreadsheet.sheets[0].columns[0].hidden).toBeFalsy();
+                done();
+            });
+        });
+        it('Resizing the row when editing mode is enabled', (done: Function) => {
+            helper.invoke('selectRange', ['A1']);
+            helper.invoke('startEdit');
+            const rowHdrPanel: HTMLElement = helper.invoke('getRowHeaderContent');
+            const rowHdr: HTMLElement = helper.invoke('getRowHeaderTable').rows[0].cells[0];
+            const offset: DOMRect = rowHdr.getBoundingClientRect() as DOMRect;
+            helper.triggerMouseAction('mousemove', { x: offset.top + 0.5, y: offset.left + 1, offsetY: 3 }, rowHdrPanel, rowHdr);
+            setTimeout(() => {
+                expect(rowHdr.classList).toContain('e-header-cell');
+                expect(rowHdr.classList).not.toContain('e-rowresize');
+                helper.invoke('endEdit');
+                done();
+            });
+        });
+        it('Resizing the column when editing mode is enabled', (done: Function) => {
+            helper.invoke('startEdit');
+            const colHdrPanel: HTMLElement = helper.invoke('getColumnHeaderContent').parentElement;
+            const colHdr: HTMLElement = helper.invoke('getColHeaderTable').rows[0].cells[0];
+            const offset: DOMRect = colHdr.getBoundingClientRect() as DOMRect;
+            helper.triggerMouseAction('mousemove', { x: offset.left + 1, y: offset.top + 0.5, offsetX: 7 }, colHdrPanel, colHdr);
+            setTimeout(() => {
+                expect(colHdr.classList).toContain('e-header-cell');
+                expect(colHdr.classList).not.toContain('e-colresize');
+                helper.invoke('endEdit');
                 done();
             });
         });
@@ -144,6 +171,52 @@ describe('Resize ->', () => {
                 helper.triggerMouseAction('dblclick', { x: offset.left + 1, y: offset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
                 setTimeout(() => {
                     expect(spreadsheet.sheets[0].columns[5].width).toBe(54);
+                    done();
+                });
+            });
+        });
+        it('Selection misalignment occurs when showing hidden columns with readonly applied', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.hideColumn(4, 4, true);
+            spreadsheet.setRangeReadOnly(true, 'A1:H11', 0);
+            const colHdr: HTMLElement = helper.invoke('getCell', [null, 5, helper.invoke('getColHeaderTable').rows[0]]);
+            const hdrPanel: HTMLElement = spreadsheet.element.querySelector('.e-header-panel');
+            const offset: DOMRect = colHdr.getBoundingClientRect() as DOMRect;
+            expect(spreadsheet.sheets[0].columns[4].hidden).toBeTruthy();
+            expect(spreadsheet.sheets[0].columns[4].width).toBe(44);
+            helper.triggerMouseAction('mousemove', { x: offset.left + 0.5, y: offset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
+            helper.triggerMouseAction('dblclick', { x: offset.left + 1, y: offset.top + 1, offsetX: 3 }, hdrPanel, colHdr);
+            setTimeout((): void => {
+                const dialog: HTMLElement = helper.getElement('.e-readonly-alert-dlg.e-dialog');
+                expect(dialog.querySelector('.e-dlg-content').textContent).toBe("You are trying to modify a cell that is in read-only mode. To make changes, please disable the read-only status.");
+                helper.click('.e-dialog .e-primary');
+                setTimeout((): void => {
+                    expect(spreadsheet.sheets[0].columns[4].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].columns[4].width).toBe(44);
+                    spreadsheet.setRangeReadOnly(false, 'A1:H11', 0);
+                    spreadsheet.hideColumn(4, 4, false);
+                    done();
+                });
+            });
+        });
+        it('Selection misalignment occurs when showing hidden rows with readonly applied', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.hideRow(4, 4, true);
+            spreadsheet.setRangeReadOnly(true, 'A1:H11', 0);
+            const rowHdr: HTMLElement = helper.invoke('getRowHeaderTable').rows[4].cells[0];
+            const rowHdrPanel: HTMLElement = helper.invoke('getRowHeaderContent');
+            const offset: DOMRect = rowHdr.getBoundingClientRect() as DOMRect;
+            expect(spreadsheet.sheets[0].rows[4].hidden).toBeTruthy();
+            helper.triggerMouseAction('mousemove', { x: offset.top + 0.5, y: offset.left + 1, offsetY: 3 }, rowHdrPanel, rowHdr);
+            helper.triggerMouseAction('dblclick', { x: offset.top + 1, y: offset.left + 1, offsetY: 3 }, rowHdrPanel, rowHdr);
+            setTimeout((): void => {
+                const dialog: HTMLElement = helper.getElement('.e-readonly-alert-dlg.e-dialog');
+                expect(dialog.querySelector('.e-dlg-content').textContent).toBe("You are trying to modify a cell that is in read-only mode. To make changes, please disable the read-only status.");
+                helper.click('.e-dialog .e-primary');
+                setTimeout((): void => {
+                    expect(spreadsheet.sheets[0].rows[4].hidden).toBeTruthy();
+                    spreadsheet.setRangeReadOnly(false, 'A1:H11', 0);
+                    spreadsheet.hideRow(4, 4, false);
                     done();
                 });
             });
@@ -1051,6 +1124,69 @@ describe('Resize ->', () => {
             expect(helper.invoke('getCell', [6, 5]).getElementsByClassName('e-databar')[1].style.height).toBe('37px');
             expect(helper.invoke('getRow', [6]).style.height).toBe('40px');
             done();
+        });
+        it('EJ2-912849 - Issue in cell height while performing redo actions', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.notify(setCellFormat, { style: { fontSize: '36pt' }, range:'A2', onActionUpdate: true });
+            expect(helper.getInstance().sheets[0].rows[1].height).toBe(61);
+            spreadsheet.notify(setCellFormat, { style: { fontSize: '11pt' }, range:'A2', onActionUpdate: true });
+            expect(helper.getInstance().sheets[0].rows[1].height).toBe(20);
+            helper.click('#spreadsheet_undo');
+            expect(helper.getInstance().sheets[0].rows[1].height).toBe(61);
+            helper.click('#spreadsheet_undo');
+            expect(helper.getInstance().sheets[0].rows[1].height).toBe(20);
+            helper.click('#spreadsheet_redo');
+            expect(helper.getInstance().sheets[0].rows[1].height).toBe(61);
+            helper.click('#spreadsheet_redo');
+            expect(helper.getInstance().sheets[0].rows[1].height).toBe(20);
+            done();
+        });
+        it('EJ2-931204 - CustomHeight property not removed on undo after row resize with wrap cells', (done: Function) => {
+            helper.edit('I12', 'Hello, World! 🌟 @2024');
+            expect(helper.getInstance().sheets[0].rows[11].cells[8].value).toEqual('Hello, World! 🌟 @2024');
+            helper.invoke('selectRange', ['I12']);
+            helper.click('#spreadsheet_wrap');
+            expect(helper.getInstance().sheets[0].rows[11].cells[8].wrap).toEqual(true);
+            helper.invoke('selectRange', ['A12']);
+            const rowHdr: HTMLElement = helper.invoke('getRowHeaderTable').rows[12].cells[0];
+            const rowHdrPanel: HTMLElement = helper.invoke('getRowHeaderContent');
+            const offset: DOMRect = rowHdr.getBoundingClientRect() as DOMRect;
+            helper.triggerMouseAction('mousemove', { x: offset.top + 0.5, y: offset.left + 1, offsetY: 3 }, rowHdrPanel, rowHdr);
+            helper.triggerMouseAction('mousedown', { x: offset.left + 1, y: offset.top + 0.5, offsetY: 3 }, rowHdrPanel, rowHdr);
+            helper.triggerMouseAction('mouseup', { x: offset.left + 1, y: offset.top + 50, offsetY: 3 }, document, rowHdr);
+            expect(helper.getInstance().sheets[0].rows[11].customHeight).toEqual(true);
+            helper.triggerMouseAction('mousemove', { x: offset.top + 0.5, y: offset.left + 1, offsetY: 3 }, rowHdrPanel, rowHdr);
+            helper.triggerMouseAction('mousedown', { x: offset.left + 1, y: offset.top + 0.5, offsetY: 3 }, rowHdrPanel, rowHdr);
+            helper.triggerMouseAction('mouseup', { x: offset.left + 1, y: offset.top + 50, offsetY: 3 }, document, rowHdr);
+            helper.triggerMouseAction('dblclick', { x: offset.top + 1, y: offset.left + 1, offsetY: 3 }, rowHdrPanel, rowHdr);
+            expect(helper.getInstance().sheets[0].rows[11].customHeight).toEqual(false);
+            helper.invoke('undo');
+            expect(helper.getInstance().sheets[0].rows[11].customHeight).toEqual(undefined);
+            helper.invoke('undo');
+            expect(helper.getInstance().sheets[0].rows[11].customHeight).toEqual(true);
+            done();
+        });
+    });
+
+    describe('EJ2-888389 ->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Script error while mouse hovering on the select all button', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setColWidth(7, 0);
+            const colHdrPanel: HTMLElement = helper.invoke('getColumnHeaderContent').parentElement;
+            const colHdr: HTMLElement = helper.invoke('getColHeaderTable').rows[0].cells[0];
+            const offset: DOMRect = colHdr.getBoundingClientRect() as DOMRect;
+            helper.triggerMouseAction('mousemove', { x: offset.left + 1, y: offset.top + 0.5, offsetX: 7 }, colHdrPanel, colHdr);
+            setTimeout((): void => {
+                expect(spreadsheet.sheets[0].columns[0].width).toBe(7);
+                expect(colHdr.classList).toContain('e-colresize');
+                done();
+            });
         });
     });
 

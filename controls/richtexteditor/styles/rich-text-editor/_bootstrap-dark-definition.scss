@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 //default
 $rte-border-size: 1px !default;
 $rte-2px-border-size: 2px !default;
@@ -141,7 +143,7 @@ $rte-table-header-color: $grey-dark-font !default;
 $rte-table-span-bg-color: $grey-dark !default;
 $rte-table-span-border: 1px solid $grey-cc !default;
 $rte-table-span-active-bg-color: rgba($brand-primary, .2) !default;
-$rte-table-span-active-border-color: lighten($brand-primary, 0%) !default;
+$rte-table-span-active-border-color: color.adjust($brand-primary, $lightness: 0%) !default;
 $rte-table-select-border-color: #0478d7 !default;
 $rte-table-popup-bg: $grey-dark !default;
 $rte-table-resize-back-color: $grey-dark !default;

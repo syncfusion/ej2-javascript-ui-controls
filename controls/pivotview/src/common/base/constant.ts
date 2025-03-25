@@ -53,6 +53,8 @@ export const beforeColumnsRender: string = 'beforeColumnsRender';
 /** @hidden */
 export const selected: string = 'selected';
 /** @hidden */
+export const selecting: string = 'selecting';
+/** @hidden */
 export const cellSelecting: string = 'cellSelecting';
 /** @hidden */
 export const drill: string = 'drill';

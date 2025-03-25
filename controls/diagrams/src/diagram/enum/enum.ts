@@ -264,6 +264,21 @@ export type LayoutType =
      */
     'Flowchart';
 
+/**
+ * Defines the state of the layout rendering process.
+ * * Started - Indicates that the layout rendering process has started.
+ * * Completed - Indicates that the layout rendering process has finished.
+ */
+export type LayoutState =
+    /**
+     * Started - Indicates that the layout rendering process has started.
+     */
+    'Started' |
+    /**
+     * Completed - Indicates that the layout rendering process has finished.
+     */
+    'Completed';
+
 export type BranchDirection =
     /**
      * SameAsFlow -Defines the direction as same as flow chart.
@@ -1238,6 +1253,8 @@ export enum ThumbsConstraints {
  * Pan - Enables/Disable Pan support the diagram
  * ZoomTextEdit - Enables/Disables zooming the text box while editing the text
  * Virtualization - Enables/Disable Virtualization support the diagram
+ * LineRouting - Enables/ Disable the line routing
+ * AvoidLineOverlapping - Enables/Disables the line overlapping resolution globally in the diagram
  * Default - Enables/Disable all constraints
  *
  * @aspNumberEnum
@@ -1272,6 +1289,8 @@ export enum DiagramConstraints {
     Virtualization = 1 << 10,
     /** Enables/ Disable the line routing */
     LineRouting = 1 << 11,
+    /** Enables/Disables the line overlapping resolution globally in the diagram */
+    AvoidLineOverlapping = 1 << 12,
     /** Enables/Disable all constraints */
     Default = 1 << 2 | 1 << 4 | 1 << 5 | 1 << 6 | 1 << 7 | 1 << 8
 }
@@ -2683,7 +2702,7 @@ export enum DiagramEvent {
     'mouseEnter', 'mouseLeave', 'mouseOver', 'expandStateChange', 'segmentCollectionChange', 'commandExecute', 'historyStateChange',
     'onUserHandleMouseDown', 'onUserHandleMouseUp', 'onUserHandleMouseEnter', 'onUserHandleMouseLeave', 'onImageLoad',
     'onDoBindingInit', 'keyUp', 'keyDown', 'fixedUserHandleClick', 'elementDraw', 'mouseWheel', 'segmentChange',
-    'onFixedUserHandleMouseDown', 'onFixedUserHandleMouseUp', 'onFixedUserHandleMouseEnter', 'onFixedUserHandleMouseLeave', 'loaded'
+    'onFixedUserHandleMouseDown', 'onFixedUserHandleMouseUp', 'onFixedUserHandleMouseEnter', 'onFixedUserHandleMouseLeave', 'loaded', 'layoutUpdated'
 }
 /**
  * @private

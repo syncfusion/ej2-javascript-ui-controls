@@ -10,8 +10,8 @@ import { Size } from '../../primitives/size';
 import { Rect } from '../../primitives/rect';
 import { PointModel } from '../../primitives/point-model';
 import { TextElement } from '../elements/text-element';
-import { ImageElement } from '../elements/image-element';
 import { PathElement } from '../elements/path-element';
+import { ImageElement } from '../elements/image-element';
 
 /**
  * Canvas module is used to define a plane(canvas) and to arrange the children based on margin
@@ -194,7 +194,6 @@ export class Canvas extends Container {
             }
         }
     }
-
 
 
     //Aligns the child element based on its parent

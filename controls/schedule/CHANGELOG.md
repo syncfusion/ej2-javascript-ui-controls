@@ -2,7 +2,25 @@
 
 ## [Unreleased]
 
-## 28.2.12 (2025-03-19)
+## 29.1.33 (2025-03-25)
+
+### Schedule
+
+#### Features
+
+- Provided support to prevent the overlapping appointments by setting `allowOverlap` property as `false`. It prevents users from scheduling multiple appointments at the same time in the same time slot.
+- A new callback event, `tooltipOpen`, has been added to control when an appointment tooltip is shown. You can use this event to prevent the tooltip from appearing.
+- A new callback event, `beforePrint`, is triggered when the print event is called. It allows for customization before the print action begins.
+- `#I254712` - A new callback event, `excelExport`, is available before the Excel export process starts. This event lets you customize the Excel worksheet before it's exported.
+- `#I659693` - Provided the `overscanCount` property to adjust the number of additional resources to render outside the visible area during virtual scrolling. This helps achieve smoother scrolling by pre-loading data just outside the visible region.
+- `#700794` - Provided `created` and `destroyed` callback events support for recurrence editor.
+
+#### Bug fixes
+
+- `#I694546` - An issue where the horizontal scrollbar appears when enabling `rowAutoHeight` in the Month view has been resolved.
+- `#I697893` - The issue with the Schedule `virtualScroll` causing a script error on horizontal scrolling has been fixed.
+
+## 28.2.11 (2025-03-11)
 
 ### Schedule
 

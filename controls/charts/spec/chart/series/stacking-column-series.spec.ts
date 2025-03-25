@@ -1544,6 +1544,68 @@ describe('Chart Control', () => {
             chartObj.isTransposed = true;
             chartObj.refresh();
         });
+        it('Checking StackLabels', (done: Function) => {
+            loaded = (args: Object): void => {
+                const stackLabel: Element = document.getElementById('StackingColumncontainer_StackLabel_3');
+                const stackLabelRect: Element = document.getElementById('StackingColumncontainerStackLabel_TextShape_4');
+                expect(stackLabel !== null).toBe(true);
+                expect(stackLabel.innerHTML).toBe('50');
+                expect(stackLabel.getAttribute('x') === '568.2857142857143' || stackLabel.getAttribute('x') === '525.4285714285714').toBe(true);
+                expect(stackLabel.getAttribute('y')).toBe('163.75');
+                expect(stackLabel.getAttribute('transform') === 'rotate(270, 568.2857142857143, 163.75)' || stackLabel.getAttribute('transform') === 'rotate(270, 525.4285714285714, 158.75)').toBe(true);
+                expect(stackLabelRect !== null).toBe(true);
+                expect(stackLabelRect.getAttribute('x') === '660.6428571428571' || stackLabelRect.getAttribute('x') === '609.2142857142857').toBe(true);
+                expect(stackLabelRect.getAttribute('y') === '69.5' || stackLabelRect.getAttribute('y') === '65.5').toBe(true);
+                expect(stackLabelRect.getAttribute('transform') === 'rotate(270, 671.6428571428571, 89.5)' || stackLabelRect.getAttribute('transform') === 'rotate(270, 620.2142857142857, 84.5)').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.stackLabels.visible = true;
+            chartObj.stackLabels.angle = 270;
+            chartObj.stackLabels.border = { width: 1, color: 'black' };
+            chartObj.refresh();
+        });
+        it('Checking StackLabels inversed', (done: Function) => {
+            loaded = (args: Object): void => {
+                const stackLabel: Element = document.getElementById('StackingColumncontainer_StackLabel_3');
+                const stackLabelRect: Element = document.getElementById('StackingColumncontainerStackLabel_TextShape_4');
+                expect(stackLabel !== null).toBe(true);
+                expect(stackLabel.innerHTML).toBe('50');
+                expect(stackLabel.getAttribute('x')).toBe('439.9583333333333');
+                expect(stackLabel.getAttribute('y')).toBe('25.25');
+                expect(stackLabel.getAttribute('transform')).toBe('rotate(270, 439.9583333333333, 25.25)');
+                expect(stackLabelRect !== null).toBe(true);
+                expect(stackLabelRect.getAttribute('x')).toBe('669.7916666666667');
+                expect(stackLabelRect.getAttribute('y')).toBe('31.36538461538462');
+                expect(stackLabelRect.getAttribute('transform')).toBe('rotate(270, 680.7916666666667, 51.36538461538462)');
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.isTransposed = false;
+            chartObj.stackLabels.visible = true;
+            chartObj.stackLabels.font.textAlignment = 'Near';
+            chartObj.stackLabels.angle = 270;
+            chartObj.primaryYAxis.isInversed = false;
+            chartObj.series = [
+                {
+                    dataSource: [{ x: 1, y: 10 }, { x: 2, y: null },
+                    { x: 3, y: 15 }, { x: 4, y: 25 }, { x: 5, y: -30 }, { x: 6, y: 20 }],
+                    xName: 'x', yName: 'y', emptyPointSettings: { mode: 'Average' },
+                    type: 'StackingColumn', animation: { enable: false },
+                    marker: { visible: true, dataLabel: { visible: true } },
+                    name: 'Column1'
+                },
+                {
+                    dataSource: [{ x: 1, y: 10 }, { x: 2, y: null },
+                    { x: 3, y: 15 }, { x: 4, y: 25 }, { x: 5, y: -30 }, { x: 6, y: 20 }],
+                    xName: 'x', yName: 'y', emptyPointSettings: { mode: 'Average' },
+                    type: 'StackingColumn', animation: { enable: false },
+                    marker: { visible: true, dataLabel: { visible: true } },
+                    name: 'Column2'
+                }
+            ];
+            chartObj.refresh();
+        });
     });
     describe('Staking Column - Checking datalabel.', () => {
         let chartObj: Chart;

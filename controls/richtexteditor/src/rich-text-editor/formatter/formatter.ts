@@ -296,7 +296,6 @@ export class Formatter {
     public beforeSlashMenuApply(): void {
         this.editorManager.beforeSlashMenuApplyFormat();
     }
-
     public getCurrentStackIndex(): undefined | number {
         return this.editorManager.undoRedoManager.getCurrentStackIndex();
     }

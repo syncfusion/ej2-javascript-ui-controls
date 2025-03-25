@@ -2,13 +2,15 @@
 
 ## [Unreleased]
 
-## 28.2.12 (2025-03-19)
+## 29.1.33 (2025-03-25)
 
-### MultiSelect
+### DropDownTree
 
 #### Bug Fixes
 
-- `#I695096` - Fixed an issue where data was not displaying correctly during scrolling.
+- `#I694965` - Resolved an issue where the parent node check state was not maintained in nested data after filtering when Select All was used in the Dropdown Tree component.
+
+- `#I693819` - An issue with the select All checkbox in Dropdown Tree component when filtering is enabled and the tree contains disabled items has been resolved.
 
 ## 28.2.9 (2025-03-04)
 

@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $sheet-skin: 'highcontrast-light' !default;
 $spreadsheet-border-color: transparent !default;
 $spreadsheet-border-width: 1px;
@@ -34,7 +36,7 @@ $define-name-input-padding: 0 0 0 8px !default;
 $cfmain-header-font-size: 14px !default;
 
 //selection
-$selection-bg-color: lighten($selection-bg, 32%) !default;
+$selection-bg-color: color.adjust($selection-bg, $lightness: 32%) !default;
 $selection-border-color: $selection-bg !default;
 $selection-border-width: 1px !default;
 $hdr-selection-bg-color: #e6e6e6 !default;
@@ -219,7 +221,6 @@ $mac-scrollbar-background: rgba(0, 0, 0, .5) !default;
 //Custom Format
 $custom-listview-color: #ddd;
 $custom-format-dlg-input-margin-right: 2.8% !default;
-$custom-format-dlg-input-width: 80% !default;
 $custom-format-dlg-sample-margin: 10px 10px 10px 0 !default;
 
 //File Name Dialog

@@ -64,6 +64,8 @@ export interface ICellClickEventArgs extends IHeatMapEventArgs {
     yValue: string | number | Date;
     /** Defines the pointer event for the click action. */
     event: PointerEvent;
+    /** Specifies whether the right-click action has been performed. The default value is false. If a right-click is detected, the value is set to **true**. */
+    hasRightClicked: boolean;
 }
 
 /**

@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { DocumentHelper } from './viewer';
 import { Page } from './viewer/page';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, updateCSSText } from '@syncfusion/ej2-base';
 /**
  * Print class
  */
@@ -106,7 +106,7 @@ export class Print {
             image = new Image();
             image.src = imageData;
             // tslint:disable-next-line:max-line-length
-            image.setAttribute('style', 'margin:0px;display:block;width:' + pgWidth.toString() + 'px;height:' + pgHeight.toString() + 'px;');
+            image.style.cssText = `margin: 0px; display: block; width: ${pgWidth}px; height: ${pgHeight}px;`;
         }
         return image;
     }
@@ -121,7 +121,7 @@ export class Print {
      */
     public generatePrintContent(documentHelper: DocumentHelper, element: HTMLDivElement): void {
         // Rendering canvas to print
-        let htmlString: string = '';
+        element.innerHTML = '';
         for (let i: number = 0; i < documentHelper.pages.length; i++) {
             const page: Page = documentHelper.pages[i];
             const pageHeight: number = page.boundingRectangle.height;
@@ -130,10 +130,17 @@ export class Print {
             documentHelper.render.renderWidgets(page, 0, 0, pageWidth, 0);
             const canvasURL: string = documentHelper.render.pageCanvas.toDataURL();
             documentHelper.render.isPrinting = false;
-            let breakstring: string = (i==documentHelper.pages.length -1) ? '':'<br/>';
-            htmlString += '<div><img src=' + canvasURL + ' style="margin:0px;display:block;width: ' + pageWidth.toString() + 'px; height:' + pageHeight.toString() + 'px; "/></div>' + breakstring;
+            const div = document.createElement('div');
+            const img = document.createElement('img');
+            img.src = canvasURL;
+            let cssText: string = `margin:0px;display:block;width:${pageWidth}px;height:${pageHeight}px`;
+            updateCSSText(img, cssText);
+            div.appendChild(img);
+            element.appendChild(div);
+            if (i !== documentHelper.pages.length - 1) {
+                element.appendChild(document.createElement('br'));
+            }
         }
-        element.innerHTML = htmlString;
     }
     /**
      * Gets page width.

@@ -1629,13 +1629,13 @@ describe('Child Node - Backward & Forward', () => {
     it('Send group node front and check z index', (done: Function) => {
         diagram.select([diagram.getObject('node1')]);
         diagram.sendBackward();
-        expect(diagram.selectedItems.nodes[0].zIndex === -1).toBe(true);
+        expect(diagram.selectedItems.nodes[0].zIndex === 1).toBe(true);
         done();
     });
     it('Send group back and check z index', (done: Function) => {
         diagram.select([diagram.getObject('node1')]);
         diagram.moveForward();
-        expect(diagram.selectedItems.nodes[0].zIndex === 3).toBe(true);
+        expect(diagram.selectedItems.nodes[0].zIndex === 5).toBe(true);
         done();
     });
 })
@@ -2059,7 +2059,7 @@ describe('Swimlane Order commands - Undo & Redo', () => {
     it('Diagram Redo operation for Send to back order command', (done: Function) => {
         let node: NodeModel = diagram.getObject('swimlane');
         diagram.redo();
-        expect(node.zIndex === zIndex).toBe(true);
+        expect(node.zIndex !== zIndex).toBe(true);
         done();
     });
 })
@@ -2141,7 +2141,7 @@ describe('Swimlane & Child - Bring to Front command - undo', () => {
     it('Bring Swimlane Front to all child', (done: Function) => {
         let node: NodeModel = diagram.getObject('swimlane');
         diagram.redo();
-        expect(node.zIndex === zIndex).toBe(true);
+        expect(node.zIndex !== zIndex).toBe(true);
         done();
     });
 })

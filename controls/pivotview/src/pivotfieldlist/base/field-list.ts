@@ -860,7 +860,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             enableDrillThrough: this.pivotGridModule ?
                 (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true,
             locale: JSON.stringify(PivotUtil.getLocalizedObject(this)),
-            savedFieldList: (action === 'onDrop' && this.engineModule.fieldList !== null) ? this.engineModule.fieldList : undefined,
+            savedFieldList: (action === 'onDrop' && this.engineModule.fieldList !== null) ?
+                PivotUtil.getClonedFieldList(this.engineModule.fieldList, true) : undefined,
             enableOptimizedRendering: this.pivotGridModule && (this.pivotGridModule.enableVirtualization &&
                 this.pivotGridModule.virtualScrollSettings && this.pivotGridModule.virtualScrollSettings.allowSinglePage),
             requestType: 'string',
@@ -1149,8 +1150,14 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     this.clonedDataSet = newProp.dataSourceSettings.dataSource as IDataSet[];
                     this.engineModule.groupingFields = {};
                 }
-                if ((!isNullOrUndefined(newProp.dataSourceSettings.dataSource) && !(newProp.dataSourceSettings.groupSettings
-                && newProp.dataSourceSettings.groupSettings.length > 0)) || (this.dataType === 'olap' && !isNullOrUndefined(newProp.dataSourceSettings.url))) {
+                if (newProp.dataSourceSettings && Object.keys(newProp.dataSourceSettings).length === 1
+                    && newProp.dataSourceSettings.groupSettings && this.dataType === 'pivot') {
+                    const control: PivotView = !this.isPopupView ? this.staticPivotGridModule : this.pivotGridModule;
+                    if (control) {
+                        control.updateGroupingReport(newProp.dataSourceSettings.groupSettings, 'Date');
+                    }
+                }
+                if (!isNullOrUndefined(newProp.dataSourceSettings.dataSource) || (this.dataType === 'olap' && !isNullOrUndefined(newProp.dataSourceSettings.url))) {
                     if (this.dataType !== 'olap') {
                         if (!isNullOrUndefined(this.savedDataSourceSettings)) {
                             PivotUtil.updateDataSourceSettings(this.staticPivotGridModule, this.savedDataSourceSettings);
@@ -1216,6 +1223,13 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     if (this.treeViewModule.fieldTable && !this.isAdaptive) {
                         this.notify(events.treeViewUpdate, {});
                     }
+                } else {
+                    this.remoteData = [];
+                    if (this.dataType === 'pivot' && this.dataSourceSettings.url && this.dataSourceSettings.url !== '' &&
+                        ('type' in newProp.dataSourceSettings || 'url' in newProp.dataSourceSettings)) {
+                        this.engineModule.fieldList = null;
+                        this.render();
+                    }
                 }
                 break;
             case 'aggregateTypes':
@@ -1246,9 +1260,12 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 requireRefresh = true;
                 break;
             case 'enableFieldSearching':
-            case 'allowDeferLayoutUpdate':
             case 'allowCalculatedField':
                 this.refresh();
+                break;
+            case 'allowDeferLayoutUpdate':
+                this.isDeferLayoutUpdate = this.allowDeferLayoutUpdate;
+                this.fieldListRender();
                 break;
             }
             if (requireRefresh) {
@@ -1282,7 +1299,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             PivotUtil.updateDataSourceSettings(this, observedArgs.dataSourceSettings);
             if (this.dataType === 'pivot') {
                 if (this.dataSourceSettings.groupSettings && this.dataSourceSettings.groupSettings.length > 0) {
-                    const pivotDataSet: IDataSet[] | string[][] = this.dataSourceSettings.dataSource as IDataSet[] | string[][];
+                    const pivotDataSet: IDataSet[] | string[][] = this.engineModule.data as IDataSet[] | string[][];
                     this.clonedDataSet = (this.clonedDataSet ? this.clonedDataSet : this.dataSourceSettings.type === 'CSV' ? PivotUtil.getClonedCSVData(pivotDataSet as string[][]) as string[][]
                         : PivotUtil.getClonedData(pivotDataSet as IDataSet[])) as IDataSet[];
                     const dataSourceSettings: IDataOptions = JSON.parse(this.getPersistData()).dataSourceSettings as IDataOptions;
@@ -1440,6 +1457,10 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 this.clonedFieldListData = PivotUtil.cloneOlapFieldSettings(this.olapEngineModule.fieldListData);
             }
             this.clonedFieldList = PivotUtil.getClonedFieldList(this.pivotFieldList);
+        }
+        const control: PivotView = !this.isPopupView ? this.staticPivotGridModule : this.pivotGridModule;
+        if (control && control.toolbarModule) {
+            PivotUtil.toggleFieldListIconVisibility(control);
         }
     }
     private getFieldCaption(dataSourceSettings: DataSourceSettingsModel): void {
@@ -1736,7 +1757,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         if (control) {
             const isOlapCalcFieldAdded: boolean = this.actionObj.actionName === 'Calculated field applied' && control.dataType === 'olap';
             if (control.element.querySelector('.e-spin-hide') && !isOlapCalcFieldAdded &&
-                (!(this.allowDeferLayoutUpdate && !this.isDeferUpdateApplied) || control.isInitial)) {
+                (!(this.allowDeferLayoutUpdate && !this.isDeferUpdateApplied) || (control.isInitial && control.currentView !== 'Chart'))) {
                 control.showWaitingPopup();
             }
             control.clonedDataSet = this.clonedDataSet;
@@ -1753,9 +1774,11 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 pivotValues: control.pivotValues
             };
             control.trigger(events.fieldListRefreshed, eventArgs);
-            if (!this.isPopupView) {
+            if (!this.isPopupView && ((this.dataType === 'olap' ?
+                this.olapEngineModule.isEngineUpdated : this.engineModule.isEngineUpdated) || this.isInitial)) {
                 this.staticPivotGridModule = control;
                 control.isStaticRefresh = true;
+                control.isStaticFieldList = true;
             }
             this.isDeferUpdateApplied = false;
             if (this.staticPivotGridModule) {

@@ -411,13 +411,15 @@ export class Reorder implements IAction {
             this.setDisplay('none');
         }
         const header: Element = (this.parent.element.querySelector('.' + literals.headerContent) as Element);
-        this.upArrow = header.appendChild(
-            this.parent
-                .createElement('div', { className: 'e-icons e-icon-reorderuparrow e-reorderuparrow', attrs: { style: 'display:none' } }));
-        this.downArrow = header.appendChild(
-            this.parent
-                .createElement(
-                    'div', { className: 'e-icons e-icon-reorderdownarrow e-reorderdownarrow', attrs: { style: 'display:none' } }));
+        const upArrowDiv: HTMLElement = this.parent.createElement('div', { className: 'e-icons e-icon-reorderuparrow e-reorderuparrow' });
+        upArrowDiv.style.display = 'none';
+        this.upArrow = upArrowDiv;
+        header.appendChild(this.upArrow);
+        const downArrowDiv: HTMLElement = this.parent
+            .createElement('div', { className: 'e-icons e-icon-reorderdownarrow e-reorderdownarrow' });
+        downArrowDiv.style.display = 'none';
+        this.downArrow = downArrowDiv;
+        header.appendChild(this.downArrow);
     }
 
     /**

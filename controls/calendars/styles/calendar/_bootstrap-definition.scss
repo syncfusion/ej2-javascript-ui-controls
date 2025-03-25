@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 /*! calendar bootstrap theme variables */
 
 //month view
@@ -95,7 +97,7 @@ $calendar-normal-today-button-height: 36px !default;
 //color
 $calendar-yeardecade-bg-color: none !default;
 $calendar-yeardecade-hover-bg: $grey-e6 !default;
-$calendar-yeardecade-selected-hover-bg: darken($brand-primary, 10%) !default;
+$calendar-yeardecade-selected-hover-bg: color.adjust($brand-primary, $lightness: -10%) !default;
 
 //dimension
 $calendar-normal-year-decade-height: 54px !default;
@@ -152,7 +154,7 @@ $calendar-active-today-hover-font-color: $brand-primary-font !default;
 $calendar-active-bg-color: $brand-primary !default;
 $calendar-active-bg-box-shadow: inset 1px 0 $brand-primary, inset 0 1px $brand-primary, inset -1px 0 $brand-primary, inset 0 -1px $brand-primary !default;
 $calendar-active-bg-border-color: none !default;
-$calendar-active-hover-bg-color: darken($brand-primary, 10%) !default;
+$calendar-active-hover-bg-color: color.adjust($brand-primary, $lightness: -10%) !default;
 $calendar-hover-color:  $grey-e6 !default;
 $calendar-text-color: $grey-light-font !default;
 $calendar-hover-text: $calendar-text-color !default;

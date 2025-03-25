@@ -24,6 +24,7 @@ export class BaseSelection {
     constructor(control: Chart | AccumulationChart | Chart3D | CircularChart3D) {
         this.control = control;
     }
+    public selectionStyle: [string, string, string][] = [];
     /**
      * To create selection styles for series
      *
@@ -31,7 +32,7 @@ export class BaseSelection {
      */
     protected seriesStyles(): void {
         let seriesclass: string;
-        let style: HTMLStyleElement = <HTMLStyleElement>document.getElementById(this.styleId);
+        let style: HTMLDivElement = <HTMLDivElement>document.getElementById(this.styleId);
         let pattern: string = '{}';
         let fill: string;
         let opacity: number;
@@ -41,16 +42,16 @@ export class BaseSelection {
             if (document.getElementById(this.styleId)) {
                 document.getElementById(this.styleId).remove();
             }
-            style = document.createElement('style');
+            style = this.control.createElement('div');
             style.setAttribute('id', this.styleId);
             for (const series of this.control.visibleSeries) {
-                const visibleSeries: Series | AccumulationSeries  = this.control.visibleSeries[series.index] as Series ||
-                this.control.visibleSeries[series.index] as AccumulationSeries;
+                const visibleSeries: Series | AccumulationSeries = this.control.visibleSeries[series.index] as Series ||
+                    this.control.visibleSeries[series.index] as AccumulationSeries;
                 if ((this.styleId.indexOf('highlight') > 0 && (<Chart>this.control).highlightColor !== '') || (!isNullOrUndefined(selectionPattern) || !isNullOrUndefined(highlightPattern)) &&
                     (selectionPattern !== 'None' || highlightPattern !== 'None')) {
                     const patternName: SelectionPattern = this.styleId.indexOf('highlight') > 0 ? highlightPattern : selectionPattern;
                     if (((visibleSeries.type as AccumulationType === 'Pie' || visibleSeries.type as AccumulationType === 'Funnel' ||
-                    visibleSeries.type as AccumulationType === 'Pyramid') || this.control.getModuleName() === 'circularchart3d') && this.control.highlightColor !== 'transparent') {
+                        visibleSeries.type as AccumulationType === 'Pyramid') || this.control.getModuleName() === 'circularchart3d') && this.control.highlightColor !== 'transparent') {
                         for (let i: number = 0; i < visibleSeries.points.length; i++) {
                             opacity = visibleSeries.opacity;
                             fill = this.pattern(this.control, (this.styleId.indexOf('highlight') > 0 && (this.control as AccumulationChart).highlightColor !== '') ? (this.control as AccumulationChart).highlightColor : (visibleSeries.points[i as number]).color, series.points[i as number].index, patternName, opacity);
@@ -59,9 +60,10 @@ export class BaseSelection {
                                 this.styleId + '_series_' + series.index + '_point_' + series.points[i as number].index + '> *';
                             if ((this.control as AccumulationChart).highlightMode === 'None' && (this.control as AccumulationChart).legendSettings.enableHighlight && !series.isRectSeries) {
                                 style.innerText += '.' + this.styleId + '_series_' + series.index + '> *' + ' { stroke-width:' + (3) + ';} ';
+                                this.selectionStyle.push([this.styleId + '_series_' + series.index, 'stroke-width', '3']);
                             }
                             pattern = (pattern.indexOf('None') > -1) ? '{fill:' + ((this.styleId.indexOf('highlight') > 0 && (this.control as AccumulationChart).highlightColor !== '') ? (this.control as AccumulationChart).highlightColor : (visibleSeries.points[i as number]).color) + '!important}' : pattern;
-                            style.innerText += (series as Series | AccumulationSeries).selectionStyle ? '' : '.' + seriesclass + pattern;
+                            this.selectionStyle.push([this.styleId + '_series_' + series.index + '_point_' + series.points[i as number].index, 'fill', fill ?  ((fill.indexOf('None') > -1) ? (this.styleId.indexOf('highlight') > -1 ? (this.control as AccumulationChart).highlightColor : '') : fill) : '']);
                         }
                     } else if ((visibleSeries.type as ChartSeriesType) && (this.control as Chart).highlightColor !== 'transparent') {
                         opacity = visibleSeries.opacity;
@@ -75,17 +77,20 @@ export class BaseSelection {
                 seriesclass = (series as Series | AccumulationSeries).selectionStyle || this.styleId + '_series_' + series.index + ',' + '.' +
                     this.styleId + '_series_' + series.index + '> *';
                 if ((this.control as Chart).highlightMode === 'None' && (this.control as Chart).legendSettings.enableHighlight && !series.isRectSeries) {
-                    style.innerText += '.' + this.styleId + '_series_' + series.index + '> *' + ' { stroke-width:' + (parseFloat(((series as Series | AccumulationSeries).width ? (series as Series | AccumulationSeries).width.toString() : '0')) + 1) + ';} ';
+                    this.selectionStyle.push([this.styleId + '_series_' + series.index, 'stroke-width', (parseFloat(((series as Series | AccumulationSeries).width ? (series as Series | AccumulationSeries).width.toString() : '0')) + 1).toString()]);
                 }
                 pattern = (pattern.indexOf('None') > -1) ? '{}' : pattern;
-                style.innerText += (series as Series | AccumulationSeries).selectionStyle ? '' : '.' + seriesclass + pattern;
+                this.selectionStyle.push([this.styleId + '_series_' + series.index, 'fill', fill ? ((fill.indexOf('None') > -1) ? (this.styleId.indexOf('highlight') > -1 ? (this.control as Chart).highlightColor : '') : fill) : '']);
             }
             let unSelectOpacity: number = (this.control).highlightColor !== 'transparent' ? (this.control.getModuleName() === 'circularchart3d' ? 0.2 : 0.3) : opacity;
             if (isNullOrUndefined((this.control as Chart).selectionModule) && (this.control as Chart).selectionMode === 'None' && (this.control as Chart).highlightColor !== '') {
                 unSelectOpacity = 1;
             }
-            style.innerText += '.' + this.unselected + ' { opacity:' + (unSelectOpacity) + ';} ';
-            document.body.appendChild(style);
+            this.selectionStyle.push([this.unselected, 'opacity', unSelectOpacity.toString()]);
+            const secondaryElement: Element = document.getElementById(this.control.element.id + '_Secondary_Element');
+            if (secondaryElement) {
+                secondaryElement.appendChild(style);
+            }
         }
     }
     /**
@@ -486,8 +491,61 @@ export class BaseSelection {
     public addSvgClass(element: Element, className: string): void {
         let elementClassName: string = element.getAttribute('class') || '';
         elementClassName += ((elementClassName !== '') ? ' ' : '');
+        const isDataLabel: boolean = element.id.indexOf('datalabel') > -1 || (element.id.indexOf('Text') > -1 || element.id.indexOf('TextShape') > -1);
         if (elementClassName.indexOf(className) === -1) {
             element.setAttribute('class', elementClassName + className);
+            let selectionStyles: [string, string, string][] = this.selectionStyle;
+            if (className && className.indexOf('highlight') !== -1) {
+                if (this.control.getModuleName() === 'chart' && (this.control as Chart).highlightModule) {
+                    selectionStyles = (this.control as Chart).highlightModule.selectionStyle;
+                } else if (this.control.getModuleName() === 'accumulationchart' && (this.control as AccumulationChart).accumulationHighlightModule) {
+                    selectionStyles = (this.control as AccumulationChart).accumulationHighlightModule.selectionStyle;
+                } else if (this.control.getModuleName() === 'chart3d' && (this.control as Chart3D).highlight3DModule) {
+                    selectionStyles = (this.control as Chart3D).highlight3DModule.selectionStyle;
+                } else if (this.control.getModuleName() === 'circularchart3d' && (this.control as CircularChart3D).circularChartHighlight3DModule) {
+                    selectionStyles = (this.control as CircularChart3D).circularChartHighlight3DModule.selectionStyle;
+                }
+            }
+            if (element.tagName.toLowerCase() === 'g') {
+                element.querySelectorAll('*').forEach((child: Element) => {
+                    for (let i: number = 0; i < selectionStyles.length; i++) {
+                        const key: [string, string, string] = selectionStyles[i as number];
+                        const classValue: string = key[0];
+                        const childClass: string = child.getAttribute('class') ? child.getAttribute('class') : '';
+                        if ((classValue === className || classValue.indexOf(className) !== -1) && childClass.indexOf('selection') === -1) {
+                            if (key[1] === 'fill' && key[2] && !isDataLabel) {
+                                (child as HTMLElement).style.fill = key[2];
+                            }
+                            if (key[1] === 'opacity' && key[2]) {
+                                (child as HTMLElement).style.opacity = key[2];
+                                (child as HTMLElement).style.fill = '';
+                            }
+                            if (key[1] === 'stroke-width' && key[2]) {
+                                (child as HTMLElement).style.strokeWidth = key[2];
+                            }
+                        }
+                    }
+                });
+            }
+            else {
+                for (let i: number = 0; i < selectionStyles.length; i++) {
+                    const key: [string, string, string] = selectionStyles[i as number];
+                    const classValue: string = key[0];
+                    const childClass: string = element.getAttribute('class') ? element.getAttribute('class') : '';
+                    if ((classValue === className || classValue.indexOf(className) !== -1) && (className.indexOf('highlight') === -1 || childClass.indexOf('selection') === -1)) {
+                        if (key[1] === 'fill' && key[2] && !isDataLabel) {
+                            (element as HTMLElement).style.fill = key[2];
+                        }
+                        if (key[1] === 'opacity' && key[2]) {
+                            (element as HTMLElement).style.opacity = key[2];
+                            (element as HTMLElement).style.fill = '';
+                        }
+                        if (key[1] === 'stroke-width' && key[2] && element.id.indexOf('legend_shape') === -1) {
+                            (element as HTMLElement).style.strokeWidth = key[2];
+                        }
+                    }
+                }
+            }
         }
     }
     /**
@@ -503,7 +561,57 @@ export class BaseSelection {
     public removeSvgClass(element: Element, className: string): void {
         const elementClassName: string = element.getAttribute('class') || '';
         if (elementClassName.indexOf(className) > -1) {
-            element.setAttribute('class', elementClassName.replace(className, ''));
+            element.setAttribute('class', elementClassName.replace(className, '').trim());
+            let selectionStyles: [string, string, string][] = this.selectionStyle;
+            if (className && className.indexOf('highlight') !== -1) {
+                if (this.control.getModuleName() === 'chart' && (this.control as Chart).highlightModule) {
+                    selectionStyles = (this.control as Chart).highlightModule.selectionStyle;
+                } else if (this.control.getModuleName() === 'accumulationchart' && (this.control as AccumulationChart).accumulationHighlightModule) {
+                    selectionStyles = (this.control as AccumulationChart).accumulationHighlightModule.selectionStyle;
+                } else if (this.control.getModuleName() === 'chart3d' && (this.control as Chart3D).highlight3DModule) {
+                    selectionStyles = (this.control as Chart3D).highlight3DModule.selectionStyle;
+                } else if (this.control.getModuleName() === 'circularchart3d' && (this.control as CircularChart3D).circularChartHighlight3DModule) {
+                    selectionStyles = (this.control as CircularChart3D).circularChartHighlight3DModule.selectionStyle;
+                }
+            }
+            if (element.tagName.toLowerCase() === 'g') {
+                element.querySelectorAll('*').forEach((child: Element) => {
+                    for (let i: number = 0; i < selectionStyles.length; i++) {
+                        const key: [string, string, string] = selectionStyles[i as number];
+                        const classValue: string = key[0];
+                        const childClass: string = child.getAttribute('class') ? child.getAttribute('class') : '';
+                        if ((classValue === className || classValue.indexOf(className) !== -1)  && childClass.indexOf('selection') === -1) {
+                            if (key[1] === 'fill' && key[2]) {
+                                (child as HTMLElement).style.fill = '';
+                            }
+                            if (key[1] === 'opacity' && key[2]) {
+                                (child as HTMLElement).style.opacity = '';
+                            }
+                            if (key[1] === 'stroke-width' && key[2]) {
+                                (child as HTMLElement).style.strokeWidth = '';
+                            }
+                        }
+                    }
+                });
+            }
+            else {
+                for (let i: number = 0; i < selectionStyles.length; i++) {
+                    const key: [string, string, string] = selectionStyles[i as number];
+                    const classValue: string = key[0];
+                    const childClass: string = element.getAttribute('class') ? element.getAttribute('class') : '';
+                    if ((classValue === className || classValue.indexOf(className) !== -1) && (className.indexOf('highlight') === -1 || childClass.indexOf('selection') === -1)) {
+                        if (key[1] === 'fill' && key[2]) {
+                            (element as HTMLElement).style.fill = '';
+                        }
+                        if (key[1] === 'opacity' && key[2]) {
+                            (element as HTMLElement).style.opacity = '';
+                        }
+                        if (key[1] === 'stroke-width' && key[2]) {
+                            (element as HTMLElement).style.strokeWidth = '';
+                        }
+                    }
+                }
+            }
         }
     }
     /**

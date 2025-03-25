@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // Size variables
 $breadcrumb-skin: 'bootstrap5' !default;
 $breadcrumb-last-item-font-weight: $font-weight-normal !default;
@@ -38,9 +40,9 @@ $breadcrumb-popup-item-bigger-height: 36px !default;
 // Color variables
 $breadcrumb-separator-color: $content-text-color-alt3 !default;
 $breadcrumb-item-color: $primary-outline !default;
-$breadcrumb-item-hover-color: darken($primary-outline, 10%) !default;
+$breadcrumb-item-hover-color: color.adjust($primary-outline, $lightness: -10%) !default;
 $breadcrumb-item-focus-color: $breadcrumb-item-hover-color !default;
-$breadcrumb-item-active-color: darken($primary-outline, 15%) !default;
+$breadcrumb-item-active-color: color.adjust($primary-outline, $lightness: -15%) !default;
 $breadcrumb-last-item-font-color: $content-text-color-alt3 !default;
 $breadcrumb-collapsed-icon-hover-bgcolor: $content-bg-color-hover !default;
 $breadcrumb-collapsed-icon-active-bgcolor: $content-bg-color-pressed !default;
@@ -49,7 +51,7 @@ $breadcrumb-collapsed-icon-color: $icon-color !default;
 $breadcrumb-collapsed-icon-hover-color: $icon-color !default;
 $breadcrumb-disabled-item-color: $content-text-color-disabled !default;
 $breadcrumb-icon-interaction-color: $icon-color !default;
-$breadcrumb-item-focus-border: 1px solid darken($primary-outline, 10%) !default;
+$breadcrumb-item-focus-border: 1px solid color.adjust($primary-outline, $lightness: -10%) !default;
 $breadcrumb-popup-item-color: $content-text-color-alt3 !default;
 $breadcrumb-popup-border: 1px solid $border-light !default;
 $breadcrumb-popup-bgcolor: $flyout-bg-color !default;

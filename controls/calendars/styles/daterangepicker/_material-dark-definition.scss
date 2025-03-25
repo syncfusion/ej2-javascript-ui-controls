@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 //default
 $range-bg-color: $grey-800 !default;
 $range-primary-color: $primary !default;
@@ -11,7 +13,7 @@ $range-header-bg-color: $range-background !default;
 $range-active-icon-color: $accent !default;
 $range-active-state-icon-color: $accent !default;
 $range-hover-color: $grey-700 !default;
-$range-hover-content-color: darken($range-hover-color, 15%) !default;
+$range-hover-content-color: color.adjust($range-hover-color, $lightness: -15%) !default;
 $range-today-color: transparent !default;
 $range-selection-bg: $accent !default;
 $range-other-hover-color: transparent !default;

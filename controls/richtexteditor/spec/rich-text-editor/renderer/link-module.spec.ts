@@ -2142,7 +2142,7 @@ describe('Link Module', () => {
                 let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
                 (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
                 let result : string = document.querySelector('a').childNodes[0].nodeName;
-                expect(result == 'STRONG').toBe(true);
+                expect(result === 'STRONG').not.toBe(true);
                 done();
             },200);
         });
@@ -2178,16 +2178,13 @@ describe('After clicking on outside, link dialog still open state', function () 
         });
     });
 
-  describe('Unable to open the quick toolbar after inserting link', function () {
+    describe('916973: Unable to open the quick toolbar after inserting link', function () {
         let rteEle: HTMLElement;
         let rteObj: any;
         let defaultUA: string = navigator.userAgent;
         let safari: string = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15";
         beforeAll(function () {
-            Object.defineProperty(navigator, 'userAgent', {
-                value: safari,
-                configurable: true
-            });
+            Browser.userAgent = safari;
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['CreateLink', 'Image']
@@ -2200,8 +2197,8 @@ describe('After clicking on outside, link dialog still open state', function () 
             rteEle = rteObj.element;
         });
         afterAll(function () {
-            Browser.userAgent = defaultUA;
             destroy(rteObj);
+            Browser.userAgent = defaultUA;
         });
         it('Quicktoolbar open after right click on link', (done: Function) => {
             let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
@@ -2214,9 +2211,11 @@ describe('After clicking on outside, link dialog still open state', function () 
             target.dispatchEvent(clickEvent);
             let eventsArg: any = { target: target, which: 3, ctrlKey: false };
             (rteObj.linkModule as any).editAreaClickHandler({ args: eventsArg });
-            let quickPop: HTMLElement =document.querySelector('.e-rte-quick-toolbar.e-rte-toolbar.e-control.e-toolbar.e-lib.e-keyboard');
-            expect(!isNullOrUndefined(quickPop)).toBe(true);
-            done();
+            setTimeout(() => {
+                let quickPop: HTMLElement =document.querySelector('.e-rte-quick-toolbar.e-rte-toolbar.e-control.e-toolbar.e-lib.e-keyboard');
+                expect(!isNullOrUndefined(quickPop)).toBe(true);
+                done();
+            }, 100);
         });
     });
 

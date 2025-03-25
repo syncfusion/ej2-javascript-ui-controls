@@ -6022,3 +6022,233 @@ describe('Task to milestone for fixedWork type', () => {
         destroyGantt(ganttObj);       
     });
 });
+describe('Update Record By ID with task type', () => {
+    let ganttObj: Gantt;
+    const resourcesData : object[] = [
+        {
+            TaskID: 1,
+            TaskName: 'Project initiation',
+            StartDate: new Date('03/29/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                {
+                    TaskID: 3, TaskName: 'Perform soil test', taskType: 'FixedDuration', StartDate: new Date('03/29/2019'), Duration: 4,
+                    resources: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20
+                },   
+            ]
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: resourcesData,
+                resources: resourceCollection,
+                viewType: 'ResourceView',
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    child: 'subtasks',
+                    type: 'taskType'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'taskType' },
+                    { field: 'TaskName', headerText: 'Name', width: 250 },
+                    { field: 'work', headerText: 'Work' },
+                    { field: 'Progress' },
+                    { field: 'resourceGroup', headerText: 'Group' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                ],     
+                splitterSettings: {
+                    columnIndex: 3
+                },  
+                allowSelection: true,
+                highlightWeekends: true,
+                treeColumnIndex: 1,
+                height: '550px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+    });
+    
+    it('Update Record By ID with task type', () => {
+        let data: object[] = [{
+            TaskID: 3,
+            TaskName: 'Updated by index value',
+            StartDate: new Date('04/02/2019'),
+            Duration: 4,
+            Progress: 50,
+            taskType: 'FixedUnit',
+            resources: [{ resourceId: 3, resourceUnit: 70 }]
+        }]
+        ganttObj.editModule.updateRecordByID(data[0]);
+        expect(getValue('taskType',ganttObj.flatData[3])).toBe('FixedUnit')
+    })
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('update record by id method to update enddate', () => {
+    let ganttObj: Gantt;
+    const datas : Object[] =   [
+        {
+          TaskID: 1,
+          TaskName: 'Product Concept',
+          StartDate: new Date('04/02/2019'),
+          EndDate: new Date('04/21/2019'),
+          subtasks: [
+
+            { TaskID: 3, TaskName: 'Defining target audience', Duration: 3 },
+
+          ],
+        },
+      ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: datas,
+                    allowSorting: true,
+                    allowReordering: true,
+                    enableContextMenu: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency:'Predecessor',
+                        baselineStartDate: "BaselineStartDate",
+                        baselineEndDate: "BaselineEndDate",
+                        child: 'subtasks',
+                        indicators: 'Indicators'
+                    },
+                    renderBaseline: true,
+                    baselineColor: 'red',
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    gridLines: "Both",
+                    taskbarHeight: 20,
+                    rowHeight: 40,
+                    height: '550px',
+                    allowUnscheduledTasks: true,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+        }, done);
+    });
+    it('update record by id method to update enddate',() => {
+        const data : Object = {
+            TaskID: 3,
+            TaskName: 'Updated by index value',
+            EndDate: new Date('04/02/2019'),
+        }
+        ganttObj.updateRecordByID(data);
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/02/2019');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('update record by id method to update enddate in self referance data', () => {
+    let ganttObj: Gantt;
+    const datas : Object[] =  [
+        {
+          taskID: '1',
+          taskName: 'Project Schedule',
+          startDate: new Date('02/04/2019'),
+          endDate: new Date('03/10/2019'),
+        },
+        {
+          taskID: '2',
+          taskName: 'Planning',
+          startDate: new Date('02/04/2019'),
+          endDate: new Date('02/10/2019'),
+          parentID: 1,
+        },
+        {
+          taskID: '3',
+          taskName: 'Plan timeline',
+          duration: 6,
+          progress: '60',
+          parentID: 2,
+        },
+      ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: datas,
+                height: '450px',
+                highlightWeekends: true,
+                allowSelection: true,
+                treeColumnIndex: 1,
+                taskFields: {
+                    id: 'taskID',
+                    name: 'taskName',
+                    startDate: 'startDate',
+                    endDate: 'endDate',
+                    duration: 'duration',
+                    progress: 'progress',
+                    dependency: 'predecessor',
+                    parentID: 'parentID',
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                selectedRowIndex: 1,
+                gridLines: "Both",
+                taskbarHeight: 20,
+                rowHeight: 40,
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('01/28/2019'),
+                projectEndDate: new Date('03/10/2019')
+        }, done);
+    });
+    it('update record by id method to update enddate',() => {
+        const data : Object = {
+            taskID: 3,
+            taskName: 'Updated by index value',
+            endDate: new Date('04/02/2019'), 
+        }
+        ganttObj.updateRecordByID(data);
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/02/2019');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

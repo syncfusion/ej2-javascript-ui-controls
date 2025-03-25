@@ -60,6 +60,11 @@ export const toolbarRefresh: string = 'toolbar-refresh';
  * @hidden
  * @deprecated
  */
+export const slashMenuOpening: string = 'slash-menu-opening';
+/**
+ * @hidden
+ * @deprecated
+ */
 export const refreshBegin: string = 'refresh-begin';
 /**
  * @hidden

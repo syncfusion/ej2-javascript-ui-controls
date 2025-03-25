@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $schedule-skin: $skin-name !default;
 $schedule-date-navigation-font-size: $text-lg !default;
 $schedule-header-nrml-font-size: $text-sm !default;
@@ -229,7 +231,7 @@ $schedule-work-cells-bg-color: $content-bg-color-alt1 !default;
 $schedule-current-date-bg-color: $primary !default;
 $schedule-disable-dates-color: $content-bg-color-alt2 !default;
 $schedule-workhour-bg-color: $content-bg-color !default;
-$schedule-hover-bg-color: darken($content-bg-color-alt1, 2%) !default;
+$schedule-hover-bg-color: color.adjust($content-bg-color-alt1, $lightness: -2%) !default;
 $schedule-resource-focus-bg-color: $schedule-hover-bg-color !default;
 $schedule-active-color: $content-bg-color !default;
 $schedule-current-day-active-color: $schedule-active-color !default;
@@ -264,6 +266,8 @@ $schedule-bgr-date-time-icon-padding-right: 10px !default;
 $schedule-bgr-more-event-close-icon-padding: unset !default;
 $schedule-bgr-tbar-btn-text-font-size: $schedule-header-bgr-font-size !default;
 $schedule-multiple-event-popup-icon-bg-color: $schedule-header-bg-color !default;
+$schedule-calendar-width: 300px !default;
+$schedule-bgr-calendar-width: 345px !default;
 
 @mixin tbar-btn-animation {
   content: '';

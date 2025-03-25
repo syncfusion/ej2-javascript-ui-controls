@@ -165,9 +165,9 @@ export class Clipboard implements IAction {
         this.parent.off(events.contentReady, this.initialEnd);
         this.clipBoardTextArea = this.parent.createElement('textarea', {
             className: 'e-clipboard',
-            styles: 'opacity: 0',
             attrs: { tabindex: '-1', 'aria-label': this.l10n.getConstant('ClipBoard') }
         }) as HTMLInputElement;
+        this.clipBoardTextArea.style.opacity = '0';
         this.parent.element.appendChild(this.clipBoardTextArea);
     }
 
@@ -245,7 +245,7 @@ export class Clipboard implements IAction {
                             this.getCopyData(leftCols, false, '\t', withHeader);
                         }
                     }
-                } else if (this.parent.selectionModule && this.parent.selectionModule.selectedRowCellIndexes.length) {
+                } else if (this.parent.selectionModule && this.parent.selectionModule.selectedRowCellIndexes.length)  {
                     const obj: { status: boolean, rowIndexes?: number[], colIndexes?: number[] } = this.checkBoxSelection();
                     if (obj.status) {
                         if (withHeader) {
@@ -297,7 +297,8 @@ export class Clipboard implements IAction {
         const isElement: boolean = typeof cells[0] !== 'string';
         for (let j: number = 0; j < cells.length; j++) {
             if (withHeader && isCell) {
-                const colIdx: number = parseInt((cells[parseInt(j.toString(), 10)] as HTMLElement).getAttribute(literals.dataColIndex), 10);
+                const colIdx: number = parseInt((cells[parseInt(j.toString(), 10)] as HTMLElement).
+                    getAttribute(literals.ariaColIndex), 10) - 1;
                 this.copyContent += (this.parent.getColumns() as Column[])[parseInt(colIdx.toString(), 10)].headerText + '\n';
             }
             if (isElement) {

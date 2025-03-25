@@ -82,6 +82,12 @@ export function PdfiumRunner(): void {
         (FPDF as any).GetCharBox = PDFiumModule.cwrap('FPDFText_GetCharBox', 'number', ['number', 'number', 'number', 'number', 'number']);
         (FPDF as any).GetPageRotation = PDFiumModule.cwrap('FPDFPage_GetRotation', 'number', ['number']);
         (FPDF as any).GetCharAngle = PDFiumModule.cwrap('FPDFText_GetCharAngle', 'number', ['number']);
+        (FPDF as any).TextFindStart = PDFiumModule.cwrap('FPDFText_FindStart', '', ['number', 'number', 'number', 'number']);
+        (FPDF as any).TextFindClose = PDFiumModule.cwrap('FPDFText_FindClose', '', ['number']);
+        (FPDF as any).TextFindNext = PDFiumModule.cwrap('FPDFText_FindNext', '', ['number']);
+        (FPDF as any).TextFindResultIndex = PDFiumModule.cwrap('FPDFText_GetSchResultIndex', '', ['number']);
+        (FPDF as any).TextFindCount = PDFiumModule.cwrap('FPDFText_GetSchCount', '', ['number']);
+        (FPDF as any).GetPageHeight = PDFiumModule.cwrap('FPDF_GetPageHeight', 'number', ['number']);
         (FPDF as any).GetPageHeight = PDFiumModule.cwrap('FPDF_GetPageHeight', 'number', ['number']);
         (FPDF as any).GetPageWidth = PDFiumModule.cwrap('FPDF_GetPageWidth', 'number', ['number']);
         (pdfiumWindow as any).heap = (J: any, s: number) => {
@@ -222,18 +228,113 @@ export function PdfiumRunner(): void {
                 (data as any).message = 'imageRenderedSearch';
                 ctx.postMessage(data);
             }
-            else if (event.data.message === 'extractText') {
+            else if (event.data.message.indexOf('extractText') !== -1) {
                 const firstPage: Page = documentDetails.getPage(event.data.pageIndex);
                 const ImageData: any = event.data;
+                const isSkipCharacterBounds: boolean = event.data.isSkipCharacterBounds;
                 const data: object = firstPage.render('extractText', ImageData.zoomFactor, ImageData.isTextNeed, null, null,
-                                                      ImageData.textDetailsId);
-                (data as any).message = 'textExtracted';
+                                                      ImageData.textDetailsId, null, null, null, null, isSkipCharacterBounds);
+                (data as any).message = event.data.message;
                 (data as any).isLayout = event.data.isLayout;
                 (data as any).isRenderText = event.data.isRenderText;
                 (data as any).jsonObject = event.data.jsonObject;
                 (data as any).requestType = event.data.requestType;
                 (data as any).annotationObject = event.data.annotationObject;
+                (data as any).pageIndex = event.data.pageIndex;
+                (data as any).options = event.data.options;
+                (data as any).isAPI = event.data.isAPI;
+                (data as any).isNeedToRender = event.data.isNeedToRender;
                 ctx.postMessage(data);
+            }
+            else if (event.data.message === 'searchText') {
+                const pagesCount: number = FPDF.GetPageCount(documentDetails.processor.wasmData.wasm);
+                const searchTerm: string = event.data.searchWord;
+                const buffer: any = new Uint16Array(searchTerm.length + 1);
+                for (let i: number = 0; i < searchTerm.length; i++) {
+                    buffer[parseInt(i.toString(), 10)] = searchTerm.charCodeAt(i);
+                }
+                buffer[searchTerm.length] = 0;
+                const pointer: any = PDFiumModule.asm.malloc(buffer.length * buffer.BYTES_PER_ELEMENT);
+                PDFiumModule.HEAPU16.set(buffer, pointer / Uint16Array.BYTES_PER_ELEMENT);
+                let occurrencesCount: number = 0;
+                const isMatchCase: number = (event.data.matchCase === true) ? 1 : 0;
+                const startIndex: number = event.data.startIndex;
+                const endIndex: number = event.data.endIndex;
+                let pageSearchCounts: any = {};
+                for (let a: number = startIndex; a < endIndex; a++) {
+                    let pageOccurrence: number = -1;
+                    const page: any = FPDF.LoadPage(documentDetails.processor.wasmData.wasm, a);
+                    const textPage: any = FPDF.LoadTextPage(page);
+                    const searchHandle: any = FPDF.TextFindStart(textPage, pointer, isMatchCase, 0);
+                    const pageHeight: any = FPDF.GetPageHeight(page);
+                    while (FPDF.TextFindNext(searchHandle)) {
+                        occurrencesCount++;
+                        pageOccurrence++;
+                        const charLength: any = FPDF.TextFindCount(searchHandle);
+                        const startIndex: any = FPDF.TextFindResultIndex(searchHandle);
+                        if (!pageSearchCounts[parseInt(a.toString(), 10)]) {
+                            pageSearchCounts[parseInt(a.toString(), 10)] = { Indices: [], Bounds: {}, pageOccurrence: 0 };
+                        }
+                        if (!pageSearchCounts[parseInt(a.toString(), 10)].Bounds[parseInt(pageOccurrence.toString(), 10)]) {
+                            pageSearchCounts[parseInt(a.toString(), 10)].Bounds[parseInt(pageOccurrence.toString(), 10)] = [];
+                        }
+                        pageSearchCounts[parseInt(a.toString(), 10)].Indices.push(startIndex);
+                        let charLeft: number = Number.POSITIVE_INFINITY;
+                        let charRight: number = 0;
+                        let charBottom: number = Number.POSITIVE_INFINITY;
+                        let charTop: number = 0;
+                        for (let i: number = 0; i < charLength; i++) {
+                            const resultPage: any = FPDF.GetUnicodeChar(textPage, startIndex + i);
+                            const character: string = String.fromCharCode(resultPage);
+                            if (character !== '\r') {
+                                if (character !== '\n') {
+                                    const result: any = H(F64, 4, [-1, -1, -1, -1])((left: any, right: any, bottom: any, top: any) => {
+                                        return FPDF.GetCharBox(textPage, startIndex + i, left, right, bottom, top);
+                                    });
+                                    charLeft = Math.min(charLeft, result[0]);
+                                    charRight = Math.max(charRight, result[1]);
+                                    charBottom = Math.min(charBottom, result[2]);
+                                    charTop = Math.max(charTop, result[3]);
+                                }
+                            }
+                            if (character === '\r') {
+                                const characterBounds: RectAngle = new RectAngle((charLeft * (96 / 72)), ((pageHeight - (charTop - charBottom) - charBottom) * (96 / 72)), ((charRight - charLeft) * (96 / 72)), ((charTop - charBottom) * (96 / 72)), '', null);
+                                pageSearchCounts[parseInt(a.toString(), 10)].Bounds[parseInt(pageOccurrence.toString(), 10)]
+                                    .push(characterBounds);
+                                pageSearchCounts[parseInt(a.toString(), 10)].Bounds[parseInt(pageOccurrence.toString(), 10)].sort(
+                                    (a: any, b: any): number => {
+                                        return a.Top === b.Top ? a.Left - b.Left : a.Top - b.Top;
+                                    });
+                                charLeft = Number.POSITIVE_INFINITY;
+                                charRight = 0;
+                                charBottom = Number.POSITIVE_INFINITY;
+                                charTop = 0;
+                            }
+                        }
+                        const characterBounds: RectAngle = new RectAngle((charLeft * (96 / 72)), ((pageHeight - (charTop - charBottom) - charBottom) * (96 / 72)), ((charRight - charLeft) * (96 / 72)), ((charTop - charBottom) * (96 / 72)), '', null);
+                        pageSearchCounts[parseInt(a.toString(), 10)].Bounds[parseInt(pageOccurrence.toString(), 10)].push(characterBounds);
+                        pageSearchCounts[parseInt(a.toString(), 10)].Bounds[parseInt(pageOccurrence.toString(), 10)].sort(
+                            (a: any, b: any): number => {
+                                return a.Top === b.Top ? a.Left - b.Left : a.Top - b.Top;
+                            });
+                        pageSearchCounts[parseInt(a.toString(), 10)].pageOccurrence = pageOccurrence + 1;
+                    }
+                    FPDF.TextFindClose(searchHandle);
+                    FPDF.ClosePage(page);
+                }
+                const result: object = {
+                    totalSearchCount: occurrencesCount,
+                    resultPages: pageSearchCounts,
+                    message: 'textSearched',
+                    searchWord: searchTerm,
+                    matchCase: event.data.matchCase,
+                    isRequestsend: event.data.isRequestsend,
+                    isCompletedSearch: (endIndex === pagesCount) ? true : false,
+                    endIndex: endIndex
+                };
+                ctx.postMessage(result);
+                pageSearchCounts = {};
+                PDFiumModule.asm.free(pointer);
             }
             else if (event.data.message === 'renderThumbnail') {
                 // eslint-disable-next-line
@@ -241,7 +342,10 @@ export function PdfiumRunner(): void {
                     try {
                         const firstPage: Page = documentDetails.getPage(event.data.pageIndex);
                         if (firstPage.processor !== null && firstPage.processor !== undefined) {
-                            const data: object = firstPage.render('thumbnail', null, false, null, null);
+                            const data: object = firstPage.render('thumbnail', null, event.data.isTextNeed, null, null, null, null, null, null, null, event.data.isSkipCharacterBounds);
+                            (data as any).isRenderText = event.data.isRenderText;
+                            (data as any).jsonObject = event.data.jsonObject;
+                            (data as any).requestType = event.data.requestType;
                             resolve(data);
                         }
                     } catch (error) {
@@ -255,8 +359,11 @@ export function PdfiumRunner(): void {
             }
             else if (event.data.message === 'renderPreviewTileImage') {
                 const firstPage: Page = documentDetails.getPage(event.data.pageIndex);
-                const data: object = firstPage.render('thumbnail', null, false, null, null);
+                const data: object = firstPage.render('thumbnail', null, event.data.isTextNeed, null, null, null, null, null, null, null, event.data.isSkipCharacterBounds);
                 (data as any).message = 'renderPreviewTileImage';
+                (data as any).isRenderText = event.data.isRenderText;
+                (data as any).jsonObject = event.data.jsonObject;
+                (data as any).requestType = event.data.requestType;
                 (data as any).startIndex = event.data.startIndex;
                 (data as any).endIndex = event.data.endIndex;
                 ctx.postMessage(data);
@@ -266,12 +373,17 @@ export function PdfiumRunner(): void {
                 const data: object = firstPage.render('print', null, false, event.data.printScaleFactor, event.data.printDevicePixelRatio);
                 ctx.postMessage(data);
             }
-            else if (event.data.message === 'extractImage') {
+            else if (event.data.message === 'extractImage' || event.data.message === 'extractImages') {
                 const firstPage: Page = documentDetails.getPage(event.data.pageIndex);
                 const ImageData: any = event.data;
                 const data: object = firstPage.render(null, ImageData.zoomFactor, ImageData.isTextNeed, null, null,
                                                       ImageData.textDetailsId, null, null, null, event.data.size);
-                (data as any).message = 'imageExtracted';
+                if (event.data.message === 'extractImage') {
+                    (data as any).message = 'imageExtracted';
+                }
+                if (event.data.message === 'extractImages') {
+                    (data as any).message = 'imagesExtracted';
+                }
                 ctx.postMessage(data);
             }
             else if (event.data.message === 'renderImageAsTile') {
@@ -315,9 +427,10 @@ export function PdfiumRunner(): void {
         }
         public render(message: any, zoomFactor?: number, isTextNeed?: boolean, printScaleFactor?: any,
                       printDevicePixelRatio?: number, textDetailsId?: any, isTransparent?: boolean,
-                      cropBoxRect?: Rect, mediaBoxRect?: Rect, size?: Size): object {
+                      cropBoxRect?: Rect, mediaBoxRect?: Rect, size?: Size, isSkipCharacterBounds?: boolean): object {
             return this.processor.render(this.index, message, zoomFactor, isTextNeed, printScaleFactor,
-                                         printDevicePixelRatio, textDetailsId, isTransparent, cropBoxRect, mediaBoxRect, size);
+                                         printDevicePixelRatio, textDetailsId, isTransparent, cropBoxRect, mediaBoxRect, size,
+                                         isSkipCharacterBounds);
         }
         public renderTileImage(x: any, y: any, tileX: any, tileY: any, zoomFactor?: number, isTextNeed?: boolean,
                                textDetailsId?: any, cropBoxRect?: Rect, mediaBoxRect?: Rect): object {
@@ -373,7 +486,7 @@ export function PdfiumRunner(): void {
         }
 
         public getRender(i: number = 0, w: any, h: any, isTextNeed: boolean, isTransparent?: boolean,
-                         cropBoxRect?: Rect, mediaBoxRect?: Rect): any {
+                         cropBoxRect?: Rect, mediaBoxRect?: Rect, isSkipCharacterBounds?: boolean): any {
             const flag: any = (FPDF as any).REVERSE_BYTE_ORDER;
             const heap: any = PDFiumModule.asm.malloc(w * h * 4);
             PDFiumModule.HEAPU8.fill(0, heap, heap + (w * h * 4));
@@ -382,12 +495,13 @@ export function PdfiumRunner(): void {
             (FPDF as any).Bitmap_FillRect(bmap, 0, 0, w, h, isTransparent ? 0x00FFFFFF : 0xFFFFFFFF);
             (FPDF as any).RenderPageBitmap(bmap, page, 0, 0, w, h, 0, flag);
             (FPDF as any).Bitmap_Destroy(bmap);
-            this.textExtraction(page, i, isTextNeed, cropBoxRect, mediaBoxRect);
+            this.textExtraction(page, i, isTextNeed, cropBoxRect, mediaBoxRect, isSkipCharacterBounds);
             (FPDF as any).ClosePage(page);
             return heap;
         }
 
-        public textExtraction(pagePointer: any, pageIndex: number, isTextNeed: boolean, cropBoxRect?: Rect, mediaBoxRect?: Rect): void {
+        public textExtraction(pagePointer: any, pageIndex: number, isTextNeed: boolean, cropBoxRect?: Rect,
+                              mediaBoxRect?: Rect, isSkipCharacterBounds?: boolean): void {
             if (isTextNeed) {
                 // eslint-disable-next-line
                 let [pageWidth, pageHeight] = this.getPageSize(pageIndex);
@@ -420,110 +534,28 @@ export function PdfiumRunner(): void {
                 let startNewLine: boolean = false;
                 const maximumSpaceForNewLine: number = 11;
                 for (let charCount: number = 0; charCount <= totalCharacterCount; charCount++) {
-                    const result: any = (FPDF as any).GetUnicodeChar(textPage, charCount);
-                    let rotationRadian: any = (FPDF as any).GetCharAngle(textPage, charCount);
-                    const character: string = String.fromCharCode(result);
-                    let [charLeft, charRight, charBottom, charTop] = this.getCharBounds(textPage, charCount);
-                    let X: number = this.pointerToPixelConverter(charLeft) -
-                    this.pointerToPixelConverter(cropBoxRect && cropBoxRect.x ? cropBoxRect.x : 0);
-                    let Y: number = (pageHeight + this.pointerToPixelConverter(cropBoxRect && cropBoxRect.y ? cropBoxRect.y : 0)) -
-                    this.pointerToPixelConverter(charTop);
-                    let Width: number = this.pointerToPixelConverter(charRight - charLeft);
-                    let Height: number = this.pointerToPixelConverter(charTop - charBottom);
-                    let rotationAngle: number = parseInt((rotationRadian * 180 / Math.PI).toString(), 10);
-                    if (charCount < totalCharacterCount) {
-                        pageText += character;
-                        const currentCharacterBounds: RectAngle = new RectAngle(X, Y, Width, Height, character, rotationAngle);
-                        this.CharacterBounds.push(currentCharacterBounds);
-                    }
-                    if (pageRotation === 1 || pageRotation === 3) {
-                        Y = (pageWidth) - this.pointerToPixelConverter(charTop);
-                    }
-                    switch (character) {
-                    case '\0': {
-                        // eslint-disable-next-line
-                        minTop = Math.min.apply(Math, top);
-                        // eslint-disable-next-line
-                        maxBottom = Math.max.apply(Math, bottom);
-                        // eslint-disable-next-line
-                        minLeft = Math.min.apply(Math, left);
-                        // eslint-disable-next-line
-                        maxRight = Math.max.apply(Math, right);
-                        const newWordBounds: RectAngle = new RectAngle(wordMinLeft, wordMinTop, wordMaxRight - wordMinLeft,
-                                                                       wordMaxBottom - wordMinTop, word, wordRotation);
-                        wordBounds.push(newWordBounds);
-                        this.textBoundsCalculation(wordBounds, minTop, maxBottom, maxRight, minLeft, pageRotation, pageWidth, pageHeight);
-                        wordBounds = [];
-                        wordStart = true;
-                        isPreviousSpace = false;
-                        word = '';
-                        top = [];
-                        left = [];
-                        bottom = [];
-                        right = [];
-                        minTop = 0;
-                        maxBottom = 0;
-                        minLeft = 0;
-                        maxRight = 0;
-                        break;
-                    }
-                    case '\r':
+                    if (!isSkipCharacterBounds) {
+                        const result: any = (FPDF as any).GetUnicodeChar(textPage, charCount);
+                        let rotationRadian: any = (FPDF as any).GetCharAngle(textPage, charCount);
+                        const character: string = String.fromCharCode(result);
+                        let [charLeft, charRight, charBottom, charTop] = this.getCharBounds(textPage, charCount);
+                        let X: number = this.pointerToPixelConverter(charLeft) -
+                        this.pointerToPixelConverter(cropBoxRect && cropBoxRect.x ? cropBoxRect.x : 0);
+                        let Y: number = (pageHeight + this.pointerToPixelConverter(cropBoxRect && cropBoxRect.y ? cropBoxRect.y : 0)) -
+                        this.pointerToPixelConverter(charTop);
+                        let Width: number = this.pointerToPixelConverter(charRight - charLeft);
+                        let Height: number = this.pointerToPixelConverter(charTop - charBottom);
+                        let rotationAngle: number = parseInt((rotationRadian * 180 / Math.PI).toString(), 10);
                         if (charCount < totalCharacterCount) {
-                            const characterBounds: RectAngle = new RectAngle(X, Y, Width, Height, '\r\n', rotationAngle);
-                            top.push(characterBounds.Top);
-                            bottom.push(characterBounds.Bottom);
-                            left.push(characterBounds.Left);
-                            right.push(characterBounds.Right);
-                            // eslint-disable-next-line
-                            minTop = Math.min.apply(Math, top);
-                            // eslint-disable-next-line
-                            maxBottom = Math.max.apply(Math, bottom);
-                            // eslint-disable-next-line
-                            minLeft = Math.min.apply(Math, left);
-                            // eslint-disable-next-line
-                            maxRight = Math.max.apply(Math, right);
-                            let newWordBounds: any;
-                            if (wordStart === false) {
-                                newWordBounds = new RectAngle(wordMinLeft, wordMinTop, wordMaxRight - wordMinLeft,
-                                                              wordMaxBottom - wordMinTop, word, wordRotation);
-                                wordBounds.push(newWordBounds);
-                            }
-                            wordBounds.push(characterBounds);
-                            this.textBoundsCalculation(wordBounds, minTop, maxBottom, maxRight, minLeft, pageRotation,
-                                                       pageWidth, pageHeight);
-                            wordBounds = [];
-                            wordStart = true;
-                            isPreviousSpace = false;
-                            word = '';
-                            top = [];
-                            left = [];
-                            bottom = [];
-                            right = [];
-                            minTop = 0;
-                            maxBottom = 0;
-                            minLeft = 0;
-                            maxRight = 0;
-                            pageText += '\n';
-                            rotationRadian = (FPDF as any).GetCharAngle(textPage, charCount);
-                            [charLeft, charRight, charBottom, charTop] = this.getCharBounds(textPage, charCount);
-                            X = this.pointerToPixelConverter(charLeft);
-                            Y = (pageHeight) - this.pointerToPixelConverter(charTop);
-                            Width = this.pointerToPixelConverter(charRight - charLeft);
-                            Height = this.pointerToPixelConverter(charTop - charBottom);
-                            rotationAngle = parseInt((rotationRadian * 180 / Math.PI).toString(), 10);
+                            pageText += character;
                             const currentCharacterBounds: RectAngle = new RectAngle(X, Y, Width, Height, character, rotationAngle);
                             this.CharacterBounds.push(currentCharacterBounds);
-                            charCount++;
                         }
-                        break;
-                    case '\u0002':
-                    case '\ufffe':
-                        {
-                            const characterBounds: any = new RectAngle(X, Y, Width, Height, character, rotationAngle);
-                            top.push(characterBounds.Top);
-                            bottom.push(characterBounds.Bottom);
-                            left.push(characterBounds.Left);
-                            right.push(characterBounds.Right);
+                        if (pageRotation === 1 || pageRotation === 3) {
+                            Y = (pageWidth) - this.pointerToPixelConverter(charTop);
+                        }
+                        switch (character) {
+                        case '\0': {
                             // eslint-disable-next-line
                             minTop = Math.min.apply(Math, top);
                             // eslint-disable-next-line
@@ -532,17 +564,11 @@ export function PdfiumRunner(): void {
                             minLeft = Math.min.apply(Math, left);
                             // eslint-disable-next-line
                             maxRight = Math.max.apply(Math, right);
-                            let newWordBounds: any;
-                            if (wordStart === false) {
-                                newWordBounds = new RectAngle(wordMinLeft, wordMinTop, wordMaxRight - wordMinLeft,
-                                                              wordMaxBottom - wordMinTop, word, wordRotation);
-                                wordBounds.push(newWordBounds);
-                            }
-                            if (character === '\u0002') {
-                                wordBounds.push(characterBounds);
-                            }
-                            this.textBoundsCalculation(wordBounds, minTop, maxBottom, maxRight, minLeft, pageRotation,
-                                                       pageWidth, pageHeight);
+                            const newWordBounds: RectAngle = new RectAngle(wordMinLeft, wordMinTop, wordMaxRight - wordMinLeft,
+                                                                           wordMaxBottom - wordMinTop, word, wordRotation);
+                            wordBounds.push(newWordBounds);
+                            this.textBoundsCalculation(wordBounds, minTop, maxBottom, maxRight, minLeft,
+                                                       pageRotation, pageWidth, pageHeight);
                             wordBounds = [];
                             wordStart = true;
                             isPreviousSpace = false;
@@ -555,115 +581,119 @@ export function PdfiumRunner(): void {
                             maxBottom = 0;
                             minLeft = 0;
                             maxRight = 0;
+                            break;
                         }
-                        break;
-                    default:
-                        if (Width === 0 || Height === 0) {
-                            isZeroWidthSpace = true;
-                            // eslint-disable-next-line
-                            minTop = Math.min.apply(Math, top);
-                            // eslint-disable-next-line
-                            maxBottom = Math.max.apply(Math, bottom);
-                            // eslint-disable-next-line
-                            minLeft = Math.min.apply(Math, left);
-                            // eslint-disable-next-line
-                            maxRight = Math.max.apply(Math, right);
-                            let newWordBounds: any = new RectAngle(wordMinLeft, wordMinTop, wordMaxRight - wordMinLeft,
-                                                                   wordMaxBottom - wordMinTop, word, wordRotation);
-                            wordBounds.push(newWordBounds);
-                            const characterBounds: RectAngle = new RectAngle(X, Y, Width, Height, character, rotationAngle);
-                            wordMinTop = characterBounds.Top;
-                            wordMaxBottom = characterBounds.Bottom;
-                            wordMinLeft = characterBounds.Left;
-                            wordMaxRight = characterBounds.Right;
-                            word = character;
-                            wordRotation = wordBounds[wordBounds.length - 1].Rotation;
-                            newWordBounds = new RectAngle(wordMinLeft, wordMinTop, wordMaxRight - wordMinLeft,
-                                                          wordMaxBottom - wordMinTop, word, wordRotation);
-                            wordBounds.push(newWordBounds);
-                            wordMinTop = 0;
-                            wordMaxBottom = 0;
-                            wordMinLeft = 0;
-                            wordMaxRight = 0;
-                            word = '';
-                            wordRotation = 0;
-                            wordStart = true;
-                            isPreviousSpace = true;
-                        }
-                        else {
-                            if (wordStart === true) {
-                                wordMinTop = Y;
-                                wordMaxBottom = Y + Height;
-                                wordMinLeft = X;
-                                wordMaxRight = X + Width;
-                            }
-                            const characterBounds: RectAngle = new RectAngle(X, Y, Width, Height, character, rotationAngle);
-                            if (character !== ' ') {
-                                if (isPreviousSpace && wordBounds.length > 0 && (rotationAngle === wordBounds[0].Rotation)) {
-                                    if ((rotationAngle === 180 || rotationAngle === 0) &&
-                                    (Math.abs(characterBounds.Y - wordBounds[0].Y) > maximumSpaceForNewLine)) {
-                                        startNewLine = true;
-                                    }
-                                    if ((rotationAngle === 270 || rotationAngle === 90) &&
-                                    (Math.abs(characterBounds.X - wordBounds[0].X) > maximumSpaceForNewLine)) {
-                                        startNewLine = true;
-                                    }
-                                }
-                                if ((isZeroWidthSpace && wordBounds.length >= 1 &&
-                                    wordBounds[wordBounds.length - 1].Rotation !== characterBounds.Rotation) || startNewLine) {
-                                    isZeroWidthSpace = false;
-                                    startNewLine = false;
-                                    // eslint-disable-next-line
-                                    minTop = Math.min.apply(Math, top);
-                                    // eslint-disable-next-line
-                                    maxBottom = Math.max.apply(Math, bottom);
-                                    // eslint-disable-next-line
-                                    minLeft = Math.min.apply(Math, left);
-                                    // eslint-disable-next-line
-                                    maxRight = Math.max.apply(Math, right);
-                                    let newWordBounds: any;
-                                    if (wordStart === false) {
-                                        newWordBounds = new RectAngle(wordMinLeft, wordMinTop,
-                                                                      wordMaxRight - wordMinLeft, wordMaxBottom - wordMinTop,
-                                                                      word, wordRotation);
-                                        wordBounds.push(newWordBounds);
-                                    }
-                                    this.textBoundsCalculation(wordBounds, minTop, maxBottom, maxRight, minLeft,
-                                                               pageRotation, pageWidth, pageHeight);
-                                    wordBounds = [];
-                                    wordStart = true;
-                                    word = '';
-                                    top = [];
-                                    left = [];
-                                    bottom = [];
-                                    right = [];
-                                    minTop = 0;
-                                    maxBottom = 0;
-                                    minLeft = 0;
-                                    maxRight = 0;
-                                }
+                        case '\r':
+                            if (charCount < totalCharacterCount) {
+                                const characterBounds: RectAngle = new RectAngle(X, Y, Width, Height, '\r\n', rotationAngle);
                                 top.push(characterBounds.Top);
                                 bottom.push(characterBounds.Bottom);
                                 left.push(characterBounds.Left);
                                 right.push(characterBounds.Right);
-                                wordMinTop = Math.min(wordMinTop, characterBounds.Top);
-                                wordMaxBottom = Math.max(wordMaxBottom, characterBounds.Bottom);
-                                wordMinLeft = Math.min(wordMinLeft, characterBounds.Left);
-                                wordMaxRight = Math.max(wordMaxRight, characterBounds.Right);
-                                word += character;
-                                wordRotation = characterBounds.Rotation;
-                                wordStart = false;
+                                // eslint-disable-next-line
+                                minTop = Math.min.apply(Math, top);
+                                // eslint-disable-next-line
+                                maxBottom = Math.max.apply(Math, bottom);
+                                // eslint-disable-next-line
+                                minLeft = Math.min.apply(Math, left);
+                                // eslint-disable-next-line
+                                maxRight = Math.max.apply(Math, right);
+                                let newWordBounds: any;
+                                if (wordStart === false) {
+                                    newWordBounds = new RectAngle(wordMinLeft, wordMinTop, wordMaxRight - wordMinLeft,
+                                                                  wordMaxBottom - wordMinTop, word, wordRotation);
+                                    wordBounds.push(newWordBounds);
+                                }
+                                wordBounds.push(characterBounds);
+                                this.textBoundsCalculation(wordBounds, minTop, maxBottom, maxRight, minLeft, pageRotation,
+                                                           pageWidth, pageHeight);
+                                wordBounds = [];
+                                wordStart = true;
                                 isPreviousSpace = false;
-                            } else {
-                                let newWordBounds: RectAngle = new RectAngle(wordMinLeft, wordMinTop, wordMaxRight - wordMinLeft,
-                                                                             wordMaxBottom - wordMinTop, word, wordRotation);
+                                word = '';
+                                top = [];
+                                left = [];
+                                bottom = [];
+                                right = [];
+                                minTop = 0;
+                                maxBottom = 0;
+                                minLeft = 0;
+                                maxRight = 0;
+                                pageText += '\n';
+                                rotationRadian = (FPDF as any).GetCharAngle(textPage, charCount);
+                                [charLeft, charRight, charBottom, charTop] = this.getCharBounds(textPage, charCount);
+                                X = this.pointerToPixelConverter(charLeft);
+                                Y = (pageHeight) - this.pointerToPixelConverter(charTop);
+                                Width = this.pointerToPixelConverter(charRight - charLeft);
+                                Height = this.pointerToPixelConverter(charTop - charBottom);
+                                rotationAngle = parseInt((rotationRadian * 180 / Math.PI).toString(), 10);
+                                const currentCharacterBounds: RectAngle = new RectAngle(X, Y, Width, Height, character, rotationAngle);
+                                this.CharacterBounds.push(currentCharacterBounds);
+                                charCount++;
+                            }
+                            break;
+                        case '\u0002':
+                        case '\ufffe':
+                            {
+                                const characterBounds: any = new RectAngle(X, Y, Width, Height, character, rotationAngle);
+                                top.push(characterBounds.Top);
+                                bottom.push(characterBounds.Bottom);
+                                left.push(characterBounds.Left);
+                                right.push(characterBounds.Right);
+                                // eslint-disable-next-line
+                                minTop = Math.min.apply(Math, top);
+                                // eslint-disable-next-line
+                                maxBottom = Math.max.apply(Math, bottom);
+                                // eslint-disable-next-line
+                                minLeft = Math.min.apply(Math, left);
+                                // eslint-disable-next-line
+                                maxRight = Math.max.apply(Math, right);
+                                let newWordBounds: any;
+                                if (wordStart === false) {
+                                    newWordBounds = new RectAngle(wordMinLeft, wordMinTop, wordMaxRight - wordMinLeft,
+                                                                  wordMaxBottom - wordMinTop, word, wordRotation);
+                                    wordBounds.push(newWordBounds);
+                                }
+                                if (character === '\u0002') {
+                                    wordBounds.push(characterBounds);
+                                }
+                                this.textBoundsCalculation(wordBounds, minTop, maxBottom, maxRight, minLeft, pageRotation,
+                                                           pageWidth, pageHeight);
+                                wordBounds = [];
+                                wordStart = true;
+                                isPreviousSpace = false;
+                                word = '';
+                                top = [];
+                                left = [];
+                                bottom = [];
+                                right = [];
+                                minTop = 0;
+                                maxBottom = 0;
+                                minLeft = 0;
+                                maxRight = 0;
+                            }
+                            break;
+                        default:
+                            if (Width === 0 || Height === 0) {
+                                isZeroWidthSpace = true;
+                                // eslint-disable-next-line
+                                minTop = Math.min.apply(Math, top);
+                                // eslint-disable-next-line
+                                maxBottom = Math.max.apply(Math, bottom);
+                                // eslint-disable-next-line
+                                minLeft = Math.min.apply(Math, left);
+                                // eslint-disable-next-line
+                                maxRight = Math.max.apply(Math, right);
+                                let newWordBounds: any = new RectAngle(wordMinLeft, wordMinTop, wordMaxRight - wordMinLeft,
+                                                                       wordMaxBottom - wordMinTop, word, wordRotation);
                                 wordBounds.push(newWordBounds);
+                                const characterBounds: RectAngle = new RectAngle(X, Y, Width, Height, character, rotationAngle);
                                 wordMinTop = characterBounds.Top;
                                 wordMaxBottom = characterBounds.Bottom;
                                 wordMinLeft = characterBounds.Left;
                                 wordMaxRight = characterBounds.Right;
                                 word = character;
-                                wordRotation = characterBounds.Rotation;
+                                wordRotation = wordBounds[wordBounds.length - 1].Rotation;
                                 newWordBounds = new RectAngle(wordMinLeft, wordMinTop, wordMaxRight - wordMinLeft,
                                                               wordMaxBottom - wordMinTop, word, wordRotation);
                                 wordBounds.push(newWordBounds);
@@ -676,8 +706,102 @@ export function PdfiumRunner(): void {
                                 wordStart = true;
                                 isPreviousSpace = true;
                             }
+                            else {
+                                if (wordStart === true) {
+                                    wordMinTop = Y;
+                                    wordMaxBottom = Y + Height;
+                                    wordMinLeft = X;
+                                    wordMaxRight = X + Width;
+                                }
+                                const characterBounds: RectAngle = new RectAngle(X, Y, Width, Height, character, rotationAngle);
+                                if (character !== ' ') {
+                                    if (isPreviousSpace && wordBounds.length > 0 && (rotationAngle === wordBounds[0].Rotation)) {
+                                        if ((rotationAngle === 180 || rotationAngle === 0) &&
+                                        (Math.abs(characterBounds.Y - wordBounds[0].Y) > maximumSpaceForNewLine)) {
+                                            startNewLine = true;
+                                        }
+                                        if ((rotationAngle === 270 || rotationAngle === 90) &&
+                                        (Math.abs(characterBounds.X - wordBounds[0].X) > maximumSpaceForNewLine)) {
+                                            startNewLine = true;
+                                        }
+                                    }
+                                    if ((isZeroWidthSpace && wordBounds.length >= 1 &&
+                                        wordBounds[wordBounds.length - 1].Rotation !== characterBounds.Rotation) || startNewLine) {
+                                        isZeroWidthSpace = false;
+                                        startNewLine = false;
+                                        // eslint-disable-next-line
+                                        minTop = Math.min.apply(Math, top);
+                                        // eslint-disable-next-line
+                                        maxBottom = Math.max.apply(Math, bottom);
+                                        // eslint-disable-next-line
+                                        minLeft = Math.min.apply(Math, left);
+                                        // eslint-disable-next-line
+                                        maxRight = Math.max.apply(Math, right);
+                                        let newWordBounds: any;
+                                        if (wordStart === false) {
+                                            newWordBounds = new RectAngle(wordMinLeft, wordMinTop,
+                                                                          wordMaxRight - wordMinLeft, wordMaxBottom - wordMinTop,
+                                                                          word, wordRotation);
+                                            wordBounds.push(newWordBounds);
+                                        }
+                                        this.textBoundsCalculation(wordBounds, minTop, maxBottom, maxRight, minLeft,
+                                                                   pageRotation, pageWidth, pageHeight);
+                                        wordBounds = [];
+                                        wordStart = true;
+                                        word = '';
+                                        top = [];
+                                        left = [];
+                                        bottom = [];
+                                        right = [];
+                                        minTop = 0;
+                                        maxBottom = 0;
+                                        minLeft = 0;
+                                        maxRight = 0;
+                                    }
+                                    top.push(characterBounds.Top);
+                                    bottom.push(characterBounds.Bottom);
+                                    left.push(characterBounds.Left);
+                                    right.push(characterBounds.Right);
+                                    wordMinTop = Math.min(wordMinTop, characterBounds.Top);
+                                    wordMaxBottom = Math.max(wordMaxBottom, characterBounds.Bottom);
+                                    wordMinLeft = Math.min(wordMinLeft, characterBounds.Left);
+                                    wordMaxRight = Math.max(wordMaxRight, characterBounds.Right);
+                                    word += character;
+                                    wordRotation = characterBounds.Rotation;
+                                    wordStart = false;
+                                    isPreviousSpace = false;
+                                } else {
+                                    let newWordBounds: RectAngle = new RectAngle(wordMinLeft, wordMinTop, wordMaxRight - wordMinLeft,
+                                                                                 wordMaxBottom - wordMinTop, word, wordRotation);
+                                    wordBounds.push(newWordBounds);
+                                    wordMinTop = characterBounds.Top;
+                                    wordMaxBottom = characterBounds.Bottom;
+                                    wordMinLeft = characterBounds.Left;
+                                    wordMaxRight = characterBounds.Right;
+                                    word = character;
+                                    wordRotation = characterBounds.Rotation;
+                                    newWordBounds = new RectAngle(wordMinLeft, wordMinTop, wordMaxRight - wordMinLeft,
+                                                                  wordMaxBottom - wordMinTop, word, wordRotation);
+                                    wordBounds.push(newWordBounds);
+                                    wordMinTop = 0;
+                                    wordMaxBottom = 0;
+                                    wordMinLeft = 0;
+                                    wordMaxRight = 0;
+                                    word = '';
+                                    wordRotation = 0;
+                                    wordStart = true;
+                                    isPreviousSpace = true;
+                                }
+                            }
+                            break;
                         }
-                        break;
+                    }
+                    else {
+                        const result: any = (FPDF as any).GetUnicodeChar(textPage, charCount);
+                        const character: string = String.fromCharCode(result);
+                        if (charCount < totalCharacterCount) {
+                            pageText += character;
+                        }
                     }
                 }
                 (FPDF as any).CloseTextPage(textPage);
@@ -1006,8 +1130,8 @@ export function PdfiumRunner(): void {
         }
 
         public getPageRender(n: number = 0, w: any, h: any, isTextNeed: boolean, isTransparent?: boolean,
-                             cropBoxRect?: Rect, mediaBoxRect?: Rect): any {
-            const pageRenderPtr: any = this.getRender(n, w, h, isTextNeed, isTransparent, cropBoxRect, mediaBoxRect);
+                             cropBoxRect?: Rect, mediaBoxRect?: Rect, isSkipCharacterBounds?: boolean): any {
+            const pageRenderPtr: any = this.getRender(n, w, h, isTextNeed, isTransparent, cropBoxRect, mediaBoxRect, isSkipCharacterBounds);
             let pageRenderData: any[] = [];
             pageRenderData = PDFiumModule.HEAPU8.slice(pageRenderPtr, pageRenderPtr + (w * h * 4));
             PDFiumModule.asm.free(pageRenderPtr);
@@ -1016,7 +1140,7 @@ export function PdfiumRunner(): void {
 
         public render(n: number = 0, message: any, zoomFactor: number, isTextNeed: boolean, printScaleFactor: any,
                       printDevicePixelRatio: number, textDetailsId: any, isTransparent?: boolean,
-                      cropBoxRect?: Rect, mediaBoxRect?: Rect, size?: Size): object {
+                      cropBoxRect?: Rect, mediaBoxRect?: Rect, size?: Size, isSkipCharacterBounds?: boolean): object {
             let [w, h] = this.getPageSize(n);
             if (isNaN(w) && isNaN(h)) {
                 const page: any = FPDF.LoadPage(this.wasmData.wasm, n);
@@ -1029,8 +1153,8 @@ export function PdfiumRunner(): void {
             if (message === 'thumbnail') {
                 const newWidth: number = Math.round(thumbnailWidth * scaleFactor);
                 const newHeight: number = Math.round(thumbnailHeight * scaleFactor);
-                const data: any = this.getPageRender(n, newWidth, newHeight, false);
-                return { value: data, width: newWidth, height: newHeight, pageIndex: n, message: 'renderThumbnail' };
+                const data: any = this.getPageRender(n, newWidth, newHeight, isTextNeed, null, null, null, isSkipCharacterBounds);
+                return { value: data, width: newWidth, height: newHeight, pageIndex: n, message: 'renderThumbnail', textBounds: this.TextBounds, textContent: this.TextContent, rotation: this.Rotation, pageText: this.PageText, characterBounds: this.CharacterBounds, zoomFactor: zoomFactor, isTextNeed: isTextNeed, textDetailsId: textDetailsId };
             }
             else if (message === 'print') {
                 //An A0 piece of paper measures 33.1 × 46.8 inches, with 46.8 inches being the greater dimension. The pixel value of 46.8 inches is 4493px. If the document size is too large, we may not be able to display the image. Therefore, we should consider the maximum size of A0 paper if the page size is greater than 4493 pixels.
@@ -1052,7 +1176,7 @@ export function PdfiumRunner(): void {
                 }
                 const newWidth: number = Math.round(maxWidth * printScaleFactor * scaleFactor);
                 const newHeight: number = Math.round(maxHeight * printScaleFactor * scaleFactor);
-                const data: any = this.getPageRender(n, newWidth, newHeight, false);
+                const data: any = this.getPageRender(n, newWidth, newHeight, false, null, null, null, isSkipCharacterBounds);
                 return { value: data, width: newWidth, height: newHeight, pageIndex: n, pageWidth: w, pageHeight: h, message: 'printImage', printDevicePixelRatio };
             }
             else {
@@ -1067,11 +1191,12 @@ export function PdfiumRunner(): void {
                 let data: any = null;
                 if (message === 'extractText') {
                     const page: any = FPDF.LoadPage(this.wasmData.wasm, n);
-                    this.textExtraction(page, n, isTextNeed, cropBoxRect, mediaBoxRect);
+                    this.textExtraction(page, n, isTextNeed, cropBoxRect, mediaBoxRect, isSkipCharacterBounds);
                     FPDF.ClosePage(page);
                 }
                 else {
-                    data = this.getPageRender(n, newWidth, newHeight, isTextNeed, isTransparent, cropBoxRect, mediaBoxRect);
+                    data = this.getPageRender(n, newWidth, newHeight, isTextNeed, isTransparent, cropBoxRect, mediaBoxRect,
+                                              isSkipCharacterBounds);
                 }
                 return { value: data, width: newWidth, height: newHeight, pageWidth: w, pageHeight: h, pageIndex: n, message: 'imageRendered', textBounds: this.TextBounds, textContent: this.TextContent, rotation: this.Rotation, pageText: this.PageText, characterBounds: this.CharacterBounds, zoomFactor: zoomFactor, isTextNeed: isTextNeed, textDetailsId: textDetailsId };
             }

@@ -225,7 +225,7 @@ export class ContextMenu implements IContextMenu {
                         target = args.event.target;
                     }
                     if (this.pdfViewer.annotation && this.pdfViewer.annotation.isShapeCopied && ((target).classList.contains('e-pv-text-layer') ||
-                        (target).classList.contains('e-pv-text')) && !this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
+                        (target).classList.contains('e-pv-text') || (target).classList.contains('e-pv-viewer-container')) && !this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
                         this.onOpeningForShape(false);
                     } else if (this.pdfViewer.formDesigner && this.pdfViewer.formDesigner.isShapeCopied && ((target).classList.contains('e-pv-text-layer') ||
                         (target).classList.contains('e-pv-text'))) {

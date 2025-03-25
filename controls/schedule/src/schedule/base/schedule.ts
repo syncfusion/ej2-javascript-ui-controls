@@ -45,10 +45,10 @@ import { ICalendarExport } from '../exports/calendar-export';
 import { ICalendarImport } from '../exports/calendar-import';
 import { ExcelExport } from '../exports/excel-export';
 import { Print } from '../exports/print';
-import { IRenderer, ActionEventArgs, NavigatingEventArgs, CellClickEventArgs, RenderCellEventArgs, ScrollCss, TimezoneFields, BeforePasteEventArgs } from '../base/interface';
+import { IRenderer, ActionEventArgs, NavigatingEventArgs, CellClickEventArgs, RenderCellEventArgs, ScrollCss, TimezoneFields, ExcelExportEventArgs, BeforePasteEventArgs, TooltipOpenEventArgs } from '../base/interface';
 import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, DragEventArgs, ResizeEventArgs } from '../base/interface';
 import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs, ExportOptions, SelectEventArgs } from '../base/interface';
-import { ViewsData, PopupCloseEventArgs, HoverEventArgs, MoreEventsClickArgs, ScrollEventArgs, CallbackFunction } from '../base/interface';
+import { ViewsData, PopupCloseEventArgs, HoverEventArgs, MoreEventsClickArgs, ScrollEventArgs, CallbackFunction, BeforePrintEventArgs } from '../base/interface';
 import { CalendarUtil, Gregorian, Islamic, CalendarType } from '../../common/calendar-util';
 import { ResourceBase } from '../base/resource';
 import { Timezone, timezoneData } from '../timezone/timezone';
@@ -140,6 +140,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public editorTitles: EventFieldsMapping;
     public eventsData: Record<string, any>[];
     public eventsProcessed: Record<string, any>[];
+    public overlapAppointments: Record<string, any>[];
     public blockData: Record<string, any>[];
     public blockProcessed: Record<string, any>[];
     public resourceCollection: ResourcesModel[];
@@ -209,6 +210,40 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(true)
     public allowSwiping: boolean;
+
+    /**
+     * Specifies whether overlapping appointments are allowed within the same time slot in the Scheduler.
+     *
+     * @remarks
+     * When set to `false`, the Scheduler enforces restrictions to prevent creating or displaying overlapping appointments within the same time duration.
+     * This setting includes the following limitations:
+     *
+     * - **Initial Loading**: The alert for overlapping appointments will not display during the initial load. Overlapping events will be ignored in rendering, including occurrences.
+     *
+     * - **Dynamic Add/Edit**: When adding or editing events dynamically, overlapping validation is performed. If an overlap is detected for a single event, an alert will be shown, and the event will not be saved.
+     *
+     * For recurring events, an alert will be displayed, and the event will not be saved. To save recurring events while ignoring overlapping occurrences, trigger the `PopupOpen` event. The `Data` field will contain the parent recurrence data, and the `overlapEvents` field will contain the overlap events. Using these details, users can include exceptions in the recurrence events and save them with the `addEvent` method.
+     *
+     * - **Out-of-Date-Range Events**: The `allowOverlap` setting only prevents overlaps for events within the current view date range. To validate overlap events outside the current date range, use the `actionBegin` event to send a request to the server for validation and return a promise-based response. Assign this promise response to the `promise` field in `ActionEventArgs` to handle asynchronous server validation.
+     *
+     * @default true
+     */
+    @Property(true)
+    public allowOverlap: boolean;
+
+    /**
+     * Specifies the number of additional rows or columns to render outside the visible area during virtual scrolling.
+     * This property helps in achieving smoother scrolling by pre-loading data just outside the visible region.
+     *
+     * @remarks
+     * The default value is 3. Increasing this value can result in smoother scrolling but may impact performance
+     * with larger datasets. Decreasing it can improve performance but may cause more frequent data fetches during scrolling.
+     * This property only takes effect when `allowVirtualScrolling` is enabled for the current view.
+     *
+     * @default 3
+     */
+    @Property(3)
+    public overscanCount: number;
 
     /**
      * To render the custom toolbar items, the `toolbarItems` property can be used. It contains built-in and custom toolbar items.
@@ -1117,6 +1152,31 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public beforePaste : EmitType<BeforePasteEventArgs>;
 
     /**
+     * Triggers when the print event is called.
+     *
+     * @event 'beforePrint'
+     */
+    @Event()
+    public beforePrint: EmitType<BeforePrintEventArgs>;
+
+    /**
+     * Triggers before the Excel export process begins.
+     *
+     * @event 'excelExport'
+     */
+    @Event()
+    public excelExport: EmitType<ExcelExportEventArgs>;
+
+    /**
+     * Triggers before the tooltip is rendered.
+     *
+     * @event 'tooltipOpen'
+     */
+    @Event()
+    public tooltipOpen: EmitType<TooltipOpenEventArgs>;
+
+
+    /**
      * Constructor for creating the Schedule widget
      *
      * @param {ScheduleModel} options Accepts the schedule model properties to initiate the rendering
@@ -1443,6 +1503,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             readonly: this.readonly,
             startHour: this.startHour,
             allowVirtualScrolling: false,
+            allowOverlap: this.allowOverlap,
+            overscanCount: this.overscanCount,
             cellHeaderTemplate: this.cellHeaderTemplate,
             dayHeaderTemplate: this.dayHeaderTemplate,
             monthHeaderTemplate: this.monthHeaderTemplate,
@@ -1913,6 +1975,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             startEndError: 'The selected end date occurs before the start date.',
             invalidDateError: 'The entered date value is invalid.',
             blockAlert: 'Events cannot be scheduled within the blocked time range.',
+            overlapAlert: 'Events cannot be scheduled during the chosen time as it overlaps with another event.',
             ok: 'Ok',
             yes: 'Yes',
             no: 'No',
@@ -2837,6 +2900,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         case 'allowDragAndDrop':
         case 'allowResizing':
         case 'eventDragArea':
+        case 'allowOverlap':
             this.refreshEvents(false);
             break;
         case 'weekRule':
@@ -3903,6 +3967,54 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public closeQuickInfoPopup(): void {
         if (this.quickPopup) {
             this.quickPopup.quickPopupHide(true);
+        }
+    }
+
+    /**
+     * To manually open the overlap validation Alert.
+     *
+     * @param {PopupOpenEventArgs} args The arguments for opening the popup.
+     * @param {string} args.type Defines the type of overlap alert (e.g., 'OverlapAlert').
+     * @param {Record<string, any>} args.data The data associated with the popup.
+     * @param {Record<string, any>[]} args.overlapEvents The overlap events.
+     * @returns {void}
+     */
+    public openOverlapAlert(args: PopupOpenEventArgs): void {
+        if (this.quickPopup) {
+            const eventProp: PopupOpenEventArgs = {
+                type: 'OverlapAlert',
+                cancel: false,
+                element: this.quickPopup.quickDialog.element,
+                data: args.data,
+                overlapEvents: args.overlapEvents
+            };
+            this.trigger(events.popupOpen, eventProp, (popupArgs: PopupOpenEventArgs) => {
+                if (!popupArgs.cancel) {
+                    this.quickPopup.openValidationError('overlapAlert', args.data);
+                }
+            });
+        }
+    }
+
+    /**
+     * To manually close the overlap validation Alert.
+     *
+     * @function closeOverlapValidationAlert
+     * @returns {void}
+     */
+    public closeOverlapAlert(): void {
+        if (this.quickPopup) {
+            const args: PopupCloseEventArgs = {
+                type: 'OverlapAlert',
+                cancel: false,
+                data: this.activeEventData.event,
+                element: this.quickPopup.quickDialog.element
+            };
+            this.trigger(events.popupClose, args, (popupArgs: PopupCloseEventArgs) => {
+                if (!popupArgs.cancel) {
+                    this.quickPopup.quickDialog.hide();
+                }
+            });
         }
     }
 

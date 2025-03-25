@@ -722,8 +722,7 @@ export class SpellChecker {
         }
         if (jsonObject.HasSpellingError && isSamePage) {
             this.addErrorCollection(currentText, elementBox, jsonObject.Suggestions);
-            if (currentText === elementBox.text.trim())
-            {
+            if (currentText === elementBox.text.trim()) {
                 const backgroundColor: string = (elementBox.line.paragraph.containerWidget instanceof TableCellWidget) ? (elementBox.line.paragraph.containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
                 this.documentHelper.render.renderWavyLine(elementBox, left, top, underlineY, '#FF0000', 'Single', baselineAlignment, backgroundColor);
                 elementBox.isSpellChecked = true;
@@ -922,10 +921,6 @@ export class SpellChecker {
                 matchResults.elementInfo.values.push(0);
             }
             markIndex = (elementBox.istextCombined) ? elementBox.line.getOffset(this.getCombinedElement(elementBox), 0) : markIndex;
-            if (elementBox.previousElement instanceof FieldElementBox && (elementBox.previousElement as FieldElementBox).fieldType === 1){
-                matchResults.elementInfo.values.pop();
-                matchResults.elementInfo.values.push(0);
-            }
             this.documentHelper.owner.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, matchResults.textResults, matchResults.elementInfo, 0, elementBox, false, null, markIndex);
             this.handleMatchedResults(matchResults.textResults, elementBox, underlineY, iteration, jsonObject.Suggestions, isLastItem);
         } else {

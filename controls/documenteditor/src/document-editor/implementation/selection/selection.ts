@@ -4874,12 +4874,20 @@ export class Selection {
      */
     public getStartLineOffset(line: LineWidget): number {
         let startOffset: number = 0;
+        let isHidden: boolean = true;
         for (let i: number = 0; i < line.children.length; i++) {
             const inline: ElementBox = line.children[i] as ElementBox;
             if (inline.length === 0) {
                 continue;
             }
-
+            if (inline instanceof ElementBox && inline.characterFormat.hidden) {
+                startOffset += inline.length;
+                if (isHidden) {
+                    startOffset += 1;
+                    isHidden = false;
+                }
+                continue;
+            }
             if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof BookmarkElementBox
                 || inline instanceof ShapeElementBox || inline instanceof EditRangeStartElementBox
                 || inline instanceof EditRangeEndElementBox || inline instanceof CommentCharacterElementBox
@@ -5148,32 +5156,34 @@ export class Selection {
      *
      * @private
      */
-    public getPreviousValidOffset(paragraph: ParagraphWidget, offset: number): number {
+    public getPreviousValidOffset(line: LineWidget, offset: number): number {
         if (offset === 0) {
             return 0;
         }
         let validOffset: number = 0;
         let count: number = 0;
-        let value: number = 0;
-        const bidi: boolean = paragraph.paragraphFormat.bidi;
-        for (let i: number = 0; i < paragraph.childWidgets.length; i++) {
-            const lineWidget: LineWidget = paragraph.childWidgets[i] as LineWidget;
-            for (let j: number = 0; j < lineWidget.children.length; j++) {
-                const inline: ElementBox = lineWidget.children[j] as ElementBox;
-                if (inline.length === 0 || inline instanceof ListTextElementBox) {
-                    continue;
-                }
-                if (offset <= count + inline.length) {
-                    return offset - 1 === count ? validOffset : offset - 1;
-                }
-                if (inline instanceof TextElementBox || inline instanceof ContentControl || inline instanceof ImageElementBox || inline instanceof CommentCharacterElementBox || inline instanceof BookmarkElementBox
-                    || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)))) {
-                    validOffset = count + inline.length;
-                }
-                count += inline.length;
+        let hiddenTextLength: number = 0;
+        for (let j: number = 0; j < line.children.length; j++) {
+            const inline: ElementBox = line.children[j] as ElementBox;
+            if (inline.length === 0 || inline instanceof ListTextElementBox) {
+                continue;
             }
+            if (inline.characterFormat.hidden) {
+                hiddenTextLength += inline.length;
+                count += inline.length;
+                continue;
+            }
+            hiddenTextLength = 0;
+            if (offset <= count + inline.length) {
+                return offset - 1 === count ? validOffset : offset - 1;
+            }
+            if (inline instanceof TextElementBox || inline instanceof ContentControl || inline instanceof ImageElementBox || inline instanceof CommentCharacterElementBox || inline instanceof BookmarkElementBox
+                || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)))) {
+                validOffset = count + inline.length;
+            }
+            count += inline.length;
         }
-        return offset - 1 === count ? validOffset : offset - 1;
+        return offset - 1 === count ? validOffset : hiddenTextLength > 0 ? offset - (hiddenTextLength + 1) : offset - 1;
     }
     /**
      * Get next valid offset
@@ -5186,6 +5196,10 @@ export class Selection {
         for (let i: number = 0; i < line.children.length; i++) {
             const inline: ElementBox = line.children[i] as ElementBox;
             if (inline.length === 0 || inline instanceof ListTextElementBox) {
+                continue;
+            }
+            if (inline.characterFormat.hidden) {
+                count += inline.length;
                 continue;
             }
             if (offset < count + inline.length) {
@@ -10442,6 +10456,22 @@ export class Selection {
             if (!isNullOrUndefined(inline)) {
                 caret = this.getCaretHeight(inline, index, inline.characterFormat, true, topMargin, isItalic);
                 caretHeight = caret.height;
+                if (inline.characterFormat.hidden && caret.height === 0) {
+                    let visibleElement: ElementBox = inline;
+                    while (visibleElement && visibleElement.characterFormat.hidden) {
+                        visibleElement = visibleElement.previousElement;
+                    }
+                    if (isNullOrUndefined(visibleElement)) {
+                        visibleElement = inline;
+                        while (visibleElement && visibleElement.characterFormat.hidden) {
+                            visibleElement = visibleElement.nextElement;
+                        }
+                    }
+                    if (!isNullOrUndefined(visibleElement)) {
+                        let height: number = this.documentHelper.textHelper.getHeight(visibleElement.characterFormat).Height;
+                        caretHeight = caret.height = height;
+                    }
+                }
                 if (!skipUpdate) {
                     this.caret.style.height = caret.height * this.documentHelper.zoomFactor + 'px';
                 }

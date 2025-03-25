@@ -529,8 +529,16 @@ export class MonthEvent extends EventBase {
                 setStyleAttribute(appointmentElement, { 'width': appWidth + 'px', 'top': appTop + 'px' });
                 this.renderEventElement(event, appointmentElement, cellTd);
                 if (this.parent.rowAutoHeight) {
+                    const conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+                    const conWidth: number = this.parent.getElementWidth(conWrap);
+                    const isWithoutScroll: boolean = conWrap.offsetHeight === conWrap.clientHeight &&
+                    conWrap.offsetWidth === conWrap.clientWidth;
                     const firstChild: HTMLElement = cellTd.parentElement.firstElementChild as HTMLElement;
                     this.updateCellHeight(firstChild, height);
+                    if (isWithoutScroll &&
+                        (conWrap.offsetWidth > conWrap.clientWidth || conWidth !== this.parent.getElementWidth(conWrap))) {
+                        this.adjustAppointments(conWidth);
+                    }
                 }
             } else {
                 for (let i: number = 0; i < diffInDays; i++) {
@@ -558,6 +566,22 @@ export class MonthEvent extends EventBase {
                 }
             }
         }
+    }
+
+    public adjustAppointments(conWidth: number): void {
+        const tr: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr');
+        const actualCellWidth: number = this.parent.getElementWidth(this.workCells[0]);
+        this.cellWidth = actualCellWidth / +(this.workCells[0].getAttribute('colspan') || 1);
+        const currentPercentage: number = (actualCellWidth * tr.children.length) / (conWidth / 100);
+        const apps: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS));
+        apps.forEach((app: HTMLElement) => {
+            if (this.parent.enableRtl && app.style.right !== '0px') {
+                app.style.right = ((parseFloat(app.style.right) / 100) * currentPercentage) + 'px';
+            } else if (app.style.left !== '0px') {
+                app.style.left = ((parseFloat(app.style.left) / 100) * currentPercentage) + 'px';
+            }
+            app.style.width = ((parseFloat(app.style.width) / 100) * currentPercentage) + 'px';
+        });
     }
 
     public updateCellHeight(cell: HTMLElement, height: number): void {

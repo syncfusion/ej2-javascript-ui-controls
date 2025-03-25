@@ -678,7 +678,6 @@ Line with more than one break line before
             detach(textArea);
         });
     });
-
     describe('938234 - MAC: The Revert operation fails after pressing Enter on an empty list.', () => {
         let editorObj: MarkdownParser;
         let textArea: HTMLTextAreaElement = <HTMLTextAreaElement>createElement('textarea', {

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { print as basePrint, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { print as basePrint, createElement, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { TimelineYear } from '../renderer/timeline-year';
 import { Year } from '../renderer/year';
@@ -15,6 +15,7 @@ import { EventSettingsModel, GroupModel, TimeScaleModel, ViewsModel } from '../m
 import { ScheduleModel } from '../base/schedule-model';
 import * as events from '../base/constant';
 import { View } from '../base/type';
+import { BeforePrintEventArgs } from '../base/interface';
 
 /**
  * Print Module
@@ -40,46 +41,52 @@ export class Print {
     private printScheduler(): void {
         const clone: HTMLElement = this.parent.element.cloneNode(true) as HTMLElement;
         clone.id = this.parent.element.id + '_print';
-        document.body.appendChild(clone);
-        const className: string = this.parent.currentView === 'MonthAgenda' ? '.e-appointment-wrap' : '.e-content-wrap';
-        const scrollableEle: Element = this.parent.element.querySelector(className);
-        const links: Element[] = [].slice.call(document.getElementsByTagName('head')[0].querySelectorAll('link, style'));
-        let reference: string = '';
-        for (const link of links) {
-            reference += link.outerHTML;
-        }
-        const div: Element = createElement('div');
-        clone.style.width = this.parent.element.offsetWidth + 'px';
-        const elementWidth: number = Math.round((parseInt(clone.style.width, 10)) / 100) * 100;
-        div.appendChild(clone);
-        const printWindow: Window = window.open('', 'print', 'height=550,width=' + elementWidth + ',tabbar=no');
-        printWindow.document.write('<!DOCTYPE html><html><head>' + reference + '</head><body>' + div.innerHTML +
-            '<script>(function() { window.ready = true; })();</script></body></html>');
-        printWindow.document.close();
-        printWindow.focus();
-        setTimeout(() => {
-            if ((printWindow as any).ready && scrollableEle) {
-                // eslint-disable-next-line no-self-assign
-                scrollableEle.scrollLeft = scrollableEle.scrollLeft;
-                // eslint-disable-next-line no-self-assign
-                scrollableEle.scrollTop = scrollableEle.scrollTop;
-                const headerTimeCellsScroll: HTMLElement = printWindow.document.querySelector('.e-date-header-wrap');
-                if (headerTimeCellsScroll) {
-                    headerTimeCellsScroll.scrollLeft = scrollableEle.scrollLeft;
-                }
-                const timeCellsScroll: HTMLElement = printWindow.document.querySelector('.e-time-cells-wrap');
-                if (timeCellsScroll) {
-                    timeCellsScroll.scrollTop = scrollableEle.scrollTop;
-                }
-                const contentCellScroll: HTMLElement = printWindow.document.querySelector(className);
-                if (contentCellScroll) {
-                    contentCellScroll.scrollLeft = scrollableEle.scrollLeft;
-                    contentCellScroll.scrollTop = scrollableEle.scrollTop;
-                }
-                printWindow.print();
-                printWindow.close();
+        const args: BeforePrintEventArgs = { cancel: false, printElement: clone };
+        this.parent.trigger(events.beforePrint, args, (printElement: BeforePrintEventArgs) => {
+            if (printElement.cancel) {
+                return;
             }
-        }, 500);
+            document.body.appendChild(clone);
+            const className: string = this.parent.currentView === 'MonthAgenda' ? '.e-appointment-wrap' : '.e-content-wrap';
+            const scrollableEle: Element = this.parent.element.querySelector(className);
+            const links: Element[] = [].slice.call(document.getElementsByTagName('head')[0].querySelectorAll('link, style'));
+            let reference: string = '';
+            for (const link of links) {
+                reference += link.outerHTML;
+            }
+            const div: Element = createElement('div');
+            clone.style.width = this.parent.element.offsetWidth + 'px';
+            const elementWidth: number = Math.round((parseInt(clone.style.width, 10)) / 100) * 100;
+            div.appendChild(clone);
+            const printWindow: Window = window.open('', 'print', 'height=550,width=' + elementWidth + ',tabbar=no');
+            printWindow.document.write('<!DOCTYPE html><html><head>' + reference + '</head><body>' + div.innerHTML +
+                '<script>(function() { window.ready = true; })();</script></body></html>');
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => {
+                if ((printWindow as any).ready && scrollableEle) {
+                    // eslint-disable-next-line no-self-assign
+                    scrollableEle.scrollLeft = scrollableEle.scrollLeft;
+                    // eslint-disable-next-line no-self-assign
+                    scrollableEle.scrollTop = scrollableEle.scrollTop;
+                    const headerTimeCellsScroll: HTMLElement = printWindow.document.querySelector('.e-date-header-wrap');
+                    if (headerTimeCellsScroll) {
+                        headerTimeCellsScroll.scrollLeft = scrollableEle.scrollLeft;
+                    }
+                    const timeCellsScroll: HTMLElement = printWindow.document.querySelector('.e-time-cells-wrap');
+                    if (timeCellsScroll) {
+                        timeCellsScroll.scrollTop = scrollableEle.scrollTop;
+                    }
+                    const contentCellScroll: HTMLElement = printWindow.document.querySelector(className);
+                    if (contentCellScroll) {
+                        contentCellScroll.scrollLeft = scrollableEle.scrollLeft;
+                        contentCellScroll.scrollTop = scrollableEle.scrollTop;
+                    }
+                    printWindow.print();
+                    printWindow.close();
+                }
+            }, 500);
+        });
     }
 
     private printSchedulerWithModel(printOptions: ScheduleModel): void {
@@ -91,10 +98,17 @@ export class Print {
         this.printInstance.registeredTemplate = this.parent.registeredTemplate;
         this.printInstance.root = this.parent.root ? this.parent.root : this.parent;
         this.printInstance.appendTo(element);
-        this.printInstance.on(events.print, this.contentReady, this);
-        this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
-        this.printWindow.moveTo(0, 0);
-        this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
+        const args: BeforePrintEventArgs = { cancel: false, printElement: element };
+        this.parent.trigger(events.beforePrint, args, (printElement: BeforePrintEventArgs) => {
+            if (printElement.cancel) {
+                this.printCleanup();
+                return;
+            }
+            this.printInstance.on(events.print, this.contentReady, this);
+            this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
+            this.printWindow.moveTo(0, 0);
+            this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
+        });
     }
 
     private getPrintScheduleModel(printOptions: ScheduleModel): ScheduleModel {
@@ -174,15 +188,38 @@ export class Print {
 
     private contentReady(): void {
         this.printWindow = basePrint(this.printInstance.element, this.printWindow);
+        this.closePrintWindow(this.printWindow, true);
         this.printWindow.onbeforeunload = () => {
-            if (this.printInstance) {
-                this.printInstance.off(events.print, this.contentReady);
-                this.printInstance.element.remove();
-                this.printInstance.destroy();
-                this.printInstance = null;
-            }
-            this.printWindow = null;
+            this.printCleanup();
         };
+    }
+
+    private closePrintWindow(printWindow: Window, cleanupRequired?: boolean): void {
+        if (Browser.isIos) {
+            const printInterval: ReturnType<typeof setInterval> = setInterval(() => {
+                if (printWindow.opener) {
+                    printWindow.close();
+                } else if (isNullOrUndefined(printWindow.opener)) {
+                    if (cleanupRequired) {
+                        this.printCleanup();
+                    }
+                    clearInterval(printInterval);
+                }
+            }, 500);
+        }
+    }
+
+    private printCleanup(): void {
+        if (this.printInstance) {
+            this.printInstance.off(events.print, this.contentReady);
+            this.printInstance.element.remove();
+            this.printInstance.destroy();
+            this.printInstance = null;
+        }
+        if (this.printWindow) {
+            this.printWindow.onbeforeunload = null;
+            this.printWindow = null;
+        }
     }
 
     protected getModuleName(): string {

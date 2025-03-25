@@ -4,7 +4,7 @@
 import { DateFormat } from '../../src/intl/date-formatter';
 import { DateParser } from '../../src/intl/date-parser';
 import { dateMatched, dupCulObject } from './date-parser.spec';
-import { loadCldr, cldrData, Internationalization  } from '../../src/internationalization';
+import { loadCldr, cldrData, Internationalization } from '../../src/internationalization';
 import { ParserBase } from '../../src/intl/parser-base';
 import {HijriParser} from '../../src/hijri-parser';
 loadCldr(dupCulObject, {});

@@ -333,14 +333,13 @@ describe('Spreadsheet sorting module ->', () => {
         it('Cancel opening custom sort dialog', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
-            args.cancel = true;
+                args.cancel = true;
             };
             helper.invoke('selectRange', ['A1']);
             helper.click('#' + helper.id + '_sorting');
             helper.click('.e-sort-filter-ddb ul li:nth-child(3)');
             setTimeout(() => {
-                var dialog = helper.getElement('.e-customsort-dlg.e-dialog');
-                expect(!!dialog).toBeTruthy();    
+                expect(helper.getElement('.e-customsort-dlg.e-dialog')).toBeNull();    
                 done();
             });
         });
@@ -349,8 +348,7 @@ describe('Spreadsheet sorting module ->', () => {
             helper.click('#' + helper.id + '_sorting');
             helper.click('.e-sort-filter-ddb ul li:nth-child(1)');
             setTimeout(() => {
-                var dialog = helper.getElement('.e-customsort-dlg.e-dialog');
-                expect(!!dialog).toBeTruthy();    
+                expect(helper.getElement('.e-customsort-dlg.e-dialog')).toBeNull();    
                 done();
             }, 10);
         });
@@ -761,7 +759,7 @@ describe('Spreadsheet sorting module ->', () => {
             });
         });
         describe('EJ2-53804->', () => {
-            beforeEach((done: Function) => {
+            beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({
                     sheets: [{ rows: [{ cells: [{ value: '' }, { value: 'Yes'}] }, { cells: [{ value: '1' }, { value: 'Yes'}] },
                     { cells: [{ value: '2' }, { value: 'Yes'}] }, { cells: [{ value: '' }, { value: 'No'}] }, { cells: [{ value: '3' }, { value: 'Yes'}] },
@@ -769,7 +767,7 @@ describe('Spreadsheet sorting module ->', () => {
                     { cells: [{ value: '5' }, { value: 'No'}] }, { cells: [{ value: '' }, { value: 'Yes'}] }, { cells: [{ value: '' }, { value: 'No'}] }], selectedRange: 'A1'}]
                 }, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
             it('Empty cell sorting issue in Spreadsheet->', (done: Function) => {
@@ -784,6 +782,40 @@ describe('Spreadsheet sorting module ->', () => {
                     expect(spreadsheet.sheets[0].rows[4].cells[0].value.toString()).toEqual('5');
                     done();
                 }, 10);
+            });
+            it('Decending sort with cell data binding->', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('updateRange', [{ template: '<span class="e-icons e-add-icon"/>', address: `B1:B${spreadsheet.getActiveSheet().usedRange.rowIndex + 1}` }]);
+                helper.getElement('#' + helper.id + '_sorting').click();
+                helper.getElement('#' + helper.id + '_sorting-popup').querySelectorAll('.e-item')[1].click();
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].rows[0].cells[0].value.toString()).toEqual('5');
+                    expect(spreadsheet.sheets[0].rows[1].cells[0].value.toString()).toEqual('4');
+                    expect(spreadsheet.sheets[0].rows[2].cells[0].value.toString()).toEqual('3');
+                    expect(spreadsheet.sheets[0].rows[3].cells[0].value.toString()).toEqual('2');
+                    expect(spreadsheet.sheets[0].rows[4].cells[0].value.toString()).toEqual('1');
+                    done();
+                }, 50);
+            });
+            it('Decending sort with dataSource without field as header->', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('selectRange', ['D2:K11']);
+                const sheet: SheetModel = helper.invoke('getActiveSheet');
+                spreadsheet.setSheetPropertyOnMute(sheet, 'ranges', []);
+                helper.invoke('updateRange', [{ dataSource: defaultData, startCell: 'D2', showFieldAsHeader: false }]);
+                setTimeout(() => {
+                    expect(sheet.rows[1].cells[3].value).toEqual('Casual Shoes');
+                    expect(sheet.rows[2].cells[3].value).toEqual('Sports Shoes');
+                    expect(sheet.rows[3].cells[3].value).toEqual('Formal Shoes');
+                    helper.getElement('#' + helper.id + '_sorting').click();
+                    helper.getElement('#' + helper.id + '_sorting-popup').querySelectorAll('.e-item')[1].click();
+                    setTimeout(() => {
+                        expect(sheet.rows[1].cells[3].value).toEqual('T-Shirts');
+                        expect(sheet.rows[2].cells[3].value).toEqual('Sports Shoes');
+                        expect(sheet.rows[3].cells[3].value).toEqual('Sneakers');
+                        done();
+                    }, 10);
+                });
             });
         });
         
@@ -852,6 +884,29 @@ describe('Spreadsheet sorting module ->', () => {
                         done();
                     });
                 });
+            });
+            it('Sort with number and string values ->', (done: Function) => {
+                helper.invoke('selectRange', ['A1']);
+                helper.invoke('updateCell', [{ value: '   Running Shoes' }, 'A9']);
+                helper.invoke('updateCell', [{ value: 200 }, 'A10']);
+                helper.invoke('updateCell', [{ value: 12 }, 'A11']);
+                helper.invoke('updateCell', [{ value: 2606 }, 'A12']);
+                const sheet: any = helper.invoke('getActiveSheet');
+                expect(sheet.rows[0].cells[0].value).toBe('Item Name');
+                expect(sheet.rows[2].cells[0].value).toBe('T-Shirts');
+                expect(sheet.rows[8].cells[0].value).toBe('   Running Shoes');
+                expect(sheet.rows[11].cells[0].value).toBe(2606);
+                helper.getInstance().sort({ sortDescriptors: [{ order: 'Descending', field: 'A' }], containsHeader: true }, 'A1:H12').then(
+                    () => {
+                        expect(sheet.rows[0].cells[0].value).toBe('Item Name');
+                        expect(sheet.rows[1].cells[0].value).toBe('T-Shirts');
+                        expect(sheet.rows[6].cells[0].value).toBe('   Running Shoes');
+                        expect(sheet.rows[7].cells[0].value).toBe(2606);
+                        expect(sheet.rows[9].cells[0].value).toBe(12);
+                        expect(sheet.rows[10].cells[0]).toBeNull();
+                        expect(sheet.rows[11].cells[0]).toBeNull();
+                        done();
+                    });
             });
         });
 
@@ -1081,6 +1136,36 @@ describe('Spreadsheet sorting module ->', () => {
                     listValue.click();
                     let textValue = document.querySelector('.e-ul').children[1].querySelector('.e-sort-field-ddl') as HTMLElement;
                     expect(textValue.children[0].textContent).toBe('Time');
+                    done();
+                });
+            });
+        });
+        it('EJ2-876256 - Row height not maintained when sorting wrapped text cells', (done: Function) => {
+            let sheet: SheetModel;
+            sheet = helper.getInstance().sheets[0];
+            helper.invoke('wrap', ['A6', true]);
+            expect(sheet.rows[5].cells[0].value).toBe('Flip- Flops & Slippers');
+            expect(sheet.rows[5].cells[0].wrap).toBe(true);
+            const rowHeight1: number = sheet.rows[5].height;
+            helper.invoke('sort', [{ sortDescriptors: { order: 'Ascending' } }]).then((args: SortEventArgs) => {
+                expect(sheet.rows[1].cells[0].value).toBe('Casual Shoes');
+                expect(sheet.rows[1].cells[0].wrap).not.toBe(true);
+                expect(sheet.rows[2].cells[0].value).toBe('Cricket Shoes');
+                expect(sheet.rows[2].cells[0].wrap).not.toBe(true);
+                expect(sheet.rows[3].cells[0].value).toBe('Flip- Flops & Slippers');
+                expect(sheet.rows[3].cells[0].wrap).toBe(true);
+                const rowHeight2: number = sheet.rows[2].height;
+                expect(sheet.rows[5].cells[0].value).toBe('Loafers');
+                expect(sheet.rows[5].cells[0].wrap).toBe(undefined);
+                expect(sheet.rows[5].height).not.toBe(rowHeight1);
+                helper.invoke('sort', [{ sortDescriptors: { order: 'Descending' } }]).then((args: SortEventArgs) => {
+                    expect(sheet.rows[8].cells[0].value).toBe('Flip- Flops & Slippers');
+                    expect(sheet.rows[8].cells[0].wrap).toBe(true);
+                    const rowHeight3: number = sheet.rows[8].height;
+                    expect(sheet.rows[8].height).toBe(rowHeight3);
+                    expect(sheet.rows[2].cells[0].value).toBe('Sports Shoes');
+                    expect(sheet.rows[2].cells[0].wrap).toBe(undefined);
+                    expect(sheet.rows[2].height).toBe(rowHeight2);
                     done();
                 });
             });
@@ -1456,6 +1541,102 @@ describe('Spreadsheet sorting module ->', () => {
                     expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[3].cells[4].value.toString()).toBe('10');
                     done();
                 });
+            });
+        });
+    });
+
+    describe('EJ2-874115 - Data misalignment issue when sorting merged cells', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('EJ2-874115 - Data misalignment issue when sorting merged cells', (done: Function) => {
+            helper.invoke('applyFilter');
+            helper.invoke('merge', ['D3:E3']);
+            expect(helper.getInstance().sheets[0].rows[2].cells[3].colSpan).toBe(2);
+            expect(helper.getInstance().sheets[0].rows[2].cells[4].colSpan).toBe(-1);
+            helper.invoke('selectRange', ['D1:D100']);
+            helper.click('#' + helper.id + '_sorting');
+            helper.click('.e-sort-filter-ddb ul li:nth-child(1)');
+            setTimeout((): void => {
+                const dialog: HTMLElement = helper.getElement('.e-dialog');
+                expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
+                    'To do this, all the merged cells need to be the same size.');
+                helper.click('.e-dialog .e-primary');
+                helper.invoke('unMerge', ['D3:E3']);
+                done();
+            });
+        });
+        it('EJ2-874115 - Data misalignment issue when sorting merged cells', (done: Function) => {
+            helper.invoke('selectRange', ['D1:D100']);
+            helper.click('#' + helper.id + '_sorting');
+            helper.click('.e-sort-filter-ddb ul li:nth-child(1)');
+            setTimeout((): void => {
+                helper.invoke('merge', ['D3:E3']);
+                expect(helper.getInstance().sheets[0].rows[2].cells[3].colSpan).toBe(2);
+                expect(helper.getInstance().sheets[0].rows[2].cells[4].colSpan).toBe(-1);
+                helper.invoke('selectRange', ['D1:D100']);
+                helper.click('#' + helper.id + '_sorting');
+                helper.click('.e-sort-filter-ddb ul li:nth-child(1)');
+                setTimeout((): void => {
+                    const dialog: HTMLElement = helper.getElement('.e-dialog');
+                    expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
+                        'To do this, all the merged cells need to be the same size.');
+                    helper.click('.e-dialog .e-primary');
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('EJ2-931228 -> Header row without style treated as content during sort action', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('EJ2-Header row without style treated as content during sort action- ', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['A1:H11']);
+            helper.invoke('sort', [{ sortDescriptors: { order: 'Ascending' } }]).then((args: SortEventArgs) => {
+                expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[0].cells[0].value.toString()).toBe('Item Name');
+                expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[0].cells[1].value.toString()).toBe('Date');
+                expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[0].cells[2].value.toString()).toBe('Time');
+                expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[0].cells[3].value.toString()).toBe('Quantity');
+                expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[0].cells[4].value.toString()).toBe('Price');
+                done();
+            });
+        });
+    });
+
+    describe('EJ2-936817->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    rows: [{ cells: [{ value: '0.0001', format: '@' }] },
+                    { cells: [{ value: '0.001', format: '@' }] },
+                    { cells: [{ value: '0.0020', format: '@' }] },
+                    { cells: [{ value: '0.0040', format: '@' }] },
+                    { cells: [{ value: '0.010', format: '@' }] }]
+                }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Sorting with text formatted cells', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['A1:A5']);
+            helper.invoke('sort', [{ sortDescriptors: { order: 'Descending' } }]).then((args: SortEventArgs) => {
+                expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[0].cells[0].value.toString()).toBe('0.010');
+                expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[1].cells[0].value.toString()).toBe('0.0040');
+                expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[2].cells[0].value.toString()).toBe('0.0020');
+                expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[3].cells[0].value.toString()).toBe('0.001');
+                expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[4].cells[0].value.toString()).toBe('0.0001');
+                done();
             });
         });
     });

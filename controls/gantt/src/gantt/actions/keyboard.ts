@@ -17,6 +17,7 @@ export class FocusModule {
     private parent: Gantt;
     private activeElement: HTMLElement;
     private previousActiveElement: HTMLElement;
+    private isFromKeyboardAction: boolean = false;
     constructor(parent: Gantt) {
         this.parent = parent;
         this.activeElement = null;
@@ -298,8 +299,8 @@ export class FocusModule {
             e.preventDefault();
             const ganttRow: HTMLElement[] = [].slice.call(this.parent.ganttChartModule.chartBodyContent.querySelector('tbody').children);
             if (ganttRow.length > 0) {
-                let firstRowIndex: any = ganttRow[0].getAttribute('data-rowindex');
-                let lastRowIndex: any = ganttRow[ganttRow.length - 1].getAttribute('data-rowindex');
+                let firstRowIndex: number = parseInt(ganttRow[0].getAttribute('aria-rowindex'), 10) - 1;
+                let lastRowIndex: number = parseInt(ganttRow[ganttRow.length - 1].getAttribute('aria-rowindex'), 10) - 1;
                 if (!isNullOrUndefined(firstRowIndex)) {
                     firstRowIndex = Number(firstRowIndex);
                 }
@@ -391,9 +392,13 @@ export class FocusModule {
                     selectedRowIndex.toString()) + 1;
             }
             if (e.action === 'expandRow') {
+                this.isFromKeyboardAction = true;
                 ganttObj.expandByIndex(selectedRowIndex);
+                this.isFromKeyboardAction = false;
             } else {
+                this.isFromKeyboardAction = true;
                 ganttObj.collapseByIndex(selectedRowIndex);
+                this.isFromKeyboardAction = false;
             }
         }
     }

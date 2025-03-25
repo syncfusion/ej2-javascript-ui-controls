@@ -41,10 +41,13 @@ export class HtmlEditor {
     private deleteRangeElement: Element;
     private deleteOldRangeElement: Element;
     private isImageDelete: boolean = false;
+    private isMention: boolean = false;
     private saveSelection: NodeSelection;
     public xhtmlValidation: XhtmlValidation;
     private clickTimeout: number;
     private isCopyAll: boolean;
+    private isSlashMenuOpen: boolean;
+    private isPreviousNodeBrAfterBackSpace: boolean;
 
     public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -54,6 +57,8 @@ export class HtmlEditor {
         this.addEventListener();
         this.isDestroyed = false;
         this.isCopyAll = false;
+        this.isSlashMenuOpen = false;
+        this.isPreviousNodeBrAfterBackSpace = false;
     }
     /**
      * Destroys the Markdown.
@@ -76,6 +81,7 @@ export class HtmlEditor {
         this.toolbarUpdate = null;
         this.nodeSelectionObj = null;
         this.isCopyAll = null;
+        this.isSlashMenuOpen = null;
         if (this.rangeCollection.length > 0) {
             this.rangeCollection = [];
         }
@@ -106,6 +112,7 @@ export class HtmlEditor {
         this.nodeSelectionObj = new NodeSelection(this.parent.inputElement);
         this.parent.on(events.initialLoad, this.instantiateRenderer, this);
         this.parent.on(events.htmlToolbarClick, this.onToolbarClick, this);
+        this.parent.on(events.slashMenuOpening, this.onSlashMenuOpen, this);
         this.parent.on(events.keyDown, this.onKeyDown, this);
         this.parent.on(events.keyUp, this.onKeyUp, this);
         this.parent.on(events.initialEnd, this.render, this);
@@ -120,6 +127,9 @@ export class HtmlEditor {
         this.parent.on(events.paste, this.onPaste, this);
         this.parent.on(events.tableclass, this.isTableClassAdded, this);
         this.parent.on(events.onHandleFontsizeChange, this.onHandleFontsizeChange, this);
+    }
+    private onSlashMenuOpen(): void {
+        this.isSlashMenuOpen = true;
     }
     private updateReadOnly(): void {
         if (this.parent.readonly) {
@@ -252,7 +262,9 @@ export class HtmlEditor {
         }
         let pointer: number;
         let isRootParent: boolean = false;
-        if (restrictKeys.indexOf(args.keyCode) < 0 && !args.shiftKey && !args.ctrlKey && !args.altKey && !isEmptyNode && !isMention) {
+        if (!this.isSlashMenuOpen &&
+            restrictKeys.indexOf(args.keyCode) < 0 && !args.shiftKey && !args.ctrlKey && !args.altKey &&
+            !isEmptyNode && !isMention) {
             pointer = range.startOffset;
             // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             range.startContainer.nodeName === '#text' ? range.startContainer.parentElement !== this.parent.inputElement ? range.startContainer.parentElement.classList.add('currentStartMark')
@@ -293,7 +305,8 @@ export class HtmlEditor {
                     parentElement.removeChild(tempSpanToRemove);
                     tempSpanToRemove = null;
                 }
-                const currentChildNode : NodeListOf<ChildNode> = this.parent.inputElement.querySelector('.currentStartMark').childNodes;
+                const currentElement: Element | null = this.parent.inputElement.querySelector('.currentStartMark');
+                const currentChildNode: NodeListOf<ChildNode> | [] = currentElement ? currentElement.childNodes : [];
                 if (currentChildNode.length > 1) {
                     for (let i: number = 0; i < currentChildNode.length; i++) {
                         if (currentChildNode[i as number].nodeName === '#text' && currentChildNode[i as number].textContent.length === 0) {
@@ -339,6 +352,7 @@ export class HtmlEditor {
                     this.parent.contentModule.getDocument(), range.startContainer as Element, pointer);
             }
         }
+        this.isSlashMenuOpen = false;
     }
     private removeZeroWidthSpaces(node: Node, regex: RegExp): void {
         if (node.nodeType === Node.TEXT_NODE) {
@@ -434,6 +448,13 @@ export class HtmlEditor {
             let hasSplitedText: boolean = false;
             if (orderedList || unOrderedList) {
                 hasSplitedText = this.hasMultipleTextNode(currentRange);
+                if (hasSplitedText && !this.isMention) {
+                    let element: HTMLElement = currentRange.startContainer as HTMLElement;
+                    element = this.parent.formatter.editorManager.domNode.getImmediateBlockNode(element) as HTMLElement;
+                    if (element.childNodes.length > 0 && !element.innerHTML.includes('<br>')) {
+                        hasSplitedText = false;
+                    }
+                }
             }
             if (!hasSplitedText && (orderedList && !unOrderedList || unOrderedList && !orderedList)) {
                 const eventArgs: IHtmlKeyboardEvent = {
@@ -504,11 +525,13 @@ export class HtmlEditor {
         return false;
     }
     private hasMultipleTextNode(range: Range): boolean {
+        this.isMention = false;
         if (range && range.startContainer && range.startContainer.parentNode) {
             const parentNode: Node = range.startContainer.parentNode as Node;
             if ((range.startContainer as HTMLElement).previousElementSibling &&
                 (range.startContainer as HTMLElement).previousElementSibling.classList.contains('e-mention-chip')
                 && !((range.startContainer as HTMLElement).previousElementSibling as HTMLElement).isContentEditable) {
+                this.isMention = true;
                 return true;
             }
             if (this.parent.enterKey === 'BR' || closest(parentNode, 'table')) {
@@ -528,6 +551,52 @@ export class HtmlEditor {
         }
         return false;
     }
+    //Determines if the cursor is truly at the start of a block element
+    private isCursorAtBlockStart(range: Range): boolean {
+        if (range.startOffset !== 0 || range.endOffset !== 0) {
+            return false;
+        }
+        // Get the node where cursor is positioned
+        const cursorNode: Node = range.startContainer;
+        // If cursor is in a text node, check its parent
+        const elementAtCursor: Element = cursorNode.nodeType === Node.TEXT_NODE ?
+            cursorNode.parentElement : cursorNode as Element;
+        // First, check if we're in a table cell - we don't want to handle these
+        if (elementAtCursor.tagName === 'TD' || elementAtCursor.tagName === 'TH') {
+            return false;
+        }
+        // Find the block-level ancestor
+        const blockNode: Element = this.parent.formatter.editorManager.domNode.getImmediateBlockNode(elementAtCursor) as Element;
+        // If cursor is directly in a block element at position 0, it's at the start
+        if (cursorNode === blockNode && range.startOffset === 0) {
+            return true;
+        }
+        // Otherwise, we need to check if the cursor is positioned at the absolute beginning of content
+        let currentNode: Node = elementAtCursor;
+        let previousContentFound: boolean = false;
+        // Walk up the DOM tree until we reach the block parent
+        while (currentNode && currentNode !== blockNode) {
+            // Check if there's any previous sibling with content
+            let sibling: Node = currentNode.previousSibling;
+            while (sibling) {
+                // Skip empty text nodes
+                if (sibling.nodeType === Node.TEXT_NODE && (!sibling.textContent || !sibling.textContent.trim())) {
+                    sibling = sibling.previousSibling;
+                    continue;
+                }
+                // If we found any non-empty previous sibling, cursor is not at block start
+                previousContentFound = true;
+                break;
+            }
+            if (previousContentFound) {
+                break;
+            }
+            // Move up to parent and check again
+            currentNode = currentNode.parentNode;
+        }
+        // If we reached the block parent without finding previous content, cursor is at start
+        return !previousContentFound;
+    }
     private backSpaceCleanup(e: NotifyArgs, currentRange: Range): void {
         let isLiElement: boolean = false;
         let isPreviousNotContentEditable: boolean = true;
@@ -538,9 +607,12 @@ export class HtmlEditor {
         const checkNode: Node = currentRange.startContainer.nodeName === '#text' ? currentRange.startContainer.parentElement : currentRange.startContainer;
         const isSelectedPositionNotStart: boolean = closest(currentRange.startContainer.nodeName === '#text' ? currentRange.startContainer.parentElement : currentRange.startContainer, 'li') ?
             checkNode.nodeName !== 'li' && isNOU(checkNode.previousSibling) : true;
-        if (((e as NotifyArgs).args as KeyboardEventArgs).code === 'Backspace' && ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 8 && currentRange.startOffset === 0 &&
-            currentRange.endOffset === 0 && this.parent.getSelection().length === 0 && currentRange.startContainer.textContent.length > 0 &&
-            currentRange.startContainer.parentElement.tagName !== 'TD' && currentRange.startContainer.parentElement.tagName !== 'TH' &&
+        // Method to determine if cursor is truly at start
+        const isCursorAtStart: boolean = this.isCursorAtBlockStart(currentRange);
+        if (((e as NotifyArgs).args as KeyboardEventArgs).code === 'Backspace' &&
+            ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 8 &&
+            isCursorAtStart && currentRange.startContainer.textContent !== ' ' &&
+            this.parent.getSelection().length === 0 && currentRange.startContainer.textContent.length > 0 &&
             isPreviousNotContentEditable && isSelectedPositionNotStart) {
             if ((!this.parent.formatter.editorManager.domNode.isBlockNode(checkNode as Element) &&
                 !isNOU(checkNode.previousSibling) && checkNode.previousSibling.nodeName === 'BR') ||
@@ -577,23 +649,30 @@ export class HtmlEditor {
                 const prevSibling: HTMLElement = findBlockElement[0].previousSibling as HTMLElement;
                 const currentElement: HTMLElement = findBlockElement[0] as HTMLElement;
                 if (prevSibling.textContent.trim()) {
-                    if (prevSibling.lastChild.nodeName === 'BR') {
-                        prevSibling.removeChild(prevSibling.lastChild);
-                    }
+                    this.removeLastBr(prevSibling);
                     const lastPosition: { node: Node; offset: number } | null =
                         this.parent.formatter.editorManager.nodeSelection.findLastTextPosition(prevSibling);
                     const cursorpointer: number = lastPosition.offset;
                     const lastChild: Element = lastPosition.node as Element;
                     const childNodes: Node[] = Array.from(currentElement.childNodes);
-                    const previousBlockElements: Node = this.getImmediateBlockNode(lastChild);
+                    let save: NodeSelection = this.nodeSelectionObj.save(currentRange, this.contentRenderer.getDocument());
+                    if (this.isPreviousNodeBrAfterBackSpace) {
+                        this.parent.formatter.editorManager.domNode.setMarker(save);
+                    }
+                    const previousBlockElements: Node = this.parent.formatter.editorManager.domNode.getImmediateBlockNode(lastChild);
                     for (let i: number = 0; i < childNodes.length; i++) {
                         previousBlockElements.appendChild(childNodes[i as number].cloneNode(true));
                     }
-                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
-                        this.parent.contentModule.getDocument(),
-                        lastChild,
-                        cursorpointer
-                    );
+                    if (this.isPreviousNodeBrAfterBackSpace) {
+                        save = (this.parent.formatter.editorManager as EditorManager).domNode.saveMarker(save);
+                        save.restore();
+                    } else {
+                        this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                            this.parent.contentModule.getDocument(),
+                            lastChild,
+                            cursorpointer
+                        );
+                    }
                     currentElement.parentNode.removeChild(currentElement);
                     (e.args as KeyboardEventArgs).preventDefault();
                 } else {
@@ -650,9 +729,10 @@ export class HtmlEditor {
             }
         }
         if (((e as NotifyArgs).args as KeyboardEventArgs).code === 'Backspace' && ((e as NotifyArgs).args as KeyboardEventArgs).keyCode === 8 &&
-            currentRange.startContainer.nodeType !== Node.TEXT_NODE){
+            currentRange.startContainer.nodeType !== Node.TEXT_NODE) {
             const ChildNode: HTMLElement = !isNOU(currentRange.startContainer.childNodes[currentRange.startOffset - 1]) &&
-            !(currentRange.startContainer.childNodes[currentRange.startOffset - 1] as HTMLElement).isContentEditable ?
+                !isNOU((currentRange.startContainer.childNodes[currentRange.startOffset - 1] as HTMLElement).isContentEditable) &&
+                !(currentRange.startContainer.childNodes[currentRange.startOffset - 1] as HTMLElement).isContentEditable ?
                 currentRange.startContainer.childNodes[currentRange.startOffset - 1] as HTMLElement : null;
             if (ChildNode) {
                 ChildNode.remove();
@@ -660,23 +740,27 @@ export class HtmlEditor {
             }
         }
     }
-    private findLastTextPosition(element: Node): { node: Node; offset: number } | null {
-        if (element.nodeType === Node.TEXT_NODE) {
-            return { node: element, offset: element.textContent ? element.textContent.length : 0 };
+    //Finds the last significant node within the given element.
+    private getLastNode(node: Node): Node | null {
+        while (node && node.lastChild) {
+            node = node.lastChild;
         }
-        for (let i: number = element.childNodes.length - 1; i >= 0; i--) {
-            const lastPosition: { node: Node; offset: number } | null = this.findLastTextPosition(element.childNodes[i as number]);
-            if (lastPosition) {
-                return lastPosition;
-            }
-        }
-        return null;
-    }
-    private getImmediateBlockNode(node: Node): Node {
-        while (node && CONSTANTS.BLOCK_TAGS.indexOf(node.nodeName.toLocaleLowerCase()) < 0) {
-            node = node.parentNode;
+        // Skip empty text nodes by checking if the node is a text node and contains only whitespace.
+        while (node && node.nodeType === Node.TEXT_NODE && !node.nodeValue.trim()) {
+            node = node.previousSibling;
         }
         return node;
+    }
+    // Removes the last <br> element from the given element if it is the last meaningful node.
+    private removeLastBr(element: HTMLElement): void {
+        // Get the last meaningful node of the given element.
+        const lastNode: Node = this.getLastNode(element);
+        // If the last node is a <br> element, remove it from the DOM.
+        if (lastNode && lastNode.nodeName === 'BR' && lastNode.parentNode) {
+            this.isPreviousNodeBrAfterBackSpace = !isNOU(lastNode.previousSibling) &&
+                lastNode.previousSibling.nodeName === 'BR' ? true : false;
+            lastNode.parentNode.removeChild(lastNode);
+        }
     }
     private deleteCleanup(e: NotifyArgs, currentRange: Range): void {
         let isLiElement: boolean = false;
@@ -783,9 +867,14 @@ export class HtmlEditor {
         return position;
     }
     private getRangeElement(element: Element): Element {
-        const rangeElement: Element = element.lastElementChild ? element.lastElementChild.tagName === 'BR' ?
-            element.lastElementChild.previousElementSibling ? element.lastElementChild.previousElementSibling
-                : element : element.lastElementChild : element;
+        let rangeElement: Element;
+        if (element.childNodes.length <= 1) {
+            rangeElement = element.lastElementChild ? element.lastElementChild.tagName === 'BR' ?
+                element.lastElementChild.previousElementSibling ? element.lastElementChild.previousElementSibling
+                    : element : element.lastElementChild : element;
+        } else {
+            rangeElement = element;
+        }
         return rangeElement;
     }
     private getRootBlockNode(rangeBlockNode: Node): Node {
@@ -879,34 +968,36 @@ export class HtmlEditor {
     }
     private spaceLink(e?: KeyboardEvent): void {
         const range: Range = this.nodeSelectionObj.getRange(this.contentRenderer.getDocument());
-        const selectNodeEle: Node[] = this.nodeSelectionObj.getParentNodeCollection(range);
-        const text: string = range.startContainer.textContent.substr(0, range.endOffset);
-        const splitText: string[] = text.split(' ');
-        let urlText: string = splitText[splitText.length - 1];
-        const urlTextRange: number = range.startOffset - (text.length - splitText[splitText.length - 1].length);
-        urlText = urlText.slice(0, urlTextRange);
-        // eslint-disable-next-line
-        const regex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
-        if (selectNodeEle[0] && selectNodeEle[0].nodeName !== 'A' && urlText.match(regex)) {
-            const selection: NodeSelection = this.nodeSelectionObj.save(
-                range, this.parent.contentModule.getDocument());
-            const url: string = urlText.indexOf('http') > -1 ? urlText : 'http://' + urlText;
-            const selectParent: Node[] = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
-            const value: NotifyArgs = {
-                url: url,
-                selection: selection, selectParent: selectParent,
-                text: urlText,
-                title: '',
-                target: '_blank'
-            };
-            this.parent.formatter.process(
-                this.parent, {
-                    item: {
-                        'command': 'Links',
-                        'subCommand': 'CreateLink'
-                    }
-                },
-                e, value);
+        if (range.startContainer.nodeType === Node.TEXT_NODE) {
+            const selectNodeEle: Node[] = this.nodeSelectionObj.getParentNodeCollection(range);
+            const text: string = range.startContainer.textContent.substr(0, range.endOffset);
+            const splitText: string[] = text.split(' ');
+            let urlText: string = splitText[splitText.length - 1];
+            const urlTextRange: number = range.startOffset - (text.length - splitText[splitText.length - 1].length);
+            urlText = urlText.slice(0, urlTextRange);
+            // eslint-disable-next-line
+            const regex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
+            if (selectNodeEle[0] && selectNodeEle[0].nodeName !== 'A' && urlText.match(regex)) {
+                const selection: NodeSelection = this.nodeSelectionObj.save(
+                    range, this.parent.contentModule.getDocument());
+                const url: string = urlText.indexOf('http') > -1 ? urlText : 'http://' + urlText;
+                const selectParent: Node[] = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
+                const value: NotifyArgs = {
+                    url: url,
+                    selection: selection, selectParent: selectParent,
+                    text: urlText,
+                    title: '',
+                    target: '_blank'
+                };
+                this.parent.formatter.process(
+                    this.parent, {
+                        item: {
+                            'command': 'Links',
+                            'subCommand': 'CreateLink'
+                        }
+                    },
+                    e, value);
+            }
         }
     }
     private onToolbarClick(args: ClickEventArgs): void {
@@ -1098,7 +1189,8 @@ export class HtmlEditor {
             });
             this.parent.setProperties({ formatter: formatterClass }, true);
         } else {
-            this.parent.formatter.updateFormatter(editElement, this.contentRenderer.getDocument(), option);
+            this.parent.formatter.updateFormatter(editElement, this.contentRenderer.getDocument(), option,
+                                                  this.parent.formatPainterSettings);
         }
         if (this.parent.enableXhtml) {
             this.parent.notify(events.xhtmlValidation, {});

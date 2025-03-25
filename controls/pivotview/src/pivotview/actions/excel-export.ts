@@ -144,9 +144,6 @@ export class ExcelExport {
                     for (let cCnt: number = 0; cCnt < colLen; cCnt++) {
                         if (pivotValues[rCnt as number][cCnt as number]) {
                             const pivotCell: IAxisSet = (pivotValues[rCnt as number][cCnt as number] as IAxisSet);
-                            if (pivotCell && pivotCell.axis === 'value' && pivotCell.formattedText === '') {
-                                pivotCell.value = Number(pivotCell.formattedText);
-                            }
                             const field: string = (this.parent.dataSourceSettings.valueAxis === 'row' &&
                                 this.parent.dataType === 'olap' && pivotCell.rowOrdinal &&
                                 (this.engine as OlapEngine).tupRowInfo[pivotCell.rowOrdinal]) ?
@@ -167,7 +164,7 @@ export class ExcelExport {
                                     cellValue = (!isNullOrUndefined(pivotCell.valueSort) && (this.parent.localeObj.getConstant('grandTotal') + this.parent.dataSourceSettings.valueSortSettings.headerDelimiter + pivotCell.formattedText
                                         === pivotCell.valueSort.levelName) && isgetValuesHeader) ? this.parent.getValuesHeader(pivotCell, 'value') : cellValue;
                                 }
-                                if (!(pivotCell.level === -1 && !pivotCell.rowSpan)) {
+                                if (!(pivotCell.level === -1 && !pivotCell.rowSpan) && pivotCell.rowSpan !== 0) {
                                     cells.push({
                                         index: cCnt + 1, value: cellValue,
                                         colSpan: pivotCell.colSpan, rowSpan: (pivotCell.rowSpan === -1 ? 1 : pivotCell.rowSpan)

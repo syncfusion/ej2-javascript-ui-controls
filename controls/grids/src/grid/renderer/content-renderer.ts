@@ -53,7 +53,8 @@ export class ContentRender implements IRenderer {
         this.parent.notify(events.columnDrop, { target: e.target, droppedElement: e.droppedElement });
         remove(e.droppedElement);
     }
-    private infiniteCache: { [x: number]: Row<Column>[] } | { [x: number]: Row<Column>[][] } = {};
+    /** @hidden */
+    public infiniteCache: { [x: number]: Row<Column>[] } | { [x: number]: Row<Column>[][] } = {};
     private pressedKey: string;
     /** @hidden */
     public visibleRows: Row<Column>[] = [];
@@ -82,7 +83,7 @@ export class ContentRender implements IRenderer {
                 rows = this.parent.getRowsObject(); const prevPage: number = (<{ prevPage: number }>arg).prevPage;
                 if (this.parent.infiniteScrollSettings.enableCache && prevPage) {
                     const maxBlock: number = this.parent.infiniteScrollSettings.maxBlocks; rows = [];
-                    const rowIdx: number = (parseInt(this.rowElements[0].getAttribute('data-rowindex'), 10) + 1);
+                    const rowIdx: number = (parseInt(this.rowElements[0].getAttribute('aria-rowindex'), 10));
                     const startIdx: number = Math.ceil(rowIdx / this.parent.pageSettings.pageSize);
                     for (let i: number = 0, count: number = startIdx; i < maxBlock; i++, count++) {
                         if (this.infiniteCache[parseInt(count.toString(), 10)]) {
@@ -272,10 +273,11 @@ export class ContentRender implements IRenderer {
         const table: Element = innerDiv.querySelector('.' + literals.table) ? innerDiv.querySelector('.' + literals.table) :
             this.parent.createElement('table', {
                 className: literals.table, attrs: {
-                    cellspacing: '0.25px', role: 'presentation',
+                    role: 'presentation',
                     id: this.parent.element.id + id
                 }
             });
+        (table as HTMLElement).style.cssText = 'border-collapse: separate; border-spacing: .25px;';
         this.setColGroup(<Element>this.parent.getHeaderTable().querySelector(literals.colGroup).cloneNode(true));
         table.appendChild(this.getColGroup());
         table.appendChild(this.parent.createElement( literals.tbody, { attrs: { role: 'rowgroup' } }));
@@ -318,7 +320,20 @@ export class ContentRender implements IRenderer {
         const isInfiniteScroll: boolean = this.parent.enableInfiniteScrolling
             && (args as InfiniteScrollArgs).requestType === 'infiniteScroll';
         const isColumnVirtualInfiniteProcess: boolean = this.isInfiniteColumnvirtualization() && args.requestType !== 'virtualscroll';
-        gObj.notify(events.destroyChildGrid, {});
+        const infiniteDetail: boolean = gObj.enableInfiniteScrolling && (gObj.childGrid || gObj.detailTemplate) ? true : false;
+        const infiniteDetailModified: boolean = infiniteDetail && ((args.action === 'add' && args.requestType === 'save')
+            || args.requestType === 'delete');
+        if (infiniteDetailModified) {
+            (args as InfiniteScrollArgs).startIndex = 0;
+            gObj.notify(events.detachDetailTemplate, {});
+        }
+        if (!(isInfiniteScroll && (gObj.childGrid || gObj.detailTemplate) && !gObj.infiniteScrollSettings.enableCache)) {
+            if (infiniteDetail) {
+                this.parent.infiniteScrollModule.infiniteDetailDestroy = true;
+            }
+            gObj.notify(events.destroyChildGrid, isInfiniteScroll && (gObj.childGrid || gObj.detailTemplate)
+                && gObj.infiniteScrollSettings.enableCache ? args : {});
+        }
         this.rowElements = [];
         this.rows = [];
         this.tempFreezeRows = [];
@@ -432,7 +447,8 @@ export class ContentRender implements IRenderer {
             (this.parent.enableVirtualization ? this.parent.lazyLoadRender as GroupLazyLoadRenderer :
                 this.parent.contentModule as GroupLazyLoadRenderer).refRowsObj[this.parent.pageSettings.currentPage] = [];
         }
-        if (this.parent.enableInfiniteScrolling && this.parent.groupSettings.enableLazyLoading && args.requestType === 'delete') {//  || (this.parent.infiniteScrollSettings && this.parent.infiniteScrollSettings.enableCache))
+        if ((this.parent.enableInfiniteScrolling && this.parent.groupSettings.enableLazyLoading && args.requestType === 'delete')
+            || infiniteDetailModified) {//  || (this.parent.infiniteScrollSettings && this.parent.infiniteScrollSettings.enableCache))
             this.visibleRows = [];
         }
         for (let i: number = startIndex, len: number = modelData.length; i < len; i++) {
@@ -463,7 +479,7 @@ export class ContentRender implements IRenderer {
                 } else {
                     frag.appendChild(tr);
                 }
-                const rowIdx: number = parseInt(tr.getAttribute('data-rowindex'), 10);
+                const rowIdx: number = parseInt(tr.getAttribute('aria-rowindex'), 10) - 1;
                 if (rowIdx + 1 === gObj.frozenRows) {
                     isGroupFrozenHdr = false;
                 }
@@ -744,9 +760,9 @@ export class ContentRender implements IRenderer {
                 return [];
             }
             const rows: Element[] = this.parent.getRows();
-            let index: number = parseInt(rows[this.parent.frozenRows].getAttribute(literals.dataRowIndex), 10);
+            let index: number = parseInt(rows[this.parent.frozenRows].getAttribute(literals.ariaRowIndex), 10) - 1;
             const first: number = Math.ceil((index + 1) / this.parent.pageSettings.pageSize);
-            index = parseInt(rows[rows.length - 1].getAttribute(literals.dataRowIndex), 10);
+            index = parseInt(rows[rows.length - 1].getAttribute(literals.ariaRowIndex), 10) - 1;
             const last: number = Math.ceil((index + (rows.length ? 1 : 0)) / this.parent.pageSettings.pageSize);
             for (let i: number = first; i <= last; i++) {
                 data = !data.length ? this.infiniteCache[parseInt(i.toString(), 10)] as Row<Column>[]
@@ -1037,7 +1053,7 @@ export class ContentRender implements IRenderer {
             const fRows: number = this.parent.frozenRows;
             const idx: number = fRows > index ? 0 : fRows;
             const firstRowIndex: number = parseInt(this.parent.getRows()[parseInt(idx.toString(), 10)]
-                .getAttribute(literals.dataRowIndex), 10);
+                .getAttribute(literals.ariaRowIndex), 10) - 1;
             index = fRows > index ? index : (index - firstRowIndex) + fRows;
         }
         return index;
@@ -1222,7 +1238,6 @@ export class ContentRender implements IRenderer {
         row.index = index;
         row.edit = undefined;
         row.isDirty = false;
-        tr.setAttribute(literals.dataRowIndex, index.toString());
         tr.setAttribute(literals.ariaRowIndex, (index + 1).toString());
         this.updateCellIndex(tr, index);
     }

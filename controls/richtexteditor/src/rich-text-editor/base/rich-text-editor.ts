@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, detach } from '@syncfusion/ej2-base';
+import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, detach, updateCSSText } from '@syncfusion/ej2-base';
 import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';
 import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';
@@ -46,7 +46,7 @@ import { PasteCleanup } from '../actions/paste-clean-up';
 import { ImportExport } from '../actions/import-export';
 import { EnterKeyAction } from '../actions/enter-key';
 import * as CONSTANT from '../../common/constant';
-import { IHtmlKeyboardEvent, IHtmlUndoRedoData } from '../../editor-manager/base/interface';
+import { IHtmlKeyboardEvent, IHtmlUndoRedoData, BeforeInputEvent } from '../../editor-manager/base/interface';
 import { dispatchEvent, getEditValue, isIDevice, decode, isEditableValueEmpty, getDefaultValue } from '../base/util';
 import { scrollToCursor } from '../../common/util';
 import { DialogRenderer } from '../renderer/dialog-renderer';
@@ -59,7 +59,7 @@ import { SlashMenuSettings } from '../models/slash-menu-settings';
 import { SlashMenuSettingsModel } from '../models/slash-menu-settings-model';
 import { SlashMenu} from '../renderer/slash-menu';
 import { mentionRestrictKeys } from '../../common/config';
-import { isSafari } from '../../common/util';
+import { CustomUserAgentData } from '../../common/user-agent';
 import { cleanupInternalElements, removeSelectionClassStates, resetContentEditableElements } from '../base/util';
 import { NodeSelection } from '../../selection/index';
 import { MarkdownUndoRedoData } from '../../markdown-parser/base/interface';
@@ -94,6 +94,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private beforeRenderClassValue: string;
     private mouseDownDebListener: Function;
     private internalID: string;
+    /**
+     * @private
+     */
+    public userAgentData: CustomUserAgentData;
 
     /**
      * Specifies the root container of the Rich Text Editor component.
@@ -1920,6 +1924,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.RTERender();
         // eslint-disable-next-line
         const execCommandCallBack: ExecCommandCallBack = new ExecCommandCallBack(this);
+        this.userAgentData = new CustomUserAgentData(Browser.userAgent, false);
         this.notify(events.initialEnd, {});
         if (this.enableXhtml) {
             this.setProperties({ value: this.getXhtml() }, true);
@@ -1958,7 +1963,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             // eslint-disable-next-line max-len
             if (!audioElm[i as number].parentElement.classList.contains(classes.CLS_CLICKELEM) && !audioElm[i as number].parentElement.classList.contains(classes.CLS_AUDIOWRAP)) {
                 const audioWrapElem: HTMLElement = this.createElement('span', { className: classes.CLS_AUDIOWRAP });
-                audioWrapElem.setAttribute('style', 'width:300px; margin:0 auto;');
+                const csstext: string = 'width:300px; margin:0 auto;';
+                updateCSSText(audioWrapElem, csstext);
                 audioWrapElem.contentEditable = 'false';
                 const audioInnerWrapElem: HTMLElement = this.createElement('span', { className: classes.CLS_CLICKELEM });
                 audioWrapElem.appendChild(audioInnerWrapElem);
@@ -2068,7 +2074,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @hidden
      */
     public keyDown(e: KeyboardEvent): void {
-        const isMacDev: boolean = window.navigator.platform.toLocaleLowerCase().includes('mac');
+        const isMacDev: boolean = this.userAgentData.getPlatform() === 'macOS';
         if (((e.ctrlKey || (e.metaKey && isMacDev)) && e.shiftKey && e.keyCode === 86) ||
             (e.metaKey && isMacDev && e.altKey && e.shiftKey && e.keyCode === 86)) {
             this.isPlainPaste = true;
@@ -2172,7 +2178,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             switch ((e as KeyboardEventArgs).action) {
             case 'toolbar-focus':
                 if (this.toolbarSettings.enable && this.getToolbarElement()) {
-                    if (isSafari() && e.type === 'keydown' && this.formatter.editorManager.nodeSelection &&
+                    if (this.userAgentData.isSafari() && e.type === 'keydown' && this.formatter.editorManager.nodeSelection &&
                     this.formatter.editorManager.nodeSelection.get(this.contentModule.getDocument()).rangeCount > 0 &&
                     this.inputElement.contains(this.getRange().startContainer)) {
                         this.notify(events.selectionSave, {});
@@ -2188,7 +2194,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                         const firstChild: HTMLElement = firstActiveItem.firstElementChild as HTMLElement;
                         firstChild.removeAttribute('tabindex');
                         firstChild.focus();
-                        if (quickToolbarElem && quickToolbarElem.classList.contains('e-rte-image-popup') && toolbarFocusType === 'quickToolbar' && isSafari()) {
+                        if (quickToolbarElem && quickToolbarElem.classList.contains('e-rte-image-popup') && toolbarFocusType === 'quickToolbar' && this.userAgentData.isSafari()) {
                             this.inputElement.ownerDocument.getSelection().removeAllRanges();
                         }
                     }
@@ -2604,6 +2610,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         this.currentTarget = null;
         this.scrollParentElements = [];
+        this.userAgentData = null;
         this.isRendered = false;
         super.destroy();
     }
@@ -3013,8 +3020,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 ((this.inputElement.firstChild.nodeName === 'P' || this.inputElement.firstChild.nodeName === 'DIV') && !isNOU(this.inputElement.firstChild.firstChild) &&
                 this.inputElement.firstChild.childNodes.length < 2 && this.inputElement.firstChild.firstChild.nodeName === 'BR'))) {
                     this.placeHolderWrapper.classList.add('enabled');
+                    EventHandler.add(this.inputElement as HTMLElement, 'input', this.setPlaceHolder, this);
                 } else {
                     this.placeHolderWrapper.classList.remove('enabled');
+                    EventHandler.remove(this.inputElement as HTMLElement, 'input', this.setPlaceHolder);
                 }
             } else {
                 this.inputElement.setAttribute('placeholder', this.placeholder);
@@ -3026,8 +3035,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.inputElement.firstChild.firstChild.nodeName === 'BR'))) {
                 addClass([this.inputElement], 'e-rte-placeholder');
                 this.inputElement.setAttribute('placeholder', this.placeholder);
+                EventHandler.add(this.inputElement as HTMLElement, 'input', this.setPlaceHolder, this);
             } else {
                 removeClass([this.inputElement], 'e-rte-placeholder');
+                EventHandler.remove(this.inputElement as HTMLElement, 'input', this.setPlaceHolder);
             }
         }
     }
@@ -3976,12 +3987,35 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
     }
+    private beforeInputHandler(e: BeforeInputEvent): void {
+        if (this.maxLength >= 0) {
+            const element: string = this.editorMode === 'Markdown' ? this.contentModule.getText() :
+                (this.getText().replace(/(\r\n|\n|\r|\t)/gm, '').replace(/\u200B/g, ''));
+            if (e.data && element.length >= this.maxLength && !this.isSpecialInputType(e)) {
+                e.preventDefault();
+            }
+        }
+    }
+    private isSpecialInputType(e: BeforeInputEvent): boolean {
+        const allowedKeys: number[] = [8, 16, 17, 37, 38, 39, 40, 46, 65];
+        if (e.inputType) {
+            return (
+                e.inputType.indexOf('delete') !== -1 ||
+                e.inputType.indexOf('backward') !== -1 ||
+                e.inputType === 'insertLineBreak'
+            );
+        }
+        return allowedKeys.indexOf((e as any).which) !== -1;
+    }
 
     private bindEvents(): void {
         this.keyboardModule = new KeyboardEvents(this.inputElement, {
             keyAction: this.keyDown.bind(this), keyConfigs:
                 { ...this.formatter.keyConfig, ...this.keyConfig }, eventName: 'keydown'
         });
+        if (this.userAgentData && this.userAgentData.getPlatform() === 'Android') {
+            EventHandler.add(this.inputElement, 'beforeinput', this.beforeInputHandler, this);
+        }
         const formElement: Element = closest(this.valueContainer, 'form');
         if (formElement) {
             EventHandler.add(formElement, 'reset', this.resetHandler, this);
@@ -4090,6 +4124,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             EventHandler.remove(this.inputElement.ownerDocument, Browser.touchStartEvent, this.onIframeMouseDown);
             EventHandler.remove(this.contentModule.getPanel(), 'load', this.iframeLoadHandler);
         }
+        if (this.userAgentData && this.userAgentData.getPlatform() === 'Android') {
+            EventHandler.remove(this.inputElement, 'beforeinput', this.beforeInputHandler);
+        }
         this.unWireScrollElementsEvents();
     }
 
@@ -4132,10 +4169,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private getRenderedQuickToolbarElem(): HTMLElement | null {
-        const quickToolbars : IBaseQuickToolbar[] = this.quickToolbarModule.getQuickToolbarInstance();
-        for (let i: number = 0; i < quickToolbars.length; i++) {
-            if (quickToolbars[i as number] && quickToolbars[i as number].isRendered) {
-                return quickToolbars[i as number].element;
+        if (!isNOU(this.quickToolbarModule)) {
+            const quickToolbars : IBaseQuickToolbar[] = this.quickToolbarModule.getQuickToolbarInstance();
+            for (let i: number = 0; i < quickToolbars.length; i++) {
+                if (quickToolbars[i as number] && quickToolbars[i as number].isRendered) {
+                    return quickToolbars[i as number].element;
+                }
             }
         }
         return null;

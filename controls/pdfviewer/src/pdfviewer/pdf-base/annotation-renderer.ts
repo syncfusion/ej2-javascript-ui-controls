@@ -817,36 +817,13 @@ export class AnnotationRenderer {
             break;
         }
         const bounds: {[key: string]: number}[] = JSON.parse(markupAnnotation.bounds);
-        let boundsCollection: Rect[] = [];
+        const boundsCollection: Rect[] = [];
         for (let i: number = 0; i < bounds.length; i++){
             const bound:  {[key: string]: number} = bounds[parseInt(i.toString(), 10)];
             const cropValues: PointBase = this.getCropBoxValue(page, true);
             if (!isNullOrUndefined(bound['left'])){
                 boundsCollection.push(new Rect(cropValues.x + this.convertPixelToPoint(bound['left']), cropValues.y + this.convertPixelToPoint(bound['top']), Object.prototype.hasOwnProperty.call(bound, 'width') ? this.convertPixelToPoint(bound['width']) : 0, Object.prototype.hasOwnProperty.call(bound, 'height') ? this.convertPixelToPoint(bound['height']) : 0));
             }
-            // Assuming boundsCollection is an array of RectangleF objects
-            const groupedRectangles: Map<number, Rect[]> = new Map<number, Rect[]>();
-            // Group rectangles by their Y values
-            for (const rect of boundsCollection) {
-                if (!groupedRectangles.has(rect.y)) {
-                    groupedRectangles.set(rect.y, []);
-                }
-                if (groupedRectangles.get(rect.y))
-                {
-                    groupedRectangles.get(rect.y).push(rect);
-                }
-            }
-            // Calculate combined rectangles within each group
-            const combinedRectangles: Rect[] = [];
-            groupedRectangles.forEach((group: Rect[], groupKey: number) => {
-                if (group.length > 0) {
-                    const minX: number = Math.min(...group.map((rect: Rect) => rect.x));
-                    const width: number = group.map((rect: Rect) => rect.width).reduce((sum: number, width: number) => sum + width, 0);
-                    const height: number = group[0].height;
-                    combinedRectangles.push(new Rect(minX, groupKey, width, height));
-                }
-            });
-            boundsCollection = combinedRectangles;
         }
         const annotation: PdfTextMarkupAnnotation = new PdfTextMarkupAnnotation(null, 0, 0, 0, 0);
         if (boundsCollection.length > 0) {
@@ -1286,7 +1263,8 @@ export class AnnotationRenderer {
                 lineAnnotation.modifiedDate = dateValue;
             }
             lineAnnotation.caption.type = this.getCaptionType(measureShapeAnnotation.captionPosition);
-            lineAnnotation.caption.cap = measureShapeAnnotation.caption;
+            const hasUniCode: boolean = /[\u0600-\u06FF]/.test(lineAnnotation.text);
+            lineAnnotation.caption.cap = !hasUniCode && measureShapeAnnotation.caption;
             lineAnnotation.leaderExt = measureShapeAnnotation.leaderLength;
             lineAnnotation.leaderLine = measureShapeAnnotation.leaderLineExtension;
             const commentsDetails: any = measureShapeAnnotation.comments;
@@ -2253,12 +2231,14 @@ export class AnnotationRenderer {
             style = PdfLineEndingStyle.square;
             break;
         case 'ClosedArrow':
+        case 'Closed':
             style = PdfLineEndingStyle.closedArrow;
             break;
         case 'RClosedArrow':
             style = PdfLineEndingStyle.rClosedArrow;
             break;
         case 'OpenArrow':
+        case 'Open':
             style = PdfLineEndingStyle.openArrow;
             break;
         case 'ROpenArrow':
@@ -2268,6 +2248,7 @@ export class AnnotationRenderer {
             style = PdfLineEndingStyle.butt;
             break;
         case 'Circle':
+        case 'Round':
             style = PdfLineEndingStyle.circle;
             break;
         case 'Diamond':

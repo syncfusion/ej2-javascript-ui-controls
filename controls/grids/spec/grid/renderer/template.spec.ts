@@ -311,5 +311,35 @@ describe('Template render module', () => {
 
     });
 
+    describe('Enabling the aria-label attribute dynamically for cells in template columns.', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0,5), 
+                    allowPaging: false,
+                    columns: [
+                            { field: 'OrderID', headerText: 'Order ID', template: '#template', width: 180, templateOptions: {enableAriaLabel: false} },
+                            { field: 'CustomerID', headerText: 'Customer ID', width: 150,template: '#cusIDTemplate'},
+                            { field: 'ShipCity', headerText: 'Ship City', width: 150, template: '#shipTemplate', templateOptions: { enableAriaLabel: true } },
+                            { field: 'ShipName', headerText: 'Ship Name', width: 150, template: '#shipNameTemplate', templateOptions: {enableAriaLabel: false} }
+                    ],
+                }, done);
+        });
+
+        it('The TD element includes aria-label for testing', () => {
+            let trs = gridObj.getContent().querySelectorAll('tr');
+            expect(trs[0].querySelectorAll('td')[0].hasAttribute('aria-label')).toBe(false);
+            expect(trs[0].querySelectorAll('td')[1].hasAttribute('aria-label')).toBe(true);
+            expect(trs[1].querySelectorAll('td')[2].hasAttribute('aria-label')).toBe(true);
+            expect(trs[1].querySelectorAll('td')[3].hasAttribute('aria-label')).toBe(false);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+
+    });
 
 });

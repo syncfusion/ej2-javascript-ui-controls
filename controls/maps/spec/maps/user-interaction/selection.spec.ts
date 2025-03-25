@@ -880,7 +880,17 @@ describe('Selection Settings', () => {
                 ele['y'] = spec.getBoundingClientRect().top;
                 world.mapsTooltipModule.removeEventListener();
                 world.tooltipDisplayMode = 'Click';
-                world.destroy();
+            });
+            it('coverage tooltipDisplayMode as double click', () => {
+                var spec = getElement('container_LayerIndex_0_MarkerIndex_0_dataIndex_2');
+                let ele: object = {};                
+                ele['target'] = spec;
+                ele['type'] = '';
+                ele['pageX'] = spec.getBoundingClientRect().left;
+                ele['pageY'] = spec.getBoundingClientRect().top;
+                ele['x'] = spec.getBoundingClientRect().left;
+                ele['y'] = spec.getBoundingClientRect().top;
+                world.mapsTooltipModule.removeEventListener();
                 world.tooltipDisplayMode = 'DoubleClick';
                 world.destroy();
             });

@@ -413,14 +413,15 @@ export class AutoComplete extends ComboBox {
             if (this.enableVirtualization && !isNoDataElement) {
                 if (!this.list.querySelector('.e-virtual-ddl-content') && this.list.querySelector('.e-list-parent')) {
                     const virtualElement: HTMLElement = this.createElement('div', {
-                        className: 'e-virtual-ddl-content',
-                        styles: this.getTransformValues()
+                        className: 'e-virtual-ddl-content'
                     });
+                    virtualElement.style.cssText = this.getTransformValues();
                     this.list.appendChild(virtualElement).appendChild(this.list.querySelector('.e-list-parent'));
                 }
                 if (!this.list.querySelector('.e-virtual-ddl') && this.list.parentElement){
                     const virtualElement: HTMLElement = this.createElement('div', {
-                        id: this.element.id + '_popup', className: 'e-virtual-ddl', styles: this.GetVirtualTrackHeight()});
+                        id: this.element.id + '_popup', className: 'e-virtual-ddl'});
+                    virtualElement.style.cssText = this.GetVirtualTrackHeight();
                     this.list.parentElement.querySelector('.e-dropdownbase').appendChild(virtualElement);
                 }
             }

@@ -28,6 +28,7 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy, getKeyUpObj, getClickObj, getKeyActionObj } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import * as events from '../../../src/grid/base/constant';
+import { NumberFilterUI } from '../../../src/grid/renderer/number-filter-ui';
 
 Grid.Inject(Filter, Page, Selection, Group, Sort, Reorder, ColumnMenu);
 
@@ -845,6 +846,11 @@ describe('filter menu module =>', () => {
             let filter: BooleanFilterUI = new BooleanFilterUI(undefined, undefined, undefined);
             let string: StringFilterUI = new StringFilterUI(undefined, undefined, undefined);
             let menu: FlMenuOptrUI = new FlMenuOptrUI(undefined, undefined, undefined);
+            let number: NumberFilterUI = new NumberFilterUI(undefined, undefined, undefined);
+            (number as any).dialogObj = {zIndex: '1'} as any;
+            (number as any).openPopup(({popup: {element: {style: {zIndex: '1'}}}} as any));
+            let numberActionCompete = (number as any).actionComplete('OrderID');
+            numberActionCompete({result: [{OrderID: 1}]});
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'filterAfterOpen') {
                     let datepicker: DatePicker = document.querySelector('.e-filter-popup').querySelectorAll('.e-datepicker')[0]['ej2_instances'][0];
@@ -1379,6 +1385,134 @@ describe('filter menu module =>', () => {
         afterAll(() => {
             destroy(gridObj);
             gridObj = null;
+        });
+    });
+
+    describe('Filter Menu Code Coverage - 1 => ', () => {
+        let gridObj: Grid;
+        let actionComplete: (args: any) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    allowPaging: true,
+                    filterSettings: { type: 'Menu',
+                        operators: {
+                            stringOperator: [
+                                { value: 'in', text: 'In' },
+                            ],
+                            numberOperator: [
+                                { value: 'in', text: 'In' },
+                            ],
+                            booleanOperator: [
+                                { value: 'in', text: 'In' },
+                            ]
+                        }
+                     },
+                    columns: [
+                        { field: 'OrderID', type: 'number', visible: true},
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 120 },
+                        { field: 'Verified', headerText: 'Verified', width: 150 }
+                    ],
+                    actionComplete: actionComplete,
+                }, done);
+        });
+    
+        it('open filter menu filtering orderID', (done: Function) => {
+            actionComplete = (args: any) => {
+                if(args.requestType == 'filterAfterOpen') {     
+                    (args.filterModel.dlgDiv.querySelector('.e-flmenu-okbtn') as HTMLElement).click();
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.element.querySelectorAll('.e-filtermenudiv')[0] as HTMLElement).click();
+        });
+
+        it('open filter menu filtering ShipCountry', (done: Function) => {
+            actionComplete = (args: any) => {
+                if(args.requestType == 'filterAfterOpen') {     
+                    (args.filterModel.dlgDiv.querySelector('.e-flmenu-okbtn') as HTMLElement).click();
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.element.querySelectorAll('.e-filtermenudiv')[1] as HTMLElement).click();
+        });
+
+        it('open filter menu filtering Verified', (done: Function) => {
+            actionComplete = (args: any) => {
+                if(args.requestType == 'filterAfterOpen') {     
+                    (args.filterModel.dlgDiv.querySelector('.e-flmenu-okbtn') as HTMLElement).click();
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.element.querySelectorAll('.e-filtermenudiv')[2] as HTMLElement).click();
+        });
+    
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    });
+
+    describe('Filter Menu Code Coverage - 2 => ', () => {
+        let gridObj: Grid;
+        let actionComplete: (args: any) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    allowPaging: true,
+                    filterSettings: { type: 'Menu' },
+                    columns: [
+                        { field: 'OrderID', type: 'number', visible: true },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 120 },
+                        { field: 'Verified', headerText: 'Boolean', width: 150 }
+                    ],
+                    actionComplete: actionComplete,
+                }, done);
+        });
+    
+        it('open filter menu filtering orderID and destroy the intances', (done: Function) => {
+            actionComplete = (args: any) => {
+                if(args.requestType == 'filterAfterOpen') {     
+                    (gridObj.filterModule as any).filterModule.closeDialog();
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.element.querySelectorAll('.e-filtermenudiv')[0] as HTMLElement).click();
+        });
+        
+        it('open filter menu filtering ShipCountry and destroy the intances', (done: Function) => {
+            actionComplete = (args: any) => {
+                if(args.requestType == 'filterAfterOpen') {     
+                    (gridObj.filterModule as any).filterModule.closeDialog();
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.element.querySelectorAll('.e-filtermenudiv')[1] as HTMLElement).click();
+        });
+
+        it('open filter menu filtering Verified and destroy the intances', (done: Function) => {
+            actionComplete = (args: any) => {
+                if(args.requestType == 'filterAfterOpen') {     
+                    (gridObj.filterModule as any).filterModule.closeDialog();
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.element.querySelectorAll('.e-filtermenudiv')[2] as HTMLElement).click();
+        });
+    
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
         });
     });
 

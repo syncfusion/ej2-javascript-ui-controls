@@ -731,6 +731,48 @@ describe('ContextMenu', () => {
             contextMenu.hideItems(['Copy']);
             contextMenu.hideItems(['Facebook']);
         });
+        it('Mobile Scroller Checking', () => {
+            Browser.userAgent = androidUserAgent;
+            document.body.appendChild(div);
+            document.body.appendChild(ul);
+            contextMenu = new ContextMenu({
+                target: '#target',
+                items: items,
+                enableScrolling: true,
+                beforeOpen: (args: MenuEventArgs) => {
+                    args.element.parentElement.style.height = '150px';
+                },
+            }, '#contextmenu');
+            contextMenu.open(40, 62);
+            const menuElement: HTMLElement = contextMenu.getWrapper();
+            // Simulate touchstart and touchmove events
+            const createTouchEvent = (type: string, clientY: number) => 
+                new TouchEvent(type, {
+                    touches: [new Touch({
+                        identifier: 0,
+                        target: menuElement,
+                        clientX: 0,
+                        clientY,
+                        screenX: 0,
+                        screenY: clientY,
+                        pageX: 0,
+                        pageY: clientY,
+                        radiusX: 0,
+                        radiusY: 0,
+                        rotationAngle: 0,
+                        force: 0
+                    })]
+                });
+            const touchStartEvent = createTouchEvent('touchstart', 100);
+            const touchMoveEvent = createTouchEvent('touchmove', 50);
+            spyOn(touchMoveEvent, 'preventDefault');
+            menuElement.dispatchEvent(touchStartEvent);
+            menuElement.dispatchEvent(touchMoveEvent);
+            expect(touchMoveEvent.preventDefault).toHaveBeenCalled();
+            document.dispatchEvent(touchStartEvent);
+            document.dispatchEvent(touchMoveEvent);
+            contextMenu.destroy();
+        });
     });
 
     describe('notify property changes of', () => {
@@ -1141,6 +1183,21 @@ describe('ContextMenu', () => {
             document.body.appendChild(ul);
             contextMenu = new ContextMenu({ target: '#target', items: items }, '#contextmenu');
             contextMenu.getPersistData();
+        });
+        it('should handle ESCAPE key correctly', () => {
+            document.body.appendChild(div);
+            document.body.appendChild(ul);
+            contextMenu = new ContextMenu(options, '#contextmenu');
+            let contextmenu: any = getEventObject('MouseEvents', 'contextmenu');
+            contextmenu = setMouseCoordinates(contextmenu, 5, 5, select('#target'));
+            EventHandler.trigger(div, 'contextmenu', contextmenu);
+            const escapeKeyEvent: KeyboardEvent = new KeyboardEvent('keydown', {
+                key: 'Escape',
+                bubbles: true,
+            });
+            document.dispatchEvent(escapeKeyEvent);
+            contextMenu.domKeyHandler(escapeKeyEvent);
+            expect(isVisible(contextMenu.element)).toBeFalsy();
         });
     });
 
@@ -1606,157 +1663,6 @@ describe('ContextMenu', () => {
             expect(contextMenu.enableScrolling).toBeFalsy();
         });
 
-        it('Context Menu With scroll enabled testing', () => {
-            document.body.appendChild(div);
-            document.body.appendChild(ul);
-            let menuItems: MenuItemModel[] = [
-                {
-                  text: 'Cut',
-                  iconCss: 'e-cm-icons e-cut',
-                },
-                {
-                  text: 'Copy',
-                  iconCss: 'e-cm-icons e-copy',
-                },
-                {
-                  text: 'Paste',
-                  iconCss: 'e-cm-icons e-paste',
-                  items: [
-                    {
-                      text: 'Paste Text',
-                      iconCss: 'e-cm-icons e-pastetext',
-                    },
-                    {
-                      text: 'Paste Special',
-                      iconCss: 'e-cm-icons e-pastespecial',
-                    },
-                  ],
-                },
-                {
-                  separator: true,
-                },
-                {
-                  text: 'Link',
-                  iconCss: 'e-cm-icons e-link',
-                },
-                {
-                  text: 'New Comment',
-                  iconCss: 'e-cm-icons e-comment',
-                },
-                {
-                  text: 'Cut',
-                  iconCss: 'e-cm-icons e-cut',
-                },
-                {
-                  text: 'Copy',
-                  iconCss: 'e-cm-icons e-copy',
-                },
-                {
-                  text: 'Paste',
-                  iconCss: 'e-cm-icons e-paste',
-                  items: [
-                    {
-                      text: 'Paste Text',
-                      iconCss: 'e-cm-icons e-pastetext',
-                    },
-                    {
-                      text: 'Paste Special',
-                      iconCss: 'e-cm-icons e-pastespecial',
-                    },
-                  ],
-                },
-                {
-                  separator: true,
-                },
-                {
-                  text: 'Link',
-                  iconCss: 'e-cm-icons e-link',
-                },
-                {
-                  text: 'New Comment',
-                  iconCss: 'e-cm-icons e-comment',
-                },
-                {
-                  text: 'Cut',
-                  iconCss: 'e-cm-icons e-cut',
-                },
-                {
-                  text: 'Copy',
-                  iconCss: 'e-cm-icons e-copy',
-                },
-                {
-                  text: 'Paste',
-                  iconCss: 'e-cm-icons e-paste',
-                  items: [
-                    {
-                      text: 'Paste Text',
-                      iconCss: 'e-cm-icons e-pastetext',
-                    },
-                    {
-                      text: 'Paste Special',
-                      iconCss: 'e-cm-icons e-pastespecial',
-                    },
-                  ],
-                },
-                {
-                  separator: true,
-                },
-                {
-                  text: 'Link',
-                  iconCss: 'e-cm-icons e-link',
-                },
-                {
-                  text: 'New Comment',
-                  iconCss: 'e-cm-icons e-comment',
-                },
-                {
-                  text: 'Cut',
-                  iconCss: 'e-cm-icons e-cut',
-                },
-                {
-                  text: 'Copy',
-                  iconCss: 'e-cm-icons e-copy',
-                },
-                {
-                  text: 'Paste',
-                  iconCss: 'e-cm-icons e-paste',
-                  items: [
-                    {
-                      text: 'Paste Text',
-                      iconCss: 'e-cm-icons e-pastetext',
-                    },
-                    {
-                      text: 'Paste Special',
-                      iconCss: 'e-cm-icons e-pastespecial',
-                    },
-                  ],
-                },
-                {
-                  separator: true,
-                },
-                {
-                  text: 'Link',
-                  iconCss: 'e-cm-icons e-link',
-                },
-                {
-                  text: 'New Comment',
-                  iconCss: 'e-cm-icons e-comment',
-                },
-            ];
-            contextMenu = new ContextMenu(
-                {
-                    target: '#target',
-                    items: menuItems,
-                    enableScrolling: true,
-                    beforeOpen: (args: MenuEventArgs) => {
-                        args.element.parentElement.style.height = '150px';
-                    }
-                },
-            '#contextmenu');
-            contextMenu.open(40, 62);
-            const menuElement = document.querySelectorAll('.e-menu-vscroll')[0];
-        });
-
         it('Context Menu With scroll enabled and hide items', () => {
             document.body.appendChild(div);
             document.body.appendChild(ul);
@@ -1791,6 +1697,8 @@ describe('ContextMenu', () => {
             contextMenu.open(40, 62);
             contextMenu.enableItems(['Cut'], false);
             expect(contextMenu.element.querySelectorAll('li.e-disabled').length).toBe(1);
+            contextMenu.enableItems(['Cut'], true);
+            expect(contextMenu.element.querySelectorAll('li.e-disabled').length).toBe(0);
         });
 
         it('Context Menu With scroll enabled and insert items', () => {
@@ -1812,11 +1720,163 @@ describe('ContextMenu', () => {
         });
     });
 
+    it('Context Menu With scroll enabled testing', () => {
+        document.body.appendChild(div);
+        document.body.appendChild(ul);
+        let menuItems: MenuItemModel[] = [
+            {
+              text: 'Cut',
+              iconCss: 'e-cm-icons e-cut',
+            },
+            {
+              text: 'Copy',
+              iconCss: 'e-cm-icons e-copy',
+            },
+            {
+              text: 'Paste',
+              iconCss: 'e-cm-icons e-paste',
+              items: [
+                {
+                  text: 'Paste Text',
+                  iconCss: 'e-cm-icons e-pastetext',
+                },
+                {
+                  text: 'Paste Special',
+                  iconCss: 'e-cm-icons e-pastespecial',
+                },
+              ],
+            },
+            {
+              separator: true,
+            },
+            {
+              text: 'Link',
+              iconCss: 'e-cm-icons e-link',
+            },
+            {
+              text: 'New Comment',
+              iconCss: 'e-cm-icons e-comment',
+            },
+            {
+              text: 'Cut',
+              iconCss: 'e-cm-icons e-cut',
+            },
+            {
+              text: 'Copy',
+              iconCss: 'e-cm-icons e-copy',
+            },
+            {
+              text: 'Paste',
+              iconCss: 'e-cm-icons e-paste',
+              items: [
+                {
+                  text: 'Paste Text',
+                  iconCss: 'e-cm-icons e-pastetext',
+                },
+                {
+                  text: 'Paste Special',
+                  iconCss: 'e-cm-icons e-pastespecial',
+                },
+              ],
+            },
+            {
+              separator: true,
+            },
+            {
+              text: 'Link',
+              iconCss: 'e-cm-icons e-link',
+            },
+            {
+              text: 'New Comment',
+              iconCss: 'e-cm-icons e-comment',
+            },
+            {
+              text: 'Cut',
+              iconCss: 'e-cm-icons e-cut',
+            },
+            {
+              text: 'Copy',
+              iconCss: 'e-cm-icons e-copy',
+            },
+            {
+              text: 'Paste',
+              iconCss: 'e-cm-icons e-paste',
+              items: [
+                {
+                  text: 'Paste Text',
+                  iconCss: 'e-cm-icons e-pastetext',
+                },
+                {
+                  text: 'Paste Special',
+                  iconCss: 'e-cm-icons e-pastespecial',
+                },
+              ],
+            },
+            {
+              separator: true,
+            },
+            {
+              text: 'Link',
+              iconCss: 'e-cm-icons e-link',
+            },
+            {
+              text: 'New Comment',
+              iconCss: 'e-cm-icons e-comment',
+            },
+            {
+              text: 'Cut',
+              iconCss: 'e-cm-icons e-cut',
+            },
+            {
+              text: 'Copy',
+              iconCss: 'e-cm-icons e-copy',
+            },
+            {
+              text: 'Paste',
+              iconCss: 'e-cm-icons e-paste',
+              items: [
+                {
+                  text: 'Paste Text',
+                  iconCss: 'e-cm-icons e-pastetext',
+                },
+                {
+                  text: 'Paste Special',
+                  iconCss: 'e-cm-icons e-pastespecial',
+                },
+              ],
+            },
+            {
+              separator: true,
+            },
+            {
+              text: 'Link',
+              iconCss: 'e-cm-icons e-link',
+            },
+            {
+              text: 'New Comment',
+              iconCss: 'e-cm-icons e-comment',
+            },
+        ];
+        contextMenu = new ContextMenu(
+            {
+                target: '#target',
+                items: menuItems,
+                enableScrolling: true,
+                beforeOpen: (args: MenuEventArgs) => {
+                    args.element.parentElement.style.height = '150px';
+                }
+            },
+        '#contextmenu');
+        contextMenu.open(40, 62);
+        const menuElement = document.querySelectorAll('.e-menu-vscroll')[0];
+        // expect((menuElement as any).style.top).toBe('40px');
+    });
+
     describe('Context Menu With Animation - Popup close', () => {
         let contextMenu: ContextMenu;
         let div: HTMLElement;
         let ul: HTMLElement;
-    
+
         beforeEach(() => {
             div = document.createElement('div');
             div.id = 'target';
@@ -1825,7 +1885,7 @@ describe('ContextMenu', () => {
             ul.id = 'contextmenu';
             document.body.appendChild(ul);
         });
-    
+
         afterEach(() => {
             // Destroy the context menu instance and clean up elements
             if (contextMenu) {
@@ -1840,7 +1900,7 @@ describe('ContextMenu', () => {
             action: 'escape',
             type: 'keyup'
         };
-    
+
         it('Context Menu With Animation - Popup close using Esc key', () => {
             const items = [
                 { text: 'JavaScript' },
@@ -1860,4 +1920,65 @@ describe('ContextMenu', () => {
         });
     });
 
+    describe('ContextMenu Hover Focus Issue', () => {
+        let contextMenu: any;
+        let div: HTMLElement;
+        let ul: HTMLElement;
+        let mouseEventArgs: any;
+        let keyEventArgs: any;
+
+        beforeEach(() => {
+            div = document.createElement('div');
+            div.id = 'target';
+            document.body.appendChild(div);
+            ul = document.createElement('ul');
+            ul.id = 'contextmenu';
+            document.body.appendChild(ul);
+            mouseEventArgs = {
+                preventDefault: (): void => { /** NO Code */ },
+                target: null,
+                type: 'mouseover'
+            };
+            keyEventArgs = {
+                preventDefault: (): void => { /** NO Code */ },
+                action: 'downarrow',
+                type: 'keyup',
+                target: null
+            };
+            contextMenu = new ContextMenu({
+                items: [
+                    { text: 'Item 1' },
+                    { text: 'Item 2', items: [{ text: 'Sub Item 1' }, { text: 'Sub Item 2' }] },
+                    { text: 'Item 3' }
+                ],
+                target: '#target',
+                animationSettings: { effect: 'None' }
+            }, '#contextmenu');
+        });
+
+        afterEach(() => {
+            if (contextMenu) {
+                contextMenu.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+
+        it('should not focus menu items on hover', () => {
+            contextMenu.open(30, 30);
+            const firstItem = contextMenu.element.querySelectorAll('li')[0];
+            mouseEventArgs.target = firstItem;
+            contextMenu['isKBDAction'] = false; // Simulate mouse interaction
+            contextMenu.clickHandler(mouseEventArgs);
+            expect(contextMenu.element.querySelector('.e-focused')).toBeNull();
+        });
+
+        it('should focus menu item on arrow key navigation', () => {
+            contextMenu.open(30, 30);
+            const firstItem = contextMenu.element.querySelectorAll('li')[0];
+            keyEventArgs.target = firstItem;
+            contextMenu['isKBDAction'] = true; // Simulate keyboard interaction
+            contextMenu.keyBoardHandler(keyEventArgs);
+            expect(contextMenu.element.querySelector('.e-focused')).not.toBeNull();
+        });
+    });
 });

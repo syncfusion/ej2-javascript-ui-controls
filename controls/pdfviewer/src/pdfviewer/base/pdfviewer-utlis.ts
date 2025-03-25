@@ -248,6 +248,22 @@ export class PdfViewerUtils {
     public static isProxy(value: any): boolean {
         return Object.prototype.toString.call(value) === '[object Object]';
     }
+
+    /**
+     * @private
+     * @returns {string} - string
+     */
+    public static createGUID(): string {
+        return this.getRandomNumber();
+    }
+
+    private static getRandomNumber(): string {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c: any): string {
+            const random: number = Math.random() * 16 | 0;
+            const v: number = c === 'x' ? random : (random & 0x3 | 0x8);
+            return random.toString(16);
+        });
+    }
 }
 
 /**
@@ -295,9 +311,9 @@ export class PdfViewerSessionStorage {
      * @private
      * @returns {any} - It's return the value.
      */
-    public  getItem(key: string): string | null {
+    public getItem(key: string): string | null {
         if (this.enableLocalStorage) {
-            return (key in this.localStorage) ? this.localStorage[`${key}`] :  null;
+            return (key in this.localStorage) ? this.localStorage[`${key}`] : null;
         } else {
             return window.sessionStorage.getItem(key);
         }
@@ -440,6 +456,7 @@ export class PdfiumTaskScheduler {
     private taskQueue: any[] = [];
     private isProcessing: boolean = false;
     private pdfViewer: PdfViewer;
+    private functionManager: { [key: string]: any } = {};
 
     // Constructor
     constructor(workerScript: any, pdfViewer: PdfViewer) {
@@ -447,6 +464,7 @@ export class PdfiumTaskScheduler {
         this.taskQueue = [];
         this.isProcessing = false;
         this.pdfViewer = pdfViewer;
+        this.functionManager = {};
     }
 
     /**
@@ -458,6 +476,10 @@ export class PdfiumTaskScheduler {
      * @returns {void}
      */
     public addTask(taskData: any, priority: TaskPriorityLevel): void {
+        if (taskData.message === 'unloadFPDF') {
+            this.taskQueue = [];
+            this.functionManager = {};
+        }
         this.taskQueue.push({ taskData, priority });
         this.taskQueue.sort((a: any, b: any) => a.priority - b.priority); // Sort by priority
         this.processQueue(); // Start processing if idle
@@ -480,14 +502,24 @@ export class PdfiumTaskScheduler {
     /**
      * Method to call on message for the worker
      *
+     * @param {string} key - Get the key value for the method function.
      * @param {any} method - Get the method for the onmessage.
      * @private
      * @returns {void}
      */
-    public onMessage(method: (event: any) => void): void {
+    public onMessage(key: string, method: (event: any) => void): void {
+        if (!Object.prototype.hasOwnProperty.call(this.functionManager, key)) {
+            this.functionManager[`${key}`] = method;
+        }
         this.worker.onmessage = (event: MessageEvent) => {
             if (event.data.message !== '') {
-                method(event); // Call the provided method with the event
+                for (const handlerKey in this.functionManager) {
+                    if (Object.prototype.hasOwnProperty.call(this.functionManager, handlerKey) &&
+                    handlerKey.includes(event.data.message)) {
+                        this.functionManager[`${handlerKey}`](event);
+                        break;
+                    }
+                }
             }
             this.isProcessing = false;
             this.processQueue();
@@ -502,5 +534,6 @@ export class PdfiumTaskScheduler {
      */
     public terminate(): void {
         this.worker.terminate();
+        this.functionManager = {};
     }
 }

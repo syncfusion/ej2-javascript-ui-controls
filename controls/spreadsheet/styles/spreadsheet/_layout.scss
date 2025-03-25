@@ -1,3 +1,5 @@
+@use 'sass:list';
+
 @mixin cf-menu-iconsets($float, $height, $width) {
   float: $float;
   height: $height;
@@ -297,9 +299,11 @@
     }
 
     & .e-dlg-content .e-custom-dialog {
+      & .e-input-button {
+        display: flex;
+      }
       & .e-input.e-dialog-input {
         float: left;
-        width: $custom-format-dlg-input-width;
         margin-right: $custom-format-dlg-input-margin-right;
       }
     }
@@ -746,7 +750,7 @@
         }
       }
     }
-
+    
     & .e-select-all-cell {
       border-style: solid;
       border-width: 0 1px 1px 0;
@@ -765,7 +769,7 @@
         width: $select-all-size;
       }
     }
-
+    
     & .e-row-header .e-table .e-header-cell {
       padding-bottom: 2px;
       vertical-align: bottom;
@@ -1834,6 +1838,7 @@
 
     & .e-validation-list {
       float: right;
+      font-size: 11pt;
       height: inherit;
       max-height: 18px;
       overflow: hidden;
@@ -1917,6 +1922,7 @@
 
           & .e-input-group {
             min-width: 220px;
+            max-width: 220px;
           }
         }
       }
@@ -2203,6 +2209,7 @@
     & .e-validation-error-dlg .e-dlg-content {
       font-size: $validationerror-dlg-content-font-size;
       line-height: 28px;
+      overflow: hidden;
     }
 
     & .e-hyperlink-dlg.e-dialog,
@@ -2347,6 +2354,11 @@
         & .e-findCheck {
           @if $skin-name == 'fluent2' {
             padding: $find-dlg-exactmatchcheckbox-padding;
+            & .e-checkbox-wrapper {
+              & .e-frame {
+                margin-left: 0;
+              }
+            }
           }
         }
 
@@ -2685,9 +2697,9 @@
     }
 
     &.e-font-family ul .e-item {
-      @for $i from 0 to length($font-family-collection) {
+      @for $i from 0 to list.length($font-family-collection) {
         &:nth-child(#{$i+1}) {
-          font-family: nth($font-family-collection, $i+1);
+          font-family: list.nth($font-family-collection, $i+1);
         }
       }
     }
@@ -2742,10 +2754,10 @@
 
         $border-style-collection: solid solid solid dashed dotted double;
         $border-width-collection: thin medium thick thin thin medium;
-        @for $i from 0 to length($border-style-collection) {
+        @for $i from 0 to list.length($border-style-collection) {
           &:nth-child(#{$i+1})::after {
-            border-bottom-style: nth($border-style-collection, $i+1);
-            border-bottom-width: nth($border-width-collection, $i+1);
+            border-bottom-style: list.nth($border-style-collection, $i+1);
+            border-bottom-width: list.nth($border-width-collection, $i+1);
           }
         }
       }
@@ -3311,6 +3323,7 @@
     height: 100%;
     position: relative;
     @if $skin-name == 'Material3' {
+      overflow: hidden;
       & .e-sort-header {
         border-bottom: 1px solid $spreadsheet-customsrt-line-color;
       }

@@ -510,7 +510,7 @@ describe('LazyLoadGroup module', () => {
         });
         it('edit first row of first caption', () => {
             const dataRow: HTMLElement = gridObj.getContentTable().querySelector('.e-row');
-            gridObj.selectRow(parseInt(dataRow.getAttribute('data-rowindex'), 10));
+            gridObj.selectRow(parseInt(dataRow.getAttribute('aria-rowindex'), 10) - 1);
             gridObj.startEdit();
         });
         it('edit group caption aggregate', (done: Function) => {
@@ -660,7 +660,7 @@ describe('LazyLoadGroup module', () => {
         
         it('check data row, select and start edit', function () {
             let dataRows: NodeListOf<HTMLTableRowElement> = gridObj.getContentTable().querySelectorAll('.e-row');
-            rowindex = parseInt(dataRows[0].getAttribute("data-rowindex"), 10);
+            rowindex = parseInt(dataRows[0].getAttribute("aria-rowindex"), 10) - 1;
             expect(dataRows.length).toBeGreaterThan(0);
             gridObj.selectRow(rowindex);
             gridObj.startEdit();
@@ -832,7 +832,7 @@ describe('LazyLoadGroup module', () => {
 
         it('check data row, select and delete', function (done: Function) {
             let dataRows: NodeListOf<HTMLTableRowElement> = gridObj.getContentTable().querySelectorAll('.e-row');
-            rowindex = parseInt(dataRows[0].getAttribute("data-rowindex"), 10);
+            rowindex = parseInt(dataRows[0].getAttribute("aria-rowindex"), 10) - 1;
             expect(dataRows.length).toBeGreaterThan(0);
             gridObj.selectRow(rowindex);
             rowindex = gridObj.selectionModule['data'][(gridObj.columns[2] as Column).field];
@@ -906,7 +906,7 @@ describe('LazyLoadGroup module', () => {
 
         it('check data row, select and start edit', function () {
             let dataRows: NodeListOf<HTMLTableRowElement> = gridObj.getContentTable().querySelectorAll('.e-row');
-            rowindex = parseInt(dataRows[0].getAttribute("data-rowindex"), 10);
+            rowindex = parseInt(dataRows[0].getAttribute("aria-rowindex"), 10) - 1;
             expect(dataRows.length).toBeGreaterThan(0);
             gridObj.selectRow(rowindex);
         });

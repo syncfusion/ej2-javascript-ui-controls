@@ -80,7 +80,7 @@ export class BoxAndWhiskerSeries extends ColumnBase {
         point.symbolLocations = []; point.regions = [];
         let centerRegion: Rect;
         if (point.visible && withInRange(series.points[point.index - 1], point, series.points[point.index + 1], series)) {
-            this.findBoxPlotValues(point.y as number[], point, series.boxPlotMode);
+            this.findBoxPlotValues(point.y as number[], point, series.boxPlotMode, series.showOutliers);
             //region to cover the top and bottom ticks
             this.updateTipRegion(series, point, sideBySideInfo);
             //get middle rect
@@ -261,10 +261,11 @@ export class BoxAndWhiskerSeries extends ColumnBase {
      * @param {number[]} yValues yValues
      * @param {Points} point point
      * @param {BoxPlotMode} mode mode
+     * @param {boolean} showOutliers - Specifies to show or hide the outliers in a box-and-whisker series type.
      * @returns {void}
      * @private
      */
-    public findBoxPlotValues(yValues: number[], point: Points, mode: BoxPlotMode): void {
+    public findBoxPlotValues(yValues: number[], point: Points, mode: BoxPlotMode, showOutliers: boolean): void {
         const yCount: number = yValues.length;
         const quartile: IBoxPlotQuartile = {
             average: sum(yValues) / yCount,
@@ -284,7 +285,7 @@ export class BoxAndWhiskerSeries extends ColumnBase {
             quartile.median = getMedian(yValues);
             this.getQuartileValues(yValues, yCount, quartile);
         }
-        this.getMinMaxOutlier(yValues, yCount, quartile);
+        this.getMinMaxOutlier(yValues, yCount, quartile, showOutliers);
         point.minimum = quartile.minimum;
         point.maximum = quartile.maximum;
         point.lowerQuartile = quartile.lowerQuartile;
@@ -368,15 +369,16 @@ export class BoxAndWhiskerSeries extends ColumnBase {
      * @param {number[]} yValues yValues
      * @param {number} count count
      * @param {IBoxPlotQuartile} quartile quartile
+     * @param {boolean} showOutliers - Specifies to show or hide the outliers in a box-and-whisker series type.
      * @returns {void}
      */
     private getMinMaxOutlier(
-        yValues: number[], count: number, quartile: IBoxPlotQuartile
+        yValues: number[], count: number, quartile: IBoxPlotQuartile, showOutliers: boolean
     ): void {
         const interquartile: number = quartile.upperQuartile - quartile.lowerQuartile;
         const rangeIQR: number = 1.5 * interquartile;
         for (let i: number = 0; i < count; i++) {
-            if (yValues[i as number] < quartile.lowerQuartile - rangeIQR) {
+            if ((yValues[i as number] < quartile.lowerQuartile - rangeIQR) && showOutliers) {
                 quartile.outliers.push(yValues[i as number]);
             } else {
                 quartile.minimum = yValues[i as number];
@@ -384,7 +386,7 @@ export class BoxAndWhiskerSeries extends ColumnBase {
             }
         }
         for (let i: number = count - 1; i >= 0; i--) {
-            if (yValues[i as number] > quartile.upperQuartile + rangeIQR) {
+            if ((yValues[i as number] > quartile.upperQuartile + rangeIQR) && showOutliers) {
                 quartile.outliers.push(yValues[i as number]);
             } else {
                 quartile.maximum = yValues[i as number];

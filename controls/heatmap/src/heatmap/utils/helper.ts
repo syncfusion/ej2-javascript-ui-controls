@@ -701,6 +701,10 @@ export class DrawSvgCanvas {
                 rectElement.setAttribute('title', 'Rect Element');
                 rectElement.setAttribute('role', 'img');
                 rectElement.setAttribute('aria-hidden', 'false');
+            } else {
+                const tabindex: number = (this.heatMap.cellSettings.enableCellHighlighting || this.heatMap.allowSelection) ? 0 : -1;
+                rectElement.setAttribute('tabindex', tabindex.toString());
+                (rectElement as HTMLElement).style.outline = 'none';
             }
         } else {
             this.drawCanvasRectangle(this.heatMap.canvasRenderer, properties, isFromSeries);
@@ -711,7 +715,10 @@ export class DrawSvgCanvas {
     public drawCircle(properties: CircleOption, parentElement: Element): void {
         if (!this.heatMap.enableCanvasRendering) {
             delete properties.d;
-            parentElement.appendChild(this.heatMap.renderer.drawCircle(properties));
+            const circleElement: Element = parentElement.appendChild(this.heatMap.renderer.drawCircle(properties));
+            const tabindex: number = this.heatMap.cellSettings.enableCellHighlighting ? 0 : -1;
+            circleElement.setAttribute('tabindex', tabindex.toString());
+            (circleElement as HTMLElement).style.outline = 'none';
         } else {
             this.drawCanvasCircle(this.heatMap.canvasRenderer, properties);
         }

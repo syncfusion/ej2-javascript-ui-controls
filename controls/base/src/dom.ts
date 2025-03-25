@@ -41,14 +41,44 @@ export function createElement(tagName: string, properties?: ElementProperties): 
         element.id = properties.id;
     }
     if (properties.styles !== undefined) {
-        element.setAttribute('style', properties.styles);
+        (element as HTMLElement).style.cssText = properties.styles;
     }
     if (properties.attrs !== undefined) {
         attributes(element, properties.attrs);
     }
     return <HTMLElement>element;
 }
+/**
+ * Updates the CSS text of an element by merging new styles with existing styles.
+ *
+ * @param {HTMLElement} element - The element whose styles need to be updated.
+ * @param {string} cssText - The new CSS styles to be added or updated.
+ * @returns {void}
+ */
+export function updateCSSText(element: HTMLElement, cssText: string): void {
+    const existingStyles: { [key: string]: string } = element.style.cssText.split(';').reduce((styles: { [key: string]: string }, style: string) => {
+        const [key, value] = style.split(':');
+        if (key && value) {
+            styles[key.trim()] = value.trim();
+        }
+        return styles;
+    }, {} as { [key: string]: string });
+    const newStyles: { [key: string]: string } = cssText.split(';').reduce((styles: { [key: string]: string }, style: string) => {
+        const [key, value] = style.split(':');
+        if (key && value) {
+            styles[key.trim()] = value.trim();
+        }
+        return styles;
+    }, {} as { [key: string]: string });
 
+    const styleElement: HTMLDivElement = document.createElement('div');
+    // Use safe iteration over keys using Object.keys
+    Object.keys({ ...existingStyles, ...newStyles }).forEach((key: string) => {
+        styleElement.style.setProperty(key, newStyles[key as string] || existingStyles[key as string]);
+    });
+
+    element.style.cssText = styleElement.style.cssText;
+}
 /**
  * The function used to add the classes to array of elements
  *

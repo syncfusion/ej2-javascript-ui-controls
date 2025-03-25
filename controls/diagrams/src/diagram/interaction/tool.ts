@@ -19,7 +19,7 @@ import { IBlazorDropEventArgs } from '../objects/interface/IElement';
 import { IRotationEventArgs, IDoubleClickEventArgs, IClickEventArgs, IDropEventArgs } from '../objects/interface/IElement';
 import { CommandHandler } from './command-manager';
 import { IBlazorDraggingEventArgs } from '../objects/interface/IElement';
-import { rotatePoint, cloneObject, randomId } from '../utility/base-util';
+import { rotatePoint, cloneObject, randomId, getBounds } from '../utility/base-util';
 import { Rect } from '../primitives/rect';
 import { getFreeHandPath, getPolygonPath } from '../utility/path-util';
 import { canOutConnect, canInConnect, canAllowDrop, canPortInConnect, canPortOutConnect, canMove } from '../utility/constraints-util';
@@ -44,6 +44,8 @@ import { NodeFixedUserHandleModel, ConnectorFixedUserHandleModel } from '../obje
 import { findAngle } from '../utility/connector';
 import { updateLaneBoundsWithSelector } from './container-interaction';
 import { Diagram } from '../diagram';
+import { AnnotationModel } from '../objects/annotation-model';
+
 
 /**
  * Defines the interactive tools
@@ -402,11 +404,11 @@ export class SelectTool extends ToolBase {
                 this.commandHandler.doRubberBandSelection(region);
             } else {
                 //single selection
-                const arrayNodes: (NodeModel | ConnectorModel)[] = this.commandHandler.getSelectedObject();
+                const arrayNodes: (NodeModel | ConnectorModel | AnnotationModel)[] = this.commandHandler.getSelectedObject();
                 if (!this.commandHandler.hasSelection() || !args.info || !args.info.ctrlKey) {
                     this.commandHandler.clearSelection(args.source === null ? true : false);
                     if (this.action === 'LabelSelect') {
-                        this.commandHandler.labelSelect(args.source, args.sourceWrapper);
+                        this.commandHandler.labelSelect(args.source, args.sourceWrapper, arrayNodes);
                     }
                     else if (args.source) {
                         this.commandHandler.selectObjects([args.source], false, arrayNodes);
@@ -562,6 +564,7 @@ export class ConnectTool extends ToolBase {
             (this.endPoint === 'ConnectorTargetEnd' &&
                 ((!Point.equals((args.source as SelectorModel).connectors[0].targetPoint, this.undoElement.connectors[0].targetPoint))
                     || ((args.source as SelectorModel).connectors[0].targetID !== this.undoElement.connectors[0].targetID))))) {
+
             let oldValues: PointModel; let newValues: PointModel; let connector: ConnectorModel;
             if (args.source && (args.source as SelectorModel).connectors && this.endPoint === 'ConnectorSourceEnd') {
                 //941055: The sourcePointChange event's old and new values are the same
@@ -810,7 +813,7 @@ export class MoveTool extends ToolBase {
      */
     public mouseDown(args: MouseEventArgs): void {
         if (args.source instanceof Node || args.source instanceof Connector) {
-            const arrayNodes: (NodeModel | ConnectorModel)[] = this.commandHandler.getSelectedObject();
+            const arrayNodes: (NodeModel | ConnectorModel | AnnotationModel)[] = this.commandHandler.getSelectedObject();
             this.commandHandler.selectObjects([args.source], args.info && args.info.ctrlKey, arrayNodes);
             const selectedObject: SelectorModel = { nodes: [], connectors: [] };
             if (args.source instanceof Node) {
@@ -874,12 +877,32 @@ export class MoveTool extends ToolBase {
             }
             object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Selector || (this.commandHandler.renderContainerHelper(args.source as ConnectorModel) as Connector);
             if (((object as Node).id === 'helper')|| ((object as Node).id !== 'helper')) {
+                let isSubGroupSelection: boolean = false;
+                if (object instanceof Selector) {
+                    let currentSelection: SelectorModel = cloneObject(object);
+                    // check currentSelection.selectedObjects array contains same object of this.undoElement.selectedObjects array
+                    if (currentSelection.selectedObjects.length === this.undoElement.selectedObjects.length) {
+                        for (let i: number = 0; i < currentSelection.selectedObjects.length; i++) {
+                            if (currentSelection.selectedObjects[parseInt(i.toString(), 10)].id !==
+                                this.undoElement.selectedObjects[parseInt(i.toString(), 10)].id) {
+                                isSubGroupSelection = true;
+                                break;
+                            }
+                        }
+                    }
+                }
                 //EJ2-71257 - Position change event completed state is not fired on selecting the node first and then dragging the node while changing node width at progress state.
                 // If object is instanceof selector then checked the length of selected objects is 1 or not.
-                if ((((object instanceof Selector && ((Math.round(object.width) === Math.round(this.undoElement.width) && Math.round(object.height) === Math.round(this.undoElement.height)) || (object.selectedObjects && object.selectedObjects.length === 1))) || !(object instanceof Selector)) && ((object as NodeModel).offsetX !== this.undoElement.offsetX || (object as NodeModel).offsetY !== this.undoElement.offsetY ||
-                    (object as ConnectorModel).sourcePoint !== (this.undoElement as any).sourcePoint
-                    // eslint-disable-next-line max-len
-                    || (object as ConnectorModel).targetPoint !== (this.undoElement as any).targetPoint)) || this.isSelectionHasConnector(object)) {
+                const isSelector: boolean = object instanceof Selector;
+                const isSingleSelectedObject: boolean = object instanceof Selector && object.selectedObjects && object.selectedObjects.length === 1;
+                const isSameSize: boolean = object instanceof Selector && Math.round(object.width) === Math.round(this.undoElement.width) && Math.round(object.height) === Math.round(this.undoElement.height);
+                const isDifferentPosition: boolean = (object as NodeModel).offsetX !== this.undoElement.offsetX || (object as NodeModel).offsetY !== this.undoElement.offsetY;
+                const isDifferentSourcePoint: boolean = (object as ConnectorModel).sourcePoint !== (this.undoElement as any).sourcePoint;
+                const isDifferentTargetPoint: boolean = (object as ConnectorModel).targetPoint !== (this.undoElement as any).targetPoint;
+
+                if (!isSubGroupSelection &&
+                    (((isSelector && (isSameSize || isSingleSelectedObject)) || !isSelector) && (isDifferentPosition || isDifferentSourcePoint || isDifferentTargetPoint))
+                    || this.isSelectionHasConnector(object)) {
                     if (args.source) {
                         newValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
                         oldValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
@@ -1133,6 +1156,7 @@ export class MoveTool extends ToolBase {
         return nodes;
     }
 
+
     //EJ2-59309-While drag the connected node the connector endPointChange event does not get trigger
     private connectorEndPointChangeEvent(arg: any, snappedPoint?: PointModel): void {
         let selectedElement: any = arg.source;
@@ -1245,6 +1269,19 @@ export class MoveTool extends ToolBase {
         //(EJ2-277624)-In the positionChange event, during the completed state, old and new values remain identical.
         if (!this.isStartAction) {
             this.intialValue = { offsetX: object.wrapper.offsetX, offsetY: object.wrapper.offsetY };
+            if ((this.commandHandler.diagram.lineRoutingModule &&
+                (this.commandHandler.diagram.constraints & DiagramConstraints.LineRouting)
+                && (this.commandHandler.diagram.layout.type !== 'ComplexHierarchicalTree'))) {
+                const INFLATE_MARGIN: number = 40;
+                const nodeBounds: Rect = getBounds(object.wrapper);
+                nodeBounds.Inflate(INFLATE_MARGIN);
+                const nearbyObjects: Array<NodeModel | ConnectorModel>= this.commandHandler.diagram.spatialSearch.findObjects(nodeBounds);
+                for (const item of nearbyObjects) {
+                    if (item instanceof Connector && this.commandHandler.diagram.routedConnectors.indexOf(item.id) === -1) {
+                        // this.commandHandler.diagram.lineConnector.push(item.id);
+                    }
+                }
+            }
         }
         if (isSame && !isBlazor()) {
             this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg);

@@ -8,7 +8,6 @@ import { ClickEventArgs, Toolbar } from '@syncfusion/ej2-navigations';
 import { ItemModel } from '@syncfusion/ej2-navigations/src/toolbar/toolbar-model';
 import { TextBox } from '@syncfusion/ej2-inputs';
 import { NodeSelection } from '../../selection';
-import { isSafari } from '../../common/util';
 
 export class EmojiPicker {
     protected parent: IRichTextEditor;
@@ -178,8 +177,8 @@ export class EmojiPicker {
             actionOnScroll: 'hide',
             close: () => {
                 this.parent.isBlur = false;
-                this.popupObj.element.parentElement.style.zIndex = '';
                 this.childDestroy();
+                this.popupObj.element.parentElement.style.zIndex = '';
                 detach(this.popupObj.element);
                 this.popupObj = null;
                 const activeElement: HTMLElement = this.divElement.firstChild as HTMLElement;
@@ -200,6 +199,9 @@ export class EmojiPicker {
                 showClearButton: true
             });
             inputobj.appendTo(inputEle);
+            if (this.parent.userAgentData.isSafari() && this.parent.inputElement.contains(this.parent.getRange().startContainer)) {
+                this.parent.notify(events.selectionSave, {});
+            }
             inputEle.focus();
         }
         const closeIcon: HTMLElement = this.popupObj.element.querySelector('.e-clear-icon');
@@ -566,7 +568,7 @@ export class EmojiPicker {
             if (isNOU(firstFocusEle)) {
                 const focusEle: HTMLElement = emojiButtons[0] as HTMLElement | null;
                 addClass([focusEle], 'e-focus');
-                if (isSafari()) {
+                if (this.parent.userAgentData.isSafari() && this.parent.inputElement.contains(this.parent.getRange().startContainer)) {
                     this.parent.notify(events.selectionSave, {});
                 }
                 emojiButtons[0].focus();
@@ -580,7 +582,7 @@ export class EmojiPicker {
         if (isNOU(firstFocusEle) && e.keyCode === 40) {
             const focusEle: HTMLElement = emojiButtons[0] as HTMLElement | null;
             addClass([focusEle], 'e-focus');
-            if (isSafari()) {
+            if (this.parent.userAgentData.isSafari()) {
                 this.parent.notify(events.selectionSave, {});
             }
             emojiButtons[0].focus();
@@ -769,7 +771,7 @@ export class EmojiPicker {
             removeClass([this.divElement], 'e-active');
             this.popupObj.hide();
         }
-        if (isSafari() && e.type === 'keydown') {
+        if (this.parent.userAgentData.isSafari() && e.type === 'keydown') {
             this.parent.notify(events.selectionRestore, {});
         }
         const originalEvent: MouseEvent | KeyboardEvent | PointerEvent = e as MouseEvent | KeyboardEvent | PointerEvent;

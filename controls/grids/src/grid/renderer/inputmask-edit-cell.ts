@@ -2,7 +2,7 @@ import { extend } from '@syncfusion/ej2-base';
 import { IEditCell } from '../base/interface';
 import { Column } from '../models/column';
 import { MaskedTextBox  } from '@syncfusion/ej2-inputs';
-import { isEditable, getObject, isCellHaveWidth, parentsUntil } from '../base/util';
+import { isEditable, getObject, parentsUntil, isCellHaveWidth } from '../base/util';
 import { EditCellBase } from './edit-cell-base';
 
 /**

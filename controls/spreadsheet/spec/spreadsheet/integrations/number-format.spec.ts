@@ -273,7 +273,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(cellEle.textContent).toBe(' Test ');
             helper.invoke('updateCell', [{ value: '0' }, 'A2']);
             expect(cell.value).toBe(0);
-            expect(cellEle.innerHTML).toBe('<span id="spreadsheet_currency" style="float: left"> $</span>  - ');
+            expect(cellEle.innerHTML).toBe('<span id="spreadsheet_currency" style="float: left;"> $</span>  - ');
             helper.invoke('updateCell', [{ value: '4234.567' }, 'A2']);
             expect(cell.value).toBe(4234.567);
             expect(cellEle.textContent).toBe(' $4,235 ');
@@ -748,7 +748,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
     describe('Culture based number format ->', (): void => {
         let spreadsheet: Spreadsheet; let cell: any; let sheet: any; let cellEle: HTMLElement;
         let formatBtn: HTMLElement; let customFormats: string[]; let localizedFormats: string[];
-        let listObj: { dataSource: string[], selectItem: (text: string) => void, getSelectedItems: () => { text: string, item: Element } };
+        let listObj: { dataSource: string[], element: HTMLElement, selectItem: (text: string) => void, getSelectedItems: () => { text: string, item: Element } };
         beforeAll((done: Function) => {
             helper.loadCultureFiles(['de']);
             // Added below lines to clear the external bounded events which causing delay on setCulture & setCurrencyCode method execution.
@@ -788,6 +788,8 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 expect(customFormats.length).toBe(36);
                 localizedFormats = (spreadsheet.workbookNumberFormatModule as any).localizedFormats;
                 expect(localizedFormats === listObj.dataSource).toBeTruthy();
+                expect(localizedFormats[4] !== customFormats[4]).toBeTruthy();
+                expect(localizedFormats.length === listObj.element.getElementsByClassName('e-list-text').length).toBeTruthy();
                 expect(listObj.dataSource[2]).toBe('0,00');
                 expect(listObj.dataSource[7]).toBe('#.##0,00_);(#.##0,00)');
                 expect(listObj.dataSource[10]).toBe('#.##0 €_);[Red](#.##0 €)');
@@ -1403,6 +1405,57 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(firstCell.querySelector('.e-iconsetspan')).not.toBeNull();
             expect(firstCell.querySelector('.e-fill-sec')).toBeNull();
             expect(firstCell.querySelector('.e-addNoteIndicator')).not.toBeNull();
+            done();
+        });
+        it('EJ2-907514 -> Date formats not working as expected while editing in German cultures', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            helper.invoke('numberFormat', [getFormatFromType('LongDate'), 'I1:I10']);
+            expect(spreadsheet.sheets[0].rows[0].cells[8].format).toBe('dddd, mmmm dd, yyyy');
+            expect(spreadsheet.sheets[0].rows[1].cells[8].format).toBe('dddd, mmmm dd, yyyy');
+            expect(spreadsheet.sheets[0].rows[2].cells[8].format).toBe('dddd, mmmm dd, yyyy');
+            expect(spreadsheet.sheets[0].rows[3].cells[8].format).toBe('dddd, mmmm dd, yyyy');
+            expect(spreadsheet.sheets[0].rows[4].cells[8].format).toBe('dddd, mmmm dd, yyyy');
+            helper.edit('I1','1.3245');
+            helper.edit('I2','1.25');
+            helper.edit('I3','1.324567');
+            helper.edit('I4','1,3245');
+            helper.edit('I5','1,324589');
+            helper.edit('I6','1.234');
+            expect(spreadsheet.sheets[0].rows[0].cells[8].value).toBe('491254');
+            expect(spreadsheet.sheets[0].rows[1].cells[8].value).toBe('45682');
+            expect(spreadsheet.sheets[0].rows[2].cells[8].value).toBe(1.324567);
+            expect(spreadsheet.sheets[0].rows[3].cells[8].value).toBe('1.3245');
+            expect(spreadsheet.sheets[0].rows[4].cells[8].value).toBe('1.324589');
+            expect(spreadsheet.sheets[0].rows[5].cells[8].value).toBe('1234');
+            expect(spreadsheet.sheets[0].rows[0].cells[8].formattedText).toBe('Sonntag, 1. Januar 3245');
+            expect(spreadsheet.sheets[0].rows[1].cells[8].formattedText).toBe('Samstag, 25. Januar 2025');
+            expect(spreadsheet.sheets[0].rows[2].cells[8].formattedText).toBe('Montag, 1. Januar 1900');
+            expect(spreadsheet.sheets[0].rows[3].cells[8].formattedText).toBe('Montag, 1. Januar 1900');
+            expect(spreadsheet.sheets[0].rows[4].cells[8].formattedText).toBe('Montag, 1. Januar 1900');
+            helper.invoke('numberFormat', ['m/d/yyyy', 'J1:J10']);
+            expect(spreadsheet.sheets[0].rows[0].cells[9].format).toBe('m/d/yyyy');
+            expect(spreadsheet.sheets[0].rows[1].cells[9].format).toBe('m/d/yyyy');
+            expect(spreadsheet.sheets[0].rows[2].cells[9].format).toBe('m/d/yyyy');
+            expect(spreadsheet.sheets[0].rows[3].cells[9].format).toBe('m/d/yyyy');
+            expect(spreadsheet.sheets[0].rows[4].cells[9].format).toBe('m/d/yyyy');
+            helper.edit('J1','1.3245');
+            helper.edit('J2','1.25');
+            helper.edit('J3','1.324567');
+            helper.edit('J4','1,3245');
+            helper.edit('J5','1,324589');
+            helper.edit('J6','1.234');
+            expect(spreadsheet.sheets[0].rows[0].cells[9].value).toBe('491254');
+            expect(spreadsheet.sheets[0].rows[1].cells[9].value).toBe('45682');
+            expect(spreadsheet.sheets[0].rows[2].cells[9].value).toBe(1.324567);
+            expect(spreadsheet.sheets[0].rows[3].cells[9].value).toBe('1.3245');
+            expect(spreadsheet.sheets[0].rows[4].cells[9].value).toBe('1.324589');
+            expect(spreadsheet.sheets[0].rows[5].cells[9].value).toBe('1234');
+            expect(spreadsheet.sheets[0].rows[0].cells[9].formattedText).toBe('1.1.3245');
+            expect(spreadsheet.sheets[0].rows[1].cells[9].formattedText).toBe('25.1.2025');
+            expect(spreadsheet.sheets[0].rows[2].cells[9].formattedText).toBe('1.1.1900');
+            expect(spreadsheet.sheets[0].rows[3].cells[9].formattedText).toBe('1.1.1900');
+            expect(spreadsheet.sheets[0].rows[4].cells[9].formattedText).toBe('1.1.1900');
+            expect(spreadsheet.sheets[0].rows[5].cells[9].formattedText).toBe('18.5.1903');
             done();
         });
     });
@@ -2374,7 +2427,7 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             });
         });
     });
-    describe('EJ2-880370, EJ2-907823 ->', () => {
+    describe('EJ2-880370, EJ2-907823, EJ2-931160 ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
         });
@@ -2481,75 +2534,239 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(sheet.rows[7].cells[8].value).toBe('0.9701388888888889');
             done();
         });
+        it('Date format is not auto-detected properly with Currency and Percentage formatted values. ->', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            helper.edit('J2', '1');
+            helper.edit('J3', '2');
+            helper.edit('J4', '3');
+            helper.edit('J5', '4');
+            helper.edit('J6', '5');
+            helper.invoke('numberFormat', [getFormatFromType('ShortDate'), 'J2']);
+            helper.invoke('numberFormat', [getFormatFromType('LongDate'), 'J3']);
+            helper.invoke('numberFormat', ['ddd/dd/MM/yyyy', 'J4']);
+            helper.invoke('numberFormat', ['d-mmm-yy', 'J5']);
+            helper.invoke('numberFormat', ['m/d/yyyy', 'J6']);
+            expect(spreadsheet.sheets[0].rows[1].cells[9].value).toBe(1);
+            expect(spreadsheet.sheets[0].rows[2].cells[9].value).toBe(2);
+            expect(spreadsheet.sheets[0].rows[3].cells[9].value).toBe(3);
+            expect(spreadsheet.sheets[0].rows[4].cells[9].value).toBe(4);
+            expect(spreadsheet.sheets[0].rows[5].cells[9].value).toBe(5);
+            expect(spreadsheet.sheets[0].rows[1].cells[9].format).toBe('m/d/yyyy');
+            expect(spreadsheet.sheets[0].rows[2].cells[9].format).toBe('dddd, mmmm dd, yyyy');
+            expect(spreadsheet.sheets[0].rows[3].cells[9].format).toBe('ddd/dd/MM/yyyy');
+            expect(spreadsheet.sheets[0].rows[4].cells[9].format).toBe('d-mmm-yy');
+            expect(spreadsheet.sheets[0].rows[5].cells[9].format).toBe('m/d/yyyy');
+            expect(spreadsheet.sheets[0].rows[1].cells[9].formattedText).toBe('1/1/1900');
+            expect(spreadsheet.sheets[0].rows[2].cells[9].formattedText).toBe('Tuesday, January 2, 1900');
+            expect(spreadsheet.sheets[0].rows[3].cells[9].formattedText).toBe('Wed/03/01/1900');
+            expect(spreadsheet.sheets[0].rows[4].cells[9].formattedText).toBe('4-Jan-00');
+            expect(spreadsheet.sheets[0].rows[5].cells[9].formattedText).toBe('1/5/1900');
+            helper.edit('J2', '$10');
+            helper.edit('J3', '$45.58');
+            helper.edit('J4', '$30.00');
+            helper.edit('J5', '40%');
+            helper.edit('J6', '5.75%');
+            expect(spreadsheet.sheets[0].rows[1].cells[9].value).toBe('10');
+            expect(spreadsheet.sheets[0].rows[2].cells[9].value).toBe('45.58');
+            expect(spreadsheet.sheets[0].rows[3].cells[9].value).toBe('30');
+            expect(spreadsheet.sheets[0].rows[4].cells[9].value).toBe(0.4);
+            expect(spreadsheet.sheets[0].rows[5].cells[9].value).toBe(0.0575);
+            expect(spreadsheet.sheets[0].rows[1].cells[9].format).toBe('$#,##0');
+            expect(spreadsheet.sheets[0].rows[2].cells[9].format).toBe('$#,##0.00');
+            expect(spreadsheet.sheets[0].rows[3].cells[9].format).toBe('$#,##0.00');
+            expect(spreadsheet.sheets[0].rows[4].cells[9].format).toBe('0%');
+            expect(spreadsheet.sheets[0].rows[5].cells[9].format).toBe('0.00%');
+            expect(spreadsheet.sheets[0].rows[1].cells[9].formattedText).toBe('$10');
+            expect(spreadsheet.sheets[0].rows[2].cells[9].formattedText).toBe('$45.58');
+            expect(spreadsheet.sheets[0].rows[3].cells[9].formattedText).toBe('$30.00');
+            expect(spreadsheet.sheets[0].rows[4].cells[9].formattedText).toBe('40%');
+            expect(spreadsheet.sheets[0].rows[5].cells[9].formattedText).toBe('5.75%');
+            done();
+        });
     });
-    describe('Fraction format in spreadsheet component', () => {
+
+    describe('EJ2-931115 ->', () => {
         beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({
-                sheets: [{ ranges: [{ dataSource: [] }] }]
-            }, done);
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
         });
         afterAll(() => {
             helper.invoke('destroy');
         });
-        it('Fraction format - I', (done: Function) => {
-            helper.invoke('updateCell', [{ value: '0', format: '# ?/?' }, 'A1']);
-            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('0    ');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"value":0,"format":"# ?/?","formattedText":"0    "}');
+        it('Aggregate options are not properly displaying the result when applying number formats.', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.showAggregate).toBeTruthy();
+            expect(helper.getElement(`#${helper.id}_aggregate`)).toBeNull();
+            helper.invoke('selectRange', ['D1:D11']);
+            expect(spreadsheet.sheets[0].selectedRange).toEqual('D1:D11');
+            const aggregateBtn: HTMLElement = helper.getElement(`#${helper.id}_aggregate`);
+            expect(aggregateBtn).not.toBeNull();
+            expect(aggregateBtn.textContent).toBe('Sum: 277');
+            helper.click('#' + helper.id + '_aggregate');
+            expect(helper.getElement('#' + helper.id + '_aggregate-popup ul li').textContent).toBe('Count: 11');
+            helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(1)');
+            expect(aggregateBtn.textContent).toBe('Count: 11');
+            helper.click('#' + helper.id + '_aggregate');
+            helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(2)');
+            expect(aggregateBtn.textContent).toBe('Sum: 277');
+            helper.click('#' + helper.id + '_aggregate');
+            helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(3)');
+            expect(aggregateBtn.textContent).toBe('Avg: 27.70');
+            helper.click('#' + helper.id + '_aggregate');
+            helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(4)');
+            expect(aggregateBtn.textContent).toBe('Min: 10');
+            helper.click('#' + helper.id + '_aggregate');
+            helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(5)');
+            expect(aggregateBtn.textContent).toBe('Max: 50');
+            helper.click(`#${helper.id}_number_format`);
+            helper.click(`#${helper.id}_Currency`);
+            expect(aggregateBtn.textContent).toBe('Max: $50.00');
+            helper.click('#' + helper.id + '_aggregate');
+            expect(helper.getElement('#' + helper.id + '_aggregate-popup ul li').textContent).toBe('Count: 11');
+            helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(1)');
+            expect(aggregateBtn.textContent).toBe('Count: 11');
+            helper.click('#' + helper.id + '_aggregate');
+            helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(2)');
+            expect(aggregateBtn.textContent).toBe('Sum: $277.00');
+            helper.click('#' + helper.id + '_aggregate');
+            helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(3)');
+            expect(aggregateBtn.textContent).toBe('Avg: $27.70');
+            helper.click('#' + helper.id + '_aggregate');
+            helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(4)');
+            expect(aggregateBtn.textContent).toBe('Min: $10.00');
+            helper.click('#' + helper.id + '_aggregate');
+            helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(5)');
+            expect(aggregateBtn.textContent).toBe('Max: $50.00');
             done();
         });
-        it('Fraction format - II', (done: Function) => {
-            helper.invoke('updateCell', [{ value: '67.32', format: '# ?/?' }, 'A1']);
-            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('67 1/3');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"value":67.32,"format":"# ?/?","formattedText":"67 1/3"}');
+    });
+
+    describe('EJ2-907498, EJ2-931154, EJ2-931158, EJ2-931182 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Currency format is not auto-detected properly while editing cells with other formats.', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('numberFormat', [getFormatFromType('Number'), 'I2:I11']);
+            expect(spreadsheet.sheets[0].rows[1].cells[8].format).toBe('0.00');
+            expect(spreadsheet.sheets[0].rows[2].cells[8].format).toBe('0.00');
+            expect(spreadsheet.sheets[0].rows[3].cells[8].format).toBe('0.00');
+            expect(spreadsheet.sheets[0].rows[4].cells[8].format).toBe('0.00');
+            helper.edit('I2', '$12');
+            expect(spreadsheet.sheets[0].rows[1].cells[8].value).toBe('12');
+            expect(spreadsheet.sheets[0].rows[1].cells[8].format).not.toBe('$#,##0');
+            expect(spreadsheet.sheets[0].rows[1].cells[8].format).toBe('0.00');
+            expect(spreadsheet.sheets[0].rows[1].cells[8].formattedText).toBe('12.00');
+            helper.edit('I3', '$$121.32');
+            expect(spreadsheet.sheets[0].rows[2].cells[8].value).toBe('$$121.32');
+            expect(spreadsheet.sheets[0].rows[2].cells[8].format).not.toBe('$#,##0.00');
+            expect(spreadsheet.sheets[0].rows[2].cells[8].format).toBe('0.00');
+            expect(spreadsheet.sheets[0].rows[2].cells[8].formattedText).toBeUndefined();
+            helper.edit('I4', '121.32$');
+            expect(spreadsheet.sheets[0].rows[3].cells[8].value).toBe('121.32');
+            expect(spreadsheet.sheets[0].rows[3].cells[8].format).not.toBe('$#,##0.00');
+            expect(spreadsheet.sheets[0].rows[3].cells[8].format).toBe('0.00');
+            expect(spreadsheet.sheets[0].rows[3].cells[8].formattedText).toBeUndefined();
+            helper.edit('I5', '$       121.32');
+            expect(spreadsheet.sheets[0].rows[4].cells[8].value).toBe('121.32');
+            expect(spreadsheet.sheets[0].rows[4].cells[8].format).not.toBe('$#,##0.00');
+            expect(spreadsheet.sheets[0].rows[4].cells[8].format).toBe('0.00');
+            expect(spreadsheet.sheets[0].rows[4].cells[8].formattedText).toBeUndefined();
+            helper.invoke('numberFormat', [getFormatFromType('Accounting'), 'J2:J11']);
+            expect(spreadsheet.sheets[0].rows[1].cells[9].format).toBe('_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)');
+            expect(spreadsheet.sheets[0].rows[2].cells[9].format).toBe('_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)');
+            expect(spreadsheet.sheets[0].rows[3].cells[9].format).toBe('_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)');
+            expect(spreadsheet.sheets[0].rows[4].cells[9].format).toBe('_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)');
+            helper.edit('J2', '$12');
+            expect(spreadsheet.sheets[0].rows[1].cells[9].value).toBe('12');
+            expect(spreadsheet.sheets[0].rows[1].cells[9].format).not.toBe('$#,##0');
+            expect(spreadsheet.sheets[0].rows[1].cells[9].format).toBe('_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)');
+            expect(spreadsheet.sheets[0].rows[1].cells[9].formattedText).toBe(' $12.00 ');
+            helper.edit('J3', '$$121.32');
+            expect(spreadsheet.sheets[0].rows[2].cells[9].value).toBe('$$121.32');
+            expect(spreadsheet.sheets[0].rows[2].cells[9].format).not.toBe('$#,##0.00');
+            expect(spreadsheet.sheets[0].rows[2].cells[9].format).toBe('_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)');
+            expect(spreadsheet.sheets[0].rows[2].cells[9].formattedText).toBe(' $$121.32 ');
+            helper.edit('J4', '121.32$');
+            expect(spreadsheet.sheets[0].rows[3].cells[9].value).toBe('121.32');
+            expect(spreadsheet.sheets[0].rows[3].cells[9].format).not.toBe('$#,##0.00');
+            expect(spreadsheet.sheets[0].rows[3].cells[9].format).toBe('_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)');
+            expect(spreadsheet.sheets[0].rows[3].cells[9].formattedText).toBe(' $121.32 ');
+            helper.edit('J5', '$       121.32');
+            expect(spreadsheet.sheets[0].rows[4].cells[9].value).toBe('121.32');
+            expect(spreadsheet.sheets[0].rows[4].cells[9].format).not.toBe('$#,##0.00');
+            expect(spreadsheet.sheets[0].rows[4].cells[9].format).toBe('_($* #,##0.00_);_($* (#,##0.00);_($* "-"??_);_(@_)');
+            expect(spreadsheet.sheets[0].rows[4].cells[9].formattedText).toBe(' $121.32 ');
+            helper.invoke('numberFormat', [getFormatFromType('Percentage'), 'K2:K11']);
+            expect(spreadsheet.sheets[0].rows[1].cells[10].format).toBe('0.00%');
+            expect(spreadsheet.sheets[0].rows[2].cells[10].format).toBe('0.00%');
+            expect(spreadsheet.sheets[0].rows[3].cells[10].format).toBe('0.00%');
+            expect(spreadsheet.sheets[0].rows[4].cells[10].format).toBe('0.00%');
+            helper.edit('K2', '$12');
+            expect(spreadsheet.sheets[0].rows[1].cells[10].value).toBe('12');
+            expect(spreadsheet.sheets[0].rows[1].cells[10].format).not.toBe('$#,##0');
+            expect(spreadsheet.sheets[0].rows[1].cells[10].format).toBe('0.00%');
+            expect(spreadsheet.sheets[0].rows[1].cells[10].formattedText).toBe('1200.00%');
+            helper.edit('K3', '$$121.32');
+            expect(spreadsheet.sheets[0].rows[2].cells[10].value).toBe('$$121.32');
+            expect(spreadsheet.sheets[0].rows[2].cells[10].format).not.toBe('$#,##0.00');
+            expect(spreadsheet.sheets[0].rows[2].cells[10].format).toBe('0.00%');
+            expect(spreadsheet.sheets[0].rows[2].cells[10].formattedText).toBeUndefined();
+            helper.edit('K4', '121.32$');
+            expect(spreadsheet.sheets[0].rows[3].cells[10].value).toBe('121.32');
+            expect(spreadsheet.sheets[0].rows[3].cells[10].format).not.toBe('$#,##0.00');
+            expect(spreadsheet.sheets[0].rows[3].cells[10].format).toBe('0.00%');
+            expect(spreadsheet.sheets[0].rows[3].cells[10].formattedText).toBe('12132.00%');
+            helper.edit('K5', '$       121.32');
+            expect(spreadsheet.sheets[0].rows[4].cells[10].value).toBe('121.32');
+            expect(spreadsheet.sheets[0].rows[4].cells[10].format).not.toBe('$#,##0.00');
+            expect(spreadsheet.sheets[0].rows[4].cells[10].format).toBe('0.00%');
+            expect(spreadsheet.sheets[0].rows[4].cells[10].formattedText).toBe('12132.00%');
             done();
         });
-        it('Fraction format - III', (done: Function) => {
-            helper.invoke('updateCell', [{ value: '12.89', format: '# ??/??' }, 'A1']);
-            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('12 81/91');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"value":12.89,"format":"# ??/??","formattedText":"12 81/91"}');
-            done();
+    });
+
+    describe('903814 ->', () => {
+        const dataSource: object[] = [
+            { 'Item Name': 'Casual Shoes', 'Text': '12.23', Date: '14.01.2014' },
+            { 'Item Name': 'Sports Shoes', 'Text': '43.6', Date: '11.06.2014' },
+            { 'Item Name': 'Formal Shoes', 'Text': '23.4', Date: '27.07.2014'},
+            { 'Item Name': 'Sandals & Floaters', 'Text': '76.7', Date: '21.11.2014' },
+        ];
+        beforeAll((done: Function) => {
+            helper.loadCultureFiles(['de']);
+            setCulture('de');
+            setCurrencyCode('EUR');
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: dataSource }] }]
+            }, done);
         });
-        it('Fraction format - IV', (done: Function) => {
-            helper.invoke('updateCell', [{ value: '7.056', format: '# ???/???' }, 'A1']);
-            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('7 7/125');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"value":7.056,"format":"# ???/???","formattedText":"7 7/125"}');
-            done();
+        afterAll(function () {
+            setCulture('en-US');
+            setCurrencyCode('USD');
+            helper.invoke('destroy');
         });
-        it('Fraction format - V', (done: Function) => {
-            helper.invoke('updateCell', [{ value: '2.4', format: '# ?/?' }, 'A1']);
-            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('2 2/5');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"value":2.4,"format":"# ?/?","formattedText":"2 2/5"}');
-            done();
-        });
-        it('Fraction format - VI', (done: Function) => {
-            helper.invoke('updateCell', [{ value: '9.988', format: '# ??/??' }, 'A1']);
-            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('9 82/83');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"value":9.988,"format":"# ??/??","formattedText":"9 82/83"}');
-            done();
-        });
-        it('Fraction format - VII', (done: Function) => {
-            helper.invoke('updateCell', [{ value: '-0.67', format: '# ?/?' }, 'A1']);
-            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('- 2/3');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"value":-0.67,"format":"# ?/?","formattedText":"- 2/3"}');
-            done();
-        });
-        it('Fraction format - VIII', (done: Function) => {
-            helper.invoke('updateCell', [{ value: '1.999', format: '# ????/????' }, 'A1']);
-            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('1 999/1000');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"value":1.999,"format":"# ????/????","formattedText":"1 999/1000"}');
-            done();
-        });
-        it('Fraction format - IX', (done: Function) => {
-            helper.invoke('updateCell', [{ value: '5/3', format: '# ?/?' }, 'A1']);
-            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('1 2/3');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"value":1.6666666666666667,"format":"# ?/?","formattedText":"1 2/3"}');
-            done();
-        });
-        it('Fraction format - X', (done: Function) => {
-            helper.invoke('updateCell', [{ value: '435 3/5', format: '# ?/?' }, 'A1']);
-            expect(helper.invoke('getCell', [0, 0]).textContent).toBe('435 3/5');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[0].cells[0])).toBe('{"value":435.6,"format":"# ?/?","formattedText":"435 3/5"}');
-            done();
+        it('Month and day names are not localized in the filter popup in other cultures', (done: Function) => {
+            helper.invoke('selectRange', ['A1']);
+            helper.invoke('getCell', [0, 0]).focus();
+            helper.click('#' + helper.id + '_sorting');
+            helper.click('.e-sort-filter-ddb ul li:nth-child(5)');
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const td: HTMLTableCellElement = helper.invoke('getCell', [0, 2]);
+            helper.invoke('selectRange', ['C1']);
+            helper.invoke('getCell', [0, 2]).focus();
+            helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
+            setTimeout(() => {
+                const searchEle: HTMLInputElement = helper.getElementFromSpreadsheet('.e-searchinput') as HTMLInputElement;
+                searchEle.value = 'Januar';
+                spreadsheet.notify(refreshCheckbox, { event: { type: 'keyup', target: searchEle } });
+                setTimeout(() => {
+                    expect(spreadsheet.element.querySelectorAll('.e-excelfilter .e-checkboxlist .e-list-text')[1].textContent).toBe('Januar');
+                    done();
+                });
+            }, 100);
         });
     });
 });

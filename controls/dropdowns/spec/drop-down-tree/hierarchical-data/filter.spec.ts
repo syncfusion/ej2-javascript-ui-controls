@@ -2147,7 +2147,45 @@ describe('Hierarchial data filter testing', () => {
                 expect(ddtreeObj.treeObj.selectedNodes.length).toBe(2);
                 done();
             }, 350);
-        });  
+        });
+        it('Perform SelectAll and filter with Multi-level nested data on loadOnDemand true', function (done) {
+            ddtreeObj = new DropDownTree({
+                fields: { dataSource: hierarchicalData3filtering, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+                allowFiltering: true,
+                treeSettings: { autoCheck: true, expandOn: 'Auto', loadOnDemand: true },
+                showCheckBox: true,
+                allowMultiSelection: true,
+                showSelectAll: true,
+                filterType: 'Contains'
+            }, '#ddtree');
+            ddtreeObj.showPopup();
+            var parentNode = document.querySelector('.e-selectall-parent');
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            parentNode.querySelector('.e-frame').dispatchEvent(e);
+            e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            parentNode.querySelector('.e-frame').dispatchEvent(e);
+            e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            parentNode.querySelector('.e-frame').dispatchEvent(e);
+            expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(9);
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter_wrap').length).toBe(1);
+            expect(document.querySelectorAll('#' + ddtreeObj.element.id + '_filter').length).toBe(1);
+            expect(ddtreeObj.treeObj.checkedNodes.length).toBe(28);
+            let filterEle: any = ddtreeObj.popupObj.element.querySelector('#' + ddtreeObj.element.id + "_filter");
+            let filterObj: any = filterEle.ej2_instances[0];
+            filterEle.value = 'che';
+            filterObj.value = 'che';
+            let eventArgs: any = { value: 'che', container: filterEle };
+            filterObj.input(eventArgs);
+            setTimeout(() => {
+                expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBe(3); 
+                expect(document.querySelectorAll('.e-chips-wrapper .e-chipcontent').length).toBe(28);
+                expect(ddtreeObj.treeObj.checkedNodes.indexOf('21') !== -1).toBe(true);
+                expect(ddtreeObj.treeObj.checkedNodes.indexOf('24') !== -1).toBe(true);
+                expect(ddtreeObj.treeObj.checkedNodes.indexOf('29') !== -1).toBe(true);
+                expect(ddtreeObj.treeObj.checkedNodes.length).toBe(3);
+                done();
+            }, 350);
+        });
     });
 });
 

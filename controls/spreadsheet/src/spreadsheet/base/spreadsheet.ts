@@ -4,7 +4,7 @@ import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclarat
 import { addClass, removeClass, EmitType, Complex, formatUnit, L10n, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { detach, select, closest, setStyleAttribute, EventHandler, getComponent } from '@syncfusion/ej2-base';
 import { MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel } from '@syncfusion/ej2-navigations';
-import { mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, refreshSheetTabs, positionAutoFillElement, updateSortCollection, isReadOnlyCells, readonlyAlert, deInitProperties, UndoRedoEventArgs } from '../common/index';
+import { mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, refreshSheetTabs, positionAutoFillElement, readonlyAlert, deInitProperties, UndoRedoEventArgs, isColumnRange, isRowRange } from '../common/index';
 import { performUndoRedo, overlay, DialogBeforeOpenEventArgs, createImageElement, deleteImage, removeHyperlink } from '../common/index';
 import { HideShowEventArgs, sheetNameUpdate, updateUndoRedoCollection, getUpdateUsingRaf, setAutoFit } from '../common/index';
 import { actionEvents, CollaborativeEditArgs, keyDown, enableFileMenuItems, hideToolbarItems, updateAction } from '../common/index';
@@ -21,7 +21,7 @@ import { CellRenderEventArgs, IRenderer, IViewport, OpenOptions, MenuSelectEvent
 import { Dialog, ActionEvents, Overlay } from '../services/index';
 import { ServiceLocator } from '../../workbook/services/index';
 import { SheetModel, getColumnsWidth, getSheetIndex, WorkbookHyperlink, HyperlinkModel, DefineNameModel } from './../../workbook/index';
-import { BeforeHyperlinkArgs, AfterHyperlinkArgs, FindOptions, ValidationModel, getCellAddress, getColumnHeaderText, SortCollectionModel, PrintOptions, getSwapRange, getSheetIndexFromAddress } from './../../workbook/common/index';
+import { BeforeHyperlinkArgs, AfterHyperlinkArgs, FindOptions, ValidationModel, getCellAddress, getColumnHeaderText, SortCollectionModel, PrintOptions, getSwapRange, getSheetIndexFromAddress, isReadOnlyCells, updateSortCollection } from './../../workbook/common/index';
 import { BeforeCellFormatArgs, afterHyperlinkCreate, getColIndex, CellStyleModel, setLinkModel } from './../../workbook/index';
 import { BeforeSaveEventArgs, SaveCompleteEventArgs, WorkbookInsert, WorkbookDelete, WorkbookMerge } from './../../workbook/index';
 import { getSheetNameFromAddress, DataBind, CellModel, beforeHyperlinkCreate, DataSourceChangedEventArgs } from './../../workbook/index';
@@ -1391,7 +1391,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public setColWidth(width: number | string = 64, colIndex: number = 0, sheetIndex?: number): void {
         const sheet: SheetModel = isNullOrUndefined(sheetIndex) ? this.getActiveSheet() : this.sheets[sheetIndex as number];
-        if (sheet) {
+        if (sheet && (!sheet.isProtected || sheet.protectSettings.formatColumns)) {
             const mIndex: number = colIndex;
             const colWidth: string = (typeof width === 'number') ? width + 'px' : width;
             colIndex = isNullOrUndefined(colIndex) ? getCellIndexes(sheet.activeCell)[1] : colIndex;
@@ -1858,7 +1858,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public hideRow(startIndex: number, endIndex: number = startIndex, hide: boolean = true): void {
         if (this.renderModule) {
-            this.notify(hideShow, <HideShowEventArgs>{ startIndex: startIndex, endIndex: endIndex, hide: hide });
+            this.notify(hideShow, <HideShowEventArgs>{ startIndex: startIndex, endIndex: endIndex, hide: hide, actionUpdate: false });
         } else {
             super.hideRow(startIndex, endIndex, hide);
         }
@@ -1874,7 +1874,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public hideColumn(startIndex: number, endIndex: number = startIndex, hide: boolean = true): void {
         if (this.renderModule) {
-            this.notify(hideShow, <HideShowEventArgs>{ startIndex: startIndex, endIndex: endIndex, hide: hide, isCol: true });
+            this.notify(
+                hideShow, <HideShowEventArgs>{ startIndex: startIndex, endIndex: endIndex, hide: hide, isCol: true, actionUpdate: false });
         } else {
             super.hideColumn(startIndex, endIndex, hide);
         }
@@ -2113,7 +2114,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         if (isReadOnlyCells(this, getRangeIndexes(address))) {
             return;
         }
-        super.updateCellDetails(cell, address, cellInformation, isRedo, isDependentUpdate, isPublic);
+        const isFinite: boolean = this.scrollSettings.isFinite;
+        super.updateCellDetails(cell, address, cellInformation, isRedo, isDependentUpdate, isFinite, isPublic);
     }
 
     /**
@@ -2337,17 +2339,21 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             if (node && node.nodeName === 'SPAN' && (node as HTMLElement).classList.contains('e-iconsetspan')) {
                 node = null;
             }
+            const nodeIndicator: HTMLElement = td.querySelector('.e-addNoteIndicator') as HTMLElement;
+            if (nodeIndicator) {
+                node = nodeIndicator.previousSibling;
+            }
             if (td.querySelector('.e-databar-value')) {
                 node = td.querySelector('.e-databar-value').lastChild;
             }
             if (td.querySelector('.e-hyperlink')) {
+                if (args.cell && args.cell.wrap && value && value.toString().indexOf('\n')) {
+                    td.querySelector('.e-hyperlink').textContent = value;
+                }
                 node = td.querySelector('.e-hyperlink').lastChild;
             }
-            if (td.querySelector('.e-addNoteIndicator')) {
-                node = td.firstChild;
-            }
             const wrapContent: Element = td.querySelector('.e-wrap-content');
-            if (wrapContent) {
+            if (wrapContent && !(td.querySelector('.e-hyperlink') || td.querySelector('.e-databar-value'))) {
                 if (!wrapContent.lastChild) {
                     wrapContent.appendChild(document.createTextNode(''));
                 }
@@ -3341,7 +3347,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         const sheet: SheetModel = getSheet(this as Workbook, sheetIdx);
         if (isNullOrUndefined(sheet)) { return; }
         this.notify('actionBegin', { action: 'readonly', eventArgs: { readOnly, range, sheetIdx } });
-        if (this.isColumnRange(range) || (indexes[0] === 0 && indexes[2] === sheet.rowCount - 1)) {
+        if (isColumnRange(range) || (indexes[0] === 0 && indexes[2] === sheet.rowCount - 1)) {
             for (let col: number = indexes[1]; col <= indexes[3]; col++) {
                 if (!readOnly) {
                     const column: ColumnModel = getColumn(sheet, col);
@@ -3350,7 +3356,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                     setColumn(sheet, col, { isReadOnly: readOnly });
                 }
             }
-        } else if (this.isRowRange(range) || (indexes[1] === 0 && indexes[3] === sheet.colCount - 1)) {
+        } else if (isRowRange(range) || (indexes[1] === 0 && indexes[3] === sheet.colCount - 1)) {
             for (let row: number = indexes[0]; row <= indexes[2]; row++) {
                 if (!readOnly) {
                     const rowValue: RowModel = getRow(sheet, row);
@@ -3383,29 +3389,5 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             }
         }
         this.notify('actionComplete', { action: 'readonly', eventArgs: { readOnly, range, sheetIdx } });
-    }
-
-    private isColumnRange(range: string): boolean {
-        let isValid: boolean = true;
-        // Iterate over each character in the range string
-        Array.from(range).forEach((char: string) => {
-            // Check if the character is not an alphabet and not a colon
-            if (!((char >= 'A' && char <= 'Z') || (char >= 'a' && char <= 'z') || char === ':')) {
-                isValid = false;
-            }
-        });
-        return isValid;
-    }
-
-    private isRowRange(range: string): boolean {
-        let isValid: boolean = true;
-        // Iterate over each character in the range string
-        Array.from(range).forEach((char: string) => {
-            // Check if the character is not a digit and not a colon
-            if (!((char >= '0' && char <= '9') || char === ':')) {
-                isValid = false;
-            }
-        });
-        return isValid;
     }
 }

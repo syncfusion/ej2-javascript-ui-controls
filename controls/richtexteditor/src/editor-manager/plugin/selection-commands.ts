@@ -9,11 +9,14 @@ import { isIDevice, setEditFrameFocus } from '../../common/util';
 import { isNullOrUndefined as isNOU, Browser, closest, detach } from '@syncfusion/ej2-base';
 import { DOMNode } from './dom-node';
 import { FormatPainterValue, ITableSelection } from '../base/interface';
+import { CustomUserAgentData } from '../../common/user-agent';
+import { DOMMethods } from './dom-tree';
 
 export class SelectionCommands {
     public static enterAction: string = 'P';
     public static isUnwrapped: boolean = false;
     public static isWrapped: boolean = false;
+    public static userAgentData: CustomUserAgentData = new CustomUserAgentData(Browser.userAgent, false);
     /**
      * applyFormat method
      *
@@ -99,6 +102,12 @@ export class SelectionCommands {
             let isCursor: boolean = false;
             let preventRestore: boolean = false;
             const isFontStyle: boolean = (['fontcolor', 'fontname', 'fontsize', 'backgroundcolor'].indexOf(format) > -1);
+            let isMACMentionStartEnd: boolean = false;
+            let mentionPosition: MentionPositionType;
+            if (SelectionCommands.userAgentData.isSafari()) {
+                mentionPosition = SelectionCommands.isMentionStartOrEnd(endNode as HTMLDivElement, nodes[0], nodes[nodes.length - 1]);
+                isMACMentionStartEnd = mentionPosition !== 'None';
+            }
             if (!isTableSelect && range.collapsed) {
                 const currentFormatNode: Node = isFormatted.getFormattedNode(range.startContainer, format, endNode);
                 const currentSelector: string = !isNOU(currentFormatNode) ?
@@ -134,6 +143,7 @@ export class SelectionCommands {
             }
             isCursor = isTableSelect ? false : range.collapsed;
             let isSubSup: boolean = false;
+            let isRemoved: boolean = false;
             for (let index: number = 0; index < nodes.length; index++) {
                 let formatNode: Node = isFormatted.getFormattedNode(nodes[index as number], format, endNode);
                 if (formatNode === null) {
@@ -144,6 +154,7 @@ export class SelectionCommands {
                         formatNode = isFormatted.getFormattedNode(nodes[index as number], 'subscript', endNode);
                         isSubSup = formatNode === null ? false : true;
                     }
+                    isRemoved = false;
                 }
                 if (index === 0 && formatNode === null) {
                     isFormat = true;
@@ -164,7 +175,9 @@ export class SelectionCommands {
                         domSelection,
                         endNode,
                         domNode);
-                } else {
+                    isRemoved = true;
+                }
+                if (!isRemoved && formatNode === null) {
                     nodes[index as number] = this.insertFormat(
                         docElement,
                         nodes,
@@ -187,58 +200,21 @@ export class SelectionCommands {
                     this.isWrapped = true;
                 }
                 if (!isTableSelect) {
-                    domSelection = this.applySelection(nodes, domSelection, nodeCutter, index, isCollapsed);
+                    if (!isMACMentionStartEnd) {
+                        domSelection = this.applySelection(nodes, domSelection, nodeCutter, index, isCollapsed);
+                    }
                 }
             }
             if (isIDevice()) {
                 setEditFrameFocus(endNode as Element, selector);
             }
             if (!preventRestore && !isTableSelect) {
-                if (this.isSafari() && !range.collapsed && (this.isUnwrapped || this.isWrapped)) {
-                    const range: Range = save.range.cloneRange();
-                    this.restoreSelectionForSafari(range, docElement, domSelection);
-                    this.isUnwrapped = false;
-                    this.isWrapped = false;
-                } else {
-                    save.restore();
-                }
+                save.restore();
             }
             if (isSubSup) {
                 this.applyFormat(docElement, format, endNode, enterAction, tableCellSelection);
             }
         }
-    }
-
-    private static adjustContainerAndOffset(container: Node, offset: number, isEndNode: boolean): [Node, number] {
-        const childNodes: NodeListOf<ChildNode> = container.childNodes;
-        // If the container is an element node (e.g., <p>, <div>), adjust selection
-        if (container.nodeType === Node.ELEMENT_NODE && childNodes.length > 0) {
-            // Ensure the offset is within a valid range
-            const validIndex: number = isEndNode ? (offset - 1) : (this.isUnwrapped ? offset - 1 : offset);
-            const adjustedIndex: number = Math.max(Math.min(validIndex, childNodes.length - 1), 0);
-            const focusChild: ChildNode = childNodes[adjustedIndex as number];
-            // If it's an end node and a text node, place the cursor at the end of text content
-            const adjustedOffset: number = isEndNode ?
-                (focusChild.nodeType === Node.TEXT_NODE ? focusChild.textContent.length : focusChild.childNodes.length) : 0;
-            return [focusChild, adjustedOffset];
-        }
-        // If the container is already a text node or has no children, return as it is.
-        return [container, offset];
-    }
-
-    private static restoreSelectionForSafari(range: Range, docElement: Document, domSelection: NodeSelection): void {
-        // Adjust the start & end container and offset if necessary & false is set to ensure if it is endContainer.
-        const [startNode, startOffset] = this.adjustContainerAndOffset(range.startContainer, range.startOffset, false);
-        const [endNode, endOffset] = this.adjustContainerAndOffset(range.endContainer, range.endOffset, true);
-        // Set the corrected selection range
-        range.setStart(startNode, startOffset);
-        range.setEnd(endNode, endOffset);
-        const selection: Selection = docElement.getSelection();
-        if (selection) {
-            selection.removeAllRanges();
-            selection.addRange(range);
-        }
-        domSelection.save(range, docElement);
     }
 
     private static insertCursorNode(
@@ -506,9 +482,9 @@ export class SelectionCommands {
                 (liElement.textContent.trim() === nodes[index as number].textContent.trim() ||
                 liElement.innerText.split('\n')[0] === nodes[index as number].textContent.trim() )) {
                 if (format === 'bold') {
-                    liElement.style.fontWeight = 'normal';
+                    liElement.style.fontWeight = '';
                 } else if (format === 'italic') {
-                    liElement.style.fontStyle = 'normal';
+                    liElement.style.fontStyle = '';
                 }
                 else if (format === 'fontsize') {
                     liElement.style.fontSize = '';
@@ -516,6 +492,11 @@ export class SelectionCommands {
             }
             else if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li'
                 && liElement.textContent.trim() !== nodes[index as number].textContent.trim()) {
+                if (format === 'bold') {
+                    liElement.style.fontWeight = '';
+                } else if (format === 'italic') {
+                    liElement.style.fontStyle = '';
+                }
                 SelectionCommands.conCatenateTextNode(liElement, format, '', 'normal', value);
             }
         }
@@ -582,7 +563,8 @@ export class SelectionCommands {
                         && liElement.textContent.trim() !== nodes[index as number].textContent.trim()) {
                         liElement.removeAttribute('style');
                     }
-                    if (child[num as number].textContent === startText) {
+                    if (child[num as number].textContent === startText && (range.startContainer.nodeName === '#text' || range.startContainer.nodeName !== '#text'
+                        && (range.startContainer as Element).classList && !(range.startContainer as Element).classList.contains('e-multi-cells-select')) ) {
                         if (num === 0) {
                             range.setStartBefore(child[num as number]);
                         }
@@ -825,7 +807,7 @@ export class SelectionCommands {
                     }
                 }
             } else {
-                if (!isTableSelect) {
+                if (!isTableSelect && nodes[index as number].isConnected) {
                     nodes[index as number] = nodeCutter.GetSpliceNode(range, nodes[index as number] as HTMLElement);
                 }
             }
@@ -899,11 +881,6 @@ export class SelectionCommands {
         return node;
     }
 
-    private static isSafari(): boolean {
-        const userAgent: any = navigator.userAgent.toLowerCase();
-        const vendor: any = navigator.vendor.toLowerCase();
-        return vendor.includes('apple') && userAgent.includes('safari') && !userAgent.includes('chrome');
-    }
 
     private static applySelection(
         nodes: Node[],
@@ -925,11 +902,6 @@ export class SelectionCommands {
             domSelection.endContainer = domSelection.startContainer;
             domSelection.startOffset = nodeCutter.position;
             domSelection.endOffset = nodeCutter.position;
-        } else if (this.isSafari() && !isCollapsed ) {
-            const node: Node = domSelection.range.startContainer.childNodes[domSelection.range.startOffset];
-            if (node instanceof HTMLElement && !node.isContentEditable) {
-                return domSelection;
-            }
         } else if (index === 0) {
             domSelection.startContainer = domSelection.getNodeArray(
                 nodes[index as number],
@@ -993,7 +965,7 @@ export class SelectionCommands {
 
     private static updateStyles(ele: HTMLElement, tag: string, styles: string): void {
         if (styles !== null && tag === 'SPAN') {
-            ele.setAttribute('style', styles);
+            ele.style.cssText = styles;
         }
     }
 
@@ -1160,4 +1132,26 @@ export class SelectionCommands {
         }
         return color1.replace(/\s+/g, '') === color2.replace(/\s+/g, '');
     }
+
+    private static isMentionStartOrEnd(editableElement: HTMLDivElement, start: Node, end: Node): MentionPositionType {
+        let type: MentionPositionType = 'None';
+        const domTree: DOMMethods = new DOMMethods(editableElement);
+        const startParent: HTMLElement = domTree.getTopMostNode(start as Text) as HTMLElement;
+        const endParent: HTMLElement = domTree.getTopMostNode(end as Text) as HTMLElement;
+        if ((startParent.nodeType === Node.ELEMENT_NODE && !startParent.isContentEditable) &&
+        (endParent.nodeType === Node.ELEMENT_NODE && !endParent.isContentEditable)) {
+            type = 'Both';
+        }
+        if (startParent.nodeType === Node.ELEMENT_NODE && !startParent.isContentEditable) {
+            type = 'Start';
+        }
+        if (endParent.nodeType === Node.ELEMENT_NODE && !endParent.isContentEditable) {
+            type = 'End';
+        }
+        return type;
+    }
 }
+/**
+ * Type used to define the position of the Mention ELement(AKA Content Editable False)
+ */
+type MentionPositionType = 'Start' | 'End' | 'None' | 'Both';

@@ -89,8 +89,10 @@ export class CellRenderer implements ICellRenderer<Column> {
             }
             this.parent.notify('template-result', { template: result });
             result = null;
-            node.setAttribute('aria-label', (<HTMLElement>node).innerText + this.localizer.getConstant('TemplateCell') +
-                this.localizer.getConstant('ColumnHeader') + cell.column.headerText);
+            if (cell.column.templateOptions.enableAriaLabel) {
+                node.setAttribute('aria-label', (<HTMLElement>node).innerText + this.localizer.getConstant('TemplateCell') +
+                    this.localizer.getConstant('ColumnHeader') + cell.column.headerText);
+            }
             return false;
         }
         return true;
@@ -297,7 +299,10 @@ export class CellRenderer implements ICellRenderer<Column> {
         }
 
         if (column.textAlign) {
-            node.style.textAlign = column.textAlign;
+            const alignmentClassMap: { [key in string]?: string } = { right: 'e-rightalign', left: 'e-leftalign', center: 'e-centeralign', justify: 'e-justifyalign' };
+            if (alignmentClassMap[column.textAlign.toLowerCase()]) {
+                node.classList.add(alignmentClassMap[column.textAlign.toLowerCase()]);
+            }
         }
 
         if (column.clipMode === 'Clip' || (!column.clipMode && this.parent.clipMode === 'Clip')) {
@@ -313,7 +318,6 @@ export class CellRenderer implements ICellRenderer<Column> {
 
     public buildAttributeFromCell<Column>(node: HTMLElement, cell: Cell<Column>, isCheckBoxType?: boolean): void {
         const attr: ICell<Column> & { 'class'?: string[] } = {};
-        const prop: { 'colindex'?: string } = { 'colindex': literals.dataColIndex };
         const classes: string[] = [];
 
         if (cell.colSpan) {
@@ -340,10 +344,8 @@ export class CellRenderer implements ICellRenderer<Column> {
         }
 
         if (cell.cellType === CellType.Header) {
-            attr[prop.colindex] = cell.colIndex;
             attr[literals.ariaColIndex] = cell.colIndex + 1;
         }   else if (!isNullOrUndefined(cell.index)) {
-            attr[prop.colindex] = cell.index;
             attr[literals.ariaColIndex] = cell.index + 1;
         }
 

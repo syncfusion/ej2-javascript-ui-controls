@@ -1,0 +1,8 @@
+@include export-module('speechtotext-fabric-icons') {
+  .e-listen-icon::before {
+    content: '\e9ef';
+  }
+  .e-listen-stop::before {
+    content: '\e9ec';
+  }
+}

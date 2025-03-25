@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $ribbon-border: none !default;
 $ribbon-border-radius: unset !default;
 $ribbon-disabled-opacity: .35 !default;
@@ -290,7 +292,12 @@ $ribbon-bigger-keytip-font-size: 14px !default;
 $ribbon-bigger-keytip-line-height: 18px !default;
 $ribbon-bigger-keytip-height: 20px !default;
 $ribbon-bigger-keytip-min-width: 20px !default;
+$ribbon-text-font-weight: 400 !default;
+$filemenu-popup-padding: 0 !default;
+$filemenu-popup-bigger-padding: 0 !default;
 
+$ribbon-grp-overflow-border-color: $grey-44 !default;
+$ribbon-grp-overflow-popup-box-shadow: unset !default;
 $ribbon-header-bg-color: $gray-darker !default;
 $ribbon-tab-background-color: $ribbon-header-bg-color !default;
 $ribbon-border-color: unset !default;
@@ -317,7 +324,7 @@ $ribbon-collapse-btn-background: $gray-darker !default;
 $ribbon-text-color: $grey-dark-font !default;
 $ribbon-tab-text-color: $ribbon-text-color !default;
 $ribbon-tab-text-focus-color: $grey-dark-font !default;
-$ribbon-tab-text-hover-color: lighten($brand-primary, 10%) !default;
+$ribbon-tab-text-hover-color: color.adjust($brand-primary, $lightness: 10%) !default;
 $ribbon-active-tab-color: $brand-primary-lighten-10 !default;
 $ribbon-active-tab-indicator-color: $brand-primary-lighten-10 !default;
 $ribbon-active-file-menu-color: $brand-primary-font !default;
@@ -406,5 +413,5 @@ $ribbon-gallery-item-selected-icons-color: $brand-primary-font !default;
 $ribbon-gallery-popup-box-shadow: 0 6px 12px rgba($grey-base, .175) !default;
 $ribbon-group-button-item-border: 1px solid $ribbon-group-button-border-color !default;
 $ribbon-items-focus-box-shadow: none !default;
-$ribbon-skeleton-wave-color: linear-gradient(90deg, rgba(255, 255, 255, 0) 15%, rgb(80, 80, 80) 28%, rgba(255, 255, 255, 0) 42%) !default;
-$ribbon-skeleton-bg-color: rgba(217, 217, 217, 1) !default;
+$ribbon-skeleton-wave-color: linear-gradient(90deg, rgba(255, 255, 255, 0) 20%, $grey-88 50%, rgba(255, 255, 255, 0) 70%) !default;
+$ribbon-skeleton-bg-color: $gray-dark !default;

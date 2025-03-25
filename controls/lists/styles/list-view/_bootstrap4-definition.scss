@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $listview-font-family: $font-family !default;
 $listview-text-color: rgba($gray-900, 1) !default;
 $listview-text-disabled: $gray-600 !default;
@@ -9,7 +11,7 @@ $listview-icon-back-margin: 0 !default;
 $listview-rtl-icon-back-margin: 0 !default;
 $listview-background: $content-bg !default;
 $listview-line-color: rgba($black, .13) !default;
-$listview-item-hover-bg: darken($gray-100, 5%) !default;
+$listview-item-hover-bg: color.adjust($gray-100, $lightness: -5%) !default;
 $listview-item-height: 40px !default;
 $listview-item-line-height: 1.6 !default;
 $listview-item-padding: 8px 16px 8px 16px !default;

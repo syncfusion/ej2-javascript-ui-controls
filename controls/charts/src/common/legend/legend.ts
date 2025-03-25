@@ -776,8 +776,9 @@ export class BaseLegend {
             let pageCount: number = 1;
             let rowHeights: number = this.rowHeights[0] + ((this.isVertical || (this.rowHeights.length > 1 && this.legend.itemPadding && this.chart.getModuleName() === 'chart')) ? this.itemPadding : padding);
             for (let i: number = 1; i < this.rowHeights.length; i++) {
-                if ((rowHeights + this.rowHeights[i as number] + (this.isVertical && this.legend.itemPadding ? this.itemPadding : padding))
-                > (this.legendBounds.height - this.pageButtonSize - this.maxItemHeight / 2)) {
+                if ((rowHeights + this.rowHeights[i as number] + (((this.isVertical || (this.rowHeights.length > 1 && this.chart.getModuleName() === 'chart')) && this.legend.itemPadding) ? this.itemPadding : padding))
+                    > (this.legendBounds.height - this.pageButtonSize - this.maxItemHeight / 2) - this.legend.containerPadding.top -
+                    this.legend.containerPadding.bottom) {
                     this.pageHeights[pageCount - 1] = rowHeights + titleHeight;
                     pageCount++;
                     rowHeights = 0;
@@ -864,12 +865,14 @@ export class BaseLegend {
                         id: this.legendID + this.generateId(legendOption, '_g_', legendIndex)});
                     if (legendSeriesGroup && (this.chart.getModuleName() === 'chart' || this.chart.getModuleName() === 'accumulationchart')) {
                         legendSeriesGroup.setAttribute('tabindex', (i === 0 && legend.accessibility.focusable) ? String(legend.accessibility.tabIndex) : '');
+                        (legendSeriesGroup as HTMLElement).style.outline = 'none';
                         legendSeriesGroup.setAttribute('aria-label', legend.accessibility.accessibilityDescription ? legend.accessibility.accessibilityDescription : (legendOption.text + ' series is ' + (legendOption.visible ? 'showing, press enter to hide the ' : 'hidden, press enter to show the ') + legendOption.text + ' series'));
                         legendSeriesGroup.setAttribute('role', legend.accessibility.accessibilityRole ? legend.accessibility.accessibilityRole : 'button');
                         legendSeriesGroup.setAttribute('aria-pressed', legendOption.visible ? 'true' : 'false');
                     }
                     else if (legendSeriesGroup) {
                         legendSeriesGroup.setAttribute('tabindex', i === 0 ? '0' : '');
+                        (legendSeriesGroup as HTMLElement).style.outline = 'none';
                         legendSeriesGroup.setAttribute('aria-label', legend.description || (legendOption.text + ' series is ' + (legendOption.visible ? 'showing, press enter to hide the ' : 'hidden, press enter to show the ') + legendOption.text + ' series'));
                         legendSeriesGroup.setAttribute('role', 'button');
                         legendSeriesGroup.setAttribute('aria-pressed', legendOption.visible ? 'true' : 'false');
@@ -1481,7 +1484,7 @@ export class BaseLegend {
         }
         // Page right arrow rendering calculation started here
         x = textOption.x + padding + (iconSize / 2) + size.width;
-        if (this.isPaging && !legend.enablePages && !this.isVertical) {
+        if (this.isPaging && !legend.enablePages && !this.isBulletChartControl  && !this.isVertical) {
             x = (bounds.x + bounds.width - (this.isBulletChartControl ? this.fivePixel : 0) - this.pageButtonSize - (legend.title && legend.titlePosition === 'Right' ?
                 this.legendTitleSize.width + this.fivePixel : 0));
         }

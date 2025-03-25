@@ -921,6 +921,127 @@ describe('Field List rendering on mobile device', () => {
         });
     });
 
+    describe('Change aggregation', () => {
+        let down: MouseEvent = new MouseEvent('mousedown', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true,
+        });
+        let up: MouseEvent = new MouseEvent('mouseup', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true,
+        });
+        let originalTimeout: number;
+        let fieldListObj: PivotFieldList;
+        let elem: HTMLElement = createElement('div', { id: 'PivotFieldList', styles: 'height:400px;width:100%' });
+        afterAll(() => {
+            if (fieldListObj) {
+                fieldListObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            let dataBound: EmitType<Object> = () => { done(); };
+            fieldListObj = new PivotFieldList({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    expandAll: false,
+                    enableSorting: true,
+                    sortSettings: [{ name: 'company', order: 'Descending' }],
+                    filterSettings: [{ name: 'name', type: 'Include', items: ['Knight Wooten'] },
+                    { name: 'company', type: 'Exclude', items: ['NIPAZ'] },
+                    { name: 'gender', type: 'Include', items: ['male'] }],
+                    rows: [{ name: 'company' }, { name: 'state' }],
+                    columns: [{ name: 'name' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' }], filters: [{ name: 'gender' }]
+                },
+                allowCalculatedField: true,
+                dataBound: dataBound,
+                renderMode: 'Fixed',
+                load: (args: LoadEventArgs) => {
+                    fieldListObj.isAdaptive = true;
+                },
+                fieldDragStart: (args: FieldDragStartEventArgs) => {
+                    expect(args.fieldItem).toBeTruthy;
+                    expect(args.cancel).toBe(false);
+                    console.log('fieldDragName: ' + args.fieldItem.name);
+                },
+                fieldDrop: (args: FieldDropEventArgs) => {
+                    expect(args.dropField).toBeTruthy;
+                    expect(args.cancel).toBe(false);
+                    console.log('fieldDropName: ' + args.dropField.name);
+                },
+                onFieldDropped: (args: FieldDroppedEventArgs) => {
+                    expect(args.droppedField).toBeTruthy;
+                    console.log('fieldDroppedName: ' + args.droppedField.name);
+                },
+                fieldRemove: (args: FieldRemoveEventArgs) => {
+                    expect(args.fieldItem).toBeTruthy;
+                    expect(args.cancel).toBe(false);
+                    console.log('fieldRemoveName: ' + args.fieldItem.name);
+                },
+                calculatedFieldCreate: (args: CalculatedFieldCreateEventArgs) => {
+                    expect(args.calculatedField).toBeTruthy;
+                    expect(args.cancel).toBe(false);
+                    console.log('CreateCalcaltedFieldName: ' + args.calculatedField.name);
+                }
+            });
+            fieldListObj.appendTo('#PivotFieldList');
+            fieldListObj.calculatedFieldModule = new CalculatedField(fieldListObj);
+        });
+        it('control class testing check', () => {
+            expect(fieldListObj.element.classList.contains('e-pivotfieldlist')).toEqual(true);
+            expect(fieldListObj.element.classList.contains('e-device')).toEqual(true);
+        });
+        it('get component name check', () => {
+            expect(fieldListObj.getModuleName()).toEqual('pivotfieldlist');
+        });
+        it('check on axis view change check', (done: Function) => {
+            let element: HTMLElement = fieldListObj.element.querySelector('.e-adaptive-container');
+            expect([].slice.call(element.querySelectorAll('.e-toolbar-item')).length).toEqual(5);
+            let headerElement: HTMLElement[] = [].slice.call(element.querySelectorAll('.e-toolbar-item'));
+            expect(headerElement[3].classList.contains('e-active')).toBeTruthy;
+            headerElement[3].click();
+            setTimeout(() => {
+                expect(headerElement[3].textContent).toBe('Values');
+                expect(headerElement[3].classList.contains('e-active')).toBeTruthy;
+                let aggregationDd: HTMLElement = element.querySelector('.e-dropdown-icon');
+                aggregationDd.click();
+                done();
+            }, 1000);
+        });
+        it('Change the aggregation', (done: Function) => {
+            let element: HTMLElement = document.querySelector('#PivotFieldList_MoreOption');
+            element.click();
+            setTimeout(() => {
+                document.getElementsByClassName('e-value-options')[0].dispatchEvent(new Event('mousedown', { bubbles: true }));
+                setTimeout(() => {
+                    let menu: NodeListOf<Element> = document.querySelectorAll('.e-list-item');
+                    expect(menu.length).toBe(22);
+                    done();
+                }, 100);
+            }, 100);
+        });
+        it('Aggregation click', (done: Function) => {
+            (document.querySelectorAll('.e-list-item')[18] as HTMLElement).click();
+            setTimeout(() => {
+                (document.querySelector('.e-ok-btn') as HTMLElement).click();
+                done();
+            }, 100);
+        });
+        it('Aggregation check -1', (done: Function) => {
+            expect(fieldListObj.dataSourceSettings.values[0].type).toBe('PercentageOfParentRowTotal');
+            done();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange);

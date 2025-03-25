@@ -510,10 +510,11 @@ export class Render {
         this.contentRenderer = <ContentRender>this.renderer.getRenderer(RenderType.Content);
         this.headerRenderer = <HeaderRender>this.renderer.getRenderer(RenderType.Header);
         (<{ actionArgs?: NotifyArgs }>e).actionArgs = args;
+        const detailGrid: boolean = gObj.childGrid || gObj.detailTemplate ? true : false;
         const isInfiniteDelete: boolean = this.parent.enableInfiniteScrolling && !this.parent.infiniteScrollSettings.enableCache &&
-            !gObj.groupSettings.enableLazyLoading && (args.requestType === 'delete' || (args.requestType === 'save' &&
+            !gObj.groupSettings.enableLazyLoading && ((args.requestType === 'delete' && !detailGrid) || (args.requestType === 'save' &&
             this.parent.infiniteScrollModule.requestType === 'add' && !(gObj.sortSettings.columns.length ||
-            gObj.filterSettings.columns.length || this.parent.groupSettings.columns.length || gObj.searchSettings.key)));
+            gObj.filterSettings.columns.length || this.parent.groupSettings.columns.length || gObj.searchSettings.key || detailGrid)));
         // tslint:disable-next-line:max-func-body-length
         gObj.trigger(events.beforeDataBound, e, (dataArgs: ReturnType) => {
             if ((<{ cancel?: boolean }>dataArgs).cancel) {

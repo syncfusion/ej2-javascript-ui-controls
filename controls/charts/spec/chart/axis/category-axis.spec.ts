@@ -1310,6 +1310,80 @@ describe('Chart Control', () => {
             chart.refresh();
         });
     });
+
+    describe('Label wrap checking -', () => {
+        let chart: Chart;
+        let labelElement: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let label: HTMLElement;
+        beforeAll((): void => {
+            labelElement = createElement('div', { id: 'container', styles: 'width: 450px;height: 400px' });
+            document.body.appendChild(labelElement);
+            chart = new Chart(
+                {
+                    primaryXAxis: {
+                        majorGridLines: { width: 0 },
+                        lineStyle: { width: 0 },
+                        majorTickLines: { width: 0 },
+                        valueType: 'Category',
+                        labelIntersectAction: 'None',
+                        enableWrap: true
+                    },
+                    primaryYAxis: {},
+
+                    chartArea: {
+                        border: {
+                            width: 1
+                        }
+                    },
+                    //Initializing Chart Series
+                    series: [
+                        {
+                            type: 'Bar',
+                            dataSource: [{ x: 'Traffic controls', y: 56 }, { x: 'Child Care produts Organization', y: 44.8 },
+                                { x: 'Transport corpration TamilNadu', y: 27.2 }, { x: 'Weather forecast Report', y: 19.6 },
+                                { x: 'Emergency Exit van', y: 6.6 }],
+                            xName: 'x',
+                            yName: 'y', name: 'Germany',
+                            animation: { enable: false }
+                        }
+                    ],
+                    //Initializing Chart title
+                    title: 'Inflation - Consumer Price',
+                }, '#container');
+        });
+        afterAll((): void => {
+            chart.destroy();
+            labelElement.remove();
+        });
+        it('Checking position for wrap', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById("containerAxisLabels0");
+                expect(label.childElementCount === 5);
+                let x: string = document.getElementById('container0_AxisLabel_0').getAttribute('x');
+                expect(x).toBe('33.5');
+                let y: string = document.getElementById('container0_AxisLabel_0').getAttribute('y');
+                expect(y).toBe('302');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Checking position for wrap with max label width', (done: Function) => {
+            loaded = (args: Object): void => {
+                label = document.getElementById("containerAxisLabels0");
+                expect(label.childElementCount === 5);
+                let x: string = document.getElementById('container0_AxisLabel_3').getAttribute('x');
+                expect(x).toBe('39');
+                let y: string = document.getElementById('container0_AxisLabel_3').getAttribute('y');
+                expect(y).toBe('129');
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.maximumLabelWidth = 50;
+            chart.refresh();
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

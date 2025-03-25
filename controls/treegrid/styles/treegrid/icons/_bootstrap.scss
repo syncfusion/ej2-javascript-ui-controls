@@ -28,23 +28,6 @@
         content: '\e35d';
       }
     }
-    .e-toolbar-item {
-      .e-expand::before {
-        content: '\e558';
-      }
-
-      .e-collapse::before {
-        content: '\e557';
-      }
-
-      .e-indent::before {
-        content: '\e33f';
-      }
-
-      .e-outdent::before {
-        content: '\e35d';
-      }
-    }
   }
 
   .e-treegrid,

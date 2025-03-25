@@ -1,5 +1,5 @@
-import { Workbook, getSheetName, getSheet, SheetModel, RowModel, CellModel, getSheetIndexFromId, ColumnModel, setCell } from '../index';
-import { getSingleSelectedRange, getCell, getSheetIndex, NumberFormatArgs, checkFormulaRef, parseFormulaArgument } from '../index';
+import { Workbook, getSheetName, getSheet, SheetModel, RowModel, CellModel, getSheetIndexFromId, ColumnModel, setCell, getTypeFromFormat } from '../index';
+import { getSingleSelectedRange, getCell, getSheetIndex, NumberFormatArgs, checkFormulaRef, parseFormulaArgument, sheetRenameUpdate } from '../index';
 import { workbookFormulaOperation, getColumnHeaderText, aggregateComputation, AggregateArgs, clearFormulaDependentCells, formulaInValidation, ValidationModel, LocaleNumericSettings, applyCF, getCellRefValue, commputeFormulaValue } from '../common/index';
 import { Calculate, ValueChangedArgs, CalcSheetFamilyItem, FormulaInfo, CommonErrors, getAlphalabel } from '../../calculate/index';
 import { IFormulaColl } from '../../calculate/common/interface';
@@ -9,6 +9,7 @@ import { DefineNameModel, getCellAddress, getFormattedCellObject, isNumber, chec
 import { getRangeAddress, InsertDeleteEventArgs, getRangeFromAddress, isCellReference, refreshInsertDelete, getUpdatedFormulaOnInsertDelete } from '../common/index';
 import { getUniqueRange, DefineName, selectionComplete, DefinedNameEventArgs, getRangeIndexes, InvalidFormula, getSwapRange } from '../common/index';
 import { FormulaCalculateArgs, updateSheetFromDataSource, ExtendedRange } from '../common/index';
+import { formulaBarOperation } from '../../spreadsheet/common/event';
 
 /**
  * @hidden
@@ -90,6 +91,7 @@ export class WorkbookFormula {
         this.parent.on(parseFormulaArgument, this.parseFormulaArgument, this);
         this.parent.on(getCellRefValue, this.getCellRefValue, this);
         this.parent.on(commputeFormulaValue, this.commputeFormulaValue, this);
+        this.parent.on(sheetRenameUpdate, this.renameUpdation, this);
     }
 
     private removeEventListener(): void {
@@ -106,6 +108,7 @@ export class WorkbookFormula {
             this.parent.off(parseFormulaArgument, this.parseFormulaArgument);
             this.parent.off(getCellRefValue, this.getCellRefValue);
             this.parent.off(commputeFormulaValue, this.commputeFormulaValue);
+            this.parent.off(sheetRenameUpdate, this.renameUpdation);
         }
     }
 
@@ -220,9 +223,6 @@ export class WorkbookFormula {
             break;
         case 'initiateDefinedNames':
             this.initiateDefinedNames();
-            break;
-        case 'renameUpdation':
-            this.renameUpdation(<string>args.value, <string>args.pName);
             break;
         case 'addSheet':
             this.sheetInfo.push({ visibleName: <string>args.visibleName, sheet: <string>args.sheetName, index: <number>args.sheetId });
@@ -369,8 +369,9 @@ export class WorkbookFormula {
         });
     }
 
-    private renameUpdation(name: string, pName: string): void {
-        let sheet: SheetModel; let cell: CellModel; const uPName: string = pName.toUpperCase();
+    private renameUpdation(args: { [key: string]: string }): void {
+        const name: string = args.value; const pName: string = args.pName;
+        let sheet: SheetModel; let cell: CellModel; const uPName: string = args.pName.toUpperCase();
         const escapeRegx: RegExp = new RegExp('[!@#$%^&()+=\';,.{}|\\":<>~_-]', 'g');
         const exp: string = '(?=[\'!])(?=[^"]*(?:"[^"]*"[^"]*)*$)';
         const regExp: RegExpConstructor = RegExp;
@@ -440,7 +441,7 @@ export class WorkbookFormula {
                             if (i === this.parent.activeSheetIndex && sheet.activeCell === getCellAddress(indexes[0], indexes[1])) {
                                 this.parent.notify(selectionComplete, {});
                             }
-                        } else {
+                        } else if (this.parent.calculationMode === 'Automatic') {
                             colObj.value = this.referenceError();
                         }
                     } else {
@@ -658,7 +659,11 @@ export class WorkbookFormula {
                         }
                         index = getRangeIndexes(cellRef);
                         fCell = getCell(index[0], index[1], model);
-                        if (fCell && fCell.format && (!args.fillType || !updatedCell.format)) {
+                        const format: string = getTypeFromFormat(updatedCell.format);
+                        const excludedFormats: string[] = ['Number', 'Currency', 'LongDate', 'Time'];
+                        if (fCell && fCell.format && (!updatedCell.format || (!args.fillType &&
+                            (excludedFormats.every((fmt: string) => format !== fmt) &&
+                                getTypeFromFormat(fCell.format) !== 'Number')))) {
                             updatedCell.format = fCell.format;
                             break;
                         }
@@ -925,7 +930,7 @@ export class WorkbookFormula {
                 name = getSheetName(this.parent, sheetIdx) + '!' + name;
             }
         } else {
-            definedName.scope = '';
+            definedName.scope = 'Workbook';
         }
         if (!definedName.comment) { definedName.comment = ''; }
         //need to extend once internal sheet value changes done.
@@ -938,6 +943,7 @@ export class WorkbookFormula {
             }
             if (this.parent.definedNames.indexOf(definedName) < 0) {
                 this.parent.definedNames.splice(index, 0, definedName);
+                this.parent.notify(formulaBarOperation, { action: 'setNameBoxValue', definedName: definedName });
             }
         }
         const eventArgs: DefinedNameEventArgs = { name: definedName.name, scope: definedName.scope, comment: definedName.comment,
@@ -959,7 +965,8 @@ export class WorkbookFormula {
      */
     private removeDefinedName(name: string, scope: string, isEventTrigger?: boolean): boolean {
         let isRemoved: boolean = false;
-        const index: number = this.getIndexFromNameColl(name, scope);
+        const scopeVal: string = !scope ? 'Workbook' : scope;
+        const index: number = this.getIndexFromNameColl(name, scopeVal);
         if (index > -1) {
             let calcName: string = name;
             if (scope) {
@@ -969,9 +976,10 @@ export class WorkbookFormula {
                 }
             }
             this.calculateInstance.removeNamedRange(calcName);
-            this.parent.definedNames.splice(index, 1);
+            const removedName: DefineNameModel[] = this.parent.definedNames.splice(index, 1);
+            this.parent.notify(formulaBarOperation, { action: 'setNameBoxValue', definedName: removedName[0], isRemove: true });
             if (!isEventTrigger) {
-                const eventArgs: DefinedNameEventArgs = { name: name, scope: scope, cancel: false };
+                const eventArgs: DefinedNameEventArgs = { name: name, scope: scopeVal, cancel: false };
                 this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'removeDefinedName' });
             }
             isRemoved = true;
@@ -1085,7 +1093,7 @@ export class WorkbookFormula {
     }
 
     private getCellRefValue(args: { value: string }): void {
-        let sheetId: number; let formulaValue: string;
+        let sheetId: number;
         const sheetInfo: { visibleName: string, sheet: string }[] = this.getSheetInfo();
         const sheetCount: number = sheetInfo.length;
         const token: string = this.calculateInstance.sheetToken;
@@ -1101,13 +1109,10 @@ export class WorkbookFormula {
                     sheetId = i; break;
                 }
             }
-            formulaValue = token + sheetId + token + value.substring(tokenIndex + 1).toUpperCase();
-        } else {
-            if (value.length > 0 && value[0] === this.calculateInstance.getFormulaCharacter()) {
-                formulaValue = value.substring(1, args.value.length).toUpperCase();
-            }
+            args.value = this.calculateInstance.getValueFromArg(token + sheetId + token + value.substring(tokenIndex + 1).toUpperCase());
+        } else if (value.length > 0 && value[0] === this.calculateInstance.getFormulaCharacter()) {
+            args.value = this.calculateInstance.getValueFromArg(value.substring(1, args.value.length).toUpperCase());
         }
-        args.value = this.calculateInstance.getValueFromArg(formulaValue);
     }
 
     private aggregateComputation(args: AggregateArgs): void {
@@ -1126,7 +1131,7 @@ export class WorkbookFormula {
                 break;
             }
         }
-        args.Count = this.calculateInstance.getFunction('COUNTA')(range);
+        args.Count = this.calculateInstance.getFunction('COUNTA')(range, 'isAggregate');
         if (!args.Count || args.countOnly) {
             return;
         }
@@ -1135,7 +1140,7 @@ export class WorkbookFormula {
         const index: number[] = getRangeIndexes(sheet.activeCell);
         const cell: CellModel = getCell(index[0], index[1], sheet, false, true);
         for (i = 0; i < 4; i++) {
-            calcValue = this.toFixed(this.calculateInstance.getFunction(formulaVal[i as number])(range));
+            calcValue = this.toFixed(this.calculateInstance.getFunction(formulaVal[i as number])(range, 'isAggregate'));
             if (cell.format) {
                 const eventArgs: NumberFormatArgs = { formattedText: calcValue, value: calcValue, format: cell.format,
                     cell: { value: calcValue, format: cell.format } };

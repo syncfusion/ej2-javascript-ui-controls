@@ -470,7 +470,8 @@ export class ColumnBase {
         const argsData: IPointRenderEventArgs = {
             cancel: false, name: pointRender, series: series, point: point,
             fill: series.setPointColor(point, fill),
-            border: series.setBorderColor(point, border)
+            border: series.setBorderColor(point, border),
+            cornerRadius: series.cornerRadius
         };
         series.chart.trigger(pointRender, argsData);
         point.color = argsData.fill;
@@ -499,9 +500,26 @@ export class ColumnBase {
             // For 0 values corner radius will not calculate
             direction = this.calculateRoundedRectPath(rect, 0, 0, 0, 0);
         } else {
+            let topLeft: number;
+            let topRight: number;
+            let bottomLeft: number;
+            let bottomRight: number;
+            const isNegative: boolean = point.y as number < 0;
+            if (chart.requireInvertedAxis) {
+                topLeft = isNegative ? argsData.cornerRadius.topRight : argsData.cornerRadius.topLeft;
+                topRight = isNegative ? argsData.cornerRadius.topLeft : argsData.cornerRadius.topRight;
+                bottomLeft = isNegative ? argsData.cornerRadius.bottomRight : argsData.cornerRadius.bottomLeft;
+                bottomRight = isNegative ? argsData.cornerRadius.bottomLeft : argsData.cornerRadius.bottomRight;
+            }
+            else {
+                topLeft = isNegative ? argsData.cornerRadius.bottomLeft : argsData.cornerRadius.topLeft;
+                topRight = isNegative ? argsData.cornerRadius.bottomRight : argsData.cornerRadius.topRight;
+                bottomLeft = isNegative ? argsData.cornerRadius.topLeft : argsData.cornerRadius.bottomLeft;
+                bottomRight = isNegative ? argsData.cornerRadius.topRight : argsData.cornerRadius.bottomRight;
+            }
             direction = this.calculateRoundedRectPath(
-                rect, series.cornerRadius.topLeft, series.cornerRadius.topRight, series.cornerRadius.bottomLeft,
-                series.cornerRadius.bottomRight, chart.requireInvertedAxis);
+                rect, topLeft, topRight, bottomLeft, bottomRight, chart.requireInvertedAxis
+            );
         }
         const name: string = series.category === 'Indicator' ? chart.element.id + '_Indicator_' + series.index + '_' + series.name +
             '_Point_' + point.index : chart.element.id + '_Series_' + series.index + '_Point_' + ((series.removedPointIndex !== null && series.removedPointIndex <= point.index) ? (point.index + 1) : point.index);
@@ -629,6 +647,10 @@ export class ColumnBase {
                     const annotations: HTMLElement = <HTMLElement>document.getElementById(series.chart.element.id + '_Annotation_Collections');
                     if (annotations) {
                         annotations.style.visibility = 'visible';
+                    }
+                    const stackLabelGroup: HTMLElement = <HTMLElement>document.getElementById(series.chart.element.id + '_StackLabelGroup');
+                    if (stackLabelGroup) {
+                        stackLabelGroup.setAttribute('visibility', 'visible');
                     }
                     element.setAttribute('transform', 'translate(0,0)');
                     const seriesElement: Element = series.seriesElement;

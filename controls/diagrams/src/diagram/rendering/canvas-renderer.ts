@@ -15,8 +15,8 @@ import { Container } from '../core/containers/container';
 import { PathElement } from '../core/elements/path-element';
 import { TextElement } from '../core/elements/text-element';
 import { ImageElement } from '../core/elements/image-element';
-import { DiagramElement } from '../core/elements/diagram-element';
 import { ElementAction, FlipDirection } from '../enum/enum';
+import { DiagramElement } from '../core/elements/diagram-element';
 
 /**
  * Canvas Renderer

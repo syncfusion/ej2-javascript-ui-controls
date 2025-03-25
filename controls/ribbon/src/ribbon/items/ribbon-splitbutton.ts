@@ -201,7 +201,11 @@ export class RibbonSplitButton {
      * @returns {void}
      */
     public toggle(controlId: string): void {
-        this.getSplitButtonObj(controlId).toggle();
+        const splitBtnObj: SplitButton = this.getSplitButtonObj(controlId);
+        if (!splitBtnObj) { return; }
+        if (!splitBtnObj.disabled) {
+            splitBtnObj.toggle();
+        }
     }
     /**
      * Updates the splitbutton.

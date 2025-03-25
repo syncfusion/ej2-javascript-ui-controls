@@ -667,6 +667,146 @@ describe('Heatmap Control', () => {
 
     });
 
+    describe('Heatmap tab navigation', () => {
+        let heatmap: HeatMap;
+        let ele: HTMLElement;
+        let tempElement: HTMLElement;
+        let created: EmitType<Object>;
+        
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'sampleTest' });
+            document.body.appendChild(ele);
+            heatmap = new HeatMap({
+                allowSelection: true,
+                titleSettings: {
+                    text: 'Sales Revenue per Employee (in 1000 US$)',
+                    textStyle: {
+                        size: '15px'
+                    }
+                },
+                cellSettings: {
+                    showLabel: true,
+                    labelTemplate:
+                        '<div style="width:25px;height:20px;text-align:center;padding-top:2px;background-color:#5BBB9C; border: 1px solid #000000; border-radius:50%;font-weight:bold;">${value}</div>',
+                },
+                xAxis: {
+                    labels: ['Nancy', 'Andrew', 'Janet', 'Margaret', 'Steven',
+                        'Michael', 'Robert', 'Laura', 'Anne', 'Paul', 'Karin', 'Mario'],
+                    isInversed: true
+                },
+                yAxis: {
+                    labels: ['Mon', 'Tues', 'Wed', 'Thurs', 'Fri', 'Sat'],
+                    opposedPosition: true
+                },
+                dataSource: [
+                    [73, 39, 26, 39, 94, 0],
+                    [93, 58, 53, 38, 26, 68],
+                    [99, 28, 22, 4, 66, 90],
+                    [14, 26, 97, 69, 69, 3],
+                    [7, 46, 47, 47, 88, 6],
+                    [41, 55, 73, 23, 3, 79],
+                    [56, 69, 21, 86, 3, 33],
+                    [45, 7, 53, 81, 95, 79],
+                    [60, 77, 74, 68, 88, 51],
+                    [25, 25, 10, 12, 78, 14],
+                    [25, 56, 55, 58, 12, 82],
+                    [74, 33, 88, 23, 86, 59]
+                ],
+                legendSettings: {
+                    position: 'Right',
+                    showLabel: true,
+                    height: "150px",
+                    toggleVisibility: true,
+                    title: {
+                        text: "Sales Efficiency"
+                    }
+                },
+                showTooltip: true,
+                tooltipSettings: {
+                    fill: '#696295',
+                    textStyle: {
+                        color: '#FFFFFF',
+                        size: '12px'
+                    },
+                    border: {
+                        width: 2,
+                        color: '#F0C27B'
+                    }
+                },
+                paletteSettings: {
+                    palette: [
+                        { value: 0, color: '#C2E7EC' },
+                        { value: 10, color: '#AEDFE6' },
+                        { value: 20, color: '#9AD7E0' },
+                        { value: 25, color: '#86CFDA' },
+                        { value: 30, color: '#72C7D4' },
+                        { value: 40, color: '#5EBFCE' },
+                        { value: 50, color: '#4AB7C8' },
+                        { value: 55, color: '#36AFC2' },
+                        { value: 60, color: '#309DAE' },
+                        { value: 70, color: '#2B8C9B' },
+                        { value: 75, color: '#257A87' },
+                        { value: 80, color: '#206974' },
+                        { value: 85, color: '#1B5761' },
+                        { value: 90, color: '#15464D' },
+                        { value: 100, color: '#000000' },
+                    ],
+                    type: 'Fixed'
+                },
+            });
+        });
+
+        afterAll((): void => {
+            heatmap.destroy();
+        });
+        it('key up event', () => {
+            heatmap.appendTo('#sampleTest');
+            let targetArea: HTMLElement = document.getElementById('sampleTest_HeatMapRect_0');            
+            let keyboardeventargs: any = {
+                target: targetArea,
+                code : 'Tab',
+                type: 'keyup',
+                key: 'keyup',
+            }
+            heatmap.heatMapKeyUp(keyboardeventargs)
+            targetArea = document.getElementById('sampleTest_HeatMapRect_10');
+            keyboardeventargs = {
+                target: targetArea,
+                code : '',
+                type: 'keyup',
+                key: 'keyup'
+            }
+            heatmap.heatMapKeyUp(keyboardeventargs)
+        });
+        it('key down event', () => {
+            heatmap.appendTo('#sampleTest');
+            let targetArea: HTMLElement = document.getElementById('sampleTest_HeatMapRect_2');            
+            let keyboardeventargs: any = {
+                target: targetArea,
+                code : 'Enter',
+                type: 'keydown',
+                key: 'keydown',
+            }
+            heatmap.heatMapKeyDown(keyboardeventargs);
+            targetArea = document.getElementById('sampleTest_Legend_Index_0');            
+            keyboardeventargs = {
+                target: targetArea,
+                code : 'Enter',
+                type: 'keydown',
+                key: 'keydown',
+            }
+            heatmap.heatMapKeyDown(keyboardeventargs);
+            targetArea = document.getElementById('sampleTest_Legend_rightarrow');            
+            keyboardeventargs = {
+                target: targetArea,
+                code : 'Enter',
+                type: 'keydown',
+                key: 'keydown',
+            }
+            heatmap.heatMapKeyDown(keyboardeventargs);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

@@ -155,7 +155,7 @@ export class Aggregate {
                     } else if (this.parent.isLocalData) {
                         const data: Object[] = this.parent.dataSource instanceof DataManager ? this.parent.dataSource.dataSource.json
                             : this.parent.flatData;
-                        itemData[`${key}`] = this.getSummaryValues(summary.columns[parseInt(i.toString(), 10)] as AggregateColumn, data );
+                        itemData[`${key}`] = this.getSummaryValues(summary.columns[parseInt(i.toString(), 10)] as AggregateColumn, data);
                     }
                 } else {
                     continue;
@@ -195,7 +195,7 @@ export class Aggregate {
         const cellElement: Element = createElement('td', {
             className: 'e-summary'
         });
-        if ((<{ isReact?: boolean }>this.parent).isReact) {
+        if ((<{ isReact?: boolean }>this.parent).isReact && typeof (summaryColumn.footerTemplate) !== 'string') {
             const renderReactTemplates: string = 'renderReactTemplates';
             tempObj.fn(single[summaryColumn.columnName], this.parent, tempObj.property, '', null, null, cellElement);
             this.parent[`${renderReactTemplates}`]();

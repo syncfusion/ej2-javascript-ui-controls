@@ -133,10 +133,7 @@ export class Formula {
                         const dlgArgs: DialogBeforeOpenEventArgs = { dialogName: 'CircularReferenceDialog', element: args.element,
                             target: args.target, cancel: args.cancel, cellAddress, content: dialogContent };
                         triggerEvent(dlgArgs);
-                        if (dlgArgs.cancel) {
-                            args.cancel = true;
-                            dialogInst.hide(true);
-                        }
+                        args.cancel = dlgArgs.cancel;
                     }
                 });
             }

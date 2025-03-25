@@ -1003,8 +1003,9 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private popupCreation(): void {
         this.popupWrapper = this.createElement('div', {
             className: ROOT + ' ' + POPUP,
-            attrs: { 'id': this.element.id + '_popup', 'style': 'visibility:hidden' }
+            attrs: { 'id': this.element.id + '_popup' }
         });
+        this.popupWrapper.style.visibility = 'hidden';
         this.popupWrapper.setAttribute( 'aria-label', this.element.id );
         this.popupWrapper.setAttribute( 'role', 'dialog' );
         if (!isNullOrUndefined(this.cssClass)) {

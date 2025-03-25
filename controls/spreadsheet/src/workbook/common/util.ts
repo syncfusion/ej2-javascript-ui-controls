@@ -1,8 +1,8 @@
-import { CellModel, ColumnModel, getCell, SheetModel, setCell, Workbook, getSheetIndex, CellStyleModel, getCellIndexes, RowModel } from './../index';
-import { getCellAddress, getRangeIndexes, BeforeCellUpdateArgs, beforeCellUpdate, workbookEditOperation, CellUpdateArgs, getRangeAddress } from './index';
+import { CellModel, ColumnModel, getCell, SheetModel, setCell, Workbook, getSheetIndex, CellStyleModel, getCellIndexes, RowModel, getRow, getColumn } from './../index';
+import { getCellAddress, getRangeIndexes, BeforeCellUpdateArgs, beforeCellUpdate, workbookEditOperation, CellUpdateArgs, getRangeAddress, getSwapRange } from './index';
 import { InsertDeleteModelArgs, getColumnHeaderText, ConditionalFormat, ConditionalFormatModel, clearFormulaDependentCells } from './index';
 import { isHiddenCol, isHiddenRow, VisibleMergeIndexArgs, checkDateFormat, checkNumberFormat, DateFormatCheckArgs } from './../index';
-import { isUndefined, getNumberDependable, getNumericObject, Internationalization, defaultCurrencyCode } from '@syncfusion/ej2-base';
+import { isUndefined, getNumberDependable, getNumericObject, Internationalization, defaultCurrencyCode, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { parseThousandSeparator } from './internalization';
 import { AutoDetectGeneralFormatArgs, isNumber, NumberFormatArgs, getFormattedCellObject, LocaleNumericSettings } from './../index';
 import { ExtendedWorkbook } from './index';
@@ -1009,6 +1009,50 @@ export function applyPredicates(dataManager: DataManager, predicates: Predicate[
  */
 export function isReadOnly(cell: CellModel, column: ColumnModel, row: RowModel): boolean {
     return (cell && cell.isReadOnly) || (row && row.isReadOnly) || (column && column.isReadOnly);
+}
+
+/**
+ * Checks whether a specific range of cells is read-only or not.
+ *
+ * @param {Workbook} parent - The spreadsheet instance.
+ * @param {number[]} rangeIndexes - The range indexes to check.
+ * @returns {boolean} - Returns true if any of the cells is read-only, otherwise false.
+ * @hidden
+ */
+export function isReadOnlyCells(parent: Workbook, rangeIndexes?: number[]): boolean {
+    const sheet: SheetModel = parent.getActiveSheet(); let hasReadOnlyCell: boolean;
+    const address: number[] = !isNullOrUndefined(rangeIndexes) ? rangeIndexes : getSwapRange(getRangeIndexes(sheet.selectedRange));
+    for (let row: number = address[0]; row <= address[2]; row++) {
+        for (let col: number = address[1]; col <= address[3]; col++) {
+            const cell: CellModel = getCell(row, col, sheet);
+            if (isReadOnly(cell, getColumn(sheet, col), getRow(sheet, row))) {
+                hasReadOnlyCell = true;
+                break;
+            }
+        }
+    }
+    return hasReadOnlyCell;
+}
+
+/**
+ * Checks whether the selected range in the sheet is an entire row or column and returns the updated range accordingly.
+ *
+ * @param {SheetModel} sheet -Specifies the sheet.
+ * @param {string} range - Specify the range that need to be updated.
+ * @returns {string} - Retruns updated range
+ * @hidden
+ */
+export function getUpdatedRange(sheet: SheetModel, range?: string): string {
+    let updateRange: string = range || sheet.selectedRange;
+    const indexes: number[] = getRangeIndexes(updateRange);
+    const maxColCount: number = sheet.colCount;
+    const maxRowCount: number = sheet.rowCount;
+    if (indexes[2] === maxRowCount - 1 && indexes[0] === 0) {
+        updateRange = updateRange.replace(/[0-9]/g, '');
+    } else if (indexes[3] === maxColCount - 1 && indexes[2] === 0) {
+        updateRange = updateRange.replace(/\D/g, '');
+    }
+    return updateRange;
 }
 
 /**

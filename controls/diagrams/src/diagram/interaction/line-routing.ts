@@ -34,6 +34,7 @@ export class LineRouting {
     private targetGridCollection: VirtualBoundaries[] = [];
     private sourceGridCollection: VirtualBoundaries[] = [];
     private considerWalkable: VirtualBoundaries[] = [];
+    public skipObstacleCheck: boolean = false;
 
     /**
      * lineRouting method \
@@ -192,6 +193,107 @@ export class LineRouting {
         return endPoint;
     }
 
+
+    /**
+     * Gets the grids that intersect with the line segment defined by the start and end points.
+     * @param {PointModel} startPoint - The starting point of the line segment.
+     * @param {PointModel} endPoint - The ending point of the line segment.
+     * @returns {VirtualBoundaries[]} An array of VirtualBoundaries that intersect with the line segment.
+     * @private
+     */
+    public getGridsIntersect(startPoint: PointModel, endPoint: PointModel): VirtualBoundaries[] {
+        const grids: VirtualBoundaries[] = [];
+        const minX: number = Math.min(startPoint.x, endPoint.x);
+        const minY: number = Math.min(startPoint.y, endPoint.y);
+        const maxX: number = Math.max(startPoint.x, endPoint.x);
+        const maxY: number = Math.max(startPoint.y, endPoint.y);
+        const gridSize: number = this.size;
+        const minGridX: number = Math.floor((minX - this.diagramStartX) / gridSize);
+        const minGridY: number = Math.floor((minY - this.diagramStartY) / gridSize);
+        const maxGridX: number = Math.floor((maxX - this.diagramStartX) / gridSize);
+        const maxGridY: number = Math.floor((maxY - this.diagramStartY) / gridSize);
+        const isHorizontal: boolean = maxX - minX > maxY - minY;
+        if (isHorizontal) {
+            for (let x: number = minGridX; x <= maxGridX; x++) {
+                const gridRow: VirtualBoundaries[] = this.gridCollection[parseInt(x.toString(), 10)];
+                if (gridRow) {
+                    const grid: VirtualBoundaries = gridRow[parseInt(minGridY.toString(), 10)];
+                    if (grid && grids.indexOf(grid) === -1) {
+                        grids.push(grid);
+                    }
+                }
+            }
+        }
+        else {
+            for (let y: number = minGridY; y <= maxGridY; y++) {
+                const gridRow: VirtualBoundaries[] = this.gridCollection[parseInt(minGridX.toString(), 10)];
+                if (gridRow) {
+                    const grid: VirtualBoundaries = gridRow[parseInt(y.toString(), 10)];
+                    if (grid && grids.indexOf(grid) === -1) {
+                        grids.push(grid);
+                    }
+                }
+            }
+        }
+
+        return grids;
+    }
+
+    /**
+     * Checks if the path between the start and end points is walkable.
+     * @param {PointModel} startPoint - The starting point of the path.
+     * @param {PointModel} endPoint - The ending point of the path.
+     * @param {Diagram} diagram - The diagram instance.
+     * @param {Connector} [connector] - The connector to check for obstacles.
+     * @returns {boolean} True if the path is walkable, otherwise false.
+     * @private
+     */
+    public isPathWalkable(startPoint: PointModel, endPoint: PointModel, diagram: Diagram, connector?: Connector): boolean {
+        const minX: number = Math.min(startPoint.x, endPoint.x);
+        const minY: number = Math.min(startPoint.y, endPoint.y);
+        const maxX: number = Math.max(startPoint.x, endPoint.x);
+        const maxY: number = Math.max(startPoint.y, endPoint.y);
+        const grids: VirtualBoundaries[] = this.getGridsIntersect(startPoint, endPoint);
+        for (let i: number = 0; i < grids.length; i++) {
+            const grid: VirtualBoundaries = grids[parseInt(i.toString(), 10)];
+            // Exclude grids that contain the source or target node
+            if (connector && (grid.nodeId.indexOf(connector.sourceID) !== -1 || grid.nodeId.indexOf(connector.targetID) !== -1)) {
+                continue;
+            }
+            if (!grid.walkable) {
+                const isHorizontal: boolean = maxX - minX > maxY - minY;
+                for (const nodeId of grid.nodeId) {
+                    const node: NodeModel = diagram.nameTable[`${nodeId}`];
+                    if (node) {
+                        const bounds: Rect = node.wrapper.bounds;
+                        const padding: number = 5;
+                        if (isHorizontal) {
+                            if (bounds.top - padding < minY && bounds.bottom + padding > maxY) {
+                                return false;
+                            }
+                        } else {
+                            if (bounds.left - padding < minX && bounds.right + padding > maxX) {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private checkObstaclesIntersect(segmentPoints: PointModel[], connector: Connector, diagram: Diagram): boolean {
+        for (let i: number = 1; i < segmentPoints.length; i++) {
+            const start: PointModel = segmentPoints[i - 1];
+            const end: PointModel = segmentPoints[parseInt(i.toString(), 10)];
+            if (!this.isPathWalkable(start, end, diagram, connector)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /**
      * refreshConnectorSegments method \
      *
@@ -205,6 +307,17 @@ export class LineRouting {
      */
     public refreshConnectorSegments(
         diagram: Diagram, connector: Connector, isUpdate: boolean, isEnableRouting?: boolean): void {
+        if (!connector.sourceID || !connector.targetID || connector.sourceID === connector.targetID) {
+            return;
+        }
+        if (!this.skipObstacleCheck && connector.segments && connector.segments.length < 2 && connector.intermediatePoints
+            && this.checkObstaclesIntersect(connector.intermediatePoints, connector, diagram)) {
+            if (diagram.avoidLineOverlappingModule && isUpdate) {
+                diagram.avoidLineOverlappingModule.addConnector(connector);
+                diagram.avoidLineOverlappingModule.refreshModifiedConnectors(diagram);
+            }
+            return;
+        }
         const sourceId: string = connector.sourceID; const targetId: string = connector.targetID;
         const sourcePortID: string = connector.sourcePortID; const targetPortID: string = connector.targetPortID;
         let startPoint: PointModel; let targetPoint: PointModel; let sourcePortDirection: string; let targetPortDirection: string;
@@ -631,7 +744,7 @@ export class LineRouting {
         diagram: Diagram, intermediatePoints: PointModel[], gridCollection: VirtualBoundaries[][],
         connector: Connector, isUpdate: boolean): boolean {
 
-        const segments: OrthogonalSegmentModel[] = []; let seg: OrthogonalSegmentModel; let targetPoint: PointModel;
+        let segments: OrthogonalSegmentModel[] = []; let seg: OrthogonalSegmentModel; let targetPoint: PointModel;
         let pointX: number; let pointY: number; let node: VirtualBoundaries; const points: PointModel[] = [];
         let direction: Direction; let length: number; let currentdirection: Direction; let prevDirection: Direction;
         const targetWrapper: DiagramElement = connector.targetWrapper; const sourceWrapper: DiagramElement = connector.sourceWrapper;
@@ -677,9 +790,12 @@ export class LineRouting {
                     if (j === 0 && sourcePoint) {
                         currentPoint.x = sourcePoint.x;
                         currentPoint.y = nextPoint.y = sourcePoint.y;
-                        const newDirection: string = currentPoint.x > nextPoint.x ? 'Left' : 'Right';
-                        const refPoint: PointModel = findPoint(sourceWrapper.bounds, getOppositeDirection(newDirection));
-                        sourcePoint = getIntersection(connector, sourceWrapper, sourcePoint, refPoint, false);
+                        //Bug:849859 -set node bounds as source point if intersected point exists inside the node
+                        if (connector.sourcePortID === '') {
+                            const newDirection: string = currentPoint.x > nextPoint.x ? 'Left' : 'Right';
+                            const refPoint: PointModel = findPoint(sourceWrapper.bounds, getOppositeDirection(newDirection));
+                            sourcePoint = getIntersection(connector, sourceWrapper, sourcePoint, refPoint, false);
+                        }
                         currentPoint.x = sourcePoint.x;
                     }
                     if (j === points.length - 2 && targetPoint) {
@@ -709,9 +825,12 @@ export class LineRouting {
                     if (j === 0 && sourcePoint) {
                         currentPoint.y = sourcePoint.y;
                         currentPoint.x = nextPoint.x = sourcePoint.x;
-                        const newDirection1: string = currentPoint.y > nextPoint.y ? 'Top' : 'Bottom';
-                        const refPoint: PointModel = findPoint(sourceWrapper.bounds, getOppositeDirection(newDirection1));
-                        sourcePoint = getIntersection(connector, sourceWrapper, sourcePoint, refPoint, false);
+                        //Bug:849859 -set node bounds as source point if intersected point exists inside the node
+                        if (connector.sourcePortID === '') {
+                            const newDirection1: string = currentPoint.y > nextPoint.y ? 'Top' : 'Bottom';
+                            const refPoint: PointModel = findPoint(sourceWrapper.bounds, getOppositeDirection(newDirection1));
+                            sourcePoint = getIntersection(connector, sourceWrapper, sourcePoint, refPoint, false);
+                        }
                         currentPoint.y = sourcePoint.y;
                     }
                     if (j === points.length - 2 && targetPoint) {
@@ -731,25 +850,40 @@ export class LineRouting {
                 }
             }
 
-            for (let j: number = 0; j < points.length - 1; j++) {
-                const currentPoint: PointModel = points[parseInt(j.toString(), 10)];
-                const nextPoint: PointModel = points[j + 1];
-
-                if (currentPoint.x !== nextPoint.x) {
-                    if (currentPoint.x > nextPoint.x) {
-                        direction = 'Left'; length = currentPoint.x - nextPoint.x;
-                    } else {
-                        direction = 'Right'; length = nextPoint.x - currentPoint.x;
-                    }
-                } else {
-                    if (currentPoint.y > nextPoint.y) {
-                        direction = 'Top'; length = currentPoint.y - nextPoint.y;
-                    } else {
-                        direction = 'Bottom'; length = nextPoint.y - currentPoint.y;
-                    }
+            if (diagram.avoidLineOverlappingModule && isUpdate) {
+                diagram.avoidLineOverlappingModule.addConnector(connector, points);
+                const modifiedConnectors = diagram.avoidLineOverlappingModule.getModifiedConnector();
+                if (modifiedConnectors.has(connector)) {
+                    segments = diagram.avoidLineOverlappingModule.getModifiedConnectorSegments(connector);
+                    modifiedConnectors.delete(connector);
                 }
-                seg = { type: 'Orthogonal', length: length, direction: direction };
-                segments.push(seg);
+
+                if (modifiedConnectors.size > 0) {
+                    diagram.avoidLineOverlappingModule.refreshModifiedConnectors(diagram);
+                }
+            }
+
+            if (segments.length === 0) {
+                for (let j: number = 0; j < points.length - 1; j++) {
+                    const currentPoint: PointModel = points[parseInt(j.toString(), 10)];
+                    const nextPoint: PointModel = points[j + 1];
+
+                    if (currentPoint.x !== nextPoint.x) {
+                        if (currentPoint.x > nextPoint.x) {
+                            direction = 'Left'; length = currentPoint.x - nextPoint.x;
+                        } else {
+                            direction = 'Right'; length = nextPoint.x - currentPoint.x;
+                        }
+                    } else {
+                        if (currentPoint.y > nextPoint.y) {
+                            direction = 'Top'; length = currentPoint.y - nextPoint.y;
+                        } else {
+                            direction = 'Bottom'; length = nextPoint.y - currentPoint.y;
+                        }
+                    }
+                    seg = { type: 'Orthogonal', length: length, direction: direction };
+                    segments.push(seg);
+                }
             }
         }
 
@@ -766,7 +900,9 @@ export class LineRouting {
             if (connector.targetDecorator &&
                 ((lastSeg.direction === 'Top' || lastSeg.direction === 'Bottom') && lastSeg.length > connector.targetDecorator.height + 1) ||
                 ((lastSeg.direction === 'Right' || lastSeg.direction === 'Left') && lastSeg.length > connector.targetDecorator.width + 1)) {
-                connector.segments = segments;
+                if (isUpdate || !diagram.avoidLineOverlappingModule) {
+                    connector.segments = segments;
+                }
                 if (isUpdate) {
                     diagram.connectorPropertyChange(
                         connector as Connector, {} as Connector, { type: 'Orthogonal', segments: segments } as Connector);

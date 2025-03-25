@@ -84,9 +84,6 @@ export class Filter {
         case 'setAdjustmentValue':
             this.adjustmentValue = args.value['adjustmentValue'];
             break;
-        case 'getBrightnessAdjusted':
-            args.value['obj']['isBrightnessAdjusted'] = this.isBrightnessAdjusted;
-            break;
         case 'setBrightnessAdjusted':
             this.isBrightnessAdjusted = args.value['isBrightnessAdjusted'];
             if (this.parent.currentFilter.split('_') && this.parent.currentFilter.split('_')[1] === 'cold') {
@@ -165,18 +162,6 @@ export class Filter {
         let splitWords: string[] = this.lowerContext.filter.split(' ');
         let values: string[] = [];
         const brightness: number = this.getFilterValue(this.adjustmentLevel.brightness);
-        const excludedTypes: string[] = ['brightness', 'contrast', 'hue', 'saturation', 'exposure', 'opacity', 'blur'];
-        if (excludedTypes.indexOf(type) === -1) {
-            if (isNullOrUndefined(isPreview) && (this.adjustmentLevel.sharpen || this.adjustmentLevel.bw)) {
-                parent.isUndoRedo = true;
-                const temp: string = this.lowerContext.filter;
-                this.lowerContext.filter = 'none';
-                parent.notify('shape', { prop: 'drawAnnotations', onPropertyChange: false,
-                    value: {ctx: this.lowerContext, shape: 'iterate', pen: 'iterate', isPreventApply: null }});
-                this.lowerContext.filter = temp;
-                parent.isUndoRedo = false;
-            }
-        }
         let saturate: number; let bright: number; let saturatePercent: number; let contrast: number;
         let saturatePercentage: number;
         switch (type) {

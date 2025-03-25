@@ -11,6 +11,7 @@ import { CalendarType } from '../../common/calendar-util';
 import * as util from '../base/util';
 import * as cls from '../base/css-constant';
 import * as event from '../base/constant';
+import { CurrentAction } from '../base/type';
 /**
  * EventBase for appointment rendering
  */
@@ -19,6 +20,7 @@ export class EventBase {
     public slots: number[] = [];
     public cssClass: string;
     public groupOrder: string[];
+    public processedData: Record<string, any>[] = [];
     private isDoubleTapped: boolean = false;
 
     /**
@@ -89,6 +91,26 @@ export class EventBase {
         const eventData: Record<string, any>[] = processed.filter((data: Record<string, any>) =>
             !data[this.parent.eventFields.isBlock]);
         this.parent.eventsProcessed = this.filterEvents(start, end, eventData);
+        if (!this.parent.activeViewOptions.allowOverlap && this.parent.eventsProcessed.length > 0) {
+            this.processedData = this.parent.eventsProcessed;
+            const nonOverlapList: Record<string, any>[] = [];
+            const fields: EventFieldsMapping = this.parent.eventFields;
+            for (const data of this.parent.eventsProcessed as Record<string, any>[]) {
+                const overlappingData: Record<string, any> = this.findOverlappingData(data, nonOverlapList);
+                if (!overlappingData) {
+                    nonOverlapList.push(data);
+                } else if (!this.parent.eventSettings.sortComparer) {
+                    const dataDuration: number = new Date(data[fields.endTime]).getTime() - new Date(data[fields.startTime]).getTime();
+                    const duplicateDuration: number = new Date(overlappingData[fields.endTime]).getTime() - new Date(overlappingData[fields.startTime]).getTime();
+                    if ((dataDuration > duplicateDuration && data[fields.startTime] === overlappingData[fields.startTime]) || (data[fields.isAllDay] === true)) {
+                        const index: number = nonOverlapList.indexOf(overlappingData);
+                        if (index !== -1) { nonOverlapList.splice(index, 1); }
+                        nonOverlapList.push(data);
+                    }
+                }
+            }
+            this.parent.eventsProcessed = nonOverlapList;
+        }
         const blockData: Record<string, any>[] = processed.filter((data: Record<string, any>) =>
             data[this.parent.eventFields.isBlock]);
         for (const eventObj of blockData) {
@@ -103,6 +125,82 @@ export class EventBase {
         }
         this.parent.blockProcessed = blockData;
         return eventData;
+    }
+
+    private findOverlappingData(eventData: Record<string, any>, eventList: Record<string, any>[]): Record<string, any> | undefined {
+        const isResource: boolean = this.parent.activeViewOptions.group.resources.length > 0;
+        const resourceCollection: ResourcesModel[] = isResource ? this.parent.resourceBase.resourceCollection : [];
+        const lastLevelResource: string = isResource ? resourceCollection[resourceCollection.length - 1].field : null;
+        const fields: EventFieldsMapping = this.parent.eventFields;
+        const newStartTime: Date = new Date(eventData[fields.startTime]);
+        const newEndTime: Date = new Date(eventData[fields.endTime]);
+        for (const existingEvent of eventList) {
+            if (
+                newStartTime < existingEvent[fields.endTime] &&
+                newEndTime > existingEvent[fields.startTime] &&
+                existingEvent[fields.id] !== eventData[fields.id] &&
+                (!isResource || isNullOrUndefined(lastLevelResource) ||
+                    this.compareResourceValues(existingEvent[`${lastLevelResource}`], eventData[`${lastLevelResource}`]))
+            ) {
+                return existingEvent;
+            }
+        }
+        return undefined;
+    }
+
+    private isOverlapRange(eventData: Record<string, any> | Record<string, any>[], currentAction: CurrentAction = null): boolean {
+        const isResource: boolean = this.parent.activeViewOptions.group.resources.length > 0;
+        const resourceCollection: ResourcesModel[] = isResource ? this.parent.resourceBase.resourceCollection : [];
+        const lastLevelResource: string = isResource ? resourceCollection[resourceCollection.length - 1].field : null;
+        const eventCollection: Record<string, any>[] = Array.isArray(eventData) ? eventData : [eventData];
+        const fields: EventFieldsMapping = this.parent.eventFields;
+
+        const processOverlappingEvents: (data: Record<string, any>) => Record<string, any>[] = (data: Record<string, any>) => {
+            return this.processedData.filter((x: Record<string, any>) =>
+                data[fields.startTime] < x[fields.endTime] &&
+                data[fields.endTime] > x[fields.startTime] &&
+                x[fields.id] !== data[fields.id] &&
+                (!isResource || isNullOrUndefined(lastLevelResource) || this.compareResourceValues(x[`${lastLevelResource}`], data[`${lastLevelResource}`]))
+            );
+        };
+        const overlappedEvents: Record<string, any>[] = [];
+        let isOverlapAlert: boolean = false;
+
+        for (const event of eventCollection) {
+            const dataCol: Record<string, any>[] = !isNullOrUndefined(event[fields.recurrenceRule]) &&
+                (isNullOrUndefined(event[fields.recurrenceID]) || event[fields.recurrenceID] === event[fields.id]) &&
+                (isNullOrUndefined(event[fields.recurrenceID]) || currentAction === 'EditSeries')
+                ? this.generateOccurrence(event)
+                : [event];
+
+            for (const data of dataCol) {
+                const overlappingEvents: Record<string, any>[] = processOverlappingEvents(data);
+                if (overlappingEvents.length > 0) {
+                    overlappedEvents.push(...overlappingEvents);
+                }
+                if (this.findOverlappingData(data, this.parent.eventsProcessed)) {
+                    isOverlapAlert = true;
+                }
+            }
+        }
+        this.parent.overlapAppointments = overlappedEvents;
+        return isOverlapAlert;
+    }
+
+    private compareResourceValues(a: string | number | (string | number)[], b: string | number | (string | number)[]): boolean {
+        type GetValueFunction = (value: string | number | (string | number)[]) => string | number;
+        const getValue: GetValueFunction = (value: string | number | (string | number)[]) => Array.isArray(value) ? value[0] : value;
+        return getValue(a) === getValue(b);
+    }
+
+    public checkOverlap(eventData: Record<string, any> | Record<string, any>[]): boolean {
+        if (!this.parent.activeViewOptions.allowOverlap) {
+            if (this.isOverlapRange(eventData)) {
+                this.parent.quickPopup.openValidationError('overlapAlert', eventData);
+                return true;
+            }
+        }
+        return false;
     }
 
     public updateEventDateTime(eventData: Record<string, any>): Record<string, any> {

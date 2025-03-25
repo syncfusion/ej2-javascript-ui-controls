@@ -243,8 +243,8 @@
         width: $toast-icon-nrml-width;
         @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
           left: 16px;
+          margin-left: 13px;
           margin-top: 13px;
-          position: absolute;
         }
       }
 

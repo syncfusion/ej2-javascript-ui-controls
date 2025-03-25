@@ -1,4 +1,4 @@
-import { Workbook, SheetModel, CellModel, getCell, getSheet } from '../base/index';
+import { Workbook, SheetModel, CellModel, getCell, getSheet, isCustomDateTime } from '../base/index';
 import { workbookEditOperation, checkDateFormat, workbookFormulaOperation, refreshChart, checkUniqueRange, getFormattedCellObject, checkNumberFormat } from '../common/event';
 import { getRangeIndexes, parseIntValue, setLinkModel, getCellAddress, NumberFormatArgs, isNumber, LocaleNumericSettings } from '../common/index';
 import { defaultCurrencyCode, getNumberDependable, getNumericObject, Internationalization, isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -128,20 +128,33 @@ export class WorkbookEdit {
                 if (!isFormula) {
                     const cellType: string = getTypeFromFormat(cell.format);
                     const valArr: string[] = value ? value.toString().split('/') : [];
-                    if (cellType !== 'Fraction' ||  valArr.length !== 2) {
+                    if ((cellType !== 'Number' && cellType !== 'Percentage' && cellType !== 'Fraction' && !(cellType === 'Scientific' && valArr.length === 2)) ||
+                        (cellType === 'Fraction' && valArr.length !== 2)) {
                         this.parent.notify(checkDateFormat, dateEventArgs);
                     }
                     if (!isNullOrUndefined(dateEventArgs.updatedVal) && (dateEventArgs.updatedVal as string).length > 0) {
                         cell.value = <string>dateEventArgs.updatedVal;
                     } else if (this.parent.isEdit && value && !isNumber(value)) {
+                        const curSymbol: string = getNumberDependable(this.parent.locale, defaultCurrencyCode);
                         if (cell.format) {
-                            const evtArgs: NumberFormatArgs = {
-                                value: cell.value, format: cell.format, formattedText: cell.value,
-                                type: 'General', cell: cell, rowIndex: range[0], colIndex: range[1]
-                            };
-                            this.parent.notify(getFormattedCellObject, evtArgs);
+                            if ((value.includes('%') || value.includes(curSymbol)) && isCustomDateTime(cell.format)) {
+                                const formatArgs: NumberFormatArgs = {
+                                    formattedText: value, value: value, format: 'General',
+                                    cell: { value: value, format: 'General' }, isEdit: true
+                                };
+                                this.parent.notify(getFormattedCellObject, formatArgs);
+                                if (formatArgs.format !== 'General' && ['Currency', 'Percentage'].indexOf(getTypeFromFormat(formatArgs.format)) > -1) {
+                                    cell.format = formatArgs.format;
+                                    cell.value = <string>formatArgs.value;
+                                }
+                            } else {
+                                const evtArgs: NumberFormatArgs = {
+                                    value: cell.value, format: cell.format, formattedText: cell.value,
+                                    type: 'General', cell: cell, rowIndex: range[0], colIndex: range[1]
+                                };
+                                this.parent.notify(getFormattedCellObject, evtArgs);
+                            }
                         } else {
-                            const curSymbol: string = getNumberDependable(this.parent.locale, defaultCurrencyCode);
                             if (value.includes(curSymbol) || value.includes('%') ||
                                 value.includes((<LocaleNumericSettings>getNumericObject(this.parent.locale)).group)) {
                                 const intl: Internationalization = new Internationalization();
@@ -166,8 +179,7 @@ export class WorkbookEdit {
                 const args: { cellIdx: number[], isUnique: boolean } = { cellIdx: range, isUnique: false };
                 this.parent.notify(checkUniqueRange, args);
                 if (this.parent.calculationMode === 'Manual' && isFormula && isNullOrUndefined(isDependentUpdate) &&
-                    (!(actionName === 'autofill' || actionName === 'FillSeries') ||
-                        (actionName === 'autofill' && cell.formula !== '')) && !this.parent.isEdit &&
+                    (actionName !== 'autofill' || cell.formula !== '') && !this.parent.isEdit &&
                     isNullOrUndefined((this.parent.element.querySelector('.e-text-replaceInp') as HTMLInputElement))) {
                     skipFormula = true;
                     if (!isRedo && cell.value === undefined) {
@@ -205,10 +217,13 @@ export class WorkbookEdit {
                         }
                     }
                     const formula: string = cell.formula.toLowerCase();
-                    if (formula === '=now()' && (!cell.format || cell.format === 'General')) {
+                    const isNeedFormatUpdate: boolean = getTypeFromFormat(cell.format) === 'Scientific' && !skipFormatCheck && this.parent.isEdit;
+                    if (formula === '=now()' && (!cell.format || cell.format === 'General' || isNeedFormatUpdate)) {
                         cell.format = `${getFormatFromType('ShortDate')} h:mm`;
-                    } else if (formula.includes('=time(') && !cell.format) {
+                    } else if (formula.includes('=time(') && (!cell.format || isNeedFormatUpdate)) {
                         cell.format = 'h:mm AM/PM';
+                    } else if (formula.includes('=date(') && isNeedFormatUpdate) {
+                        cell.format = getFormatFromType('ShortDate');
                     }
                 } else if (cell.value && typeof cell.value === 'string' && (cell.value.indexOf('www.') === 0 ||
                     cell.value.indexOf('https://') === 0 || cell.value.indexOf('http://') === 0 || cell.value.indexOf('ftp://') === 0)) {
@@ -224,7 +239,7 @@ export class WorkbookEdit {
         }
         this.parent.setUsedRange(range[0], range[1], sheet);
         if (this.parent.chartColl.length && !this.parent.isEdit && !isRandomFormula) {
-            this.parent.notify(refreshChart, {cell: cell, rIdx: range[0], cIdx: range[1], sheetIdx: sheetIdx });
+            this.parent.notify(refreshChart, {cell: cell, rIdx: range[0], cIdx: range[1], sheetIdx: sheetIdx, isRefreshChart: true });
         }
         return isFormulaDependent;
     }

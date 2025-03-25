@@ -1,4 +1,4 @@
-import { isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, L10n, updateCSSText } from '@syncfusion/ej2-base';
 import { WCharacterFormat, WParagraphFormat } from '../index';
 import { WCellFormat } from '../index';
 import { WBorder } from '../index';
@@ -1003,7 +1003,7 @@ private calculatePathBounds(data: string): Rect {
         }
         for (let i: number = 0; i < paraWidget.childWidgets.length; i++) {
             let widget: LineWidget = paraWidget.childWidgets[i] as LineWidget;
-            top += widget.marginTop;
+            top += widget.marginTop;            
             this.renderLine(widget, page, left, top);
             top += widget.height;
         }
@@ -1316,7 +1316,7 @@ private calculatePathBounds(data: string): Rect {
             let firstPara: ParagraphWidget = this.documentHelper.selection.getFirstParagraph(cellWidget) as ParagraphWidget;
             let firstLine: LineWidget = firstPara.firstChild as LineWidget;                
             let xLeft = firstLine.paragraph.x;
-            if(firstLine.children.length > 0 && !isNullOrUndefined(firstLine.children[0].margin) && firstLine.children[0].margin.left > 0){
+            if (firstLine.children.length > 0 && !isNullOrUndefined(firstLine.children[0].margin) && firstLine.children[0].margin.left > 0) {
                 xLeft += firstLine.children[0].margin.left;
             }
             let ytop = firstLine.paragraph.y;
@@ -1327,7 +1327,6 @@ private calculatePathBounds(data: string): Rect {
                 this.renderBookmark(this.getScaledValue(xLeft, 1),this.getScaledValue(ytop, 2),this.getScaledValue(firstLine.height - firstLine.margin.bottom),0,color);
             }
         }
-        
         //Commented out the following code as part of bug fix (BUG-935678):The Editable region start marker rendering issue when the paragraph has a left margin.
         //As per Microsoft Word behavior, when a cell, row, or table contains an editable element, the edit range end element should not be rendered for each cell.        
         // To align with this behavior, we have disabled this logic.
@@ -1664,7 +1663,7 @@ private calculatePathBounds(data: string): Rect {
                     if(this.documentHelper.owner.documentEditorSettings.highlightEditableRanges && elementBox.columnFirst==-1 ){
                         var height = elementBox.line.height - elementBox.line.margin.bottom;
                         let xLeft = left;
-                        if(!isNullOrUndefined(elementBox.margin) && elementBox.margin.left > 0){
+                        if (!isNullOrUndefined(elementBox.margin) && elementBox.margin.left > 0) {
                             xLeft += elementBox.margin.left;
                         }
                         let yTop = top;
@@ -1687,10 +1686,11 @@ private calculatePathBounds(data: string): Rect {
                             leftPosition = lineWidget.paragraph.x - 5 + 'px;';
                         }
                         style = style + 'left:' + leftPosition + 'top:' + topPosition;
-                        elementBox.editRangeMark.setAttribute('style', style);
+                        updateCSSText(elementBox.editRangeMark, style);
                     } else {
                         if (elementBox.editRangeMark) {
-                            elementBox.editRangeMark.setAttribute('style', 'display:none');
+                            const cssText:string = 'display:none';
+                            updateCSSText(elementBox.editRangeMark, cssText);
                         }
                     }
                 } else if (elementBox instanceof CommentCharacterElementBox &&
@@ -1708,11 +1708,12 @@ private calculatePathBounds(data: string): Rect {
                         if (commentIDList.indexOf(elementBox.commentId) === -1 && !isNullOrUndefined(elementBox.comment) && !elementBox.comment.isReply) {
                             commentIDList.push(elementBox.commentId);
                             elementBox.renderCommentMark(topPosition, leftPosition);
-                            elementBox.commentMark.setAttribute('style', style);
+                            updateCSSText(elementBox.commentMark, style);
                         }
                     } else {
                         if (elementBox.commentMark) {
-                            elementBox.commentMark.setAttribute('style', 'display:none');
+                            const cssText:string = 'display:none';
+                            updateCSSText(elementBox.commentMark, cssText);
                         }
                     }
                 }
@@ -1732,7 +1733,7 @@ private calculatePathBounds(data: string): Rect {
             if (elementBox instanceof BookmarkElementBox && this.documentHelper.owner.documentEditorSettings.showBookmarks && this.documentHelper.getBookmarks().indexOf(elementBox.name) !== -1) {
                 var height = elementBox.line.height - elementBox.line.margin.bottom;
                 let xLeft = left;
-                if(!isNullOrUndefined(elementBox.margin) && elementBox.margin.left > 0){
+                if (!isNullOrUndefined(elementBox.margin) && elementBox.margin.left > 0) {
                     xLeft += elementBox.margin.left;
                 }
                 let yTop = top;
@@ -1762,10 +1763,10 @@ private calculatePathBounds(data: string): Rect {
                             }
                         }
                         if(!isNullOrUndefined(prevRenderableElement)){
-                            if(previousParaElement.containerWidget instanceof TableCellWidget){
+                            if (previousParaElement.containerWidget instanceof TableCellWidget) {
                                 xLeft += previousParaElement.x + this.documentHelper.selection.getWidth(prevRenderableElement.line, false) + this.documentHelper.textHelper.getParagraphMarkWidth(elementBox.line.paragraph.characterFormat);
-                            }else{
-                                xLeft += this.documentHelper.selection.getWidth(prevRenderableElement.line, false) + this.documentHelper.textHelper.getParagraphMarkWidth(elementBox.line.paragraph.characterFormat);  
+                            } else {
+                                xLeft += this.documentHelper.selection.getWidth(prevRenderableElement.line, false) + this.documentHelper.textHelper.getParagraphMarkWidth(elementBox.line.paragraph.characterFormat);
                             }
                             yTop = this.documentHelper.selection.getTop(prevRenderableElement.line);
                         }
@@ -1987,7 +1988,7 @@ private calculatePathBounds(data: string): Rect {
                     }
                 }
             }
-            if (text.length > 0) {
+            if (text.length > 0 && !(lineWidget.paragraph.characterFormat.hidden && lineWidget.paragraph.height === 0)) {
                 if (lineWidget.paragraph.bidi && !lineWidget.paragraph.isEmpty()) {
                     x -= this.documentHelper.textHelper.getWidth(text, currentCharFormat, FontScriptType.English);
                 }
@@ -2287,7 +2288,6 @@ private calculatePathBounds(data: string): Rect {
         } else {
             this.pageContext.fillStyle = HelperMethods.getColor(color);
         }
-
         let scaledWidth: number = this.getScaledValue(elementBox.width);
         let text: string = elementBox.text;
         if (elementBox instanceof TabElementBox) {

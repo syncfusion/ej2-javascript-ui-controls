@@ -647,7 +647,7 @@ describe('FileManager control Grid view', () => {
                     { field: 'type', headerText: 'Type', width: '100', minWidth: 8, textAlign: 'Left', },
                     { field: 'size', headerText: 'Size', headerTextAlign: 'Left', minWidth: 8, width: '100', textAlign: 'Right' },
                     { field: 'hasChild', headerText: 'Has Children', minWidth: 8, width: '200', textAlign: 'Right' },
-                    { field: 'filterPath', headerText: 'Path'}
+                    { field: 'filterPath', headerText: 'Path' }
                     ]
                 },
             });

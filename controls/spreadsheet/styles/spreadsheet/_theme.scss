@@ -1024,13 +1024,13 @@
 
     & .e-frozen-column {
       background-color: $freezepane-color;
-      @if $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' or $sheet-skin == 'bootstrap5.3' or $sheet-skin == 'Material3' or $sheet-skin == 'fluent2' or $sheet-skin == 'tailwind3' {
+      @if $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' or $sheet-skin == 'bootstrap5.3' or $sheet-skin == 'Material3' or $sheet-skin == 'fluent2' or $sheet-skin == 'tailwind3' or $sheet-skin == 'FluentUI' {
         border-right: $spreadsheet-frozen-border;
       }
     }
 
     & .e-frozen-row {
-      @if $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' or $sheet-skin == 'bootstrap5.3' or $sheet-skin == 'Material3' or $sheet-skin == 'fluent2' or $sheet-skin == 'tailwind3' {
+      @if $sheet-skin == 'tailwind' or $sheet-skin == 'bootstrap5' or $sheet-skin == 'bootstrap5.3' or $sheet-skin == 'Material3' or $sheet-skin == 'fluent2' or $sheet-skin == 'tailwind3' or $sheet-skin == 'FluentUI' {
         border-bottom: $spreadsheet-frozen-border;
       }
       @else {
@@ -1072,7 +1072,7 @@
         }
       }
     }
-
+    
     & .e-datavalidation-dlg .e-dlg-error {
       color: $dlg-error-color;
     }
@@ -1284,6 +1284,27 @@
         background-color: $ele-hover-color;
       }
     }
+  }
+
+  .e-spreadsheet .e-cf-databar .e-cf-currency {
+    height: 100%;
+    display: inline-grid;
+  }
+
+  .e-spreadsheet .e-iconsetspan {
+    /* stylelint-disable */
+    &.e-cf-icon-top {
+        background-position: 50% 0% !important;
+        top: 1px;
+    }
+    &.e-cf-icon-middle {
+        background-position: 50% 50% !important;
+    }
+    &.e-cf-icon-end {
+        background-position: 50% 99% !important;
+        bottom: 1px;
+    }
+    /* stylelint-enable */
   }
 
   .e-menu-wrapper .e-3arrows-1,

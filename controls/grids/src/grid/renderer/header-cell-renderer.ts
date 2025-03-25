@@ -77,7 +77,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
         if (!isNullOrUndefined(column.headerValueAccessor)) {
             hValueAccer = (this.getValue(column.headerText, column) as string);
         }
-        if (this.parent.allowSorting && column.allowSorting && !isNullOrUndefined(column.field)) {
+        if (this.parent.rowHeight && this.parent.allowSorting && column.allowSorting && !isNullOrUndefined(column.field)) {
             node.classList.add('e-sort-icon');
         }
         if (column.type !== 'checkbox') {
@@ -175,11 +175,12 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
         this.ariaService.setOptions(<HTMLElement>node, ariaAttr);
         if (!isNullOrUndefined(column.headerTextAlign) || !isNullOrUndefined(column.textAlign)) {
             const alignment: string = column.headerTextAlign || column.textAlign;
-            (innerDIV as HTMLElement).style.textAlign = alignment;
-            if (alignment === 'Right' || alignment === 'Left') {
-                node.classList.add(alignment === 'Right' ? 'e-rightalign' : 'e-leftalign');
-            } else if (alignment === 'Center') {
+            if (alignment.toLowerCase() === 'right' || alignment.toLowerCase() === 'left') {
+                node.classList.add(alignment.toLowerCase() === 'right' ? 'e-rightalign' : 'e-leftalign');
+            } else if (alignment.toLowerCase() === 'center') {
                 node.classList.add('e-centeralign');
+            } else if (alignment.toLowerCase() === 'justify') {
+                node.classList.add('e-justifyalign');
             }
         }
         if (column.clipMode === 'Clip' || (!column.clipMode && this.parent.clipMode === 'Clip')) {
@@ -192,7 +193,8 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             }
         }
         if (elementDesc) {
-            const titleElem: HTMLElement = (this.parent.createElement('span', { id: 'headerTitle-' + column.uid , innerHTML: elementDesc, attrs: { style: 'display:none' } }));
+            const titleElem: HTMLElement = (this.parent.createElement('span', { id: 'headerTitle-' + column.uid , innerHTML: elementDesc }));
+            titleElem.style.display = 'none';
             node.appendChild(titleElem);
             node.setAttribute('aria-describedby', titleElem.id);
         }

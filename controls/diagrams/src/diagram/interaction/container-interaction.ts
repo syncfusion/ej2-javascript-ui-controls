@@ -487,7 +487,7 @@ export function updateLaneBoundsAfterAddChild(
     container: NodeModel, swimLane: NodeModel, node: NodeModel | SelectorModel, diagram: Diagram, isBoundsUpdate?: boolean,
     isSelector?: boolean): boolean {
     const undoObject: NodeModel = cloneObject(container);
-    let isUpdateRow: boolean; let isUpdateColumn: boolean; let isGroupAction: boolean = false;
+    let isUpdateRow: boolean;  let isUpdateColumn: boolean; let isGroupAction: boolean = false;
     const padding: number = (swimLane.shape as SwimLane).padding;
     const containerBounds: Rect = container.wrapper.bounds;
     const containerOuterBounds: Rect = container.wrapper.outerBounds;

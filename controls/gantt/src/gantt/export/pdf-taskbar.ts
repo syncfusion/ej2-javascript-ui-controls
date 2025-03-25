@@ -129,6 +129,7 @@ export class PdfGanttTaskbarCollection {
     public endPage: number = -1;
     public isStartPoint: boolean;
     public taskStartPoint: PointF;
+    private spaceBetweenImageAndValue: number = 8;
     public add(): PdfGanttTaskbarCollection {
         return new PdfGanttTaskbarCollection(this.parent);
     }
@@ -179,11 +180,6 @@ export class PdfGanttTaskbarCollection {
                 startPoint.y = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60);
             }
             isNextPage = true;
-            const graphics = page.graphics;
-            const pen = new PdfPen(new PdfColor(206, 206, 206));
-            if (page['contentWidth'] && (this.parent.gridLines === "Both" || this.parent.gridLines === "Horizontal")) {
-                graphics.drawRectangle(pen, startPoint.x, startPoint.y, this.isAutoFit() && this.parent.timelineModule.bottomTier !=="Day" ? page['contentWidth'] + 0.5 : lineWidth, rowHeight);
-            }
         }
         this.drawLeftLabel(page, startPoint, detail, cumulativeWidth ,taskbar);
         //Draw Taskbar
@@ -1355,9 +1351,10 @@ export class PdfGanttTaskbarCollection {
             else {
                 actualLeft = left - pixelToPoint(cumulativeWidth) + startPoint.x;
             }
-            if (detail.startPoint <= left && left < detail.endPoint &&
+            const leftForLabel : number = this.isAutoFit() ? pixelToPoint(left) : left;
+            if (detail.startPoint <= leftForLabel && leftForLabel < detail.endPoint &&
                 !isNullOrUndefined(this.rightTaskLabel.value) && !this.rightTaskLabel.isCompleted) {
-                const result: PdfStringLayoutResult = this.getWidth(this.rightTaskLabel.value, detail.endPoint - left, 15);
+                const result: PdfStringLayoutResult = this.getWidth(this.rightTaskLabel.value, detail.endPoint - leftForLabel, 15);
                 let font: PdfFont = new PdfStandardFont(this.fontFamily, 9);
                 let customizedFont : PdfFont;
                 const ganttStyle : IGanttStyle = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle;
@@ -1433,7 +1430,8 @@ export class PdfGanttTaskbarCollection {
                         const value: string[] = this.labelSettings.rightLabel.value.split(',');
                         if (value) {
                             this.rightTaskLabel.isCompleted = false;
-                            this.drawRightLabelValue(page, startPoint, detail, cumulativeWidth, value[i as number]);
+                            this.drawRightLabelValue(page, startPoint, detail,
+                                                     cumulativeWidth - this.spaceBetweenImageAndValue, value[i as number]);
                         }
                     }
                 }
@@ -1485,7 +1483,8 @@ export class PdfGanttTaskbarCollection {
             else {
                 actualLeft = left - pixelToPoint(cumulativeWidth) + startPoint.x;
             }
-            if (detail.startPoint <= left && left < detail.endPoint &&
+            const leftForLabel: number = this.isAutoFit() ? pixelToPoint(left) : left;
+            if (detail.startPoint <= leftForLabel && leftForLabel < detail.endPoint &&
                 !isNullOrUndefined(this.labelSettings.rightLabel) && !this.rightTaskLabel.isCompleted) {
                 const result: SizeF = new SizeF(rightImage.width, rightImage.height);
                 const adjustHeight: number = (pixelToPoint(this.parent.rowHeight) - result.height) / 2;
@@ -1561,9 +1560,10 @@ export class PdfGanttTaskbarCollection {
             else {
                 actualLeft = left - pixelToPoint(cumulativeWidth) + startPoint.x;
             }
-            if (detail.startPoint <= left && left < detail.endPoint &&
+            const leftForLabel: number = this.isAutoFit() ? pixelToPoint(left) : left;
+            if (detail.startPoint <= leftForLabel && leftForLabel < detail.endPoint &&
                 !isNullOrUndefined(rightString) && !this.rightTaskLabel.isCompleted) {
-                const result: PdfStringLayoutResult = this.getWidthofrightLabel(rightString, detail.endPoint - left, 15);
+                const result: PdfStringLayoutResult = this.getWidthofrightLabel(rightString, detail.endPoint - leftForLabel, 15);
                 let font: PdfFont = new PdfStandardFont(this.fontFamily, 9);
                 if (!isNullOrUndefined(this.parent.pdfExportModule['helper']['exportProps'].ganttStyle) &&
                     this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {
@@ -1744,7 +1744,8 @@ export class PdfGanttTaskbarCollection {
                     if (this.labelSettings.leftLabel.value) {
                         const value: string[] = this.labelSettings.leftLabel.value.split(',');
                         if (value) {
-                            this.drawLeftLabelValue(page, startPoint, detail, cumulativeWidth, value[i as number]);
+                            this.drawLeftLabelValue(page, startPoint, detail,
+                                                    cumulativeWidth - this.spaceBetweenImageAndValue, value[i as number]);
                         }
                     }
                 }
@@ -1859,7 +1860,7 @@ export class PdfGanttTaskbarCollection {
             } else {
                 const value: string[] = this.labelSettings.leftLabel.value.split(',');
                 if (value.length === 1) {
-                    left = this.leftTaskLabel.left + this.previousWidthofLeftImage;
+                    left = this.leftTaskLabel.left + (this.previousWidthofLeftImage ? this.previousWidthofLeftImage : 0);
                     this.labelSettings.left = left;
                     const result: PdfStringLayoutResult = this.getWidthofLeftLabel(leftLabelValue, Number.MAX_VALUE, 15);
                     this.previousWidthofLeftValue += this.previousWidthofLeftImage + result.actualSize.width;
@@ -1884,9 +1885,10 @@ export class PdfGanttTaskbarCollection {
             else {
                 actualLeft = left - pixelToPoint(cumulativeWidth) + startPoint.x;
             }
-            if (detail.startPoint <= left && left < detail.endPoint && !isNullOrUndefined(leftLabelValue)
+            const leftForLabel: number = this.isAutoFit() ? pixelToPoint(left) : left;
+            if (detail.startPoint <= leftForLabel && leftForLabel < detail.endPoint && !isNullOrUndefined(leftLabelValue)
                 && !this.leftTaskLabel.isCompleted) {
-                const result: PdfStringLayoutResult = this.getWidthofLeftLabel(leftLabelValue, detail.endPoint - left, 15);
+                const result: PdfStringLayoutResult = this.getWidthofLeftLabel(leftLabelValue, detail.endPoint - leftForLabel, 15);
                 let font: PdfFont = new PdfStandardFont(this.fontFamily, 9);
                 if (!isNullOrUndefined(this.parent.pdfExportModule['helper']['exportProps'].ganttStyle) &&
                     this.parent.pdfExportModule['helper']['exportProps'].ganttStyle.font) {

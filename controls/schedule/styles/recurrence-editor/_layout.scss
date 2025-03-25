@@ -166,6 +166,11 @@
       }
     }
 
+    .e-input-wrapper.e-month-expander-checkbox-wrapper.e-repeat-on-week-selector {
+      min-width: 30px;
+      margin-bottom: 18px;
+    }
+
     .e-input-wrapper-side {
       float: left;
       padding: 16px 20px 0;
@@ -396,7 +401,7 @@
         }
 
         .e-recurrence-table .e-day-position {
-          padding-left: 50px;
+          padding-left: 59px;
         }
       }
 

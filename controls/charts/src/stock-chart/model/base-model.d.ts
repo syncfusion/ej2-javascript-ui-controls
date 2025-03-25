@@ -701,6 +701,13 @@ export interface StockSeriesModel {
      */
     columnSpacing?: number;
 
+    /**
+     * Enables or disables the display of tooltips for the nearest data point to the cursor for series.
+     *
+     * @default true
+     */
+    showNearestTooltip?: boolean;
+
 }
 
 /**

@@ -78,6 +78,7 @@ export * from './interaction/actions';
 export * from './interaction/connector-editing';
 export * from './interaction/container-interaction';
 export * from './interaction/line-routing';
+export * from './interaction/line-overlapping';
 export * from './interaction/line-distribution';
 
 export * from './diagram/data-source';

@@ -349,7 +349,9 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
             //const container: HTMLElement = document.getElementById(this.element.id);
             view.diagramLayer = CanvasRenderer.createCanvas(
                 this.element.id + '_diagramLayer', this.model.width as number, this.model.height as number);
-            view.diagramLayer.setAttribute('style', 'position:absolute; left:0px;  top:0px ');
+            view.diagramLayer.style.position = 'absolute';
+            view.diagramLayer.style.left = '0px';
+            view.diagramLayer.style.top = '0px';
             view.diagramLayerDiv.appendChild(view.diagramLayer);
             view.canvas.appendChild(view.diagramLayerDiv);
         }
@@ -432,7 +434,7 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
             'fill': 'transparent', 'width': '100%', 'height': '100%', 'class': 'overviewbackrect',
             'id': this.canvas.id + 'overviewbackrect'
         });
-        rect.setAttribute('style', ' pointer-events: none; ');
+        rect.style.pointerEvents = 'none';
         ovw.appendChild(rect);
         //const svgDocument: SVGElement = (ovw);
         const g: SVGElement = createSvgElement('g', { 'id': this.canvas.id + 'overviewhandle', 'style': 'pointer-events:all' });

@@ -788,12 +788,14 @@ describe('UI Spec ', () => {
             clickVideo(video);
             setTimeout(() => {
                 const quickToolbar = document.querySelector('.e-rte-elements.e-rte-quick-popup.e-lib.e-popup.e-control.e-tooltip.e-rte-pop.e-popup-open');
-                const quickToolbarRect = quickToolbar.getBoundingClientRect();
-                const videoRect = video.getBoundingClientRect();
-                expect(quickToolbarRect.left).toBeGreaterThan(videoRect.left);
-                expect(videoRect.right).toBeGreaterThan(quickToolbarRect.right);
-                done();
-            }, 150);
+                if (!isNullOrUndefined(quickToolbar)) {
+                    const quickToolbarRect = quickToolbar.getBoundingClientRect();
+                    const videoRect = video.getBoundingClientRect();
+                    expect(quickToolbarRect.left).toBeGreaterThan(videoRect.left);
+                    expect(videoRect.right).toBeGreaterThan(quickToolbarRect.right);  
+                    done(); 
+                }
+            }, 500);
         });
     });
 
@@ -956,7 +958,7 @@ describe('UI Spec ', () => {
                 const videoRect = videoElment.getBoundingClientRect();
                 expect(videoRect.left).toBeGreaterThan(quickToolbarRect.left);
                 done();
-            }, 2000);
+            }, 4000);
         });
     });
 

@@ -2,7 +2,7 @@ import { Chart, Alignment } from '..';
 import { AxisModel } from '../axis/axis-model';
 import { Axis } from '../axis/axis';
 import { SeriesModel } from '../series/chart-series-model';
-import { BorderModel, FontModel } from '../../common/model/base-model';
+import { BorderModel, CornerRadiusModel, FontModel } from '../../common/model/base-model';
 import { Series, Points } from '../series/chart-series';
 import { ChartShape} from '../utils/enum';
 import { AccPoints, AccumulationSeries } from '../../accumulation-chart/model/acc-base';
@@ -258,6 +258,8 @@ export interface IPointRenderEventArgs extends IChartEventArgs {
     width?: number;
     /** Defines the point marker shape. */
     shape?: ChartShape;
+    /** Defines the corner radius of the point. */
+    cornerRadius?: CornerRadiusModel;
 }
 
 export interface ISeriesRenderEventArgs {
@@ -317,13 +319,6 @@ export interface IPrintEventArgs extends IChartEventArgs {
     htmlContent: Element;
 }
 
-export interface IExportEventArgs extends IChartEventArgs {
-    /** Defines the width of the exported chart. */
-    width: number;
-    /** Defines the height of the exported chart. */
-    height: number;
-}
-
 
 export interface IZoomingEventArgs extends IChartEventArgs {
     /** Defines the collection of axis data that is involved in the zoom operation. */
@@ -365,6 +360,7 @@ export interface IThemeStyle {
     areaBorder: string;
     errorBar : string;
     crosshairLine: string;
+    crosshairBackground: string;
     crosshairFill: string;
     crosshairLabel: string;
     tooltipFill: string;

@@ -2,22 +2,6 @@
 
 ## [Unreleased]
 
-## 28.2.5 (2025-02-11)
-
-### Dashboard Layout
-
-#### Bug Fixes
-
-- `#I686340` - The issue with the layout height after removing all the panels has been resolved.
-
-## 28.2.4 (2025-02-04)
-
-### Dashboard Layout
-
-#### Bug Fixes
-
-- `#I680947` - The issue with the "size of the drag-and-drop helper element differs from the original panel size in Dashboard Layout" has been resolved.
-
 ## 25.1.35 (2024-03-15)
 
 ### Timeline

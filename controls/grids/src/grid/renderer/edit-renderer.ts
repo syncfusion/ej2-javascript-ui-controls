@@ -164,7 +164,8 @@ export class EditRender {
                 const cells: Cell<Column>[] = model.generateRows(args.rowData)[0].cells;
                 const cell: Cell<Column>[] = cells.filter((cell: Cell<Column>) => cell.rowID);
                 const td: Element = cellRenderer.render(
-                    cell[parseInt(i.toString(), 10)], args.rowData, <{ [x: string]: string }>{ 'index': args.row ? args.row.getAttribute(literals.dataRowIndex) : 0 }, this.parent.enableVirtualization);
+                    cell[parseInt(i.toString(), 10)], args.rowData, <{ [x: string]: string }>{ 'index': args.row ? (parseInt(args.row.getAttribute(
+                        literals.ariaRowIndex), 10) - 1).toString() : 0 }, this.parent.enableVirtualization);
                 const div: Element = td.firstElementChild;
                 div.setAttribute('textAlign', td.getAttribute('textAlign'));
                 elements[col.uid] = div;

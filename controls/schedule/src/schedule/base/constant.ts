@@ -63,9 +63,14 @@ export const agendaCells: string = 'agendaCells';
 export const resourceHeader: string = 'resourceHeader';
 /** @private */
 export const dateHeader: string = 'dateHeader';
-
 /** @private */
 export const beforePaste: string = 'beforePaste';
+/** @private */
+export const beforePrint: string = 'beforePrint';
+/** @private */
+export const excelExport: string = 'excelExport';
+/** @private */
+export const tooltipOpen: string = 'tooltipOpen';
 
 /**
  * Specifies schedule internal events

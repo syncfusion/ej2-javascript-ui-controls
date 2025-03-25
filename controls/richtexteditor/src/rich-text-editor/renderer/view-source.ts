@@ -143,7 +143,8 @@ export class ViewSource {
                 if (isNOU(this.previewElement)) {
                     this.previewElement = this.getSourceCode() as HTMLElement;
                 }
-                this.parent.inputElement.innerHTML = this.replaceAmpersand(this.parent.inputElement.innerHTML);
+                this.parent.inputElement.innerHTML = cleanupInternalElements(this.replaceAmpersand(this.parent.inputElement.innerHTML),
+                                                                             this.parent.editorMode);
                 this.parent.updateValueData();
                 let rteContent: HTMLElement;
                 if (isNOU(this.parent.element.querySelector('#' + this.parent.getID() + '_source-view'))) {

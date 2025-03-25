@@ -30,7 +30,6 @@ export class NavigationPane {
     public touchClickObj: Touch;
     // Specifies the previously selected nodes in the treeview control.
     public previousSelected: string[] = [];
-    private expandTree: boolean = false;
     private isDrag: boolean = false;
     private dragObj: Draggable;
     private isPathDragged: boolean = false;
@@ -292,7 +291,6 @@ export class NavigationPane {
         if (previousPath !== this.parent.path) {
             if (!this.isRightClick && this.isSameNodeClicked) {
                 read(this.parent, this.isPathDragged ? events.pasteEnd : events.pathChanged, this.parent.path);
-                this.isNodeClickCalled = true;
             }
             this.parent.visitedItem = args.node;
         }
@@ -347,7 +345,6 @@ export class NavigationPane {
             }
             this.isSameNodeClicked = true;
             this.isNodeClickCalled = true;
-            this.treeObj.setProperties({selectedNodes: [args.node.getAttribute('data-uid')]});
         }
     }
 
@@ -365,11 +362,10 @@ export class NavigationPane {
             const sNode: Element = select('[data-uid="' + this.treeObj.selectedNodes[0] + '"]', this.treeObj.element);
             const ul: Element = (!isNOU(sNode)) ? select('.' + CLS.LIST_PARENT, sNode) : null;
             if (isNOU(ul)) {
-                this.addChild(args.files, this.treeObj.selectedNodes[0], !this.expandTree);
+                this.addChild(args.files, this.treeObj.selectedNodes[0], true);
             }
             this.expandNodeTarget = '';
         }
-        this.expandTree = false;
         if (isNOU(currFiles)) {
             setValue(this.parent.pathId[this.parent.pathId.length - 1], args.files, this.parent.feFiles);
         }
@@ -468,7 +464,6 @@ export class NavigationPane {
     /* istanbul ignore next */
     private onRenameEndParent(args: ReadArgs): void {
         const id: string = this.renameParent ? this.renameParent : this.parent.pathId[this.parent.pathId.length - 1];
-        this.expandTree = this.treeObj.expandedNodes.indexOf(this.treeObj.selectedNodes[0]) !== -1;
         this.updateTreeNode(args, id);
         this.parent.expandedId = null;
         if (this.renameParent) {

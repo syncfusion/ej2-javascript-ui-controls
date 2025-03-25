@@ -596,6 +596,51 @@ describe(' Summary row format', () => {
   });
 });
 
+describe("EJ2-926455- ShowChildSummary not shown in React", () => { 
+  let TreegridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    TreegridObj = createGrid(
+      {
+        dataSource: summaryRowData,
+        childMapping: 'children',
+        treeColumnIndex: 0,
+        height: 260,
+        columns: [
+            { field: 'FreightID', headerText: 'Freight ID', width: 130 },
+            { field: 'FreightName', width: 195, headerText: 'Freight Name' },
+            { field: 'UnitWeight', headerText: 'Weight Per Unit', type: 'number', width: 130, textAlign: 'Right' },
+            { field: 'TotalUnits', headerText: 'Total Units', type: 'number', width: 125, textAlign: 'Right' }
+        ],
+        aggregates: [{
+            showChildSummary: true,
+            columns: [
+                {
+                    type: 'Max',
+                    field: 'UnitWeight',
+                    columnName: 'UnitWeight',
+                    footerTemplate: 'Maximum: ${Max}'
+                },
+                {
+                type: 'Min',
+                field: 'TotalUnits',
+                columnName: 'TotalUnits',
+                footerTemplate: 'Minimum: ${Min}'
+            }]
+        }]
+      },done);
+  });
+  it("Time taken for rendering rows", function (done: Function) {
+      setTimeout(done, 300);
+  });
+  it('Summary Row Rendering', () => {
+    expect(TreegridObj.getRows()[5].getElementsByClassName('e-rowcell')[2].innerHTML === 'Maximum: 87').toBe(true);
+  });
+ 
+  afterAll(() => {
+    destroy(TreegridObj);
+  });
+});
+
 describe('Summary row Rendering ', () => {
   let TreegridObj: TreeGrid;
   beforeAll((done: Function) => {

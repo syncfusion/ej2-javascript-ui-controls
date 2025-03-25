@@ -99,6 +99,7 @@ export class TechnicalAnalysis extends LineBase {
         if (indicator.indicatorElement) {
             indicator.indicatorElement.setAttribute('role', indicator.accessibility.accessibilityRole ? indicator.accessibility.accessibilityRole : '');
             indicator.indicatorElement.setAttribute('tabindex', indicator.accessibility.focusable ? String(indicator.accessibility.tabIndex) : '-1');
+            if (indicator.accessibility.focusable) { (indicator.indicatorElement as HTMLElement).style.outline = 'none'; }
             indicator.indicatorElement.setAttribute('aria-label', indicator.accessibility.accessibilityDescription ? indicator.accessibility.accessibilityDescription : '');
             indicator.indicatorElement.appendChild(clipRectElement);
         }

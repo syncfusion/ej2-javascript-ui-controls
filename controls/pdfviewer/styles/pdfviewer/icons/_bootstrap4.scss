@@ -519,4 +519,14 @@
     font-size: $pv-eye-icon-font-size;
     padding: $pv-eye-icon-padding;
   }
+
+  .e-pv-button-icon::before {
+    content: '\e9d9';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-drag-and-drop-icon::before {
+    content: '\e726';
+    font-family: 'e-icons';
+  }
 }

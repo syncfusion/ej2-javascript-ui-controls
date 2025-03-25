@@ -655,6 +655,14 @@ export interface AxisModel {
     enableTrim?: boolean;
 
     /**
+     * Specifies whether the axis labels should be wrapped based on the specified `maximumLabelWidth`.
+     * When set to `true`, the axis labels will automatically wrap to fit within the available width defined by `maximumLabelWidth`.
+     *
+     * @default false
+     */
+    enableWrap?: boolean;
+
+    /**
      * The `labelPadding` property adjusts the distance to ensure a clear space between the axis labels and the axis line.
      *
      * @default 5

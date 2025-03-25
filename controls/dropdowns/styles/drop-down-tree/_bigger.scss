@@ -123,6 +123,7 @@
           min-height: $ddt-close-icon-bigger-min-height;
         }
         @if $ddt-skin-name == 'fluent2' {
+          padding: 0;
           &::before {
             font-size: 18px;
           }
@@ -166,6 +167,10 @@
             @if $ddt-skin-name == 'FluentUI' {
               line-height: 38px;
               padding-top: 0;
+            }
+            @if ($ddt-skin-name == 'fluent2') {
+              padding-top: 9px;
+              padding-bottom: 9px;
             }
           }
         }

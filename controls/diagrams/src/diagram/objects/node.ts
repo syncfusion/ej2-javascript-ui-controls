@@ -2738,7 +2738,7 @@ export class Node extends NodeBase implements IElement {
             content.margin = (this.shape as Text).margin;
         }
         // 923325: Grey area visible while drawing "Freehand" connector with DragSegmentThumb enabled
-        if (canShadow(this as NodeModel) && ((this as unknown as ConnectorModel).type !== 'Freehand')) {
+        if (canShadow(this as NodeModel) && ((this as unknown as ConnectorModel).type !== 'Freehand') && ((this.shape as BpmnShape).type !== 'Bpmn' || (this.shape as BpmnShape).shape === 'TextAnnotation')) {
             //941052: Issue with visible property doesn't hide shadows
             if ((this.constraints & NodeConstraints.Shadow) !== 0 && this.visible) {
                 content.shadow = this.shadow;
@@ -2752,7 +2752,7 @@ export class Node extends NodeBase implements IElement {
                 this.oldGradientValue = (this.style.gradient) ? cloneObject(this.style.gradient) : null;
             }
         }
-        if (!(this.wrapper.elementActions & ElementAction.ElementIsGroup) && this.flip === FlipDirection.Horizontal || this.flip === FlipDirection.Vertical) {
+        if (!(this.wrapper.elementActions & ElementAction.ElementIsGroup) && this.flip === FlipDirection.Horizontal  || this.flip === FlipDirection.Vertical) {
             content.flip = this.flip;
             content.flipMode = this.flipMode;
         }

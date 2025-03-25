@@ -1,4 +1,4 @@
-import { SpreadsheetModel, Spreadsheet, SheetModel, DialogBeforeOpenEventArgs, ImageModel } from '../../../src/index';
+import { SpreadsheetModel, Spreadsheet, SheetModel, DialogBeforeOpenEventArgs, ImageModel, focus } from '../../../src/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
 
@@ -94,6 +94,32 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
             expect(sheet.rows[0].cells[0].formula).toBe('=SUM(#REF!D2:D4)');
             expect(sheet.rows[1].cells[0].formula).toBe('=SUM(#REF!D2:D4)');
             done();
+        });
+        it('Sheet rename invalid dialog cancel action testing', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+                expect(args.dialogName).toBe('SheetRenameDialog');
+                args.cancel = true;
+            };
+            spreadsheet.dataBind();
+            helper.triggerMouseAction(
+                'dblclick', null, helper.getElementFromSpreadsheet('.e-sheet-tab .e-toolbar-items'),
+                helper.getElementFromSpreadsheet('.e-sheet-tab .e-active .e-text-wrap'));
+            const editorElem: HTMLInputElement = <HTMLInputElement>helper.getElementFromSpreadsheet('.e-sheet-tab .e-sheet-rename');
+            focus(editorElem);
+            editorElem.value = '*Test';
+            editorElem.setSelectionRange(1, 1);
+            helper.triggerKeyNativeEvent(13, false, false, editorElem);
+            setTimeout(() => {
+                expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).toBeNull();
+                expect(spreadsheet.sheets[0].name).toBe('Sheet1');
+                expect(document.activeElement).toBe(editorElem);
+                helper.triggerKeyNativeEvent(27, false, false, editorElem);
+                expect(spreadsheet.sheets[0].name).toBe('Sheet1');
+                spreadsheet.dialogBeforeOpen = undefined;
+                spreadsheet.dataBind();
+                done();
+            });
         });
     });
 
@@ -588,6 +614,89 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
                     helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, sheetTabEle);
                     setTimeout(() => {
                         expect(helper.getElement('#' + helper.id + '_contextmenu').querySelector('.e-disabled').textContent).toBe('Insert');
+                        done();
+                    });
+                });
+            });
+        });
+    
+        describe('EJ2-942093 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Hidden cells were included while calculating the aggregate values', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('selectRange', ['D2:H11']);
+                expect(spreadsheet.sheets[0].selectedRange).toEqual('D2:H11');
+                let aggregateBtn: HTMLElement = helper.getElement(`#${helper.id}_aggregate`);
+                expect(aggregateBtn).not.toBeNull();
+                expect(aggregateBtn.textContent).toBe('Sum: 5803');
+                helper.click('#' + helper.id + '_aggregate');
+                helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(1)');
+                expect(aggregateBtn.textContent).toBe('Count: 50');
+                helper.click('#' + helper.id + '_aggregate');
+                helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(2)');
+                expect(aggregateBtn.textContent).toBe('Sum: 5803');
+                helper.click('#' + helper.id + '_aggregate');
+                helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(3)');
+                expect(aggregateBtn.textContent).toBe('Avg: 116.06');
+                helper.click('#' + helper.id + '_aggregate');
+                helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(4)');
+                expect(aggregateBtn.textContent).toBe('Min: 1');
+                helper.click('#' + helper.id + '_aggregate');
+                helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(5)');
+                expect(aggregateBtn.textContent).toBe('Max: 1210');
+                helper.invoke('hideRow', [2, 5]);
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].rows[2].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[3].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[4].hidden).toBeTruthy();
+                    expect(spreadsheet.sheets[0].rows[5].hidden).toBeTruthy();
+                    helper.invoke('selectRange', ['D2:H11']);
+                    aggregateBtn = helper.getElement(`#${helper.id}_aggregate`);
+                    expect(aggregateBtn).not.toBeNull();
+                    expect(aggregateBtn.textContent).toBe('Max: 1210');
+                    helper.click('#' + helper.id + '_aggregate');
+                    helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(1)');
+                    expect(aggregateBtn.textContent).toBe('Count: 30');
+                    helper.click('#' + helper.id + '_aggregate');
+                    helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(2)');
+                    expect(aggregateBtn.textContent).toBe('Sum: 3896');
+                    helper.click('#' + helper.id + '_aggregate');
+                    helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(3)');
+                    expect(aggregateBtn.textContent).toBe('Avg: 129.87');
+                    helper.click('#' + helper.id + '_aggregate');
+                    helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(4)');
+                    expect(aggregateBtn.textContent).toBe('Min: 1');
+                    helper.click('#' + helper.id + '_aggregate');
+                    helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(5)');
+                    expect(aggregateBtn.textContent).toBe('Max: 1210');
+                    helper.invoke('hideColumn', [4, 5]);
+                    setTimeout(() => {
+                        expect(spreadsheet.sheets[0].columns[4].hidden).toBeTruthy();
+                        expect(spreadsheet.sheets[0].columns[5].hidden).toBeTruthy();
+                        helper.invoke('selectRange', ['D2:H11']);
+                        aggregateBtn = helper.getElement(`#${helper.id}_aggregate`);
+                        expect(aggregateBtn).not.toBeNull();
+                        expect(aggregateBtn.textContent).toBe('Max: 166');
+                        helper.click('#' + helper.id + '_aggregate');
+                        helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(1)');
+                        expect(aggregateBtn.textContent).toBe('Count: 18');
+                        helper.click('#' + helper.id + '_aggregate');
+                        helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(2)');
+                        expect(aggregateBtn.textContent).toBe('Sum: 576');
+                        helper.click('#' + helper.id + '_aggregate');
+                        helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(3)');
+                        expect(aggregateBtn.textContent).toBe('Avg: 32');
+                        helper.click('#' + helper.id + '_aggregate');
+                        helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(4)');
+                        expect(aggregateBtn.textContent).toBe('Min: 1');
+                        helper.click('#' + helper.id + '_aggregate');
+                        helper.click('#' + helper.id + '_aggregate-popup ul li:nth-child(5)');
+                        expect(aggregateBtn.textContent).toBe('Max: 166');
                         done();
                     });
                 });

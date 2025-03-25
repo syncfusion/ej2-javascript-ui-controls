@@ -9,6 +9,7 @@ import { Query, DataManager } from '@syncfusion/ej2-data';
 import { Dialog, Popup } from '@syncfusion/ej2-popups';
 import * as events from '../base/constant';
 import * as literals from '../base/string-literals';
+import { toggleFilterUI } from '../base/util';
 
 /**
  * `filter operators` render boolean column.
@@ -21,7 +22,7 @@ export class FlMenuOptrUI {
     private customFilterOperators: Object;
     private serviceLocator: ServiceLocator;
     private filterSettings: FilterSettings;
-    private dropOptr: DropDownList;
+    public dropOptr: DropDownList;
     private customOptr: { [key: string]: Object }[];
     private optrData: Object;
     private dialogObj: Dialog;
@@ -66,11 +67,10 @@ export class FlMenuOptrUI {
             cssClass: this.parent.cssClass ? 'e-popup-flmenu' + ' ' + this.parent.cssClass : 'e-popup-flmenu',
             enableRtl: this.parent.enableRtl,
             text: selectedValue,
-            // eslint-disable-next-line @typescript-eslint/tslint/config
-            change: function() {
+            change: () => {
                 const valInput: HTMLInputElement = document.querySelector('.e-flmenu-valuediv').querySelector('input');
-                if ((this as DropDownList).value === 'isempty' || (this as DropDownList).value === 'isnotempty' ||
-                    (this as DropDownList).value === 'isnotnull' || (this as DropDownList).value === 'isnull') {
+                if (this.dropOptr.value === 'isempty' || this.dropOptr.value === 'isnotempty' ||
+                    this.dropOptr.value === 'isnotnull' || this.dropOptr.value === 'isnull') {
                     if (!isNullOrUndefined(valInput['ej2_instances'])) {
                         valInput['ej2_instances'][0]['enabled'] = false ;
                     } else {
@@ -83,6 +83,7 @@ export class FlMenuOptrUI {
                         valInput.removeAttribute('disabled');
                     }
                 }
+                toggleFilterUI(this.dropOptr.value as string, column.uid, column, column.type, dlgObj, this.dropOptr['previousValue'] as string);
             }
         });
         this.dropOptr.addEventListener(literals['open'], this.ddOpen);

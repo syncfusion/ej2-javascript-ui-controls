@@ -607,7 +607,7 @@ export function getThemeColor(theme: SmithchartTheme): ISmithchartThemeStyle {
             minorGridLine: '#3B3A39',
             chartTitle: '#FFFFFF',
             legendLabel: '#D6D6D6',
-            background: '#292929',
+            background: 'transparent',
             areaBorder: '#292827',
             tooltipFill: '#292929',
             dataLabel: '#FFFFFF',

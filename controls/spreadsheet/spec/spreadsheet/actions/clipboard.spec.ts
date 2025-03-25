@@ -310,7 +310,7 @@ describe('Clipboard ->', () => {
             helper.invoke('copy', ['A2']).then(() => {
                 expect(helper.getElementFromSpreadsheet('.e-copy-indicator')).not.toBeNull();
                 helper.invoke('insertRow', [2]);
-                expect(helper.getInstance().sheets[0].rows[2]).toEqual({});
+                expect(JSON.stringify(helper.getInstance().sheets[0].rows[2])).toEqual('{"cells":[null,{"wrap":true}]}');
                 expect(helper.getInstance().sheets[0].rows[3].cells[0].value).toBe('Sports Shoes');
                 done();
             });
@@ -541,6 +541,52 @@ describe('Clipboard ->', () => {
             expect(helper.getInstance().sheets[0].rows[11].cells[2].value).toBeUndefined();
             done();
         });
+        it('EJ2-914973 - Copy-Paste issue for rows containing Locked Cells in Protected Sheet', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            let args = {
+                action: 'protectSheet', eventArgs: {
+                    isProtected: true, password: 'Spreadsheet', protectSettings: {
+                        selectCells: true,
+                        formatCells: true,
+                        formatRows: true,
+                        formatColumns: true,
+                        insertLink: true
+                    }
+                }
+            };
+            helper.getInstance().updateAction(args);
+            expect(spreadsheet.sheets[0].isProtected).toBe(true);
+            spreadsheet.lockCells('Sheet1!A1:H11', false);
+            expect(spreadsheet.sheets[0].rows[0].cells[0].isLocked).toBe(false);
+            expect(spreadsheet.sheets[0].rows[10].cells[7].isLocked).toBe(false);
+            helper.invoke('selectRange', ['A5:CV5']);
+            let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-rowhdr-table') as HTMLTableElement).rows[5].cells[0];
+            let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+            let td: HTMLTableCellElement = helper.invoke('getRow', [4]);
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+            setTimeout(() => {
+                helper.click('#' + helper.id + '_contextmenu li:nth-child(2)');
+                setTimeout(() => {
+                    let clipboardModule: any = helper.getModel('clipboardModule');
+                    expect(JSON.stringify(clipboardModule.copiedInfo)).toBe('{"range":[4,0,4,99],"sId":1,"isCut":false}');
+                    helper.invoke('selectRange', ['A2:CV2']);
+                    let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-rowhdr-table') as HTMLTableElement).rows[1].cells[0];
+                    let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+                    let td: HTMLTableCellElement = helper.invoke('getRow', [1]);
+                    helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
+                    setTimeout(() => {
+                        helper.click('#' + helper.id + '_contextmenu li:nth-child(3)');
+                        setTimeout(() => {
+                            const dialog: HTMLElement = helper.getElement('.e-editAlert-dlg.e-dialog');
+                            expect(dialog.querySelector('.e-dlg-content').textContent).toBe(
+                                "The cell you're trying to change is protected. To make change, unprotect the sheet.");
+                            helper.click('.e-dialog .e-primary');
+                            done();
+                        });
+                    });
+                });
+            });
+        });
     });
 
     describe('Copy/paste with finite rows and columns', () => {
@@ -585,8 +631,7 @@ describe('Clipboard ->', () => {
             helper.invoke('copy', ['A2:A16']).then(() => {
                 helper.invoke('paste', ['B2']);
                 setTimeout(() => {
-                    var dialog = helper.getElement('.e-control.e-dialog');
-                    expect(!!dialog).toBeTruthy();
+                    expect(helper.getElement('.e-control.e-dialog')).toBeNull();
                     done();
                 });
             });   
@@ -1242,6 +1287,30 @@ describe('Clipboard ->', () => {
                     done();
                 });
             });
+            it('EJ2-892894 - Issue while performing cut-paste on merged cells', (done: Function) => {
+                helper.invoke('merge', ['H10:H11']);
+                expect(helper.getInstance().sheets[0].rows[9].cells[7].rowSpan).toBe(2);
+                expect(helper.getInstance().sheets[0].rows[10].cells[7].rowSpan).toBe(-1);
+                helper.invoke('insertSheet', [1]);
+                setTimeout((): void => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    expect(spreadsheet.sheets.length).toBe(2);
+                    const selectAll: HTMLElement = helper.getElement('#' + helper.id + '_select_all');
+                    helper.triggerMouseAction('mousedown', { x: selectAll.getBoundingClientRect().left + 1, y: selectAll.getBoundingClientRect().top + 1 }, null, selectAll);
+                    helper.triggerMouseAction('mouseup', { x: selectAll.getBoundingClientRect().left + 1, y: selectAll.getBoundingClientRect().top + 1 }, document, selectAll);
+                    helper.invoke('cut').then(function () {
+                        const args = { action: 'gotoSheet', eventArgs: { currentSheetIndex: 1, previousSheetIndex: 0 } };
+                        helper.getInstance().updateAction(args);
+                        setTimeout((): void => {
+                            expect(helper.getInstance().activeSheetIndex).toEqual(1);
+                            helper.invoke('paste');
+                            expect(helper.getInstance().sheets[1].rows[9].cells[7].rowSpan).toBe(2);
+                            expect(helper.getInstance().sheets[1].rows[10].cells[7].rowSpan).toBe(-1);
+                            done();
+                        });
+                    });
+                });
+            });
         });
         describe('EJ2-55989->', () => {
             beforeEach((done: Function) => {
@@ -1313,7 +1382,7 @@ describe('Clipboard ->', () => {
                 });
             });
         });
-        
+
         describe('EJ2-922761, EJ-936817', () => {
             let tableCont: HTMLElement; let spreadsheet: any;
             beforeAll((done: Function) => {

@@ -106,6 +106,24 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
             helper.getElement('.e-clear-ddb .e-clear-icon').click();
             done();
         });
+        it('914971- Clear options not enabled for Unlocked cells in Protected Sheet', (done: Function): void => {
+            helper.invoke('protectSheet', ['Sheet1', { selectCells: true, selectUnLockedCells: true, formatCells: true, formatRows: true, formatColumns: true, insertLink: true, }]);
+            expect(helper.getInstance().sheets[0].isProtected).toBeTruthy();
+            helper.invoke('lockCells', ['A1:H11', false]);
+            const clearButton = helper.getElement('#' + helper.id + '_clear');
+            clearButton.click();
+            const clearOptions = document.querySelectorAll('.e-clear-ddb .e-item');
+            clearOptions.forEach((option: Element) => {
+                const id = option.getAttribute('id');
+                if (id.includes('_Clear Formats') || id.includes('_Clear All') || id.includes('_Clear Contents')) {
+                    expect(option.classList.contains('e-disabled')).toBe(false);
+                } else {
+                    expect(option.classList.contains('e-disabled')).toBe(true);
+                }
+            });
+            helper.getElement('.e-clear-ddb .e-clear-icon').click();
+            done();
+        });
     });
 
 

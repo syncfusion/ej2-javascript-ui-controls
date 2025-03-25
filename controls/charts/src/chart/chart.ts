@@ -68,7 +68,7 @@ import { StripLine } from './axis/strip-line';
 import { MultiLevelLabel } from './axis/multi-level-labels';
 import { BoxAndWhiskerSeries } from './series/box-and-whisker-series';
 import { PolarRadarPanel } from './axis/polar-radar-panel';
-import { StripLineSettingsModel, ToolbarPositionModel } from './model/chart-base-model';
+import { StripLineSettingsModel, ToolbarPositionModel, StackLabelSettingsModel } from './model/chart-base-model';
 import { Trendline } from './series/chart-series';
 import { Trendlines } from './trend-lines/trend-line';
 import { TechnicalIndicator } from './technical-indicators/technical-indicator';
@@ -86,7 +86,7 @@ import { TechnicalIndicatorModel } from './technical-indicators/technical-indica
 import { ILegendRenderEventArgs, IAxisLabelRenderEventArgs, ITextRenderEventArgs, IResizeEventArgs } from '../chart/model/chart-interface';
 import { IAnnotationRenderEventArgs, IAxisMultiLabelRenderEventArgs, IThemeStyle, IScrollEventArgs } from '../chart/model/chart-interface';
 import { IPointRenderEventArgs, ISeriesRenderEventArgs, ISelectionCompleteEventArgs } from '../chart/model/chart-interface';
-import { IDragCompleteEventArgs, ITooltipRenderEventArgs, IExportEventArgs } from '../chart/model/chart-interface';
+import { IDragCompleteEventArgs, ITooltipRenderEventArgs } from '../chart/model/chart-interface';
 import { IZoomCompleteEventArgs, ILoadedEventArgs, IZoomingEventArgs, IAxisLabelClickEventArgs } from '../chart/model/chart-interface';
 import { IMultiLevelLabelClickEventArgs, ILegendClickEventArgs, ISharedTooltipRenderEventArgs } from '../chart/model/chart-interface';
 import { IAnimationCompleteEventArgs, IMouseEventArgs, IPointEventArgs, IBeforeResizeEventArgs } from '../chart/model/chart-interface';
@@ -94,7 +94,7 @@ import { chartMouseClick, chartDoubleClick, pointClick, pointDoubleClick, axisLa
 import { chartMouseDown, chartMouseMove, chartMouseUp, load, pointMove, chartMouseLeave, resized } from '../common/model/constants';
 import { IPrintEventArgs, IAxisRangeCalculatedEventArgs, IDataEditingEventArgs } from '../chart/model/chart-interface';
 import { ChartAnnotationSettingsModel } from './model/chart-base-model';
-import { ChartAnnotationSettings, ToolbarPosition } from './model/chart-base';
+import { ChartAnnotationSettings, StackLabelSettings, ToolbarPosition } from './model/chart-base';
 import { ChartAnnotation } from './annotation/annotation';
 import { getElement, getTitle } from '../common/utils/helper';
 import { Alignment, ExportType, SelectionPattern } from '../common/utils/enum';
@@ -105,7 +105,7 @@ import { DataManager } from '@syncfusion/ej2-data';
 import { StockChart } from '../stock-chart/stock-chart';
 import { Export } from './print-export/export';
 import { PrintUtils } from '../common/utils/print';
-import { IAfterExportEventArgs } from '../common/model/interface';
+import { IAfterExportEventArgs, IExportEventArgs } from '../common/model/interface';
 
 /**
  * Configures the range color settings in the chart.
@@ -204,6 +204,15 @@ export class CrosshairSettings extends ChildProperty<CrosshairSettings> {
      */
     @Property(false)
     public snapToData: boolean;
+
+    /**
+     * If set to true, highlights the entire category range when hovered over.
+     * This property applies only to category axes.
+     *
+     * @default false
+     */
+    @Property(false)
+    public highlightCategory: boolean;
 }
 /**
  * Configures the zooming behavior for the chart.
@@ -1133,6 +1142,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public focusBorderMargin: number;
 
     /**
+     * Configuration options for stack labels in the chart.
+     * Stack labels display the total value for stacked series, including customization options for appearance and positioning, and other visual elements to enhance chart readability.
+     * This property allows users to modify how stack labels are rendered in a stacked chart.
+     */
+    @Complex<StackLabelSettingsModel>({}, StackLabelSettings)
+    public stackLabels: StackLabelSettingsModel;
+
+    /**
      * Triggers after the chart is resized.
      *
      * @event resized
@@ -1657,8 +1674,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public markerRender: Marker;
     public markerIndex: number;
-    private titleCollection: string[];
-    private subTitleCollection: string[];
+    /** @private */
+    public titleCollection: string[];
+    /** @private */
+    public subTitleCollection: string[];
     /** @private */
     public themeStyle: IThemeStyle;
     /** @private */
@@ -1806,6 +1825,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
         this.element.setAttribute('role', this.accessibility.accessibilityRole ? this.accessibility.accessibilityRole : 'region');
         this.element.setAttribute('tabindex', this.accessibility.focusable ? String(this.accessibility.tabIndex) : '-1');
+        (this.element as HTMLElement).style.outline = 'none';
         this.element.setAttribute('aria-label', this.accessibility.accessibilityDescription ? this.accessibility.accessibilityDescription : this.title + '. Syncfusion interactive chart.');
         if (!(this.element.classList.contains('e-chart-focused'))) {
             this.element.setAttribute('class', this.element.getAttribute('class') + ' e-chart-focused');
@@ -2018,6 +2038,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
 
         this.renderAnnotation();
+        if (this.stackLabels.visible && this.visibleSeries.some((series: Series) => series.type && series.type.indexOf('Stacking') > -1) && this.dataLabelModule) {
+            this.dataLabelModule.renderStackLabels();
+        }
     }
     /**
      * To render the legend
@@ -2267,7 +2290,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
 
         appendChildElement(this.enableCanvas, this.svgObject, axisElement, this.redraw);
-        if ((this.zoomModule && this.zoomSettings.enableScrollbar && this.scrollElement.childElementCount) ||
+        if ((this.zoomModule && this.zoomSettings.enableScrollbar && this.scrollElement && this.scrollElement.childElementCount) ||
             (this.scrollElement && this.scrollElement.childElementCount)) {
             appendChildElement(false, getElement(this.element.id + '_Secondary_Element'), this.scrollElement, this.redraw);
         }
@@ -2433,6 +2456,27 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 top += this.stockChart.stockLegendModule.legendBounds.height;
             } else if (this.stockChart.legendSettings.position === 'Left') {
                 left += this.stockChart.stockLegendModule.legendBounds.width;
+            }
+        }
+        if (this.scrollBarModule && ((this.zoomModule && this.zoomSettings.enableScrollbar && this.zoomModule.isZoomed) ||
+            this.scrollSettingEnabled)) {
+            const scrollbarPadding: number = 10;
+            for (let i: number = 0, len: number = this.axisCollections.length; i < len; i++) {
+                const axis: Axis = this.axisCollections[i as number];
+                if (axis.orientation === 'Horizontal' && axis.scrollbarSettings.position === 'Bottom') {
+                    height -= axis.scrollbarSettings.height + scrollbarPadding;
+                }
+                else if (axis.orientation === 'Horizontal' && axis.scrollbarSettings.position === 'Top') {
+                    height -= axis.scrollbarSettings.height + scrollbarPadding;
+                    top += axis.scrollbarSettings.height + scrollbarPadding;
+                }
+                else if (axis.orientation === 'Vertical' && axis.scrollbarSettings.position === 'Right') {
+                    width -= axis.scrollbarSettings.height + scrollbarPadding;
+                }
+                else if (axis.orientation === 'Vertical' && axis.scrollbarSettings.position === 'Left') {
+                    width -= axis.scrollbarSettings.height + scrollbarPadding;
+                    left += axis.scrollbarSettings.height + scrollbarPadding;
+                }
             }
         }
         this.initialClipRect = new Rect(left, top, width, height);
@@ -2746,6 +2790,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 );
             if (element && !this.enableCanvas) {
                 element.setAttribute('tabindex', this.titleStyle.accessibility.focusable ? String(this.titleStyle.accessibility.tabIndex) : '-1');
+                (element as HTMLElement).style.outline = 'none';
                 element.setAttribute('class', 'e-chart-focused');
                 element.setAttribute('role', this.titleStyle.accessibility.accessibilityRole);
                 element.setAttribute('aria-label', this.titleStyle.accessibility.accessibilityDescription);
@@ -2820,6 +2865,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             );
         if (element && !this.enableCanvas) {
             element.setAttribute('tabindex', this.subTitleStyle.accessibility.focusable ? String(this.subTitleStyle.accessibility.tabIndex) : '-1');
+            if (this.subTitleStyle.accessibility.focusable) { (element as HTMLElement).style.outline = 'none'; }
             element.setAttribute('class', 'e-chart-focused');
             element.setAttribute('role', this.subTitleStyle.accessibility.accessibilityRole);
             element.setAttribute('aria-label', this.subTitleStyle.accessibility.accessibilityDescription);
@@ -2919,7 +2965,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
 
     public addSeries(seriesCollection: SeriesModel[]): void {
-        const scrollTop: number = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollTop: number = window.scrollY || document.documentElement.scrollTop;
         for (let series of seriesCollection) {
             series = new Series(this, 'series', series);
             this.series.push(series);
@@ -2936,10 +2982,15 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public removeSeries(index: number): void {
         this.redraw = false; //fix for remove svg not working when use animatemethod.
-        const scrollTop: number = window.pageYOffset || document.documentElement.scrollTop;
-        if (this.visibleSeries[index as number]) {
-            this.visibleSeries[index as number].xAxis.orientation = null;
-            this.visibleSeries[index as number].yAxis.orientation = null;
+        const scrollTop: number = window.scrollY || document.documentElement.scrollTop;
+        const series: Series = this.visibleSeries[index as number];
+        if (series) {
+            if (series.xAxis.series.length <= 1) {
+                series.xAxis.orientation = null;
+            }
+            if (series.yAxis.series.length <= 1) {
+                series.yAxis.orientation = null;
+            }
         }
         for (let i: number = 0; i < this.axes.length; i++) {
             if ((this.axes[i as number] as Axis).orientation === null) {
@@ -2959,7 +3010,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     public clearSeries(): void {
         this.series = [];
-        const scrollTop: number = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollTop: number = window.scrollY || document.documentElement.scrollTop;
         this.refresh();
         window.scrollTo(0, scrollTop);
     }
@@ -3414,6 +3465,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (actionKey !== '') {
             this.chartKeyboardNavigations(e, (e.target as HTMLElement).id, actionKey);
         }
+        if (e.code === 'Tab') {
+            this.removeNavigationStyle();
+        }
         return false;
     }
 
@@ -3466,12 +3520,15 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             if (this.previousTargetId !== '') {
                 if ((this.previousTargetId.indexOf('_Series_') > -1 && targetId.indexOf('_Series_') === -1)) {
                     groupElement = getElement(this.element.id + 'SeriesCollection') as HTMLElement;
-                    const previousElement: Element = this.previousTargetId.indexOf('_Symbol') > -1 ?
-                        getElement(this.element.id + 'SymbolGroup' + this.currentSeriesIndex).children[this.currentPointIndex + 1] :
-                        (this.previousTargetId.indexOf('_Point_') > -1 ?
-                            groupElement.children[this.currentSeriesIndex].children[this.currentPointIndex + 1] :
-                            groupElement.children[this.currentSeriesIndex]);
-                    this.setTabIndex(previousElement as HTMLElement, groupElement.firstElementChild as HTMLElement);
+                    let previousElement: Element;
+                    if (this.previousTargetId.indexOf('_Symbol') > -1 ? getElement(this.element.id + 'SymbolGroup' + this.currentSeriesIndex) :
+                        groupElement.children[this.currentSeriesIndex]) {
+                        previousElement = this.previousTargetId.indexOf('_Symbol') > -1 ?
+                            getElement(this.element.id + 'SymbolGroup' + this.currentSeriesIndex).children[this.currentPointIndex + 1] :
+                            (this.previousTargetId.indexOf('_Point_') > -1 ?
+                                groupElement.children[this.currentSeriesIndex].children[this.currentPointIndex + 1] :
+                                groupElement.children[this.currentSeriesIndex]);
+                    }
                     this.currentPointIndex = 0;
                     this.currentSeriesIndex = 0;
                 }
@@ -3497,7 +3554,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 }
                 targetId = this.focusChild((markerGroup != null ? markerGroup.children[1] : targetElement.children[1]) as HTMLElement);
             }
-            actionKey = this.highlightMode !== 'None' || this.tooltip.enable ? 'Tab' : '';
+            else if (targetId.indexOf('_ChartTitle') > -1) {
+                this.setNavigationStyle(targetId);
+            }
+            actionKey = targetId !== this.element.id ? 'Tab' : '';
         }
         else if (e.code.indexOf('Arrow') > -1) {
             e.preventDefault();
@@ -3521,6 +3581,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
                 const currentLegend: Element = legendElement[this.currentLegendIndex];
                 this.focusChild(currentLegend as HTMLElement);
+                this.removeNavigationStyle();
+                this.setNavigationStyle(currentLegend.id);
                 targetId = currentLegend.children[1].id;
                 actionKey = this.highlightMode !== 'None' ? 'ArrowMove' : '';
             }
@@ -3556,7 +3618,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                         this.currentPointIndex);
                 }
                 targetId = this.focusChild(currentPoint as HTMLElement);
-                actionKey = this.tooltip.enable || this.highlightMode !== 'None' ? 'ArrowMove' : '';
+                actionKey = 'ArrowMove';
             }
         }
         else if ((e.code === 'Enter' || e.code === 'Space') && ((targetId.indexOf('_chart_legend_') > -1) ||
@@ -3618,9 +3680,42 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         // 74 - J
         if (e.altKey && e.keyCode === 74 && !isNullOrUndefined(this.element)) {
             this.element.focus();
+            this.setNavigationStyle(this.element.id);
         }
     }
 
+    /**
+     * Handles to set style for key event on the document.
+     *
+     * @param {target} target - element which currently focused.
+     * @returns {void}
+     * @private
+     */
+    private setNavigationStyle(target: string): void {
+        const currentElement: HTMLElement = document.getElementById(target);
+        if (currentElement) {
+            currentElement.style.setProperty('outline', `${this.focusBorderWidth}px solid ${this.focusBorderColor || this.themeStyle.tabColor}`);
+            currentElement.style.setProperty('margin', `${this.focusBorderMargin}px`);
+        }
+    }
+
+    /**
+     * Handles to remove style for key event on the document.
+     *
+     * @returns {void}
+     * @private
+     */
+    private removeNavigationStyle(): void {
+        const currentElement: NodeList = document.querySelectorAll(`[id*=_Point_], [id*=${this.element.id}], [id*=_ChartBorder], text[id*=_ChartTitle],g[id*=_chart_legend],  text[id*=_ChartSubTitle], div[id*=_Annotation], g[id*=IndicatorGroup], g[id*=_Zooming_Zoom], g[id*=_Zooming_ZoomIn], g[id*=_Zooming_ZoomOut], g[id*=_Zooming_Pan], g[id*=_Zooming_Reset], path[id*=_TrendLine_]`);
+        if (currentElement) {
+            currentElement.forEach((element: Node) => {
+                if (element instanceof HTMLElement || element instanceof SVGElement) {
+                    element.style.setProperty('outline', 'none');
+                    element.style.setProperty('margin', '');
+                }
+            });
+        }
+    }
     /**
      * Handles keyboard navigation on the chart.
      *
@@ -3632,6 +3727,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public chartKeyboardNavigations(e: KeyboardEvent, targetId: string, actionKey: string): void {
         this.isLegendClicked = false;
+        this.removeNavigationStyle();
+        if (actionKey !== 'Enter' && actionKey !== 'Space') {
+            this.setNavigationStyle(targetId);
+        }
         switch (actionKey) {
         case 'Tab':
         case 'ArrowMove':
@@ -3678,8 +3777,12 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 this.isLegendClicked = true;
                 this.legendModule.click(e as Event);
                 this.focusChild(document.getElementById(targetId).parentElement);
+                this.setNavigationStyle(document.getElementById(targetId).parentElement.id);
             } else {
-                this.selectionModule.calculateSelectedElements(document.getElementById(targetId) , 'click');
+                if (this.selectionModule) {
+                    this.selectionModule.calculateSelectedElements(document.getElementById(targetId), 'click');
+                }
+                this.setNavigationStyle(targetId);
             }
             break;
         case 'CtrlP':
@@ -3764,6 +3867,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.axisLabelClick) {
             this.triggerAxisLabelClickEvent(axisLabelClick, e);
         }
+        this.removeNavigationStyle();
         this.notify('click', e);
         return false;
     }
@@ -3897,7 +4001,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 .categories[parseInt(texts[2], 10)].text);
         }
     }
-
     /**
      * Handles the mouse down on the chart.
      *
@@ -4064,16 +4167,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     private setTheme(): void {
         /** Set theme */
         this.themeStyle = getThemeColor(this.theme, this.enableCanvas, this);
-        if (!(document.getElementById(this.element.id + 'Keyboard_chart_focus'))) {
-            const style: HTMLStyleElement = document.createElement('style');
-            style.setAttribute('id', (<HTMLElement>this.element).id + 'Keyboard_chart_focus');
-            style.innerText = '.e-chart-focused:focus, path[class*=_ej2_chart_selection_series]:focus,' +
-                'path[id*=_Point_]:focus, text[id*=_ChartTitle]:focus, text[id*=_ChartSubTitle]:focus, div[id*=_Annotation]:focus, g[id*=IndicatorGroup]:focus, g[id*=_Zooming_Zoom]:focus, g[id*=_Zooming_ZoomIn]:focus, g[id*=_Zooming_ZoomOut]:focus,' +
-                'g[id*=_Zooming_Pan]:focus, g[id*=_Zooming_Reset]:focus, path[id*=_TrendLine_]:focus {outline: none } .e-chart-focused:focus-visible, path[class*=_ej2_chart_selection_series]:focus-visible,' +
-                'path[id*=_Point_]:focus-visible, text[id*=_ChartTitle]:focus-visible, text[id*=_ChartSubTitle]:focus-visible, div[id*=_Annotation]:focus-visible, g[id*=IndicatorGroup]:focus-visible, g[id*=_Zooming_Zoom]:focus-visible, g[id*=_Zooming_ZoomIn]:focus-visible, g[id*=_Zooming_ZoomOut]:focus-visible,' +
-                'g[id*=_Zooming_Pan]:focus-visible, g[id*=_Zooming_Reset]:focus-visible, path[id*=_TrendLine_]:focus-visible {outline: ' + (this.focusBorderWidth + 'px') + ' ' + (this.focusBorderColor || this.themeStyle.tabColor) + ' solid; margin: ' + (this.focusBorderMargin + 'px') + ';}';
-            document.body.appendChild(style);
-        }
     }
 
     /**
@@ -4619,8 +4712,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let refreshBounds: boolean = false;
         this.animateSeries = false;
         let axis: Axis;
+        let axisChange: boolean = false;
+        let isZooming: boolean = false;
         if (!this.delayRedraw && !this.zoomRedraw) {
             for (const prop of Object.keys(newProp)) {
+                axisChange = axisChange || (prop !== 'primaryXAxis' && prop !== 'primaryYAxis' && prop !== 'axes');
+                if (isZooming && axisChange) {
+                    this.redraw = false;
+                }
                 switch (prop) {
                 case 'primaryXAxis':
                     axis = <Axis>newProp.primaryXAxis;
@@ -4636,6 +4735,11 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                     }
                     if (!isNullOrUndefined(axis.isInversed) || !isNullOrUndefined(axis.opposedPosition)) {
                         (this.primaryXAxis as Axis).setIsInversedAndOpposedPosition();
+                    }
+                    if ((!(this.primaryXAxis as Axis).zoomingScrollBar || !((this.primaryXAxis as Axis).zoomingScrollBar.isScrollUI)) &&
+                    this.zoomModule && (!isNullOrUndefined(axis.zoomFactor) || !isNullOrUndefined(axis.zoomPosition))) {
+                        this.redraw = this.zoomSettings.enableAnimation && !axisChange;
+                        isZooming = this.zoomSettings.enableAnimation && !axisChange;
                     }
                     break;
                 case 'primaryYAxis':
@@ -4653,6 +4757,11 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                     if (!isNullOrUndefined(axis.isInversed) || !isNullOrUndefined(axis.opposedPosition)) {
                         (this.primaryYAxis as Axis).setIsInversedAndOpposedPosition();
                     }
+                    if ((!(this.primaryYAxis as Axis).zoomingScrollBar || !((this.primaryYAxis as Axis).zoomingScrollBar.isScrollUI)) &&
+                    this.zoomModule && (!isNullOrUndefined(axis.zoomFactor) || !isNullOrUndefined(axis.zoomPosition))) {
+                        this.redraw = this.zoomSettings.enableAnimation && !axisChange;
+                        isZooming = this.zoomSettings.enableAnimation && !axisChange;
+                    }
                     break;
                 case 'axes':
                     for (const index of Object.keys(newProp.axes)) {
@@ -4667,6 +4776,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                         if (!isNullOrUndefined(axis.isInversed) || !isNullOrUndefined(axis.opposedPosition)) {
                             (this.axes[index as string] as Axis).setIsInversedAndOpposedPosition();
                         }
+                        if ((!this.axes[index as string].zoomingScrollBar || !(this.axes[index as string].zoomingScrollBar.isScrollUI)) &&
+                        this.zoomModule && (!isNullOrUndefined(axis.zoomFactor) || !isNullOrUndefined(axis.zoomPosition))) {
+                            this.redraw = this.zoomSettings.enableAnimation && !axisChange;
+                            isZooming = this.zoomSettings.enableAnimation && !axisChange;
+                        }
+                    }
+                    if (this.scrollElement && this.zoomSettings.enableScrollbar) {
+                        this.scrollElement = null;
                     }
                     break;
                 case 'height':
@@ -4679,7 +4796,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                     refreshBounds = true;
                     break;
                 case 'titleStyle':
-                    if (newProp.titleStyle && (newProp.titleStyle.size || newProp.titleStyle.textOverflow)) {
+                    if (newProp.titleStyle && (newProp.titleStyle.size || newProp.titleStyle.textOverflow || newProp.titleStyle.position)) {
                         refreshBounds = true;
                     } else {
                         renderer = true;
@@ -4718,12 +4835,15 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                             series.yName || series.size || series.high || series.low || series.open || series.close || series.trendlines ||
                             series.fill || series.name || series.marker || series.width || series.binInterval || series.type ||
                             (series.visible !== oldProp.series[i as number].visible) ||
-                            series.legendShape || series.emptyPointSettings || blazorProp)) {
+                            series.legendShape || series.emptyPointSettings || series.opacity ||
+                            series.columnWidth || series.columnSpacing || series.opacity || series.dashArray ||
+                            series.bearFillColor || series.bullFillColor || blazorProp)) {
                             extend(this.getVisibleSeries(this.visibleSeries, i), series, null, true);
                             seriesRefresh = true;
                         }
                     }
                     if (seriesRefresh) {
+                        this.calculateAreaType();
                         this.calculateVisibleSeries();
                         this.initTechnicalIndicators();
                         this.initTrendLines();
@@ -4778,6 +4898,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 case 'selectionMode':
                     if (this.selectionModule && newProp.selectionMode && newProp.selectionMode.indexOf('Drag') === -1) {
                         this.selectionModule.currentMode = this.selectionMode;
+                        if (oldProp.selectionMode === 'None') {
+                            this.selectionModule.invokeSelection(this);
+                        }
                         this.selectionModule.styleId = this.element.id + '_ej2_chart_selection';
                         this.selectionModule.redrawSelection(this, oldProp.selectionMode, true);
                     }

@@ -454,6 +454,10 @@
           .e-text-wrap {
             height: $tab-nrml-pop-item-textwrap-height;
             width: 100%;
+
+            @media screen and (max-width: 480px) {
+              height: $tab-big-height;
+            }
           }
 
           .e-tab-text {

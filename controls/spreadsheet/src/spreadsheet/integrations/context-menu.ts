@@ -2,11 +2,11 @@ import { Spreadsheet } from '../base/index';
 import { ContextMenu as ContextMenuComponent, BeforeOpenCloseMenuEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { closest, extend, detach, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { MenuSelectEventArgs, removeSheetTab, cMenuBeforeOpen, renameSheetTab, cut, copy, paste, focus, getUpdateUsingRaf, updateSortCollection, isReadOnlyCells, readonlyAlert, getRowIdxFromClientY, getColIdxFromClientX } from '../common/index';
+import { MenuSelectEventArgs, removeSheetTab, cMenuBeforeOpen, renameSheetTab, cut, copy, paste, focus, getUpdateUsingRaf, readonlyAlert, getRowIdxFromClientY, getColIdxFromClientX } from '../common/index';
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, initiateCustomSort, hideSheet } from '../common/index';
 import { openHyperlink, initiateHyperlink, editHyperlink, HideShowEventArgs, addNote, editNote, deleteNote } from '../common/index';
 import { filterByCellValue, reapplyFilter, clearFilter, getFilteredColumn, applySort, locale, removeHyperlink } from '../common/index';
-import { getRangeIndexes, getColumnHeaderText, getCellIndexes, InsertDeleteModelArgs, insertModel, SortCollectionModel, getDataRange} from '../../workbook/common/index';
+import { getRangeIndexes, getColumnHeaderText, getCellIndexes, InsertDeleteModelArgs, insertModel, SortCollectionModel, getDataRange, isReadOnlyCells, updateSortCollection} from '../../workbook/common/index';
 import { RowModel, ColumnModel, SheetModel, getSwapRange, getSheetIndex, moveSheet, duplicateSheet, hideShow, getRow, getColumn, getSheet } from '../../workbook/index';
 import { toggleProtect } from '../common/index';
 
@@ -76,7 +76,7 @@ export class ContextMenu {
         this.parent.trigger('contextMenuItemSelect', selectArgs); const id: string = this.parent.element.id + '_cmenu';
         const range: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
         const prevSort: SortCollectionModel[] = [];
-        if ((id + '_ascending' || id + '_descending') && this.parent.sortCollection) {
+        if ((args.item.id === id + '_ascending' || args.item.id === id + '_descending') && this.parent.sortCollection) {
             for (let i: number = this.parent.sortCollection.length - 1; i >= 0; i--) {
                 if (this.parent.sortCollection[i as number] &&
                     this.parent.sortCollection[i as number].sheetIndex === this.parent.activeSheetIndex) {

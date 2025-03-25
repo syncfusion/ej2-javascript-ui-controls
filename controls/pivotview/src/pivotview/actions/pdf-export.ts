@@ -223,9 +223,17 @@ export class PDFExport {
         this.exportProperties.allowRepeatHeader =
             this.exportProperties.allowRepeatHeader === true || isNullOrUndefined(this.exportProperties.allowRepeatHeader);
         const allowRepeatHeader: boolean = this.exportProperties.allowRepeatHeader ? this.exportProperties.allowRepeatHeader : false;
-        for (let vLen: number = 0; allowRepeatHeader && size > 1 && vLen < pivotValues.length; vLen++) {
+        const isHeaderRepeatEligible: boolean = allowRepeatHeader && size > 1;
+        let rowMaxLevel: number ;
+        if (this.parent.isTabular) {
+            rowMaxLevel = this.parent.engineModule.rowMaxLevel;
+            size = rowMaxLevel + 1 < size ? size : rowMaxLevel + 2;
+        }
+        for (let vLen: number = 0; isHeaderRepeatEligible && vLen < pivotValues.length; vLen++) {
             for (let vCnt: number = size; pivotValues[vLen as number] && vCnt < pivotValues[vLen as number].length; vCnt += size) {
-                (pivotValues[vLen as number] as IAxisSet[]).splice(vCnt, 0, pivotValues[vLen as number][0] as IAxisSet);
+                const rowHeaderLevel: IAxisSet[] = this.parent.isTabular
+                    ? pivotValues[vLen as number].slice(0, rowMaxLevel + 1) : [pivotValues[vLen as number][0]];
+                pivotValues[vLen as number].splice(vCnt, 0, ...rowHeaderLevel);
             }
         }
         let colLength: number = pivotValues && pivotValues.length > 0 ? pivotValues[0].length : 0;
@@ -251,6 +259,7 @@ export class PDFExport {
                         const isColHeader: boolean = !(pivotValues[rCnt as number][0] && (pivotValues[rCnt as number][0] as IAxisSet).axis === 'row');
                         const colLen: number = pivotValues[rCnt as number].length > (integratedCnt + pageSize) ? (integratedCnt + pageSize)
                             : pivotValues[rCnt as number].length;
+                        let rowCount: number = 0;
                         if (isColHeader) {
                             pdfGrid.headers.add(1);
                         }
@@ -267,7 +276,7 @@ export class PDFExport {
                         let localCnt: number = 0; let isEmptyRow: boolean = true;
                         for (let cCnt: number = integratedCnt; cCnt < colLen; cCnt++) {
                             let isValueCell: boolean = false;
-                            if (pivotValues[rCnt as number][cCnt as number]) {
+                            if (pivotValues[rCnt as number][cCnt as number] && pivotValues[rCnt as number][cCnt as number].rowSpan !== 0) {
                                 const pivotCell: IAxisSet = (pivotValues[rCnt as number][cCnt as number] as IAxisSet);
                                 let cellValue: string | number = pivotCell.formattedText;
                                 cellValue = (this.parent.dataSourceSettings.rows.length === 0 || this.parent.dataSourceSettings.columns.length === 0) ? this.parent.getValuesHeader(pivotCell, 'value') : cellValue;
@@ -278,7 +287,8 @@ export class PDFExport {
                                     if (!(pivotCell.level === -1 && !pivotCell.rowSpan)) {
                                         pdfGridRow.cells.getCell(localCnt).columnSpan = pivotCell.colSpan ?
                                             (pageSize - localCnt < pivotCell.colSpan ? pageSize - localCnt : pivotCell.colSpan) : 1;
-                                        if (isColHeader && pivotCell.rowSpan && pivotCell.rowSpan > 1) {
+                                        if ((isColHeader && pivotCell.rowSpan && pivotCell.rowSpan > 1) ||
+                                            (!isColHeader && pivotCell.rowSpan && pivotCell.rowSpan > 1 && this.parent.isTabular)) {
                                             pdfGridRow.cells.getCell(localCnt).rowSpan = pivotCell.rowSpan ? pivotCell.rowSpan : 1;
                                         }
                                         pdfGridRow.cells.getCell(localCnt).value = cellValue ? cellValue.toString() : '';
@@ -349,14 +359,31 @@ export class PDFExport {
                                     this.processCellStyle(pdfGridRow.cells.getCell(localCnt), args);
                                 }
                                 pdfGridRow.cells.getCell(localCnt).value = '';
-                                if (cCnt === 0 && isColHeader && this.parent.dataSourceSettings.columns &&
-                                    this.parent.dataSourceSettings.columns.length > 0) {
-                                    pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan++;
-                                } else if (cCnt !== 0 && isColHeader && this.parent.dataSourceSettings.columns &&
-                                    this.parent.dataSourceSettings.columns.length > 0 &&
-                                    pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan <
-                                    Object.keys(this.engine.headerContent).length) {
-                                    pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan++;
+                                if (this.parent.isTabular && rowCount === 0) {
+                                    if (cCnt === 0 && isColHeader && this.parent.dataSourceSettings.columns &&
+                                        this.parent.dataSourceSettings.columns.length > 0) {
+                                        pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan =
+                                            Object.keys(this.engine.headerContent).length + 1;
+                                        pdfGrid.headers.getHeader(0).cells.getCell(0).columnSpan = this.parent.engineModule.rowMaxLevel + 1;
+                                    } else if (cCnt !== 0 && isColHeader && this.parent.dataSourceSettings.columns &&
+                                        this.parent.dataSourceSettings.columns.length > 0 &&
+                                        pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan <
+                                            Object.keys(this.engine.headerContent).length) {
+                                        pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan =
+                                            Object.keys(this.engine.headerContent).length;
+                                        pdfGrid.headers.getHeader(0).cells.getCell(0).columnSpan = this.parent.engineModule.rowMaxLevel + 1;
+                                    }
+                                    rowCount++;
+                                } else {
+                                    if (cCnt === 0 && isColHeader && this.parent.dataSourceSettings.columns &&
+                                        this.parent.dataSourceSettings.columns.length > 0) {
+                                        pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan++;
+                                    } else if (cCnt !== 0 && isColHeader && this.parent.dataSourceSettings.columns &&
+                                        this.parent.dataSourceSettings.columns.length > 0 &&
+                                        pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan <
+                                        Object.keys(this.engine.headerContent).length) {
+                                        pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan++;
+                                    }
                                 }
                             }
                             const stringFormat: PdfStringFormat = new PdfStringFormat();

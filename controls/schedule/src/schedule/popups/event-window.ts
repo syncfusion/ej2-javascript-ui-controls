@@ -4,7 +4,7 @@ import { cldrData, removeClass, getValue, getDefaultDateObject, closest, Keyboar
 import { Query, Deferred } from '@syncfusion/ej2-data';
 import { CheckBox, ChangeEventArgs, Button } from '@syncfusion/ej2-buttons';
 import { Dialog, DialogModel, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
-import { DropDownList, FilteringEventArgs, MultiSelect, ChangeEventArgs as ddlChangeEventArgs, MultiSelectChangeEventArgs } from '@syncfusion/ej2-dropdowns';
+import { DropDownList, FilteringEventArgs, MultiSelect, ChangeEventArgs as ddlChangeEventArgs, MultiSelectChangeEventArgs, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
 import { Input, FormValidator, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { DatePicker, DateTimePicker, ChangedEventArgs } from '@syncfusion/ej2-calendars';
 import { Schedule } from '../base/schedule';
@@ -315,6 +315,7 @@ export class EventWindow {
         const callBackPromise: Deferred = new Deferred();
         this.parent.trigger(event.popupOpen, eventProp, (popupArgs: PopupOpenEventArgs) => {
             args.cancel = popupArgs.cancel;
+            args.maxHeight = this.parent.isAdaptive ? 'max-content' : args.maxHeight;
             this.duration = this.cellClickAction ? popupArgs.duration : null;
             if (this.eventData[this.fields.endTime].getTime() === endTime && !this.cellClickAction &&
                 (<Date>this.eventData[this.fields.endTime]).getHours() === 0 &&
@@ -467,7 +468,8 @@ export class EventWindow {
         const description: HTMLElement = this.createDivElement(cls.DESCRIPTION_CLASS + '-row');
         description.appendChild(this.renderTextBox(cls.DESCRIPTION_CLASS));
         parentDiv.appendChild(description);
-        const submit: HTMLElement = createElement('button', { attrs: { type: 'hidden', title: 'submit', style: 'display:none' } });
+        const submit: HTMLElement = createElement('button', { attrs: { type: 'hidden', title: 'submit' } });
+        submit.style.display = 'none';
         parentDiv.appendChild(submit);
         return parentDiv;
     }
@@ -566,9 +568,9 @@ export class EventWindow {
         const resourceInput: HTMLElement = this.createInputElement(value + ' ' + EVENT_FIELD, fieldName);
         resourceDiv.appendChild(resourceInput);
         const resourceTemplate: Function = function(data: any): string {
-            return SanitizeHtmlHelper.sanitize(`<div class="e-resource-template"><div class="e-resource-color" style="background-color:${
-                data[resourceData.colorField]}"></div><div class="e-resource-text">${
-                data[resourceData.textField]}</div></div>`);
+            return SanitizeHtmlHelper.sanitize(`<div class="e-resource-template">
+                <div class="e-resource-color" data-resource-color="${data[resourceData.colorField]}"></div>
+                <div class="e-resource-text">${data[resourceData.textField]}</div></div>`);
         };
         initializeCSPTemplate(resourceTemplate, resourceData);
         if (resourceData.allowMultiple) {
@@ -588,7 +590,12 @@ export class EventWindow {
                 placeholder: labelValue,
                 popupHeight: '230px',
                 popupWidth: '447px',
-                mode: 'Box'
+                mode: 'Box',
+                open: (args: PopupEventArgs) => {
+                    Promise.resolve().then(() => {
+                        this.applyStylesAfterRender(args);
+                    });
+                }
             });
             listObj.appendTo(resourceInput);
         } else {
@@ -606,11 +613,27 @@ export class EventWindow {
                 placeholder: labelValue,
                 popupHeight: '230px',
                 popupWidth: '447px',
-                itemTemplate: resourceTemplate as any
+                itemTemplate: resourceTemplate as any,
+                open: (args: PopupEventArgs) => {
+                    Promise.resolve().then(() => {
+                        this.applyStylesAfterRender(args);
+                    });
+                }
             });
             dropDownList.appendTo(resourceInput);
         }
         return resourceDiv;
+    }
+
+    private applyStylesAfterRender(args: PopupEventArgs): void {
+        if (!args.popup || !args.popup.element) { return; }
+        const resourceColors: NodeListOf<Element> = args.popup.element.querySelectorAll('.e-resource-color[data-resource-color]');
+        resourceColors.forEach((element: Element) => {
+            const color: string = element.getAttribute('data-resource-color');
+            if (color) {
+                (element as HTMLElement).style.backgroundColor = color;
+            }
+        });
     }
 
     private renderDropDown(value: string): HTMLElement {
@@ -1433,6 +1456,9 @@ export class EventWindow {
             if (eventObj[this.fields.isReadonly]) {
                 return false;
             }
+            if (this.parent.eventBase.checkOverlap(eventObj)) {
+                return true;
+            }
             let currentAction: CurrentAction;
             if (!isNullOrUndefined(editedData[this.fields.recurrenceRule])) {
                 currentAction = this.parent.currentAction;
@@ -1463,6 +1489,9 @@ export class EventWindow {
             }
         } else {
             this.parent.currentAction = 'Add';
+            if (this.parent.eventBase.checkOverlap(eventObj)) {
+                return true;
+            }
             if (isResourceEventExpand) {
                 this.resourceSaveEvent(eventObj, this.parent.currentAction);
             } else {

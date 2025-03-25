@@ -75,7 +75,7 @@ export class Row extends ChildProperty<Row> {
         let width: number = 0;
         const innerPadding: number = 5;
         if (axis.visible && axis.internalVisibility) {
-            width += (axis.findTickSize(axis.crossInAxis) + scrollBarHeight +
+            width += (axis.findTickSize(axis.crossInAxis) + ((axis.scrollbarSettings.position === 'Right' || axis.scrollbarSettings.position === 'Left') ? 0 : scrollBarHeight) +
                 axis.findLabelSize(axis.crossInAxis, innerPadding, definition, chart) + axis.lineStyle.width * 0.5);
         }
 
@@ -137,7 +137,7 @@ export class Column extends ChildProperty<Column> {
         let height: number = 0;
         const innerPadding: number = 5;
         if (axis.visible && axis.internalVisibility) {
-            height += (axis.findTickSize(axis.crossInAxis) + scrollBarHeight +
+            height += (axis.findTickSize(axis.crossInAxis) + ((axis.scrollbarSettings.position === 'Top' || axis.scrollbarSettings.position === 'Bottom') ? 0 : scrollBarHeight) +
                 axis.findLabelSize(axis.crossInAxis, innerPadding, definition, chart) + axis.lineStyle.width * 0.5);
         }
         if (axis.isAxisOpposedPosition) {
@@ -815,6 +815,15 @@ export class Axis extends ChildProperty<Axis> {
     public enableTrim: boolean;
 
     /**
+     * Specifies whether the axis labels should be wrapped based on the specified `maximumLabelWidth`.
+     * When set to `true`, the axis labels will automatically wrap to fit within the available width defined by `maximumLabelWidth`.
+     *
+     * @default false
+     */
+    @Property(false)
+    public enableWrap: boolean;
+
+    /**
      * The `labelPadding` property adjusts the distance to ensure a clear space between the axis labels and the axis line.
      *
      * @default 5
@@ -1282,6 +1291,20 @@ export class Axis extends ChildProperty<Axis> {
                 label.breakLabelSize = measureText(
                     this.enableTrim ? (<string[]>label.text).join('<br>') : label.originalText, this.labelStyle, chart.themeStyle.axisLabelFont
                 );
+            }
+            else if (this.enableWrap) {
+                const maximumLabelHeight: number = chart.initialClipRect.height / this.visibleLabels.length;
+                label.text = textWrap(label.text as string, this.maximumLabelWidth, this.labelStyle, chart.enableRtl, null, null,
+                                      chart.themeStyle.axisLabelFont, this.orientation === 'Vertical' ? maximumLabelHeight : null);
+                let maxTextWidth: number = 0;
+                let maxTextHeight: number = 0;
+                label.text.forEach((textLine: string) => {
+                    const textSize: Size = measureText(textLine, this.labelStyle, chart.themeStyle.axisLabelFont);
+                    maxTextWidth = Math.max(maxTextWidth, textSize.width);
+                    maxTextHeight += textSize.height;
+                });
+                label.size.width = maxTextWidth;
+                label.size.height = maxTextHeight;
             } else {
                 if ((this.angle === -90 || this.angle === 90 || this.angle === 270 || this.angle === -270) && this.orientation === 'Vertical') {
                     label.size = rotateTextSize(this.labelStyle, <string>label.text, this.angle, chart, chart.themeStyle.axisLabelFont);

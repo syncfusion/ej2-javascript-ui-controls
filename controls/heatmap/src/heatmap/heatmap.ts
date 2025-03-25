@@ -872,6 +872,9 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         if (document.getElementById(this.element.id + '_CellSelection_Container')) {
             remove(document.getElementById(this.element.id + '_CellSelection_Container'));
         }
+        if (document.getElementById(this.element.id + '_secondary_canvas')) {
+            remove(document.getElementById(this.element.id + '_secondary_canvas'));
+        }
         if (this.svgObject) {
             const svgElement: Element = document.getElementById(this.svgObject.id);
             if (svgElement) {
@@ -1011,10 +1014,9 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
 
     private appendSvgObject(): void {
+        this.element.appendChild(this.svgObject);
         if (this.enableCanvasRendering && this.allowSelection) {
             this.createMultiCellDiv(false);
-        } else {
-            this.element.appendChild(this.svgObject);
         }
     }
 
@@ -1227,11 +1229,14 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         const move: string = Browser.touchMoveEvent;
         const cancel: string = isIE11Pointer ? 'pointerleave' : 'mouseleave';
         EventHandler.add(this.element, Browser.isDevice ? start : 'click', this.heatMapMouseClick, this);
+        EventHandler.add(this.element, 'contextmenu', this.heatMapMouseRightClick, this);
         EventHandler.add(this.element, 'dblclick', this.heatMapMouseDoubleClick, this);
         EventHandler.add(this.element, start, this.heatMapMouseMove, this);
         EventHandler.add(this.element, stop, this.heatMapMouseLeave, this);
         EventHandler.add(this.element, move, this.heatMapMouseMove, this);
         EventHandler.add(this.element, cancel, this.heatMapMouseLeave, this);
+        EventHandler.add(this.element, 'keyup', this.heatMapKeyUp, this);
+        EventHandler.add(this.element, 'keydown', this.heatMapKeyDown, this);
         this.resizeEvent = this.heatMapResize.bind(this);
         window.addEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
@@ -1350,11 +1355,14 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         const move: string = Browser.touchMoveEvent;
         const cancel: string = isIE11Pointer ? 'pointerleave' : 'mouseleave';
         EventHandler.remove(this.element, Browser.isDevice ? start : 'click', this.heatMapMouseClick);
+        EventHandler.remove(this.element, 'contextmenu', this.heatMapMouseRightClick);
         EventHandler.remove(this.element, 'dblclick', this.heatMapMouseDoubleClick);
         EventHandler.remove(this.element, start, this.heatMapMouseMove);
         EventHandler.remove(this.element, stop, this.heatMapMouseLeave);
         EventHandler.remove(this.element, move, this.heatMapMouseMove);
         EventHandler.remove(this.element, cancel, this.heatMapMouseLeave);
+        EventHandler.remove(this.element, 'keyup', this.heatMapKeyUp);
+        EventHandler.remove(this.element, 'keydown', this.heatMapKeyDown);
         window.removeEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
             this.resizeEvent
@@ -1525,7 +1533,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private triggerClickEvent(e: PointerEvent, isDoubleClick: boolean): any {
+    private triggerClickEvent(e: PointerEvent, isDoubleClick: boolean, hasRightClicked: boolean): any {
         let pageX: number;
         let pageY: number;
         let touchArg: TouchEvent;
@@ -1559,15 +1567,21 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                 xValue: this.heatMapSeries.hoverXAxisValue,
                 yValue: this.heatMapSeries.hoverYAxisValue,
                 cellElement: this.enableCanvasRendering ? null : document.getElementById(currentRect.id),
+                hasRightClicked: hasRightClicked,
                 event: e
             });
         }
         return { x: pageX, y: pageY };
     }
 
-    private heatMapMouseDoubleClick(e: PointerEvent): void {
-        this.triggerClickEvent(e, true);
+    private heatMapMouseRightClick(e: PointerEvent): void {
+        this.triggerClickEvent(e, false, true);
     }
+
+    private heatMapMouseDoubleClick(e: PointerEvent): void {
+        this.triggerClickEvent(e, true, false);
+    }
+
     /**
      * @param {PointerEvent} e - Specifies the event.
      * @returns {boolean} Returns the boolean that that the heatmap is clicked or not
@@ -1575,10 +1589,16 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public heatMapMouseClick(e: PointerEvent): boolean {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const position: any = this.triggerClickEvent(e, false);
+        const position: any = this.triggerClickEvent(e, false, false);
         const pageX: number = position.x;
         const pageY: number = position.y;
         this.notify('click', e);
+        if (this.isHeatmapRect(pageX, pageY) && this.currentRect) {
+            const rectElement: HTMLElement = document.getElementById(this.currentRect.id);
+            if (!isNullOrUndefined(rectElement)) {
+                rectElement.focus();
+            }
+        }
         if (this.paletteSettings.type !== 'Gradient' && this.legendModule
             && this.legendSettings.visible && this.legendVisibilityByCellType) {
             const page: Rect[] = this.legendModule.navigationCollections;
@@ -1634,6 +1654,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             pageX = e.clientX;
             pageY = e.clientY;
         }
+        this.removeFocus('none');
         pageX -= elementRect.left;
         pageY -= elementRect.top;
         this.setMouseXY(pageX, pageY);
@@ -2049,7 +2070,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public addSvgClass(element: Element): void {
         if (!this.enableCanvasRendering) {
             const className: string = this.element.id + '_selected';
-            element.setAttribute('class', className);
+            (element as HTMLElement).classList.add(className);
         }
     }
 
@@ -2275,6 +2296,127 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
+     * This method is used to perform operations when keyboard up on Heatmap.
+     *
+     * @param {KeyboardEvent} e - Specifies the keyboard event on Heatmap.
+     * @returns {void}
+     * @private
+     */
+    public heatMapKeyUp(e: KeyboardEvent): void {
+        if (e.code !== 'Tab') {
+            return;
+        }
+        this.removeFocus('none');
+        if (this.tooltipModule) {
+            this.tooltipModule.showHideTooltip(false);
+        }
+        const targetElement: Element = e.target as Element;
+        const isRect: boolean = targetElement.id.indexOf('HeatMapRect') > -1;
+        const isLegend: boolean = targetElement.id.indexOf('Legend') > -1;
+        const toHighlightCells: boolean = this.cellSettings.enableCellHighlighting;
+        if (toHighlightCells && !isLegend && !this.rectSelected) {
+            this.heatMapSeries.highlightSvgRect(targetElement.id);
+        } else if ((isRect && this.allowSelection) || (isLegend && this.legendSettings.toggleVisibility) || targetElement.id.indexOf('arrow') > -1) {
+            (targetElement as HTMLElement).style.outline = '2px solid black';
+            (targetElement as HTMLElement).classList.add('keyboard-focused');
+        }
+    }
+
+    /**
+     * This method is used to perform operations when keyboard down on Heatmap.
+     *
+     * @param {KeyboardEvent} e - Specifies the keyboard event on Heatmap.
+     * @returns {void}
+     * @private
+     */
+    public heatMapKeyDown(e: KeyboardEvent): void {
+        if (e.code !== 'Enter') {
+            return;
+        }
+        if (!e.ctrlKey) {
+            this.multiCellCollection = [];
+        }
+        this.removeFocus('none');
+        let targetElement: Element = e.target as Element;
+        if (this.allowSelection && (targetElement.id.indexOf('HeatMapRect') > -1) && this.cellSettings.tileType === 'Rect') {
+            this.previousRect = this.currentRect = this.getRectElement(targetElement.id);
+            this.removeSelectedCellsBorder(false);
+            this.getDataCollection();
+            this.setCellOpacity();
+            this.rectSelected = true;
+        } else if (this.legendModule && this.legendSettings.visible) {
+            const index: number = this.calculateLegendIndex(targetElement);
+            if (!isNullOrUndefined(index)) {
+                this.legendModule.legendRangeSelection(index);
+            }
+            targetElement = document.getElementById(targetElement.id);
+            this.handleArrowNavigation(targetElement);
+            (targetElement as HTMLElement).setAttribute('tabindex', '0');
+            (targetElement as HTMLElement).focus();
+        }
+    }
+
+    /**
+     * Method to find the legend index.
+     */
+
+    private calculateLegendIndex(targetElement: Element): number | null {
+        if (this.legendSettings.toggleVisibility) {
+            if (targetElement.id.indexOf('Legend_Index') > -1) {
+                return parseFloat(targetElement.id.split('Legend_Index_')[1]);
+            }
+            if (targetElement.id.indexOf('_Smart_Legend_Group_') > -1) {
+                return parseFloat(targetElement.id.split('_Smart_Legend_Group_')[1]);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Method to handle arrow navigation in legend.
+     */
+
+    private handleArrowNavigation(targetElement: Element): void {
+        if (targetElement.id.indexOf('arrow') > -1) {
+            const currentPage: number = this.legendModule.currentPage;
+            const maxPage: number = this.legendColorCollection.length / this.legendModule.listPerPage;
+            if (currentPage < maxPage && targetElement.id.indexOf('rightarrow') > -1) {
+                this.legendModule.translatePage(this, currentPage, true);
+            } else if (currentPage <= maxPage && targetElement.id.indexOf('leftarrow') > -1) {
+                this.legendModule.translatePage(this, currentPage, false);
+            }
+        }
+    }
+
+    /**
+     * Method to return Current rect.
+     */
+
+    private getRectElement(id: string): CurrentRect {
+        const rectCollection: CurrentRect[][] = this.heatMapSeries.rectPositionCollection;
+        for (let i: number = 0; i < rectCollection.length; i++) {
+            for (let j: number = 0; j < rectCollection[i as number].length; j++) {
+                if (rectCollection[i as number][j as number].id === id) {
+                    return rectCollection[i as number][j as number];
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Method to remove the highlight outline.
+     */
+
+    private removeFocus(outline: string): void {
+        const highlightedElement: Element = document.querySelector('.keyboard-focused');
+        if (highlightedElement) {
+            (highlightedElement as HTMLElement).style.outline = outline;
+            highlightedElement.classList.remove('keyboard-focused');
+        }
+    }
+
+    /**
      * Method to Check for deselection of cell.
      */
 
@@ -2334,6 +2476,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                     const collectionClasss: Element = this.multiCellCollection[i as number].cellElement;
                     const index: number = parseInt(collectionClasss.id.replace(this.element.id + '_HeatMapRect_', ''), 10);
                     (containersRect.childNodes[index as number] as HTMLElement).setAttribute('opacity', '1');
+                    (containersRect.childNodes[index as number] as HTMLElement).setAttribute('tabindex', '0');
                     if (this.cellSettings.showLabel) {
                         const getText: HTMLElement = document.getElementById(this.element.id + '_HeatMapRectLabels_' + index);
                         if (getText) {
@@ -2362,21 +2505,22 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             });
             (divElement as HTMLElement).style.position = 'relative';
             this.element.appendChild(divElement);
-            divElement.appendChild(this.svgObject);
             (this.svgObject as HTMLElement).style.position = 'absolute';
             (this.svgObject as HTMLElement).style.left = '0px';
             (this.svgObject as HTMLElement).style.top = '0px';
             (this.svgObject as HTMLElement).style.zIndex = '0';
 
         } else {
-            const element: Element = document.getElementById(this.element.id + '_Multi_CellSelection_Canvas');
-            const secondaryCanvas: HTMLCanvasElement = this.secondaryCanvasRenderer.createCanvas({
-                width: this.availableSize.width,
-                height: this.availableSize.height, x: 0, y: 0
-            });
-            secondaryCanvas.style.cssText = 'position: absolute; z-index: 1';
-
-            element.appendChild(secondaryCanvas);
+            let secondaryCanvas: HTMLCanvasElement;
+            secondaryCanvas = document.getElementById(this.element.id + '_secondary_canvas') as HTMLCanvasElement;
+            if (isNullOrUndefined(secondaryCanvas)) {
+                secondaryCanvas = this.secondaryCanvasRenderer.createCanvas({
+                    width: this.availableSize.width,
+                    height: this.availableSize.height, x: 0, y: 0
+                });
+            }
+            secondaryCanvas.style.cssText = 'position: relative; z-index: 1';
+            this.element.appendChild(secondaryCanvas);
         }
     }
 }

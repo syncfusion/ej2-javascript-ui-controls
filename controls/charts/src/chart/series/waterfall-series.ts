@@ -18,7 +18,6 @@ export class WaterfallSeries extends ColumnBase {
      * @private
      */
     public cumulativeSums: number[] = [];
-
     /**
      * Render waterfall series.
      *

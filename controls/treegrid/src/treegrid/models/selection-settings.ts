@@ -6,12 +6,10 @@ import { SelectionMode, CellSelectionMode, SelectionType, CheckboxSelectionType 
  */
 export class SelectionSettings extends ChildProperty<SelectionSettings> {
     /**
-     * TreeGrid supports row, cell, and both (row and cell) selection mode.
-     * ```props
-     * * Row :- Selects the entire row.
-     * * Cell :- Selects the cell alone.
-     * * Both :- Selects the entire row and its cell.
-     * ```
+     * Specifies the selection mode for the TreeGrid, which supports row, cell, and both (row and cell) selection modes.
+     * * `Row`: Selects the entire row.
+     * * `Cell`: Selects a single cell.
+     * * `Both`: Selects the entire row and its cells.
      *
      * @default Syncfusion.EJ2.Grids.SelectionMode.Row
      * @isEnumeration true
@@ -21,12 +19,10 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
     public mode: SelectionMode;
 
     /**
-     * The cell selection modes are flow and box. It requires the selection
-     * [`mode`](#mode) to be either cell or both.
-     * ```props
-     * * Flow :- Selects the range of cells between start index and end index that also includes the other cells of the selected rows.
-     * * Box :- Selects the range of cells within the start and end column indexes that includes in between cells of rows within the range.
-     * ```
+     * Determines the mode for cell selection, available options are flow and box.
+     * Requires the selection `mode` to be either cell or both.
+     * * `Flow`: Selects the range between start and end indexes, including other cells of selected rows.
+     * * `Box`: Selects cells within the start and end column indexes within the selected rows.
      *
      * @default Syncfusion.EJ2.Grids.CellSelectionMode.Flow
      * @isEnumeration true
@@ -36,11 +32,9 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
     public cellSelectionMode: CellSelectionMode;
 
     /**
-     * Defines options for selection type. They are
-     * ```props
-     * * Single :- Allows selection of only a row or a cell.
-     * * Multiple :- Allows selection of multiple rows or cells.
-     * ```
+     * Defines the selection type, specifying whether single or multiple selections are allowed.
+     * * `Single`: Allows selection of only a single row or cell.
+     * * `Multiple`: Allows selection of multiple rows or cells.
      *
      * @default Syncfusion.EJ2.Grids.SelectionType.Single
      * @isEnumeration true
@@ -50,20 +44,18 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
     public type: SelectionType;
 
     /**
-     * If 'persistSelection' set to true, then the TreeGrid selection is persisted on all operations.
-     * For persisting selection in the TreeGrid, any one of the column should be enabled as a primary key.
+     * When set to true, the TreeGrid selection persists even during various grid operations such as sorting or paging.
+     * Requires at least one column to be configured as the primary key for persistence.
      *
      * @default false
      */
     @Property(false)
     public persistSelection: boolean;
+
     /**
-     * Defines options for checkbox selection Mode. They are
-     * ```props
-     * * Default :- This is the default value of the checkboxMode. In this mode, user can select multiple rows by clicking rows one by one.
-     * * ResetOnRowClick :- In ResetOnRowClick mode, on clicking a row it will reset previously selected row and also multiple.
-     * ```
-     *  rows can be selected by using CTRL or SHIFT key.
+     * Specifies the mode for checkbox selection:
+     * * `Default`: Allows selection of multiple rows by clicking on each row individually.
+     * * `ResetOnRowClick`: Resets prior selection when a new row is clicked. Multiple rows can be selected using CTRL or SHIFT keys.
      *
      * @default Syncfusion.EJ2.Grids.CheckboxSelectionType.Default
      * @isEnumeration true
@@ -71,17 +63,17 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
      */
     @Property('Default')
     public checkboxMode: CheckboxSelectionType;
+
     /**
-     * If 'checkboxOnly' set to true, then the TreeGrid selection is allowed only through checkbox.
-     *
-     * > To enable checkboxOnly selection, should specify the column type as `checkbox`.
+     * If set to true, TreeGrid selection is allowed only through checkboxes. Ensure the column type is set to `checkbox` to enable this mode.
      *
      * @default false
      */
     @Property(false)
     public checkboxOnly: boolean;
+
     /**
-     * If ‘enableToggle’ set to true, then the user can able to perform toggle for the selected row.
+     * Enables toggling of the selected row. When true, users can toggle the selection of a row.
      *
      * @default true
      */

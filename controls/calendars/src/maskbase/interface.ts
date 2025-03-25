@@ -16,6 +16,7 @@ export interface IMaskedDateTime extends Component<HTMLElement> {
     locale: string;
     inputElement: HTMLInputElement;
     inputWrapper: InputObject;
+    strictMode: boolean;
     value: Date;
     updateInputValue(value?: string): void
     dateTimeFormat: string

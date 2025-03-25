@@ -1299,7 +1299,43 @@
       white-space: nowrap;
       width: auto;
     }
+ 
+    th.e-detailcell td.e-rowcell.e-rightalign,
+    td.e-rowcell.e-rightalign,
+    th.e-headercell.e-rightalign .e-headercelldiv,
+    th.e-headercell.e-rightalign .e-stackedheadercelldiv,
+    td.e-summarycell.e-rightalign {
+      text-align: right;
+    }
+
+    th.e-detailcell td.e-rowcell.e-leftalign,
+    td.e-rowcell.e-leftalign,
+    th.e-headercell.e-leftalign .e-headercelldiv,
+    th.e-headercell.e-leftalign .e-stackedheadercelldiv,
+    td.e-summarycell.e-leftalign {
+      text-align: left;
+    }
+
+    th.e-detailcell td.e-rowcell.e-centeralign,
+    td.e-rowcell.e-centeralign,
+    th.e-headercell.e-centeralign .e-headercelldiv,
+    th.e-headercell.e-centeralign .e-stackedheadercelldiv,
+    td.e-summarycell.e-centeralign {
+      text-align: center;
+    }
     
+    th.e-detailcell td.e-rowcell.e-justifyalign,
+    td.e-rowcell.e-justifyalign,
+    th.e-headercell.e-justifyalign .e-headercelldiv,
+    th.e-headercell.e-justifyalign .e-stackedheadercelldiv,
+    td.e-summarycell.e-justifyalign {
+      text-align: justify;
+    }
+
+    .e-gridcontent td.e-rowcell.e-unboundcell .e-unboundcelldiv {
+      display: inline-block;
+    }
+
     .e-rowcell.e-gridchkbox {
       @if $grid-skin == 'fluent' {
         padding-left: 8px;
@@ -2899,13 +2935,18 @@
           & .e-headercelldiv,
           .e-headercelldiv.e-headerchkcelldiv {
             padding: $grid-rtl-headercelldiv-padding;
-            text-align: right;
             @if $grid-skin == 'highcontrast' {
               margin: -7px 0;
             }
-
+ 
             & .e-sortnumber {
               @include grid-flot-margin(left, $grid-fltr-rtl-sortnumber-margin);
+            }
+          }
+          &.e-rightalign {
+            & .e-headercelldiv,
+            .e-headercelldiv.e-headerchkcelldiv {
+              text-align: right;
             }
           }
         }
@@ -3619,6 +3660,7 @@
         width: $grid-columnchoosertext-width;
         white-space: normal;
       }
+
       .e-rowcell.e-frozen-right-border,
       .e-headercell.e-frozen-right-border,
       .e-filterbarcell.e-frozen-right-border {
@@ -3888,6 +3930,19 @@
         border-bottom-style: $grid-border-type;
         border-bottom-width: $grid-border-size;
         @include grid-border-width-styles;
+      }
+
+      &.e-print-grid-layout {
+        @if $theme-name =='fluent2-highcontrast' {
+          border-color: rgb(128, 128, 128);
+        }
+
+        .e-rowcell,
+        .e-gridheader {
+          @if $theme-name =='fluent2-highcontrast' {
+            border-color: rgb(128, 128, 128);
+          }
+        }
       }
     }
   }

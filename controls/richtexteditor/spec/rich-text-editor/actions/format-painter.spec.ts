@@ -9,6 +9,7 @@ import { Button } from '@syncfusion/ej2-buttons';
 import { Browser, createElement, detach } from '@syncfusion/ej2-base';
 import { NodeSelection } from '../../../src/selection/selection';
 import { EditorManager } from '../../../src/editor-manager/index';
+import { MACOS_USER_AGENT } from '../user-agent.spec';
 
 
 const copyKeyBoardEventArgs: any = {
@@ -2455,10 +2456,7 @@ describe('Format Painter Module', () => {
         let defaultUA: string = navigator.userAgent;
         let safari: string = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15";
         beforeAll(function () {
-            Object.defineProperty(navigator, 'userAgent', {
-                value: safari,
-                configurable: true
-            });
+            Browser.userAgent = safari;
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['FormatPainter']
@@ -2467,8 +2465,8 @@ describe('Format Painter Module', () => {
             rteEle = rteObj.element;
         });
         afterAll(function () {
-            Browser.userAgent = defaultUA;
             destroy(rteObj);
+            Browser.userAgent = defaultUA;
         });
         it(' To check correct shortcut key is displayed in tooltip for format painter in safari', (done: Function) => {
             const title = document.querySelector('.e-toolbar-item.e-tbtn-align').getAttribute('title');
@@ -2630,6 +2628,101 @@ describe('Format Painter Module', () => {
                 expect(rteObj.inputElement.innerHTML).toBe(innerHtml);
                 done();
             }, 500);
+        });
+    });
+
+    describe('945054: MAC - Format painter pastes the content without formatting.', ()=>{
+        let editor: RichTextEditor;
+        let defaultPrevented: boolean = false;
+        const defaultUA: string = Browser.userAgent;
+        beforeAll(()=> {
+            Browser.userAgent = MACOS_USER_AGENT.SAFARI;
+            editor = renderRTE({
+                toolbarSettings: {
+                    items: ['FormatPainter']
+                },
+                value: '<p><strong>Getting</strong> started with format painter</p>'
+            });
+        });
+        afterAll(()=> {
+            destroy(editor);
+            Browser.userAgent = defaultUA;
+        });
+        it('Should call the prevent default for MAC Safari browser.',(done: DoneFn)=> {
+            editor.focusIn();
+            const copyEventInit: any = {
+                "key": "̧",
+                "keyCode": 67,
+                "which": 67,
+                "code": "KeyC",
+                "location": 0,
+                "altKey": true,
+                "ctrlKey": false,
+                "metaKey": false,
+                "shiftKey": true,
+                "repeat": false
+            };
+            const copyKeyDownEvent: KeyboardEvent = new KeyboardEvent('keydown', copyEventInit);
+            spyOn(copyKeyDownEvent, 'preventDefault');
+            let startElement = editor.inputElement.querySelector('p');
+            editor.formatter.editorManager.nodeSelection.setSelectionText(document, startElement.childNodes[0], startElement.childNodes[0], 0, 1);
+            editor.inputElement.dispatchEvent(copyKeyDownEvent);
+            setTimeout(() => {
+                expect(copyKeyDownEvent.preventDefault).toHaveBeenCalled();
+                defaultPrevented = false;
+                const pasteEventInit: any = {
+                    "key": "̌",
+                    "keyCode": 86,
+                    "which": 86,
+                    "code": "KeyV",
+                    "location": 0,
+                    "altKey": true,
+                    "ctrlKey": false,
+                    "metaKey": false,
+                    "shiftKey": true,
+                    "repeat": false
+                };
+                editor.formatter.editorManager.nodeSelection.setSelectionText(document, startElement.childNodes[1], startElement.childNodes[1], 0, 28);
+                const pasteEvent : KeyboardEvent = new KeyboardEvent('keydown', pasteEventInit);
+                spyOn(pasteEvent, 'preventDefault');
+                editor.inputElement.dispatchEvent(pasteEvent);
+                setTimeout(() => {
+                    expect(pasteEvent.preventDefault).toHaveBeenCalled();
+                    done();
+                }, 100);
+            }, 100);
+        });
+    });
+    describe('945446 - Script Error Occurs After Using Format Painter in Arabic Localization.', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let originalConsoleError: { (...data: any[]): void; (...data: any[]): void; };
+        let errorSpy: jasmine.Spy;
+        beforeAll(() => {
+            originalConsoleError = console.error;
+            errorSpy = jasmine.createSpy('error');
+            console.error = errorSpy;
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['formatpainter']
+                },
+                value: '<p>Rich Text Editor content</p>'
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll((done) => {
+            console.error = originalConsoleError;
+            destroy(rteObj);
+            done();
+        });
+        it('Should not throw error when refreshing after dynamic localization change', (done) => {
+            rteObj.locale = 'de-DE';
+            rteObj.dataBind();
+            (rteObj.element.querySelectorAll(".e-toolbar-items .e-toolbar-item button")[0] as any).click();
+            setTimeout(function () {
+                expect(errorSpy).not.toHaveBeenCalled();
+                done();
+            }, 100);
         });
     });
 });

@@ -107,29 +107,31 @@ describe('Merge ->', () => {
             });
         });
         it('Cut paste of merged range', (done: Function) => {
-            helper.invoke('cut').then(() => {
-                checkPosition(helper.getElementFromSpreadsheet('.e-active-cell'), ['79px', '63px', '61px', '65px']);
-                checkPosition(helper.getElementFromSpreadsheet('.e-selection'), ['79px', '63px', '61px', '129px']);
-                helper.invoke('selectRange', ['E10']);
-                helper.invoke('paste', ['E10']);
-                setTimeout(() => {
-                    let cell: CellModel = helper.getInstance().sheets[0].rows[9].cells[4];
-                    expect(cell.value as any).toBe(41964);
-                    expect(cell.colSpan).toBeUndefined();
-                    expect(cell.rowSpan).toBe(3);
-                    expect(spreadsheet.sheets[0].rows[10].cells[4].rowSpan).toBe(-1);
-                    cell = spreadsheet.sheets[0].rows[9].cells[5];
-                    expect(cell.value as any).toBe(0.2665972222222222);
-                    expect(cell.colSpan).toBeUndefined();
-                    expect(cell.rowSpan).toBe(3);
-                    expect(spreadsheet.sheets[0].rows[11].cells[5].rowSpan).toBe(-2);
-                    const td: HTMLTableCellElement = helper.invoke('getCell', [9, 5]);
-                    expect(td.colSpan).toBe(1);
-                    expect(td.rowSpan).toBe(3);
-                    expect(helper.invoke('getCell', [10, 5]).style.display).toBe('none');
-                    expect(helper.invoke('getCell', [11, 5]).style.display).toBe('none');
-                    done();
-                });
+            setTimeout((): void => {
+                helper.invoke('cut').then(() => {
+                    checkPosition(helper.getElementFromSpreadsheet('.e-active-cell'), ['79px', '63px', '61px', '65px']);
+                    checkPosition(helper.getElementFromSpreadsheet('.e-selection'), ['79px', '63px', '61px', '129px']);
+                    helper.invoke('selectRange', ['E10']);
+                    helper.invoke('paste', ['E10']);
+                    setTimeout(() => {
+                        let cell: CellModel = helper.getInstance().sheets[0].rows[9].cells[4];
+                        expect(cell.value as any).toBe(41964);
+                        expect(cell.colSpan).toBeUndefined();
+                        expect(cell.rowSpan).toBe(3);
+                        expect(spreadsheet.sheets[0].rows[10].cells[4].rowSpan).toBe(-1);
+                        cell = spreadsheet.sheets[0].rows[9].cells[5];
+                        expect(cell.value as any).toBe(0.2665972222222222);
+                        expect(cell.colSpan).toBeUndefined();
+                        expect(cell.rowSpan).toBe(3);
+                        expect(spreadsheet.sheets[0].rows[11].cells[5].rowSpan).toBe(-2);
+                        const td: HTMLTableCellElement = helper.invoke('getCell', [9, 5]);
+                        expect(td.colSpan).toBe(1);
+                        expect(td.rowSpan).toBe(3);
+                        expect(helper.invoke('getCell', [10, 5]).style.display).toBe('none');
+                        expect(helper.invoke('getCell', [11, 5]).style.display).toBe('none');
+                        done();
+                    });
+                }, 30);
             }, 10);
         });
     });
@@ -351,14 +353,13 @@ describe('Merge ->', () => {
         });
         it('Cancelling merge dialog', (done: Function) => {
             const spreadsheet: Spreadsheet = helper.getInstance();
-                spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
+            spreadsheet.dialogBeforeOpen = (args: DialogBeforeOpenEventArgs): void => {
                 args.cancel = true;
             };
             helper.invoke('selectRange', ['E2:H2']);
             helper.click('#' + helper.id + '_merge');
             setTimeout(() => {
-                var dialog = helper.getElement('.e-merge-alert-dlg.e-dialog');
-                expect(!!dialog).toBeTruthy();
+                expect(helper.getElement('.e-merge-alert-dlg.e-dialog')).toBeNull();
                 done();
             });
         }); 
@@ -422,6 +423,83 @@ describe('Merge ->', () => {
             helper.click('#' + helper.id + '_merge');
             expect(document.getElementsByClassName('e-empty').length).toBe(0);
             done();
+        });
+    });
+
+    describe('EJ2-888391 - Merge cell is not maintained correctly after performing undo and redo actions ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Applying horizontal merge to cells', (done: Function) => {
+            helper.invoke('selectRange', ['A2:B3']);
+            helper.click('#' + helper.id + '_merge_dropdownbtn');
+            setTimeout(() => {
+                helper.click('#' + helper.id + '_merge_horizontally');
+                helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+                setTimeout(() => {
+                    helper.click('.e-dialog .e-primary');
+                    expect(helper.getInstance().sheets[0].rows[1].cells[0].colSpan).toBe(2);
+                    expect(helper.getInstance().sheets[0].rows[2].cells[0].colSpan).toBe(2);
+                    done();
+                });
+            });
+        });
+        it('Applying Hyperlink to vertical merge to cells', (done: Function) => {
+            helper.invoke('selectRange', ['A6:B7']);
+            helper.click('#' + helper.id + '_merge_dropdownbtn');
+            setTimeout(() => {
+                helper.click('#' + helper.id + '_merge_vertically');
+                helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+                setTimeout(() => {
+                    helper.click('.e-dialog .e-primary');
+                    expect(helper.getInstance().sheets[0].rows[5].cells[0].rowSpan).toBe(2);
+                    expect(helper.getInstance().sheets[0].rows[5].cells[1].rowSpan).toBe(2);
+                    done();
+                });
+            });
+        });
+        it('Applying merge all to the cells', (done: Function) => {
+            helper.invoke('selectRange', ['A10:B11']);
+            helper.click('#' + helper.id + '_merge_dropdownbtn');
+            setTimeout(() => {
+                helper.click('#' + helper.id + '_merge_all');
+                helper.setAnimationToNone('.e-merge-alert-dlg.e-dialog');
+                setTimeout(() => {
+                    helper.click('.e-dialog .e-primary');
+                    expect(helper.getInstance().sheets[0].rows[9].cells[0].rowSpan).toBe(2);
+                    expect(helper.getInstance().sheets[0].rows[9].cells[0].colSpan).toBe(2);
+                    done();
+                });
+            });
+        });
+        it('Merge cells are maintained properly after applying undo and redo actions - I', (done: Function) => {
+            helper.invoke('selectRange', ['A1:C11']);
+            helper.click('#' + helper.id + '_merge_dropdownbtn');
+            setTimeout(() => {
+                helper.click('#' + helper.id + '_unmerge');
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[1].cells[0].colSpan).toBe(2);
+                    expect(helper.getInstance().sheets[0].rows[2].cells[0].colSpan).toBe(2);
+                    expect(helper.getInstance().sheets[0].rows[5].cells[0].rowSpan).toBe(2);
+                    expect(helper.getInstance().sheets[0].rows[5].cells[1].rowSpan).toBe(2);
+                    expect(helper.getInstance().sheets[0].rows[9].cells[0].rowSpan).toBe(2);
+                    expect(helper.getInstance().sheets[0].rows[9].cells[0].colSpan).toBe(2);
+                    helper.click('#spreadsheet_redo');
+                    setTimeout(() => {
+                        expect(helper.getInstance().sheets[0].rows[1].cells[0].colSpan).toBeUndefined();
+                        expect(helper.getInstance().sheets[0].rows[2].cells[0].colSpan).toBeUndefined();
+                        expect(helper.getInstance().sheets[0].rows[5].cells[0].rowSpan).toBeUndefined();
+                        expect(helper.getInstance().sheets[0].rows[5].cells[1].rowSpan).toBeUndefined();
+                        expect(helper.getInstance().sheets[0].rows[9].cells[0].rowSpan).toBeUndefined();
+                        expect(helper.getInstance().sheets[0].rows[9].cells[0].colSpan).toBeUndefined();
+                        done();
+                    });
+                });
+            });
         });
     });
 

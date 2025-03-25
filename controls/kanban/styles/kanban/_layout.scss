@@ -660,6 +660,18 @@
             line-height: $kanban-mb-swl-name-line-height;
             padding: $kanban-mb-swl-name-padding;
           }
+          
+          .e-toolbar-swimlane-item-count {
+            padding-top: 9px;
+
+            .e-item-count {
+              font-size: $kanban-frozen-swl-row-head-item-count-font-size;
+              font-weight: $kanban-frozen-swl-row-head-item-count-font-weight;
+              line-height: $kanban-frozen-swl-row-head-item-count-line-height;
+              opacity: $kanban-frozen-swl-row-head-item-count-opacity;
+              padding: $kanban-frozen-swl-row-head-item-count-padding;
+            }
+          }
 
           .e-toolbar-menu,
           .e-toolbar-level-title {

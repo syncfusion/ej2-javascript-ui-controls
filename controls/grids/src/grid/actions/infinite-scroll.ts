@@ -67,6 +67,8 @@ export class InfiniteScroll implements IAction {
     private groupCaptionAction: string;
     protected widthService: ColumnWidthService;
     private addRowIndex: number;
+    /** @hidden */
+    public infiniteDetailDestroy: boolean = false;
 
     /**
      * Constructor for the Grid infinite scrolling.
@@ -306,7 +308,10 @@ export class InfiniteScroll implements IAction {
     }
 
     private refreshInfiniteCurrentViewData(e: { args: NotifyArgs, data: Object[] }): void {
-        if (e.args.action === 'add' && e.args.requestType === 'save') {
+        const gObj: IGrid = this.parent;
+        const infiniteDetailModified: boolean = gObj.enableInfiniteScrolling && (gObj.childGrid || gObj.detailTemplate)
+        && ((e.args.action === 'add' && e.args.requestType === 'save') || e.args.requestType === 'delete');
+        if (e.args.action === 'add' && e.args.requestType === 'save' && !infiniteDetailModified) {
             this.parent.pageSettings.currentPage = Math.ceil(e.args['index'] / this.parent.pageSettings.pageSize) ?
                 Math.ceil(e.args['index'] / this.parent.pageSettings.pageSize) : 1;
         }
@@ -320,7 +325,7 @@ export class InfiniteScroll implements IAction {
                 || this.parent.filterSettings.columns.length || this.parent.groupSettings.columns.length
                 || this.parent.searchSettings.key);
             const isDelete: boolean = e.args.requestType === 'delete';
-            if (!cache && (isAdd || isDelete)) {
+            if (!cache && (isAdd || isDelete) && !infiniteDetailModified) {
                 if (isAdd) {
                     let indexCount: number = 0;
                     for (let i: number = 1; i <= keys.length; i++) {
@@ -337,6 +342,10 @@ export class InfiniteScroll implements IAction {
                 }
             } else {
                 if (blocks > 1 && e.data.length === (blocks * size)) {
+                    if (infiniteDetailModified) {
+                        this.infiniteCurrentViewData = {};
+                        this.firstBlock = 1;
+                    }
                     this.setInitialCache(e.data.slice() as Row<Column>[], {}, cache && e.args.requestType === 'delete', true);
                 } else {
                     this.infiniteCurrentViewData[parseInt(page.toString(), 10)] = e.data.slice();
@@ -718,15 +727,20 @@ export class InfiniteScroll implements IAction {
     }
 
     private infiniteScrollHandler(e: { target: HTMLElement, isLeft: boolean }): void {
+        if (this.infiniteDetailDestroy) {
+            return;
+        }
         this.restoreInfiniteEdit();
         this.restoreInfiniteAdd();
         const targetEle: HTMLElement = e.target as HTMLElement;
         const isInfinite: boolean = targetEle.classList.contains(literals.content);
+        const detailGrid: boolean = this.parent.childGrid || this.parent.detailTemplate ? true : false;
         if (isInfinite && this.parent.enableInfiniteScrolling && !e.isLeft) {
             const scrollEle: Element = this.parent.getContent().firstElementChild;
             const captionRows: Element[] = [].slice.call(this.parent.getContentTable().querySelectorAll('tr'));
             this.prevScrollTop = scrollEle.scrollTop;
-            const rows: Element[] = this.parent.groupSettings.enableLazyLoading ? captionRows : this.parent.getRows();
+            const rows: Element[] = detailGrid ? this.parent.getRows().filter((row: HTMLElement) => !row.classList.contains('e-detailrow'))
+                : this.parent.groupSettings.enableLazyLoading ? captionRows : this.parent.getRows();
             if (!rows.length) {
                 return;
             }
@@ -746,7 +760,8 @@ export class InfiniteScroll implements IAction {
                     this.isUpScroll = false;
                     this.isDownScroll = true;
                 }
-                const rows: Element[] = [].slice.call(scrollEle.querySelectorAll('.e-row:not(.e-addedrow)'));
+                const rows: Element[] = detailGrid ? this.getGridRows().filter((row: HTMLElement) => row.classList.contains('e-row')
+                    && !row.classList.contains('e-addedrow')) : [].slice.call(scrollEle.querySelectorAll('.e-row:not(.e-addedrow)'));
                 const row: Element = rows[rows.length - 1];
                 const rowIndex: number = !(this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length)
                     ? getRowIndexFromElement(row) : this.parent.contentModule['visibleRows'].length - 1;
@@ -767,7 +782,8 @@ export class InfiniteScroll implements IAction {
                     this.isDownScroll = false;
                     this.isUpScroll = true;
                 }
-                const row: Element = [].slice.call(scrollEle.getElementsByClassName(literals.row));
+                const row: Element = detailGrid ? this.getGridRows().filter((row: HTMLElement) => row.classList.contains(literals.row))
+                    : [].slice.call(scrollEle.getElementsByClassName(literals.row));
                 const rowIndex: number = getRowIndexFromElement(row[this.parent.pageSettings.pageSize - 1]);
                 const startIndex: number = getRowIndexFromElement(row[0]) - this.parent.pageSettings.pageSize;
                 this.parent.pageSettings.currentPage = Math.ceil(rowIndex / this.parent.pageSettings.pageSize) - 1;
@@ -818,7 +834,8 @@ export class InfiniteScroll implements IAction {
     }
 
     private infinitePageQuery(query: Query): void {
-        if (this.initialRender) {
+        if (this.initialRender || ((this.requestType === 'add' || this.requestType === 'delete')
+            && (this.parent.childGrid || this.parent.detailTemplate))) {
             this.initialRender = false;
             this.intialPageQuery(query);
         } else {
@@ -916,8 +933,8 @@ export class InfiniteScroll implements IAction {
         const cell: Element = ((e.byClick && e.clickArgs.target) || (e.byKey && e.keyArgs.target)
             || (!this.isFocusScroll && <{ target?: Element }>e).target) as Element;
         if (cell && cell.classList.contains('e-rowcell')) {
-            const cellIdx: number = parseInt(cell.getAttribute('data-colindex'), 10);
-            const rowIdx: number = parseInt(cell.parentElement.getAttribute('data-rowindex'), 10);
+            const cellIdx: number = parseInt(cell.getAttribute('aria-colindex'), 10) - 1;
+            const rowIdx: number = parseInt(cell.parentElement.getAttribute('aria-rowindex'), 10) - 1;
             this.lastFocusInfo = { rowIdx: rowIdx, cellIdx: cellIdx };
         }
     }
@@ -932,7 +949,7 @@ export class InfiniteScroll implements IAction {
             }
             const cell: Element = document.activeElement;
             let rowIndex: number = getRowIndexFromElement(cell.parentElement);
-            this.cellIndex = parseInt(cell.getAttribute(literals.dataColIndex), 10);
+            this.cellIndex = parseInt(cell.getAttribute(literals.ariaColIndex), 10) - 1;
             const content: Element = gObj.getContent().firstElementChild;
             const totalRowsCount: number = (this.maxPage * gObj.pageSettings.pageSize) - 1;
             const visibleRowCount: number = Math.floor((content as HTMLElement).offsetHeight / this.parent.getRowHeight());
@@ -1034,8 +1051,15 @@ export class InfiniteScroll implements IAction {
         rows: Row<Column>[], rowElements: Element[], visibleRows: Row<Column>[],
         tableName: freezeTable
     }): void {
+        const gObj: IGrid = this.parent;
         const scrollEle: Element = this.parent.getContent().firstElementChild;
         const isInfiniteScroll: boolean = this.parent.enableInfiniteScrolling && e.args.requestType === 'infiniteScroll';
+        const infiniteDetailModified: boolean = gObj.enableInfiniteScrolling && (gObj.childGrid || gObj.detailTemplate)
+        && (((e.args as NotifyArgs).action === 'add' && e.args.requestType === 'save') || e.args.requestType === 'delete');
+        if (infiniteDetailModified) {
+            scrollEle.scrollTop = 0;
+            gObj.pageSettings.currentPage = 1;
+        }
         if ((this.parent.isAngular || this.parent.isReact || this.parent.isVue || this.parent.isVue3) && isInfiniteScroll &&
          !e.args.isFrozen && this.parent.infiniteScrollSettings.enableCache){
             const isChildGrid: boolean = this.parent.childGrid && this.parent.element.querySelectorAll('.e-childgrid').length ? true : false;
@@ -1067,6 +1091,7 @@ export class InfiniteScroll implements IAction {
             this.isScroll = true;
         }
         this.isInfiniteScroll = false;
+        this.infiniteDetailDestroy = false;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1108,10 +1133,13 @@ export class InfiniteScroll implements IAction {
     private removeInfiniteCacheRows(e: { args: InfiniteScrollArgs }): void {
         const isInfiniteScroll: boolean = this.parent.enableInfiniteScrolling && e.args.requestType === 'infiniteScroll';
         if (!e.args.isFrozen && isInfiniteScroll && this.parent.infiniteScrollSettings.enableCache && this.isRemove) {
-            const rows: Element[] = [].slice.call(this.parent.getContentTable().getElementsByClassName(literals.row));
+            const detailGrid: boolean = this.parent.childGrid || this.parent.detailTemplate ? true : false;
+            const rows: Element[] = detailGrid ? this.getGridRows().filter((row: HTMLElement) => row.classList.contains(literals.row))
+                : [].slice.call(this.parent.getContentTable().getElementsByClassName(literals.row));
             if (e.args.direction === 'down') {
                 if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
-                    const captionRows: Element[] = [].slice.call(this.parent.getContentTable().querySelectorAll('tr'));
+                    const captionRows: Element[] = detailGrid ? this.getGridRows().filter((row: HTMLElement) => !row.classList
+                        .contains('e-detailrow')) : [].slice.call(this.parent.getContentTable().querySelectorAll('tr'));
                     this.removeCaptionRows(captionRows, e.args);
                 }
                 const addRowCount: number = this.parent.element.querySelector('.' + literals.addedRow) ? 0 : 1;
@@ -1119,7 +1147,8 @@ export class InfiniteScroll implements IAction {
             }
             if (e.args.direction === 'up') {
                 if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
-                    const captionRows: Element[] = [].slice.call(this.parent.getContentTable().querySelectorAll('tr'));
+                    const captionRows: Element[] = detailGrid ? this.getGridRows().filter((row: HTMLElement) => !row.classList
+                        .contains('e-detailrow')) : [].slice.call(this.parent.getContentTable().querySelectorAll('tr'));
                     this.removeCaptionRows(captionRows, e.args);
                 } else {
                     this.removeBottomRows(rows, rows.length - 1, e.args);
@@ -1202,7 +1231,9 @@ export class InfiniteScroll implements IAction {
     }
 
     private removeCaptionRows(rows: Element[], args: InfiniteScrollArgs): void {
-        const rowElements: Element[] = [].slice.call(this.parent.getContent().getElementsByClassName(literals.row));
+        const detailGrid: boolean = this.parent.childGrid || this.parent.detailTemplate ? true : false;
+        const rowElements: Element[] = detailGrid ? this.getGridRows().filter((row: HTMLElement) => row.classList.contains(literals.row))
+            : [].slice.call(this.parent.getContent().getElementsByClassName(literals.row));
         if (args.direction === 'down') {
             const lastRow: Element = rowElements[this.parent.pageSettings.pageSize - 1];
             const lastRowIndex: number = getRowIndexFromElement(lastRow) - 1;
@@ -1220,12 +1251,17 @@ export class InfiniteScroll implements IAction {
             const page: number = Math.ceil(lastIndex / this.parent.pageSettings.pageSize);
             let startIndex: number = 0;
             for (let i: number = this.parent.pageSettings.currentPage + 1; i < page; i++) {
-                startIndex += this.infiniteCache[parseInt(i.toString(), 10)].length;
+                startIndex += detailGrid ? this.infiniteCache[parseInt(i.toString(), 10)]
+                    .filter((row: Row<Column>) => !row.isDetailRow).length : this.infiniteCache[parseInt(i.toString(), 10)].length;
             }
             for (let i: number = startIndex; i < rows.length; i++) {
                 remove(rows[parseInt(i.toString(), 10)]);
             }
         }
+    }
+
+    private getGridRows(): Element[] {
+        return [].slice.call((this.parent.getContentTable() as HTMLTableElement).rows);
     }
 
     private resetInfiniteBlocks(args: InfiniteScrollArgs, isDataModified?: boolean): void {
@@ -1235,6 +1271,7 @@ export class InfiniteScroll implements IAction {
                 && (this.parent.sortSettings.columns.length || this.parent.filterSettings.columns.length
                 || this.parent.groupSettings.columns.length || this.parent.searchSettings.key))) {
                 const scrollEle: Element = this.parent.getContent().firstElementChild;
+                this.parent.notify(events.detachDetailTemplate, {});
                 this.initialRender = true;
                 scrollEle.scrollTop = 0;
                 this.parent.pageSettings.currentPage = 1;
@@ -1254,13 +1291,19 @@ export class InfiniteScroll implements IAction {
 
     private setCache(e: { isInfiniteScroll: boolean, modelData: Row<Column>[], args?: InfiniteScrollArgs }): void {
         if (this.parent.enableInfiniteScrolling && this.parent.infiniteScrollSettings.enableCache) {
+            const gObj: IGrid = this.parent;
+            const infiniteDetailModified: boolean = (gObj.childGrid || gObj.detailTemplate) && (((e.args as NotifyArgs).action === 'add'
+                && e.args.requestType === 'save') || e.args.requestType === 'delete');
             const isEdit: boolean = e.args.requestType !== 'infiniteScroll'
                 && (this.requestType === 'delete' || this.requestType === 'add');
             const currentPage: number = this.parent.pageSettings.currentPage;
             if (!Object.keys(this.infiniteCache).length || isEdit) {
+                if (infiniteDetailModified) {
+                    this.infiniteCache = {};
+                }
                 this.setInitialCache(e.modelData, e.args, isEdit);
             }
-            if (isNullOrUndefined(this.infiniteCache[this.parent.pageSettings.currentPage])) {
+            if (isNullOrUndefined(this.infiniteCache[this.parent.pageSettings.currentPage]) && !infiniteDetailModified) {
                 this.infiniteCache[this.parent.pageSettings.currentPage] = e.modelData;
                 this.resetContentModuleCache(this.infiniteCache);
             }

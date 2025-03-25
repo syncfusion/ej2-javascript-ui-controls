@@ -32,8 +32,9 @@
         }
       }
     }
-
+    
     /* stylelint-disable */
+    
     .e-member-editor-dialog {
       .e-editor-search-container {
 
@@ -498,18 +499,18 @@
       .e-stackedheadercelldiv.e-cellvalue {
         padding-right: 16px !important;
       }
-      /* stylelint-enable */
     }
 
-    @if ($skin-name == 'tailwind') or ($skin-name == 'FluentUI') or ($skin-name == 'bootstrap5') {
+    @if ($skin-name == 'tailwind') or ($skin-name == 'FluentUI') or ($skin-name == 'bootstrap5') or ($skin-name == 'tailwind3'){
       .e-expand::before {
-        font-size: $pivotgrid-expand-bigger-icon-fontsize;
+        font-size: $pivotgrid-expand-bigger-icon-fontsize !important;
       }
 
       .e-collapse::before {
-        font-size: $pivotgrid-collapse-bigger-icon-fontsize;
+        font-size: $pivotgrid-collapse-bigger-icon-fontsize !important;
       }
     }
+    /* stylelint-enable */
 
     .e-pivot-pager,
     #{&}.e-pivot-pager.e-bigger {

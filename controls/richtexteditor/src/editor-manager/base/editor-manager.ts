@@ -27,6 +27,8 @@ import { FormatPainterActions } from '../plugin/format-painter-actions';
 import { EmojiPickerAction } from '../plugin/emoji-picker-action';
 import { TableSelection } from '../plugin/table-selection';
 import { DOMMethods } from '../plugin/dom-tree';
+import { CustomUserAgentData } from '../../common/user-agent';
+
 /**
  * EditorManager internal component
  *
@@ -61,6 +63,7 @@ export class EditorManager {
     public isDestroyed: boolean;
     private clickCount: number = 0;
     private lastClickTime: number = 0;
+    public userAgentData: CustomUserAgentData;
 
     /**
      * Constructor for creating the component
@@ -94,6 +97,7 @@ export class EditorManager {
         this.formatPainterEditor = new FormatPainterActions(this, options.formatPainterSettings);
         this.emojiPickerObj = new EmojiPickerAction(this);
         this.tableCellSelection = new TableSelection(this.editableElement as HTMLElement, this.currentDocument);
+        this.userAgentData = new CustomUserAgentData(Browser.userAgent, false);
         this.wireEvents();
         this.isDestroyed = false;
     }
@@ -359,6 +363,7 @@ export class EditorManager {
         if (this.formatPainterEditor) { this.formatPainterEditor = null; }
         if (this.emojiPickerObj) { this.emojiPickerObj = null; }
         if (this.tableCellSelection) { this.tableCellSelection = null; }
+        this.userAgentData = null;
         this.isDestroyed = true;
     }
 

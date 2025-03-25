@@ -6,12 +6,14 @@ import { Chart } from '../../../src/chart/chart';
 import { ChartSeriesType } from '../../../src/chart/utils/enum';
 import { LineSeries } from '../../../src/chart/series/line-series';
 import { ColumnSeries } from '../../../src/chart/series/column-series';
+import { BarSeries } from '../../../src/chart/series/bar-series';
 import { AreaSeries } from '../../../src/chart/series/area-series';
+import { SplineSeries } from '../../../src/chart/series/spline-series';
 import { Crosshair } from '../../../src/chart/user-interaction/crosshair';
 import { Tooltip } from '../../../src/chart/user-interaction/tooltip';
-
+import { Legend } from '../../../src/chart/legend/legend';
 import { MouseEvents } from '../base/events.spec';
-import { categoryData, categoryData1, tooltipData1, datetimeData } from '../base/data.spec';
+import { categoryData, categoryData1, tooltipData1, datetimeData, highlightData, highlightAxesData } from '../base/data.spec';
 import { DateTime } from '../../../src/chart/axis/date-time-axis';
 import { Category } from '../../../src/chart/axis/category-axis';
 import { DataEditing } from '../../../src/chart/user-interaction/data-editing';
@@ -20,7 +22,7 @@ import { unbindResizeEvents } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { ILoadedEventArgs,  } from '../../../src/chart/model/chart-interface';
-Chart.Inject(LineSeries, ColumnSeries, DateTime, Category, Tooltip, DataEditing);
+Chart.Inject(LineSeries, ColumnSeries, DateTime, Category, Tooltip, DataEditing, SplineSeries, BarSeries, Legend);
 Chart.Inject(Crosshair, AreaSeries);
 
 
@@ -725,6 +727,331 @@ describe('Chart Crosshair', () => {
             };
             chartObj.theme = 'Bootstrap5';
             chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+    });
+
+    describe('The chart crosshair highlights the data background for a single series.', () => {
+        let chartObj: Chart;
+        const element: HTMLElement = createElement('div', { id: 'container' });
+        let loaded: EmitType<ILoadedEventArgs>;
+        const trigger: MouseEvents = new MouseEvents();
+        let x: number;
+        let y: number;
+        beforeAll(() => {
+            document.body.appendChild(element);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'Category',
+                        majorGridLines: { width: 0 },
+                        majorTickLines: { width: 0 },
+                        edgeLabelPlacement: 'Shift'
+                    },
+                    primaryYAxis: {
+                        labelFormat: '{value}°',
+                        title: 'Temperature',
+                        rangePadding: 'None',
+                        minimum: 0,
+                        maximum: 30,
+                        interval: 5,
+                        lineStyle: { width: 0 },
+                        majorTickLines: { width: 0 },
+                        minorTickLines: { width: 0 }
+                    },
+                    chartArea: {
+                        border: {
+                            width: 0
+                        }
+                    },
+                    series: [
+                        {
+                            type: 'Spline',
+                            dataSource: highlightData,
+                            xName: 'x',
+                            yName: 'y',
+                            name: 'Tokyo',
+                            width: 2,
+                            marker: {
+                                visible: true,
+                                width: 7,
+                                height: 7,
+                                isFilled: true
+                            }
+                        }
+                    ],
+                    title: 'Monthly Average Temperature',
+                    legendSettings: { visible: true },
+                    crosshair: { enable: true, snapToData: false },
+                    width: '90%'
+                });
+            chartObj.appendTo('#container');
+
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            element.remove();
+        });
+
+        it('The crosshair highlights the data background in the Spline chart.', (done: Function) => {
+            loaded = (args: Object): void => {
+                const chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
+                y = parseFloat(chartArea.getAttribute('y')) + parseFloat(chartArea.getAttribute('height')) / 2 + element.offsetTop;
+                x = parseFloat(chartArea.getAttribute('x')) + parseFloat(chartArea.getAttribute('width')) / 2 + element.offsetLeft;
+                trigger.mousemovetEvent(chartArea, Math.ceil(x), Math.ceil(y));
+                const crosshair: HTMLElement = document.getElementById('container_UserInteraction');
+                const crosshairElement: HTMLElement = <HTMLElement>crosshair.childNodes[1];
+                expect(crosshairElement.getAttribute('fill') === 'rgba(107, 114, 128, 0.1)').toBe(true);
+                done();
+            };
+            chartObj.crosshair.highlightCategory = true;
+            chartObj.crosshair.lineType = 'Vertical';
+            chartObj.theme = 'Tailwind3';
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+
+        it('The crosshair highlights the data background in the transposed Spline chart.', (done: Function) => {
+            loaded = (args: Object): void => {
+                const chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
+                y = parseFloat(chartArea.getAttribute('y')) + parseFloat(chartArea.getAttribute('height')) / 2 + element.offsetTop;
+                x = parseFloat(chartArea.getAttribute('x')) + parseFloat(chartArea.getAttribute('width')) / 2 + element.offsetLeft;
+                trigger.mousemovetEvent(chartArea, Math.ceil(x), Math.ceil(y));
+                const crosshair: HTMLElement = document.getElementById('container_UserInteraction');
+                const crosshairElement: HTMLElement = <HTMLElement>crosshair.childNodes[0];
+                expect(crosshairElement.getAttribute('fill') === 'rgba(255, 255, 255, 0.1)').toBe(true);
+                done();
+            };
+            chartObj.crosshair.highlightCategory = true;
+            chartObj.crosshair.lineType = 'Horizontal';
+            chartObj.isTransposed = true;
+            chartObj.theme = 'Fluent2HighContrast';
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+
+        it('The crosshair highlights the data background in the Bar chart.', (done: Function) => {
+            loaded = (args: Object): void => {
+                const chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
+                y = parseFloat(chartArea.getAttribute('y')) + parseFloat(chartArea.getAttribute('height')) / 2 + element.offsetTop;
+                x = parseFloat(chartArea.getAttribute('x')) + parseFloat(chartArea.getAttribute('width')) / 2 + element.offsetLeft;
+                trigger.mousemovetEvent(chartArea, Math.ceil(x), Math.ceil(y));
+                const crosshair: HTMLElement = document.getElementById('container_UserInteraction');
+                const crosshairElement: HTMLElement = <HTMLElement>crosshair.childNodes[0];
+                expect(crosshairElement.getAttribute('fill') === 'rgba(161, 159, 157, 0.1)').toBe(true);
+                done();
+            };
+            chartObj.crosshair.highlightCategory = true;
+            chartObj.crosshair.lineType = 'Horizontal';
+            chartObj.isTransposed = false;
+            chartObj.series[0].type = 'Bar';
+            chartObj.theme = 'Fluent';
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+    });
+
+    describe('The chart crosshair highlights the data background for multiple series.', () => {
+        let chartObj: Chart;
+        const element: HTMLElement = createElement('div', { id: 'container' });
+        let loaded: EmitType<ILoadedEventArgs>;
+        const trigger: MouseEvents = new MouseEvents();
+        let x: number;
+        let y: number;
+        beforeAll(() => {
+            document.body.appendChild(element);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'Category',
+                        majorGridLines: { width: 0 },
+                        majorTickLines: { width: 0 },
+                        edgeLabelPlacement: 'Shift'
+                    },
+                    primaryYAxis: {
+                        labelFormat: '{value}°',
+                        title: 'Temperature',
+                        rangePadding: 'None',
+                        minimum: 0,
+                        maximum: 30,
+                        interval: 5,
+                        lineStyle: { width: 0 },
+                        majorTickLines: { width: 0 },
+                        minorTickLines: { width: 0 }
+                    },
+                    chartArea: {
+                        border: {
+                            width: 0
+                        }
+                    },
+                    series: [
+                        {
+                            type: 'Spline',
+                            dataSource: highlightData,
+                            xName: 'x',
+                            yName: 'y',
+                            name: 'Tokyo',
+                            width: 2,
+                            marker: {
+                                visible: true,
+                                width: 7,
+                                height: 7,
+                                isFilled: true
+                            }
+                        },
+                        {
+                            type: 'Spline',
+                            dataSource: highlightData,
+                            xName: 'x',
+                            yName: 'y1',
+                            name: 'Bergan',
+                            width: 2,
+                            marker: {
+                                visible: true,
+                                width: 7,
+                                height: 7,
+                                isFilled: true
+                            }
+                        }
+                    ],
+                    title: 'Monthly Average Temperature',
+                    legendSettings: { visible: true },
+                    crosshair: { enable: true, snapToData: false },
+                    width: '90%'
+                });
+            chartObj.appendTo('#container');
+
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            element.remove();
+        });
+
+        it('The crosshair highlights the data background in the Spline chart with multiple series.', (done: Function) => {
+            loaded = (args: Object): void => {
+                const chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
+                y = parseFloat(chartArea.getAttribute('y')) + parseFloat(chartArea.getAttribute('height')) / 2 + element.offsetTop;
+                x = parseFloat(chartArea.getAttribute('x')) + parseFloat(chartArea.getAttribute('width')) / 2 + element.offsetLeft;
+                trigger.mousemovetEvent(chartArea, Math.ceil(x), Math.ceil(y));
+                const crosshair: HTMLElement = document.getElementById('container_UserInteraction');
+                const crosshairElement: HTMLElement = <HTMLElement>crosshair.childNodes[1];
+                expect(crosshairElement.getAttribute('fill') === 'rgba(52, 58, 64, 0.1)').toBe(true);
+                done();
+            };
+            chartObj.crosshair.highlightCategory = true;
+            chartObj.crosshair.lineType = 'Vertical';
+            chartObj.theme = 'Bootstrap5';
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+    });
+
+    describe('The chart crosshair highlights the data background with secondary axes.', () => {
+        let chartObj: Chart;
+        const element: HTMLElement = createElement('div', { id: 'container' });
+        let loaded: EmitType<ILoadedEventArgs>;
+        const trigger: MouseEvents = new MouseEvents();
+        let x: number;
+        let y: number;
+        let x1: number;
+        let y1: number;
+        beforeAll(() => {
+            document.body.appendChild(element);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'Category',
+                        majorGridLines: { width: 0 },
+                        majorTickLines: { width: 0 },
+                        edgeLabelPlacement: 'Shift'
+                    },
+                    primaryYAxis: {
+                        labelFormat: '{value}°',
+                        title: 'Temperature',
+                        rangePadding: 'None',
+                        minimum: 0,
+                        maximum: 30,
+                        interval: 5,
+                        lineStyle: { width: 0 },
+                        majorTickLines: { width: 0 },
+                        minorTickLines: { width: 0 }
+                    },
+                    chartArea: {
+                        border: {
+                            width: 0
+                        }
+                    },
+                    axes: [
+                        {
+                            opposedPosition: true,
+                            lineStyle: { width: 0 },
+                            name: 'xAxis',
+                            minorTickLines: { width: 0 },
+                            valueType: 'Category'
+                        }
+                    ],
+                    series: [
+                        {
+                            type: 'Spline',
+                            dataSource: highlightAxesData,
+                            xName: 'x',
+                            yName: 'y',
+                            name: 'Tokyo',
+                            width: 2,
+                            marker: {
+                                visible: true,
+                                width: 7,
+                                height: 7,
+                                isFilled: true
+                            }
+                        },
+                        {
+                            type: 'Spline',
+                            dataSource: highlightData,
+                            xName: 'x',
+                            yName: 'y1',
+                            name: 'Bergan',
+                            xAxisName: 'xAxis',
+                            width: 2,
+                            marker: {
+                                visible: true,
+                                width: 7,
+                                height: 7,
+                                isFilled: true
+                            }
+                        }
+                    ],
+                    title: 'Monthly Average Temperature',
+                    legendSettings: { visible: true },
+                    crosshair: { enable: true, snapToData: false },
+                    width: '90%'
+                });
+            chartObj.appendTo('#container');
+
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            element.remove();
+        });
+
+        it('The crosshair highlights the data background in the Spline chart with a secondary axis.', (done: Function) => {
+            loaded = (args: Object): void => {
+                const chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
+                y = parseFloat(chartArea.getAttribute('y')) + parseFloat(chartArea.getAttribute('height')) / 2 + element.offsetTop;
+                x = parseFloat(chartArea.getAttribute('x')) + parseFloat(chartArea.getAttribute('width')) / 2 + element.offsetLeft;
+                trigger.mousemovetEvent(chartArea, Math.ceil(x), Math.ceil(y));
+                y1 = parseFloat(chartArea.getAttribute('y')) + parseFloat(chartArea.getAttribute('height')) / 4 + element.offsetTop;
+                x1 = parseFloat(chartArea.getAttribute('x')) + parseFloat(chartArea.getAttribute('width')) / 4 + element.offsetLeft;
+                trigger.mousemovetEvent(chartArea, Math.ceil(x), Math.ceil(y));
+                const crosshair: HTMLElement = document.getElementById('container_UserInteraction');
+                const crosshairElement: HTMLElement = <HTMLElement>crosshair.childNodes[1];
+                expect(crosshairElement.getAttribute('fill') === 'rgba(0, 0, 0, 0.1)').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.crosshair.highlightCategory = true;
+            chartObj.crosshair.lineType = 'Vertical';
+            chartObj.theme = 'Fabric';
             chartObj.refresh();
         });
     });

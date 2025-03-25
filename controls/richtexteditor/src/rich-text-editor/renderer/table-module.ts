@@ -960,7 +960,7 @@ export class Table {
             const endNode: HTMLElement = this.parent.getRange().endContainer.parentElement;
             const isAnchorEle: HTMLElement = this.getAnchorNode(target);
             const currentTime: number = new Date().getTime();
-            const ismacRightClick: boolean = /Version\/\d+\.\d+.*Safari/.test(Browser.userAgent) && !/Chrome|Edg|Firefox/.test(Browser.userAgent) && args.which === 3;
+            const ismacRightClick: boolean = this.parent.userAgentData.getPlatform() === 'macOS' && args.which === 3;
             if (target && target.nodeName !== 'A' && isAnchorEle.nodeName !== 'A' && target.nodeName !== 'IMG' && target.nodeName !== 'VIDEO' && !target.classList.contains(classes.CLS_CLICKELEM) &&
                 target.nodeName !== 'AUDIO' && (startNode === endNode || ismacRightClick) && (target.nodeName === 'TD' || target.nodeName === 'TH' ||
                 target.nodeName === 'TABLE' || (closestTable && this.parent.contentModule.getEditPanel().contains(closestTable)))
@@ -1013,9 +1013,11 @@ export class Table {
     }
 
     private tableMouseLeave(): void {
-        this.unwireTableSelectionEvents();
-        this.isTableMoveActive = false;
-        this.resetTableSelection();
+        if (!Browser.isDevice) {
+            this.unwireTableSelectionEvents();
+            this.isTableMoveActive = false;
+            this.resetTableSelection();
+        }
     }
 
     // eslint-disable-next-line
@@ -2174,7 +2176,7 @@ export class Table {
                             tdElm[i as number].style.padding = (dialogEle.querySelector('.e-cell-padding') as HTMLInputElement).value + 'px';
                             padVal = tdElm[i as number].getAttribute('style');
                         }
-                        tdElm[i as number].setAttribute('style', padVal);
+                        tdElm[i as number].style.cssText = padVal;
                     }
                 }
                 table.cellSpacing = dialogEle.querySelector('.e-cell-spacing') ? (dialogEle.querySelector('.e-cell-spacing') as HTMLInputElement).value

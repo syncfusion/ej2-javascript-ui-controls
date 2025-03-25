@@ -806,12 +806,12 @@ describe('Adaptive renderer', () => {
             gridObj.toolbarModule.toolbarMenuElement.querySelector('.e-excelexport').click();
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_responsivetoolbaritems' } });
             gridObj.toolbarModule.toolbarMenuElement.querySelector('.e-csvexport').click();
-            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_responsivetoolbaritems' } });
-            gridObj.toolbarModule.toolbarMenuElement.querySelector('.e-columnchooser').click();
             done();
         });
 
         it('ToolbarMenu popup column chooser popup close', () => {
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_responsivetoolbaritems' } });
+            gridObj.toolbarModule.toolbarMenuElement.querySelector('.e-columnchooser').click();
             let columnChooseHeader: HTMLElement = document.querySelector('.e-rescolumnchooserdiv > .e-dlg-header-content');
             (columnChooseHeader.querySelector('.e-dlg-closeicon-btn') as HTMLElement).click();
             expect(document.getElementsByClassName('e-responsive-dialog').length).toBe(0);
@@ -882,11 +882,11 @@ describe('Adaptive renderer', () => {
             gridObj.toolbarModule.toolbarMenuElement.querySelector('.e-excelexport').click();
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_responsivetoolbaritems' } });
             gridObj.toolbarModule.toolbarMenuElement.querySelector('.e-csvexport').click();
-            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_responsivetoolbaritems' } });
-            gridObj.toolbarModule.toolbarMenuElement.querySelector('.e-columnchooser').click();
             done();
         });
         it('ToolbarMenu popup column menu', () => {
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_responsivetoolbaritems' } });
+            gridObj.toolbarModule.toolbarMenuElement.querySelector('.e-columnchooser').click();
             columnMenu = gridObj.getHeaderContent().querySelector('.e-columnmenu');
             columnMenu.click();
             let columnChooseHeader: HTMLElement = document.querySelector('.e-rescolumnchooserdiv > .e-dlg-header-content');
@@ -1155,11 +1155,7 @@ describe('Adaptive renderer', () => {
         it('should open column chooser on button click', (done: Function) => {
             openButton.click();
             expect(document.querySelector('.e-rescolumnchooserdiv')).not.toBeNull();
-            done();
-        });
-
-        it('932457: Two column chooser dialog opens on programmatically opens the column chooser using openColumnChooser method', function (done) {
-            expect(document.querySelectorAll('.e-ccdlg').length === 1).toBeTruthy();
+            expect(document.querySelectorAll('.e-ccdlg').length).toBe(1);
             done();
         });
     
@@ -1185,6 +1181,8 @@ describe('Adaptive renderer', () => {
                     allowFiltering: true,
                     allowSorting: true,
                     allowPaging: true,
+                    showColumnChooser: true,
+                    columnChooserSettings: { headerTemplate: '<div>Choose Columns Template</div>'},
                     filterSettings: { type: 'Excel', enableInfiniteScrolling: true, loadingIndicator: 'Shimmer' },
                     height: 400,
                     columns: [
@@ -1207,6 +1205,11 @@ describe('Adaptive renderer', () => {
             gridObj.filterModule.responsiveDialogRenderer.showResponsiveDialog(gridObj.getColumns()[0]);
         });
 
+        it('Coverage - responsive column chooser template', (done: Function) => {
+            (gridObj.columnChooserModule as any).showCustomColumnChooser();
+            done();
+        });
+        
         afterAll(() => {
             destroy(gridObj);
             gridObj = null;

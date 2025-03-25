@@ -2,40 +2,6 @@
 
 ## [Unreleased]
 
-## 28.2.12 (2025-03-19)
-
-### MultiColumn ComboBox
-
-#### Bug Fixes
-
-- `#I682925` - Now the issue with value not returned properly when using the ejs-for in the Multicolumn ComboBox has been resolved.
-
-- `#I691442` - Now the issue with popup height doesn’t adjust properly when filtering results with large row content in the Multicolumn ComboBox has been resolved.
-
-## 28.2.6 (2025-02-18)
-
-### MultiColumn ComboBox
-
-#### Bug Fixes
-
-- `#I685573` - Now the issue with MultiColumn ComboBox popup not rendered properly when placed inside the Dialog has been resolved.
-
-## 28.2.3 (2025-01-29)
-
-### MultiColumn ComboBox
-
-#### Bug Fixes
-
-- `#I667643` - Now the exception raised when updating empty value in the MultiColumn ComboBox with grid batch mode enabled has been resolved.
-
-## 28.1.37 (2024-12-31)
-
-### MultiColumn ComboBox
-
-#### Bug Fixes
-
-- `#I666815` - Now the issue with value selection using complex data binding in the Multicolumn ComboBox has been resolved.
-
 ## 27.1.48 (2024-09-18)
 
 ### MultiColumn ComboBox

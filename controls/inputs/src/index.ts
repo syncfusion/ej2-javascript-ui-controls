@@ -15,3 +15,4 @@ export * from './signature/index';
 export * from './rating/index';
 export * from './otp-input/index';
 export * from './common/index';
+export * from './speech-to-text/index';

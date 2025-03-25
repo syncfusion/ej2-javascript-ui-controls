@@ -839,7 +839,7 @@ describe('Collaborative Editing ->', () => {
             helper.switchRibbonTab(1);
             helper.click('#spreadsheet_undo');
             setTimeout(() => {
-                expect(JSON.stringify(getCell(7, 3, sheets2[0]).chart[0])).toBe('{"type":"Column","theme":"Material","markerSettings":{"visible":false,"isFilled":true},"isSeriesInRows":false,"range":"Sheet1!D6:D8","id":"e_spreadsheet_chart_2","height":290,"width":480,"top":148,"left":192}');
+                expect(JSON.stringify(getCell(5, 3, sheets2[0]).chart[0])).toBe('{"type":"Column","theme":"Material","markerSettings":{"visible":false,"isFilled":true},"isSeriesInRows":false,"range":"Sheet1!D6:D8","id":"e_spreadsheet_chart_2","height":290,"width":480,"top":148,"left":192}');
                 expect(getCell(5, 3, sheets2[1]).chart).toBeUndefined();
                 expect(helper2.getInstance().activeSheetIndex).toBe(1);
                 EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
@@ -1472,9 +1472,9 @@ describe('Collaborative Editing ->', () => {
             setTimeout(() => {
                 setTimeout(() => {
                     setTimeout(() => {
-                        expect(getCell(0, 0, sheets2[1]).value).toBe('Casual Shoes');
-                        expect(getCell(1, 0, sheets2[1]).value).toBe('Cricket Shoes');
-                        expect(getCell(2, 0, sheets2[1]).value).toBe('Flip- Flops & Slippers');
+                        expect(getCell(0, 0, sheets2[1]).value).toBe('Item Name');
+                        expect(getCell(1, 0, sheets2[1]).value).toBe('Casual Shoes');
+                        expect(getCell(2, 0, sheets2[1]).value).toBe('Cricket Shoes');
                         expect(helper2.getInstance().activeSheetIndex).toBe(0);
                         done();
                     });
@@ -1492,24 +1492,24 @@ describe('Collaborative Editing ->', () => {
                 helper.click('#spreadsheet_redo');
                 setTimeout(() => {
                     setTimeout(() => {
-                        expect(getCell(0, 0, sheets2[1]).value).toBe('Casual Shoes');
-                        expect(getCell(1, 0, sheets2[1]).value).toBe('Cricket Shoes');
-                        expect(getCell(2, 0, sheets2[1]).value).toBe('Flip- Flops & Slippers');
+                        expect(getCell(0, 0, sheets2[1]).value).toBe('Item Name');
+                        expect(getCell(1, 0, sheets2[1]).value).toBe('Casual Shoes');
+                        expect(getCell(2, 0, sheets2[1]).value).toBe('Cricket Shoes');
                         done();
                     });
                 });
             });
         });
 
-        it('Sorting descending', (done: Function) => {
+        it('Sorting-descending', (done: Function) => {
             helper.click('#spreadsheet_sorting');
             helper.click('#spreadsheet_sorting-popup ul li:nth-child(2)');
             setTimeout(() => {
                 setTimeout(() => {
                     setTimeout(() => {
-                        expect(getCell(0, 0, sheets2[1]).value).toBe('T-Shirts');
-                        expect(getCell(1, 0, sheets2[1]).value).toBe('Sports Shoes');
-                        expect(getCell(2, 0, sheets2[1]).value).toBe('Sneakers');
+                        expect(getCell(0, 0, sheets2[1]).value).toBe('Item Name');
+                        expect(getCell(1, 0, sheets2[1]).value).toBe('T-Shirts');
+                        expect(getCell(2, 0, sheets2[1]).value).toBe('Sports Shoes');
                         expect(helper2.getInstance().activeSheetIndex).toBe(0);
                         done();
                     });
@@ -1520,16 +1520,16 @@ describe('Collaborative Editing ->', () => {
         it('Sorting descending - Undo & Redo', (done: Function) => {
             helper.click('#spreadsheet_undo');
             setTimeout(() => {
-                expect(getCell(0, 0, sheets2[1]).value).toBe('Casual Shoes');
-                expect(getCell(1, 0, sheets2[1]).value).toBe('Cricket Shoes');
-                expect(getCell(2, 0, sheets2[1]).value).toBe('Flip- Flops & Slippers');
+                expect(getCell(0, 0, sheets2[1]).value).toBe('Item Name');
+                expect(getCell(1, 0, sheets2[1]).value).toBe('Casual Shoes');
+                expect(getCell(2, 0, sheets2[1]).value).toBe('Cricket Shoes');
                 expect(helper2.getInstance().activeSheetIndex).toBe(0);
                 helper.click('#spreadsheet_redo');
                 setTimeout(() => {
                     setTimeout(() => {
-                        expect(getCell(0, 0, sheets2[1]).value).toBe('T-Shirts');
-                        expect(getCell(1, 0, sheets2[1]).value).toBe('Sports Shoes');
-                        expect(getCell(2, 0, sheets2[1]).value).toBe('Sneakers');
+                        expect(getCell(0, 0, sheets2[1]).value).toBe('Item Name');
+                        expect(getCell(1, 0, sheets2[1]).value).toBe('T-Shirts');
+                        expect(getCell(2, 0, sheets2[1]).value).toBe('Sports Shoes');
                         done();
                     });
                 });

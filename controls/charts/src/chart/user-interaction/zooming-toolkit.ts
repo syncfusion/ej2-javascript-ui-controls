@@ -486,15 +486,25 @@ export class Toolkit {
         // const zoomModule: Zoom = this.chart.zoomModule;
         this.elementOpacity = '1';
         this.chart.svgObject.setAttribute('cursor', 'auto');
-        this.zoomInElements.setAttribute('opacity', this.elementOpacity);
+        if (this.zoomInElements) {
+            this.zoomInElements.setAttribute('opacity', this.elementOpacity);
+        }
         this.elementOpacity = (!this.chart.zoomModule.isZoomed && this.chart.zoomSettings.showToolbar) ? '0.2' : '1';
-        this.zoomOutElements.setAttribute('opacity', this.elementOpacity);
+        if (this.zoomOutElements) {
+            this.zoomOutElements.setAttribute('opacity', this.elementOpacity);
+        }
         this.applySelection(this.zoomElements.childNodes, this.chart.themeStyle.toolkitSelectionColor);
         if (this.chart.theme === 'Fluent2HighContrast') {
-            this.applySelection(this.zoomInElements.childNodes, this.chart.themeStyle.toolkitFill);
-            this.applySelection(this.zoomOutElements.childNodes, this.chart.themeStyle.toolkitFill);
+            if (this.zoomInElements) {
+                this.applySelection(this.zoomInElements.childNodes, this.chart.themeStyle.toolkitFill);
+            }
+            if (this.zoomOutElements) {
+                this.applySelection(this.zoomOutElements.childNodes, this.chart.themeStyle.toolkitFill);
+            }
         }
-        this.applySelection(this.panElements.childNodes, this.chart.theme === 'Tailwind3Dark' ? '#FFFFFF' : '#737373');
+        if (this.panElements) {
+            this.applySelection(this.panElements.childNodes, this.chart.theme === 'Tailwind3Dark' ? '#FFFFFF' : '#737373');
+        }
         if (getElement(this.selectedID)) {
             getElement(this.selectedID).setAttribute('fill', 'transparent');
         }

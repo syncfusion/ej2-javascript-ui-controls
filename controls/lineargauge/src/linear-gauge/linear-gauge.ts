@@ -621,12 +621,12 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             progress: (args: AnimationOptions): void => {
                 if (args.timeStamp > args.delay) {
                     tempOpacity = ((args.timeStamp - args.delay) / args.duration);
-                    elements[0].innerHTML = '.' + this.element.id + 'animation' + '{opacity:' + (opacity * tempOpacity) + '}';
+                    elements[0].style.cssText = `opacity: ${opacity * tempOpacity};`;
                 }
             },
             end: (): void => {
                 if (!isNullOrUndefined(elements) && elements.length !== 0) {
-                    elements[0].innerHTML = '.' + this.element.id + 'animation' + '{opacity: 1}';
+                    elements[0].style.cssText = 'opacity: 1;';
                 }
                 for (let i: number = 0; i < this.axes.length; i++) {
                     this.axisRenderer.pointerAnimation(<Axis>this.axes[i as number], i);
@@ -676,7 +676,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                 const styleClass: Element = createElement('style', {
                     className: this.element.id + 'animation'
                 });
-                (styleClass as HTMLElement).innerText = '.' + this.element.id + 'animation' + '{opacity: 0}';
+                (styleClass as HTMLElement).style.cssText = '.' + this.element.id + 'animation' + '{opacity: 0}';
                 document.body.appendChild(styleClass);
             }
         }

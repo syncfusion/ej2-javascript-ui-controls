@@ -99,10 +99,7 @@ describe('Triple click selection testing', () => {
     let defaultUA: string = navigator.userAgent;
     let safari: string = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15";
     beforeEach(() => {
-        Object.defineProperty(navigator, 'userAgent', {
-            value: safari,
-            configurable: true
-        });
+        Browser.userAgent = safari;
         editor = renderRTE( {
             value: `<p>The Rich Text Editor is a WYSIWYG ("what you see is what you get") editor useful to create and edit content and return the valid <a href='https://ej2.syncfusion.com/home/' target='_blank'>HTML markup</a> or <a href='https://ej2.syncfusion.com/home/' target='_blank'>markdown</a> of the content</p>
             <ol>
@@ -117,8 +114,8 @@ describe('Triple click selection testing', () => {
         } );
     });
     afterEach(() => {
-        Browser.userAgent = defaultUA;
         destroy(editor);
+        Browser.userAgent = defaultUA;
     });
     it('Triple click selection testing Case 1:', () => {
         editor.focusIn();

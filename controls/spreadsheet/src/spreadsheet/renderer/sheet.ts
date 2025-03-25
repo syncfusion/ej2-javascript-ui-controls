@@ -585,7 +585,7 @@ export class SheetRender implements IRenderer {
                 rowIdx: indexes[0], colIdx: indexes[1], cell: value, address:
                     key, lastCell: indexes[1] === args.indexes[3], row: row, hRow: hdrRow, pRow: row.previousSibling,
                 pHRow: hdrRow.previousSibling, isHeightCheckNeeded: true, first: !args.skipUpdateOnFirst && indexes[0] === args.indexes[0] ?
-                    'Row' : (notFirstCol && indexes[1] === args.indexes[1] ? 'Column' : ''), isRefreshing: true, mergeBorderRows: mergeBorderRows };
+                    'Row' : (notFirstCol && indexes[1] === args.indexes[1] ? 'Column' : ''), isRefreshing: true,  mergeBorderRows: mergeBorderRows };
             cell = this.cellRenderer.render(cellArgs);
             this.checkRowMerge(indexes, args.indexes, cell, value, sheet);
             if (frozenCol && indexes[1] === lastFrozenCol) { row = null; }
@@ -750,7 +750,10 @@ export class SheetRender implements IRenderer {
         this.clearCFResult(sheet);
         (args.cells as Map<string, CellModel>).forEach((value: CellModel, cKey: string): void => {
             const indexes: number[] = getRangeIndexes(cKey);
+            let pHRow: HTMLElement; let pRow: HTMLElement;
             if (args.direction ===  'first' && indexes[0] === args.indexes[0]) {
+                pHRow = rTBody.rows[rTBody.rows.length - 1];
+                pRow = tBody.rows[tBody.rows.length - 1];
                 if (firstRow === undefined) {
                     firstRow = (indexes[1] < frozenCol ? rTBody : tBody).rows[(args.indexes[2] - args.indexes[0]) + 1] || null;
                 }
@@ -786,8 +789,8 @@ export class SheetRender implements IRenderer {
             if (frozenCol) { hRow = (rFrag.lastElementChild as HTMLElement) || hRow; }
             cellArgs = <CellRenderArgs>{
                 colIdx: indexes[1], rowIdx: indexes[2], cell: value, address: cKey, row: row,
-                lastCell: indexes[1] === args.indexes[3], pHRow: hRow.previousSibling, checkNextBorder: args.direction === 'last' &&
-                    indexes[2] === args.indexes[2] ? 'Row' : '', pRow: row.previousSibling, isHeightCheckNeeded: args.direction === 'first'
+                lastCell: indexes[1] === args.indexes[3], pHRow: hRow.previousSibling || pHRow, checkNextBorder: args.direction === 'last' &&
+                    indexes[2] === args.indexes[2] ? 'Row' : '', pRow: row.previousSibling || pRow, isHeightCheckNeeded: args.direction === 'first'
                         || args.direction === '', hRow: hRow, first: args.direction === 'last' && !args.skipUpdateOnFirst && indexes[0] ===
                             args.indexes[0] ? 'Row' : '', isRefreshing: args.direction === 'first', mergeBorderRows: mergeBorderRows
             };

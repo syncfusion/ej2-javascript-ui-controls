@@ -1,9 +1,9 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Spreadsheet } from '../base/index';
-import { RangeModel, SheetModel, RowModel, getSheetIndex, ChartModel, CellStyleModel } from '../../workbook/index';
+import { RangeModel, SheetModel, RowModel, getSheetIndex, ChartModel, CellStyleModel, getColumnsWidth } from '../../workbook/index';
 import { CellModel, checkIsFormula, ColumnModel, NumberFormatArgs, PrintOptions, workbookFormulaOperation } from '../../workbook/index';
 import { getColumnHeaderText, getIndexesFromAddress, updateSheetFromDataSource, getCellAddress } from '../../workbook/index';
-import { getColIdxFromClientX, getExcludedColumnWidth, getRowIdxFromClientY, getTextWidth } from '../common/index';
+import { getColIdxFromClientX, getBorderWidth, getRowIdxFromClientY, getTextWidth, getDPRValue } from '../common/index';
 
 /**
  * This class supports the printing functionality in Spreadsheet.
@@ -428,9 +428,9 @@ export class Print {
                                     if (cell.wrap) {
                                         const cellLineHeight: number = this.defaultCellHeight < cellHeight ? ((parseInt(textSize.replace('pt', ''), 10) / 72) * 96) : cellHeight;
                                         const endColIdx: number = cell.colSpan > 1 ? k + cell.colSpan - 1 : k;
-                                        const contentWidth: number = getExcludedColumnWidth(sheet, j, k, endColIdx);
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        const textLines: any = printInstance.wrapText(cellText, cellWidth, contentWidth, cell.style);
+                                        const colWidth: number = getDPRValue(
+                                            getColumnsWidth(sheet, k, endColIdx) - (4 + (getBorderWidth(j, k, sheet) || 1)), true);
+                                        const textLines: string[] = this.wrapText(cellText, colWidth, cell.style, this.parent.cellStyle);
                                         const space: number = (textLines.length === 1) ? cellHeight :
                                             (textLines.length * cellLineHeight === cellHeight) ? cellLineHeight :
                                                 (textLines.length * cellLineHeight < cellHeight) ?
@@ -443,8 +443,7 @@ export class Print {
                                         context.clip();
                                         context.fillStyle = backgroundColor;
                                         context.fillRect(currentX, currentY[k as number], cellWidth, (cellHeight + (verticalAlign === 'top' ? cellLineHeight : 0)));
-                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                        textLines.forEach((line: any, index: number) => {
+                                        textLines.forEach((line: string, index: number): void => {
                                             context.fillStyle = color;
                                             textMetrics = context.measureText(line);
                                             textWidth = textMetrics.width;
@@ -453,7 +452,7 @@ export class Print {
                                             const locationY: number = startY + index * cellLineHeight;
                                             if (position.toLowerCase() === 'right') {
                                                 context.textAlign = 'right';
-                                                context.fillText(line.trimEnd(), locationX, locationY);
+                                                context.fillText(line.trim(), locationX, locationY);
                                             } else {
                                                 context.fillText(line, locationX, locationY);
                                             }
@@ -1090,9 +1089,9 @@ export class Print {
                 break;
             case 'right':
                 if (isWrap) {
-                    x = currentX + availableSpace;
+                    x = currentX + (availableSpace - space);
                 } else {
-                    x = currentX + availableSpace - textWidth;
+                    x = currentX + (availableSpace - space) - textWidth;
                 }
                 break;
             }
@@ -1130,27 +1129,95 @@ export class Print {
         }
         return pageCount;
     }
-    private wrapText(text: string, maxWidth: number, contentWidth: number, style: CellStyleModel): string[] {
+    private wrapText(text: string, colwidth: number, style: CellStyleModel, parentStyle: CellStyleModel): string[] {
         if (isNullOrUndefined(text)) {
             return [''];
         }
-        text = typeof text === 'number' ? text + '' : text;
-        const lines: string[] = [];
-        const bpWidth: number = maxWidth - contentWidth;  // border and padding width of the cell
-        let line: string = '';
-        for (let i: number = 0; i < text.length; i++) {
-            const char: string = text[i as number];
-            const textLine: string = (line + char);
-            const textWidth: number = getTextWidth(textLine, style, this.parent.cellStyle) + bpWidth;
-            if (textWidth > maxWidth) {
-                lines.push(line);
-                line = char;
-            } else {
-                line = textLine;
+        const displayText: string[] = [];
+        let width: number; let splitTextArr: string[]; let lWidth: number; let cWidth: number; let prevChars: string;
+        let prevWidth: number = 0;
+        const textArr: string[] = text.toString().split(' ');
+        const spaceWidth: number = getTextWidth(' ', style, parentStyle, true);
+        let hypenWidth: number; let lines: number; let lineText: string = '';
+        let lineCnt: number = 0; let maxCnt: number = 0;
+        const calculateCount: (txt: string) => void = (txt: string): void => {
+            if (prevWidth) {
+                displayText.push(lineText);
             }
+            if (getDPRValue(width / colwidth, true) > 1) {
+                txt.split('').forEach((val: string) => {
+                    cWidth = getTextWidth(val, style, parentStyle, true);
+                    lWidth += cWidth;
+                    prevChars += val;
+                    if (getDPRValue(lWidth, true) > colwidth) {
+                        displayText.push(prevChars);
+                        lWidth = cWidth;
+                        prevChars = val;
+                    }
+                });
+                width = lWidth;
+                txt = prevChars;
+            }
+            lineText = txt;
+            prevWidth = width;
+        };
+        const lastTextLen: number = textArr.length - 1;
+        const addSpace: (size: number, textIdx: number) => void = (size: number, textIdx: number): void => {
+            if (getDPRValue(size + spaceWidth, true) / colwidth >= 1) {
+                width += 0;
+            } else {
+                width += spaceWidth;
+                if (textIdx !== lastTextLen) {
+                    lineText += ' ';
+                }
+            }
+        };
+        textArr.forEach((txt: string, textIdx: number) => {
+            lWidth = 0; cWidth = 0; prevChars = '';
+            width = getTextWidth(txt, style, parentStyle, true);
+            lines = getDPRValue(prevWidth + width, true) / colwidth;
+            if (lines > 1) {
+                splitTextArr = txt.split('-');
+                if (splitTextArr.length > 1) {
+                    const lastIdx: number = splitTextArr.length - 1;
+                    splitTextArr.forEach((splitText: string, index: number) => {
+                        lWidth = 0; cWidth = 0; prevChars = '';
+                        if (!hypenWidth) { hypenWidth = getTextWidth('-', style, parentStyle, true); }
+                        width = getTextWidth(splitText, style, parentStyle, true);
+                        if (index < lastIdx) {
+                            width += hypenWidth;
+                            splitText += '-';
+                        }
+                        lines = getDPRValue(prevWidth + width, true) / colwidth;
+                        if (lines > 1) {
+                            calculateCount(splitText);
+                            if (index === lastIdx) {
+                                addSpace(width, textIdx);
+                            }
+                        } else {
+                            lineText += splitText;
+                            if (index === lastIdx && textArr[textArr.length - 1] !== txt) {
+                                addSpace(prevWidth + width, textIdx);
+                            }
+                            prevWidth += width;
+                        }
+                    });
+                } else {
+                    calculateCount(txt);
+                    addSpace(width, textIdx);
+                }
+            } else {
+                lineText += txt;
+                addSpace(prevWidth + width, textIdx);
+                prevWidth += width;
+            }
+        });
+        if (prevWidth) {
+            lineCnt = getDPRValue(prevWidth - spaceWidth, true) / colwidth;
+            maxCnt = parseFloat((lineCnt).toString().split('.')[0]);
+            displayText.push(lineText);
         }
-        lines.push(line);
-        return lines;
+        return displayText;
     }
 
     /**

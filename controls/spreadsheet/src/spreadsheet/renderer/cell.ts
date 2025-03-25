@@ -1,16 +1,16 @@
 import { Spreadsheet } from '../base/index';
-import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell, deleteNote, showNote } from '../common/index';
+import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell, deleteNote, showNote, PreviousCellDetails } from '../common/index';
 import { createHyperlinkElement, checkPrevMerge, createImageElement, IRenderer, createNoteIndicator } from '../common/index';
 import { removeAllChildren, setRowEleHeight } from '../common/index';
 import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
 import { CellStyleExtendedModel, setChart, refreshChart, getCellAddress, ValidationModel, MergeArgs } from '../../workbook/common/index';
 import { CellModel, SheetModel, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol, isImported } from '../../workbook/index';
-import { getRowHeight, getCell, getColumnWidth, getSheet, setCell } from '../../workbook/base/index';
+import { getRowHeight, getCell, getColumnWidth, getSheet, setCell, ColumnModel, checkColumnValidation } from '../../workbook/base/index';
 import { addClass, attributes, extend, compile, isNullOrUndefined, detach, append } from '@syncfusion/ej2-base';
 import { getFormattedCellObject, applyCellFormat, workbookFormulaOperation, wrapEvent, applyCF } from '../../workbook/common/index';
 import { getTypeFromFormat, activeCellMergedRange, updateHighlight, getCellIndexes, updateView, skipHiddenIdx } from '../../workbook/index';
 import { checkIsFormula, ApplyCFArgs, NumberFormatArgs, ExtendedCellModel, calculateFormula } from '../../workbook/common/index';
-import { isInMultipleRange, addListValidationDropdown } from './../../workbook/common/index';
+import { addListValidationDropdown } from './../../workbook/common/index';
 /**
  * CellRenderer class which responsible for building cell content.
  *
@@ -203,7 +203,7 @@ export class CellRenderer implements ICellRenderer {
                     this.parent.notify(
                         createHyperlinkElement, {
                             cell: args.cell, style: style, td: args.td, rowIdx: args.rowIdx,
-                            colIdx: args.colIdx, fillType: args.fillType
+                            colIdx: args.colIdx, fillType: args.fillType, action: args.action
                         });
                 }
             }
@@ -222,10 +222,10 @@ export class CellRenderer implements ICellRenderer {
                     this.mergeFreezeCol(sheet, args.rowIdx, args.colIdx, colSpan);
                 }
             }
-            if (!isNullOrUndefined(args.cell.notes)){
-                this.parent.notify(createNoteIndicator, {targetElement: args.td, rowIndex: args.rowIdx, columnIndex: args.colIdx});
+            if (!isNullOrUndefined(args.cell.notes) && !args.fillType) {
+                this.parent.notify(createNoteIndicator, { targetElement: args.td, rowIndex: args.rowIdx, columnIndex: args.colIdx });
             } else if (!isNullOrUndefined(args.td) && args.td.children.length > 0 && args.td.children[args.td.childElementCount - 1].className.indexOf('e-addNoteIndicator') > -1) {
-                this.parent.notify(deleteNote, {rowIndex: args.rowIdx, columnIndex: args.colIdx});
+                this.parent.notify(deleteNote, { rowIndex: args.rowIdx, columnIndex: args.colIdx });
             }
             if (args.cell.isNoteEditable) {
                 this.parent.notify(showNote,
@@ -239,7 +239,7 @@ export class CellRenderer implements ICellRenderer {
         if (args.isRefresh) { this.removeStyle(args.td, args.rowIdx, args.colIdx); }
         if (args.lastCell && this.parent.chartColl && this.parent.chartColl.length) {
             this.parent.notify(refreshChart, {
-                cell: args.cell, rIdx: args.rowIdx, cIdx: args.colIdx, sheetIdx: this.parent.activeSheetIndex
+                cell: args.cell, rIdx: args.rowIdx, cIdx: args.colIdx, sheetIdx: this.parent.activeSheetIndex, isSelectAll: args.isSelectAll
             });
         }
         this.applyStyle(args, style);
@@ -265,11 +265,18 @@ export class CellRenderer implements ICellRenderer {
                     getRowHeight(sheet, args.rowIdx) > (sheet && sheet.standardHeight ? sheet.standardHeight : 20)
             });
         }
-        const validation: ValidationModel = (args.cell && args.cell.validation) || (sheet.columns && sheet.columns[args.colIdx] &&
-            sheet.columns[args.colIdx].validation);
-        if (validation && (!validation.address || isInMultipleRange(validation.address, args.rowIdx, args.colIdx))) {
+        let validation: ValidationModel; let col: ColumnModel;
+        if (args.cell && args.cell.validation) {
+            validation = args.cell.validation;
+            col = sheet.columns && sheet.columns[args.colIdx];
+        } else {
+            validation = checkColumnValidation(sheet.columns && sheet.columns[args.colIdx], args.rowIdx, args.colIdx) &&
+                sheet.columns[args.colIdx].validation;
+        }
+        if (validation) {
             if (validation.isHighlighted) {
                 args.validation = validation;
+                args.col = col;
                 this.parent.notify(updateHighlight, args);
             }
             if (validation.type === 'List' && !args.isRefresh && args.address === sheet.activeCell) {
@@ -462,7 +469,7 @@ export class CellRenderer implements ICellRenderer {
                     let curSpan: number = 0;
                     if (curEmptyLength === emptyCols.length) {
                         let curCell: CellModel; let len: number; let i: number;
-                        if (frozenRow && rowIdx < frozenCol) {
+                        if (frozenRow && rowIdx < frozenRow) {
                             len = frozenRow; i = getCellIndexes(sheet.topLeftCell)[0];
                         } else {
                             len = this.parent.viewport.bottomIndex; i = this.parent.viewport.topIndex + frozenRow;
@@ -517,10 +524,20 @@ export class CellRenderer implements ICellRenderer {
             if (frozenRowEle) { frozenRowEle.style.zIndex = ''; }
             if (frozenColEle) { frozenColEle.style.zIndex = ''; }
         } else {
-            if (this.parent.getRowHeaderContent().style.zIndex || this.parent.getColumnHeaderContent().style.zIndex) {
+            const rowHeader: HTMLElement = this.parent.getRowHeaderContent();
+            const colHeader: HTMLElement = this.parent.getColumnHeaderContent();
+            if (rowHeader.style.zIndex || colHeader.style.zIndex) {
                 this.parent.getSelectAllContent().style.zIndex = '3';
                 if (frozenRowEle) { frozenRowEle.style.zIndex = '4'; }
                 if (frozenColEle) { frozenColEle.style.zIndex = '4'; }
+                const rowHdrSelection: HTMLElement = rowHeader.querySelector('.e-selection');
+                if (rowHdrSelection) {
+                    rowHdrSelection.style.zIndex = '3';
+                }
+                const colHdrSelection: HTMLElement = colHeader.querySelector('.e-selection');
+                if (colHdrSelection) {
+                    colHdrSelection.style.zIndex = '3';
+                }
             } else {
                 this.parent.getSelectAllContent().style.zIndex = '2';
             }
@@ -534,6 +551,14 @@ export class CellRenderer implements ICellRenderer {
             const frozenColEle: HTMLElement = this.parent.element.querySelector('.e-frozen-column');
             if (frozenColEle) { frozenColEle.style.zIndex = '4'; }
             if (frozenRowEle) { frozenRowEle.style.zIndex = '4'; }
+            const rowHdrSelection: HTMLElement = this.parent.getRowHeaderContent().querySelector('.e-selection');
+            if (rowHdrSelection) {
+                rowHdrSelection.style.zIndex = '3';
+            }
+            const colHdrSelection: HTMLElement = this.parent.getColumnHeaderContent().querySelector('.e-selection');
+            if (colHdrSelection) {
+                colHdrSelection.style.zIndex = '3';
+            }
         }
     }
 
@@ -657,15 +682,18 @@ export class CellRenderer implements ICellRenderer {
      * @param {boolean} isFromAutoFillOption - Specifies whether the value is from auto fill option or not.
      * @param {boolean} isHeightCheckNeeded - Specifies whether the refreshing is from undo-redo with format action.
      * @param {boolean} isSortAction - Specifies whether to check the sort action performed or not.
+     * @param {boolean} isSelectAll - Specifies the all sheet cells selected or not.
+     * @param {PreviousCellDetails[]} cells - Specifies the undo redo cell collections.
      * @returns {void}
      */
     public refreshRange(
         range: number[], refreshing?: boolean, checkWrap?: boolean, checkHeight?: boolean, checkCF?: boolean,
         skipFormatCheck?: boolean, checkFormulaAdded?: boolean, isFromAutoFillOption?: boolean,
-        isHeightCheckNeeded: boolean = true, isSortAction?: boolean): void {
+        isHeightCheckNeeded: boolean = true, isSortAction?: boolean, isSelectAll?: boolean, cells?: PreviousCellDetails[]): void {
         const sheet: SheetModel = this.parent.getActiveSheet();
         const cRange: number[] = range.slice(); let args: CellRenderArgs; let cell: HTMLTableCellElement;
         if (inView(this.parent, cRange, true)) {
+            let cellIdx: number = 0;
             for (let i: number = cRange[0]; i <= cRange[2]; i++) {
                 if (isHiddenRow(sheet, i)) { continue; }
                 for (let j: number = cRange[1]; j <= cRange[3]; j++) {
@@ -674,7 +702,9 @@ export class CellRenderer implements ICellRenderer {
                     if (cell) {
                         args = { rowIdx: i, colIdx: j, td: cell, cell: getCell(i, j, sheet), isRefreshing: refreshing, lastCell: j ===
                             cRange[3], isRefresh: true, isHeightCheckNeeded: isHeightCheckNeeded, manualUpdate: true, first: '', onActionUpdate:
-                            checkHeight, skipFormatCheck: skipFormatCheck, isFromAutoFillOption: isFromAutoFillOption };
+                            checkHeight, skipFormatCheck: skipFormatCheck, isFromAutoFillOption: isFromAutoFillOption,
+                        isSelectAll: isSelectAll, rowHeight: cells && cells[cellIdx as number] && cells[cellIdx as number].rowHeight };
+                        cellIdx++;
                         if (checkFormulaAdded) {
                             args.address = getCellAddress(i, j);
                         }

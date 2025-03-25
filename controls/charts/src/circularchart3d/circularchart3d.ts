@@ -677,6 +677,7 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
         }
         this.wireEvents();
         this.element.setAttribute('dir', this.enableRtl ? 'rtl' : '');
+        (this.element as HTMLElement).style.outline = 'none';
     }
 
     /**
@@ -751,6 +752,7 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
         if (this.pointClick) {
             this.triggerPointEvent(pointClick, <Element>e.target, e);
         }
+        this.removeNavigationStyle();
         return false;
     }
 
@@ -996,46 +998,6 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
         element.style.position = 'relative';
         element.style.display = 'block';
         element.style.height = (element.style.height || (this.height && this.height.indexOf('%') === -1)) ? element.style.height : 'inherit';
-        let tabColor: string = '';
-        switch (this.theme) {
-
-        case 'HighContrastLight':
-        case 'HighContrast':
-            tabColor = '#969696';
-            break;
-        case 'MaterialDark':
-        case 'FabricDark':
-        case 'Bootstrap':
-        case 'Bootstrap4':
-            tabColor = '#66afe9';
-            break;
-        case 'Tailwind':
-        case 'TailwindDark':
-            tabColor = '#4f46e5';
-            break;
-        case 'Bootstrap5':
-        case 'Bootstrap5Dark':
-            tabColor = '#0d6efd';
-            break;
-        case 'Fluent':
-        case 'FluentDark':
-            tabColor = '#9e9e9e';
-            break;
-        case 'Fluent2':
-        case 'Fluent2Dark':
-        case 'Fluent2HighContrast':
-            tabColor = '#0078D4';
-            break;
-        default:
-            tabColor = '#9e9e9e';
-            break;
-        }
-        const style: HTMLStyleElement = document.createElement('style');
-        style.setAttribute('id', element.id + 'Keyboard_circular3dchart_focus');
-        style.innerText = '.e-circular3dchart-focused:focus,path[id*=-series-0-point-]:focus, text[id*=-title]:focus' +
-            '{outline: none} .e-circular3dchart-focused:focus-visible,path[id*=-series-0-point-]:focus-visible, text[id*=-title]:focus-visible' +
-            '{outline: 1.5px ' + tabColor + ' solid}';
-        document.body.appendChild(style);
     }
 
     /**
@@ -1526,6 +1488,7 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
         );
         if (element) {
             element.setAttribute('tabindex', '0');
+            (element as HTMLElement).style.outline = 'none';
             element.parentNode.insertBefore(element, this.svgObject.children && this.svgObject.children[1]);
         }
         if (this.subTitle) {
@@ -1805,6 +1768,71 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
     }
 
     /**
+     * Handles to set style for key event on the document.
+     *
+     * @param {target} target - element which currently focused.
+     * @returns {void}
+     * @private
+     */
+    private setNavigationStyle(target: string): void {
+        let tabColor: string = '';
+        switch (this.theme) {
+
+        case 'HighContrastLight':
+        case 'HighContrast':
+            tabColor = '#969696';
+            break;
+        case 'MaterialDark':
+        case 'FabricDark':
+        case 'Bootstrap':
+        case 'Bootstrap4':
+            tabColor = '#66afe9';
+            break;
+        case 'Tailwind':
+        case 'TailwindDark':
+            tabColor = '#4f46e5';
+            break;
+        case 'Bootstrap5':
+        case 'Bootstrap5Dark':
+            tabColor = '#0d6efd';
+            break;
+        case 'Fluent':
+        case 'FluentDark':
+            tabColor = '#9e9e9e';
+            break;
+        case 'Fluent2':
+        case 'Fluent2Dark':
+        case 'Fluent2HighContrast':
+            tabColor = '#0078D4';
+            break;
+        default:
+            tabColor = '#9e9e9e';
+            break;
+        }
+        const currentElement: HTMLElement = document.getElementById(target);
+        if (currentElement) {
+            currentElement.style.setProperty('outline', `1.5px solid ${tabColor}`);
+        }
+    }
+
+    /**
+     * Handles to remove style for key event on the document.
+     *
+     * @returns {void}
+     * @private
+     */
+    private removeNavigationStyle(): void {
+        const currentElement: NodeList = document.querySelectorAll(`path[id*=_Series_0_Point_], [id*=${this.element.id}], [id*=_ChartBorder], text[id*=_title],g[id*=_chart_legend]`);
+        if (currentElement) {
+            currentElement.forEach((element: Node) => {
+                if (element instanceof HTMLElement || element instanceof SVGElement) {
+                    element.style.setProperty('outline', 'none');
+                }
+            });
+        }
+    }
+
+    /**
      * Handles the keyboard onkeydown event in the circular 3D chart.
      *
      * @param {KeyboardEvent} e - The keydown event arguments.
@@ -1813,7 +1841,6 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
      */
     public circular3DChartKeyDown(e: KeyboardEvent): boolean {
         let actionKey: string = '';
-
         if (this.tooltip.enable && ((e.code === 'Tab' && this.previousTargetId.indexOf('series') > -1) || (this.previousTargetId.indexOf('legend') > -1) || e.code === 'Escape')) {
             actionKey = 'ESC';
         }
@@ -1829,7 +1856,9 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
         if (actionKey !== '') {
             this.chartKeyboardNavigations(e, (e.target as HTMLElement).id, actionKey);
         }
-
+        if (e.code === 'Tab') {
+            this.removeNavigationStyle();
+        }
         return false;
     }
 
@@ -1911,10 +1940,12 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
                 this.isLegendClicked = true;
                 this.circularChartLegend3DModule.click(e as Event);
                 this.focusChild(document.getElementById(targetId).parentElement);
+                this.setNavigationStyle(document.getElementById(targetId).parentElement.id);
             } else {
                 if (this.circularChartSelection3DModule) {
                     this.circularChartSelection3DModule.calculateSelectedElements(this, document.getElementById(targetId), 'click');
                 }
+                this.setNavigationStyle(targetId);
             }
             break;
         case 'CtrlP':
@@ -1981,7 +2012,7 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
         }
         if (pagingElement) { pagingElement.setAttribute('class', 'e-circular3dchart-focused'); }
 
-
+        this.removeNavigationStyle();
         if (e.code === 'Tab') {
             if (this.previousTargetId !== '') {
                 if (this.previousTargetId.indexOf('-point-') > -1 && targetId.indexOf('-point-') === -1) {
@@ -2027,6 +2058,8 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
 
                 const currentLegend: Element = legendElement.children[this.currentLegendIndex];
                 this.focusTarget(currentLegend as HTMLElement);
+                this.removeNavigationStyle();
+                this.setNavigationStyle(currentLegend.id);
                 this.previousTargetId = targetId = currentLegend.lastElementChild.id;
                 actionKey = this.highlightMode !== 'None' ? 'ArrowMove' : '';
             }
@@ -2050,6 +2083,8 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
                 }
                 targetId = element ? element.id : '';
                 this.focusTarget(getElement(targetId) as HTMLElement);
+                this.removeNavigationStyle();
+                this.setNavigationStyle(targetId);
                 actionKey = this.tooltip.enable || this.circularChartHighlight3DModule ? 'ArrowMove' : '';
             }
         }
@@ -2062,6 +2097,7 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
         if (actionKey !== '') {
             this.chartKeyboardNavigations(e, targetId, actionKey);
         }
+        if (e.code === 'Tab') { this.setNavigationStyle(targetId); }
         return false;
     }
 
@@ -2148,6 +2184,10 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
             this.element.classList.remove('e-circular3dchart-focused');
             const element: HTMLElement = document.getElementById(this.element.id + 'Keyboard_circular3dchart_focus');
             if (element) { element.remove(); }
+            const highlightElement: HTMLElement = document.getElementById(this.element.id + '_ej2_chart_highlight');
+            if (highlightElement) { highlightElement.remove(); }
+            const selectionElement: HTMLElement = document.getElementById(this.element.id + '_ej2_chart_selection');
+            if (selectionElement) { selectionElement.remove(); }
             removeElement('chartmeasuretext');
             this.removeSvg();
             this.svgObject = null;
@@ -2326,6 +2366,12 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
                 break;
             case 'enableRtl':
             case 'locale':
+                if (this.circularChartHighlight3DModule) {
+                    removeElement(this.circularChartHighlight3DModule.styleId);
+                }
+                if (this.circularChartSelection3DModule) {
+                    removeElement(this.circularChartSelection3DModule.styleId);
+                }
                 super.refresh(); break;
             case 'background':
             case 'border':

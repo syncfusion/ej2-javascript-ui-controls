@@ -1217,7 +1217,7 @@ export class FormFields {
                         this.pdfViewerBase.currentSignatureAnnot = null;
                     }
                     if (signatureType !== 'Image') {
-                        const canvass: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentPage);
+                        const canvass: HTMLElement = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', currentPage);
                         this.pdfViewer.renderDrawing(canvass as any, currentPage);
                         this.pdfViewerBase.signatureModule.showSignatureDialog(false);
                         if (currentField.className === 'e-pdfviewer-signatureformfields e-pv-signature-focus') {
@@ -1296,7 +1296,7 @@ export class FormFields {
         } else {
             this.pdfViewer.add(annot as PdfAnnotationBase);
         }
-        const canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentPage);
+        const canvass: any = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', currentPage);
         this.pdfViewer.renderDrawing(canvass as any, currentPage);
         this.pdfViewerBase.signatureModule.showSignatureDialog(false);
         if (currentField.className === 'e-pdfviewer-signatureformfields e-pv-signature-focus') {
@@ -2488,7 +2488,7 @@ export class FormFields {
                     height : currentHeight * zoomvalue };
                 this.updateSignatureDataInSession(annot, annot.id);
             }
-            const canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentPage);
+            const canvass: any = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', currentPage);
             const obj: any = this.pdfViewer.formFieldCollection.filter((field: any) => { return annot.id.split('_')[0] === field.id; });
             if (obj.length > 0 && obj[0].visibility !== 'hidden' || !this.pdfViewer.formDesignerModule) {
                 this.pdfViewer.renderDrawing(canvass as any, currentPage);

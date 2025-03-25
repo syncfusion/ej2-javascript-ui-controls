@@ -60,7 +60,7 @@ describe('Chart Control', () => {  beforeAll(() => {
                             border: { width: 1, color: null }
                         }
                     }], width: '800',
-                    tooltip: { enable: true},
+                    tooltip: { enable: true, showNearestTooltip: true},
                     title: 'Chart TS Title', loaded: loaded, legendSettings: { visible: false }
                 });
             chartObj.appendTo('#container');
@@ -424,10 +424,11 @@ describe('Chart Control', () => {  beforeAll(() => {
                 expect(text1.textContent.replace(/\u200E/g, '') == 'ChartSeriesNameGold#3000 : 70C').toBe(true);
                 expect(document.getElementById('container_Series_0_Point_2_Trackball_0').getAttribute('fill') == 'transparent').toBe(true);
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y + 50));
+                done();
             };
             chartObj.animationComplete =  (args: Object): void => {
                 let track: HTMLElement = document.getElementById('container_Series_0_Point_2_Trackball_0');
-                //expect(track !== null).toBe(true);
+                expect(chartObj !== null).toBe(true);
                 done();
             };
             chartObj.loaded = loaded1;
@@ -724,6 +725,38 @@ describe('Chart Control', () => {  beforeAll(() => {
             // chartObj.series[0].dataSource = data;
             chartObj.refresh();
         });
+        it('checking tooltip with showNearestTooltip', (done: Function) => {
+            loaded = (args: Object): void => {
+                trigger.mousemovetEvent(elem, 100, 100);
+                let tooltip: HTMLElement = document.getElementById('container_tooltip');
+                expect(tooltip != null).toBe(true);
+                trigger.mousemovetEvent(elem, 300, 170);
+                tooltip = document.getElementById('container_tooltip');
+                expect(tooltip != null).toBe(true);
+                trigger.mousemovetEvent(elem, 5, 5);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.tooltip = { enable: true, showNearestTooltip: true };
+            chartObj.refresh();
+        });
+        it('checking tooltip with showHeaderLine as false', (done: Function) => {
+            loaded = (args: Object): void => {
+                let target: HTMLElement = document.getElementById('container_Series_1_Point_0_Symbol');
+                let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
+                y = parseFloat(target.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
+                x = parseFloat(target.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+                let tooltipHeaderLine: HTMLElement = document.getElementById('container_tooltip_header_path');
+                let tooltip: HTMLElement = document.getElementById('container_tooltip');
+                expect(tooltip != null).toBe(true);
+                expect(tooltipHeaderLine === null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.tooltip = { enable: true, showHeaderLine: false };
+            chartObj.refresh();
+        });
     });
 
     describe('Chart template', () => {
@@ -808,6 +841,23 @@ describe('Chart Control', () => {  beforeAll(() => {
             chartObj.title = 'Template';
             chartObj.loaded = loaded1;
             chartObj.dataBind();
+        });
+        it('checking closest Point tooltip', (done: Function) => {
+            loaded = (args: Object): void => {
+                let target: HTMLElement = document.getElementById('container_Series_0_Point_1_Symbol');
+                let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
+                y = parseFloat(target.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop + 30;
+                x = parseFloat(target.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft + 30;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+                let tooltip: HTMLElement = document.getElementById('container_tooltip');
+                expect(tooltip != null).toBe(true);
+                target = document.getElementById('container_ChartTitle');
+                trigger.mousemovetEvent(target, 10, 10);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.tooltip = { enable: true, showNearestTooltip: true, enableHighlight: true, shared: false };
+            chartObj.refresh();
         });
     });
 
@@ -984,7 +1034,7 @@ describe('Chart Control', () => {  beforeAll(() => {
                 name: 'ChartSeriesNameGold', fill: 'rgba(135,206,235,1)',
                 marker: {
                     shape: 'Circle', visible: true, width: 10, height: 10, opacity: 1,
-                    border: { width: 1, color: null }
+                    border: { width: 1, color: null }, dataLabel:{visible: true}
                 }
             },
             {  type: 'Column',
@@ -992,7 +1042,7 @@ describe('Chart Control', () => {  beforeAll(() => {
                 name: 'ChartSeriesNameGold', fill: 'rgba(135,206,235,1)',
                 marker: {
                     shape: 'Circle', visible: true, width: 10, height: 10, opacity: 1,
-                    border: { width: 1, color: null }
+                    border: { width: 1, color: null },  dataLabel:{visible: true}
                 }
             }]
             chartObj.tooltip.enableHighlight = true;

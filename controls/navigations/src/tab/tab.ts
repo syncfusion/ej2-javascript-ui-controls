@@ -47,7 +47,7 @@ export type TabSwipeMode = 'Both' | 'Touch' | 'Mouse' | 'None'
  * Specifies the options of Tab content display mode.
  * ```props
  * Demand :- The content of the selected tab alone is loaded initially. The content of the tabs which were loaded once will be maintained in the DOM.
- * Dynamic :- The content of all the tabs are rendered on the initial load and maintained in the DOM.
+ * Dynamic :- Only the content of the selected tab is loaded and available in the DOM, and it will be replaced with the corresponding content if the tab is selected dynamically.
  * Init :- The content of all the tabs are rendered on the initial load and maintained in the DOM.
  * ```
  */
@@ -485,7 +485,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * Specifies the modes for Tab content.
      * The possible modes are:
      * * `Demand` - The content of the selected tab alone is loaded initially. The content of the tabs which were loaded once will be maintained in the DOM.
-     * * `Dynamic` - The content of all the tabs are rendered on the initial load and maintained in the DOM.
+     * * `Dynamic` - Only the content of the selected tab is loaded and available in the DOM, and it will be replaced with the corresponding content if the tab is selected dynamically.
      * * `Init` - The content of all the tabs are rendered on the initial load and maintained in the DOM.
      *
      * @default 'Demand'
@@ -894,7 +894,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             attrs: { 'role': 'tabpanel', 'aria-labelledby': CLS_ITEM + this.tabId + '_' + index }
         });
         if (['Dynamic', 'Demand'].indexOf(this.loadOn) !== -1 ||
-            (this.loadOn === 'Init' && index === Number(this.extIndex(this.itemIndexArray[0])))) {
+            (this.loadOn === 'Init' && index === this.selectedItem)) {
             addClass([contentElement], CLS_ACTIVE);
         }
         return contentElement;
@@ -1452,7 +1452,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             if (this.isTemplate === true) {
                 const cnt: HTEle[] = selectAll('.' + CLS_CONTENT + ' > .' + CLS_ITEM, this.element);
                 for (let i: number = 0; i < cnt.length; i++) {
-                    cnt[i].setAttribute('style', 'display:block; visibility: visible');
+                    cnt[i].style.display = 'block';
+                    cnt[i].style.visibility = 'visible';
                     this.maxHeight = Math.max(this.maxHeight, this.getHeight(cnt[i]));
                     cnt[i].style.removeProperty('display');
                     cnt[i].style.removeProperty('visibility');
@@ -2232,6 +2233,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 item.disabled = item.disabled || false;
                 item.visible = item.visible || true;
             }
+            if (items && items.length !== 0 && this.element && this.element.classList.contains(CLS_HIDDEN)) {
+                this.element.classList.remove(CLS_HIDDEN);
+            }
             this.trigger('adding', addArgs, (tabAddingArgs: AddEventArgs) => {
                 if (!tabAddingArgs.cancel) {
                     this.addingTabContent(items, index);
@@ -2357,6 +2361,16 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     this.tbItem = selectAll('.' + CLS_TB_ITEM, this.getTabHeader());
                     index = this.getSelectingTabIndex(index);
                     index = !isNaN(index) && index >= 0 && this.tbItem.length > index ? index : 0;
+                    const tabItem = this.tbItem[index];
+                    if (tabItem) {
+                        if (tabItem.classList.contains(CLS_HIDDEN)) {
+                            tabItem.classList.remove(CLS_HIDDEN);
+                        }
+                        const firstChild = tabItem.firstElementChild;
+                        if (firstChild && firstChild.hasAttribute('aria-hidden')) {
+                            firstChild.removeAttribute('aria-hidden');
+                        }
+                    }
                     this.selectedItem = index;
                     this.select(index);
                 } else if (index !== this.selectedItem) {
@@ -2368,7 +2382,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     this.tbItem = selectAll('.' + CLS_TB_ITEM, this.getTabHeader());
                 }
                 if (selectAll('.' + CLS_TB_ITEM, this.element).length === 0) {
-                    this.hdrEle.style.display = 'none';
+                    const cnt: HTEle = <HTEle>select('.' + CLS_CONTENT, this.element);
+                    detach(this.hdrEle);
+                    detach(cnt);
                 }
                 this.enableAnimation = true;
             }
@@ -2378,7 +2394,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * Shows or hides the Tab that is in the specified index.
      *
      * @param {number} index - Index value of target item.
-     * @param {boolean} value - Based on this Boolean value, item will be hide (false) or show (true). By default, value is true.
+     * @param {boolean} value - Based on this Boolean value, item will be hide (true) or show (false). By default, value is true.
      * @returns {void}.
      */
     public hideTab(index: number, value?: boolean): void {

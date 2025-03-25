@@ -20,7 +20,7 @@ interface EJ2Instance extends HTMLElement {
     return data[field];
 }
 
-describe('Gantt editing actions', () => {
+describe('Gantt editing action', () => {
     let ganttObj: Gantt;
     let interval: number;
     let preventDefault: Function = new Function();
@@ -6515,6 +6515,78 @@ describe('CR-924999:Work field column value is inconsistent during cell editing'
         let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
         triggerMouseEvent(element, 'click');
         expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(0);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Parent taskbar renders  incorrectly after adding duration to a No scheduled task', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [       
+                    {
+                        TaskID: 5,
+                        TaskName: 'Project Estimation',
+                        StartDate: new Date('04/02/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            { TaskID: 6, TaskName: 'Develop floor plan for estimation', BaselineStartDate: new Date('04/04/2019'), BaselineEndDate: new Date('04/08/2019'), EndDate: new Date('04/08/2019'), Progress: 50, info: 'If required obtain approval from HOA (homeowners association) or ARC (architectural review committee)', amount: 40000 },
+                            { TaskID: 7, TaskName: 'List materials', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/04/2019'), resources: [4], StartDate: new Date('04/08/2019'), EndDate: new Date('04/08/2019'), Predecessor: "6SS", Duration: 3, Progress: 50, info: 'Clear the building site (demolition of existing home if necessary)', amount: 60000 },
+                            { TaskID: 8, TaskName: 'Estimation Calculation', StartDate: new Date('04/04/2019'), Duration: 0, Progress: 50, info: 'Excavate the foundation and dig footers (Scope of work is dependent of foundation designed by engineer)', amount: 80000 },
+                            { TaskID: 9, TaskName: 'Estimation approval', Progress: 50, info: 'Add floor and ceiling joists and install subfloor panels', amount: 30000 }
+                        ]
+                    },
+                ],
+                height: '450px',
+                allowSelection: true,
+                highlightWeekends: true,
+                allowUnscheduledTasks: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                    allowNextRowEdit: true
+                },
+            
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'ID', textAlign: 'Left' },
+                    { field: 'TaskName', headerText: 'Name' },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'Predecessor', headerText: 'Dependency' },
+                  
+                ],
+                splitterSettings: {
+                    position: "53%"
+                },
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('07/06/2019'),
+        }, done);
+    });
+    it('update duration for unscheduled task', () => {
+        let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(5) > td:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(duration, 'dblclick');
+        let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
+        input.value = '4 days';
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.endDate, 'M/d/yyyy')).toBe('4/10/2019');
     });
     afterAll(() => {
         if (ganttObj) {

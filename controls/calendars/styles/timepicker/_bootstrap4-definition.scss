@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $timepicker-skin-name: 'bootstrap4' !default;
 $timepicker-default-text-indent: 20px !default;
 $timepicker-list-bigger-line-height: 32px !default;
@@ -16,13 +18,13 @@ $timepicker-list-border-color: 1px solid rgba($black, .15) !default;
 $timepicker-list-bg-color: $content-popup-bg !default;
 $timepicker-list-active-bg-color: $primary !default;
 $timepicker-list-active-icon-color: $white !default;
-$timepicker-icon-active-bg-color: darken($gray-600, 10%) !default;
-$timepicker-active-border-color: darken($gray-600, 10%) !default;
+$timepicker-icon-active-bg-color: color.adjust($gray-600, $lightness: -10%) !default;
+$timepicker-active-border-color: color.adjust($gray-600, $lightness: -10%) !default;
 $timepicker-list-active-font-color: $primary-font !default;
-$timepicker-list-hover-bg-color: darken($gray-100, 2%) !default;
+$timepicker-list-hover-bg-color: color.adjust($gray-100, $lightness: -2%) !default;
 $timepicker-list-hover-font-color: $gray-900 !default;
 $timepicker-list-popup-icon-active-color: $white !default;
-$timepicker-list-active-hover-bg-color: darken($gray-100, 2%) !default;
+$timepicker-list-active-hover-bg-color: color.adjust($gray-100, $lightness: -2%) !default;
 $timepicker-list-active-hover-font-color: $gray-900 !default;
 $timepicker-list-normal-padding: 0 !default;
 $timepicker-list-bigger-padding: 0 !default;

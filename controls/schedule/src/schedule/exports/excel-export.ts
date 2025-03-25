@@ -2,8 +2,9 @@
 import { Workbook, Worksheet, Worksheets, Column } from '@syncfusion/ej2-excel-export';
 import { Schedule } from '../base/schedule';
 import { ExcelFormat } from '../base/type';
-import { ExportFieldInfo, ExportOptions } from '../base/interface';
+import { ExcelExportEventArgs, ExportFieldInfo, ExportOptions } from '../base/interface';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
+import * as events from '../base/constant';
 
 /**
  * Excel Export Module
@@ -57,8 +58,14 @@ export class ExcelExport {
             rows.push({ index: i + 2, cells: columnData });
         });
         const workSheet: Worksheets = [{ columns: columns, rows: rows } as Worksheet];
-        const book: Workbook = new Workbook({ worksheets: workSheet }, type, this.parent.locale, undefined, separator);
-        book.save(name + '.' + type);
+        const args: ExcelExportEventArgs = { cancel: false, worksheets: workSheet };
+        this.parent.trigger(events.excelExport, args, (args: ExcelExportEventArgs) => {
+            if (args.cancel) {
+                return;
+            }
+            const book: Workbook = new Workbook({ worksheets: args.worksheets }, type, this.parent.locale, undefined, separator);
+            book.save(name + '.' + type);
+        });
     }
 
     private getExportColumns(exportOptions: ExportOptions): ExportFieldInfo[] {
