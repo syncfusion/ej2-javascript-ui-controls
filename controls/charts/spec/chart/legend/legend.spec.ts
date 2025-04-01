@@ -1005,13 +1005,13 @@ describe('Chart Legend', () => {
         it('Legend Symbol Color Checking with point color mapping', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
             let color1: string = document.getElementById('container_chart_legend_shape_0').getAttribute('fill'); 
-            expect(color1 === 'fuchsia').toBe(true);
+            expect(color1).toBe('#00bdae');
             let color2: string = document.getElementById('container_chart_legend_shape_1').getAttribute('fill'); 
-            expect(color2 === 'skyblue').toBe(true);
+            expect(color2).toBe('#404041');
             let color3: string = document.getElementById('container_chart_legend_shape_2').getAttribute('fill'); 
-            expect(color3 === 'purple').toBe(true);
+            expect(color3).toBe('#357cd2');
             let color4: string = document.getElementById('container_chart_legend_shape_3').getAttribute('fill'); 
-            expect(color4 === '#e56590').toBe(true);
+            expect(color4).toBe('#e56590');
             done();
             };
             chartObj.refresh();

@@ -2121,3 +2121,42 @@ describe('EJ2-889406: White space occurs in virtual scroll', () => {
         gObj = null;
     });
 });
+
+describe('EJ2-948433: grid.getSelectedRecords() Returns Empty Array for Selected Rows in Virtualization enabled Grid with Grouping', () => {
+    let gObj: Grid;
+    beforeAll((done: Function) => {
+        gObj = createGrid(
+            {
+                dataSource: filterData.slice(0, 4),
+                height: 400,
+                enableVirtualization: true,
+                allowGrouping: true,
+                columns: [    
+                    {field: 'OrderID', headerText:'OrderID', width:120 },
+                    {field: 'CustomerID', headerText:'CustomerID', width:120},      
+                    {field: 'Freight', textAlign: 'Right', width:110 , format:'C2', headerText:"Freight"},
+                    {field: 'ShipCity', headerText:'ShipCity', width:130}    
+                ], 
+            }, done);
+    });
+
+    it('Group the column', (done: Function) => {
+        gObj.groupColumn('CustomerID');
+        done();
+    });
+
+    it('Select the row', (done: Function) => {
+        gObj.rowSelected = () => {
+            expect(gObj.getSelectedRecords().length).toBe(1);
+            gObj.rowSelected = null;
+            done();
+        }
+        gObj.selectRow(1);
+        done();
+    })
+
+    afterAll(() => {
+        destroy(gObj);
+        gObj = null;
+    });
+});

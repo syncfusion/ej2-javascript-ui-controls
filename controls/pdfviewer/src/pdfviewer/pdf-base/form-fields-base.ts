@@ -1545,7 +1545,7 @@ export class FormFieldsBase {
         else {
             formFields.IsTransparent = true;
         }
-        formFields.Text = textBox.text ? textBox.text.replace('"', '') : '';
+        formFields.Text = textBox.text ? textBox.text : '';
         formFields.Multiline = textBox.multiLine;
         formFields.RotationAngle = this.GetRotateAngle(textBox.page.rotation);
         if (textBox._dictionary.has('CustomData')) {

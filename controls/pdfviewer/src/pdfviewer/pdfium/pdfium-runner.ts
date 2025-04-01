@@ -568,7 +568,7 @@ export function PdfiumRunner(): void {
                                                                            wordMaxBottom - wordMinTop, word, wordRotation);
                             wordBounds.push(newWordBounds);
                             this.textBoundsCalculation(wordBounds, minTop, maxBottom, maxRight, minLeft,
-                                                       pageRotation, pageWidth, pageHeight);
+                                                       pageRotation, pageWidth, pageHeight, totalCharacterCount);
                             wordBounds = [];
                             wordStart = true;
                             isPreviousSpace = false;
@@ -606,7 +606,7 @@ export function PdfiumRunner(): void {
                                 }
                                 wordBounds.push(characterBounds);
                                 this.textBoundsCalculation(wordBounds, minTop, maxBottom, maxRight, minLeft, pageRotation,
-                                                           pageWidth, pageHeight);
+                                                           pageWidth, pageHeight, totalCharacterCount);
                                 wordBounds = [];
                                 wordStart = true;
                                 isPreviousSpace = false;
@@ -658,7 +658,7 @@ export function PdfiumRunner(): void {
                                     wordBounds.push(characterBounds);
                                 }
                                 this.textBoundsCalculation(wordBounds, minTop, maxBottom, maxRight, minLeft, pageRotation,
-                                                           pageWidth, pageHeight);
+                                                           pageWidth, pageHeight, totalCharacterCount);
                                 wordBounds = [];
                                 wordStart = true;
                                 isPreviousSpace = false;
@@ -745,7 +745,7 @@ export function PdfiumRunner(): void {
                                             wordBounds.push(newWordBounds);
                                         }
                                         this.textBoundsCalculation(wordBounds, minTop, maxBottom, maxRight, minLeft,
-                                                                   pageRotation, pageWidth, pageHeight);
+                                                                   pageRotation, pageWidth, pageHeight, totalCharacterCount);
                                         wordBounds = [];
                                         wordStart = true;
                                         word = '';
@@ -815,13 +815,92 @@ export function PdfiumRunner(): void {
         }
 
         public textBoundsCalculation(wordBounds: any, minTop: number, maxBottom: number, maxRight: number,
-                                     minLeft: number, pageRotation: number, pageWidth: number, pageHeight: number): void {
+                                     minLeft: number, pageRotation: number, pageWidth: number, pageHeight: number,
+                                     totalCharacterCount: number): void {
             let newWordBounds: any;
             let hasInBetweenRotation: boolean = false;
             let inBetweenRotatedText: string = '';
             const maximumSpaceBetweenWords: number = 30;
+            const minimumSpaceBetweenWords: number = 5;
             const sentence: string = wordBounds.reduce((word: string, rect: any) => word + rect.Text, '');
             const isRTLText: boolean = this.checkIsRtlText(sentence);
+            if (totalCharacterCount >= 5000) {
+                const newWordBoundsCollection: any = [];
+                let k: number = 0;
+                const updateBounds: any = (rect: any, bounds: { minX: number, minY: number, maxX: number, maxY: number }) => {
+                    bounds.minX = Math.min(bounds.minX, rect.X);
+                    bounds.minY = Math.min(bounds.minY, rect.Y);
+                    bounds.maxX = Math.max(bounds.maxX, rect.X + rect.Width);
+                    bounds.maxY = Math.max(bounds.maxY, rect.Y + rect.Height);
+                };
+                const getMostFrequentLineHeight: any = (lineHeights: number[], defaultHeight: number): number => {
+                    return lineHeights.sort((a: any, b: any) =>
+                        lineHeights.filter((v: any) => v === a).length - lineHeights.filter((v: any) => v === b).length
+                    ).pop() || defaultHeight;
+                };
+                for (let i: number = 0; i < wordBounds.length; i++) {
+                    let diff: number = 0;
+                    if (i < wordBounds.length - 1) {
+                        diff = wordBounds[parseInt((i + 1).toString(), 10)].Left - wordBounds[parseInt(i.toString(), 10)].Right;
+                    }
+                    if (diff >= minimumSpaceBetweenWords && wordBounds[parseInt(i.toString(), 10)].Text !== '\r\n') {
+                        const bounds: any = {
+                            minX: wordBounds[parseInt(k.toString(), 10)].X,
+                            minY: wordBounds[parseInt(k.toString(), 10)].Y,
+                            maxX: wordBounds[parseInt(k.toString(), 10)].X,
+                            maxY: wordBounds[parseInt(k.toString(), 10)].Y
+                        };
+                        let inBetweenRotatedText: string = '';
+                        const lineHeights: number[] = [];
+                        for (let j: number = k; j <= i; j++) {
+                            const rect: any = wordBounds[parseInt(j.toString(), 10)];
+                            updateBounds(rect, bounds);
+                            lineHeights.push(rect.Height);
+                            inBetweenRotatedText += rect.Text;
+                        }
+                        const combinedWidth: number = bounds.maxX - bounds.minX;
+                        const combinedHeight: number = bounds.maxY - bounds.minY;
+                        const newWordBounds: any = new RectAngle(bounds.minX, bounds.minY, combinedWidth, combinedHeight,
+                                                                 inBetweenRotatedText, wordBounds[0].Rotation);
+                        newWordBoundsCollection.push(newWordBounds);
+                        k = i + 1;
+                    } else if (newWordBoundsCollection.length === 0 && i === wordBounds.length - 1) {
+                        const bounds: any = { minX: wordBounds[0].X, minY: wordBounds[0].Y, maxX: wordBounds[0].X, maxY: wordBounds[0].Y };
+                        wordBounds.forEach((rect: any) => {
+                            updateBounds(rect, bounds);
+                        });
+                        const combinedWidth: number = bounds.maxX - bounds.minX;
+                        const combinedHeight: number = bounds.maxY - bounds.minY;
+                        const inBetweenRotatedText: string = wordBounds.map((rect: any) => rect.Text).join('');
+                        const newWordBounds: any = new RectAngle(bounds.minX, bounds.minY, combinedWidth, combinedHeight,
+                                                                 inBetweenRotatedText, wordBounds[0].Rotation);
+                        wordBounds = [newWordBounds];
+                    } else if (i === wordBounds.length - 1) {
+                        const bounds: any = {
+                            minX: wordBounds[parseInt(k.toString(), 10)].X,
+                            minY: wordBounds[parseInt(k.toString(), 10)].Y,
+                            maxX: wordBounds[parseInt(k.toString(), 10)].X,
+                            maxY: wordBounds[parseInt(k.toString(), 10)].Y
+                        };
+                        let inBetweenRotatedText: string = '';
+                        const lineHeights: number[] = [];
+                        for (let j: number = k; j <= i; j++) {
+                            const rect: any = wordBounds[parseInt(j.toString(), 10)];
+                            updateBounds(rect, bounds);
+                            lineHeights.push(rect.Height);
+                            inBetweenRotatedText += rect.Text;
+                        }
+                        const combinedWidth: number = bounds.maxX - bounds.minX;
+                        const combinedHeight: number = bounds.maxY - bounds.minY;
+                        const newWordBounds: any = new RectAngle(bounds.minX, bounds.minY, combinedWidth, combinedHeight,
+                                                                 inBetweenRotatedText, wordBounds[0].Rotation);
+                        newWordBoundsCollection.push(newWordBounds);
+                    }
+                }
+                if (newWordBoundsCollection.length > 0) {
+                    wordBounds = newWordBoundsCollection;
+                }
+            }
             for (let count: number = 0; count < wordBounds.length; count++) {
                 const textRotation: number = wordBounds[parseInt(count.toString(), 10)].Rotation;
                 if (textRotation === 0 || textRotation === 180) {

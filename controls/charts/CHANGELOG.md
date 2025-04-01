@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 29.1.35 (2025-04-01)
+
+### 3DChart
+
+#### Bug Fixes
+
+- `#I637725` - Now, the first label on the y-axis is positioned properly for the 100% stacking series when the x-value is empty.
+
+### Chart
+
+#### Bug Fixes
+
+- `#I697165` - The legend symbol fill remains unchanged, even when point color mapping is applied to the series, maintaining its original color instead of reflecting individual point colors.
+- `#I703094` - Tooltip trackball now works properly for the canvas-enabled scatter type chart.
+- `#I701635` - Now the column placed properly for the uneven data set.
+- `#I703055` - Crosshair tooltip now updates properly when dynamically enabled or disabled.
+
 ## 29.1.33 (2025-03-25)
 
 ### Chart

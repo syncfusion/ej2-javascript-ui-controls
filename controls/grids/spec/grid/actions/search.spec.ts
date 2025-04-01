@@ -737,6 +737,15 @@ describe('EJ2-917149 - Search Keyword changing automatically when entered more t
         gridObj.searchModule.search('12345678901234567');
     });
 
+    it('946815 - Zero gets trimmed when searching decimal value', (done: Function) => {
+        actionComplete = (args: any): void => {
+            expect(gridObj.searchSettings.key).toBe('06.12');
+            done();
+        };
+        gridObj.actionComplete = actionComplete;            
+        gridObj.searchModule.search('06.12');
+    });
+
     afterAll(() => {
         destroy(gridObj);
         gridObj = actionComplete = null;

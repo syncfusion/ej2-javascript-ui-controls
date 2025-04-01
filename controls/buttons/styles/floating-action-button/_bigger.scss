@@ -1,0 +1,27 @@
+@mixin fab-button-styles($border-radius, $min-height, $min-width, $padding, $icon-font-size) {
+  border-radius: $border-radius;
+  min-height: $min-height;
+  min-width: $min-width;
+  padding: $padding;
+
+  &.e-icon-btn {
+    padding: 0;
+  }
+
+  .e-btn-icon {
+    font-size: $icon-font-size;
+  }
+}
+
+@include export-module('floating-action-button-bigger') {
+  .e-bigger.e-fab.e-btn,
+  .e-bigger .e-fab.e-btn {
+    @include fab-button-styles($fab-bigger-border-radius, $fab-bigger-min-height, $fab-bigger-min-width, $fab-bigger-padding, $fab-bigger-icon-font-size);
+  }
+  .e-bigger.e-small.e-fab.e-btn,
+  .e-bigger.e-small .e-fab.e-btn,
+  .e-bigger .e-small.e-fab.e-btn,
+  .e-small .e-bigger.e-fab.e-btn {
+    @include fab-button-styles($fab-bigger-small-border-radius, $fab-bigger-small-min-height, $fab-bigger-small-min-width, $fab-bigger-small-padding, $fab-bigger-small-icon-font-size);
+  }
+}

@@ -16703,6 +16703,31 @@ describe('Spreadsheet formula module ->', () => {
                 done();
             });
         });
+        describe('EJ2-946729 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Spreadsheet becomes unresponsive when using improper column and row referencs->', (done: Function) => {
+                helper.edit('A1', '=SUMIF(HELLOWORLDS23231:HELLOWORLDS23234,H1,H2:H5)');
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('#NAME?');
+                helper.edit('A2', '=AVERAGEIF(HELLOWORLDS23231:HELLOWORLDS23234,H1,H2:H5)');
+                expect(helper.invoke('getCell', [1, 0]).textContent).toBe('#NAME?');
+                helper.edit('A3', '=SUMPRODUCT(HELLOWORLDS23231:HELLOWORLDS23234)');
+                expect(helper.invoke('getCell', [2, 0]).textContent).toBe('#NAME?');
+                helper.edit('A4', '=LOOKUP(E11,HELLOWORLDS23231:HELLOWORLDS23234,F5:F11)');
+                expect(helper.invoke('getCell', [3, 0]).textContent).toBe('#NAME?');
+                helper.edit('A5', '=MATCH(E11,HELLOWORLDS23231:HELLOWORLDS23234,1)');
+                expect(helper.invoke('getCell', [4, 0]).textContent).toBe('#NAME?');
+                helper.edit('A6', '=IF(E11>12,HELLOWORLDS23231:HELLOWORLDS23234,HELLOWORLDS23231:HELLOWORLDS23237)');
+                expect(helper.invoke('getCell', [5, 0]).textContent).toBe('#NAME?');
+                helper.edit('A7', '=IFS(F11>10,HELLOWORLDS23231:HELLOWORLDS23234,G11=9,HELLOWORLDS23231:HELLOWORLDS23237)');
+                expect(helper.invoke('getCell', [6, 0]).textContent).toBe('#NAME?');
+                done();
+            });
+        });
     });
     describe('EJ2-917774 ->', () => {
         beforeAll((done: Function) => {

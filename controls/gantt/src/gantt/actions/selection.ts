@@ -563,6 +563,8 @@ export class Selection {
             const parent: Element = parentsUntil(e.target as Element, 'e-chart-row');
             const isSelected: boolean = (e.target as HTMLElement).classList.contains('e-rowcell') ||
                 (e.target as HTMLElement).classList.contains('e-row') ||
+                ((e.target as HTMLElement).parentElement &&
+                (e.target as HTMLElement).parentElement.classList.contains('e-checkbox-wrapper')) ||  // Checkbox class
                 (e.target as HTMLElement).classList.contains('e-treegridexpand') ||
                 (e.target as HTMLElement).classList.contains('e-treegridcollapse') || !isNullOrUndefined(parent);
             this.popUpClickHandler(e);

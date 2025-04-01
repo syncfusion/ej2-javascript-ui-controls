@@ -71,7 +71,8 @@ export class ChartScroll {
     public updateContent(): void {
         const ganttElement: HTMLElement = this.parent.element;
         const currentCount: number = Math.round(this.element.scrollLeft / ganttElement.offsetWidth);
-        if (this.previousCount !== currentCount || this.parent.timelineModule['performedTimeSpanAction']) {
+        if (this.previousCount !== currentCount || this.parent.timelineModule['performedTimeSpanAction'] || this.parent.timelineModule.isZoomingAction) {
+            this.parent.timelineModule.isZoomingAction = false;
             this.deleteTableElements();
             this.parent.timelineModule.createTimelineSeries();
             if (this.parent.gridLines === 'Vertical' || this.parent.gridLines === 'Both') {

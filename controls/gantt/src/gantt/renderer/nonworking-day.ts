@@ -168,6 +168,7 @@ export class NonWorkingDay {
         let isFirstCell: boolean = true;
         let isFirstExecution: boolean = true;
         this.weekendWidthUpdated = false;
+        const hasDST: boolean = this.parent.dataOperation.hasDSTTransition(startDate.getFullYear());
         do {
             if (nonWorkingIndex.indexOf(startDate.getDay()) !== -1) {
                 const left: number = this.parent.dataOperation.getTaskLeft(startDate, false, true);
@@ -180,30 +181,32 @@ export class NonWorkingDay {
                     width = this.parent.dataOperation.getTaskWidth(start, tempEnd);
                     isFirstCell = false;
                 }
-                const sDate: Date = new Date(startDate);
-                const dubDate: Date = new Date(startDate);
-                sDate.setDate(sDate.getDate() + 1);
-                const sDateOffset: number = sDate.getTimezoneOffset();
-                const dubDateOffset: number = dubDate.getTimezoneOffset();
-                if (!isFirstExecution) {
-                    const isHourTimeline: boolean =
-                        (this.parent.timelineModule.bottomTier === 'Hour' &&
-                            this.parent.timelineModule.customTimelineSettings.bottomTier.count === 1) ||
+                if (!hasDST) {
+                    const sDate: Date = new Date(startDate);
+                    const dubDate: Date = new Date(startDate);
+                    sDate.setDate(sDate.getDate() + 1);
+                    const sDateOffset: number = sDate.getTimezoneOffset();
+                    const dubDateOffset: number = dubDate.getTimezoneOffset();
+                    if (!isFirstExecution) {
+                        const isHourTimeline: boolean =
+                            (this.parent.timelineModule.bottomTier === 'Hour' &&
+                                this.parent.timelineModule.customTimelineSettings.bottomTier.count === 1) ||
                             (this.parent.timelineModule.bottomTier === 'Minutes' &&
                                 this.parent.timelineModule.customTimelineSettings.bottomTier.count === 60) ||
-                        (this.parent.timelineModule.topTier === 'Hour' &&
-                            this.parent.timelineModule.customTimelineSettings.topTier.count === 1 &&
-                            this.parent.timelineModule.bottomTier === 'Minutes' &&
-                            (this.parent.timelineModule.customTimelineSettings.bottomTier.count === 30 ||
-                                this.parent.timelineModule.customTimelineSettings.bottomTier.count === 15));
-                    if (!this.weekendWidthUpdated) {
-                        if (isHourTimeline && sDateOffset < dubDateOffset) {
-                            width = width - (this.parent.perDayWidth / 24);
-                            this.weekendWidthUpdated = true;
+                            (this.parent.timelineModule.topTier === 'Hour' &&
+                                this.parent.timelineModule.customTimelineSettings.topTier.count === 1 &&
+                                this.parent.timelineModule.bottomTier === 'Minutes' &&
+                                (this.parent.timelineModule.customTimelineSettings.bottomTier.count === 30 ||
+                                    this.parent.timelineModule.customTimelineSettings.bottomTier.count === 15));
+                        if (!this.weekendWidthUpdated) {
+                            if (isHourTimeline && sDateOffset < dubDateOffset) {
+                                width = width - (this.parent.perDayWidth / 24);
+                                this.weekendWidthUpdated = true;
+                            }
                         }
+                    } else {
+                        isFirstExecution = false;
                     }
-                } else {
-                    isFirstExecution = false;
                 }
                 const align: string = this.parent.enableRtl ? `right:${left}px;` : `left:${left}px;`;
                 const weekendDiv: HTMLElement = createElement('div', {

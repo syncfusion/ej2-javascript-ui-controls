@@ -698,7 +698,7 @@ export function cleanupInternalElements(value: string, editorMode: string): stri
         } else {
             valueElementWrapper.textContent = value;
         }
-        return (editorMode === 'Markdown') ? valueElementWrapper.innerHTML.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&') : valueElementWrapper.innerHTML;
+        return (editorMode === 'Markdown') ? valueElementWrapper.textContent.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&') : valueElementWrapper.innerHTML;
     }
     return value;
 }

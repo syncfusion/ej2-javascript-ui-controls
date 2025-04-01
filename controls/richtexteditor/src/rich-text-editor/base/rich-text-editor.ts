@@ -2183,7 +2183,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     this.inputElement.contains(this.getRange().startContainer)) {
                         this.notify(events.selectionSave, {});
                     }
-                    let toolbarFocusType: string = 'toolbar' ;
+                    let toolbarFocusType: string = 'toolbar';
                     let firstActiveItem: HTMLElement = this.getToolbarElement().querySelector('.e-toolbar-item:not(.e-overlay)[title]');
                     const quickToolbarElem: HTMLElement | null = this.getRenderedQuickToolbarElem();
                     if (quickToolbarElem) {
@@ -2194,7 +2194,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                         const firstChild: HTMLElement = firstActiveItem.firstElementChild as HTMLElement;
                         firstChild.removeAttribute('tabindex');
                         firstChild.focus();
-                        if (quickToolbarElem && quickToolbarElem.classList.contains('e-rte-image-popup') && toolbarFocusType === 'quickToolbar' && this.userAgentData.isSafari()) {
+                        if (this.userAgentData.isSafari() && (toolbarFocusType === 'toolbar' || toolbarFocusType === 'quickToolbar')) {
                             this.inputElement.ownerDocument.getSelection().removeAllRanges();
                         }
                     }
@@ -2263,7 +2263,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         const currentStackIndex: number = this.formatter.getCurrentStackIndex();
         if (currentStackIndex === 0) {
-            this.updateUndoRedoStack();
+            this.updateUndoRedoStack(e);
         }
         this.notify(events.keyUp, { member: 'keyup', args: e });
         this.notify(events.tableModulekeyUp, { member: 'tableModulekeyUp', args: e });
@@ -2363,18 +2363,24 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.triggerEditArea(e);
     }
 
-    private updateUndoRedoStack(): void {
+    private updateUndoRedoStack(e: MouseEvent | TouchEvent | KeyboardEvent): void {
         const undoRedoStack: IHtmlUndoRedoData[] | MarkdownUndoRedoData[] = this.formatter.getUndoRedoStack();
         const currentStackIndex: number = this.formatter.getCurrentStackIndex();
+        const navigationKeys: string[] = [
+            'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+            'Home', 'End', 'PageUp', 'PageDown'
+        ];
+        const isNavKey: boolean = navigationKeys.indexOf((e as KeyboardEvent).key) !== -1;
+        const isNavigationKey: boolean = e.type === 'keyup' ? isNavKey : true;
         if (undoRedoStack.length === 0 || currentStackIndex === 0) {
             if (undoRedoStack.length === 0) {
                 this.formatter.saveData();
-            } else if (currentStackIndex === 0 && this.editorMode === 'HTML') {
+            } else if (currentStackIndex === 0 && this.editorMode === 'HTML' && isNavigationKey) {
                 const firstStackState: IHtmlUndoRedoData = undoRedoStack[0] as IHtmlUndoRedoData;
                 const save: NodeSelection = new NodeSelection(this.inputElement as HTMLElement)
                     .save(this.getRange(), this.contentModule.getDocument());
                 firstStackState.range = save;
-            } else if (currentStackIndex === 0 && this.editorMode === 'Markdown') {
+            } else if (currentStackIndex === 0 && this.editorMode === 'Markdown' && isNavigationKey) {
                 const markdownFirstStackState: MarkdownUndoRedoData = undoRedoStack[0] as MarkdownUndoRedoData;
                 const start: number = (this.inputElement as HTMLTextAreaElement).selectionStart;
                 const end: number = (this.inputElement as HTMLTextAreaElement).selectionEnd;
@@ -2396,7 +2402,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.notifyMouseUp(e);
         this.setPlaceHolder();
         this.autoResize();
-        this.updateUndoRedoStack();
+        this.updateUndoRedoStack(e);
     }
 
     /**
@@ -2433,17 +2439,19 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @hidden
      * @deprecated
      */
-    public onPaste(e?: KeyboardEvent | ClipboardEvent): void {
+    public onPaste(e?: ClipboardEvent): void {
         const evenArgs: { [key: string]: Object } = {
             originalEvent: e,
             cancel: false,
             requestType: 'Paste'
         };
+        this.isPlainPaste = e && e.clipboardData && e.clipboardData.items && e.clipboardData.items.length
+            && e.clipboardData.items.length === 1 && e.clipboardData.items[0].type === 'text/plain';
         this.trigger(events.actionBegin, evenArgs, (pasteArgs: { [key: string]: Object }) => {
             const currentLength: number = this.getText().replace(/\u200B/g, '').replace(this.editorMode === 'HTML' ? /(\r\n|\n|\r|\t)/gm : '', '').length;
             const selectionLength: number = this.getSelection().length;
-            const pastedContentLength: number = (isNOU(e as ClipboardEvent) || isNOU((e as ClipboardEvent).clipboardData))
-                ? 0 : (e as ClipboardEvent).clipboardData.getData('text/plain').replace(/(\r\n|\n|\r|\t)/gm, '').replace(/\u200B/g, '').length;
+            const pastedContentLength: number = (isNOU(e) || isNOU(e.clipboardData))
+                ? 0 : e.clipboardData.getData('text/plain').replace(/(\r\n|\n|\r|\t)/gm, '').replace(/\u200B/g, '').length;
             const totalLength: number = (currentLength - selectionLength) + pastedContentLength;
             if (this.editorMode === 'Markdown') {
                 const args: Object = { requestType: 'Paste', editorMode: this.editorMode, event: e };
@@ -2460,7 +2468,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 const isImageDialogOpen: HTMLElement = this.contentModule.getDocument().querySelector('.e-rte-img-dialog');
                 if (!isNOU(this.pasteCleanupModule)) {
                     if (isNOU(isImageDialogOpen)) {
-                        this.notify(events.pasteClean, { args: e as ClipboardEvent, isPlainPaste: this.isPlainPaste });
+                        this.notify(events.pasteClean, { args: e, isPlainPaste: this.isPlainPaste });
                     }
                 } else {
                     if (!this.isPlainPaste) {
@@ -2468,13 +2476,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                         const args: Object = { requestType: 'Paste', editorMode: this.editorMode, event: e };
                         let value: string = null;
                         let htmlValue: boolean = false;
-                        if (e && !isNOU((e as ClipboardEvent).clipboardData)) {
-                            value = (e as ClipboardEvent).clipboardData.getData('text/plain');
-                            htmlValue = (e as ClipboardEvent).clipboardData.getData('text/html').indexOf('MsoNormal') > 0;
+                        if (e && !isNOU(e.clipboardData)) {
+                            value = e.clipboardData.getData('text/plain');
+                            htmlValue = e.clipboardData.getData('text/html').indexOf('MsoNormal') > 0;
                         }
-                        const file: File = e && (e as ClipboardEvent).clipboardData &&
-                            (e as ClipboardEvent).clipboardData.items.length > 0 ?
-                            (e as ClipboardEvent).clipboardData.items[0].getAsFile() : null;
+                        const file: File = e && e.clipboardData && e.clipboardData.items.length > 0 ?
+                            e.clipboardData.items[0].getAsFile() : null;
                         if (value !== null) {
                             this.notify(events.paste, {
                                 file: file,
@@ -2502,7 +2509,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @hidden
      * @deprecated
      */
-    public clipboardAction(action: string, event: MouseEvent | KeyboardEvent): void {
+    public clipboardAction(action: string, event: MouseEvent | KeyboardEvent | ClipboardEvent): void {
         switch (action.toLowerCase()) {
         case 'cut':
             this.onCut();
@@ -2521,7 +2528,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             });
             break;
         case 'paste':
-            this.onPaste(event as KeyboardEvent);
+            this.onPaste(event as ClipboardEvent);
             break;
         }
     }
@@ -3127,6 +3134,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     public refreshUI(): void {
         this.renderModule.refresh();
+        // when the editor mode is markdown, need to set the height manually
+        if (this.editorMode === 'Markdown') {
+            this.autoResize();
+        }
     }
 
     /**
@@ -3789,7 +3800,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @deprecated
      */
     private contentChanged(args: CustomEvent): void {
-        const tempSpanToRemove: any = this.inputElement.querySelector('.tempSpan');
+        const tempSpanToRemove: HTMLElement = this.inputElement.querySelector('.tempSpan');
         if (tempSpanToRemove){
             detach(tempSpanToRemove);
         }

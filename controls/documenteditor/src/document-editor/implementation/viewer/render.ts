@@ -703,8 +703,10 @@ export class Renderer {
             (ctx as CanvasRenderingContext2D).translate(x, y);
             this.renderPath(ctx, collection);
             ctx.fill();
-            (ctx as CanvasRenderingContext2D).translate(-x, -y);
-            ctx.stroke();
+            if (shape.lineFormat.line && shape.lineFormat.lineFormatType !== 'None') {
+                (ctx as CanvasRenderingContext2D).translate(-x, -y);
+                ctx.stroke();
+            }
             ctx.restore();
         }
     }

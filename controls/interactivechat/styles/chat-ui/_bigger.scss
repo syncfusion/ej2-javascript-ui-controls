@@ -7,10 +7,6 @@
     .e-chat-header {
       height: $chat-bigger-header-height;
     }
-    .e-chat-send {
-      font-size: $chat-send-icon-size-bigger;
-      bottom: $chat-send-icon-bigger-bottom;
-    }
     .e-message-header {
       font-size: $message-header-bigger-size;
     }
@@ -55,6 +51,10 @@
       font-size: $chat-status-icon-bigger-size;
     }
     .e-footer {
+      &:not(.e-footer-template) .e-chat-send {
+        font-size: $chat-send-icon-size-bigger;
+        bottom: $chat-send-icon-bigger-bottom;
+      }
       .e-clear-icon:not(.e-clear-icon-hide) {
         padding-bottom: $chat-clear-icon-bigger-bottom;
       }
@@ -63,7 +63,6 @@
           min-height: 38px;
           @if $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' {
             padding: 10px 12px 0 16px;
-            min-height: 28px;
           }
         }
         &.e-rtl .e-textarea {

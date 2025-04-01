@@ -832,6 +832,39 @@ export class HtmlEditor {
                         if (!isNullOrUndefined(brParentNode) && brParentNode.childNodes.length === 0) {
                             detach(brParentNode);
                         }
+                        if (!isNullOrUndefined(this.deleteRangeElement) && this.deleteOldRangeElement.tagName &&
+                            (this.deleteOldRangeElement.tagName === 'OL' || this.deleteOldRangeElement.tagName === 'UL')
+                            && this.deleteOldRangeElement !== this.deleteRangeElement
+                            && !this.parent.contentModule.getEditPanel().contains(this.deleteRangeElement)) {
+                            const firstLi: HTMLElement = this.deleteOldRangeElement.querySelector('li');
+                            if (firstLi) {
+                                let textNode: Node = firstLi;
+                                while (textNode && textNode.firstChild && textNode.firstChild.nodeType !== Node.TEXT_NODE) {
+                                    textNode = textNode.firstChild;
+                                }
+                                if (textNode && textNode.firstChild && textNode.firstChild.nodeType === Node.TEXT_NODE) {
+                                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                                        this.parent.contentModule.getDocument(),
+                                        textNode.firstChild as Element,
+                                        0
+                                    );
+                                } else {
+                                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                                        this.parent.contentModule.getDocument(),
+                                        firstLi,
+                                        0
+                                    );
+                                }
+                            } else {
+                                this.parent.formatter.editorManager.nodeSelection.setSelectionText(
+                                    this.parent.contentModule.getDocument(),
+                                    this.deleteOldRangeElement,
+                                    this.deleteOldRangeElement,
+                                    0,
+                                    0
+                                );
+                            }
+                        }
                         (e.args as KeyboardEventArgs).preventDefault();
                     }
                     if (!isNullOrUndefined(this.deleteRangeElement) && (this.deleteOldRangeElement.tagName !== 'OL' && this.deleteOldRangeElement.tagName !== 'UL')

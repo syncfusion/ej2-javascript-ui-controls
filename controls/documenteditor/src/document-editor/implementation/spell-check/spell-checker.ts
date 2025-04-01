@@ -1283,7 +1283,7 @@ export class SpellChecker {
             let index: number = sfdtExport.keywordIndex;
             sfdtExport.keywordIndex = 0;
             sfdtExport.Initialize(); 
-            const document: any = sfdtExport.writePage(page);
+            const document: any = sfdtExport.writePage(page, true);
             sfdtExport.keywordIndex = index;
             if (this.documentHelper.owner.textExportModule) {
                 const textExport: TextExport = this.documentHelper.owner.textExportModule;

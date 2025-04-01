@@ -372,6 +372,9 @@ export class AccumulationSelection extends BaseSelection {
         for (let i: number = 0; i < points.length; i++) {
             const index: Index = new Index(0, points[i as number].index);
             this.removeStyles([this.getElementByIndex(index)], index);
+            if (accumulation.visibleSeries[0].dataLabel.visible) {
+                this.removeStyles([document.getElementById(accumulation.element.id + '_datalabel_Series_0_g_' + points[i as number].index)], index);
+            }
         }
     }
     /**

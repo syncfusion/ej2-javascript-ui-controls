@@ -2284,6 +2284,29 @@ $lg-desktop: 1399.98;
     }
   }
 
+  .e-bigger .e-pv-text-search-btn.e-btn {
+    padding-bottom: 4px;
+    padding-left: 7px;
+    padding-right: 7px;
+    padding-top: 6px;
+    line-height: 0;
+    @if ($skin-name == 'FluentUI' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' or $skin-name == 'bootstrap5-dark') {
+      padding-bottom: 0;
+      padding-left: 1px;
+      padding-right: 1px;
+      padding-top: 1px;
+    }
+    @if ($skin-name == 'bootstrap4') {
+      padding-bottom: 0;
+      padding-left: 1px;
+      padding-right: 1px;
+      padding-top: 0;
+    }
+    @if $skin-name == 'fluent2' {
+      padding: 0 !important;/* stylelint-disable-line declaration-no-important */
+    }
+  }
+  
   .e-pv-search-btn.e-btn:active,
   .e-pv-text-search-btn.e-btn:active {
     background-color: transparent;

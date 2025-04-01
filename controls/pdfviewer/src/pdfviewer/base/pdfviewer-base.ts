@@ -1377,13 +1377,14 @@ export class PdfViewerBase {
      * @returns {Promise<string | null>} - promise
      */
     public getPdfByteArray(input: string): Promise<any | null> {
+        // eslint-disable-next-line
+        const proxy: any = this;
         if (typeof input == 'string' && this.clientSideRendering && (input.startsWith('http://') || input.startsWith('https://') || input.includes('pdf;base64,') || input.startsWith('blob:'))) {
             return fetch(input)
                 .then((response: any) => {
                     if (response.ok) {
                         return response.arrayBuffer();
                     } else {
-                        console.error('Error fetching PDF:', response.statusText);
                         throw new Error(response.statusText);
                     }
                 })
@@ -1391,7 +1392,8 @@ export class PdfViewerBase {
                     return new Uint8Array(pdfData);
                 })
                 .catch((error: any) => {
-                    console.error('Error fetching PDF:', error.message);
+                    proxy.openNotificationPopup('CORS policy error');
+                    proxy.pdfViewer.fireDocumentLoadFailed(false, null);
                     throw error;
                 });
         } else {
@@ -1573,6 +1575,8 @@ export class PdfViewerBase {
                     const statusString: string = result.status.toString().split('')[0];
                     if (statusString === '4') {
                         proxy.openNotificationPopup('Client error');
+                    } else if (statusString === '5') {
+                        proxy.openNotificationPopup('CORS policy error');
                     } else {
                         proxy.openNotificationPopup();
                     }
@@ -1684,6 +1688,8 @@ export class PdfViewerBase {
                 } else {
                     this.createNotificationPopup(this.pdfViewer.localeObj.getConstant('Client error'));
                 }
+            } else if (errorString === 'CORS policy error') {
+                this.createNotificationPopup(this.pdfViewer.localeObj.getConstant('Cors policy error'));
             } else {
                 if (isBlazor()) {
                     const promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_Servererror');
@@ -1837,8 +1843,10 @@ export class PdfViewerBase {
         if (this.passwordPopup) {
             this.passwordPopup.hide();
         }
-        const pageIndex: number = 0;
         this.initPageDiv(data);
+    }
+
+    private loadPage(pageIndex: number): void {
         this.currentPageNumber = pageIndex + 1;
         this.pdfViewer.currentPageNumber = pageIndex + 1;
         this.previousZoomValue = this.pdfViewer.zoomValue;
@@ -1949,6 +1957,13 @@ export class PdfViewerBase {
         formFieldObject.Name = 'SignatureImage';
         formFieldObject.FieldName = formFieldName;
         formFieldObject.PageIndex = PageIndex;
+        const index: number = this.pdfViewer.formFieldCollections.findIndex(
+            (field: any) => (field.type === 'SignatureField' || field.type === 'InitialField') &&
+            formFieldObject.FieldName && formFieldObject.FieldName.includes(field.name) &&
+            formFieldObject.FieldName.includes(field.name + '_'));
+        if (index >= 0) {
+            this.pdfViewer.formFieldCollections[parseInt(index.toString(), 10)].value = formFieldObject.Value;
+        }
         this.pdfViewer.pdfRendererModule.formFieldsBase.PdfRenderedFormFields.push(formFieldObject);
         const updatedFormData: string = JSON.stringify(this.pdfViewer.pdfRendererModule.formFieldsBase.PdfRenderedFormFields);
         this.setItemInSessionStorage(updatedFormData, '_formfields');
@@ -2128,7 +2143,7 @@ export class PdfViewerBase {
                 this.setDocumentName(documentData);
                 base64String = documentData;
             }
-            else if (documentData.startsWith('blob:')) {
+            else {
                 this.setFileName();
                 base64String = documentData;
             }
@@ -2655,6 +2670,13 @@ export class PdfViewerBase {
                 } else {
                     jsonObject['digitalSignatureDocumentEdited'] = false;
                 }
+            }
+            if (proxy.pdfViewer.isDocumentEdited || (!isNullOrUndefined(proxy.pdfViewer.pageOrganizer) &&
+            proxy.pdfViewer.pageOrganizer.isDocumentModified)) {
+                jsonObject['isPdfEdited'] = true;
+            }
+            else {
+                jsonObject['isPdfEdited'] = false;
             }
             if (!isNullOrUndefined(this.pdfViewer.pageOrganizer) &&
              !isNullOrUndefined(this.pdfViewer.pageOrganizer.organizePagesCollection) && this.pdfViewer.pageOrganizer.isDocumentModified) {
@@ -5875,55 +5897,37 @@ export class PdfViewerBase {
             this.pageNoContainer.innerHTML = '(1-' + this.pageCount.toString() + ')';
         }
         if (this.pageCount > 0) {
-            let topValue: number = 0;
-            let pageLimit: number = 0;
-            this.isMixedSizeDocument = false;
-            if (this.pageCount > 100) {
-                // to render 100 pages intially.
-                pageLimit = 100;
-                this.pageLimit = pageLimit;
-            } else {
-                pageLimit = this.pageCount;
+            const pageLimit: number = this.getPageLimit();
+            const startIndex: number = 0;
+            this.pageSizeCollection(pageValues, startIndex, pageLimit);
+            if (this.pageCount <= 100) {
+                const limit: number = this.renderPageContainerLimit(pageLimit);
+                for (let i: number = 0; i < limit; i++) {
+                    this.renderPageContainer(i, this.getPageWidth(i), this.getPageHeight(i), this.getPageTop(i));
+                }
+                const pageIndex: number = 0;
+                this.loadPage(pageIndex);
             }
+            this.pageContainer.style.height = this.getPageTop(this.pageSize.length - 1) +
+                this.getPageHeight(this.pageSize.length - 1) + 'px';
+            this.pageContainer.style.position = 'relative';
+            if (this.pageLimit === 100) {
+                const pageDiv: HTMLElement = this.getElement('_pageDiv_' + this.pageLimit);
+                if (pageDiv === null && this.pageLimit < this.pageCount) {
+                    Promise.all([this.renderPagesVirtually()]);
+                }
+            }
+        }
+    }
+
+    private renderPageContainerLimit(pageLimit: number): any {
+        let limit: number;
+        if (this.pageCount > 0) {
+            this.isMixedSizeDocument = false;
             let isPortrait: boolean = false;
             let isLandscape: boolean = false;
             let differentPageSize: boolean = false;
-            for (let i: number = 0; i < pageLimit; i++) {
-                if (typeof pageValues.pageSizes[parseInt(i.toString(), 10)] !== 'object') {
-                    const pageSize: string[] = pageValues.pageSizes[parseInt(i.toString(), 10)].split(',');
-                    if (pageValues.pageSizes[i - 1] !== null && i !== 0) {
-                        const previousPageHeight: string = pageValues.pageSizes[i - 1].split(',');
-                        topValue = this.pageGap + parseFloat(previousPageHeight[1]) + topValue;
-                    } else {
-                        topValue = this.pageGap;
-                    }
-                    const size: ISize = { width: parseFloat(pageSize[0]), height: parseFloat(pageSize[1]),
-                        top: topValue, rotation: !isNullOrUndefined(pageValues.pageRotation) &&
-                          ((!isNullOrUndefined(pageValues.pageRotation.length) && pageValues.pageRotation.length > 0) ||
-                           (!isNullOrUndefined(Object.keys(pageValues.pageRotation).length) &&
-                            Object.keys(pageValues.pageRotation).length > 0)) ? pageValues.pageRotation[parseInt(i.toString(), 10)] : 0 };
-                    this.pageSize.push(size);
-                } else {
-                    if (pageValues.pageSizes[i - 1] !== null && i !== 0) {
-                        const previousPageHeight: any = pageValues.pageSizes[i - 1];
-                        topValue = this.pageGap + (parseFloat(previousPageHeight.height) ?
-                            parseFloat(previousPageHeight.height) : parseFloat(previousPageHeight.Height)) + topValue;
-                    } else {
-                        topValue = this.pageGap;
-                    }
-                    const size: ISize = { width: (pageValues.pageSizes[parseInt(i.toString(), 10)].width ?
-                        pageValues.pageSizes[parseInt(i.toString(), 10)].width :
-                        pageValues.pageSizes[parseInt(i.toString(), 10)].Width),
-                    height: (pageValues.pageSizes[parseInt(i.toString(), 10)].height ?
-                        pageValues.pageSizes[parseInt(i.toString(), 10)].height :
-                        pageValues.pageSizes[parseInt(i.toString(), 10)].Height),
-                    top: topValue, rotation: !isNullOrUndefined(pageValues.pageRotation) &&
-                               ((!isNullOrUndefined(pageValues.pageRotation.length) && pageValues.pageRotation.length > 0) ||
-                                (!isNullOrUndefined(Object.keys(pageValues.pageRotation).length) &&
-                                 Object.keys(pageValues.pageRotation).length > 0)) ?
-                        pageValues.pageRotation[parseInt(i.toString(), 10)] : 0 };
-                    this.pageSize.push(size);
-                }
+            for (let i: number = 0; i < this.pageCount; i++) {
                 if (this.pageSize[parseInt(i.toString(), 10)].height > this.pageSize[parseInt(i.toString(), 10)].width) {
                     isPortrait = true;
                 }
@@ -5945,7 +5949,6 @@ export class PdfViewerBase {
             if ((isPortrait && isLandscape) || differentPageSize) {
                 this.isMixedSizeDocument = true;
             }
-            let limit: number;
             if (this.pdfViewer.initialRenderPages > 10) {
                 if (this.pdfViewer.initialRenderPages > 100) {
                     limit = pageLimit;
@@ -5955,18 +5958,66 @@ export class PdfViewerBase {
             } else {
                 limit = this.pageCount < 10 ? this.pageCount : 10;
             }
-            for (let i: number = 0; i < limit; i++) {
-                this.renderPageContainer(i, this.getPageWidth(i), this.getPageHeight(i), this.getPageTop(i));
-            }
-            this.pageContainer.style.height = this.getPageTop(this.pageSize.length - 1) + this.getPageHeight(this.pageSize.length - 1) + 'px';
-            this.pageContainer.style.position = 'relative';
-            if (this.pageLimit === 100) {
-                const pageDiv: HTMLElement = this.getElement('_pageDiv_' + this.pageLimit);
-                if (pageDiv === null && this.pageLimit < this.pageCount) {
-                    Promise.all([this.renderPagesVirtually()]);
+        }
+        return limit;
+    }
+
+    private pageSizeCollection(pageValues: { pageCount: any, pageSizes: any, pageRotation: any }, startIndex: number, pageLimit: number):
+    void {
+        let topValue: number = 0;
+        for (let i: number = startIndex; i < pageLimit; i++) {
+            if (typeof pageValues.pageSizes[parseInt(i.toString(), 10)] !== 'object') {
+                const pageSize: string[] = pageValues.pageSizes[parseInt(i.toString(), 10)].split(',');
+                if (pageValues.pageSizes[i - 1] !== null && i !== 0) {
+                    const previousPageHeight: string = pageValues.pageSizes[i - 1].split(',');
+                    topValue = this.pageGap + parseFloat(previousPageHeight[1]) + topValue;
+                } else {
+                    topValue = this.pageGap;
                 }
+                const size: ISize = {
+                    width: parseFloat(pageSize[0]), height: parseFloat(pageSize[1]),
+                    top: topValue, rotation: !isNullOrUndefined(pageValues.pageRotation) &&
+                        ((!isNullOrUndefined(pageValues.pageRotation.length) && pageValues.pageRotation.length > 0) ||
+                            (!isNullOrUndefined(Object.keys(pageValues.pageRotation).length) &&
+                                Object.keys(pageValues.pageRotation).length > 0)) ? pageValues.pageRotation[parseInt(i.toString(), 10)] : 0
+                };
+                this.pageSize.push(size);
+            } else {
+                if (pageValues.pageSizes[i - 1] !== null && i !== 0) {
+                    const previousPageHeight: any = pageValues.pageSizes[i - 1];
+                    topValue = this.pageGap + (parseFloat(previousPageHeight.height) ?
+                        parseFloat(previousPageHeight.height) : parseFloat(previousPageHeight.Height)) + topValue;
+                } else {
+                    topValue = this.pageGap;
+                }
+                const size: ISize = {
+                    width: (pageValues.pageSizes[parseInt(i.toString(), 10)].width ?
+                        pageValues.pageSizes[parseInt(i.toString(), 10)].width :
+                        pageValues.pageSizes[parseInt(i.toString(), 10)].Width),
+                    height: (pageValues.pageSizes[parseInt(i.toString(), 10)].height ?
+                        pageValues.pageSizes[parseInt(i.toString(), 10)].height :
+                        pageValues.pageSizes[parseInt(i.toString(), 10)].Height),
+                    top: topValue, rotation: !isNullOrUndefined(pageValues.pageRotation) &&
+                        ((!isNullOrUndefined(pageValues.pageRotation.length) && pageValues.pageRotation.length > 0) ||
+                            (!isNullOrUndefined(Object.keys(pageValues.pageRotation).length) &&
+                                Object.keys(pageValues.pageRotation).length > 0)) ?
+                        pageValues.pageRotation[parseInt(i.toString(), 10)] : 0
+                };
+                this.pageSize.push(size);
             }
         }
+    }
+
+    private getPageLimit(): number {
+        let pageLimit: number = 0;
+        if (this.pageCount > 100) {
+            // to render 100 pages intially.
+            pageLimit = 100;
+            this.pageLimit = pageLimit;
+        } else {
+            pageLimit = this.pageCount;
+        }
+        return pageLimit;
     }
 
     private renderElementsVirtualScroll(pageNumber: number): void {
@@ -6129,6 +6180,15 @@ export class PdfViewerBase {
                             pageValues.pageRotation[parseInt(i.toString(), 10)] : 0 };
                         proxy.pageSize.push(size);
                     }
+                }
+                const pageLimit: number = proxy.getPageLimit();
+                if (proxy.pageCount > 100) {
+                    const limit: number = proxy.renderPageContainerLimit(pageLimit);
+                    for (let i: number = 0; i < limit; i++) {
+                        proxy.renderPageContainer(i, proxy.getPageWidth(i), proxy.getPageHeight(i), proxy.getPageTop(i));
+                    }
+                    const pageIndex: number = 0;
+                    proxy.loadPage(pageIndex);
                 }
                 proxy.pageContainer.style.height = proxy.getPageTop(proxy.pageSize.length - 1) + proxy.getPageHeight(proxy.pageSize.length - 1) + 'px';
                 const pageData: string = PdfViewerBase.sessionStorageManager.getItem(proxy.documentId + '_pagedata');
@@ -7891,11 +7951,15 @@ export class PdfViewerBase {
                     proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.importFormFields, data);
                     proxy.pdfViewer.fireFormImportSuccess(source);
                     PdfViewerBase.sessionStorageManager.removeItem(this.documentId + '_formfields');
-                    this.pdfViewer.formFieldsModule.removeExistingFormFields();
+                    if (this.pdfViewer.formFieldsModule) {
+                        this.pdfViewer.formFieldsModule.removeExistingFormFields();
+                    }
                     PdfViewerBase.sessionStorageManager.removeItem(this.documentId + '_formDesigner');
                     proxy.saveFormfieldsData(data);
                     for (let i: number = 0; i < proxy.renderedPagesList.length; i++) {
-                        this.pdfViewer.formFieldsModule.renderFormFields(proxy.renderedPagesList[parseInt(i.toString(), 10)], true);
+                        if (this.pdfViewer.formFieldsModule) {
+                            this.pdfViewer.formFieldsModule.renderFormFields(proxy.renderedPagesList[parseInt(i.toString(), 10)], true);
+                        }
                     }
                 } else {
                     proxy.pdfViewer.fireFormImportFailed(source, result.statusText);
@@ -7924,11 +7988,15 @@ export class PdfViewerBase {
             this.pdfViewer.fireFormImportSuccess(source);
             this.pdfViewer.viewerBase.existingFieldImport = false;
             PdfViewerBase.sessionStorageManager.removeItem(this.documentId + '_formfields');
-            this.pdfViewer.formFieldsModule.removeExistingFormFields();
+            if (this.pdfViewer.formFieldsModule) {
+                this.pdfViewer.formFieldsModule.removeExistingFormFields();
+            }
             PdfViewerBase.sessionStorageManager.removeItem(this.documentId + '_formDesigner');
             this.saveFormfieldsData(result);
             for (let i: number = 0; i < this.renderedPagesList.length; i++) {
-                this.pdfViewer.formFieldsModule.renderFormFields(this.renderedPagesList[parseInt(i.toString(), 10)], true);
+                if (this.pdfViewer.formFieldsModule) {
+                    this.pdfViewer.formFieldsModule.renderFormFields(this.renderedPagesList[parseInt(i.toString(), 10)], true);
+                }
             }
         } else {
             this.pdfViewer.fireFormImportFailed(source, null);
@@ -8145,6 +8213,13 @@ export class PdfViewerBase {
                 } else {
                     jsonObject['digitalSignatureDocumentEdited'] = false;
                 }
+            }
+            if (proxy.pdfViewer.isDocumentEdited || (!isNullOrUndefined(proxy.pdfViewer.pageOrganizer) &&
+            proxy.pdfViewer.pageOrganizer.isDocumentModified)) {
+                jsonObject['isPdfEdited'] = true;
+            }
+            else {
+                jsonObject['isPdfEdited'] = false;
             }
             if (!isNullOrUndefined(this.pdfViewer.pageOrganizer) &&
             !isNullOrUndefined(this.pdfViewer.pageOrganizer.organizePagesCollection) && this.pdfViewer.pageOrganizer.isDocumentModified) {
@@ -12736,7 +12811,8 @@ export class PdfViewerBase {
             this.isImportAction ||
             this.isStorageExceed ||
             isSignatureEditable ||
-            this.checkExportAnnotations(inkAnnotationObjct)) {
+            this.checkExportAnnotations(inkAnnotationObjct) ||
+            this.pdfViewer.annotationCollection.length > 0) {
             return true;
         } else {
             return false;
@@ -12906,7 +12982,10 @@ export class PdfViewerBase {
         if (this.pdfViewer.annotationModule) {
             this.updateAnnotationsUndoRedo();
             this.updateSignatureUndoRedo();
-            this.pdfViewer.annotations = [];
+            if (!isNullOrUndefined(this.pdfViewer.annotations))
+            {
+                this.pdfViewer.annotations.length = 0;
+            }
             this.pdfViewer.zIndexTable = [];
             this.pdfViewer.annotationCollection = [];
             this.pdfViewer.signatureCollection = [];

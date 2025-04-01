@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 29.1.35 (2025-04-01)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I685698` - `PDFium` resources can now be loaded without requiring the `ej2-pdfviewer-lib` folder.
+- `#I702575` - Double quotes will no longer be removed from the text box field when reloading a downloaded document.
+- `#I689380` - The file size will not increase when saving the document without making any changes.
+- `#I698835` - Improved performance and reduced lag when zooming in on specific landscape PDF files.
+- `#I695141` - The `documentLoadFailed` event now triggers as expected when attempting to load an invalid PDF URL.
+- `#I704811` - The `formFieldAdd` event is now triggered when adding form fields programmatically to non-rendered pages.
+- `#I683048` - Fixed an issue where the custom stamp image did not appear in the downloaded PDF when modified programmatically.
+- `#I699488` - Resolved an exception that occurred when importing and deleting annotations simultaneously within the `annotationAdd` event.
+- `#I697942` - The signature and initial form field values are now correctly included in the form field collections for non-rendered pages.
+- `#I707879` - The script error does not occur when the `documentId` is passed to the document path on the server side.
+- `#I699776` - Fixed an issue where `PdfViewer` threw a 'Cannot read properties of undefined' error under certain conditions when module injection was not used.
+
 ## 29.1.33 (2025-03-25)
 
 ### PDF Viewer

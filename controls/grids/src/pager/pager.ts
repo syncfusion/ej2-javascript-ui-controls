@@ -1044,7 +1044,11 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
                 this.updateTotalPages();
                 this.notify(this.pageRefresh, {});
             } else {
-                this.element.innerHTML = '';
+                if (this.parent && (this.parent as { isAngular: boolean }).isAngular) {
+                    (this.parent as { destroyTemplate(propertyNames?: string[]): void }).destroyTemplate(['pagerTemplate']);
+                } else {
+                    this.element.innerHTML = '';
+                }
                 this.updateTotalPages();
                 this.pagerTemplate();
             }

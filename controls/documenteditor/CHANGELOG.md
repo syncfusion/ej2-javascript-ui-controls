@@ -2,6 +2,206 @@
 
 ## [Unreleased]
 
+## 29.1.35 (2025-04-01)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I689728` - Fixed text shifting to the previous page when applying formatting styles to a combined paragraph.
+- `#I698686` - Fixed the undo issue for merged table cells.
+- `#I693506` - Fixed table header row resizing incorrectly when adding a row to the table.
+- `#I693683` - Fixed the issue where the document editor remained stuck on loading and failed to open documents.
+- `#I698863` - Fixed the outline rendering issue for rounded rectangle shapes.
+- `#I702446` - Fixed the edit region highlight issue when switching between print and web layouts.
+- `#I701024` - Fixed the malformed URI issue on Mac during document serialization.
+- `#I694808` - Fixed incorrect cursor positioning when continuously pressing Enter in a table cell that extends to the next page.
+- `#I698411` - Improved performance when scrolling and typing in large documents with spell check enabled.
+- `#I681319` - Fixed the issue where comments were removed when selecting text before the comment's end offset.
+- `#I699227`, `#I699397` - Improved editing performance when continuously typing characters.
+- `#I700275` - Fixed table layout issues with repeated header rows.
+- `#I697583` - Fixed missing table cell content when exporting to DOCX.
+- `#I652799` - Fixed incorrect cursor positioning when selecting a column cell.
+- `#I701772` - Fixed style issues in content control text.
+- `#I697055` - Fixed script errors when saving a document as a blob after deleting tracked changes content.
+
+## 29.1.33 (2025-03-25)
+
+### DocumentEditor
+
+#### Features
+
+- `#I690626` - Added support for preserving hidden text when opening and exporting Word documents.
+
+## 28.2.12 (2025-03-19)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I691095` - Fixed an issue where the `getComments` API returned the same comment ID for both parent and reply comments.
+- `#I695884` - Resolved a browser hanging issue caused by table row splitting when opening an attached document.
+- `#I691853` - Fixed a list numbering issue in the Document Editor that occurred when pasting content multiple times.
+- `#I693444` - Addressed an issue where the toggling of a checkbox content control did not reflect its character format.
+- `#I701050` - Fixed a blob document import issue in the Document Editor when using a Docker container.
+- `#I689203` - Resolved an issue where content deletion with track changes was not functioning correctly.
+- `#I695107` - Fixed a cursor disappearance issue when pressing and holding the arrow button.
+
+## 28.2.11 (2025-03-11)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#F196134` - Fixed a script error that occurred when copying content containing checkbox content control properties.
+- `#I688686` - Fixed the selection issue when applying upper-case formatting to text.
+- `#I644193` - Fixed the XML mapping issue when copy pasting content controls within Document Editor.
+- `#I691211` - Fixed the incorrect drop down list display by using the display text instead of the value.
+- `#I691064` - Fixed the issue of removing and adding highlights to editable ranges using the `highlightEditableRanges` property.
+- `#I686376` - Fixed a script error that occurred when undoing after performing Enter and Apply Style actions.
+- `#I693248` - Fixed the issue where the editing region moved out of the viewport when the keyboard opened on mobile devices.
+- `#I684310`, `#I693656` - Fixed the border rendering issue for nested content controls.
+- `#I691211` - Improved typing performance inside a table when the document contains more than 400 content controls.
+
+## 28.2.9 (2025-03-04)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I687932` - Fixed the issue where focus was not updated to the document when selecting a comment in the comment pane.
+- `#I685571`, `#I694238` - Fixed the tab element formatting issue when opening the reported document.
+- `#I683091` - Fixed the issue where cell size was not reverting correctly and an extra column was created after deleting a row.
+- `#I683159` - Fixed the issue where the editable region start marker was not rendering correctly when a paragraph had a right margin.
+- `#I691849` - Fixed the issue where Document Editor became unresponsive when accepting all changes in SFDT files containing multiple lists copied from Word.
+
+## 28.2.7 (2025-02-25)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I682091` - Fixed a document corruption issue when applying a custom style and exporting to Docx.
+- `#I683126` - Fixed a script error that occurred when performing undo, delete, and reject actions on track changes content.
+- `#I691258` - Fixed an issue where undoing the deletion of list items did not work correctly with track changes enabled.
+- `#I687962` - Fixed incorrect behaviour when applying "Capitalize Each Word" to sentences containing multiple words with apostrophes.
+- `#I683579` - Fixed a spell checker issue that occurred when track changes were enabled on combined insertion and deletion content.
+- `#I688793` - Fixed a script error that occurred when opening an SFDT document containing track changes content.
+
+## 28.2.6 (2025-02-18)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I682967` - Fixed a script error that occurred when deleting content inside an edit region.
+- `#I684112` - Fixed a script issue when opening a line-marker chart in Document Editor.
+- `#I683052` - Fixed a bookmark insertion issue when spell check is enabled.
+
+## 28.2.5 (2025-02-11)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I683467` - Improved performance by optimizing bookmark manipulation during text insertion.
+- `#I684634` - Fixed an issue where focus moved to the document editor when selecting a tracked revision.
+- `#I684435` - Resolved a freezing issue when accepting all tracked changes.
+- `#I686056` - Fixed an issue where the background color was not updating properly in the properties pane.
+- `#I679707` - Corrected the continuation of page numbers after restarting page numbering.
+- `#I680995` - Fixed font rendering issues when applying the theme font to text.
+- `#I687189` - Resolved caret height inconsistencies in collaborative editing.
+- `#I682585` - Fixed incorrect list indentation when performing an undo action.
+- `#F195801` - Resolved an issue where the content change event was triggered twice when applying a paragraph style.
+
+## 28.2.4 (2025-02-04)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I680965` - Fixed document corruption when opening a client-side exported DOCX in Microsoft Word.
+- `#I681505` - Fixed issues with programmatically added comment replies and text range selection in the Document Editor.
+- `#I684705` - Fixed wavy underline rendering issue for non-misspelled words when pressing backspace.
+- `#I680849` - Fixed missing split cell content when a row spans multiple pages.
+- `#I667699` - Fixed missing content in shapes after copying and pasting the entire content, followed by server-side DOCX export.
+- `#I678996`, `#I678997`, `#I678999` - Fixed script errors when accepting track changes in list paragraphs and table paragraphs.
+
+## 28.1.39 (2024-01-14)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I660432` - Improved performance when applying formatting to an entire document.
+- `#I668208` - Fixed text duplication caused by the move-down action outside the editable element after inserting text using Japanese IME on Windows.
+- `#I665638` - Addressed issues with arrow keys, deletion, and keyboard input in form field protection mode for Content Controls.
+
+## 28.1.38 (2025-01-07)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I665316` - Fixed layout issue during editing due to start and end fields being in different paragraphs.
+- `#I664308` - Addressed the problem of HTML content not copying correctly to the clipboard when copying table content with block content control.
+- `#I669203` - Corrected the issue where revisions in headers were not reflected in the track changes pane due to existing header/footer conditions.
+- `#I675010` - Resolved script error encountered when removing inline contents that include field elements.
+- `#I658140` - Improved performance when inserting text into split table cells across multiple pages.
+- `#I665482` - Fixed script error that occurred when pasting content from Microsoft Word into the Document Editor after selecting table cell content.
+
+## 28.1.37 (2024-12-31)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I646103` - Fixed the rendering issue of dot and circle bullets in the Ubuntu environment.
+- `#I664612` - Fixed the application hanging issue when searching for text within a split cell widget using the find option.
+- `#I665316` - Fixed the layout issue during editing actions caused by field start and end tags being in different paragraphs.
+- `#I656347` - Fixed the issue where an empty cell was not added in a split row widget.
+- `#I662866` - Fixed a script error that occurred when opening a document with block content controls inside a cell with revisions.
+- `#I660441` - Fixed the issue where a table became corrupt after merging cells.
+- `#I660453` - Fixed the issue where the replace API was not working when using a pattern to find and replace text.
+
+## 28.1.36 (2024-12-24)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I664697` - Implemented image cropping for metafile images in the Document Editor.
+- `#I662670` - Fixed the navigation pane issue where it moved to the start position when clicking sub-level headings. The selected heading is now properly highlighted.
+- `#I653747` - Resolved the font family rendering issue for special characters when the `FontHintType` property is applied in the character format.
+- `#I658305` - Corrected the updating of ordered list numbers when the list includes level overrides.
+- `#I662705` - The `setDefaultCharacterFormat` API now functions correctly in the Document Editor.
+- `#I652850` - Fixed cursor position updates and keyboard navigation issues for content controls in the Document Editor.
+- `#I668350` - Addressed the bullet list symbol rendering issue in exported DOCX documents after inserting a bullet list in the Document Editor.
+- `#I662244` - Resolved the track changes inconsistency issue in collaborative mode.
+- `#I660426` - Fixed the undo issue that occurred after merging table cells.
+- `#I661535` - Resolved the issue of span elements being present in comment data.
+
+## 28.1.35 (2024-12-18)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I653914` - Script error no longer thrown when drag and drop the text in document editor.
+- `#I655487` - Now, table column is rendered properly when imported the exported document.
+- `#I656985` - Now, oval shape is preserved properly in the document editor.
+- `#I658167` - Now table row get resized properly when we resize the row fast.
+- `F194125` - Now, Footnote and content does not get overlap when edit inside the document.
+- `#I640675` - Resolved the document freezing issue when reject the track changes.
+- `#I651428` - Now, comment get removed properly when delete the paragraph and accept the changes.
+- `#I661065` - Table border is rendered properly when table cell border's line style is set as none.
+- `#I658922` - Now, check box is rendered properly after change the value as checked.
+- `#I651509` - Provided content change event support to notify when protect and unprotected the document.
+- `#I658140` - Resolved the performance issue that occurs when performing the undo and redo functions after copy pasting multiple paragraphs within a table.
+- `#I656347` - Resolved the table layout issue when opening the exported document due to an improperly added row widget during exporting.
+- `#I645286`, `#I647203` - Handled the logic to combine text ranges with the same character formatting in the paragraph when exporting as SFDT to resolve performance issues.
+- `#I653756` - Resolved the content control border rendering issue for paragraph with lists and indentation applied.
+
 ## 27.2.4 (2024-11-26)
 
 ### DocumentEditor

@@ -9,8 +9,12 @@ import { getRangeIndexes, getCellIndexes, getCellAddress, isDateTime, workbookFo
 import { getSheetIndexByName } from '../../workbook/index';
 import { DataUtil } from '@syncfusion/ej2-data';
 
+const maxRows: number = 1048576;
+const maxCols: number = 16384;
+
 /**
  * Represents the calculate library.
+ * @hidden
  */
 @NotifyPropertyChanges
 export class Calculate extends Base<HTMLElement> implements INotifyPropertyChanged {
@@ -820,6 +824,9 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         row2 = this.rowIndex(this.substring(cellRange, i + 1, i + cellRange.length - i - 1));
         col1 = this.colIndex(this.substring(cellRange, 0, i));
         col2 = this.colIndex(this.substring(cellRange, i + 1, i + cellRange.length - i - 1));
+        if (row1 >= maxRows || row2 >= maxRows || col1 >= maxCols || col2 >= maxCols) {
+            return [this.getErrorStrings()[CommonErrors.Ref]];
+        }
         if (row1 > row2) {
             i = row2;
             row2 = row1;
@@ -1050,12 +1057,18 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         const criteriaRangeArray: string = argArr[0];
         let sumRange: string[] | string = this.getCellCollection(argCount > 2 ? argArr[2] : rangevalue);
         const criteriaRange: string[] | string = this.getCellCollection(criteriaRangeArray);
+        if (sumRange[0] === '#REF!' || criteriaRange[0] === '#REF!') {
+            return this.getErrorStrings()[CommonErrors.Name];
+        }
         if (criteriaRange.length > sumRange.length) {
             const sumEndCol: number = this.colIndex(sumRange[sumRange.length - 1]) +
                 this.colIndex(criteriaRange[criteriaRange.length - 1]) - this.colIndex(criteriaRange[0]);
             const sumrange: string[] = argArr[2].split(':');
             sumrange[1] = (this.convertAlpha(sumEndCol) + this.rowIndex(criteriaRange[criteriaRange.length - 1])).toString();
             sumRange = this.getCellCollection(sumrange.join(':'));
+            if (sumRange[0] === '#REF!') {
+                return this.getErrorStrings()[CommonErrors.Name];
+            }
         }
         const result: number[] = this.getComputeSumIfValue(
             criteriaRange, sumRange, criteria.toLowerCase(), checkCriteria, opt, isAsterisk, isQuestionMark);
@@ -1121,10 +1134,16 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         if (isArrayVector) {
             lookupRange = this.getCellCollection(lookupArray);
             matchupRange = this.getCellCollection(matchArray);
+            if (lookupRange[0] === '#REF!' || matchupRange[0] === '#REF!') {
+                return this.getErrorStrings()[CommonErrors.Name];
+            }
         } else {
             lookupRange = this.getCellCollection(argArr[1]);
             const arrvalue: string = argCount === 2 ? argArr[1] : argArr[2];
             matchupRange = this.getCellCollection(arrvalue);
+            if (lookupRange[0] === '#REF!' || matchupRange[0] === '#REF!') {
+                return this.getErrorStrings()[CommonErrors.Name];
+            }
             const lookupIndex: number[] = getRangeIndexes(argArr[1]);
             const matchIndex: number[] = getRangeIndexes(arrvalue);
             const isValidLookup: boolean = lookupIndex[1] === lookupIndex[3] ? true : lookupIndex[0] === lookupIndex[2];
@@ -1268,7 +1287,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             if (colIdx > endColIdx) {
                 [colIdx, endColIdx] = [endColIdx, colIdx];
             }
-            if (!(rowIdx > 0 && endRowIdx <= 1048576 && colIdx > 0 && endColIdx <= 16384)) {
+            if (!(rowIdx > 0 && endRowIdx <= maxRows && colIdx > 0 && endColIdx <= maxCols)) {
                 return this.getErrorStrings()[CommonErrors.Name];
             }
             grid = this.grid;
@@ -3025,7 +3044,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         const row: number = this.rowIndex(cellRef);
         const col: number = this.colIndex(cellRef);
         let result: string | number;
-        if (!(row > 0 && row <= 1048576 && col > 0 && col <= 16384)) {
+        if (!(row > 0 && row <= maxRows && col > 0 && col <= maxCols)) {
             result = this.getErrorStrings()[CommonErrors.Name];
         } else {
             const sheetId: number = this.getSheetId(this.grid);
@@ -3088,7 +3107,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
         const row: number = this.rowIndex(args);
         const col: number = this.colIndex(args);
-        return row > 0 && row <= 1048576 && col > 0 && col <= 16384;
+        return row > 0 && row <= maxRows && col > 0 && col <= maxCols;
     }
 
     /**

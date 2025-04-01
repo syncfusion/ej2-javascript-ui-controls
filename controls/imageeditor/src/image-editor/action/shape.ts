@@ -854,7 +854,9 @@ export class Shape {
             parent.pointColl[shapeId as number].strokeColor = shapeSettings.strokeColor;
             parent.pointColl[shapeId as number].strokeWidth = shapeSettings.strokeWidth;
             parent.pointColl[shapeId as number].opacity = shapeSettings.opacity;
-            parent.pointColl[shapeId as number].order = shapeSettings.index;
+            if (shapeSettings.index) {
+                parent.pointColl[shapeId as number].order = shapeSettings.index;
+            }
         } else {
             parent.activeObj.activePoint.startX = shapeSettings.startX;
             parent.activeObj.activePoint.startY = shapeSettings.startY;
@@ -870,7 +872,9 @@ export class Shape {
             }
             parent.activeObj.strokeSettings.fillColor = shapeSettings.fillColor;
             parent.activeObj.opacity = shapeSettings.opacity;
-            parent.activeObj.order = shapeSettings.index;
+            if (shapeSettings.index) {
+                parent.activeObj.order = shapeSettings.index;
+            }
             parent.activeObj.preventShapeDragOut = !allowShapeOverflow;
             if (isNullOrUndefined(shapeSettings.degree)) { shapeSettings.degree = 0; }
             switch (parent.activeObj.shape) {
@@ -2490,10 +2494,10 @@ export class Shape {
         const parent: ImageEditor = this.parent;
         const style: CSSStyleDeclaration = parent.textArea.style;
         if (style.display === 'block' || style.display === 'inline-block') {
-            if (style.fontWeight === 'normal' && fontWeight === 'bold') {style.fontWeight = 'bold'; }
-            else if (style.fontWeight === 'bold' && fontWeight === 'bold') {style.fontWeight = 'normal'; }
-            if (style.fontStyle === 'normal' && fontStyle === 'italic') {style.fontStyle = 'italic'; }
-            else if (style.fontStyle === 'italic' && fontStyle === 'italic') {style.fontStyle = 'normal'; }
+            if (fontWeight === 'bold') {style.fontWeight = 'bold'; }
+            else {style.fontWeight = 'normal'; }
+            if (fontStyle === 'italic') {style.fontStyle = 'italic'; }
+            else {style.fontStyle = 'normal'; }
             const value: string = (style.fontWeight === 'normal' && style.fontStyle === 'normal' ? 'default' :
                 (style.fontWeight === 'bold' && style.fontStyle === 'normal' ? 'bold' :
                     (style.fontWeight === 'normal' && style.fontStyle === 'italic' ? 'italic' : 'bolditalic')));

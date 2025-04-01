@@ -2825,7 +2825,6 @@ export class Gantt extends Component<HTMLElement>
             const pane2: HTMLElement = this.splitterModule.splitterObject.element.querySelectorAll('.e-pane')[1] as HTMLElement;
             this.splitterModule.splitterPreviousPositionGrid = pane1.scrollWidth + 1 + 'px';
             this.splitterModule.splitterPreviousPositionChart = pane2.scrollWidth + 1 + 'px';
-            this.splitterModule.splitterObject.paneSettings[1].size = (this.ganttWidth - parseInt(this.splitterModule.splitterPreviousPositionGrid, 10) - this.splitterSettings.separatorSize) + 'px';
             if (this.timelineModule.isZoomedToFit) {
                 setTimeout(() => {
                     this.timelineModule.processZoomToFit();
@@ -3598,6 +3597,7 @@ export class Gantt extends Component<HTMLElement>
                 }
                 break;
             case 'dataSource':
+                this.isLoad = true;
                 if (this.isReact) {
                     this['clearTemplate'](['TaskbarTemplate', 'ParentTaskbarTemplate', 'MilestoneTemplate', 'TaskLabelTemplate', 'RightLabelTemplate', 'LeftLabelTemplate']);
                 }
@@ -3611,6 +3611,7 @@ export class Gantt extends Component<HTMLElement>
                     this.treeGrid.hasChildMapping = null;
                 }
                 this.dataOperation.checkDataBinding(true);
+                this.isLoad = false;
                 break;
             case 'enableContextMenu':
             case 'contextMenuItems':
@@ -5168,9 +5169,11 @@ export class Gantt extends Component<HTMLElement>
      * @public
      */
     public addPredecessor(id: number | string, predecessorString: string): void {
-        const ganttRecord: IGanttData = this.getRecordByID(id.toString());
-        if (this.editModule && !isNullOrUndefined(ganttRecord) && this.editSettings.allowTaskbarEditing) {
-            this.connectorLineEditModule.addPredecessor(ganttRecord, predecessorString);
+        if (this.connectorLineModule) {
+            const ganttRecord: IGanttData = this.connectorLineModule.getRecordByID(id.toString());
+            if (this.editModule && !isNullOrUndefined(ganttRecord) && this.editSettings.allowTaskbarEditing) {
+                this.connectorLineEditModule.addPredecessor(ganttRecord, predecessorString);
+            }
         }
     }
     /**
@@ -5181,9 +5184,11 @@ export class Gantt extends Component<HTMLElement>
      * @public
      */
     public removePredecessor(id: number | string): void {
-        const ganttRecord: IGanttData = this.getRecordByID(id.toString());
-        if (this.editModule && !isNullOrUndefined(ganttRecord) && this.editSettings.allowTaskbarEditing) {
-            this.connectorLineEditModule.removePredecessor(ganttRecord);
+        if (this.connectorLineModule) {
+            const ganttRecord: IGanttData = this.connectorLineModule.getRecordByID(id.toString());
+            if (this.editModule && !isNullOrUndefined(ganttRecord) && this.editSettings.allowTaskbarEditing) {
+                this.connectorLineEditModule.removePredecessor(ganttRecord);
+            }
         }
     }
     /**
@@ -5195,9 +5200,11 @@ export class Gantt extends Component<HTMLElement>
      * @public
      */
     public updatePredecessor(id: number | string, predecessorString: string): void {
-        const ganttRecord: IGanttData = this.getRecordByID(id.toString());
-        if (this.editModule && !isNullOrUndefined(ganttRecord) && this.editSettings.allowTaskbarEditing) {
-            this.connectorLineEditModule.updatePredecessor(ganttRecord, predecessorString);
+        if (this.connectorLineModule) {
+            const ganttRecord: IGanttData = this.connectorLineModule.getRecordByID(id.toString());
+            if (this.editModule && !isNullOrUndefined(ganttRecord) && this.editSettings.allowTaskbarEditing) {
+                this.connectorLineEditModule.updatePredecessor(ganttRecord, predecessorString);
+            }
         }
     }
 

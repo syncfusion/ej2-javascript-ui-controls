@@ -1147,9 +1147,105 @@ describe('excel Export =>', () => {
             destroy(gridObj);
             gridObj = null;
         });
-    });    
-});
+    });
 
+    // used for code coverage
+    describe('945595: Extra column was added with groupCaptionTemplate in excel export document', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowExcelExport: true,
+                    allowPaging: true,
+                    allowGrouping: true,
+                    groupSettings: { columns: ['CustomerID'] },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                        { field: 'Freight', headerText: 'Freight', width: 150 },
+                        { field: 'ShipName', headerText: 'Ship Name', width: 150 },
+                    ],
+                    aggregates: [
+                        { columns: [ { type: 'Sum', field: 'Freight', groupCaptionTemplate: 'Sum TOP: ${Sum}' } ]},
+                    ],
+                }, done);
+        });
+
+        it('Excel export with groupCaptionTemplate', (done) => {
+            gridObj.excelExport();
+            done();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
+    // used for code coverage
+    describe('945129: excelAggregateQueryCellInfo event triggers only for aggregate cells, not for the remaining cells', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowExcelExport: true,
+                    allowGrouping: true,
+                    groupSettings: { columns: ['CustomerID'] },
+                    allowPaging: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Center', width: '120px' },
+                        {
+                            field: 'CustomerID', headerText: 'Customer ID', headerTextAlign: 'Right',
+                            textAlign: 'Right', width: '150'
+                        },
+                        {
+                            field: 'EmployeeID', headerText: 'Employee ID', headerTextAlign: 'Right',
+                            textAlign: 'Right', width: '150'
+                        },
+                        { field: 'OrderDate', headerText: 'Order Date', textAlign: 'Right', width: 135, format: 'yMd', minWidth: 10 },
+                        { field: 'Freight', headerText: 'Freight($)', textAlign: 'Right', width: 120, format: 'C2', minWidth: 10 },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 140 }
+                    ],
+                    aggregates: [{
+                        columns: [
+                            {
+                                type: 'Sum',
+                                field: 'Freight',
+                                format: 'C2',
+                                footerTemplate: 'Sum: ${Sum}'
+                            },
+                            {
+                                type: 'Average',
+                                field: 'Freight',
+                                format: 'C2',
+                                groupCaptionTemplate: 'Max: ${Average}'
+                            }
+                        ]
+                    }],
+                }, done);
+        });
+
+        it('Group caption in excel export', (done) => {
+            gridObj.exportGroupCaption = (args) => {
+                args.style = { backColor: '#99ffcc' };
+            };
+            gridObj.excelExport();
+            done();
+        });
+
+        it('Group in csv export', (done) => {
+            gridObj.csvExport();
+            done();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+});
 
 // /**
 //  * Grid Excel Export spec document

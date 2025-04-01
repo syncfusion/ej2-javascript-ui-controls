@@ -2522,6 +2522,7 @@ export class StickyNotesAnnotation {
             } else {
                 pageAnnotations = this.getAnnotations(pageIndex, null, currentAnnotation.shapeAnnotationType);
             }
+            const existingNote: any = currentAnnotation.notes || currentAnnotation.note;
             if (pageAnnotations !== null) {
                 for (let i: number = 0; i < pageAnnotations.length; i++) {
                     if (pageAnnotations[parseInt(i.toString(), 10)].annotName === currentAnnotation.annotName) {
@@ -2545,9 +2546,23 @@ export class StickyNotesAnnotation {
                         currentAnnotation.comments[currentAnnotation.comments.length] = newArray;
                     }
                 }
+                if (!isNullOrUndefined(existingNote)) {
+                    const targetProperty: string = currentAnnotation.note !== undefined ? 'note' : 'notes';
+                    if (targetProperty === 'note' || targetProperty === 'notes') {
+                        currentAnnotation[`${targetProperty}`] = existingNote;
+                        (clonedObject as any)[`${targetProperty}`] = existingNote;
+                    }
+                }
             } else if (currentAnnotation.annotName === parentElement) {
                 const newArray: ICommentsCollection = { annotName: annotName, parentId: parentElement, subject: currentAnnotation.subject, comments: [], author: author, note: text, shapeAnnotationType: '', state: '', stateModel: '', modifiedDate: this.getDateAndTime(), review: { state: '', stateModel: '', modifiedDate: this.getDateAndTime(), author: author }, isLock: false };
                 currentAnnotation.comments[currentAnnotation.comments.length] = newArray;
+                if (!isNullOrUndefined(existingNote)) {
+                    const targetProperty: string = currentAnnotation.note !== undefined ? 'note' : 'notes';
+                    if (targetProperty === 'note' || targetProperty === 'notes') {
+                        currentAnnotation[`${targetProperty}`] = existingNote;
+                        (clonedObject as any)[`${targetProperty}`] = existingNote;
+                    }
+                }
             }
             this.pdfViewer.annotation.addAction(pageIndex, null, currentAnnotation, 'Comments Property Added', '', clonedObject, currentAnnotation);
             if (!isMeasure) {

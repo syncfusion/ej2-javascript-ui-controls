@@ -113,7 +113,7 @@ export class UndoRedoCommands {
         this.selection.save(textArea.selectionStart, textArea.selectionEnd);
         const start: number = textArea.selectionStart;
         const end: number = textArea.selectionEnd;
-        const textValue: string = (this.parent.element as HTMLTextAreaElement).value;
+        const textValue: string = (this.parent.element as HTMLTextAreaElement).value.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         const changEle: { [key: string]: string | Object } = { text: textValue, start: start, end: end};
         if (this.undoRedoStack.length >= this.steps) {
             this.undoRedoStack = this.undoRedoStack.slice(0, this.steps + 1);
@@ -147,7 +147,7 @@ export class UndoRedoCommands {
             const start: number = this.undoRedoStack[this.steps - 1].start;
             const end: number = this.undoRedoStack[this.steps - 1].end;
             const removedContent: string = this.undoRedoStack[this.steps - 1].text as string;
-            (this.parent.element as HTMLTextAreaElement).value = removedContent;
+            (this.parent.element as HTMLTextAreaElement).value = removedContent.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
             (this.parent.element as HTMLTextAreaElement).focus();
             this.steps--;
             this.restore(this.parent.element as HTMLTextAreaElement, start, end, e);

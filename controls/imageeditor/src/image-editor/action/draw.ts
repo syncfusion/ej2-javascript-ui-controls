@@ -65,6 +65,7 @@ export class Draw {
     private tempStrokeWidth: number;
     private allowRedactStraighten: boolean = true;
     private isNullExtension: boolean = true;
+    private isRedactStraighten: boolean = false;
 
     constructor(parent: ImageEditor) {
         this.parent = parent;
@@ -360,6 +361,9 @@ export class Draw {
         case 'setNullExtension':
             this.isNullExtension = args.value['extension'];
             break;
+        case 'setRedactStraighten':
+            this.isRedactStraighten = args.value['bool'];
+            break;
         }
     }
 
@@ -395,6 +399,7 @@ export class Draw {
         this.straightenActObj = null; this.imgCanvasPoints = []; this.straightenInitZoom = null; this.allowRedactStraighten = true;
         this.tempObjColl = []; this.tempPointColl = {}; this.imageBackgroundColor = ''; this.tempStrokeWidth = null;
         this.straightenDestPoints = null; this.isCropSelect = this.isDownScale = this.preventStraightening = false;
+        this.isRedactStraighten = false;
     }
 
     private redrawDownScale(): void {
@@ -4686,8 +4691,7 @@ export class Draw {
             const imageWidth: number = canvas.width;
             const imageHeight: number = canvas.height;
             const tempRatio: number = Math.min(imageWidth, imageHeight) / 1000;
-            const straighten: number = this.parent.transform.straighten !== 0 ? this.parent.transform.straighten :
-                this.parent.cropObj.straighten;
+            const straighten: number = Math.round(this.parent.activeObj.rotatedAngle * (180 / Math.PI));
             if (this.allowRedactStraighten && straighten !== 0) {
                 const tempCanvas: HTMLCanvasElement = document.createElement('canvas');
                 const tempCtx: CanvasRenderingContext2D = tempCanvas.getContext('2d');
@@ -4696,9 +4700,11 @@ export class Draw {
                     tempCanvas.height = canvas.height;
                     tempCtx.drawImage(canvas, 0, 0);
                 } else {
-                    tempCanvas.width = img.destWidth; tempCanvas.height = img.destHeight;
-                    tempCtx.drawImage(this.lowerContext.canvas, img.destLeft, img.destTop, img.destWidth, img.destHeight,
-                                      0, 0, img.destWidth, img.destHeight);
+                    tempCanvas.width = img.destWidth > canvas.width ? canvas.width : img.destWidth;
+                    tempCanvas.height = img.destHeight > canvas.height ? canvas.height : img.destHeight;
+                    tempCtx.drawImage(this.lowerContext.canvas, img.destLeft > 0 ? img.destLeft : 0,
+                                      img.destTop > 0 ? img.destTop : 0, tempCanvas.width, tempCanvas.height,
+                                      0, 0, tempCanvas.width, tempCanvas.height);
                 }
                 const radians: number = -straighten * Math.PI / 180;
                 const straightenCanvas: HTMLCanvasElement = document.createElement('canvas');
@@ -4745,10 +4751,14 @@ export class Draw {
                     y: sinAngle * (p2.x - center.x) + cosAngle * (p2.y - center.y) + center.y };
                 const newP3: Point = { x: cosAngle * (p3.x - center.x) - sinAngle * (p3.y - center.y) + center.x,
                     y: sinAngle * (p3.x - center.x) + cosAngle * (p3.y - center.y) + center.y };
-                const tempWidth: number = isSaveCtx ? canvasDraw.canvas.width : img.destWidth;
-                const tempHeight: number = isSaveCtx ? canvasDraw.canvas.height : img.destHeight;
+                const tempWidth: number = isSaveCtx ? canvasDraw.canvas.width :
+                    (img.destWidth > canvas.width ? canvas.width : img.destWidth);
+                const tempHeight: number = isSaveCtx ? canvasDraw.canvas.height :
+                    (img.destHeight > canvas.height ? canvas.height : img.destHeight);
                 const rotatedWidth: number = Math.abs(tempWidth * Math.cos(radians)) + Math.abs(tempHeight * Math.sin(radians));
                 const rotatedHeight: number = Math.abs(tempWidth * Math.sin(radians)) + Math.abs(tempHeight * Math.cos(radians));
+                const prevWidth: number = straightenCanvas.width;
+                const prevHeight: number = straightenCanvas.height;
                 straightenCanvas.width = rotatedWidth;
                 straightenCanvas.height = rotatedHeight;
                 straightenCtx.save();
@@ -4759,8 +4769,14 @@ export class Draw {
                 if (this.parent.activeObj.redactType === 'blur') {
                     offscreenCanvas.width = width;
                     offscreenCanvas.height = height;
-                    offscreenCtx.drawImage(straightenCanvas, newP1.x + ((rotatedWidth - tempCanvas.width) / 2),
-                                           newP1.y + ((rotatedHeight - tempCanvas.height) / 2), newP2.x - newP1.x, newP3.y - newP2.y,
+                    let x: number = newP1.x + ((rotatedWidth - prevWidth) / 2);
+                    let y: number = newP1.y + ((rotatedHeight - prevHeight) / 2);
+                    if (this.isRedactStraighten) {
+                        x = startX + ((rotatedWidth - prevWidth) / 2);
+                        y = startY + ((rotatedHeight - prevHeight) / 2);
+                    }
+                    offscreenCtx.drawImage(straightenCanvas, x,
+                                           y, newP2.x - newP1.x, newP3.y - newP2.y,
                                            0, 0, width, height);
                 } else {
                     let pixelSize: number = (obj.redactPixelate / 100) * 20;
@@ -4769,8 +4785,14 @@ export class Draw {
                     }
                     offscreenCanvas.width = Math.ceil(width / pixelSize);
                     offscreenCanvas.height = Math.ceil(height / pixelSize);
-                    offscreenCtx.drawImage(straightenCanvas, newP1.x + ((rotatedWidth - tempCanvas.width) / 2),
-                                           newP1.y + ((rotatedHeight - tempCanvas.height) / 2), newP2.x - newP1.x, newP3.y - newP2.y,
+                    let x: number = newP1.x + ((rotatedWidth - prevWidth) / 2);
+                    let y: number = newP1.y + ((rotatedHeight - prevHeight) / 2);
+                    if (this.isRedactStraighten) {
+                        x = startX + ((rotatedWidth - prevWidth) / 2);
+                        y = startY + ((rotatedHeight - prevHeight) / 2);
+                    }
+                    offscreenCtx.drawImage(straightenCanvas, x,
+                                           y, newP2.x - newP1.x, newP3.y - newP2.y,
                                            0, 0, offscreenCanvas.width, offscreenCanvas.height);
                 }
             }

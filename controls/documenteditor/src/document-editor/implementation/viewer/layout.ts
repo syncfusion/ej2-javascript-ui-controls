@@ -5434,9 +5434,6 @@ export class Layout {
                 let childWidget = previousBlock.childWidgets[0] as TableCellWidget;
                 if (childWidget.childWidgets.length > 0) {
                     let firstBlock: ParagraphWidget = this.documentHelper.getFirstParagraphInCell(childWidget as TableCellWidget);
-                    if (!firstBlock.paragraphFormat.keepWithNext) {
-                        break;
-                    }
                     if (firstBlock.paragraphFormat.keepWithNext) {
                         if (isNullOrUndefined(this.getPreviousBlock(previousBlock as BlockWidget))) {
                             startBlock = undefined;
@@ -5444,6 +5441,15 @@ export class Layout {
                             startBlock = previousBlock;
                             startIndex = startBlock.indexInOwner;
                         }
+                    } else if (block instanceof TableRowWidget && block.rowFormat.isHeader && previousBlock.rowFormat.isHeader && !isNullOrUndefined(previousBlock.ownerTable.previousWidget)) {
+                        if (isNullOrUndefined(this.getPreviousBlock(previousBlock as BlockWidget))) {
+                            startBlock = undefined;
+                        } else {
+                            startBlock = previousBlock;
+                            startIndex = startBlock.indexInOwner;
+                        }
+                    } else {
+                        break;
                     }
                 } else {
                     break;
@@ -7495,7 +7501,7 @@ export class Layout {
                 && cellWidget.cellFormat.rowSpan === 1 && this.documentHelper.compatibilityMode === 'Word2013'
                 && this.documentHelper.splittedCellWidgets.length === 0 && rowCollection.length === 1) {
                 const firstBlock: ParagraphWidget = this.documentHelper.getFirstParagraphInCell(cellWidget as TableCellWidget);
-                if (!isNullOrUndefined(firstBlock) && firstBlock.paragraphFormat.keepWithNext && !isNullOrUndefined(this.getPreviousBlock(tableRowWidget))) {
+                if (((!isNullOrUndefined(firstBlock) && firstBlock.paragraphFormat.keepWithNext) || tableRowWidget.rowFormat.isHeader) && !isNullOrUndefined(this.getPreviousBlock(tableRowWidget))) {
                     return tableRowWidget;
                 }
             }
@@ -7780,7 +7786,7 @@ export class Layout {
                     let isRowSpanEnd: boolean = this.isRowSpanEnd(row, viewer);
                     if (!isRowSpanEnd) {
                         if (this.isVerticalMergedCellContinue(row) && (tableRowWidget.y === viewer.clientArea.y
-                            || tableRowWidget.y === this.viewer.clientArea.y + tableRowWidget.ownerTable.headerHeight)) {
+                            || tableRowWidget.y === this.viewer.clientArea.y + tableRowWidget.ownerTable.headerHeight && !isHeader)) {
                             // Bug 918606: If the row is not the end of a row span, we need to skip updating the row height based on the height of the split cell. Therefore, we have added an additional parameter to the method below.
                             this.insertSplittedCellWidgets(viewer, tableWidgets, tableRowWidget, tableRowWidget.index - 1, true);
                             this.updateChildLocationForRow(tableRowWidget.y, tableRowWidget);
@@ -7817,22 +7823,7 @@ export class Layout {
                             this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget, footnoteElements);
                             count++;
                         }
-                        if (isHeader && row.ownerTable.continueHeader) {
-                            row.ownerTable.header = false;
-                            row.ownerTable.headerHeight = 0;
-                            let pages: Page[] = undefined;
-                            if (viewer instanceof PageLayoutViewer) {
-                                pages = this.documentHelper.pages;
-                            }
-                            if (!isNullOrUndefined(pages)) {
-                                for (let i: number = 0; i < pages.length; i++) {
-                                    if (pages[i].repeatHeaderRowTableWidget && !isNullOrUndefined(pages[i].bodyWidgets[0].firstChild) && !(pages[i].bodyWidgets[0].firstChild instanceof TableWidget && (pages[i].bodyWidgets[0].firstChild as TableWidget).header)) {
-                                        pages[i].repeatHeaderRowTableWidget = false;
-                                        row.ownerTable.continueHeader = false;
-                                    }
-                                }
-                            }
-                        }
+                        this.updateHeader(row, isHeader, viewer);
                     } else {
                         if ((heightType === 'Auto' || heightType === 'AtLeast') && isAllowBreakAcrossPages) {
                             if (!(HelperMethods.convertPointToPixel(row.rowFormat.height) > viewer.clientArea.bottom) || tableRowWidget.y === viewer.clientArea.y) {
@@ -7863,7 +7854,7 @@ export class Layout {
                     if (this.isVerticalMergedCellContinue(row) && (isAllowBreakAcrossPages ||
                         (isInsertSplittedWidgets = (tableRowWidget.y === viewer.clientArea.y
                             || tableRowWidget.y === this.viewer.clientArea.y + headerHeight)))) {
-                        if (isInsertSplittedWidgets) {
+                        if (isInsertSplittedWidgets && !(isHeader && isNullOrUndefined(tableRowWidget.previousWidget))) {
                             this.insertSplittedCellWidgets(viewer, tableWidgets, splittedWidget, tableRowWidget.indexInOwner - 1);
                         } else {
                             splittedWidget = this.splitWidgets(tableRowWidget, viewer, tableWidgets, rowWidgets, splittedWidget, isLastRow, footnoteElements, undefined, undefined, undefined, true);
@@ -7889,6 +7880,7 @@ export class Layout {
                             this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget, footnoteElements);
                         }
                     }
+                    this.updateHeader(row, isHeader, viewer);
                 }
                 //Create New table for splitted widget
                 if (!isNullOrUndefined(splittedWidget) && (isNullOrUndefined(this.documentHelper.owner.editorModule) || this.documentHelper.owner.editorModule && !this.documentHelper.owner.editorModule.isTableInsert) && !(splittedWidget.bodyWidget.containerWidget instanceof FootNoteWidget)) {
@@ -8111,8 +8103,24 @@ export class Layout {
             }
         }
     }
-
-
+    private updateHeader(row: TableRowWidget, isHeader: boolean, viewer: LayoutViewer): void {
+        if (isHeader && row.ownerTable.continueHeader) {
+            row.ownerTable.header = false;
+            row.ownerTable.headerHeight = 0;
+            let pages: Page[] = undefined;
+            if (viewer instanceof PageLayoutViewer) {
+                pages = this.documentHelper.pages;
+            }
+            if (!isNullOrUndefined(pages)) {
+                for (let i: number = 0; i < pages.length; i++) {
+                    if (pages[i].repeatHeaderRowTableWidget && !isNullOrUndefined(pages[i].bodyWidgets[0].firstChild) && !(pages[i].bodyWidgets[0].firstChild instanceof TableWidget && (pages[i].bodyWidgets[0].firstChild as TableWidget).header)) {
+                        pages[i].repeatHeaderRowTableWidget = false;
+                        row.ownerTable.continueHeader = false;
+                    }
+                }
+            }
+        }
+    }
     public getHeader(table: TableWidget): TableRowWidget {
         let header: TableRowWidget = undefined;
         let flag: boolean = true;
@@ -8216,6 +8224,37 @@ export class Layout {
             if (rowSpan > 1) {
                 const currentRowWidgetIndex: number = rowWidget.containerWidget.childWidgets.indexOf(rowWidget);
                 const rowSpanWidgetEndIndex: number = currentRowWidgetIndex + rowSpan - 1 - (rowWidget.index - cellWidget.rowIndex);
+                // If the row is header it should not split into multiple pages. So checked the header and moving the talbe into next row. 
+                if (!isNullOrUndefined(rowWidget.rowFormat) && rowWidget.rowFormat.isHeader && !isNullOrUndefined(rowWidget.ownerTable) && !isNullOrUndefined(rowWidget.ownerTable.previousWidget) && viewer.clientArea.bottom < cellWidget.y + cellWidget.height + cellWidget.margin.bottom) {
+                    let block;
+                    let isTableFirstRow: boolean = false;
+                    let keepNext: boolean = false;
+                    block = tableCollection[tableCollection.length - 1];
+                    let prev = this.alignBlockElement(rowWidget);
+                    if (!isNullOrUndefined(prev.node)) {
+                        let previousRow: BlockWidget = prev.node as BlockWidget;
+                        if (previousRow instanceof TableRowWidget
+                            && previousRow.indexInOwner === 0) {
+                            if (tableCollection.length > 1 && tableCollection[tableCollection.length - 1].childWidgets.length === 0) {
+                                tableCollection.pop();
+                                tableCollection[tableCollection.length - 1].height = 0;
+                            }
+                        }
+                        if (previousRow instanceof TableRowWidget) {
+                            isTableFirstRow = previousRow.indexInOwner === 0;
+                            let rowToMove = previousRow as TableRowWidget;
+                            if (!isNullOrUndefined(rowToMove.ownerTable) && !rowToMove.ownerTable.equals(rowWidget.ownerTable)) {
+                                block = rowToMove.ownerTable;
+                            }
+                        }
+                        keepNext = true;
+                    }
+                    this.moveBlocksToNextPage(block instanceof ParagraphWidget ? block.previousWidget as BlockWidget :
+                        (keepNext && isTableFirstRow) ? !isNullOrUndefined(block.previousWidget) ? block.previousWidget as BlockWidget : block as BlockWidget : block as BlockWidget, keepNext, undefined, undefined, undefined, true);
+                    this.updateClientPositionForBlock(block, rowWidget);
+                    this.addTableRowWidget(this.viewer.clientActiveArea, [rowWidget]);
+                    this.updateChildLocationForRow(this.viewer.clientActiveArea.y, rowWidget);
+                }
                 if (!isInitialLayout && (viewer.clientArea.bottom < cellWidget.y + cellWidget.height + cellWidget.margin.bottom
                     || rowSpanWidgetEndIndex >= currentRowWidgetIndex + 1) && (rowCollection.length === 1
                         || rowCollection.length >= 1 && rowWidget === rowCollection[rowCollection.length - 1])) {
@@ -8329,6 +8368,13 @@ export class Layout {
             //Adds the splitted contents of a vertical merged cell, in order preserve in next page.
             this.documentHelper.splittedCellWidgets.push(splittedCell);
             splittedCell.isSplittedCell = true;
+            if (!isNullOrUndefined(splittedCell.ownerTable) && splittedCell.ownerTable.isInsideTable && !isNullOrUndefined(splittedCell.ownerTable.nextSplitWidget)) {
+                let table: TableWidget = splittedCell.ownerTable.nextSplitWidget as TableWidget;
+                if (!isNullOrUndefined(table.firstChild)) {
+                    let row: TableRowWidget = table.firstChild as TableRowWidget;
+                    this.insertSplittedCellWidgets(viewer, [table], row, row.index - 1, true);
+                }
+            }
         }
     }
 
@@ -9480,9 +9526,9 @@ export class Layout {
                 const container: BlockContainer = parentTable.containerWidget as BlockContainer;
                 if (!this.isReplacingAll && skipWholeTableLayout && container instanceof BodyWidget && isNullOrUndefined(container.containerWidget)) {
                     const tableHolderBeforeBuildColumn: WTableHolder = parentTable.tableHolder.clone();
-                    const tableWidget: TableWidget = (parentTable.clone()).combineWidget(this.viewer) as TableWidget;
                     let isSameColumnWidth: boolean = true;
-                    if (tableWidget.tableFormat.allowAutoFit) {
+                    if (parentTable.tableFormat.allowAutoFit) {
+                        const tableWidget: TableWidget = parentTable.getSplitWidgets().length > 1 ? (parentTable.clone()).combineWidget(this.viewer) as TableWidget : parentTable;
                         tableWidget.isGridUpdated = false;
                         tableWidget.buildTableColumns();
                         tableWidget.isGridUpdated = true;

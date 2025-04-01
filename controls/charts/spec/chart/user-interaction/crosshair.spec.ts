@@ -726,7 +726,21 @@ describe('Chart Crosshair', () => {
                 done();
             };
             chartObj.theme = 'Bootstrap5';
+            chartObj.axes = [{crosshairTooltip:{enable: true}}];
             chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+        it('Crosshair dyncmic disable on button click', (done: Function) => {
+            loaded = (args: Object): void => {
+                chartObj.primaryXAxis.crosshairTooltip.enable = false;
+                chartObj.primaryYAxis.crosshairTooltip.enable = false;
+                chartObj.axes[0].crosshairTooltip.enable = false;
+                chartObj.dataBind();
+                let tooltip: HTMLElement = document.getElementById('crosshairContainer');
+                expect(tooltip !== null).toBe(true);
+                done();
+            },
+                chartObj.loaded = loaded;
             chartObj.refresh();
         });
     });
@@ -1055,7 +1069,6 @@ describe('Chart Crosshair', () => {
             chartObj.refresh();
         });
     });
-
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

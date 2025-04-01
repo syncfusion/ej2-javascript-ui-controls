@@ -858,7 +858,7 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
             expect(spreadsheet.ribbonModule.ribbon.items[0].header.text).toBe('Huis');
         });
     });
-    describe('EJ2-63732 ->', () => {
+    describe('EJ2-63732, EJ2-946085 ->', () => {
         beforeAll((done: Function) => {
             model = {
                 sheets: [
@@ -872,11 +872,106 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
         afterAll((): void => {
             helper.invoke('destroy');
         });
-        it('Selected Icon in Font dropdown is not shown after choosing Comic Sans MS Font', (): void => {
+        it('Selected Icon in Font dropdown is not shown after choosing Comic Sans MS Font', (done: Function): void => {
             helper.click('_font_name .e-btn-icon');
             helper.click(`#${helper.id}_font_name-popup li:nth-child(7)`);
             helper.click('_font_name .e-btn-icon');
             expect(helper.getElements('.e-menu-icon')[0].classList).toContain('e-selected-icon');
+            done();
+        });
+
+        it('Disabled icons gets enabled while loading a new document', (done: Function): void => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('selectRange', ['A1']);
+            spreadsheet.enableToolbarItems('Home', [3, 4, 6, 9, 7, 8, 11, 13, 14, 15], false);
+            spreadsheet.enableToolbarItems('Insert', [0, 1], false);
+            expect(spreadsheet.ribbonModule.ribbon.items[0].content[16].disabled).toBe(false);
+            expect(spreadsheet.ribbonModule.ribbon.items[0].content[17].disabled).toBe(false);
+            expect(spreadsheet.ribbonModule.ribbon.items[0].content[19].disabled).toBe(false);
+            expect(spreadsheet.ribbonModule.ribbon.items[0].content[20].disabled).toBe(false);
+            expect(spreadsheet.ribbonModule.ribbon.items[0].content[3].disabled).toBe(true);
+            expect(spreadsheet.ribbonModule.ribbon.items[0].content[4].disabled).toBe(true);
+            expect(spreadsheet.ribbonModule.ribbon.items[0].content[6].disabled).toBe(true);
+            expect(spreadsheet.ribbonModule.ribbon.items[0].content[7].disabled).toBe(true);
+            expect(spreadsheet.ribbonModule.ribbon.items[0].content[8].disabled).toBe(true);
+            expect(spreadsheet.ribbonModule.ribbon.items[0].content[9].disabled).toBe(true);
+            expect(spreadsheet.ribbonModule.ribbon.items[0].content[11].disabled).toBe(true);
+            expect(spreadsheet.ribbonModule.ribbon.items[0].content[13].disabled).toBe(true);
+            expect(spreadsheet.ribbonModule.ribbon.items[0].content[14].disabled).toBe(true);
+            expect(spreadsheet.ribbonModule.ribbon.items[0].content[15].disabled).toBe(true);
+            expect(spreadsheet.ribbonModule.ribbon.items[1].content[0].disabled).toBe(true);
+            expect(spreadsheet.ribbonModule.ribbon.items[1].content[1].disabled).toBe(true);
+            expect(spreadsheet.ribbonModule.ribbon.items[1].content[3].disabled).toBe(false);
+            expect(spreadsheet.activeSheetIndex).toBe(0);
+            expect(spreadsheet.sheets.length).toBe(1);
+            helper.click('.e-add-sheet-tab');
+            setTimeout(() => {
+                expect(spreadsheet.activeSheetIndex).toBe(1);
+                expect(spreadsheet.sheets.length).toBe(2);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[16].disabled).toBe(false);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[17].disabled).toBe(false);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[19].disabled).toBe(false);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[20].disabled).toBe(false);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[3].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[4].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[6].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[7].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[8].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[9].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[11].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[13].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[14].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[15].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[1].content[0].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[1].content[1].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[1].content[3].disabled).toBe(false);
+                done();
+            });
+        });
+
+        it('Disabled icons gets enabled while performing protect sheet and unprotect sheet', (done: Function): void => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('protectSheet', ['Sheet1', {}]);
+            helper.invoke('goTo', ['Sheet1!A1']);
+            setTimeout(() => {
+                expect(spreadsheet.activeSheetIndex).toBe(0);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[16].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[17].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[19].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[20].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[3].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[4].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[6].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[7].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[8].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[9].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[11].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[13].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[14].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[15].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[1].content[0].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[1].content[1].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[1].content[3].disabled).toBe(true);
+                helper.invoke('unprotectSheet', ['Sheet1', {}]);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[16].disabled).toBe(false);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[17].disabled).toBe(false);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[19].disabled).toBe(false);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[20].disabled).toBe(false);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[3].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[4].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[6].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[7].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[8].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[9].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[11].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[13].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[14].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[0].content[15].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[1].content[0].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[1].content[1].disabled).toBe(true);
+                expect(spreadsheet.ribbonModule.ribbon.items[1].content[3].disabled).toBe(false);
+                done();
+            });
         });
     });
 });

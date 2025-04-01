@@ -8177,10 +8177,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             this.resourceUrl = SanitizeHtmlHelper.sanitize(this.resourceUrl);
         }
         if (!isNullOrUndefined(this.resourceUrl) && this.resourceUrl !== '') {
-            if (this.resourceUrl.indexOf('/ej2-pdfviewer-lib') !== -1) {
-                return this.resourceUrl;
-            }
-            return this.resourceUrl + '/ej2-pdfviewer-lib';
+            return this.resourceUrl;
         }
         const { protocol, host, pathname } = document.location;
         // Remove trailing slashes from the pathname using a regular expression
@@ -8682,6 +8679,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Server error': 'Web-service is not listening. PDF Viewer depends on web-service for all it\'s features. Please start the web service to continue.',
 
         'Client error': 'Client-side error is found. Please check the custom headers provided in the AjaxRequestSettings property and web action methods in the ServerActionSettings property.',
+        'Cors policy error': 'Unable to retrieve the document due to an invalid URL or access restrictions. Please check the document URL and try again.',
         'Open text': 'Open',
         'First text': 'First Page',
         'Previous text': 'Previous Page',

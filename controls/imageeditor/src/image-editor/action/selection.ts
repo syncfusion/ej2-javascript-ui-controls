@@ -3191,7 +3191,11 @@ export class Selection {
                     parent.editCompleteArgs = shapeChangedArgs;
                 }
                 const isPenDraw: boolean = parent.togglePen;
+                const tempCursor: string = parent.cursor;
                 parent.notify('toolbar', { prop: 'close-contextual-toolbar', onPropertyChange: false});
+                if (activeObj.shape === 'redact' && tempCursor !== 'default') {
+                    parent.cursor = tempCursor;
+                }
                 if (isPenDraw) {parent.freeHandDraw(true); }
                 this.isFhdEditing = false;
                 if (isLineArrow) {

@@ -433,7 +433,9 @@ export class EnterKeyAction {
                                     }
                                     if (newElem.textContent.trim().length === 0 || (newElem.childNodes[0].textContent.trim().includes('\u200B') && newElem.childNodes[0].textContent.trim() === '\u200B')) {
                                         const brElm: HTMLElement = this.parent.createElement('br');
-                                        if (this.startNode.nodeName === 'A') {
+                                        if (this.startNode.nodeName === 'A' || this.startNode.closest('a')) {
+                                            this.startNode = this.startNode.nodeName === 'A' ? this.startNode :
+                                                this.startNode.closest('a');
                                             const startParentElem: HTMLElement = this.startNode.parentElement;
                                             this.startNode.parentElement.insertBefore(brElm, this.startNode);
                                             detach(this.startNode);
@@ -462,10 +464,18 @@ export class EnterKeyAction {
                                             }
                                             this.parent.formatter.editorManager.domNode.insertAfter(insertElm, (newElem as HTMLElement));
                                             detach(newElem);
+                                            let curElement: HTMLElement | Node = this.parent.formatter.editorManager.domNode.
+                                                isBlockNode(this.startNode) ? insertElm : this.startNode;
+                                            let cusrPos: number = 0;
+                                            if (curElement && (curElement.nodeName === 'A' || (curElement as HTMLElement).closest('a'))) {
+                                                curElement = curElement.nodeName === 'A' ? curElement :
+                                                    (curElement as HTMLElement).closest('a');
+                                                curElement = this.getFirstTextNode(curElement);
+                                                curElement.nodeValue = '\u200B' + curElement.nodeValue;
+                                                cusrPos = 1;
+                                            }
                                             this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
-                                                this.parent.contentModule.getDocument(),
-                                                this.parent.formatter.editorManager.domNode.isBlockNode(this.startNode) ?
-                                                    insertElm : this.startNode, 0);
+                                                this.parent.contentModule.getDocument(), curElement as HTMLElement, cusrPos);
                                         }
                                     }
                                 }
@@ -518,9 +528,15 @@ export class EnterKeyAction {
                                         currentParent.insertBefore(focusBRElem, imageElement);
                                     } else {
                                         const lineBreakBRElem: HTMLElement = this.parent.createElement('br');
-                                        const anchorElement: Node = (!isNOU(this.range.startContainer.parentElement) && this.range.startContainer.parentElement.nodeName === 'A'
-                                            && this.range.startContainer.parentElement.textContent.length === this.range.startOffset)
-                                            ? this.range.startContainer.parentElement : this.range.startContainer;
+                                        const parentElement: HTMLElement = this.range.startContainer.parentElement;
+                                        let anchorElement: Node;
+                                        if (parentElement && parentElement.nodeName === 'A' &&
+                                            parentElement.textContent.length === this.range.startOffset) {
+                                            anchorElement = parentElement;
+                                        } else if (parentElement) {
+                                            const closestAnchor: Element | null = parentElement.closest('a');
+                                            anchorElement = closestAnchor ? closestAnchor : this.range.startContainer;
+                                        }
                                         this.parent.formatter.editorManager.domNode.insertAfter(
                                             focusBRElem, (anchorElement as Element));
                                         this.parent.formatter.editorManager.domNode.insertAfter(
@@ -577,6 +593,15 @@ export class EnterKeyAction {
                                         this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
                                             this.parent.contentModule.getDocument(), currentParent as Element, 0);
                                         this.insertFocusContent();
+                                    } else if (this.startNode.nodeName === 'A' || this.startNode.closest('A')) {
+                                        this.startNode = this.startNode.nodeName === 'A' ? this.startNode : this.startNode.closest('A');
+                                        this.parent.formatter.editorManager.nodeCutter.
+                                            SplitNode(this.range, this.startNode as HTMLElement, true).cloneNode(true);
+                                        this.startNode.parentElement.insertBefore(outerBRElem, this.startNode);
+                                        const startTextNode: Node = this.getFirstTextNode(this.startNode);
+                                        startTextNode.nodeValue = '\u200B' + startTextNode.nodeValue;
+                                        this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                                            this.parent.contentModule.getDocument(), startTextNode as HTMLElement, 1);
                                     } else {
                                         this.insertBRElement();
                                     }
@@ -592,6 +617,15 @@ export class EnterKeyAction {
                 });
             }
         }
+    }
+    private getFirstTextNode(node: Node): Node | null {
+        const treeWalker: TreeWalker = this.parent.contentModule.getDocument().createTreeWalker(
+            node,
+            NodeFilter.SHOW_TEXT,
+            null
+        );
+        const firstTextNode: Node | null = treeWalker.nextNode();
+        return firstTextNode;
     }
     private removeBRElement(currentElement: Node): void {
         if (Browser.userAgent.indexOf('Firefox') !== -1 &&
@@ -646,10 +680,13 @@ export class EnterKeyAction {
                 isEmptyBrInserted = true;
             }
         }
-        if (isEmptyBrInserted || (!isNOU(brElm.nextElementSibling) && brElm.nextElementSibling.tagName === 'BR') || (!isNOU(brElm.nextSibling) && (brElm.nextSibling.textContent.length > 0 || (brElm.nextSibling.nodeName === '#text' && brElm.nextSibling.textContent.trim().length === 0 &&  !isNOU(brElm.nextSibling.nextSibling) && brElm.nextSibling.nextSibling.textContent.trim().length > 0)))) {
+        const isBRNextElement: boolean = ((!isNOU(brElm.nextSibling) && (brElm.nextSibling.textContent.length > 0 || brElm.nextSibling.nodeName !== '#text' && (brElm.nextSibling as Element).querySelectorAll('audio,video,table,img').length > 0)) || (!isNOU(brElm.nextElementSibling) && brElm.nextElementSibling.tagName === 'BR') || this.range.startContainer.nodeName === 'BR');
+        const isMediaElement: boolean = !isNOU(brElm.nextSibling) && (!isNOU((brElm.nextSibling as HTMLElement).classList) && ((brElm.nextSibling as HTMLElement).classList.contains('e-video-wrap') || (brElm.nextSibling as HTMLElement).classList.contains('e-audio-wrap')));
+        if (isBRNextElement && (isEmptyBrInserted || (!isNOU(brElm.nextSibling) && brElm.nextSibling.nodeName === '#text' && brElm.nextSibling.textContent.trim().length === 0 && !isNOU(brElm.nextSibling.nextSibling) && brElm.nextSibling.nextSibling.textContent.trim().length > 0))) {
             this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
                 this.parent.contentModule.getDocument(),
-                !isNOU(brElm.nextSibling) && isFocusTextNode && !isImageElement ? (brElm.nextSibling as Element) : brElm, 0);
+                !isNOU(brElm.nextSibling) && isFocusTextNode &&
+                !isImageElement && !isMediaElement  ? (brElm.nextSibling as Element) : brElm, 0);
             isEmptyBrInserted = false;
         } else {
             const brElements: HTMLElement = this.parent.createElement('br');

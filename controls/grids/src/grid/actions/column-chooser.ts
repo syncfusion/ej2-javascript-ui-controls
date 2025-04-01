@@ -1,4 +1,4 @@
-import { classList, addClass, removeClass, isNullOrUndefined, Browser, KeyboardEventArgs, updateCSSText } from '@syncfusion/ej2-base';
+import { classList, addClass, removeClass, isNullOrUndefined, Browser, KeyboardEventArgs, updateCSSText, remove } from '@syncfusion/ej2-base';
 import { Query, DataManager } from '@syncfusion/ej2-data';
 import { Column } from '../models/column';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -129,6 +129,11 @@ export class ColumnChooser implements IAction {
                 }
             } else {
                 this.dlgObj.destroy();
+            }
+            let gridPopup: HTMLElement = document.getElementById(this.parent.element.id + '_e-popup');
+            if (!isNullOrUndefined(gridPopup)) {
+                remove(gridPopup);
+                gridPopup = null;
             }
         }
     }

@@ -326,6 +326,9 @@
             box-sizing: border-box;
             min-height: 30px;
           }
+          @if ($skin-name == 'FluentUI') {
+            min-height: 34px;
+          }
         }
       }
       &:not(.e-footer-template) {

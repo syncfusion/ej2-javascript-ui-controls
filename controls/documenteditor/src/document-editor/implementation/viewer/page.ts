@@ -2285,6 +2285,7 @@ export class TableWidget extends BlockWidget {
                             removeSpannedCell = false;
                             // If the cell is the last cell in the row and the row has grid after value..
                             if (j === row.childWidgets.length - 1 && row.rowFormat.gridAfter > 0) {
+                                this.updateValidPreferredWidth(spannedCells[k]);
                                 cellWidth = this.getCellWidth(spannedCells[k].cellFormat.preferredWidth, spannedCells[k].cellFormat.preferredWidthType, tableWidth, null);
                                 currOffset += cellWidth;
                             }
@@ -2294,6 +2295,7 @@ export class TableWidget extends BlockWidget {
                         // If the gird calculation is done from the UI level opearations such as resizing then table holder 
                         // will have the columns at that time we can get the column index from the table holder.
                         //Converts the cell width from point to twips point by 15 factor.
+                        this.updateValidPreferredWidth(spannedCells[k]);
                         cellWidth = this.getCellWidth(spannedCells[k].cellFormat.preferredWidth, spannedCells[k].cellFormat.preferredWidthType, tableWidth, null);
                         currOffset += cellWidth;
                         columnSpan = spannedCells[k].columnIndex + spannedCells[k].cellFormat.columnSpan;
@@ -2325,6 +2327,7 @@ export class TableWidget extends BlockWidget {
                     rowCellInfo.add(cell.cellIndex, parseFloat((currOffset - startOffset).toFixed(2)));
                 }
                 columnSpan += cell.cellFormat.columnSpan;
+                this.updateValidPreferredWidth(cell);
                 //Converts the cell width from pixel to twips point by 15 factor.
                 cellWidth = this.getCellWidth(cell.cellFormat.preferredWidth, cell.cellFormat.preferredWidthType, tableWidth, null);
                 currOffset += cellWidth;
@@ -2357,6 +2360,18 @@ export class TableWidget extends BlockWidget {
         }
         this.tableCellInfo.clear();
         this.tableCellInfo = undefined;
+    }
+    private updateValidPreferredWidth(cell: TableCellWidget): void {
+        if (cell.cellFormat.preferredWidthType === 'Point' && cell.cellFormat.preferredWidth !== cell.cellFormat.cellWidth && cell.ownerColumn && cell.cellFormat.preferredWidth < cell.ownerColumn.minimumWidth) {
+            if (cell.indexInOwner === 0) {
+                cell.cellFormat.preferredWidth = cell.ownerColumn.endOffset;
+            } else {
+                const prevCell: TableCellWidget = cell.ownerRow.childWidgets[cell.indexInOwner - 1] as TableCellWidget;
+                if (prevCell.ownerColumn) {
+                    cell.cellFormat.preferredWidth = cell.ownerColumn.endOffset - prevCell.ownerColumn.endOffset;
+                }
+            }
+        }
     }
     private updateColumnSpans(tempGrid: number[], containerWidth: number, tempSpan: number[]): void {
         for (let i: number = 0; i < this.childWidgets.length; i++) {

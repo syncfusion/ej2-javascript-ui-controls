@@ -760,7 +760,7 @@ describe('Enter key support - When `BR` is configured', () => {
         const sel: void = new NodeSelection().setCursorPoint(
             document, nodetext, nodetext.textContent.length);
         (<any>rteObj).keyDown(keyboardEventArgs);
-        expect(rteObj.inputElement.innerHTML).toBe('RTE Content<br>');
+        expect(rteObj.inputElement.innerHTML).toBe('RTE Content<br><br>');
     });
 
     it('EJ2-58543 - Press enter at the end of the line twice to check the text node removed properly', function (): void {
@@ -770,7 +770,7 @@ describe('Enter key support - When `BR` is configured', () => {
         (<any>rteObj).keyDown(keyboardEventArgs);
         (<any>rteObj).keyDown(keyboardEventArgs);
         rteObj.formatter.saveData();
-        expect(rteObj.inputElement.childNodes.length === 4).toBe(true);
+        expect(rteObj.inputElement.childNodes.length === 5).toBe(true);
     });
 
     it('Press enter at the end of the line - Style Applied -', function (): void {
@@ -1529,6 +1529,28 @@ describe('Bug 937059: Pressing Enter or Shift+Enter Removes Images in the Rich T
             document, startNode, startNode, 0, 1);
         (<any>rteObj).keyDown(shiftkeyboarArgs);
         expect(rteObj.inputElement.innerHTML).toBe('<br><p><img src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" class="e-rte-image e-imginline e-img-focus" alt="Tiny_Image.PNG" width="auto" height="auto" style="min-width: 0px; max-width: 1199px; min-height: 0px;"></p>');
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('916641: Shift+Enter before an audio element', () => {
+    let rteObj: RichTextEditor;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            value: `<p><span class="e-audio-wrap" contenteditable="false" title="RTE-Audio.wav"><span class="e-clickelem"><audio class="e-rte-audio e-audio-inline" controls="" style="outline: rgb(74, 144, 226) solid 2px;"><source src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Audio.wav" type="audio/wav"></audio></span></span> </p>`
+        });
+        done();
+    });
+    it('should insert a <br> when Shift+Enter is pressed before an audio element', () => {
+        rteObj.dataBind();
+        rteObj.focusIn();
+        const startNode: any = rteObj.inputElement.childNodes[0];
+        const sel: void = new NodeSelection().setSelectionText(
+            document, startNode, startNode, 0, 0);
+        (<any>rteObj).keyDown({ ...shiftkeyboarArgs, keyCode: 13 });
+        expect(window.getSelection().getRangeAt(0).startContainer.nodeName === 'BR').toBe(true);
     });
     afterAll(() => {
         destroy(rteObj);
@@ -2949,6 +2971,31 @@ describe('924578 - A script error hinders the use of the Enter+Shift key combina
             document, startNode, startNode, 1, 1);
         (<any>rteObj).keyDown(shiftkeyboarArgs);
         expect(rteObj.inputElement.innerHTML===`<p><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" style="width: 50%" class="e-rte-image e-imginline"><br><br></p>`).toBe(true)
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('936623 - Cursor moves to next node instead of creating new element on Enter key press in Rich Text Editor', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = false;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px',
+            value: `In Rich text Editor, the enter key and shift + enter key actions can be customized using the enterKey and shiftEnterKey APIs. And the possible values are as follows:<ul><li>P - When 'P' is configured, pressing enter or shift + enter will create a 'p' tag</li><li>DIV - When 'DIV' is configured, pressing enter or shift + enter will create a 'div' tag</li><li>BR - When 'BR' is configured, pressing enter or shift + enter will create a 'br' tag</li></ul>`,
+            enterKey: "BR",
+            shiftEnterKey: "P",
+        });
+        done();
+    });
+
+    it('Press the enter key at the end of the P tag the BR element was created', function (): void {
+        const nodetext: any = rteObj.inputElement.childNodes[0];
+        const sel: void = new NodeSelection().setCursorPoint(
+            document, nodetext, nodetext.textContent.length);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(rteObj.inputElement.innerHTML).toBe(`In Rich text Editor, the enter key and shift + enter key actions can be customized using the enterKey and shiftEnterKey APIs. And the possible values are as follows:<br><br><ul><li>P - When 'P' is configured, pressing enter or shift + enter will create a 'p' tag</li><li>DIV - When 'DIV' is configured, pressing enter or shift + enter will create a 'div' tag</li><li>BR - When 'BR' is configured, pressing enter or shift + enter will create a 'br' tag</li></ul>`);
     });
     afterAll(() => {
         destroy(rteObj);

@@ -1775,7 +1775,7 @@ export class Selection extends BaseSelection {
                 }
                 this.calculateSelectedElements(target as HTMLElement, eventType);
                 if (this.chart.highlightModule.highlightDataIndexes && this.chart.highlightModule.highlightDataIndexes.length > 0 &&
-                    target.id.indexOf('_chart_legend_g') === -1 && target.id.indexOf('_Series_') === -1) {
+                    target.id.indexOf('_chart_legend_g_') === -1 && target.id.indexOf('chart_legend_shape') === -1 && target.id.indexOf('_Series_') === -1) {
                     this.removeLegendHighlightStyles();
                 }
                 else if (this.chart.highlightModule.highlightDataIndexes && this.chart.highlightModule.highlightDataIndexes.length > 0 &&

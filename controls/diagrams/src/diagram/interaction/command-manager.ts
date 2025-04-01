@@ -5664,6 +5664,9 @@ Remove terinal segment in initial
                 oldValues = this.getPortChanges(obj, port as PointPort);
                 port.offset.x += (tx / bounds.width);
                 port.offset.y += (ty / bounds.height);
+                // 946421: Ports Are Draggable Beyond Node and Connector Boundaries.
+                port.offset.x = Math.max(0, Math.min(1, port.offset.x));
+                port.offset.y = Math.max(0, Math.min(1, port.offset.y));
                 changedvalues = this.getPortChanges(obj, port as PointPort);
                 this.diagram.nodePropertyChange(obj as Node, oldValues as Node, changedvalues as Node);
             }else{
@@ -5859,6 +5862,17 @@ Remove terinal segment in initial
         if (intersectingPoints.length > 0) {
             intersectingOffset = intersectingPoints[intersectingPoints.length - 1];
             newOffset = intersectingOffset;
+            // 946421: Ports Are Draggable Beyond Node and Connector Boundaries.
+            const minDistance: Distance = { minDistance: null };
+            newOffset = this.getRelativeOffset(currentPosition, intermediatePoints, minDistance);
+            const distance: Distance = { minDistance: null };
+            intersectingOffset = this.getRelativeOffset(currentPosition, intersectingPoints, distance);
+            if (minDistance != null && (distance as Distance).minDistance < (minDistance as Distance).minDistance) {
+                newOffset = intersectingOffset;
+            } else {
+                const connectorOffset: SegmentInfo = getOffsetOfConnector(object.intermediatePoints, port);
+                newOffset = connectorOffset.point;
+            }
             if (newOffset) {
                 let p: number; let bounds: Rect;
                 for (p = 0; p < intermediatePoints.length; p++) {
@@ -5897,14 +5911,14 @@ Remove terinal segment in initial
         return newOffset;
     }
 
-    private dragLimitValue(label: PathAnnotation, point: PointModel, tempPt: PointModel, contentDimension: Rect): IsDragArea {
+    private dragLimitValue(dragLimit: MarginModel, point: PointModel, tempPt: PointModel, contentDimension: Rect): IsDragArea {
         let x: boolean = false; let y: boolean = false;
-        if ((tempPt.x >= (point.x - label.dragLimit.left - (contentDimension.width / 2))) &&
-            (tempPt.x <= point.x + label.dragLimit.right + (contentDimension.width / 2))) {
+        if ((tempPt.x >= (point.x - dragLimit.left - (contentDimension.width / 2))) &&
+            (tempPt.x <= point.x + dragLimit.right + (contentDimension.width / 2))) {
             x = true;
         }
-        if ((tempPt.y >= (point.y - label.dragLimit.top - (contentDimension.height / 2))) &&
-            (tempPt.y <= point.y + label.dragLimit.bottom + (contentDimension.height / 2))) {
+        if ((tempPt.y >= (point.y - dragLimit.top - (contentDimension.height / 2))) &&
+            (tempPt.y <= point.y + dragLimit.bottom + (contentDimension.height / 2))) {
             y = true;
         }
         return { x: x, y: y };
@@ -5919,14 +5933,15 @@ Remove terinal segment in initial
             const point: PointModel = this.getPointAtLength(length * offset.x, node.intermediatePoints, 0);
             const curZoomfactor: number = this.diagram.scrollSettings.currentZoom;
             const dragLimit: MarginModel = label.dragLimit ? label.dragLimit : { left: 0, right: 0, top: 0, bottom: 0 };
-            if (dragLimit.top || dragLimit.bottom || dragLimit.left || dragLimit.right) {
+            if (dragLimit.top || dragLimit.bottom || dragLimit.left || dragLimit.right || (label instanceof PathPort)) {
                 const labelBounds: DiagramElement = this.diagram.getWrapper(node.wrapper, label.id);
                 const contentDimension: Rect = new Rect(0, 0, 0, 0);
                 const annotationWrtapper: DiagramElement = this.diagram.getWrapper(node.wrapper, label.id);
                 contentDimension.x = ((annotationWrtapper).offsetX / curZoomfactor) + tx;
                 contentDimension.y = (annotationWrtapper.offsetY / curZoomfactor) + ty;
-                contentDimension.width = annotationWrtapper.bounds.width / curZoomfactor;
-                contentDimension.height = annotationWrtapper.bounds.height / curZoomfactor;
+                // 946421: Ports Are Draggable Beyond Node and Connector Boundaries.
+                contentDimension.width = (label instanceof PathPort) ? 0 : annotationWrtapper.bounds.width / curZoomfactor;
+                contentDimension.height = (label instanceof PathPort) ? 0 : annotationWrtapper.bounds.height / curZoomfactor;
                 const draggableBounds: Rect = new Rect(
                     point.x - (dragLimit.left || 0) - contentDimension.width / 2,
                     point.y - (dragLimit.top || 0) - contentDimension.height / 2,
@@ -5944,7 +5959,7 @@ Remove terinal segment in initial
                         tempPt = ptt;
                     }
                 }
-                const cursorLimit: IsDragArea = this.dragLimitValue(label, point, tempPt, contentDimension as Rect);
+                const cursorLimit: IsDragArea = this.dragLimitValue(dragLimit, point, tempPt, contentDimension as Rect);
                 label.margin = {
                     left: cursorLimit.x ? tempPt.x - point.x : label.margin.left,
                     top: cursorLimit.y ? tempPt.y - point.y : label.margin.top, right: 0, bottom: 0

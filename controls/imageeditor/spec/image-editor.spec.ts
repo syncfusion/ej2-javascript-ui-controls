@@ -9919,5 +9919,21 @@ describe('ImageEditor', () => {
                 done();
             }, 100);
         });
+
+       it('Text area editing - outline color customizing', (done) => {
+            imageEditor = new ImageEditor({
+               height : '450px',
+            }, '#image-editor');
+            imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
+            setTimeout(() => {
+                imageEditor.drawText();
+                imageEditor.selectShape('shape_1');
+                imageEditor.enableTextEditing();
+                imageEditor.updateStrokeTextColor('yellow');
+                imageEditor.apply();
+                expect(imageEditor.objColl[0].strokeSettings.outlineColor).toEqual('yellow');
+                done();
+            }, 100);
+        });
     });
 });

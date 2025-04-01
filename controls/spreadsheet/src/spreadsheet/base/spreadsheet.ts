@@ -2794,7 +2794,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @returns {void} - Enables or disables the specified ribbon toolbar items or all ribbon items.
      */
     public enableToolbarItems(tab: string, items?: number[] | string[], enable?: boolean): void {
-        this.notify(enableToolbarItems, [{ tab: tab, items: items, enable: enable === undefined ? true : enable }]);
+        this.notify(enableToolbarItems, [{ tab: tab, items: items, enable: enable === undefined ? true : enable, isPublic: true }]);
     }
 
     /**

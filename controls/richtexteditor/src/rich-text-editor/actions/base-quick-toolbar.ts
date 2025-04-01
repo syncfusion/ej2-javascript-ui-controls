@@ -111,7 +111,7 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         }
         addClass([this.toolbarElement], [classes.CLS_RM_WHITE_SPACE]);
         let targetOffsetTop: number;
-        const notAllowedType: boolean = (!isNullOrUndefined(target.classList) && ['e-rte-image', 'e-clickelem', 'e-rte-audio', 'e-rte-video'].some((value: string) => target.classList.contains(value)));
+        const notAllowedType: boolean = (!isNullOrUndefined(target.classList) && ['e-rte-image', 'e-rte-img-caption', 'e-clickelem', 'e-rte-audio', 'e-rte-video'].some((value: string) => target.classList.contains(value)));
         if (!isNOU(closest(target, 'table')) && !target.classList.contains('e-multi-cells-select') && !notAllowedType) {
             targetOffsetTop = target.offsetTop;
             let parentTable: Element = closest(target, 'table');

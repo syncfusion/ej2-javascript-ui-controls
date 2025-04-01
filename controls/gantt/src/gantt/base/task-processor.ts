@@ -2,7 +2,7 @@ import { isNullOrUndefined, getValue, extend, setValue } from '@syncfusion/ej2-b
 import { getUid, ReturnType } from '@syncfusion/ej2-grids';
 import { IGanttData, ITaskData, IParent, IWorkTimelineRanges, IWorkingTimeRange, ITaskSegment } from './interface';
 import { DataManager, Query, Group, ReturnOption } from '@syncfusion/ej2-data';
-import { isCountRequired, isScheduledTask } from './utils';
+import { getUniversalTime, isCountRequired, isScheduledTask } from './utils';
 import { Gantt } from './gantt';
 import { DateProcessor } from './date-processor';
 import { TaskFieldsModel, ColumnModel, ResourceFieldsModel } from '../models/models';
@@ -1489,11 +1489,9 @@ export class TaskProcessor extends DateProcessor {
      */
     public getTaskWidth(startDate: Date, endDate: Date, ganttData?: ITaskData): number {
         const sDate: Date = new Date(startDate.getTime()); const eDate: Date = new Date(endDate.getTime());
-        let tierMode: string = this.parent.timelineModule.customTimelineSettings.bottomTier.unit !== 'None' ? this.parent.timelineModule.customTimelineSettings.bottomTier.unit :
+        const tierMode: string = this.parent.timelineModule.customTimelineSettings.bottomTier.unit !== 'None' ? this.parent.timelineModule.customTimelineSettings.bottomTier.unit :
             this.parent.timelineModule.customTimelineSettings.topTier.unit;
         const zoomOrTimeline: Object = this.parent.timelineModule.customTimelineSettings;
-        let countValue: number = zoomOrTimeline['bottomTier'] !== null ? zoomOrTimeline['bottomTier'].count :
-            zoomOrTimeline['topTier'].count;
         let isValid: boolean = false;
         let modifiedsDate: Date = new Date(startDate.getTime());
         let hour: number = 0;
@@ -1609,17 +1607,45 @@ export class TaskProcessor extends DateProcessor {
                             ? this.getHolidaysCount(sDate, eDate)
                             : 0;
                         const weekendCount: number = !this.parent.includeWeekend ? this.getWeekendCount(sDate, eDate) : 0;
-                        return ((holidaysCount + weekendCount + ganttData.duration) * this.parent.perDayWidth);
+                        if (this.hasDSTTransition(sDate.getFullYear())) {
+                            return ((this.getTimeDifference(sDate, eDate, true) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
+                        } else {
+                            return ((holidaysCount + weekendCount + ganttData.duration) * this.parent.perDayWidth);
+                        }
                     }
                     else {
                         return ((this.getTimeDifference(sDate, eDate, true) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
                     }
                 }
                 else {
-                    if (ganttData.durationUnit === 'day' && ganttData.duration < 1) {
+                    let isOnHoliday: boolean = false;
+                    const isEndDateCorrect: any = (
+                        startDate: Date,
+                        endDate: Date,
+                        duration: number,
+                        totalWorkingHoursPerDay: number
+                    ): boolean => {
+                        const start: Date = new Date(startDate);
+                        const end: Date = new Date(endDate);
+                        if (isNaN(start.getTime()) || isNaN(end.getTime()) || duration <= 0 || totalWorkingHoursPerDay <= 0) {
+                            return false;
+                        }
+                        const expectedEnd: Date = new Date(start);
+                        const hoursToAdd: number = duration * totalWorkingHoursPerDay;
+                        const fullDays: number = Math.floor(hoursToAdd / totalWorkingHoursPerDay);
+                        const remainingHours: number = hoursToAdd % totalWorkingHoursPerDay;
+                        expectedEnd.setDate(expectedEnd.getDate() + fullDays);
+                        expectedEnd.setHours(expectedEnd.getHours() + remainingHours);
+                        return expectedEnd.getTime() !== end.getTime() &&
+                            Math.abs((expectedEnd.getTime() - end.getTime()) / (1000 * 60 * 60 * 24)) > 1;
+                    };
+                    isOnHoliday = isEndDateCorrect(sDate, eDate, ganttData.duration, hour);
+                    if (ganttData.durationUnit === 'day' && ganttData.duration < 1 && !isOnHoliday) {
                         return (ganttData.duration * this.parent.perDayWidth);
                     }
-                    else {
+                    if (this.hasDSTTransition(sDate.getFullYear()) || sDate.getTimezoneOffset() === -180) {
+                        return ((this.getTimeDifference(sDate, eDate, true) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
+                    } else {
                         return ((this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * hour)) * this.parent.perDayWidth);
                     }
                 }
@@ -1650,21 +1676,10 @@ export class TaskProcessor extends DateProcessor {
                 return (this.parent.perDayWidth);
             }
             else {
-                if (this.parent.isInDst(sDate) || this.parent.isInDst(eDate)) {
-                    const timeDifference: number = this.getTimeDifference(sDate, eDate, true);
-                    let totalWidth: number = (timeDifference / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
-                    const sOffset: number = sDate.getTimezoneOffset();
-                    const eOffset: number = eDate.getTimezoneOffset();
-                    const topTier: Object = this.parent.timelineModule.customTimelineSettings.topTier;
-                    if (topTier && topTier['unit'] === 'Hour' && topTier['count'] === 1) {
-                        tierMode = topTier['unit'];
-                        countValue = topTier['count'];
-                    }
-                    const unitHour: boolean = ((tierMode === 'Hour' && countValue === 1) || (tierMode === 'Minutes' && countValue === 60));
-                    if (unitHour && sOffset !== eOffset && sOffset > eOffset) {
-                        totalWidth = totalWidth - (this.parent.perDayWidth / 24);
-                    }
-                    return totalWidth;
+                if (this.hasDSTTransition(sDate.getFullYear())) {
+                    const width: number = (getUniversalTime(eDate) - getUniversalTime(sDate)) /
+                    60000 * ((this.parent.perDayWidth) / 24) / 60;
+                    return width;
                 }
                 else {
                     return ((this.getTimeDifference(sDate, eDate)  / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
@@ -1701,14 +1716,22 @@ export class TaskProcessor extends DateProcessor {
         };
     }
     public hasDSTTransition(year: number): boolean {
-        const january: Date = new Date(year, 0, 1);
-        const july: Date = new Date(year, 6, 1);
-
-        const janOffset: number = january.getTimezoneOffset();
-        const julOffset: number = july.getTimezoneOffset();
-
-        // If the offsets are different, it means there is a DST transition
-        return janOffset !== julOffset;
+        let start: number = 0;
+        let end: number = 11;
+        const baseOffset: number = new Date(year, start, 1).getTimezoneOffset();
+        while (start <= end) {
+            const mid: number = Math.floor((start + end) / 2);
+            const currentOffset: number = new Date(year, mid, 1).getTimezoneOffset();
+            if (currentOffset !== baseOffset) {
+                return true;
+            }
+            if (currentOffset > baseOffset) {
+                end = mid - 1;
+            } else {
+                start = mid + 1;
+            }
+        }
+        return false;
     }
     /**
      * Get task left value
@@ -1722,11 +1745,8 @@ export class TaskProcessor extends DateProcessor {
     public getTaskLeft(startDate: Date, isMilestone: boolean, isFromTimelineVirtulization?: boolean): number {
         let isTimeSet: boolean = false;
         const date: Date = new Date(startDate.getTime());
-        let tierMode: string = this.parent.timelineModule.customTimelineSettings.bottomTier.unit !== 'None' ? this.parent.timelineModule.customTimelineSettings.bottomTier.unit :
+        const tierMode: string = this.parent.timelineModule.customTimelineSettings.bottomTier.unit !== 'None' ? this.parent.timelineModule.customTimelineSettings.bottomTier.unit :
             this.parent.timelineModule.customTimelineSettings.topTier.unit;
-        const zoomOrTimeline: Object = this.parent.timelineModule.customTimelineSettings;
-        let countValue: number = zoomOrTimeline['bottomTier'] !== null ? zoomOrTimeline['bottomTier'].count :
-            zoomOrTimeline['topTier'].count;
         if (tierMode === 'Day') {
             let dayStartTime: number;
             let dayEndTime: number;
@@ -1749,36 +1769,53 @@ export class TaskProcessor extends DateProcessor {
             }
         }
         let leftValueForStartDate: number;
-        let isValid: boolean = true;
-        if ((this.parent.editModule && ((this.parent.editModule.taskbarEditModule && this.parent.editModule.taskbarEditModule.taskBarEditAction) || (this.parent.editModule.dialogModule && this.parent.editModule.dialogModule['isEdit']) ||
-            (this.parent.editModule.cellEditModule && this.parent.editModule.cellEditModule.isCellEdit) ||
-            this.parent.ganttChartModule.scrollObject['isSetScrollLeft'])) && !isFromTimelineVirtulization) {
-            isValid = false;
-        }
-        if (this.parent.enableTimelineVirtualization && isValid && !this.parent.timelineModule['performedTimeSpanAction']) {
+        if (this.parent.enableTimelineVirtualization && (this.parent.isLoad || isFromTimelineVirtulization) &&
+            !this.parent.timelineModule['performedTimeSpanAction']) {
             leftValueForStartDate = (this.parent.enableTimelineVirtualization
                 && this.parent.ganttChartModule.scrollObject.element.scrollLeft !== 0)
                 ? this.parent.ganttChartModule.scrollObject.getTimelineLeft() : null;
         }
-        const timelineStartDate: Date = (this.parent.enableTimelineVirtualization && !isNullOrUndefined(leftValueForStartDate))
+        const timelineStartDate: Date = (!isNullOrUndefined(leftValueForStartDate))
             ? new Date((this.parent.timelineModule['dateByLeftValue'](leftValueForStartDate)).toString()) : new Date(this.parent.timelineModule.timelineStartDate);
         if (timelineStartDate) {
             let leftValue: number;
             const hasDST: boolean = this.hasDSTTransition(startDate.getFullYear());
             let transitions: Object;
-            if (hasDST) {
-                transitions = this.getDSTTransitions(startDate.getFullYear(), this.systemTimeZone);
-            }
-            if (this.parent.isInDst(startDate) && !this.parent.isInDst(timelineStartDate)) {
-                let newTimelineStartDate: Date;
-                if (this.parent.isInDst(date)) {
-                    newTimelineStartDate = new Date(timelineStartDate.getTime() - (60 * 60 * 1000));
-                } else {
-                    newTimelineStartDate = new Date(timelineStartDate.getTime());
-                }
-                leftValue = (date.getTime() - newTimelineStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
-            }
-            else {
+            // if (hasDST) {
+            //     transitions = this.getDSTTransitions(startDate.getFullYear(), this.systemTimeZone);
+            // }
+            // if (this.parent.isInDst(startDate) && !this.parent.isInDst(timelineStartDate)) {
+            //     let newTimelineStartDate: Date;
+            //     if (this.parent.isInDst(date)) {
+            //         newTimelineStartDate = new Date(timelineStartDate.getTime() - (60 * 60 * 1000));
+            //     } else {
+            //         newTimelineStartDate = new Date(timelineStartDate.getTime());
+            //     }
+            //     leftValue = (date.getTime() - newTimelineStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
+            // }
+            // else {
+            //     let width: number;
+            //     if (this.parent.timelineModule.bottomTier === 'Day' && this.getSecondsInDecimal(date) !== this.parent.defaultStartTime && this.getSecondsInDecimal(date) !== 0 &&
+            //         !isTimeSet && !this.parent['isFromEventMarker']) {
+            //         const newDate: Date = new Date(startDate.getTime());
+            //         const setStartDate: Date = new Date(newDate.setHours(0, 0, 0, 0));
+            //         const duration: number = this.getDuration(setStartDate, startDate, 'day', true, false);
+            //         width = duration * this.parent.perDayWidth;
+            //         date.setHours(0, 0, 0, 0);
+            //         leftValue = (date.getTime() - timelineStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
+            //         if (this.getSecondsInDecimal(startDate) !== this.parent.defaultStartTime && this.parent.timelineModule.bottomTier === 'Day') {
+            //             leftValue += width;
+            //         }
+            //     }
+            //     else {
+            //         leftValue = (date.getTime() - timelineStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
+            //     }
+            // }
+            if (this.hasDSTTransition(date.getFullYear())) {
+                leftValue = (getUniversalTime(date) - getUniversalTime(timelineStartDate)) /
+                    60000 * ((this.parent.perDayWidth) / 24) / 60;
+                return leftValue;
+            } else {
                 let width: number;
                 if (this.parent.timelineModule.bottomTier === 'Day' && this.getSecondsInDecimal(date) !== this.parent.defaultStartTime && this.getSecondsInDecimal(date) !== 0 &&
                     !isTimeSet && !this.parent['isFromEventMarker']) {
@@ -1796,68 +1833,68 @@ export class TaskProcessor extends DateProcessor {
                     leftValue = (date.getTime() - timelineStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
                 }
             }
-            const timelineStartTime: number = timelineStartDate.getTime();
-            let dstStartTime: number | undefined;
-            if (transitions && transitions['dstStart']) {
-                dstStartTime = transitions['dstStart'].getTime();
-            }
-            const isBeforeOrAtDSTStart: boolean = timelineStartTime <= dstStartTime;
-            if (hasDST && this.parent.dayWorkingTime[0]['properties'].from > transitions['dstStart'].getHours() && isBeforeOrAtDSTStart && tierMode === 'Day' && this.getSecondsInDecimal(date) === this.parent.defaultStartTime) {
-                if ((leftValue % this.parent.perDayWidth) !== 0) {
-                    const leftDifference: number = this.parent.perDayWidth - (leftValue % this.parent.perDayWidth);
-                    leftValue = leftValue + leftDifference;
-                }
-            }
-            const topTier: Object = this.parent.timelineModule.customTimelineSettings.topTier;
-            if (topTier && topTier['unit'] === 'Hour' && topTier['count'] === 1) {
-                tierMode = topTier['unit'];
-                countValue = topTier['count'];
-            }
-            const pervYear: number = startDate.getFullYear() - 1;
-            let isprevYearTransitions : boolean = false;
-            if (timelineStartDate.getFullYear() <= pervYear) {
-                if (timelineStartDate.getFullYear() < pervYear) {
-                    isprevYearTransitions = true;
-                }
-                else {
-                    const pervDSTTransitions: Object = this.getDSTTransitions(timelineStartDate.getFullYear(), this.systemTimeZone);
-                    if (startDate >= pervDSTTransitions['dstStart']) {
-                        isprevYearTransitions = true;
-                    }
-                }
-            }
-            const isHourly: boolean = this.parent.timelineModule.topTier === 'Hour' || this.parent.timelineModule.bottomTier === 'Hour';
-            const isDaily: boolean = this.parent.timelineModule.topTier === 'Day' || this.parent.timelineModule.bottomTier === 'Day';
-            const isStartDateInDst: boolean = this.parent.isInDst(startDate);
-            const isTimelineStartDateInDst: boolean = this.parent.isInDst(timelineStartDate);
-            const perHourWidth: number = this.parent.perDayWidth / 24;
+            // const timelineStartTime: number = timelineStartDate.getTime();
+            // let dstStartTime: number | undefined;
+            // if (transitions && transitions['dstStart']) {
+            //     dstStartTime = transitions['dstStart'].getTime();
+            // }
+            // const isBeforeOrAtDSTStart: boolean = timelineStartTime <= dstStartTime;
+            // if (hasDST && this.parent.dayWorkingTime[0]['properties'].from > transitions['dstStart'].getHours() && isBeforeOrAtDSTStart && tierMode === 'Day' && this.getSecondsInDecimal(date) === this.parent.defaultStartTime) {
+            //     if ((leftValue % this.parent.perDayWidth) !== 0) {
+            //         const leftDifference: number = this.parent.perDayWidth - (leftValue % this.parent.perDayWidth);
+            //         leftValue = leftValue + leftDifference;
+            //     }
+            // }
+            // const topTier: Object = this.parent.timelineModule.customTimelineSettings.topTier;
+            // if (topTier && topTier['unit'] === 'Hour' && topTier['count'] === 1) {
+            //     tierMode = topTier['unit'];
+            //     countValue = topTier['count'];
+            // }
+            // const pervYear: number = startDate.getFullYear() - 1;
+            // let isprevYearTransitions : boolean = false;
+            // if (timelineStartDate.getFullYear() <= pervYear) {
+            //     if (timelineStartDate.getFullYear() < pervYear) {
+            //         isprevYearTransitions = true;
+            //     }
+            //     else {
+            //         const pervDSTTransitions: Object = this.getDSTTransitions(timelineStartDate.getFullYear(), this.systemTimeZone);
+            //         if (startDate >= pervDSTTransitions['dstStart']) {
+            //             isprevYearTransitions = true;
+            //         }
+            //     }
+            // }
+            // const isHourly: boolean = this.parent.timelineModule.topTier === 'Hour' || this.parent.timelineModule.bottomTier === 'Hour';
+            // const isDaily: boolean = this.parent.timelineModule.topTier === 'Day' || this.parent.timelineModule.bottomTier === 'Day';
+            // const isStartDateInDst: boolean = this.parent.isInDst(startDate);
+            // const isTimelineStartDateInDst: boolean = this.parent.isInDst(timelineStartDate);
+            // const perHourWidth: number = this.parent.perDayWidth / 24;
 
-            if (!isStartDateInDst && isTimelineStartDateInDst) {
-                if ((countValue !== 1 && isHourly) || (countValue === 1 && isDaily)) {
-                    leftValue -= perHourWidth;
-                }
-            }
-            const unitHour: boolean = ((tierMode === 'Hour' && countValue === 1) || (tierMode === 'Minutes' && countValue === 60));
-            if (hasDST && unitHour && ((startDate >= transitions['dstStart']) || isprevYearTransitions) && !this.parent.enableTimelineVirtualization) {
-                if (countValue === 1) {
-                    const projectStartDate: Date = new Date(this.parent.projectStartDate);
-                    const projectEndDate: Date = new Date(this.parent.projectEndDate);
-                    const yearsCount: number[] = [];
-                    for (let year: number = projectStartDate.getFullYear(); year <= projectEndDate.getFullYear(); year++) {
-                        yearsCount.push(year);
-                    }
-                    const findYearIndex: (year: number) => number = (year: number): number => {
-                        return yearsCount.indexOf(year);
-                    };
-                    let index: number = findYearIndex(startDate.getFullYear());
-                    if (index !== -1) {
-                        if ((startDate > transitions['dstEnd']) || index === 0) {
-                            index += 1;
-                        }
-                        leftValue -= index * (this.parent.perDayWidth / 24);
-                    }
-                }
-            }
+            // if (!isStartDateInDst && isTimelineStartDateInDst) {
+            //     if ((countValue !== 1 && isHourly) || (countValue === 1 && isDaily)) {
+            //         leftValue -= perHourWidth;
+            //     }
+            // }
+            // const unitHour: boolean = ((tierMode === 'Hour' && countValue === 1) || (tierMode === 'Minutes' && countValue === 60));
+            // if (hasDST && unitHour && ((startDate >= transitions['dstStart']) || isprevYearTransitions) && !this.parent.enableTimelineVirtualization) {
+            //     if (countValue === 1) {
+            //         const projectStartDate: Date = new Date(this.parent.projectStartDate);
+            //         const projectEndDate: Date = new Date(this.parent.projectEndDate);
+            //         const yearsCount: number[] = [];
+            //         for (let year: number = projectStartDate.getFullYear(); year <= projectEndDate.getFullYear(); year++) {
+            //             yearsCount.push(year);
+            //         }
+            //         const findYearIndex: (year: number) => number = (year: number): number => {
+            //             return yearsCount.indexOf(year);
+            //         };
+            //         let index: number = findYearIndex(startDate.getFullYear());
+            //         if (index !== -1) {
+            //             if ((startDate > transitions['dstEnd']) || index === 0) {
+            //                 index += 1;
+            //             }
+            //             leftValue -= index * (this.parent.perDayWidth / 24);
+            //         }
+            //     }
+            // }
             return leftValue;
         } else {
             return 0;

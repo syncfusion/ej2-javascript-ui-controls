@@ -763,7 +763,7 @@ export class ContextMenu {
         const items: ContextMenuItemModel[] = []; let itemModel: ContextMenuItemModel;
         let increment: number = 0;
         for (const predecessor of this.predecessors) {
-            const ganttData: IGanttData = this.parent.getRecordByID(predecessor.from);
+            const ganttData: IGanttData = this.parent.connectorLineModule.getRecordByID(predecessor.from);
             const ganttProp: ITaskData = ganttData.ganttProperties;
             const text: string = ganttProp.rowUniqueID + ' - ' + ganttProp.taskName;
             const id: string = 'Dependency' + increment++;

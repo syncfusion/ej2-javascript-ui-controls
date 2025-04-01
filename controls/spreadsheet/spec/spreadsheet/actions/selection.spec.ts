@@ -984,5 +984,41 @@ describe('Selection ->', () => {
                 })
             });
         });
+
+        describe('EJ2-946612->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] , frozenRows: 3, frozenColumns: 3, activeCell: 'D100'}] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Column selection does not work properly after vertical scrolling in a sheet with frozen rows ->', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                let verticalContent: Element = spreadsheet.getMainContent().parentElement;
+                expect(verticalContent.scrollTop).toBe(0);
+                expect(spreadsheet.sheets[0].selectedRange).toBe('A1:A1');
+                helper.invoke('goTo', ['D100']);
+                setTimeout((): void => {
+                    const colHdrPanel: HTMLElement = helper.invoke('getColumnHeaderContent');
+                    let headerCell: HTMLElement = helper.invoke('getColHeaderTable').rows[0].cells[0];
+                    let offset: DOMRect = headerCell.getBoundingClientRect() as DOMRect;
+                    expect(spreadsheet.sheets[0].selectedRange).toBe('D100:D100');
+                    verticalContent = spreadsheet.getMainContent().parentElement;
+                    expect(verticalContent.scrollTop).toBe(1920);
+                    helper.triggerMouseAction('mousedown', { x: offset.left + 1, y: offset.top + 1 }, null, headerCell);
+                    setTimeout((): void => {
+                        headerCell = helper.invoke('getColHeaderTable').rows[0].cells[2];
+                        offset = headerCell.getBoundingClientRect() as DOMRect;
+                        helper.getInstance().selectionModule.mouseMoveHandler({ target: headerCell, clientX: offset.left + 1, clientY: offset.top + 1 });
+                        helper.triggerMouseAction('mouseup', { x: offset.left + 10, y: offset.top + 5, offsetX: 10 }, document, colHdrPanel);
+                        setTimeout((): void => {
+                            expect(spreadsheet.sheets[0].selectedRange).toBe('D1:F132');
+                            expect(verticalContent.scrollTop).toBe(1920);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
     });
 });

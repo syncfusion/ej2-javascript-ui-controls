@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 29.1.35 (2025-04-01)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I698681` - Resolved an issue where the record was getting selected when calling `closeEdit()` with `checkboxOnly` set to true.
+- `#I701758` - Fixed the issue where the filter dialog appeared under the `column-menu` in the Grid.
+- `#FB66390` - Resolved an issue where `getSelectedRecords()` returned an empty array instead of the selected records when `virtualization` was enabled, a column was grouped, and the dataSource had fewer records than the viewport.
+- `#I691456` - Fixed the issue where the `excelAggregateQueryCellInfo` event was triggered only for aggregate cells and not for other cells in the row.
+- `#I690601` - The issue where the `ToolbarTemplate` in the `childGrid` was not rendering properly has been resolved.
+- `#I694635` - Fixed the issue where pressing `Alt + PageUp/PageDown` in a paginated Grid caused unexpected page navigation.
+- `#I699725` - Resolved an issue where the `groupCaptionTemplate` occupied a single cell, causing an additional cell to be inserted in the exported file.
+- `#F196283` - Resolved an issue where searching for decimal values starting with zero caused the leading zero to be unexpectedly removed.
+- `#I659606` - Resolved an issue with inconsistent typing of `FailureEventArgs` in the Grid's `actionFailure` event.
+- `#I698371` - Resolved an issue where, during `infiniteScrolling` with `lazyLoadGrouping` enabled, the content unexpectedly scrolled back to the top instead of maintaining its position.
+- `#I703410` - Resolved an issue with `server-side` Excel export where the boolean column incorrectly exported the `true` value.
+- `#F196296` - Resolved the issue where unsaved batch changes were lost upon filtering in the Grid.
+- `#I696030` - Fixed the issue where the `filter-popup` did not move with the Grid when the parent had a fixed height and scroll overflow.
+
 ## 29.1.33 (2025-03-25)
 
 ### Grid

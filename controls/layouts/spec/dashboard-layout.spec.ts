@@ -6779,6 +6779,15 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('16').row == 5).toBe(true);
             expect((<any>gridLayOut).getCellInstance('16').col == 0).toBe(true);
         });
+        it('change event testing with addPanel', () => {
+            let changeEventTriggered = false;
+            gridLayOut.change = function (args: ChangeEventArgs) {
+                changeEventTriggered = true;
+            }
+            gridLayOut.addPanel({ "sizeX": 1, "sizeY": 1, "row": 1, "col": 0 })
+            gridLayOut.dataBind();
+            expect(changeEventTriggered).toBe(true);
+        });
         it('change event testing with movePanel', () => {
             gridLayOut.change = function (args: ChangeEventArgs) {
                 expect(args.changedPanels.length > 0).toBe(true);

@@ -11406,6 +11406,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                 if ((newObjects as HeaderModel).annotation && (newObjects as HeaderModel).annotation.style) {
                                     this.nameTable[`${id}`].annotations[0].style = (newObjects as HeaderModel).annotation.style;
                                 }
+                                // 945079: Swimlane Diagram Header and Phase Annotations Alignment Not Working properly
+                                if ((newObjects as HeaderModel).annotation && (newObjects as HeaderModel).annotation.offset) {
+                                    this.nameTable[`${id}`].annotations[0].offset = (newObjects as HeaderModel).annotation.offset;
+                                }
                                 this.nodePropertyChange(this.nameTable[`${id}`], oldObjects as Node, newObjects as Node);
                             }
                             if (lane.children) {
@@ -11443,6 +11447,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                 }
                                 if ((newObjects as HeaderModel).annotation && (newObjects as HeaderModel).annotation.style) {
                                     this.nameTable[`${id}`].annotations[0].style = (newObjects as HeaderModel).annotation.style;
+                                }
+                                // 945079: Swimlane Diagram Header and Phase Annotations Alignment Not Working properly
+                                if ((newObjects as HeaderModel).annotation && (newObjects as HeaderModel).annotation.offset) {
+                                    this.nameTable[`${id}`].annotations[0].offset = (newObjects as HeaderModel).annotation.offset;
                                 }
                                 this.nodePropertyChange(this.nameTable[`${id}`], oldObjects as Node, newObjects as Node);
                             }
@@ -11508,8 +11516,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                 }
                 if (actualShape.header && (actualShape as SwimLane).hasHeader && oldShape.header) {
-                    const id: string = grid.rows[0].cells[0].children[0].id; const headerNode: Node = this.nameTable[`${id}`];
-                    this.nodePropertyChange(headerNode, (oldShape.header) as Node, shape.header as Node);
+                    const id: string = grid.rows[0].cells[0].children[0].id;
+                    newObjects = shape.header;
+                    oldObjects = oldShape.header;
+                    // 945079: Swimlane Diagram Header and Phase Annotations Alignment Not Working properly
+                    if ((newObjects as HeaderModel).annotation && (newObjects as HeaderModel).annotation.offset) {
+                        this.nameTable[`${id}`].annotations[0].offset = (newObjects as HeaderModel).annotation.offset;
+                    }
+                    this.nodePropertyChange(this.nameTable[`${id}`], oldObjects as Node, newObjects as Node);
                 }
                 actualObject.height = actualObject.wrapper.height = grid.height;
                 actualObject.width = actualObject.wrapper.width = grid.width;

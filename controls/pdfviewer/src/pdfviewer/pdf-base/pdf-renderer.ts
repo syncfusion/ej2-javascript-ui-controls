@@ -401,7 +401,8 @@ export class PdfRenderer {
         this.loadedDocument = new PdfDocument(this.loadedByteArray, this.password);
         let clonedDocument: PdfDocument = null;
         if (Object.prototype.hasOwnProperty.call(jsonObject, 'digitalSignatureDocumentEdited') &&
-            !jsonObject.digitalSignatureDocumentEdited) {
+            !jsonObject.digitalSignatureDocumentEdited ||
+            (Object.prototype.hasOwnProperty.call(jsonObject, 'isPdfEdited') && !jsonObject.isPdfEdited)) {
             return this.loadedByteArray;
         }
         else {

@@ -1,3 +1,4 @@
+import { NodeCutter } from "../../../src/editor-manager/plugin/nodecutter";
 import { RichTextEditor } from "../../../src";
 import { BASIC_MOUSE_EVENT_INIT, INSRT_LINK_EVENT_INIT } from "../../constant.spec";
 import { destroy, renderRTE } from "../../rich-text-editor/render.spec";
@@ -621,7 +622,573 @@ describe('Link testing', ()=>{
             }, 100);
         });
     });
-
+    describe('Link drag and drop functionality', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                value: '<p>Test content with <a href="http://example.com">some link</a> and more text</p><p>Another paragraph</p>'
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it('Should handle drag start on anchor element', (done: DoneFn) => {
+            editor.focusIn();
+            const range: Range = new Range();
+            const linkElement = editor.inputElement.querySelector('a');
+            range.selectNode(linkElement);
+            editor.inputElement.ownerDocument.getSelection().removeAllRanges();
+            editor.inputElement.ownerDocument.getSelection().addRange(range);
+            const dragEvent = {
+                target: linkElement,
+                preventDefault: () => {}
+            };
+            const originalGetRange = editor.formatter.editorManager.nodeSelection.getRange;
+            editor.formatter.editorManager.nodeSelection.getRange = () => range;
+            (editor.formatter.editorManager as any).linkObj.dragStart(dragEvent);
+            expect((editor.formatter.editorManager as any).linkObj.dragSelectionRange).not.toBe(undefined);
+            editor.formatter.editorManager.nodeSelection.getRange = originalGetRange;
+            done();
+        });
+        it('Should handle drag enter event', (done: DoneFn) => {
+            editor.focusIn();
+            const enterEvent = {
+                dataTransfer: { dropEffect: '' },
+                preventDefault: jasmine.createSpy('preventDefault')
+            };
+            (editor.formatter.editorManager as any).linkObj.dragEnter(enterEvent);
+            expect(enterEvent.dataTransfer.dropEffect).toBe('copy');
+            expect(enterEvent.preventDefault).toHaveBeenCalled();
+            done();
+        });
+        it('Should handle drag drop event and normalize empty links', (done: DoneFn) => {
+            editor.focusIn();
+            const linkModule =  (editor.formatter.editorManager as any).linkObj;
+            const container = document.createElement('div');
+            container.innerHTML = '<p>Test <a href="#"></a> content</p>';
+            document.body.appendChild(container);
+            const range = document.createRange();
+            range.selectNodeContents(container);
+            linkModule.dragSelectionRange = range;
+            linkModule.normalizeEmptyLinks();
+            expect(container.innerHTML).toBe('<p>Test  content</p>');
+            document.body.removeChild(container);
+            done();
+        });
+        it('Should handle drag drop event', (done: DoneFn) => {
+            editor.focusIn();
+            const linkModule = (editor.formatter.editorManager as any).linkObj;
+            const mockElement = document.createElement('div');
+            mockElement.innerHTML = '<p><a href="https://example.com">Test link</a></p>';
+            document.body.appendChild(mockElement);
+            const range = document.createRange();
+            const linkElement = mockElement.querySelector('a');
+            range.selectNode(linkElement);
+            linkModule.dragSelectionRange = range.cloneRange();
+            const dropEvent = {
+                clientX: 50,
+                clientY: 50,
+                preventDefault: jasmine.createSpy('preventDefault'),
+                dataTransfer: {
+                    getData: () => '<a href="https://example.com">Dragged link</a>'
+                }
+            };
+            spyOn(linkModule, 'normalizeEmptyLinks');
+            const mockDocObj = linkModule.parent.currentDocument;
+            spyOn(mockDocObj, 'caretRangeFromPoint').and.returnValue(range);
+            spyOn(linkModule.parent.nodeSelection, 'setRange');
+            linkModule.dragDrop(dropEvent);
+            expect(dropEvent.preventDefault).toHaveBeenCalled();
+            if (linkModule.dragSelectionRange) {
+                expect(linkModule.normalizeEmptyLinks).toHaveBeenCalled();
+            }
+            document.body.removeChild(mockElement);
+            done();
+        });
+    });
+    describe('Link drag and drop functionality improved coverage', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                value: '<p>Test content with <a href="http://example.com">some link</a> and more text</p><p>Another paragraph</p>'
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it('Should handle drag start with parentElement when startContainer is not ELEMENT_NODE', (done: DoneFn) => {
+            editor.focusIn();
+            const linkModule = (editor.formatter.editorManager as any).linkObj;
+            const startAnchor = document.createElement('a');
+            startAnchor.href = 'https://example.com';
+            const div = document.createElement('div');
+            const textNode = document.createTextNode('text content');
+            div.appendChild(textNode);
+            div.appendChild(startAnchor);
+            document.body.appendChild(div);
+            if (!Element.prototype.closest) {
+                div.closest = function(selector: any) {
+                    return startAnchor;
+                };
+            }
+            const range = document.createRange();
+            range.setStart(textNode, 0);
+            range.setEnd(textNode, 5);
+            spyOn(linkModule.parent.nodeSelection, 'getRange').and.returnValue(range);
+            const event = {
+                target: startAnchor,
+                preventDefault: jasmine.createSpy('preventDefault')
+            };
+            linkModule.dragStart(event);
+            expect(linkModule.dragSelectionRange).not.toBe(undefined);
+            document.body.removeChild(div);
+            done();
+        });
+        it('Should handle drag drop with text node as target and restore selection properly', (done: DoneFn) => {
+            editor.focusIn();
+            const linkModule = (editor.formatter.editorManager as any).linkObj;
+            const mockElement = document.createElement('div');
+            mockElement.innerHTML = '<p><a href="https://example.com">Test link</a></p>';
+            document.body.appendChild(mockElement);
+            const range = document.createRange();
+            const linkElement = mockElement.querySelector('a');
+            range.selectNode(linkElement);
+            linkModule.dragSelectionRange = range.cloneRange();
+            const dropEvent = {
+                clientX: 50,
+                clientY: 50,
+                preventDefault: jasmine.createSpy('preventDefault'),
+                dataTransfer: {
+                    getData: () => '<a href="https://example.com">Dragged link</a>'
+                }
+            };
+            const mockDocObj = linkModule.parent.currentDocument;
+            spyOn(mockDocObj, 'caretRangeFromPoint').and.returnValue(range);
+            spyOn(linkModule.parent.nodeSelection, 'setRange');
+            spyOn(linkModule, 'normalizeEmptyLinks');
+            linkModule.dragDrop(dropEvent);
+            expect(dropEvent.preventDefault).toHaveBeenCalled();
+            expect(linkModule.normalizeEmptyLinks).toHaveBeenCalled();
+            document.body.removeChild(mockElement);
+            done();
+        });
+    });
+    describe('Link drag and drop functionality with Firefox and IE support', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                value: '<p>Test content with <a href="http://example.com">some link</a> and more text</p><p>Another paragraph</p>'
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it('Should handle drag drop with Firefox range parent', (done: DoneFn) => {
+            editor.focusIn();
+            const linkModule = (editor.formatter.editorManager as any).linkObj;
+            const realRange = document.createRange();
+            const linkElement = editor.inputElement.querySelector('a');
+            realRange.selectNode(linkElement);
+            linkModule.dragSelectionRange = realRange;
+            const dropEvent = {
+                clientX: 50,
+                clientY: 50,
+                preventDefault: jasmine.createSpy('preventDefault'),
+                dataTransfer: {
+                    getData: jasmine.createSpy('getData').and.returnValue('<a href="https://example.com">Dragged link</a>')
+                },
+                rangeParent: editor.inputElement.querySelector('p').firstChild,
+                rangeOffset: 2
+            };
+            const originalCaretRangeFromPoint = linkModule.parent.currentDocument.caretRangeFromPoint;
+            linkModule.parent.currentDocument.caretRangeFromPoint = null;
+            spyOn(linkModule.parent.nodeSelection, 'setRange');
+            spyOn(linkModule, 'normalizeEmptyLinks');
+            const mockFirefoxRange = document.createRange();
+            const textNode = editor.inputElement.querySelector('p').firstChild;
+            mockFirefoxRange.setStart(textNode, 0);
+            const originalCreateRange = linkModule.parent.currentDocument.createRange;
+            spyOn(linkModule.parent.currentDocument, 'createRange').and.returnValue(mockFirefoxRange);
+            spyOn(mockFirefoxRange, 'deleteContents');
+            spyOn(mockFirefoxRange, 'createContextualFragment').and.returnValue(document.createDocumentFragment());
+            linkModule.dragDrop(dropEvent);
+            linkModule.parent.currentDocument.caretRangeFromPoint = originalCaretRangeFromPoint;
+            linkModule.parent.currentDocument.createRange = originalCreateRange;
+            expect(dropEvent.preventDefault).toHaveBeenCalled();
+            expect(dropEvent.dataTransfer.getData).toHaveBeenCalledWith('text/html');
+            done();
+        });
+        it('Should handle link processing in dragDrop with text node as startContainer', (done: DoneFn) => {
+            editor.focusIn();
+            const linkModule = (editor.formatter.editorManager as any).linkObj;
+            const realRange = document.createRange();
+            const linkElement = editor.inputElement.querySelector('a');
+            realRange.selectNode(linkElement);
+            linkModule.dragSelectionRange = realRange;
+            const dropEvent = {
+                clientX: 50,
+                clientY: 50,
+                preventDefault: jasmine.createSpy('preventDefault'),
+                dataTransfer: {
+                    getData: jasmine.createSpy('getData').and.returnValue('<a href="https://example.com">Dragged link</a>')
+                }
+            };
+            const mockRange = document.createRange();
+            const textNode = editor.inputElement.querySelector('p').firstChild;
+            mockRange.setStart(textNode, 0);
+            mockRange.setEnd(textNode, 5);
+            spyOn(linkModule.parent.currentDocument, 'caretRangeFromPoint').and.returnValue(mockRange);
+            spyOn(linkModule.parent.nodeSelection, 'setRange');
+            spyOn(mockRange, 'deleteContents').and.callThrough();
+            spyOn(mockRange, 'createContextualFragment').and.callThrough();
+            spyOn(linkModule, 'normalizeEmptyLinks');
+            linkModule.dragDrop(dropEvent);
+            expect(dropEvent.preventDefault).toHaveBeenCalled();
+            expect(dropEvent.dataTransfer.getData).toHaveBeenCalledWith('text/html');
+            expect(linkModule.normalizeEmptyLinks).toHaveBeenCalled();
+            done();
+        });
+    });
+    describe('Link module improved branch coverage', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                value: '<p>Test content with <a href="http://example.com">some link</a> and more text</p><p>Another paragraph</p>'
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it('Should handle dragStart when no range is present', (done: DoneFn) => {
+            editor.focusIn();
+            const linkModule = (editor.formatter.editorManager as any).linkObj;
+            const originalGetRange = editor.formatter.editorManager.nodeSelection.getRange;
+            editor.formatter.editorManager.nodeSelection.getRange = () => null;
+            const event = {
+                target: document.createElement('a'),
+                preventDefault: jasmine.createSpy('preventDefault')
+            };
+            linkModule.dragStart(event);
+            expect(linkModule.dragSelectionRange).toBe(undefined);
+            editor.formatter.editorManager.nodeSelection.getRange = originalGetRange;
+            done();
+        });
+        it('Should handle normalizeEmptyLinks with no dragSelectionRange', (done: DoneFn) => {
+            editor.focusIn();
+            const linkModule = (editor.formatter.editorManager as any).linkObj;
+            linkModule.dragSelectionRange = null;
+            linkModule.normalizeEmptyLinks();
+            expect(linkModule.dragSelectionRange).toBe(null);
+            done();
+        });
+        it('Should handle when parentElement is not available in normalizeEmptyLinks', (done: DoneFn) => {
+            editor.focusIn();
+            const linkModule = (editor.formatter.editorManager as any).linkObj;
+            const range = document.createRange();
+            range.selectNodeContents(editor.inputElement);
+            const mockTextNode = document.createTextNode('test');
+            Object.defineProperty(range, 'commonAncestorContainer', {
+                get: () => mockTextNode
+            });
+            linkModule.dragSelectionRange = range;
+            linkModule.normalizeEmptyLinks();
+            expect(linkModule.dragSelectionRange).not.toBe(null);
+            done();
+        });
+        it('Should handle normalizeEmptyLinks with a link that contains images or videos', (done: DoneFn) => {
+            editor.focusIn();
+            const linkModule = (editor.formatter.editorManager as any).linkObj;
+            const container = document.createElement('div');
+            container.innerHTML = '<p><a href="#"><img src="test.jpg" alt="test"></a></p>';
+            document.body.appendChild(container);
+            const range = document.createRange();
+            range.selectNodeContents(container);
+            linkModule.dragSelectionRange = range;
+            linkModule.normalizeEmptyLinks();
+            expect(container.querySelector('a')).not.toBe(null);
+            document.body.removeChild(container);
+            done();
+        });
+        it('Should handle dragDrop when anchorElement is not available', (done: DoneFn) => {
+            editor.focusIn();
+            const linkModule = (editor.formatter.editorManager as any).linkObj;
+            const mockElement = document.createElement('div');
+            mockElement.innerHTML = '<p>Test text without links</p>';
+            document.body.appendChild(mockElement);
+            const range = document.createRange();
+            range.selectNodeContents(mockElement.firstChild);
+            linkModule.dragSelectionRange = range.cloneRange();
+            const dropEvent = {
+                clientX: 50,
+                clientY: 50,
+                preventDefault: jasmine.createSpy('preventDefault'),
+                dataTransfer: {
+                    getData: () => 'Plain text without links'
+                }
+            };
+            spyOn(linkModule, 'normalizeEmptyLinks');
+            const mockDocObj = linkModule.parent.currentDocument;
+            spyOn(mockDocObj, 'caretRangeFromPoint').and.returnValue(range);
+            spyOn(linkModule.parent.nodeSelection, 'setRange');
+            linkModule.dragDrop(dropEvent);
+            expect(dropEvent.preventDefault).toHaveBeenCalled();
+            expect(linkModule.normalizeEmptyLinks).toHaveBeenCalled();
+            document.body.removeChild(mockElement);
+            done();
+        });
+        it('Should handle dragEnter with proper dropEffect', (done: DoneFn) => {
+            editor.focusIn();
+            const linkModule = (editor.formatter.editorManager as any).linkObj;
+            const enterEvent = {
+                dataTransfer: { dropEffect: '' },
+                preventDefault: jasmine.createSpy('preventDefault')
+            };
+            linkModule.dragEnter(enterEvent);
+            expect(enterEvent.dataTransfer.dropEffect).toBe('copy');
+            expect(enterEvent.preventDefault).toHaveBeenCalled();
+            done();
+        });
+    });
+    describe('Link additional test coverage for edge cases', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                value: '<p>A content with <strong>bold</strong> format</p>'
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it('Should handle null url parameter in createLink', (done: DoneFn) => {
+            editor.focusIn();
+            const range = new Range();
+            range.selectNode(editor.inputElement.firstElementChild);
+            editor.inputElement.ownerDocument.getSelection().removeAllRanges();
+            editor.inputElement.ownerDocument.getSelection().addRange(range);
+            editor.showDialog('InsertLink' as any);
+            const insertBtn: HTMLElement = editor.element.querySelector('.e-rte-link-dialog .e-insertLink');
+            insertBtn.click();
+            setTimeout(() => {
+                expect(editor.inputElement.querySelectorAll('a').length).toBe(0);
+                done();
+            }, 50);
+        });
+        it('Should handle drag selection with anchor elements', (done: DoneFn) => {
+            editor.focusIn();
+            editor.inputElement.innerHTML = '<p><a href="https://example.com">Link text</a> regular text</p>';
+            const anchorElement = editor.inputElement.querySelector('a');
+            const event = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+            Object.defineProperty(event, 'target', { value: anchorElement });
+            anchorElement.dispatchEvent(event);
+            setTimeout(() => {
+                expect(editor.inputElement.querySelector('a')).not.toBeNull();
+                done();
+            }, 50);
+        });
+        it('Should Handle when parentElement is not available in normalizeEmptyLinks', (done: DoneFn) => {
+            editor.focusIn();
+            const linkModule = (editor.formatter.editorManager as any).linkObj;
+            const range = document.createRange();
+            range.selectNodeContents(editor.inputElement);
+            const mockTextNode = document.createTextNode('test');
+            Object.defineProperty(range, 'commonAncestorContainer', {
+                get: () => mockTextNode
+            });
+            linkModule.dragSelectionRange = range;
+            (linkModule as any).normalizeEmptyLinks();
+            expect( (linkModule as any).dragSelectionRange).not.toBe(null);
+            done();
+        });
+        it('Should Handle NormalizeEmptyLinks with a link that contains images or videos', (done: DoneFn) => {
+            editor.focusIn();
+            const linkModule = (editor.formatter.editorManager as any).linkObj;
+            const container = document.createElement('div');
+            container.innerHTML = '<p><a href="#"><img src="test.jpg" alt="test"></a></p>';
+            document.body.appendChild(container);
+            const range = document.createRange();
+            range.selectNodeContents(container);
+            (linkModule as any).dragSelectionRange  = range;
+           (linkModule as any).normalizeEmptyLinks();
+            expect(container.querySelector('a') ).not.toBe(null);
+            document.body.removeChild(container);
+            done();
+        });
+    });
+    describe('Link module dragStart method branch coverage', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+            editor = renderRTE({
+                value: '<p>Test content with <a href="http://example.com">some link</a> and more text</p>'
+            });
+            done();
+        });
+        afterEach((done: DoneFn) => {
+            destroy(editor);
+            done();
+        });
+        it('Should handle null range in dragStart', (done: DoneFn) => {
+            editor.focusIn();
+            const linkModule = (editor.formatter.editorManager as any).linkObj;
+            const originalGetRange = editor.formatter.editorManager.nodeSelection.getRange;
+            editor.formatter.editorManager.nodeSelection.getRange = () => null;
+            const event = {
+                target: document.createElement('a'),
+                preventDefault: jasmine.createSpy('preventDefault')
+            };
+            linkModule.dragStart(event);
+            expect(linkModule.dragSelectionRange).toBe(undefined);
+            editor.formatter.editorManager.nodeSelection.getRange = originalGetRange;
+            done();
+        });
+        it('Should handle dragStart when startContainer has no parentElement', (done: DoneFn) => {
+            editor.focusIn();
+            const linkModule = (editor.formatter.editorManager as any).linkObj;
+            const range = document.createRange();
+            const textNode = document.createTextNode('test');
+            range.setStart(textNode, 0);
+            range.setEnd(textNode, 4);
+            spyOn(linkModule.parent.nodeSelection, 'getRange').and.returnValue(range);
+            const event = {
+                target: document.createElement('span'), // Not an anchor
+                preventDefault: jasmine.createSpy('preventDefault')
+            };
+            linkModule.dragStart(event);
+            expect(linkModule.dragSelectionRange).toBe(undefined);
+            done();
+        });
+        it('Should handle dragStart when endContainer has no parentElement', (done: DoneFn) => {
+            editor.focusIn();
+            const linkModule = (editor.formatter.editorManager as any).linkObj;
+            const range = document.createRange();
+            const startContainer = editor.inputElement.querySelector('a');
+            const endContainer = document.createTextNode('test');
+            spyOn(range, 'startContainer').and.returnValue(startContainer);
+            spyOn(range, 'endContainer').and.returnValue(endContainer);
+            spyOn(linkModule.parent.nodeSelection, 'getRange').and.returnValue(range);
+            const event = {
+                target: document.createElement('span'), // Not an anchor
+                preventDefault: jasmine.createSpy('preventDefault')
+            };
+            linkModule.dragStart(event);
+            expect(linkModule.dragSelectionRange).toBe(undefined);
+            done();
+        });
+        it('Should set dragSelectionRange when event target is an anchor element', (done: DoneFn) => {
+            editor.focusIn();
+            const linkModule = (editor.formatter.editorManager as any).linkObj;
+            const range = document.createRange();
+            range.selectNodeContents(editor.inputElement);
+            spyOn(linkModule.parent.nodeSelection, 'getRange').and.returnValue(range);
+            const anchorElement = document.createElement('a');
+            const event = {
+                target: anchorElement,
+                preventDefault: jasmine.createSpy('preventDefault')
+            };
+            linkModule.dragStart(event);
+            expect(linkModule.dragSelectionRange).not.toBe(undefined);
+            done();
+        });
+        it('Should set dragSelectionRange when startAnchor exists', (done: DoneFn) => {
+            editor.focusIn();
+            const linkModule = (editor.formatter.editorManager as any).linkObj;
+            const range = document.createRange();
+            const anchor = document.createElement('a');
+            const span = document.createElement('span');
+            span.appendChild(document.createTextNode('test'));
+            anchor.appendChild(span);
+            range.setStart(span.firstChild, 0);
+            range.setEnd(span.firstChild, 4);
+            span.closest = function(selector: any) {
+                return selector === 'a' ? anchor : null;
+            };
+            spyOn(linkModule.parent.nodeSelection, 'getRange').and.returnValue(range);
+            const event = {
+                target: document.createElement('span'), // Not an anchor
+                preventDefault: jasmine.createSpy('preventDefault')
+            };
+            linkModule.dragStart(event);
+            expect(linkModule.dragSelectionRange).not.toBe(undefined);
+            done();
+        });
+        it('Should set dragSelectionRange when endAnchor exists', (done: DoneFn) => {
+            editor.focusIn();
+            const linkModule = (editor.formatter.editorManager as any).linkObj;
+            const range = document.createRange();
+            const startNode = document.createTextNode('start');
+            const anchor = document.createElement('a');
+            const endNode = document.createTextNode('end');
+            anchor.appendChild(endNode);
+            document.body.appendChild(anchor);
+            range.setStart(startNode, 0);
+            range.setEnd(endNode, 3);
+            spyOn(linkModule.parent.nodeSelection, 'getRange').and.returnValue(range);
+            const event = {
+                target: document.createElement('span'), // Not an anchor
+                preventDefault: jasmine.createSpy('preventDefault')
+            };
+            linkModule.dragStart(event);
+            expect(linkModule.dragSelectionRange).not.toBe(undefined);
+            document.body.removeChild(anchor);
+            done();
+        });
+    });
+    describe('LinkCommand getSplitNode method coverage', () => {
+        let editor: RichTextEditor;
+        beforeEach((done: DoneFn) => {
+          editor = renderRTE({
+            value: '<p>Test content for getSplitNode testing</p>'
+          });
+          done();
+        });
+        afterEach((done: DoneFn) => {
+          destroy(editor);
+          done();
+        });
+        it('should handle collapsed range in getSplitNode method', (done: DoneFn) => {
+          editor.focusIn();
+          const linkModule = (editor.formatter.editorManager as any).linkObj;
+          const range = document.createRange();
+          const textNode = editor.inputElement.querySelector('p').firstChild;
+          range.setStart(textNode, 5);
+          range.setEnd(textNode, 5);
+          range.collapse(true);
+          const result = linkModule.getSplitNode(textNode, range);
+          expect(result).not.toBeNull();
+          done();
+        });
+        it('should handle non-collapsed range in getSplitNode method', (done: DoneFn) => {
+          editor.focusIn();
+          const linkModule = (editor.formatter.editorManager as any).linkObj;
+          const range = document.createRange();
+          const textNode = editor.inputElement.querySelector('p').firstChild;
+          range.setStart(textNode, 5);
+          range.setEnd(textNode, 10);
+          const result = linkModule.getSplitNode(textNode, range);
+          expect(result).not.toBeNull();
+          done();
+        });
+        it('should handle both branches in a single test case for better coverage', (done: DoneFn) => {
+          editor.focusIn();
+          const linkModule = (editor.formatter.editorManager as any).linkObj;
+          const range = document.createRange();
+          const textNode = editor.inputElement.querySelector('p').firstChild;
+          range.setStart(textNode, 5);
+          range.collapse(true);
+          let result = linkModule.getSplitNode(textNode, range);
+          expect(result).not.toBeNull();
+          done();
+        });
+    });
     describe('924343 - Link Selection not restored properly after removing the link', ()=>{
         let editor: RichTextEditor;
         beforeAll(()=> {

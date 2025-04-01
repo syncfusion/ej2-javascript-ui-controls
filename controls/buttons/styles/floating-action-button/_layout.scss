@@ -1,0 +1,111 @@
+@mixin fab-button-styles($border-radius, $min-height, $min-width, $padding, $icon-font-size) {
+  border-radius: $border-radius;
+  min-height: $min-height;
+  min-width: $min-width;
+  padding: $padding;
+
+  &.e-icon-btn {
+    padding: 0;
+  }
+
+  .e-btn-icon {
+    font-size: $icon-font-size;
+  }
+}
+
+@include export-module('floating-action-button-layout') {
+  .e-fab.e-btn {
+    align-items: center;
+    border-radius: $fab-border-radius;
+    display: inline-flex;
+    min-height: $fab-min-height;
+    min-width: $fab-min-width;
+    padding: $fab-padding;
+    position: absolute;
+    z-index: 100000;
+
+    .e-btn-icon {
+      margin-top: 0;
+      font-size: $fab-icon-font-size;
+    }
+
+    &.e-icon-btn {
+      padding: 0;
+    }
+
+    &.e-fab-fixed {
+      position: fixed;
+    }
+
+    &.e-fab-top {
+      top: $fab-offset;
+      &.e-fab-middle {
+        top: 50%;
+        transform: translateY(-50%);
+        &.e-fab-left.e-fab-center {
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+        }
+      }
+    }
+
+    &.e-fab-bottom {
+      bottom: $fab-offset;
+    }
+
+    &.e-fab-left {
+      left: $fab-offset;
+      &.e-fab-center {
+        left: 50%;
+        transform: translateX(-50%);
+      }
+    }
+
+    &.e-fab-right {
+      right: $fab-offset;
+    }
+  }
+
+  .e-rtl {
+    &.e-fab.e-btn {
+      &.e-fab-top {
+        top: $fab-offset;
+        &.e-fab-middle {
+          top: 50%;
+          transform: translateY(-50%);
+          &.e-fab-right.e-fab-center {
+            right: 50%;
+            top: 50%;
+            transform: translate(50%, -50%);
+          }
+        }
+      }
+  
+      &.e-fab-bottom {
+        bottom: $fab-offset;
+      }
+  
+      &.e-fab-right {
+        right: $fab-offset;
+        &.e-fab-center {
+          right: 50%;
+          transform: translateX(50%);
+        }
+      }
+  
+      &.e-fab-left {
+        left: $fab-offset;
+      }
+    }
+  }
+
+  .e-fab-hidden {
+    visibility: hidden;
+  }
+
+  .e-small.e-fab.e-btn,
+  .e-small .e-fab.e-btn {
+    @include fab-button-styles($fab-small-border-radius, $fab-small-min-height, $fab-small-min-width, $fab-small-padding, $fab-small-icon-font-size);
+  }
+}

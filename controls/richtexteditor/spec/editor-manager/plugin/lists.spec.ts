@@ -3100,7 +3100,7 @@ describe ('left indent testing', () => {
         let startNode: HTMLElement;
         let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9 } };
         let elem: HTMLElement;
-        let innerValue: string = `<div id="content-edit"><p><b>Key features:</b></p><ul><li><p>Provides &lt;IFRAME&gt; and &lt;DIV&gt; modes</p><ul><li style="list-style-type: none;"><ul><li style="list-style-type: none;"><ul><li style="list-style-type: none;"><ul><li id="firstli"><p><br></p></li><li><p>Capable of handling markdown editing.</p></li></ul></li></ul></li></ul></li></ul></li><li><p>Contains a modular library to load the necessary functionality on demand.</p></li><li><p>Provides a fully customizable toolbar.</p></li><li><p>Provides HTML view to edit the source directly for developers.</p></li><li><p>Supports third-party library integration.</p></li><li><p>Allows a preview of modified content before saving it.</p></li><li><p>Handles images, hyperlinks, video, hyperlinks, uploads, etc.</p></li><li><p>Contains undo/redo manager.</p></li><li><p>Creates bulleted and numbered lists.</p></li></ul></div>`;        beforeEach(() => {
+        let innerValue: string = `<div id="content-edit"><p><b>Key features:</b></p><ul><li><p>Provides &lt;IFRAME&gt; and &lt;DIV&gt; modes</p><ul><li style="list-style-type: none;"><ul><li style="list-style-type: none;"><ul><li id="firstli"><p><br></p><ul><li><p>Capable of handling markdown editing.</p></li></ul></li></ul></li></ul></li></ul></li><li><p>Contains a modular library to load the necessary functionality on demand.</p></li><li><p>Provides a fully customizable toolbar.</p></li><li><p>Provides HTML view to edit the source directly for developers.</p></li><li><p>Supports third-party library integration.</p></li><li><p>Allows a preview of modified content before saving it.</p></li><li><p>Handles images, hyperlinks, video, hyperlinks, uploads, etc.</p></li><li><p>Contains undo/redo manager.</p></li><li><p>Creates bulleted and numbered lists.</p></li></ul></div>`;        beforeEach(() => {
             elem = createElement('div', {
                 id: 'dom-node', innerHTML: innerValue
             });
@@ -3125,6 +3125,40 @@ describe ('left indent testing', () => {
             (editorObj as any).editorKeyDown(keyBoardEvent);
             (editorObj as any).editorKeyDown(keyBoardEvent);
             expect(editNode.querySelector('#firstli')).toBe(null);
+        });
+
+        afterAll(() => {
+            detach(elem);
+        });
+    });
+
+    describe('EJ2-949708 - Pressing the Enter key at the end of the list causes the list to revert.', () => {
+        let editorObj: EditorManager;
+        let editNode: HTMLElement;
+        let startNode: HTMLElement;
+        let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9 } };
+        let elem: HTMLElement;
+        let innerValue: string = `<div id="content-edit"><p><br></p><p>Need to reconsider story points for the task. The task took more time than the planned estimate due to the following reasons.</p><ol><li id="firstli">Moved the editor application into the ej2-richtexteditor-third-party-test repository.<br></li><li>Set up Jenkins pipeline configuration with appropriate build stages. Getting PR status to success required checking with Core team and then found the solution of adding Starting Ci compile and then Finished Ci compile text.<br></li><li>Created a gulp task with latest AWS SDK. Since the older sdk is deprecated might cause security issues since its not maintained.</li><li>Resolved configuration related to region with Latest SDK.</li></ol><p><br></p></div>`;        beforeEach(() => {
+            elem = createElement('div', {
+                id: 'dom-node', innerHTML: innerValue
+            });
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+            editNode = editorObj.editableElement as HTMLElement;
+        });
+        afterEach(() => {
+            detach(elem);
+        });
+
+        it(' Pressing the Enter key at the end of the list causes the list to revert', () => {
+            startNode = editNode.querySelector('#firstli');
+            startNode = startNode.childNodes[0] as HTMLElement;
+            setCursorPoint(startNode, 0);
+            keyBoardEvent.event.shiftKey = false;
+            keyBoardEvent.action = 'enter';
+            keyBoardEvent.event.which = 13;
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            expect(editNode.querySelector('#firstli').tagName).toBe('LI');
         });
 
         afterAll(() => {

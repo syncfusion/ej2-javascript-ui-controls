@@ -134,6 +134,10 @@ export class BaseHistoryInfo {
      * @private
      */
     public pastedComments: CommentElementBox[] = [];
+    /**
+     * @private
+     */
+    public listInfo: ListInfo = undefined;
     //Properties
     //gets owner control
     public get owner(): DocumentEditor {
@@ -596,14 +600,19 @@ export class BaseHistoryInfo {
             this.revertContentControlProperties();
             return;
         }
-        if (this.action === 'ListFormat' && this.owner.editorModule.listNumberFormat !== '') {
-            let abstractList: WListLevel = this.documentHelper.lists[0].abstractList.levels[this.owner.editorModule.listLevelNumber];
+        if (this.action === 'ListFormat' && !isNullOrUndefined(this.listInfo) && this.listInfo.listNumberFormat !== '' && this.listInfo.listId !== -1) {
+            let abstractList: WListLevel = this.documentHelper.getListById(this.listInfo.listId).abstractList.levels[this.listInfo.listLevelNumber];
             let currentListLevelPattern: ListLevelPattern = abstractList.listLevelPattern;
-            let currentNUmberFormat: string = abstractList.numberFormat
-            abstractList.listLevelPattern = this.owner.editorModule.listLevelPattern;
-            abstractList.numberFormat = this.owner.editorModule.listNumberFormat;
-            this.owner.editorModule.listLevelPattern = currentListLevelPattern;
-            this.owner.editorModule.listNumberFormat = currentNUmberFormat;
+            let currentNUmberFormat: string = abstractList.numberFormat;
+            abstractList.listLevelPattern = this.listInfo.listLevelPattern;
+            abstractList.numberFormat = this.listInfo.listNumberFormat;
+            this.listInfo.listLevelPattern = currentListLevelPattern;
+            this.listInfo.listNumberFormat = currentNUmberFormat;
+            if (!isNullOrUndefined(this.listInfo.listCharacterFormat)) {
+                let currentListCharacterFormat: string = abstractList.characterFormat.fontFamily;
+                abstractList.characterFormat.fontFamily = this.listInfo.listCharacterFormat;
+                this.listInfo.listCharacterFormat = currentListCharacterFormat;
+            }
         }
         this.owner.isShiftingEnabled = true;
         let selectionStartTextPosition: TextPosition = undefined;
@@ -4799,4 +4808,30 @@ export interface ProtectionInfo {
      * Reserved for internal use only.
      */
     protectionType?: ProtectionType
+}
+/**
+ * Specifies the information about the protection type.
+ * > Reserved for internal use.
+ */
+export interface ListInfo {
+    /**
+     * Reserved for internal use only.
+     */
+    listNumberFormat?: string,
+    /**
+     * Reserved for internal use only.
+     */
+    listCharacterFormat?: string,
+    /**
+     * Reserved for internal use only.
+     */
+    listLevelPattern?: ListLevelPattern,
+    /**
+     * Reserved for internal use only.
+     */
+    listLevelNumber?: number
+    /**
+     * Reserved for internal use only.
+     */
+    listId?: number
 }

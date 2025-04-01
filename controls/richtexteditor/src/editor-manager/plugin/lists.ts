@@ -264,7 +264,7 @@ export class Lists {
         }
         if (!isNOU(parentOfCurrentOLUL) && (!isNOU(parentOfCurrentOLUL.closest('UL')) || !isNOU(parentOfCurrentOLUL.closest('OL')) || startNodeParent.nodeName === 'UL' || startNodeParent.nodeName === 'OL') &&
             (parentOfCurrentOLUL.nodeName === 'LI' || startNode.nodeName === 'LI') && (parentOfCurrentOLUL.style.listStyleType === 'none' || parentOfCurrentOLUL.style.listStyleType === '') &&
-            parentOfCurrentOLUL.textContent !== '' && (startNode.textContent !== '' || !isNOU(startNode.nextSibling)) && startNode.firstElementChild && (startNode.firstElementChild.textContent === '' && !hasIgnoredElement) && (startNode === startNodeParent.firstElementChild || startNode.nodeName === 'LI')) {
+            parentOfCurrentOLUL.textContent !== '' && (!isNOU(startNode.lastElementChild) && startNode.lastElementChild.textContent !== '') && startNode.firstElementChild && (startNode.firstElementChild.textContent === '' && !hasIgnoredElement) && (startNode === startNodeParent.firstElementChild || startNode.nodeName === 'LI')) {
             const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
             this.saveSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
             this.domNode.setMarker(this.saveSelection);
@@ -456,6 +456,7 @@ export class Lists {
         let startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
         let endNode: Element = (!isNOU(range.endContainer.parentElement.closest('li')) && range.endContainer.parentElement.closest('li').childElementCount > 1 && range.endContainer.nodeName === '#text') ? range.endContainer as Element :  this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
         let parentList: Element = (range.startContainer.nodeName === '#text') ? range.startContainer.parentElement.closest('li') : (range.startContainer as HTMLElement).closest('li');
+        const endParentList: Element = (range.endContainer.nodeName === '#text') ? range.endContainer.parentElement.closest('li') : (range.endContainer as HTMLElement).closest('li');
         let fullContent: string = '';
         if (!isNOU(parentList) && !isNOU(parentList.firstChild)) {
             parentList.childNodes.forEach((e: ChildNode) => {
@@ -490,7 +491,7 @@ export class Lists {
             parentList = (range.startContainer.nodeName === '#text') ? range.startContainer.parentElement.closest('li') : (range.startContainer as HTMLElement).closest('li');
         }
         let previousNode: Element;
-        if (!isNOU(parentList) && (!range.collapsed || (parentList.textContent.trim() === '' && isNOU(parentList.previousElementSibling) && isNOU(parentList.nextElementSibling))) && parentList.textContent === fullContent ){
+        if ((!isNOU(endParentList) && range.commonAncestorContainer === this.parent.editableElement) || (!isNOU(parentList) && (!range.collapsed || (parentList.textContent.trim() === '' && isNOU(parentList.previousElementSibling) && isNOU(parentList.nextElementSibling))) && parentList.textContent === fullContent)) {
             range.deleteContents();
             const listItems: NodeListOf<Element> = this.parent.editableElement.querySelectorAll('li');
             for (let i: number = 0; i < listItems.length; i++) {

@@ -1035,6 +1035,8 @@ export class Axis extends ChildProperty<Axis> {
     public isAxisInverse: boolean;
     /** @private */
     public isAxisOpposedPosition: boolean;
+    /** @private */
+    public index: number;
     /**
      * Task: BLAZ-2044
      * This property used to hide the axis when series hide from legend click

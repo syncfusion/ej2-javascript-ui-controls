@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 29.1.35 (2025-04-01)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I698039` - Swimlane, Phase, and Lane Header Offset is now applied correctly for header annotation positioning.
+- `#I697177` - Property changes within the Connection Change event are now logged into the undo-redo history stack correctly.
+- `#I700415` - Ports are now restricted within node and connector boundaries while dragging.
+
 ## 29.1.33 (2025-03-25)
 
 ### Diagram

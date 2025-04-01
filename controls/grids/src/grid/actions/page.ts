@@ -268,7 +268,10 @@ export class Page implements IAction {
     private keyPressHandler(e: KeyboardEventArgs): void {
         if (e.action in keyActions) {
             e.preventDefault();
-            (this.element.querySelector(keyActions[e.action]) as HTMLElement).click();
+            const element: HTMLElement = this.element.querySelector(keyActions[e.action]) as HTMLElement;
+            if (!element.classList.contains('e-nextprevitemdisabled')) {
+                element.click();
+            }
         }
     }
 

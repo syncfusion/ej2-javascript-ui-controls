@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## 29.1.35 (2025-04-01)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#F196437` - Now, the issue with the script error that throws when pasting an Excel table into the IFrame RichTextEditor has now been resolved.
+- `#I694099` - Now, plain formatting works properly, clearing the `div` elements, and works similar to 'Paste as Plain Text'.
+
+- `#I691787` - Now, the link drag and drop functionality works properly in the Rich Text Editor.
+
+- `#I694974` - Now, the enter actions works properly within the format tags in the Rich Text Editor.
+
+- `#I690911` - Now, the backspace action works properly in the list item in the Rich Text Editor.
+
+- `#I699752` - Now, the quick toolbar works properly when rendering images with captions inside tables in the Rich Text Editor.
+
+- Now, the issue with pressing the Enter key at the end of the list causing the list to revert has now been resolved.
+
 ## 29.1.33 (2025-03-25)
 
 ### RichTextEditor

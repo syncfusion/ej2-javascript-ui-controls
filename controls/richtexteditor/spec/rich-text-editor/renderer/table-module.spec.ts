@@ -6779,6 +6779,46 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         });
     });
 
+    describe('945968: Table Insertion within Nested List Items', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['CreateTable']
+                },
+                value: `<ul class ="parentUL"><li>Basic features include headings, block quotes, numbered lists, bullet lists, and support to insert images, tables, audio, and video.</li><li>Inline styles include <b>bold</b>, <em>italic</em>, <span style="text-decoration: underline">underline</span>, <span style="text-decoration: line-through">strikethrough</span>, <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" title="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/tools.html" aria-label="Open in new window">hyperlinks</a>, 😀 and more.<ul><li>First nested LI</li><li>second nested LI</li></ul></li>
+                    <li>The toolbar has multi-row, expandable, and scrollable modes. The Editor supports an inline toolbar, a floating toolbar, and custom toolbar items.<ul><li>Third nested LI</li><li>Fourth nested LI</li></ul></li>
+                    <li>Integration with Syncfusion Mention control lets users tag other users. To learn more, check out the <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/mention-integration" title="Mention Documentation" aria-label="Open in new window">documentation</a> and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/demos/#/material/rich-text-editor/mention-integration.html" title="Mention Demos" aria-label="Open in new window">demos</a>.</li>
+                    <li><b>Paste from MS Word</b> - helps to reduce the effort while converting the Microsoft Word content to HTML format with format and styles. To learn more, check out the documentation <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/rich-text-editor/paste-cleanup" title="Paste from MS Word Documentation" aria-label="Open in new window">here</a>.</li>
+                    <li>Other features: placeholder text, character count, form validation, enter key configuration, resizable editor, IFrame rendering, tooltip, source code view, RTL mode, persistence, HTML Sanitizer, autosave, and <a class="e-rte-anchor" href="https://ej2.syncfusion.com/documentation/api/rich-text-editor/" title="Rich Text Editor API" aria-label="Open in new window">more</a>.</li>
+                </ul>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('should insert table between the selected content', (done: Function) => {
+            rteObj.focusIn();
+            const nodeSelection = new NodeSelection();
+            const secondNestedLI = rteEle.querySelector('ul > li > ul > li:nth-child(2)');
+            const thirdNestedLI = rteEle.querySelector('ul > li:nth-child(3) > ul > li:nth-child(2)');
+            nodeSelection.setSelectionText(document, secondNestedLI.firstChild, thirdNestedLI.firstChild, 7, 16);
+            const createTableButton = rteEle.querySelector('.e-toolbar-item button') as HTMLElement;
+            createTableButton.click();
+            const insertTableButton = document.querySelector('.e-insert-table-btn') as HTMLElement;
+            insertTableButton.click();
+            const insertButton = document.querySelector('.e-insert-table') as HTMLElement;
+            insertButton.click();
+            setTimeout(() => {
+                const numberOfLi: number = document.querySelector('.parentUL').querySelectorAll('li').length;
+                expect(numberOfLi).toBe(7);
+                done();
+            }, 100);
+        });
+    });
+
     describe('837479 - Redo doesn’t works properly in table', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;

@@ -466,14 +466,14 @@ describe('Insert Marker Info comment', () => {
         editor.editor.insertComment('Company');
         expect(argsEle.operations[0].action).toBe('Insert');
         expect(argsEle.operations[0].length).toBe(1);
-        expect(argsEle.operations[0].offset).toBe(3);
-        expect(argsEle.operations[0].text).toBe(CONTROL_CHARACTERS.Marker_Start);
+        expect(argsEle.operations[0].offset).toBe(11);
+        expect(argsEle.operations[0].text).toBe(CONTROL_CHARACTERS.Marker_End);
         expect(argsEle.operations[0].markerData.commentId).toBeDefined();
         expect(argsEle.operations[0].markerData.type).toBe('Comment');
         expect(argsEle.operations[1].action).toBe('Insert');
         expect(argsEle.operations[1].length).toBe(1);
-        expect(argsEle.operations[1].offset).toBe(12);
-        expect(argsEle.operations[1].text).toBe(CONTROL_CHARACTERS.Marker_End);
+        expect(argsEle.operations[1].offset).toBe(3);
+        expect(argsEle.operations[1].text).toBe(CONTROL_CHARACTERS.Marker_Start);
         expect(argsEle.operations[1].markerData.commentId).toBeDefined();
         expect(argsEle.operations[1].markerData.type).toBe('Comment');
         expect(argsEle.operations[2].action).toBe('Format');

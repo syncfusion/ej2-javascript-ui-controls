@@ -617,6 +617,21 @@ export class FormFields {
                     if (currentData.Name !== 'ink' && currentData.Name !== 'SignatureImage' && currentData.Name !== 'SignatureText') {
                         this.retreiveFormFieldsData(currentData, true);
                     }
+                    else {
+                        const index: number = this.pdfViewer.formFieldCollections.findIndex(
+                            (field: any) => (field.type === 'SignatureField' || field.type === 'InitialField') &&
+                            currentData.FieldName && currentData.FieldName.includes(field.name) &&
+                            currentData.FieldName.includes(field.name + '_'));
+                        if (index >= 0) {
+                            let value: string = currentData.Value;
+                            if (currentData.Name === 'ink') {
+                                const collectionData: any = processPathData(value);
+                                const csData: any = splitArrayCollection(collectionData);
+                                value = JSON.stringify(csData);
+                            }
+                            this.pdfViewer.formFieldCollections[parseInt(index.toString(), 10)].value = value;
+                        }
+                    }
                 } else {
                     if (currentData.Name !== 'ink') {
                         let bounds: any;

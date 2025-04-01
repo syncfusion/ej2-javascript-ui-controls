@@ -2054,7 +2054,7 @@ export interface HeaderModel {
      *
      * @default ''
      */
-    annotation?: AnnotationModel;
+    annotation?: ShapeAnnotationModel;
 
     /**
      * Sets the style of the header

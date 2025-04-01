@@ -735,8 +735,16 @@ export class ColumnMenu implements IAction {
         if (!isNullOrUndefined(this.targetColumn) && this.parent.filterSettings.type === 'Menu' && Browser.isDevice) {
             return document.getElementById(this.targetColumn.uid + '-flmdlg');
         }
-        return this.parent.element.querySelector('.' + this.POP) as HTMLElement ||
-            (document.getElementById(this.parent.element.id + '_e-popup') && document.getElementById(this.parent.element.id + '_e-popup').querySelector('.' + this.POP));
+        let popElement: HTMLElement = this.parent.element.querySelector('.' + this.POP);
+        if (!popElement) {
+            const popupContainer: HTMLElement = document.getElementById(this.parent.element.id + '_e-popup');
+            popElement = popupContainer ? popupContainer.querySelector('.' + this.POP) : null;
+        }
+        if (!popElement && this.parent.element.classList.contains('e-treelistgrid')) {
+            const ganttElement: HTMLElement = closest(this.parent.element, '.e-gantt') as HTMLElement;
+            popElement = ganttElement ? ganttElement.querySelector('.' + this.POP) : null;
+        }
+        return popElement;
     }
 
     private isFilterItemAdded(): boolean {

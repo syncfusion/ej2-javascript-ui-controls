@@ -2,13 +2,13 @@ import { Dictionary } from '../../base/dictionary';
 import { WList } from '../list/list';
 import { WAbstractList } from '../list/abstract-list';
 import { WListLevel } from '../list/list-level';
-import { Selection } from '../index';
+import { Selection, WListFormat } from '../index';
 import { TextPosition } from '../selection/selection-helper';
 import { DocumentEditor } from '../../document-editor';
 import { Action, CONTROL_CHARACTERS } from '../../index';
 import { LayoutViewer } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { BaseHistoryInfo } from './base-history-info';
+import { BaseHistoryInfo, ListInfo } from './base-history-info';
 import { ModifiedParagraphFormat, ModifiedLevel, RowHistoryFormat, TableHistoryInfo, CellHistoryFormat } from './history-helper';
 import { HistoryInfo } from './history-info';
 import { WParagraphFormat } from '../format/paragraph-format';
@@ -183,6 +183,7 @@ export class EditorHistory {
      * @returns {void}
      */
     public initializeHistory(action: Action): void {
+        const selection: Selection = this.documentHelper.selection;
         if (!isNullOrUndefined(this.currentBaseHistoryInfo)) {
             this.currentBaseHistoryInfo.destroy();
         }
@@ -191,10 +192,36 @@ export class EditorHistory {
         if (action !== 'ModifyStyle') {
             this.currentBaseHistoryInfo.updateSelection();
         }
-        if (!isNullOrUndefined(this.documentHelper.selection) && this.documentHelper.selection.isEmpty
+        if (!isNullOrUndefined(selection) && selection.isEmpty
             && (action === 'BackSpace' || action === 'Delete' ||
                 (action === 'Insert' && !isNullOrUndefined(this.documentHelper.owner.editor) && this.documentHelper.owner.editor.handledTextInput))) {
             this.currentBaseHistoryInfo.isEmptySelection = true;
+        }
+        if (action === 'ListFormat') {
+            if (!isNullOrUndefined(this.documentHelper.owner.editor) &&
+                !isNullOrUndefined(this.documentHelper.owner.editor.listFormatInfo)) {
+                const listFormatInfo: ListInfo = this.documentHelper.owner.editor.listFormatInfo;
+                this.currentBaseHistoryInfo.listInfo = {
+                    listNumberFormat: listFormatInfo.listNumberFormat,
+                    listLevelPattern: listFormatInfo.listLevelPattern,
+                    listLevelNumber: listFormatInfo.listLevelNumber,
+                    listCharacterFormat: listFormatInfo.listCharacterFormat,
+                    listId: listFormatInfo.listId
+                };
+                this.documentHelper.owner.editor.listFormatInfo = undefined;
+            } else if (!isNullOrUndefined(selection) && !isNullOrUndefined(selection.start.paragraph)
+                && !isNullOrUndefined(selection.start.paragraph.paragraphFormat)
+                && !isNullOrUndefined(selection.start.paragraph.paragraphFormat.listFormat) &&
+                !isNullOrUndefined(selection.start.paragraph.paragraphFormat.listFormat.listLevel)) {
+                const listFormat: WListFormat = selection.start.paragraph.paragraphFormat.listFormat;
+                this.currentBaseHistoryInfo.listInfo = {
+                    listNumberFormat: listFormat.listLevel.numberFormat,
+                    listLevelPattern: listFormat.listLevel.listLevelPattern,
+                    listLevelNumber: listFormat.listLevelNumber,
+                    listCharacterFormat: listFormat.listLevel.characterFormat.fontFamily,
+                    listId: listFormat.listId
+                };
+            }
         }
     }
     /**

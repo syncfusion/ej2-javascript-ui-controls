@@ -404,21 +404,13 @@ export class FormDesigner {
                     if (!isNullOrUndefined((this.pdfViewer.nameTable as any)[`${elementId}`])) {
                         const value: any = (this.pdfViewer.nameTable as any)[`${elementId}`].value;
                         const signatureType: 'Type' | 'Path' | 'Image' = (value.indexOf('base64')) > -1 ? 'Image' : ((value.startsWith('M') && value.split(',')[1].split(' ')[1].startsWith('L')) ? 'Path' : 'Type');
-                        this.pdfViewer.formFieldsModule.drawSignature(signatureType, value, element.template, drawingObject.fontFamily);
+                        if (this.pdfViewer.formFieldsModule) {
+                            this.pdfViewer.formFieldsModule.drawSignature(signatureType, value, element.template, drawingObject.fontFamily);
+                        }
                     }
                 }
             }
-            const field: any = {
-                name: drawingObject.name, id: drawingObject.id, value: drawingObject.value, fontFamily: drawingObject.fontFamily,
-                fontSize: drawingObject.fontSize, fontStyle: drawingObject.fontStyle,
-                color: drawingObject.color, backgroundColor: drawingObject.backgroundColor, alignment: drawingObject.alignment,
-                isReadonly: drawingObject.isReadonly, visibility: drawingObject.visibility,
-                maxLength: drawingObject.maxLength, isRequired: drawingObject.isRequired, isPrint: drawingObject.isPrint,
-                rotation: drawingObject.rotateAngle, tooltip: drawingObject.tooltip,
-                borderColor: drawingObject.borderColor, thickness: drawingObject.thickness, options: drawingObject.options,
-                pageNumber: drawingObject.pageNumber, isChecked: drawingObject.isChecked,
-                isSelected: drawingObject.isSelected, customData: drawingObject.customData, bounds: drawingObject.bounds
-            };
+            const field: any = this.getFormFieldAddEventArgs(drawingObject);
             if (!this.pdfViewer.isFormFieldsLoaded || isAddedProgrammatically) {
                 this.pdfViewerBase.updateDocumentEditedProperty(true);
             }
@@ -431,8 +423,29 @@ export class FormDesigner {
         } else {
             const point: PointModel = cornersPointsBeforeRotation(element).topLeft;
             this.updateFormDesignerFieldInSessionStorage(point, element, formFieldAnnotationType, drawingObject);
+            if (isAddedProgrammatically) {
+                const field: any = this.getFormFieldAddEventArgs(drawingObject);
+                this.pdfViewer.fireFormFieldAddEvent('formFieldAdd', field as IFormField, pageIndex);
+            }
         }
         return element.template;
+    }
+
+    private getFormFieldAddEventArgs(drawingObject: PdfFormFieldBaseModel): any {
+        const field: any = {
+            name: drawingObject.name, id: drawingObject.id, value: drawingObject.value, fontFamily: drawingObject.fontFamily,
+            fontSize: drawingObject.fontSize, fontStyle: drawingObject.fontStyle,
+            color: drawingObject.color, backgroundColor: drawingObject.backgroundColor, alignment: drawingObject.alignment,
+            isReadonly: drawingObject.isReadonly, visibility: drawingObject.visibility,
+            maxLength: drawingObject.maxLength, isRequired: drawingObject.isRequired, isPrint: drawingObject.isPrint,
+            rotation: drawingObject.rotateAngle, tooltip: drawingObject.tooltip,
+            borderColor: drawingObject.borderColor, thickness: drawingObject.thickness, options: drawingObject.options,
+            pageNumber: drawingObject.pageNumber, isChecked: drawingObject.isChecked,
+            isSelected: drawingObject.isSelected, customData: drawingObject.customData, bounds: drawingObject.bounds,
+            formFieldAnnotationType: drawingObject.formFieldAnnotationType, isMultiline: drawingObject.isMultiline,
+            insertSpaces: drawingObject.insertSpaces
+        };
+        return field;
     }
 
     /**
@@ -951,8 +964,10 @@ export class FormDesigner {
                                         });
                                         if ((isNullOrUndefined(proxy.pdfViewer.nameTable[currentData.id])
                                             || proxy.pdfViewer.nameTable[currentData.id].value === '') && currentData.value !== '') {
-                                            this.pdfViewer.formFieldsModule.drawSignature(currentData.signatureType,
-                                                                                          currentData.value, currentData);
+                                            if (this.pdfViewer.formFieldsModule) {
+                                                this.pdfViewer.formFieldsModule.drawSignature(currentData.signatureType,
+                                                                                              currentData.value, currentData);
+                                            }
                                             signatureValueRender = true;
                                         }
                                     }
@@ -3591,6 +3606,12 @@ export class FormDesigner {
         this.pdfViewer.formFieldCollections[this.pdfViewer.formFieldCollections.findIndex((el: any) => el.id === formField.id)] = formField;
         this.pdfViewer.formFieldCollection[this.pdfViewer.formFieldCollection.
             findIndex(function (el: any): boolean { return el.id === formField.id; })] = formFieldObject;
+        if (isValueChanged || isFontFamilyChanged || isFontSizeChanged || isFontStyleChanged || isColorChanged ||
+            isBackgroundColorChanged || isBorderColorChanged || isBorderWidthChanged || isAlignmentChanged || isReadOnlyChanged
+            || isVisibilityChanged || isRequiredChanged || isPrintChanged || isToolTipChanged || isCustomDataChanged ||
+            isNameChanged || isMaxLengthChanged) {
+            this.pdfViewerBase.updateDocumentEditedProperty(true);
+        }
     }
     private colorNametoHashValue(colorString: string): string {
         let colorCode: string = colorString;
@@ -4597,10 +4618,12 @@ export class FormDesigner {
                                     Height: PdfViewerUtils.convertPixelToPoint(currentData.lineBound.Height)};
                                 const signatureBounds: any = this.pdfViewerBase.signatureModule.
                                     updateSignatureAspectRatio(filteredField[0].value, false, null, currentData);
-                                boundsObjects = this.pdfViewer.formFieldsModule.
-                                    getSignBounds(i, currentData.rotation, currentData.pageNumber,
-                                                  zoomvalue, currentData.lineBound.X, currentData.lineBound.Y,
-                                                  signatureBounds.width, signatureBounds.height, true);
+                                if (this.pdfViewer.formFieldsModule) {
+                                    boundsObjects = this.pdfViewer.formFieldsModule.
+                                        getSignBounds(i, currentData.rotation, currentData.pageNumber,
+                                                      zoomvalue, currentData.lineBound.X, currentData.lineBound.Y,
+                                                      signatureBounds.width, signatureBounds.height, true);
+                                }
                                 boundsObjects.x = boundsObjects.x + signatureBounds.left;
                                 boundsObjects.y = boundsObjects.y + signatureBounds.top;
                             }
@@ -4611,22 +4634,24 @@ export class FormDesigner {
                         }
                         else if (currentData.signatureType === 'Type') {
                             const zoomvalue: number = this.pdfViewerBase.getZoomFactor();
-                            let bounds: any = this.pdfViewer.formFieldsModule.
-                                getSignBounds(i, currentData.rotation, currentData.pageNumber, zoomvalue, currentData.lineBound.X,
-                                              currentData.lineBound.Y, currentData.lineBound.Width, currentData.lineBound.Height);
-                            if (this.pdfViewer.signatureFitMode === 'Default') {
-                                bounds = this.pdfViewer.formFieldsModule.getDefaultBoundsforSign(bounds);
+                            if (this.pdfViewer.formFieldsModule) {
+                                let bounds: any = this.pdfViewer.formFieldsModule.
+                                    getSignBounds(i, currentData.rotation, currentData.pageNumber, zoomvalue, currentData.lineBound.X,
+                                                  currentData.lineBound.Y, currentData.lineBound.Width, currentData.lineBound.Height);
+                                if (this.pdfViewer.signatureFitMode === 'Default') {
+                                    bounds = this.pdfViewer.formFieldsModule.getDefaultBoundsforSign(bounds);
+                                }
+                                currentData.signatureBound = bounds;
+                                currentData.signatureType = 'Text';
+                                const fontSize: number = bounds.height / this.pdfViewer.formFieldsModule.signatureFontSizeConstent;
+                                const textWidth: number = this.pdfViewer.formFieldsModule.
+                                    getTextWidth(currentData.value, fontSize, currentData.fontFamily);
+                                let widthRatio: number = 1;
+                                if (textWidth > bounds.width) {
+                                    widthRatio = bounds.width / textWidth;
+                                }
+                                currentData.fontSize = this.pdfViewer.formFieldsModule.getFontSize(Math.floor((fontSize * widthRatio)));
                             }
-                            currentData.signatureBound = bounds;
-                            currentData.signatureType = 'Text';
-                            const fontSize: number = bounds.height / this.pdfViewer.formFieldsModule.signatureFontSizeConstent;
-                            const textWidth: number = this.pdfViewer.formFieldsModule.
-                                getTextWidth(currentData.value, fontSize, currentData.fontFamily);
-                            let widthRatio: number = 1;
-                            if (textWidth > bounds.width) {
-                                widthRatio = bounds.width / textWidth;
-                            }
-                            currentData.fontSize = this.pdfViewer.formFieldsModule.getFontSize(Math.floor((fontSize * widthRatio)));
                         }
                     }
                 }
@@ -4774,13 +4799,17 @@ export class FormDesigner {
                                     currentHeight = signBounds.height;
                                 }
                                 else {
-                                    currentLeft = this.pdfViewer.formFieldsModule.ConvertPointToPixel(signBounds.X);
-                                    currentTop = this.pdfViewer.formFieldsModule.ConvertPointToPixel(signBounds.Y);
-                                    currentWidth = this.pdfViewer.formFieldsModule.ConvertPointToPixel(signBounds.Width);
-                                    currentHeight = this.pdfViewer.formFieldsModule.ConvertPointToPixel(signBounds.Height);
+                                    if (this.pdfViewer.formFieldsModule) {
+                                        currentLeft = this.pdfViewer.formFieldsModule.ConvertPointToPixel(signBounds.X);
+                                        currentTop = this.pdfViewer.formFieldsModule.ConvertPointToPixel(signBounds.Y);
+                                        currentWidth = this.pdfViewer.formFieldsModule.ConvertPointToPixel(signBounds.Width);
+                                        currentHeight = this.pdfViewer.formFieldsModule.ConvertPointToPixel(signBounds.Height);
+                                    }
                                 }
                                 const bound : any = { left: currentLeft, top: currentTop, width: currentWidth, height: currentHeight };
-                                finalSignBounds = this.pdfViewer.formFieldsModule.updateSignatureBounds(bound, currentPage, false);
+                                if (this.pdfViewer.formFieldsModule) {
+                                    finalSignBounds = this.pdfViewer.formFieldsModule.updateSignatureBounds(bound, currentPage, false);
+                                }
                             }
                             if (boundsData[parseInt(i.toString(), 10)].Name === 'SignatureImage'){
                                 signType = 'Image';

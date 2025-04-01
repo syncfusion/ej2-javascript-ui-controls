@@ -1693,6 +1693,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                         this.selectionModule.selectContent(this.documentStart, true);
                     }
                     this.editorModule.layoutWholeDocument(true);
+                    this.selectionModule.onHighlight();
                     setTimeout((): void => {
                         this.fireViewChange();
                     }, 200);

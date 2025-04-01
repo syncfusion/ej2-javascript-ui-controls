@@ -5293,3 +5293,32 @@ describe('Coverage for skips the hidden cell focus', () => {
         gridObj = null;
     });
 });
+
+describe('946711: Row height issue in tree grid team', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData.slice(0, 12),
+                allowPaging: true,
+                pageSettings: {pageSizes: true},
+                columns: [
+                    { headerText: 'OrderID', field: 'OrderID', width: 10 },
+                    { headerText: 'ShipCountry', field: 'ShipCountry' },
+                ]
+            }, done);
+    });
+
+    it ('Check row height', (done: Function) => {
+        const cellHeight: number = (gridObj.getContentTable() as HTMLTableElement).rows[1].cells[0].getBoundingClientRect().height;
+        expect(gridObj.getRowHeight()).toBe(Math.ceil(cellHeight));
+        expect(gridObj.getRowHeight(true)).toBe(cellHeight);
+        expect(gridObj.getRowHeight(false)).toBe(Math.ceil(cellHeight));
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

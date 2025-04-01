@@ -71,7 +71,8 @@ export class Search implements IAction {
             this.headerFocus = false;
             // Check searchString is number and parseFloat to remove trailing zeros
             if (searchString !== '' && !this.hasNonNumericCharacters(searchString)) {
-                if (searchString === '.' || (searchString.indexOf('.') === -1)) {
+                const parts: string[] = searchString.split('.');
+                if (searchString === '.' || (searchString.indexOf('.') === -1) || (parts[0].startsWith('0') && parts[0].length > 1)) {
                     gObj.searchSettings.key = searchString.toString();
                 } else {
                     gObj.searchSettings.key = parseFloat(searchString).toString();

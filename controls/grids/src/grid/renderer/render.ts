@@ -649,7 +649,7 @@ export class Render {
             this.ariaService.setOptions(<HTMLElement>this.parent.getContent().querySelector('.' + literals.content), { busy: false, invalid: true });
             this.setRowCount(1);
         }
-        this.parent.trigger(events.actionFailure, { error: e });
+        this.parent.trigger(events.actionFailure, e && (<{ error?: Error }>e).error ? e : { error: e });
         this.parent.hideSpinner();
         this.parent.removeMaskRow();
         if (args.requestType === 'save' as Action || args.requestType === 'delete' as Action

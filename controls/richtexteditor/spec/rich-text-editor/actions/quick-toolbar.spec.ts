@@ -190,7 +190,60 @@ describe("Quick Toolbar - Actions Module", () => {
             expect(imgPop2.classList.contains('changedClass')).toBe(true);
         });
     });
-
+    describe("945524 - Quick toolbar position with image caption", () => {
+        let rteObj: any;
+        let rteEle: HTMLElement;
+        let imgEle: HTMLElement;
+        let QTBarModule: any;
+        let htmlStr: string = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td style="width: 20%;"><br></td><td style="width: 20%;"><img id="imgTag" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" class="e-rte-image e-imginline" alt="RTE-Overview" width="242" height="137" style="min-width: 0px; max-width: 242px; min-height: 0px;"> </td></tr></tbody></table>`;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                value: htmlStr,
+                quickToolbarSettings: {
+                    image: ['Caption', 'Align', 'Remove']
+                }
+            });
+            rteEle = rteObj.element;
+            imgEle = select('#imgTag', rteObj.element) as HTMLElement;
+            QTBarModule = getQTBarModule(rteObj);
+            done();
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+        it("Image quick toolbar position after adding caption", (done: Function) => {
+            let target = imgEle;
+            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", true, true);
+            target.dispatchEvent(clickEvent);
+            clickEvent.initEvent("mouseup", true, true);
+            target.dispatchEvent(clickEvent);
+            rteObj.mouseUp(clickEvent);
+            setTimeout(() => {
+                let imgQuickToolbar = document.querySelector('.e-rte-quick-popup') as HTMLElement;
+                let captionBtn = imgQuickToolbar.querySelector('[title="Caption"]') as HTMLElement;
+                captionBtn.click();
+                setTimeout(() => {
+                    let imgWithCaption = rteObj.element.querySelector('.e-rte-img-caption');
+                    expect(imgWithCaption).not.toBeNull();
+                    target = rteObj.element.querySelector('.e-rte-image') as HTMLElement;
+                    clickEvent.initEvent("mouseup", true, true);
+                    target.dispatchEvent(clickEvent);
+                    rteObj.mouseUp(clickEvent);
+                    setTimeout(() => {
+                        let imgQuickToolbarAfterCaption = document.querySelector('.e-rte-quick-popup') as HTMLElement;
+                        expect(imgQuickToolbarAfterCaption).not.toBeNull();
+                        expect(imgQuickToolbarAfterCaption.offsetTop).toBeGreaterThan(0);
+                        expect(imgQuickToolbarAfterCaption.offsetLeft).toBeGreaterThan(0);
+                        expect(imgQuickToolbarAfterCaption.offsetTop + imgQuickToolbarAfterCaption.offsetHeight)
+                            .toBeLessThan(rteEle.offsetTop + rteEle.offsetHeight);
+                        done();
+                    }, 100);
+                }, 100);
+            }, 100);
+        });
+    });
     describe("Dynamic quicktoolbar disable testing", () => {
         let trg: HTMLElement;
         let rteEle: HTMLElement;

@@ -85,6 +85,7 @@ export class CheckBoxFilterBase {
     private localInfiniteSelectionInteracted: boolean = false;
     private infiniteManualSelectMaintainPred: PredicateModel[] = [];
     private infiniteUnloadParentExistPred: PredicateModel[];
+    private filterPreventColumns: PredicateModel[];
 
     /**
      * Constructor for checkbox filtering module
@@ -464,6 +465,11 @@ export class CheckBoxFilterBase {
             }
             if (this.dlg && this.dlg.parentElement) {
                 remove(this.dlg);
+                let gridPopup: HTMLElement = document.getElementById(this.parent.element.id + '_e-popup');
+                if (!isNullOrUndefined(gridPopup)) {
+                    remove(gridPopup);
+                    gridPopup = null;
+                }
             }
             this.dlg = null;
             this.parent.notify(events.filterDialogClose, {});
@@ -561,6 +567,10 @@ export class CheckBoxFilterBase {
         || this.infiniteRenderMod) {
             if (!this.infiniteRenderMod) {
                 coll = this.complexQueryPredicate(checked, defaults, isNotEqual);
+                if (isNullOrUndefined(coll)) {
+                    return;
+                }
+                coll = this.filterPreventColumns ? this.filterPreventColumns : coll;
             } else if (this.infiniteRenderMod &&
                 (!this.infiniteSearchPred || (this.infiniteSearchPred && !this.infiniteSearchPred.isComplex))) {
                 this.infiniteFltrBtnHandler(coll);
@@ -633,9 +643,15 @@ export class CheckBoxFilterBase {
             } else {
                 coll.push(fObj);
             }
-            this.notifyFilterPrevEvent(fObj);
         }
-        return coll;
+        const filterColumns: PredicateModel = this.filterPreventColumns && this.filterPreventColumns.length ?
+            this.filterPreventColumns[0] : fObj;
+        if (filterColumns && !this.notifyFilterPrevEvent(filterColumns)) {
+            this.filterPreventColumns = coll;
+            return null;
+        } else {
+            return coll;
+        }
     }
 
     private infiniteFltrBtnHandler(coll: PredicateModel[]): PredicateModel[] | void {
@@ -669,7 +685,7 @@ export class CheckBoxFilterBase {
         }
     }
 
-    private notifyFilterPrevEvent(predicate: PredicateModel): void {
+    private notifyFilterPrevEvent(predicate: PredicateModel): boolean {
         const args: {
             cancel: boolean, instance: CheckBoxFilterBase, handler: Function, arg1: string, arg2: Object, arg3: string, arg4: boolean,
             arg5: boolean, arg6: string } = {
@@ -677,8 +693,9 @@ export class CheckBoxFilterBase {
             arg4: predicate.matchCase, arg5: predicate.ignoreAccent, arg6: predicate.value as string, cancel: false };
         this.parent.notify(events.fltrPrevent, args);
         if (args.cancel) {
-            return;
+            return false;
         }
+        return true;
     }
 
     // eslint-disable-next-line

@@ -246,6 +246,10 @@ export class BatchEdit {
             this.saveCell(true);
         }
         this.isAdded = false;
+        let selectedIndexes: number[] = [];
+        if (gObj.selectionModule) {
+            selectedIndexes = gObj.selectionModule.selectedRowIndexes;
+        }
         gObj.clearSelection();
         for (let i: number = 0; i < rows.length; i++) {
             let isInsert: boolean = false;
@@ -266,7 +270,11 @@ export class BatchEdit {
             rows: this.parent.getRowsObject().length ? this.parent.getRowsObject() :
                 [new Row<Column>({ isDataRow: true, cells: [new Cell<Column>({ isDataCell: true, visible: true })] })]
         });
-        gObj.selectRow(this.cellDetails.rowIndex);
+        if (gObj.isCheckBoxSelection && (gObj.selectionSettings.checkboxOnly || gObj.selectionSettings.persistSelection)) {
+            gObj.selectRows(selectedIndexes);
+        } else {
+            gObj.selectRow(this.cellDetails.rowIndex);
+        }
         this.refreshRowIdx();
         gObj.notify(events.toolbarRefresh, {});
         this.parent.notify(events.tooltipDestroy, {});

@@ -251,7 +251,8 @@ export class Toolbar {
             const isVue: boolean = this.parent.isVue
                 || (this.parent.parentDetails && this.parent.parentDetails.parentInstObj && this.parent.parentDetails.parentInstObj.isVue);
             if (typeof (this.parent.toolbarTemplate) === 'string'
-                && !(isVue && !document.querySelectorAll(this.parent.toolbarTemplate).length)) {
+                && !(isVue && !document.querySelectorAll(this.parent.toolbarTemplate).length)
+                && (document.querySelector(this.parent.toolbarTemplate) && document.querySelector(this.parent.toolbarTemplate).tagName.toLowerCase() !== 'script')) {
                 this.toolbar.appendTo(this.parent.toolbarTemplate);
                 this.element = this.toolbar.element;
             } else {

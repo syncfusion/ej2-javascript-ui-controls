@@ -26,7 +26,7 @@ import { canOutConnect, canInConnect, canAllowDrop, canPortInConnect, canPortOut
 import { HistoryEntry } from '../diagram/history';
 import { Matrix, transformPointByMatrix, rotateMatrix, identityMatrix } from '../primitives/matrix';
 import { Snap } from './../objects/snapping';
-import { NodeConstraints, DiagramEvent, ObjectTypes, PortConstraints, State, DiagramConstraints } from './../enum/enum';
+import { NodeConstraints, DiagramEvent, ObjectTypes, PortConstraints, State, DiagramConstraints, DiagramAction } from './../enum/enum';
 import { PointPortModel, PortModel } from './../objects/port-model';
 import { ITouches } from '../objects/interface/interfaces';
 import { SelectorModel } from '../objects/node-model';
@@ -589,13 +589,14 @@ export class ConnectTool extends ToolBase {
                     targetNodeNode = (args.target as NodeModel).id;
                 }
             }
+            // 947614: Property Change does not log into history within connection change event completed state
+            if (this.commandHandler.diagram.diagramActions & DiagramAction.ToolAction) {
+                this.commandHandler.diagram.diagramActions &= ~DiagramAction.ToolAction;
+            }
             let arg: IEndChangeEventArgs = {
                 connector: connector, state: 'Completed', targetNode: targetNodeNode,
                 oldValue: oldValues, newValue: newValues, cancel: false, targetPort: targetPortName
             };
-            const trigger: number = this.endPoint === 'ConnectorSourceEnd' ? DiagramEvent.sourcePointChange : DiagramEvent.targetPointChange;
-            this.commandHandler.triggerEvent(trigger, arg);
-            this.commandHandler.removeTerminalSegment(connector as Connector, true);
             if (this.undoElement && args.source) {
                 // eslint-disable-next-line prefer-const
                 let obj: SelectorModel; obj = cloneObject(args.source);
@@ -605,6 +606,9 @@ export class ConnectTool extends ToolBase {
                 };
                 this.commandHandler.addHistoryEntry(entry);
             }
+            const trigger: number = this.endPoint === 'ConnectorSourceEnd' ? DiagramEvent.sourcePointChange : DiagramEvent.targetPointChange;
+            this.commandHandler.triggerEvent(trigger, arg);
+            this.commandHandler.removeTerminalSegment(connector as Connector, true);
         } else if (!(this instanceof ConnectorDrawingTool) &&
             (this.endPoint === 'BezierTargetThumb' || this.endPoint === 'BezierSourceThumb')) {
             if (this.undoElement && args.source) {

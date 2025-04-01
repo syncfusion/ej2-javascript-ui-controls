@@ -536,6 +536,7 @@ export class CartesianAxisLayoutPanel {
             let axisVisibility: boolean = true;
 
             axis = chart.axisCollections[i as number];
+            axis.index = i as number;
             this.element = chart.renderer.createGroup({ id: chart.element.id + 'AxisGroup' + i + 'Inside' });
             if (this.element) { this.element.setAttribute('aria-hidden', 'true'); }
             outsideElement = chart.renderer.createGroup({ id: chart.element.id + 'AxisGroup' + i + 'Outside' });

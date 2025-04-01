@@ -535,7 +535,11 @@ export class BasicFormulas {
         let mulValues: number[] = null;
         const ranges: string[] = args; const len: number[] = [];
         for (let i: number = 0; i < ranges.length; i++) {
-            len.push(this.parent.getCellCollection(ranges[i as number]).length);
+            const cells: string | string[] = this.parent.getCellCollection(ranges[i as number]);
+            if (cells[0] === '#REF!') {
+                return this.parent.getErrorStrings()[CommonErrors.Name];
+            }
+            len.push(cells.length);
         }
         for (let j: number = 0; j < len.length; j++) {
             if (len[j as number] && len[j + 1] && len[j as number] !== len[j + 1]) {
@@ -4235,6 +4239,9 @@ export class BasicFormulas {
         const valueCollection: string[] = []; let cellCollection: string[] | string; let isStringCollection: boolean = false;
         if (argArr[1].indexOf(':') > -1 || this.parent.isCellReference(argArr[1])) {
             cellCollection = this.parent.getCellCollection(argArr[1]);
+            if (cellCollection[0] === '#REF!') {
+                return this.parent.getErrorStrings()[CommonErrors.Name];
+            }
             for (let j: number = 0; j < cellCollection.length; j++) {
                 const cellValue: number | string = this.parent.getValueFromArg(cellCollection[j as number]);
                 if (cellValue.indexOf(this.parent.tic) > -1 || isNaN(Number(cellValue))) {

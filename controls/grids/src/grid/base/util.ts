@@ -624,12 +624,18 @@ export function getScrollBarWidth(): number {
 
 /** @hidden */
 let rowHeight: number;
+/** @hidden */
+let accurateRowHeight: number;
 /**
  * @param {HTMLElement} element - Defines the element
+ * @param {boolean} accurateHeight - Defines the accurate row height
  * @returns {number} Returns the roww height
  * @hidden
  */
-export function getRowHeight(element?: HTMLElement): number {
+export function getRowHeight(element?: HTMLElement, accurateHeight?: boolean): number {
+    if (accurateHeight && accurateRowHeight !== undefined) {
+        return accurateRowHeight;
+    }
     if (rowHeight !== undefined) {
         return rowHeight;
     }
@@ -639,7 +645,11 @@ export function getRowHeight(element?: HTMLElement): number {
     element.appendChild(table);
     const rect: ClientRect = table.querySelector('td').getBoundingClientRect();
     element.removeChild(table);
+    accurateRowHeight = rect.height;
     rowHeight = Math.ceil(rect.height);
+    if (accurateHeight) {
+        return accurateRowHeight;
+    }
     return rowHeight;
 }
 
@@ -1764,9 +1774,9 @@ export function resetDialogAppend(gObj: IGrid, dlgObj: Dialog): void {
     element.style.zIndex = (dlgObj.zIndex).toString();
     element.style.width = dlgObj.element.offsetWidth + 'px';
     element.appendChild(dlgObj.element);
-    const sbPanel: HTMLElement = document.querySelector('.sb-demo-section,.e-grid-dialog-fixed');
+    const sbPanel: Element = parentsUntil(gObj.element, 'sb-demo-section') || parentsUntil(gObj.element, 'e-grid-dialog-fixed');
     if (sbPanel) {
-        const sbPos: { left: number; top: number; } = calculateRelativeBasedPosition(gObj.element, sbPanel);
+        const sbPos: { left: number; top: number; } = calculateRelativeBasedPosition(gObj.element, sbPanel as HTMLElement);
         element.style.top = sbPos.top + 'px';
         element.style.left = sbPos.left + 'px';
         sbPanel.insertBefore(element, sbPanel.firstChild);

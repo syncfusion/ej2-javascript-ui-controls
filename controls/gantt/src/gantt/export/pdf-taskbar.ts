@@ -184,7 +184,7 @@ export class PdfGanttTaskbarCollection {
         this.drawLeftLabel(page, startPoint, detail, cumulativeWidth ,taskbar);
         //Draw Taskbar
         let font: PdfFont = new PdfStandardFont(this.fontFamily, 9, PdfFontStyle.Regular);
-        const fontColor: PdfPen = null;
+        let fontColor: PdfPen = null;
         const fontBrush: PdfBrush = new PdfSolidBrush(this.progressFontColor);
         let customizedFont : PdfFont;
         let customizedFontBrush : PdfBrush;
@@ -215,13 +215,20 @@ export class PdfGanttTaskbarCollection {
         else{
             taskLabelFont = font;
         }
-        if(taskbar.labelSettings.taskLabel.fontStyle.fontColor){
-            taskLabelFontBrush =  new PdfSolidBrush(taskbar.labelSettings.taskLabel.fontStyle.fontColor) ;
+        taskLabelFontBrush = taskbar.labelSettings.taskLabel.fontStyle.fontColor 
+                            ? new PdfSolidBrush(taskbar.labelSettings.taskLabel.fontStyle.fontColor) 
+                            : (ganttStyle && ganttStyle.label && ganttStyle.label.fontColor 
+                                ? new PdfSolidBrush(ganttStyle.label.fontColor) 
+                                : fontBrush);
+        if(!isNullOrUndefined(ganttStyle) && !isNullOrUndefined(ganttStyle.label) && (!isNullOrUndefined(ganttStyle.label.fontBrush))){
+            fontColor = new PdfPen(ganttStyle.label.fontBrush);
         }
-        else{
-            taskLabelFontBrush = fontBrush;
+        if (!isNullOrUndefined(ganttStyle) && !isNullOrUndefined(ganttStyle.label) && (!isNullOrUndefined(ganttStyle.label.fontSize)
+            || !isNullOrUndefined(ganttStyle.label.fontStyle) ||
+            !isNullOrUndefined(ganttStyle.label.fontFamily))) {
+            taskLabelFont = this.getPdfFont(ganttStyle);
         }
-        const progressFormat: PdfStringFormat = new PdfStringFormat();
+        let progressFormat: PdfStringFormat = new PdfStringFormat();
         progressFormat.lineAlignment = PdfVerticalAlignment.Middle;
         progressFormat.alignment = PdfTextAlignment.Right;
         let isLabelString: boolean = false;
@@ -235,6 +242,14 @@ export class PdfGanttTaskbarCollection {
         if ((!isNullOrUndefined(this.taskLabel) && (/^[a-zA-Z]/.test(this.taskLabel))) || (!isNullOrUndefined(taskbar.taskbarTemplate.value)) ){
             isLabelString = true;
             progressFormat.alignment = PdfTextAlignment.Left;
+        }
+        if(!isNullOrUndefined(ganttStyle) && !isNullOrUndefined(ganttStyle.label)&& !isNullOrUndefined(ganttStyle.label.format) ){
+            progressFormat = ganttStyle.label.format;
+        }
+        let taskLabelPadding: { left: number; right: number; top: number; bottom: number } = { left: 0, right: 0, top: 0, bottom: 0 };
+        if (!isNullOrUndefined(ganttStyle) && !isNullOrUndefined(ganttStyle.label) &&
+            !isNullOrUndefined(ganttStyle.label.padding)) {
+                taskLabelPadding = ganttStyle.label.padding;
         }
         let pageIndex: number = -1;
         const baselinePen: PdfPen = new PdfPen(taskbar.baselineBorderColor);
@@ -490,10 +505,10 @@ export class PdfGanttTaskbarCollection {
                                         updatedWidth = this.width;
                                     }
                                     if (this.isAutoFit()) {
-                                        taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + (this.left - cumulativeWidth), startPoint.y + adjustHeight, (updatedWidth), pixelToPoint(this.height), progressFormat);
+                                        taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + (this.left - cumulativeWidth)  - (taskLabelPadding.left + taskLabelPadding.right), startPoint.y + adjustHeight  - (taskLabelPadding.top + taskLabelPadding.bottom), (updatedWidth), pixelToPoint(this.height), progressFormat);
                                     }
                                     else {
-                                        taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth), startPoint.y + adjustHeight, pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
+                                        taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth) - (taskLabelPadding.left + taskLabelPadding.right), startPoint.y + adjustHeight  - (taskLabelPadding.top + taskLabelPadding.bottom), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
                                     }
                                 }
                             }
@@ -792,14 +807,14 @@ export class PdfGanttTaskbarCollection {
                                         this.remainString = result.remainder;
                                         this.stringLeft = detail.endPoint;
                                         // this.rightTaskLabel.isLeftCalculated = true;
-                                    } 
+                                    }
                                 }
                                 else{
                                     if (this.isAutoFit()) {
-                                        taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + (this.left - cumulativeWidth), (startPoint.y + adjustHeight), (updatedWidth), pixelToPoint(this.height), progressFormat);
+                                        taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + (this.left - cumulativeWidth)  - (taskLabelPadding.left + taskLabelPadding.right), (startPoint.y + adjustHeight) - (taskLabelPadding.top + taskLabelPadding.bottom) , (updatedWidth), pixelToPoint(this.height), progressFormat);
                                     }
                                     else {
-                                        taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth), (startPoint.y + adjustHeight), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
+                                        taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + pixelToPoint(this.left - cumulativeWidth)  - (taskLabelPadding.left + taskLabelPadding.right), (startPoint.y + adjustHeight)  - (taskLabelPadding.top + taskLabelPadding.bottom), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
                                     }
                                 }
                             }
@@ -919,10 +934,6 @@ export class PdfGanttTaskbarCollection {
                 }
                 else {
                     taskGraphics.drawRectangle(taskbarPen, taskBrush, startPoint.x + pixelToPoint(taskbar.left + 0.5), startPoint.y + adjustHeight, pixelToPoint(taskbar.width), pixelToPoint(taskbar.height));
-                    if (!isNullOrUndefined(this.remainString)) {
-                        var result = this.getWidth(this.remainString, taskbar.width - taskbar.left, 15);
-                        taskGraphics.drawString(result.lines[0].text, customizedFont, customizedFontColor, customizedFontBrush, startPoint.x + pixelToPoint(taskbar.left), (startPoint.y + adjustHeight), result.actualSize.width, pixelToPoint(this.height), progressFormat);
-                    }
                 }
                 if (this.isScheduledTask && taskbar.isAutoSchedule && !taskbar.isSpliterTask) {
                     if (isNullOrUndefined(template.image) && isNullOrUndefined(template.value)){
@@ -933,20 +944,18 @@ export class PdfGanttTaskbarCollection {
                         if (isLabelString) {
                             updatedWidth = this.width;
                         }
-                        if (isNullOrUndefined(taskbar.taskbarTemplate.value)) {
-                            if (isNullOrUndefined(taskbar.taskbarTemplate.value)) {
-                                if (!isNullOrUndefined(this.remainString)) {
-                                    const result: PdfStringLayoutResult = this.getWidth(this.remainString, detail.endPoint - this.stringLeft, 15);
-                                    taskGraphics.drawString(result.lines[0].text, font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left), (startPoint.y + adjustHeight), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
-                                }
+                        if (isLabelString && isNullOrUndefined(taskbar.taskbarTemplate.value)) {
+                            if (!isNullOrUndefined(this.remainString)) {
+                                const result: PdfStringLayoutResult = this.getWidth(this.remainString, detail.endPoint - this.stringLeft, 15);
+                                taskGraphics.drawString(result.lines[0].text, taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + pixelToPoint(this.left)  - (taskLabelPadding.left + taskLabelPadding.right), (startPoint.y + adjustHeight)  - (taskLabelPadding.top + taskLabelPadding.bottom), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
                             }
                         }
-                        if (!isNullOrUndefined(this.taskLabel)) {
+                        else if (!isNullOrUndefined(this.taskLabel) && !isLabelString){
                             updatedWidth = this.progressWidth;
                             if (isLabelString) {
                                 updatedWidth = this.width;
                             }
-                            taskGraphics.drawString(this.taskLabel.toString(), font, fontColor, fontBrush, startPoint.x + pixelToPoint(this.left), (startPoint.y + adjustHeight), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
+                            taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + pixelToPoint(this.left)  - (taskLabelPadding.left + taskLabelPadding.right), (startPoint.y + adjustHeight)  - (taskLabelPadding.top + taskLabelPadding.bottom), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
                         }
                     }
                 }
@@ -1046,7 +1055,7 @@ export class PdfGanttTaskbarCollection {
                             if (isLabelString) {
                                 updatedWidth = this.width;
                             }
-                            taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + pixelToPoint(this.left), (startPoint.y + adjustHeight), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
+                            taskGraphics.drawString(this.taskLabel.toString(), taskLabelFont, fontColor, taskLabelFontBrush, startPoint.x + pixelToPoint(this.left) - (taskLabelPadding.left + taskLabelPadding.right) , (startPoint.y + adjustHeight)  - (taskLabelPadding.top + taskLabelPadding.bottom), pixelToPoint(updatedWidth), pixelToPoint(this.height), progressFormat);
                         }
                     }
                 }
@@ -1930,8 +1939,10 @@ export class PdfGanttTaskbarCollection {
         let font: PdfFont;
         font = new PdfStandardFont(this.fontFamily, 9);
         const ganttStyle : IGanttStyle = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle;
-        if (ganttStyle && ganttStyle.label && ganttStyle.label.fontSize) {
-            font = new PdfStandardFont(this.fontFamily, ganttStyle.label.fontSize);
+        if (!isNullOrUndefined(ganttStyle) && !isNullOrUndefined(ganttStyle.label) && (!isNullOrUndefined(ganttStyle.label.fontSize)
+            || !isNullOrUndefined(ganttStyle.label.fontStyle) ||
+            !isNullOrUndefined(ganttStyle.label.fontFamily))) {
+            font = this.getPdfFont(ganttStyle);
             height = font.height;
         }
         if (!isNullOrUndefined(ganttStyle) && ganttStyle.font) {

@@ -363,16 +363,21 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
     private getGroupVirtualRecordsByIndex(rows: Row<Column>[]): void {
         const blocks: number = this.parent.contentModule.getGroupedTotalBlocks();
         const blockSize: number = this.parent.contentModule.getBlockSize();
-        for (let i: number = 1; i <= blocks; i++) {
-            let count: number = 0; this.cache[parseInt(i.toString(), 10)] = [];
-            for (let j: number = ((i - 1) * blockSize); j < rows.length; j++) {
-                if (count === blockSize) {
-                    break;
+        if (Object.keys(this.cache).length === 0) {
+            let countGroupRow: number = 0;
+            for (let i: number = 1; i <= blocks; i++) {
+                let count: number = 0; this.cache[parseInt(i.toString(), 10)] = [];
+                for (let j: number = ((i - 1) * blockSize + countGroupRow); j < rows.length; j++) {
+                    if (count === blockSize) {
+                        break;
+                    }
+                    this.cache[parseInt(i.toString(), 10)].push(rows[parseInt(j.toString(), 10)]);
+                    if (rows[parseInt(j.toString(), 10)].isDataRow) {
+                        count++;
+                    }
+                    countGroupRow++;
                 }
-                this.cache[parseInt(i.toString(), 10)].push(rows[parseInt(j.toString(), 10)]);
-                if (rows[parseInt(j.toString(), 10)].isDataRow) {
-                    count++;
-                }
+                countGroupRow -= count;
             }
         }
     }

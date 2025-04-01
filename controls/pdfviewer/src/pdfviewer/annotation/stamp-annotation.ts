@@ -1180,7 +1180,7 @@ export class StampAnnotation {
         if ((sessionSize + currentAnnotation) > 4500) {
             this.pdfViewerBase.isStorageExceed = true;
             this.pdfViewer.annotationModule.clearAnnotationStorage();
-            if (!(this.pdfViewerBase.isFormStorageExceed)){
+            if (!(this.pdfViewerBase.isFormStorageExceed) && !isNullOrUndefined(this.pdfViewer.formFieldsModule)) {
                 this.pdfViewer.formFieldsModule.clearFormFieldStorage();
             }
         }

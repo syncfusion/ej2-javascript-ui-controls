@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.1.35 (2025-04-01)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `#I704506` - An issue with change event when adding the panel to the Dashboard Layout component has been resolved.
+
 ## 25.1.35 (2024-03-15)
 
 ### Timeline

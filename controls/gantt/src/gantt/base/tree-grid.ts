@@ -350,6 +350,12 @@ export class GanttTreeGrid {
         if (this.parent.undoRedoModule && (args.requestType === 'filtering' || args.requestType === 'searching' || args.requestType === 'sorting'  || args.requestType === 'filterAfterOpen')) {
             this.parent.undoRedoModule['canUpdateIndex'] = false;
         }
+        if (args.requestType === 'filterchoicerequest') {
+            const filterElement: HTMLElement = getValue('filterModel.dlg', args);
+            if (filterElement) {
+                filterElement.style.display = 'none';
+            }
+        }
         this.parent.notify('actionBegin', args);
         const flag: boolean = getValue('doubleClickTarget', this.parent.treeGrid.editModule);
         if (flag !== null) {
@@ -709,6 +715,9 @@ export class GanttTreeGrid {
                 column.width = column.width ? column.width : 150;
                 column.editType = column.editType ? column.editType : 'stringedit';
                 column.type = column.type ? column.type : 'string';
+                if (column.type === 'checkbox') {
+                    this.parent.selectionSettings.type = 'Multiple';
+                }
                 this.bindTreeGridColumnProperties(column, true);
                 continue;
             } else {

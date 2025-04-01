@@ -132,9 +132,8 @@ describe('Paste CR issues ', ()=> {
                 }
             });
         });
-        afterAll((done: DoneFn) => {
+        afterAll(() => {
             destroy(editor);
-            done();
         });
         it ('Should add full URL to the Source tag srcset attribute.', (done: DoneFn) => {
             editor.focusIn();
@@ -149,7 +148,7 @@ describe('Paste CR issues ', ()=> {
                     expect(sourceElems[i].srcset.indexOf('https://support.microsoft.com')).toBe(0);
                 }
                 done();
-            }, 100);
+            }, 100 );
         });
     });
 
@@ -385,13 +384,14 @@ describe('Paste CR issues ', ()=> {
         });
         it('copy and paste text', (done: DoneFn) => {
             rteObj.focusIn();
-            const clipBoardData: string = `<p><span lang="ZH-TW" style="font-size:12.0pt;font-family:&quot;PMingLiU&quot;,serif;">大帽：</span></p><p><span lang="ZH-TW" style="font-size:12.0pt;font-family:&quot;PMingLiU&quot;,serif;">檔名：</span></p>`;
+            const clipBoardData: string = '大帽：\r\n檔名：\r\n副標：\r\n山谷滑索泛舟、酒莊品美酒佳餚\r\n主標：\r\n\r\n刺激、浪漫，又永續\r\n此生必去最後淨土：紐西蘭\r\n\r\n\r\n\r\n表定頁數：6p\r\n實際字數：\r\n前言：\r\n被稱為世界上最後一塊淨土的紐西蘭，壯闊峽灣、絕美湖泊，景緻如畫。\r\n搭配高空滑索、瀑布泛舟等大自然探索，與美食佳餚行程，成為此生必去的永續旅行。\r\n\r\n文—吳雨潔\r\n關鍵詞：紐西蘭,永續,森林,滑索,泛舟,步道,咖啡,酒莊\r\n配件：\r\n內文：\r\n「紐西蘭被歐洲探險家發現的時間不到四百年，這裡沒有歐洲的城堡，也沒有亞洲的廟宇；這片土地僅擁有原始森林。」羅托魯瓦樹冠之旅（Rotorua Canopy Tours）的滑索教練帶領遊客步入森林，途中邊介紹當地。\r\n紐西蘭原有八成面積被森林覆蓋，但Rotorua Canopy Tours創辦人詹姆斯●費茲傑羅（●James Fitzgerald）指出，原始林的動植物卻在老鼠、澳洲袋貂等外來種侵襲下，瀕臨絕種枯竭。他與伙伴嘗試用自然的陷阱跟誘餌，清除入侵種，期待復甦樹林裡的生命。\r\n';
             const dataTransfer: DataTransfer = new DataTransfer();
-            dataTransfer.setData('text/html', clipBoardData);
+            dataTransfer.setData('text/plain', clipBoardData);
             const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
             rteObj.onPaste(pasteEvent);
             setTimeout(() => {
-                expect(rteObj.contentModule.getEditPanel().innerHTML).toEqual("<p><span>大帽：</span></p><p>檔名：</p>");
+                const expectedElem: string = `<p>大帽：<br>檔名：<br>副標：<br>山谷滑索泛舟、酒莊品美酒佳餚<br>主標：<br><br>刺激、浪漫，又永續<br>此生必去最後淨土：紐西蘭<br><br><br><br>表定頁數：6p<br>實際字數：<br>前言：<br>被稱為世界上最後一塊淨土的紐西蘭，壯闊峽灣、絕美湖泊，景緻如畫。<br>搭配高空滑索、瀑布泛舟等大自然探索，與美食佳餚行程，成為此生必去的永續旅行。<br><br>文—吳雨潔<br>關鍵詞：紐西蘭,永續,森林,滑索,泛舟,步道,咖啡,酒莊<br>配件：<br>內文：<br>「紐西蘭被歐洲探險家發現的時間不到四百年，這裡沒有歐洲的城堡，也沒有亞洲的廟宇；這片土地僅擁有原始森林。」羅托魯瓦樹冠之旅（Rotorua Canopy Tours）的滑索教練帶領遊客步入森林，途中邊介紹當地。<br>紐西蘭原有八成面積被森林覆蓋，但Rotorua Canopy Tours創辦人詹姆斯●費茲傑羅（●James Fitzgerald）指出，原始林的動植物卻在老鼠、澳洲袋貂等外來種侵襲下，瀕臨絕種枯竭。他與伙伴嘗試用自然的陷阱跟誘餌，清除入侵種，期待復甦樹林裡的生命。<br><br></p>`;
+                expect(rteObj.inputElement.innerHTML).toBe(expectedElem);
                 done();
             }, 100);
           });

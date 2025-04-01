@@ -431,7 +431,7 @@ export class Link {
         const target: string = ((this as NotifyArgs).selfLink.checkBoxObj.checked) ? '_blank' : null;
         const linkLabel : string | null = ((this as NotifyArgs).selfLink.checkBoxObj.checked) ? (this as NotifyArgs).selfLink.i10n.getConstant('linkAriaLabel') : null;
         if ((this as NotifyArgs).selfLink.parent.editorMode === 'Markdown' && linkUrl === '') {
-            linkUrl = 'http://';
+            linkUrl = 'https://';
         }
         if (linkUrl === '') {
             (this as NotifyArgs).selfLink.checkUrl(true);
@@ -444,7 +444,7 @@ export class Link {
         }
         if (!(this as NotifyArgs).selfLink.isUrl(linkUrl)) {
             if (!(this as NotifyArgs).selfLink.parent.enableAutoUrl) {
-                linkUrl = linkUrl.indexOf('http') > -1 ? linkUrl : 'http://' + linkUrl;
+                linkUrl = linkUrl.indexOf('https') > -1 ? linkUrl : 'https://' + linkUrl;
             } else {
                 // eslint-disable-next-line
                 linkUrl = linkUrl;

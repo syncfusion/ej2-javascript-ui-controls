@@ -310,16 +310,18 @@ export function getComponent<T>(elem: HTMLElement | string, comp: string | any |
     let instance: T;
     let i: number;
     const ele: HTMLElement = typeof elem === 'string' ? document.getElementById(elem) : elem;
-    for (i = 0; i < (<DomElements>(ele as HTMLElement)).ej2_instances.length; i++) {
-        instance = <T>(ele as DomElements).ej2_instances[parseInt(i.toString(), 10)];
-        if (typeof comp === 'string') {
-            const compName: string = (instance as { getModuleName: () => string } & T).getModuleName();
-            if (comp === compName) {
-                return instance;
-            }
-        } else {
-            if (instance instanceof <any>comp) {
-                return instance;
+    if (ele && (<DomElements>(ele as HTMLElement)).ej2_instances) {
+        for (i = 0; i < (<DomElements>(ele as HTMLElement)).ej2_instances.length; i++) {
+            instance = <T>(ele as DomElements).ej2_instances[parseInt(i.toString(), 10)];
+            if (typeof comp === 'string') {
+                const compName: string = (instance as { getModuleName: () => string } & T).getModuleName();
+                if (comp === compName) {
+                    return instance;
+                }
+            } else {
+                if (instance instanceof <any>comp) {
+                    return instance;
+                }
             }
         }
     }

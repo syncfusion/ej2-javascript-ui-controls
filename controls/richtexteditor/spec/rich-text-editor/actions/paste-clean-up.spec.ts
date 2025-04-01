@@ -13,6 +13,8 @@ import {
 import { renderRTE, destroy, setCursorPoint, dispatchEvent } from "../render.spec";
 import { MarkdownSelection } from '../../../src/markdown-parser/index';
 import { DialogModel} from '@syncfusion/ej2-popups';
+import { BASIC_MOUSE_EVENT_INIT } from '../../constant.spec';
+import { getImageFIle } from '../online-service.spec';
 
 describe('Paste Cleanup Module ', () => {
 
@@ -345,229 +347,6 @@ describe("paste cleanup testing", () => {
     }, 100);
   });
 
-  it("Plain paste without prompt", (done) => {
-    let localElem: string = `<ol level="1" style="list-style: decimal"><li><p>One Node-1</p></li><li><p>Two Node-1</p></li><li><p>Three Node-1</p></li></ol>`;
-    keyBoardEvent.clipboardData = {
-      getData: () => {
-        return localElem;
-      },
-      items: []
-    };
-    rteObj.value = '<p>5</p>'
-    rteObj.pasteCleanupSettings.prompt = false;
-    rteObj.pasteCleanupSettings.plainText = true;
-    rteObj.pasteCleanupSettings.deniedTags = [];
-    rteObj.pasteCleanupSettings.deniedAttrs = [];
-    rteObj.pasteCleanupSettings.allowedStyleProps = [];
-    rteObj.dataBind();
-    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
-    rteObj.onPaste(keyBoardEvent);
-    setTimeout(() => {
-      let pastedElm: any = (rteObj as any).inputElement.innerHTML
-      let expected: boolean = true;
-      let expectedElem: string = `<p><span>One Node-1</span></p><p>Two Node-1</p><p>Three Node-1</p><p>5</p>`;
-      if (pastedElm !== expectedElem) {
-        expected = false;
-      }
-      expect(expected).toBe(true);
-      done();
-    }, 100);
-  });
-
-  it("Plain paste without prompt with first tag as block node", (done) => {
-    let localElem: string = `<!--StartFragment--><div class="r" style="font-weight: 400; margin: 0px; font-size: small; line-height: 1.57; color: rgb(34, 34, 34); font-family: arial, sans-serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial;"><a href="https://stackoverflow.com/questions/14535733/how-to-check-if-div-element-is-empty" ping="/url?sa=t&amp;source=web&amp;rct=j&amp;url=https://stackoverflow.com/questions/14535733/how-to-check-if-div-element-is-empty&amp;ved=2ahUKEwi0uumy88rkAhWHq48KHcruAHYQFjAAegQIAhAB" style="color: rgb(102, 0, 153); cursor: pointer; text-decoration: none;"><h3 class="LC20lb" style="font-size: 20px; font-weight: normal; margin: 0px; padding: 0px; display: inline-flex; max-width: 100%; line-height: 1.3;"><div class="ellip" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">How to check if div element is empty - Stack Overflow</div></h3><br><div class="TbwUpd" style="display: inline-block; line-height: 1.57; padding-bottom: 0px; padding-top: 1px;"><cite class="iUh30 bc" style="color: rgb(0, 102, 33); font-style: normal; font-size: 16px; padding-top: 1px; line-height: 1.5;">https://stackoverflow.com › questions › how-to-check-if-div-element-is-em...</cite></div></a><span><div class="action-menu ab_ctl" style="display: inline; position: relative; margin: 1px 3px 0px; user-select: none; vertical-align: middle;"><a class="GHDvEf ab_button" href="https://www.google.com/search?safe=off&amp;rlz=1C1GCEU_enIN858IN858&amp;sxsrf=ACYBGNQNtqskvF9E5O-LhbCduyrOpuksiw%3A1568278143880&amp;ei=fwZ6Xaq0NZOkwgPnyI7QDw&amp;q=how+to+check+if+the+element+is+empty+using+javascript&amp;oq=how+to+check+if+the+element+is+empty+using+javascript&amp;gs_l=psy-ab.3..0i22i30l4.3422.10049..10226...1.2..5.1044.7383.2j5j8j1j1j3j1j1......0....1..gws-wiz.......0i71.1WBHgC0t-pY&amp;ved=0ahUKEwjq77Kt88rkAhUTknAKHWekA_oQ4dUDCAs&amp;uact=5#" id="am-b0" aria-label="Result options" aria-expanded="false" aria-haspopup="true" role="button" jsaction="m.tdd;keydown:m.hbke;keypress:m.mskpe" data-ved="2ahUKEwi0uumy88rkAhWHq48KHcruAHYQ7B0wAHoECAIQAw" style="border-radius: 0px; cursor: default; font-family: arial, sans-serif; font-size: 11px; font-weight: bold; height: 12px; line-height: 27px; margin: 1px 0px 2px; min-width: 0px; padding: 0px; text-align: center; transition: none 0s ease 0s; user-select: none; background-color: white; background-image: none; border: 0px; color: rgb(68, 68, 68); box-shadow: 0px 0px 0px 0px; filter: none; width: 13px; text-decoration: none; display: inline-block;"><span class="mn-dwn-arw" style="border-color: rgb(0, 102, 33) transparent; border-style: solid; border-width: 5px 4px 0px; width: 0px; height: 0px; margin-left: 3px; top: 7.33333px; margin-top: -4px; position: absolute; left: 0px;"></span></a><div class="action-menu-panel ab_dropdown" role="menu" tabindex="-1" jsaction="keydown:m.hdke;mouseover:m.hdhne;mouseout:m.hdhue" data-ved="2ahUKEwi0uumy88rkAhWHq48KHcruAHYQqR8wAHoECAIQBA" style="background: rgb(255, 255, 255); border: 1px solid rgba(0, 0, 0, 0.2); font-size: 13px; padding: 0px; position: absolute; right: auto; top: 12px; white-space: nowrap; z-index: 3; transition: opacity 0.218s ease 0s; box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px; left: 0px; visibility: hidden;"><ol style="margin: 0px; padding: 0px; border: 0px;"><li class="action-menu-item ab_dropdownitem" role="menuitem" style="margin: 0px; padding: 0px; border: 0px; list-style: none; user-select: none; cursor: pointer;"><a class="fl" href="https://webcache.googleusercontent.com/search?q=cache:Q6gxbyHFlx8J:https://stackoverflow.com/questions/14535733/how-to-check-if-div-element-is-empty+&amp;cd=1&amp;hl=en&amp;ct=clnk&amp;gl=in" ping="/url?sa=t&amp;source=web&amp;rct=j&amp;url=https://webcache.googleusercontent.com/search%3Fq%3Dcache:Q6gxbyHFlx8J:https://stackoverflow.com/questions/14535733/how-to-check-if-div-element-is-empty%2B%26cd%3D1%26hl%3Den%26ct%3Dclnk%26gl%3Din&amp;ved=2ahUKEwi0uumy88rkAhWHq48KHcruAHYQIDAAegQIAhAF" style="text-decoration: none; color: rgb(51, 51, 51); cursor: pointer; font-size: 16px; display: block; padding: 7px 18px; outline: 0px;"></a></li></ol></div></div></span></div><div class="s" style="max-width: 48em; color: rgb(84, 84, 84); line-height: 1.57; font-family: arial, sans-serif; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial;"><div><br class="Apple-interchange-newline"><!--EndFragment--></div></div>`;
-    keyBoardEvent.clipboardData = {
-      getData: () => {
-        return localElem;
-      },
-      items: []
-    };
-    rteObj.value = '<p>6</p>'
-    rteObj.pasteCleanupSettings.prompt = false;
-    rteObj.pasteCleanupSettings.plainText = true;
-    rteObj.pasteCleanupSettings.deniedTags = [];
-    rteObj.pasteCleanupSettings.deniedAttrs = [];
-    rteObj.pasteCleanupSettings.allowedStyleProps = [];
-    rteObj.dataBind();
-    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
-    rteObj.onPaste(keyBoardEvent);
-    setTimeout(() => {
-      let pastedElm: any = (rteObj as any).inputElement.innerHTML;
-      let expected: boolean = false;
-      let expectedElem: string = `<p><span>How to check if div element is empty - Stack Overflow</span></p><div>https://stackoverflow.com › questions › how-to-check-if-div-element-is-em...</div><div><br></div><p>6</p>`;
-      if (pastedElm === expectedElem) {
-        expected = true;
-      }
-      expect(expected).toBe(true);
-      done();
-    }, 100);
-  });
-
-  it("EJ2-24021- Plain paste without prompt ", (done) => {
-    let localElem: string = `<ol level="1" style="list-style: decimal"><li>One <code>Node-1</code></li><li>Two <code>Node-1</code></li><li>Three <code>Node-1</code></li></ol>`;
-    keyBoardEvent.clipboardData = {
-      getData: () => {
-        return localElem;
-      },
-      items: []
-    };
-    rteObj.value = '<p>7</p>';
-    rteObj.pasteCleanupSettings.prompt = false;
-    rteObj.pasteCleanupSettings.plainText = true;
-    rteObj.pasteCleanupSettings.deniedTags = [];
-    rteObj.pasteCleanupSettings.deniedAttrs = [];
-    rteObj.pasteCleanupSettings.allowedStyleProps = [];
-    rteObj.dataBind();
-    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
-    rteObj.onPaste(keyBoardEvent);
-    setTimeout(() => {
-      let pastedElm: any = (rteObj as any).inputElement.innerHTML;
-      let expected: boolean = true;
-      let expectedElem: string = `<p><span>One Node-1</span></p><div>Two Node-1</div><div>Three Node-1</div><p>7</p>`;
-      if (pastedElm !== expectedElem) {
-        expected = false;
-      }
-      expect(expected).toBe(true);
-      done();
-    }, 100);
-  });
-
-  it("Plain paste with prompt", (done) => {
-    let localElem: string = `<ol level="1" style="list-style: decimal"><li><p>One Node-1</p></li><li><p>Two Node-1</p></li><li><p>Three Node-1</p></li></ol>`;
-    keyBoardEvent.clipboardData = {
-      getData: () => {
-        return localElem;
-      },
-      items: []
-    };
-    rteObj.value = '<p>8</p>';
-    rteObj.pasteCleanupSettings.prompt = true;
-    rteObj.pasteCleanupSettings.deniedTags = [];
-    rteObj.pasteCleanupSettings.deniedAttrs = [];
-    rteObj.pasteCleanupSettings.allowedStyleProps = [];
-    rteObj.dataBind();
-    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
-    rteObj.onPaste(keyBoardEvent);
-    setTimeout(() => {
-      if (rteObj.pasteCleanupSettings.prompt) {
-        let keepFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_PLAIN_FORMAT);
-        keepFormat[0].click();
-        let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
-        pasteOK[0].click();
-      }
-      let pastedElm: any = (rteObj as any).inputElement.innerHTML;
-      let expected: boolean = true;
-      let expectedElem: string = `<p><span>One Node-1</span></p><p>Two Node-1</p><p>Three Node-1</p><p>8</p>`;
-      if (pastedElm !== expectedElem) {
-        expected = false;
-      }
-      expect(expected).toBe(true);
-      done();
-    }, 100);
-  });
-
-  it("EJ2-26404 - Breakline issue - Plain paste with prompt", (done) => {
-    let localElem: string = `<p>First para start <code>65</code>. Syncfusion<a href="http://syncfusion.com">link</a>is here</p><blockquote><p>Second para inside blockquote</p></blockquote>`;
-    keyBoardEvent.clipboardData = {
-      getData: () => {
-        return localElem;
-      },
-      items: []
-    };
-    rteObj.value = '<p>9</p>';
-    rteObj.pasteCleanupSettings.prompt = true;
-    rteObj.pasteCleanupSettings.deniedTags = [];
-    rteObj.pasteCleanupSettings.deniedAttrs = [];
-    rteObj.pasteCleanupSettings.allowedStyleProps = [];
-    rteObj.dataBind();
-    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
-    rteObj.onPaste(keyBoardEvent);
-    setTimeout(() => {
-      if (rteObj.pasteCleanupSettings.prompt) {
-        let keepFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_PLAIN_FORMAT);
-        keepFormat[0].click();
-        let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
-        pasteOK[0].click();
-      }
-      let pastedElm: any = (rteObj as any).inputElement.innerHTML;
-      let expected: boolean = true;
-      let expectedElem: string = `<p><span>First para start 65. Syncfusionlinkis here</span></p><p>Second para inside blockquote</p><p>9</p>`;
-      if (pastedElm !== expectedElem) {
-        expected = false;
-      }
-      expect(expected).toBe(true);
-      done();
-    }, 100);
-  });
-
-  it("EJ2-26404 - Breakline issue - Plain paste with prompt with br tags", (done) => {
-    let localElem: string = `<p>To break lines<br>in a text,<br>use the br element.</p>`;
-    keyBoardEvent.clipboardData = {
-      getData: () => {
-        return localElem;
-      },
-      items: []
-    };
-    rteObj.value = '<p>10</p>';
-    rteObj.pasteCleanupSettings.prompt = true;
-    rteObj.pasteCleanupSettings.deniedTags = [];
-    rteObj.pasteCleanupSettings.deniedAttrs = [];
-    rteObj.pasteCleanupSettings.allowedStyleProps = [];
-    rteObj.dataBind();
-    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
-    rteObj.onPaste(keyBoardEvent);
-    setTimeout(() => {
-      if (rteObj.pasteCleanupSettings.prompt) {
-        let keepFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_PLAIN_FORMAT);
-        keepFormat[0].click();
-        let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
-        pasteOK[0].click();
-      }
-      let pastedElm: any = (rteObj as any).inputElement.innerHTML;
-      let expected: boolean = false;
-      let expectedElem: string = `<p><span>To break lines</span></p><p><br>in a text,<br>use the br element.</p><p>10</p>`;
-      if (pastedElm === expectedElem) {
-        expected = true;
-      }
-      expect(expected).toBe(true);
-      done();
-    }, 100);
-  });
-
-  it("EJ2-29670 - Web content with link and strong tag", (done) => {
-    let localElem: string = `<div style="box-sizing: border-box; color: rgb(91, 91, 91); font-family: proxima-nova, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial;">"<strong style="box-sizing: border-box; font-weight: 700;"><font color="#000000" style="box-sizing: border-box;"><font face="Open Sans, Arial, sans-serif" style="box-sizing: border-box;"><font style="box-sizing: border-box; font-size: 10pt;">Lorem Ipsum</font></font></font></strong><font color="#000000" style="box-sizing: border-box;"><b style="box-sizing: border-box; font-weight: 700;"> </b></font><font color="#000000" style="box-sizing: border-box;"><font face="Open Sans, Arial, sans-serif" style="box-sizing: border-box;"><font style="box-sizing: border-box; font-size: 10pt;">is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</font></font></font></div><p align="CENTER" style="box-sizing: border-box; margin: 0px 0px 0in; line-height: 25px; color: rgb(91, 91, 91); font-family: proxima-nova, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial;"><b style="box-sizing: border-box; font-weight: 700;">For more information on what F.A.S.T. Complex/The Zone has to offer please go to our website at www.clickitonceabcd.com"</b></p>`;
-    keyBoardEvent.clipboardData = {
-      getData: () => {
-        return localElem;
-      },
-      items: []
-    };
-    rteObj.value = '<p>11</p>';
-    rteObj.pasteCleanupSettings.prompt = true;
-    rteObj.pasteCleanupSettings.deniedTags = [];
-    rteObj.pasteCleanupSettings.deniedAttrs = [];
-    rteObj.pasteCleanupSettings.allowedStyleProps = [];
-    rteObj.dataBind();
-    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
-    rteObj.onPaste(keyBoardEvent);
-    setTimeout(() => {
-      if (rteObj.pasteCleanupSettings.prompt) {
-        let keepFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_PLAIN_FORMAT);
-        keepFormat[0].click();
-        let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
-        pasteOK[0].click();
-      }
-      let pastedElm: any = (rteObj as any).inputElement.innerHTML;
-      let expected: boolean = true;
-      let expectedElem: string = `<p><span>"Lorem Ipsum&nbsp;is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</span></p><p>For more information on what F.A.S.T. Complex/The Zone has to offer please go to our website at www.clickitonceabcd.com"</p><p>11</p>`;
-      if (pastedElm !== expectedElem) {
-        expected = false;
-      }
-      expect(expected).toBe(true);
-      done();
-    }, 100);
-  });
-
   it("Paste URL", (done) => {
     keyBoardEvent.clipboardData = {
       getData: (e: any) => {
@@ -642,10 +421,8 @@ describe("paste cleanup testing", () => {
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       let pastedElm: any = (rteObj as any).inputElement;
-      expect(pastedElm.children[0].children[0].childNodes[1].tagName.toLowerCase() === 'a').toBe(true);
-      expect(pastedElm.children[0].children[0].childNodes[1].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
       let expected: boolean = false;
-      let expectedElem: string = `<p><span>Hi syncfusion website <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\" aria-label=\"Open in new window\">https://ej2.syncfusion.com </a>is here</span>14</p>`;
+      let expectedElem: string = `<p>Hi syncfusion website <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target="_blank" aria-label="Open in new window">https://ej2.syncfusion.com </a>is here14</p>`;
       if (pastedElm.innerHTML === expectedElem) {
         expected = true;
       }
@@ -674,10 +451,8 @@ describe("paste cleanup testing", () => {
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       let pastedElm: any = (rteObj as any).inputElement;
-      expect(pastedElm.children[0].children[0].childNodes[1].tagName.toLowerCase() === 'a').toBe(true);
-      expect(pastedElm.children[0].children[0].childNodes[1].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
       let expected: boolean = false;
-      let expectedElem: string = `<p><span>Hi syncfusion website <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\" aria-label=\"Open in new window\">https://ej2.syncfusion.com </a>is here with another URL <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\" aria-label=\"Open in new window\">https://ej2.syncfusion.com </a>text after second URL</span>15</p>`;
+      let expectedElem: string = `<p>Hi syncfusion website <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target="_blank" aria-label="Open in new window">https://ej2.syncfusion.com </a>is here with another URL <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target="_blank" aria-label="Open in new window">https://ej2.syncfusion.com </a>text after second URL15</p>`;
       if (pastedElm.innerHTML === expectedElem) {
         expected = true;
       }
@@ -711,7 +486,7 @@ third line`;
     setTimeout(() => {
       let pastedElm: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = false;
-      let expectedElem: string = `<p><span>first line</span></p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Second line with space <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target=\"_blank\" aria-label=\"Open in new window\">https://ej2.syncfusion.com </a></p><p><br></p><p><br></p><p>third line</p><p>16</p>`;
+      let expectedElem: string = `<p>first line</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Second line with space <a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com" target="_blank" aria-label="Open in new window">https://ej2.syncfusion.com </a></p><p><br></p><p><br></p><p>third line</p><p>16</p>`;
       if (pastedElm === expectedElem) {
         expected = true;
       }
@@ -1654,6 +1429,51 @@ describe("EJ2-40047 - When pasting content in RichTextEditor the font-size of te
         done();
     });
 });
+
+    describe("Bug 947251: Bullet list not created properly in the pasted text in RichTextEditor", () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        let keyBoardEvent: any = {
+            preventDefault: () => { },
+            type: "keydown",
+            stopPropagation: () => { },
+            ctrlKey: false,
+            shiftKey: false,
+            action: null,
+            which: 64,
+            key: ""
+        };
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['OrderedList', 'UnorderedList']
+                },
+                pasteCleanupSettings: {
+                    prompt: false
+                }
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        it(" Br tag should removed from the li tag", () => {
+            rteObj.focusIn();
+            const item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_UnorderedList');
+            item.click();
+            keyBoardEvent.clipboardData = {
+                getData: () => { return `\x3C!--StartFragment--><p style="margin: 0px 0px 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><b style="font-weight: bold;">Description:</b></p><p style="margin: 0px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">The Rich Text Editor (RTE) control is an easy to render in client side. Customer easy to edit the contents and get the HTML content for the displayed content. A rich text editor control provides users with a toolbar that helps them to apply rich text formats to the text entered in the text area.</p>\x3C!--EndFragment-->` },
+                types: ['text/html'],
+                items: { 0: { kind: 'string', type: 'text/html' } }
+            };
+            setCursorPoint((rteObj as any).inputElement.firstElementChild.firstElementChild, 0);
+            rteObj.onPaste(keyBoardEvent);
+            const brEle: HTMLElement = rteObj.element.querySelector('br');
+            expect(brEle).toBe(null);
+        });
+        afterEach((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+    });
 
 describe("Paste in Markdown Editor", () => {
   let rteObj: RichTextEditor;
@@ -2685,64 +2505,6 @@ describe("EJ2-65736 - Pasted texts gets outside the contentEditable div when usi
     });
 });
 
-describe("EJ2-69216 - pasting as plain text when BR is configured", () => {
-    let rteObj: RichTextEditor;
-    let editorObj: EditorManager;
-    let keyBoardEvent: any = {
-      preventDefault: () => { },
-      type: "keydown",
-      stopPropagation: () => { },
-      ctrlKey: false,
-      shiftKey: false,
-      action: null,
-      which: 64,
-      key: ""
-    };
-    let innerHTML: string = `This is a test<br /><br />
-    Paste below:<br /><br /><br />`;
-    beforeAll((done: Function) => {
-      rteObj = renderRTE({
-        pasteCleanupSettings: {
-          prompt: true
-        },
-        enterKey: 'BR',
-        value: innerHTML
-      });
-      editorObj = new EditorManager({ document: document, editableElement: document.getElementsByClassName("e-content")[0] });
-      done();
-    });
-    it("Pasting content when enterKey is configured as BR and Div not working issue test case", (done) => {
-      let localElem: string = `<p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><b><span lang="CA" style="font-size:26.0pt;line-height:107%;">This\nis a test</span></b></p>\n\n<p style="margin-top:0in;margin-right:0in;margin-bottom:8.0pt;margin-left:0in;line-height:107%;font-size:11.0pt;font-family:&quot;Calibri&quot;,sans-serif;"><i><u><span lang="CA">This is a test</span></u></i></p>`;
-      keyBoardEvent.clipboardData = {
-        getData: () => {
-          return localElem;
-        },
-        items: []
-      };
-      rteObj.pasteCleanupSettings.deniedTags = [];
-      rteObj.pasteCleanupSettings.deniedAttrs = [];
-      rteObj.pasteCleanupSettings.allowedStyleProps = [];
-      rteObj.dataBind();
-      (rteObj as any).inputElement.focus();
-      setCursorPoint((rteObj as any).inputElement, 6);
-      rteObj.onPaste(keyBoardEvent);
-      setTimeout(() => {
-        if (rteObj.pasteCleanupSettings.prompt) {
-            let plainFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_PLAIN_FORMAT);
-            plainFormat[0].click();
-            let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
-            pasteOK[0].click();
-        }
-        expect((rteObj as any).inputElement.innerHTML === `This is a test<br><br>\n    Paste below:<br><br>This\nis a test<br>\n\n<br>This is a test<br>`).toBe(true);
-        done();
-      }, 100);
-    });
-    afterAll((done: DoneFn) => {
-      destroy(rteObj);
-      done();
-    });
-});
-
 describe("852026 - pasting plain text when BR is configured in enterkey", () => {
     let rteObj: RichTextEditor;
     let editorObj: EditorManager;
@@ -2791,7 +2553,7 @@ describe("852026 - pasting plain text when BR is configured in enterkey", () => 
             let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
             pasteOK[0].click();
         }
-        const expectedElem: string = 'dsvsdv<br>sdvsdv<br>sdvdsv<br>sdvsdv<br>sdvdsv<br><br><br><br>sdvsdvdsv<br>sdvdsvdsvdsv<br>sdvsdvsdvsvv<br><br>';
+        const expectedElem: string = 'dsvsdv<br>sdvsdv<br>sdvdsv<br><br>sdvsdv<br>sdvdsv<br><br><br><br>sdvsdvdsv<br>sdvdsvdsvdsv<br>sdvsdvsdvsvv<br><br>';
         const pastedElem: string = (rteObj as any).inputElement.innerHTML;
         expect(expectedElem === pastedElem).toBe(true);
         done();
@@ -2851,7 +2613,7 @@ describe("852026 - pasting plain text when DIV is configured in enterkey", () =>
             let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
             pasteOK[0].click();
         }
-        const expectedElem: string = '<div><div>dsvsdv<br>sdvsdv<br>sdvdsv</div><div>sdvsdv<br>sdvdsv</div><div>sdvsdvdsv<br>sdvdsvdsvdsv<br>sdvsdvsdvsvv</div></div>';
+        const expectedElem: string = '<div>dsvsdv<br>sdvsdv<br>sdvdsv<br><br>sdvsdv<br>sdvdsv<br><br><br><br>sdvsdvdsv<br>sdvdsvdsvdsv<br>sdvsdvsdvsvv<br></div>';
         const pastedElem: string = rteObj.inputElement.innerHTML;
         expect(expectedElem === pastedElem).toBe(true);
         done();
@@ -2911,7 +2673,7 @@ describe("852026 - pasting plain text when P is configured in enterkey", () => {
             let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
             pasteOK[0].click();
         }
-        const expectedElem: string = '<p>dsvsdv<br>sdvsdv<br>sdvdsv</p><p>sdvsdv<br>sdvdsv</p><p>sdvsdvdsv<br>sdvdsvdsvdsv<br>sdvsdvsdvsvv</p>';
+        const expectedElem: string = '<p>dsvsdv<br>sdvsdv<br>sdvdsv<br><br>sdvsdv<br>sdvdsv<br><br><br><br>sdvsdvdsv<br>sdvdsvdsvdsv<br>sdvsdvsdvsvv<br></p>';
         const pastedElem: string = rteObj.inputElement.innerHTML;
         expect(expectedElem === pastedElem).toBe(true);
         done();
@@ -3548,7 +3310,6 @@ describe('850189 - code coverage', () => {
         (editor as any).pasteCleanupModule.toolbarEnableDisable(false);
         expect((editor as any).pasteCleanupModule.parent.toolbarModule.baseToolbar.toolbarObj.element.classList.contains('e-overlay')).toBe(false);
         (editor as any).pasteCleanupModule.parent.inlineMode.enable = false;
-        expect((editor as any).pasteCleanupModule.findDetachEmptyElem(null)).toBeNull();
         var div = document.createElement('div');
         div.innerHTML = `<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td style="width: 25%;"><br/></td><td style="width: 25%;"><br/></td><td style="width: 25%;"><br/></td><td style="width: 25%;"><br/></td></tr><tr><td style="width: 25%;"><br/></td><td style="width: 25%;"><br/></td><td style="width: 25%;"><br/></td><td style="width: 25%;"><br/></td></tr><tr><td style="width: 25%;"><br/></td><td style="width: 25%;"><br/></td><td style="width: 25%;"><br/></td><td style="width: 25%;"><br/></td></tr></tbody></table><p><br/></p>`;
         expect((editor as any).pasteCleanupModule.addTableClass(div, null) === div).toBe(true);
@@ -3570,17 +3331,10 @@ describe('850189 - code coverage', () => {
         expect( div.querySelector('img').src !== '').toBe(true);
         div = document.createElement('div');
         div.innerHTML = '<div></div>';
-        (editor as any).pasteCleanupModule.removeEmptyElements(div);
         div = document.createElement('div');
         div.innerHTML = '<ol level="1" style="list-style: decimal"><p>One Node-1</p><li></li><li><p>Two Node-1</p></li><li><p>Three Node-1</p></li></ol>';
-        (editor as any).pasteCleanupModule.getTextContent(div);
-        expect(div.innerHTML !== '<ol level="1" style="list-style: decimal"><p>One Node-1</p><li></li><li><p>Two Node-1</p></li><li><p>Three Node-1</p></li></ol>').toBe(true);
         div = document.createElement('div');
         div.innerHTML = '<br><div class="pasteContent" style="display:inline;"><span class="pasteContent_RTE">This\nis a test <span>Hi</span></span>\n\n<p class="pasteContent_RTE">This is a test</p></div>';
-        expect((editor as any).pasteCleanupModule.reframeToBrContent(div) !== div.innerHTML).toBe(true);
-        div = document.createElement('div');
-        div.innerText = "hello!";
-        expect((editor as any).pasteCleanupModule.reframeToBrContent(div) !== div.innerHTML).toBe(true);
         let myObj: any = {
             oldCssClass: 'imageOldClass',
             cssClass: 'imageOldClass_imageNewClass',
@@ -5010,45 +4764,21 @@ StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times Ne
           destroy(rteObj);
           done();
         });
-      });
+    });
 
-      describe("936807 - Shortcut key of ctrl+shift+v should not open the prompt dialog", () => {
+    describe("936807 - Shortcut key of ctrl+shift+v should not open the prompt dialog", () => {
         let rteObj: RichTextEditor;
-        let keyBoardEvent: any = {
-          preventDefault: () => { },
-          type: "keydown",
-          stopPropagation: () => { },
-          ctrlKey: true,
-          shiftKey: true,
-          action: null,
-          which: 86,
-          key: "V"
-        };
-      
-        beforeAll((done: Function) => {
+        beforeAll(() => {
             rteObj = renderRTE({
                 value: `<p><b>Description:</b></p><p class="custom">The Rich Text Editor (RTE) control is an easy to render in client side.</p>`,
                 pasteCleanupSettings: {
-                    prompt: true
+                    prompt: true,
+                    plainText: false,
+                    keepFormat: true
                 }
             });
-            done();
         });
         it("Prompt should not open when ctrl + shift + v is pressed", (done) => {
-            keyBoardEvent.clipboardData = {
-                getData: (e: any) => {
-                    if (e === "text/plain") {
-                        return 'Description:\n\nThe Rich Text Editor (RTE) ';
-                    } else {
-                        return '';
-                    }
-                },
-                items: []
-            };
-            rteObj.pasteCleanupSettings.prompt = true;
-            rteObj.pasteCleanupSettings.plainText = false;
-            rteObj.pasteCleanupSettings.keepFormat = true;
-            rteObj.dataBind();
             let selectNode = (rteObj as any).inputElement.querySelector('.custom');
             setCursorPoint(selectNode, 0);
             let keyboardEventArgs = {
@@ -5066,7 +4796,10 @@ StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times Ne
                 type: 'keydown'
             };
             (<any>rteObj).keyDown(keyboardEventArgs);
-            rteObj.onPaste(keyBoardEvent);
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/plain', 'Description:\n\nThe Rich Text Editor (RTE) ');
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
             setTimeout(() => {
                 let pastedElm: any = (rteObj as any).inputElement.innerHTML;
                 let expected: boolean = false;
@@ -5079,10 +4812,8 @@ StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times Ne
                 done();
             }, 100);
         });
- 
-        afterAll((done: DoneFn) => {
+        afterAll(() => {
             destroy(rteObj);
-            done();
         });
     });
 
@@ -5109,19 +4840,81 @@ StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times Ne
         });
       });
 
+    describe('948219: Paste as Plain Text context menu action shows the Paste dialog CASE 1.', ()=> {
+        let editor: RichTextEditor;
+        beforeAll(()=> {
+            editor = renderRTE({
+                pasteCleanupSettings: {
+                    prompt: true
+                },
+                value: '<p>Editor content</p>'
+            })
+        });
+        afterAll(()=> {
+            destroy(editor);
+        });
+        it ('Should not open the dialog when only plain text content is present in the Clipboard data', (done: DoneFn)=> {
+            editor.focusIn();
+            const range: Range = new Range();
+            range.setStart(editor.inputElement.querySelector('p').firstChild, 3);
+            range.collapse(true);
+            editor.selectRange(range);
+            const content: string = 'Hi There\r\n\r\nThis is a text content from the Notepad.'
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/plain', content);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.inputElement.dispatchEvent(pasteEvent);
+            setTimeout(() => {
+                expect(editor.element.querySelector('.e-rte-keepformat')).toBe(null);
+                done();
+            }, 100);
+        });
+    });
+
+   describe('948219: Paste as Plain Text context menu action shows the Paste dialog CASE 2.', ()=> {
+        let editor: RichTextEditor;
+        beforeAll(()=> {
+            editor = renderRTE({
+                pasteCleanupSettings: {
+                    prompt: true
+                },
+                value: '<p>Editor content</p>'
+            })
+        });
+        afterAll(()=> {
+            destroy(editor);
+        });
+        it ('Should  open the dialog when only plain text content, html content is present in the Clipboard data', (done: DoneFn)=> {
+            editor.focusIn();
+            const range: Range = new Range();
+            range.setStart(editor.inputElement.querySelector('p').firstChild, 3);
+            range.collapse(true);
+            editor.selectRange(range);
+            const content: string = 'Hi There\r\n\r\nThis is a text content from the Notepad.';
+            const htmlContent: string = '<p>Hi There<br><br>This is a text content from the Notepad.</p>';
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/plain', content);
+	    dataTransfer.setData('text/html', htmlContent);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.inputElement.dispatchEvent(pasteEvent);
+            setTimeout(() => {
+                expect(editor.element.querySelector('.e-rte-keepformat')).not.toBe(null);
+                done();
+            }, 100);
+        });
+    });
+
       describe('942350: Copied content from Google sheets are not pasted properly into the RichTextEditor', () => {
         let editor: RichTextEditor;
-        beforeEach((done: DoneFn) => {
+        beforeAll(() => {
             editor = renderRTE({
                 pasteCleanupSettings: {
                     keepFormat: true
                 }
             });
-            done();
         });
-        afterEach((done: DoneFn) => {
+        afterAll(() => {
             destroy(editor);
-            done();
         });
         it('942350: Copied content from Google sheets are not pasted properly into the RichTextEditor', (done: DoneFn) => {
             editor.focusIn();
@@ -5138,4 +4931,72 @@ StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times Ne
         });
     });
 
+    describe('946861: Paste cleanup Dialog close testing', ()=> {
+        let editor: RichTextEditor;
+        beforeAll(()=> {
+            editor = renderRTE({
+                value: 'Editor',
+                pasteCleanupSettings: {
+                    prompt: true
+                }
+            });
+        });
+        afterAll(()=> {
+            destroy(editor);
+        });
+        it('Should close the dialog on toolbar click action.', (done: DoneFn)=> {
+            editor.focusIn();
+            const range: Range = new Range();
+            range.setStart(editor.inputElement.firstChild.firstChild, 2);
+            range.collapse(true);
+            editor.selectRange(range);
+            const pasteContent: string = '<p>This is a coverage issue test case.</p>';
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', pasteContent);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.onPaste(pasteEvent);
+            setTimeout(()=> {
+                const boldButton: HTMLElement = editor.element.querySelector('.e-bold');
+                const mouseDownEvent: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+                boldButton.dispatchEvent(mouseDownEvent);
+                const mouseUpEvent: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
+                boldButton.dispatchEvent(mouseUpEvent);
+                setTimeout(() => {
+                    expect(editor.element.querySelector('.e-popup-open')).toBe(null);
+                    done();
+                }, 300);
+            }, 100);
+        }, 1000);
+    });
+
+    describe('946861: Paste Image File content from the Clipboard Testing.', ()=> {
+        let editor: RichTextEditor;
+        beforeAll(()=> {
+            editor = renderRTE({
+                value: '<p>Editor</p>',
+                pasteCleanupSettings: {
+                    keepFormat: true
+                }
+            });
+        });
+        afterAll(()=> {
+            destroy(editor);
+        });
+        it('Testing the Image file paste action.', (done: DoneFn)=> {
+            editor.focusIn();
+            const range: Range = new Range();
+            range.setStart(editor.inputElement.firstChild.firstChild, 2);
+            range.collapse(true);
+            editor.selectRange(range);
+            const dataTransfer: DataTransfer = new DataTransfer();
+            const file: File = getImageFIle();
+            dataTransfer.items.add(file);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.onPaste(pasteEvent);
+            setTimeout(()=> {
+                expect(editor.inputElement.querySelector('img')).not.toBe(null);
+                done();
+            }, 100);
+        });
+    });
 });// Add the spec above this.

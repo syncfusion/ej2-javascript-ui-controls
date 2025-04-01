@@ -2065,7 +2065,13 @@ export class TaskbarEdit extends DateProcessor {
     public getDateByLeft(left: number, isMilestone?: boolean, property?: ITaskData): Date {
         let pStartDate: Date = new Date(this.parent.timelineModule.timelineStartDate.toString());
         const milliSecondsPerPixel: number = (24 * 60 * 60 * 1000) / this.parent.perDayWidth;
-        pStartDate.setTime(pStartDate.getTime() + (left * milliSecondsPerPixel));
+        const calculatedDate: Date = new Date(pStartDate); // Renamed from tempStartDate
+        calculatedDate.setTime(calculatedDate.getTime() + (left * milliSecondsPerPixel));
+        if (this.parent.isInDst(calculatedDate)) {
+            pStartDate.setTime(pStartDate.getTime() + ((left - (this.parent.perDayWidth / 24)) * milliSecondsPerPixel));
+        } else {
+            pStartDate.setTime(pStartDate.getTime() + (left * milliSecondsPerPixel));
+        }
         /* To render the milestone in proper date while editing */
         if (isMilestone && !isNullOrUndefined(property.predecessorsName) && property.predecessorsName !== '') {
             //  pStartDate.setDate(pStartDate.getDate() -1);

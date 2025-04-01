@@ -2342,8 +2342,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             changedPanels = [];
         } else {
             for (let i: number = 0; i < this.panels.length; i++) {
-                if (((!isNullOrUndefined(added) ? (this.panels[i as number].id !== added[0].id) : true) &&
-                    (!isNullOrUndefined(removed) ? (this.panels[i as number].id !== removed[0].id) : true)) &&
+                if (((!isNullOrUndefined(removed) ? (this.panels[i as number].id !== removed[0].id) : true)) &&
                     (this.panels[i as number].row !== this.panelsInitialModel[i as number].row ||
                         this.panels[i as number].col !== this.panelsInitialModel[i as number].col)) {
                     changedPanels.push(this.panels[i as number]);

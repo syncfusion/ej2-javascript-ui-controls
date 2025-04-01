@@ -2864,9 +2864,9 @@ export class Ribbon {
         }
     }
 
-    private enableToolbarItems(args: { tab?: string, items?: number[] | string[], enable?: boolean }[]): void {
-        args.forEach((arg: { tab?: string, items?: number[] | string[], enable: boolean }): void => {
-            this.ribbon.enableItems(arg.tab || this.ribbon.items[this.ribbon.selectedTab].header.text, arg.items, arg.enable);
+    private enableToolbarItems(args: { tab?: string, items?: number[] | string[], enable?: boolean, isPublic?: boolean }[]): void {
+        args.forEach((arg: { tab?: string, items?: number[] | string[], enable: boolean, isPublic?: boolean }): void => {
+            this.ribbon.enableItems(arg.tab || this.ribbon.items[this.ribbon.selectedTab].header.text, arg.items, arg.enable, arg.isPublic);
         });
     }
 

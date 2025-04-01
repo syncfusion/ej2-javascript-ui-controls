@@ -3556,7 +3556,7 @@ class MatrixModel {
                     if (count > 1) {
                         const segmentsize: number = inversespacing / 2.0;
                         let intermediatePoint: object = null;
-                        let key: number;
+                        let key: number = -1;
                         const edgeMapper: EdgeMapperObject[] = this.getEdgeMapper();
                         for (let k: number = 0; k < edgeMapper.length; k++) {
                             if (edgeMapper[parseInt(k.toString(), 10)].key === internalConnector) {
@@ -3564,7 +3564,7 @@ class MatrixModel {
                                 break;
                             }
                         }
-                        if (key && (edgeMapper[parseInt(key.toString(), 10)] as EdgeMapperObject).value.length > 0) {
+                        if (key !== -1 && (edgeMapper[parseInt(key.toString(), 10)] as EdgeMapperObject).value.length > 0) {
                             const edgePoint: Point = edgeMapper[parseInt(key.toString(), 10)].value[0];
                             const dxValue1: number = edgePoint.x + layout.marginX;
                             const dyValue1: number = edgePoint.y + layout.marginY;
@@ -3620,17 +3620,16 @@ class MatrixModel {
                     if (count > 1) {
                         const segmentsize: number = inversespacing / 2.0;
                         let intermediatePoint: object = null;
-                        let key: number;
-                        let k: number;
-                        for (k = 0; k < edgeMapper.length; k++) {
+                        let key: number = -1;
+                        for (let k: number = 0; k < edgeMapper.length; k++) {
                             if (edgeMapper[parseInt(k.toString(), 10)].key === internalConnector) {
                                 key = k;
                                 break;
                             }
                         }
-                        if (key && edgeMapper[parseInt(key.toString(), 10)].value.length > 0
+                        if (key !== -1 && edgeMapper[parseInt(key.toString(), 10)].value.length > 0
                             && !this.containsValue(modifiedConnectors, internalConnector)) {
-                            const edgePt: Point = edgeMapper[parseInt(k.toString(), 10)].value[0];
+                            const edgePt: Point = edgeMapper[parseInt(key.toString(), 10)].value[0];
                             const dx1: number = edgePt.x + layout.marginX;
                             const dy1: number = edgePt.y + layout.marginY;
                             // eslint-disable-next-line one-var
@@ -3704,9 +3703,9 @@ class MatrixModel {
                 intermediateEnd.x = endBefore.x;
                 intermediateEnd.y = intermediatePoint.y;
             }
-            const length: number = Math.abs(Point.findAngle(intermediateEnd, endBefore));
-            if (length < 0.1) {
-                return [startPoint, startNext, intermediateStart, endBefore, endPoint];
+            const length: number = Math.abs(Point.findLength(intermediateEnd, endBefore));
+            if (length === 0) {
+                return [startPoint, startNext, intermediateStart, endPoint];
             }
             return [startPoint, startNext, intermediateStart, intermediateEnd, endBefore, endPoint];
         }

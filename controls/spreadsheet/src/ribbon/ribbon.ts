@@ -11,6 +11,7 @@ import { Spreadsheet } from '../spreadsheet/base';
 
 /**
  * Objects used for configuring the Ribbon tab header properties.
+ * @hidden
  */
 export class RibbonHeader extends ChildProperty<RibbonHeader> {
     /**
@@ -43,6 +44,7 @@ export class RibbonHeader extends ChildProperty<RibbonHeader> {
 
 /**
  * An array of object that is used to configure the Tab.
+ * @hidden
  */
 export class RibbonItem extends ChildProperty<RibbonItem> {
     /**
@@ -77,6 +79,7 @@ export class RibbonItem extends ChildProperty<RibbonItem> {
 
 /**
  * Interface for ribbon content expand/collapse event.
+ * @hidden
  */
 export interface ExpandCollapseEventArgs {
     /** Ribbon content element */
@@ -86,7 +89,16 @@ export interface ExpandCollapseEventArgs {
 }
 
 /**
+ * Interface for ribbon content item model.
+ */
+interface ExtendedItemModel extends ItemModel {
+    /** Specifies whether the property is updated manually using public methods. */
+    isManuallyEnabled : boolean;
+}
+
+/**
  * Represents Ribbon component.
+ * @hidden
  */
 @NotifyPropertyChanges
 export class Ribbon extends Component<HTMLDivElement> implements INotifyPropertyChanged {
@@ -614,13 +626,15 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
      * @param {number[]} items - Specifies the toolbar item indexes / unique id's which needs to be enabled / disabled.
      * If it is not specified the entire toolbar items will be enabled / disabled.
      * @param  {boolean} enable - Boolean value that determines whether the toolbar items should be enabled or disabled.
+     * @param  {boolean} isPublic - Boolean value that determines whether the toolbar items are enabled or disabled from public method or not.
      * @returns {void} - Enables or disables the specified Ribbon toolbar items or all ribbon items.
      */
-    public enableItems(tab: string, items?: number[] | string[], enable?: boolean): void {
+    public enableItems(tab: string, items?: number[] | string[], enable?: boolean, isPublic?: boolean): void {
         if (enable === undefined) { enable = true; }
         if (items) {
             const tabIdx: number = this.getTabIndex(tab, -1);
             if (tabIdx < 0) { return; }
+            let isEnabled: boolean;
             for (let i: number = 0; i < items.length; i++) {
                 if (typeof items[i as number] === 'string') {
                     for (let j: number = 0; j < this.items[tabIdx as number].content.length; j++) {
@@ -630,10 +644,17 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
                 if (typeof items[i as number] === 'string') {
                     if (items.length - 1 > i) { continue; } else { return; }
                 }
-                this.items[tabIdx as number].content[items[i as number]].disabled = !enable;
+                const itemContent: ExtendedItemModel = this.items[tabIdx as number].content[items[i as number]] as ExtendedItemModel;
+                isEnabled = enable;
+                if (isPublic) {
+                    itemContent.isManuallyEnabled = enable;
+                } else if (enable && itemContent.isManuallyEnabled !== undefined) {
+                    isEnabled = itemContent.isManuallyEnabled;
+                }
+                itemContent.disabled = !isEnabled;
                 this.setProperties({ 'items': this.items }, true);
                 if (tabIdx === this.selectedTab) {
-                    this.toolbarObj.enableItems(<number>items[i as number], enable);
+                    this.toolbarObj.enableItems(<number>items[i as number], isEnabled);
                 }
             }
         }

@@ -1,15 +1,15 @@
 import { EditorManager } from './../base/editor-manager';
 import * as CONSTANT from './../base/constant';
 import { IHtmlItem } from './../base/interface';
+import { ImageDropEventArgs } from '../../rich-text-editor/base/interface';
 import { NodeSelection } from '../../selection/selection';
 import { NodeCutter } from './nodecutter';
 import { InsertHtml } from './inserthtml';
-import { createElement, isNullOrUndefined as isNOU, closest } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined as isNOU, closest, EventHandler } from '@syncfusion/ej2-base';
 import * as EVENTS from './../../common/constant';
 import { DOMMethods } from './dom-tree';
 import { InsertMethods } from './insert-methods';
 import { IsFormatted } from './isformatted';
-
 
 /**
  * Link internal component
@@ -19,6 +19,11 @@ import { IsFormatted } from './isformatted';
  */
 export class LinkCommand {
     private parent: EditorManager;
+    private drop: EventListenerOrEventListenerObject;
+    private enter: EventListenerOrEventListenerObject;
+    private start: EventListenerOrEventListenerObject;
+    private dragSelectionRange: Range;
+
     /**
      * Constructor for creating the Formats plugin
      *
@@ -28,16 +33,34 @@ export class LinkCommand {
      */
     public constructor(parent: EditorManager) {
         this.parent = parent;
+        this.drop = this.dragDrop.bind(this);
+        this.enter = this.dragEnter.bind(this);
+        this.start = this.dragStart.bind(this);
         this.addEventListener();
     }
     private addEventListener(): void {
         this.parent.observer.on(CONSTANT.LINK, this.linkCommand, this);
         this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
+        const dropElement: Element = this.parent.editableElement;
+        if (dropElement) {
+            EventHandler.add(dropElement, 'drop', this.drop as EventListener);
+            EventHandler.add(dropElement, 'dragenter', this.enter as EventListener);
+            EventHandler.add(dropElement, 'dragover', this.start as EventListener);
+        }
     }
 
     private removeEventListener(): void {
         this.parent.observer.off(CONSTANT.LINK, this.linkCommand);
         this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
+        const dropElement: Element = this.parent.editableElement;
+        if (dropElement) {
+            EventHandler.remove(dropElement, 'drop', this.drop as EventListener);
+            EventHandler.remove(dropElement, 'dragenter', this.enter as EventListener);
+            EventHandler.remove(dropElement, 'dragover', this.start as EventListener);
+        }
+        this.drop = null;
+        this.enter = null;
+        this.start = null;
     }
 
     private linkCommand(e: IHtmlItem): void {
@@ -52,6 +75,125 @@ export class LinkCommand {
         case 'removelink':
             this.removeLink(e);
             break;
+        }
+    }
+    private dragStart(event: DragEvent): void {
+        const range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        if (range) {
+            const startContainer: Node = range.startContainer;
+            const endContainer: Node = range.endContainer;
+            let startAnchor: HTMLAnchorElement | null = null;
+            let endAnchor: HTMLAnchorElement | null = null;
+            if (startContainer.nodeType === Node.ELEMENT_NODE) {
+                startAnchor = (startContainer as Element).closest('a');
+            } else {
+                const parentElement: Element | null  = (startContainer as Element).parentElement;
+                if (parentElement) {
+                    startAnchor = parentElement.closest('a');
+                }
+            }
+            if (endContainer.nodeType === Node.ELEMENT_NODE) {
+                endAnchor = (endContainer as Element).closest('a');
+            } else {
+                const parentElement: Element | null = (endContainer as Element).parentElement;
+                if (parentElement) {
+                    endAnchor = parentElement.closest('a');
+                }
+            }
+            if ((event.target as HTMLElement).nodeName === 'A' || startAnchor || endAnchor) {
+                this.dragSelectionRange = range.cloneRange();
+            }
+        }
+    }
+
+    private dragEnter(event: DragEvent): void {
+        event.dataTransfer.dropEffect = 'copy';
+        event.preventDefault();
+    }
+
+    private dragDrop(event: ImageDropEventArgs): void {
+        if (this.dragSelectionRange) {
+            event.preventDefault();
+            let range: Range;
+            if (this.parent.currentDocument.caretRangeFromPoint) { //For chrome and safari
+                range = this.parent.currentDocument.caretRangeFromPoint(event.clientX, event.clientY);
+            } else if ((event.rangeParent)) { //For mozilla firefox
+                range = this.parent.currentDocument.createRange();
+                range.setStart(event.rangeParent, event.rangeOffset);
+            }
+            let html: string = event.dataTransfer.getData('text/html');
+            if (html) {
+                let anchorElement: HTMLAnchorElement | null = null;
+                if (range.startContainer && range.startContainer.nodeType === Node.TEXT_NODE) {
+                    anchorElement = (range.startContainer.parentNode as HTMLAnchorElement);
+                } else if (range.startContainer instanceof HTMLAnchorElement) {
+                    anchorElement = range.startContainer;
+                }
+                if (!anchorElement) {
+                    if (range.collapsed) {
+                        const node: Node = range.startContainer;
+                        if (node) {
+                            const parentAnchor: Element | null = (node as Element).closest('a');
+                            if (parentAnchor) {
+                                anchorElement = parentAnchor as HTMLAnchorElement;
+                            }
+                        }
+                    }
+                } else if (anchorElement && anchorElement.nodeName !== 'A') {
+                    anchorElement = anchorElement.closest('a');
+                }
+                if (anchorElement) {
+                    const tempDiv: HTMLElement = createElement('div', { innerHTML: html });
+                    const anchors: NodeListOf<HTMLAnchorElement> = tempDiv.querySelectorAll('a');
+                    anchors.forEach((anchor: HTMLAnchorElement) => {
+                        while (anchor.firstChild) {
+                            anchor.parentNode.insertBefore(anchor.firstChild, anchor);
+                        }
+                        anchor.remove();
+                    });
+                    html = tempDiv.innerHTML;
+                }
+                range.deleteContents();
+                const fragment: DocumentFragment = range.createContextualFragment(html);
+                const anchorEle: NodeListOf<HTMLAnchorElement> = fragment.querySelectorAll('a');
+                anchorEle.forEach((anchor: HTMLAnchorElement): void => {
+                    anchor.style.textDecoration = '';
+                });
+                if (this.dragSelectionRange) {
+                    this.dragSelectionRange.deleteContents();
+                    this.normalizeEmptyLinks();
+                    this.dragSelectionRange = null;
+                }
+                this.parent.nodeSelection.setRange(this.parent.currentDocument, range);
+                InsertHtml.Insert(this.parent.currentDocument, fragment,
+                                  this.parent.editableElement as HTMLElement, true);
+                if (anchorElement) {
+                    anchorElement.normalize();
+                }
+            }
+        }
+    }
+
+    private normalizeEmptyLinks(): void {
+        if (!this.dragSelectionRange) {
+            return;
+        }
+        const commonAncestor: Node  = this.dragSelectionRange.commonAncestorContainer;
+        let parentElement: HTMLElement  = commonAncestor.nodeType === Node.TEXT_NODE
+            ? commonAncestor.parentElement
+            : commonAncestor as HTMLElement;
+        if (parentElement && CONSTANT.BLOCK_TAGS.indexOf(parentElement.nodeName.toLocaleLowerCase()) === -1) {
+            parentElement = this.parent.domNode.getImmediateBlockNode(parentElement) as HTMLElement;
+        }
+        if (parentElement) {
+            const emptyLinks: NodeListOf<HTMLAnchorElement> = parentElement.querySelectorAll('a:empty');
+            emptyLinks.forEach((link: HTMLAnchorElement) => {
+                if (link.textContent.trim() === '' && !link.querySelector('img') && !link.querySelector('video')) {
+                    if (link.parentNode) {
+                        link.parentNode.removeChild(link);
+                    }
+                }
+            });
         }
     }
 

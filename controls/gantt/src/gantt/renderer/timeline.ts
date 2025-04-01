@@ -1,13 +1,14 @@
 import { TimelineFormat, ITaskData } from './../base/interface';
 import { createElement, isNullOrUndefined, getValue, addClass, removeClass, extend, append } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
-import { TimelineSettingsModel } from '../models/timeline-settings-model';
+import { TimelineSettingsModel, TimelineTierSettingsModel } from '../models/timeline-settings-model';
 import * as cls from '../base/css-constants';
 import { CriticalPath } from '../actions/critical-path';
 import { TimelineViewMode } from '../base/enum';
 import { ITimeSpanEventArgs, ITimelineFormatter, IGanttData, ZoomEventArgs, ZoomTimelineSettings } from '../base/interface';
 import { DataUtil } from '@syncfusion/ej2-data';
 import { TaskbarEdit } from '../actions/taskbar-edit';
+import { getUniversalTime } from '../base/utils';
 /**
  * Configures the `Timeline` of the gantt.
  */
@@ -36,8 +37,15 @@ export class Timeline {
     public restrictRender: boolean = true;
     public weekendEndDate: Date;
     private clientWidthDifference: number;
+    private applyDstHour: boolean = false;
     private performedTimeSpanAction: boolean = false;
+    private dstIncreaseHour: boolean = false;
+    private fromDummyDate: boolean = false;
     public isZoomedToFit: boolean = false;
+    public isZoomingAction: boolean = false;
+    private increaseIteration: boolean = false;
+    private isFirstLoop: boolean = false;
+    private inconsistenceDstApplied: boolean = false;
     constructor(ganttObj?: Gantt) {
         this.parent = ganttObj;
         this.initProperties();
@@ -873,6 +881,7 @@ export class Timeline {
             timelineHeader['style'].width = 'calc(100% - ' + 17 + 'px)';
             if (this.parent.timelineModule.isZooming || this.parent.timelineModule.isZoomToFit) {
                 this.parent.ganttChartModule.scrollElement.scrollLeft = 0;
+                this.isZoomingAction = true;
                 this.parent.ganttChartModule.scrollObject.updateChartElementStyles();
             }
         }
@@ -1074,10 +1083,11 @@ export class Timeline {
      *
      * @param {string} dayFormat .
      * @param {Date} data .
+     * @param {Date} dummyStartDate .
      * @returns {string} .
      * @private
      */
-    private formatDateHeader(dayFormat: string, data: Date): string {
+    private formatDateHeader(dayFormat: string, data: Date, dummyStartDate?: Date): string {
         const date: Date = new Date(data.getTime());
         let dateString: string;
         if (dayFormat === '') {
@@ -1094,8 +1104,87 @@ export class Timeline {
             }
         } else {
             dateString = this.parent.globalize.formatDate(date, { format: dayFormat });
+            if (dummyStartDate) {
+                dateString = this.updateHourInFormat(dayFormat, dateString, dummyStartDate.getHours()).updatedFormat;
+            }
         }
         return dateString;
+    }
+    private isDateAffectedByDST(modifiedDate: Date): boolean {
+        const date: Date = new Date(modifiedDate);
+        const offsetAfter: number = date.getTimezoneOffset();
+        for (let hoursBack: number = 1; hoursBack <= 3; hoursBack++) {
+            const testDate: Date = new Date(date.getTime() - hoursBack * 60 * 60 * 1000);
+            const offsetBefore: number = testDate.getTimezoneOffset();
+            if (offsetBefore !== offsetAfter) {
+                return true; // DST transition happened
+            }
+        }
+        return false; // No DST transition detected
+    }
+    private calculateIteration(
+        dummystartDate: Date,
+        startDate: Date,
+        mode: string,
+        count: number
+    ): { iterations: number; dummystartDate: Date } {
+        dummystartDate.setHours(startDate.getHours());
+        if (this.isFirstLoop && this.parent.isInDst(startDate) &&
+            this.isDateAffectedByDST(startDate)) {
+            dummystartDate.setHours(dummystartDate.getHours() - 1);
+            this.increaseIteration = true;
+        }
+        this.isFirstLoop = false;
+        dummystartDate.setMinutes(startDate.getMinutes());
+        dummystartDate.setSeconds(startDate.getSeconds());
+        dummystartDate.setMilliseconds(startDate.getMilliseconds());
+        let iterations: number;
+        if (mode === 'Hour') {
+            const startHour: number = startDate.getHours();
+            // Calculate iterations based on remaining hours in the day
+            iterations = Math.ceil((24 - startHour) / count);
+        } else if (mode === 'Minutes') {
+            const startHour: number = startDate.getHours();
+            const startMinute: number = startDate.getMinutes();
+            // Calculate iterations based on remaining minutes in the day
+            iterations = Math.ceil((1440 - (startHour * 60 + startMinute)) / count);
+        }
+        if (this.increaseIteration) {
+            iterations += 1;
+            this.increaseIteration = false;
+        }
+        return {iterations: iterations, dummystartDate: dummystartDate};
+    }
+    private updateHourInFormat(
+        dayFormat: string,
+        formattedDate: string,
+        newHour: number
+    ): { hasHour: boolean, hourIndex?: number, updatedFormat: string } {
+        const hour12Pattern: RegExp = /(h{1,2})/; // Matches 'h' or 'hh'
+        const hour24Pattern: RegExp = /(H{1,2})/; // Matches 'H' or 'HH'
+        const hourMatch: RegExpMatchArray = dayFormat.match(hour12Pattern) || dayFormat.match(hour24Pattern);
+        if (!hourMatch) {
+            // No hour format found
+            return { hasHour: false, updatedFormat: formattedDate };
+        }
+        const hourFormat: string = hourMatch[0]; // Get the hour format string
+        const formatParts: string[] = dayFormat.split(/[\s,:]+/);
+        const dateParts: string[] = formattedDate.split(/[\s,:]+/);
+        const hourIndex: number = formatParts.findIndex((part: string) => part.includes('h') || part.includes('H'));
+        if (hourIndex === -1 || hourIndex >= dateParts.length) {
+            return { hasHour: false, updatedFormat: formattedDate };
+        }
+        function padWithZeros(num: number, length: number): string {
+            let numStr: string = String(num);
+            while (numStr.length < length) {
+                numStr = '0' + numStr;
+            }
+            return numStr;
+        }
+        const formattedHour: string = padWithZeros(newHour, hourFormat.length);
+        dateParts[hourIndex as number] = formattedHour;
+        const updatedDate: string = dateParts.join(' ');
+        return { hasHour: true, hourIndex, updatedFormat: updatedDate };
     }
 
     /**
@@ -1131,6 +1220,8 @@ export class Timeline {
             parent.timelineModule.customTimelineSettings.bottomTier.unit;
         const count: number = tier === 'topTier' ? parent.timelineModule.customTimelineSettings.topTier.count :
             parent.timelineModule.customTimelineSettings.bottomTier.count;
+        const topTier: TimelineTierSettingsModel = parent.timelineModule.customTimelineSettings.topTier;
+        const bottomTier: TimelineTierSettingsModel = parent.timelineModule.customTimelineSettings.bottomTier;
         let increment: number;
         let newTime: number;
         const leftValueForStartDate: number = (this.parent.enableTimelineVirtualization &&
@@ -1141,65 +1232,145 @@ export class Timeline {
             new Date(this.parent.timelineModule.timelineStartDate.toString());
         const endDate: Date = new Date(this.timelineRoundOffEndDate.toString());
         const scheduleDateCollection: Date[] = [];
+        const uniqueTimestamps: Set<number> = new Set<number>();
         let width: number = 0;
         const WidthForVirtualTable: number = this.parent.element.offsetWidth * 3;
+        const hasDST: boolean = this.parent.dataOperation.hasDSTTransition(startDate.getFullYear());
+        let dummystartDate: Date = new Date(2000, 0, 1, 0, 0, 0, 0);
+        let loopEnd: boolean = false;
+        this.isFirstLoop = true;
         do {
             // PDf export collection
-            const timelineCell: TimelineFormat = {};
+            let timelineCell: TimelineFormat = {};
             timelineCell.startDate = new Date(startDate.getTime());
+            const incrementsDone: { [key: string]: number } = {};
             if ((mode === 'Month' || mode === 'Hour') && tier === 'bottomTier' && (count !== 1) && scheduleDateCollection.length === 0) {
                 isFirstCell = true;
             }
-            parentTr = this.getHeaterTemplateString(new Date(startDate.toString()), mode, tier, false, count, timelineCell, isFirstCell);
-            scheduleDateCollection.push(new Date(startDate.toString()));
-            if (isFirstCell && mode === 'Month') {
-                newTime = this.calculateQuarterEndDate(startDate, count).getTime();
-            } else {
-                increment = Math.abs(this.getIncrement(startDate, count, mode));
-                newTime = startDate.getTime() + increment;
-            }
-            const dubStartDate: Date = new Date(startDate.getTime());
-            isFirstCell = false;
-            startDate.setTime(newTime);
-            const dubStartHour: number = dubStartDate.getHours();
-            const startHour: number = startDate.getHours();
-            const difference: number = startHour - dubStartHour;
-            if (difference !== count && difference > 1) {
-                if ((!this.parent.isInDst(startDate) && this.parent.isInDst(dubStartDate)) ||
-                    (this.parent.isInDst(startDate) && !this.parent.isInDst(dubStartDate))) {
-                    if (startDate.getTimezoneOffset() > dubStartDate.getTimezoneOffset()) {
-                        startDate.setTime(startDate.getTime() - ((1000 * 60 * 60) * (difference - count)));
+            if (((mode === 'Hour') || (mode === 'Minutes' && count === 60) ||
+                (topTier.unit === 'Hour' && bottomTier.unit === 'Minutes')) && hasDST) {
+                const calculatedIteration: {
+                    iterations: number;
+                    dummystartDate: Date;
+                } = this.calculateIteration(dummystartDate, startDate, mode, count);
+                const iterations: number = calculatedIteration.iterations;
+                dummystartDate.setTime(calculatedIteration.dummystartDate.getTime());
+                for (let i: number = 0; i < iterations; i++) {
+                    timelineCell = {};
+                    timelineCell.startDate = new Date(startDate.getTime());
+                    if (startDate.getHours() !== dummystartDate.getHours()) {
+                        this.applyDstHour = true;
+                    }
+                    parentTr = this.getHeaterTemplateString(
+                        new Date(startDate.toString()),
+                        mode,
+                        tier,
+                        false,
+                        count,
+                        timelineCell,
+                        isFirstCell,
+                        dummystartDate
+                    );
+                    const formattedStartDate: Date = new Date(startDate.toString());
+                    const timestamp: number = formattedStartDate.getTime();
+                    if (!uniqueTimestamps.has(timestamp)) {
+                        uniqueTimestamps.add(timestamp);
+                        scheduleDateCollection.push(formattedStartDate);
+                    }
+                    const incrementResult: number = this.getIncrement(startDate, count, mode, isFirstCell, true);
+                    let dummyDateIncrement: number = incrementResult;
+                    if (mode === 'Minutes' || mode === 'Hour') {
+                        if (this.dstIncreaseHour) {
+                            this.fromDummyDate = true;
+                            dummyDateIncrement = this.getIncrement(dummystartDate, count, mode, isFirstCell, true);
+                            this.dstIncreaseHour = false;
+                            this.fromDummyDate = false;
+                        }
+                        dummystartDate.setTime(dummystartDate.getTime() + dummyDateIncrement);
+                        if (this.inconsistenceDstApplied) {
+                            startDate.setTime(startDate.getTime() + incrementResult - 1800000);
+                            this.inconsistenceDstApplied = false;
+                        } else {
+                            startDate.setTime(startDate.getTime() + incrementResult);
+                        }
+                    }
+                    isFirstCell = false;
+                    if (i === iterations - 1 && startDate.getHours() !== 0) {
+                        startDate.setHours(0);
+                    }
+                    if (startDate.getHours() === 23 && startDate.getHours() !== dummystartDate.getHours()) {
+                        startDate.setHours(startDate.getHours() - 1);
+                    }
+                    if (startDate >= endDate) {
+                        /* eslint-disable-next-line */
+                        parentTr = this.getHeaterTemplateString(scheduleDateCollection[scheduleDateCollection.length - 1], mode, tier, true, count, timelineCell);
+                        loopEnd = true;
+                    }
+                    parentTh.appendChild(parentTr);
+                    const tierCollection: TimelineFormat[] = tier === 'topTier' ? this.topTierCollection : this.bottomTierCollection;
+                    timelineCell.endDate = new Date(startDate.getTime());
+                    if (this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport &&
+                        this.parent.enableTimelineVirtualization) {
+                        if (tier === 'topTier') {
+                            this.pdfExportTopTierCollection.push(timelineCell);
+                        }
+                        else {
+                            this.pdfExportBottomTierCollection.push(timelineCell);
+                        }
+                    }
+                    else {
+                        tierCollection.push(timelineCell);
+                    }
+                    width += timelineCell.width;
+                    this.weekendEndDate = timelineCell.endDate >= endDate ? endDate : timelineCell.endDate;
+                    if (loopEnd) {
+                        loopEnd = false;
+                        break;
                     }
                 }
-            }
-            if (startDate.getHours() === 5 && count === 2 && tier === 'bottomTier' &&
-                parent.timelineModule.customTimelineSettings.bottomTier.unit === 'Hour') {
-                startDate.setTime(startDate.getTime() - (1000 * 60 * 60));
-            }
-            if (startDate.getHours() === 8 && count === 12 && tier === 'bottomTier' &&
-                    this.parent.timelineModule.customTimelineSettings.bottomTier.unit === 'Hour') {
-                startDate.setTime(startDate.getTime() - (1000 * 60 * 60 * 8));
-            }
-            if (startDate >= endDate) {
-                /* eslint-disable-next-line */
-                parentTr = this.getHeaterTemplateString(scheduleDateCollection[scheduleDateCollection.length - 1], mode, tier, true, count, timelineCell);
-            }
-            parentTh.appendChild(parentTr);
-            const tierCollection: TimelineFormat[] = tier === 'topTier' ? this.topTierCollection : this.bottomTierCollection;
-            timelineCell.endDate = new Date(startDate.getTime());
-            if (this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport && this.parent.enableTimelineVirtualization) {
-                if (tier === 'topTier') {
-                    this.pdfExportTopTierCollection.push(timelineCell);
+                this.applyDstHour = false;
+                if (mode === 'Hour') {
+                    incrementsDone.day = Math.floor((iterations * count) / 24);
+                } else if (mode === 'Minutes') {
+                    incrementsDone.day = Math.floor((iterations * count) / 1440);
+                }
+                dummystartDate = new Date(2000, 0, 1, 0, 0, 0, 0);
+            } else {
+                parentTr = this.getHeaterTemplateString(new Date(startDate.toString()), mode, tier, false, count,
+                                                        timelineCell, isFirstCell);
+                scheduleDateCollection.push(new Date(startDate.toString()));
+                if (isFirstCell && mode === 'Month') {
+                    newTime = this.calculateQuarterEndDate(startDate, count).getTime();
+                } else {
+                    increment = Math.abs(this.getIncrement(startDate, count, mode, isFirstCell, true));
+                    newTime = startDate.getTime() + increment;
+                }
+                isFirstCell = false;
+                startDate.setTime(newTime);
+                if (hasDST && (mode === 'Day' || mode === 'Month' || mode === 'Week')) {
+                    startDate.setHours(0, 0, 0, 0);
+                }
+                if (startDate >= endDate) {
+                    /* eslint-disable-next-line */
+                    parentTr = this.getHeaterTemplateString(scheduleDateCollection[scheduleDateCollection.length - 1], mode, tier, true, count, timelineCell);
+                }
+                parentTh.appendChild(parentTr);
+                const tierCollection: TimelineFormat[] = tier === 'topTier' ? this.topTierCollection : this.bottomTierCollection;
+                timelineCell.endDate = new Date(startDate.getTime());
+                if (this.parent.pdfExportModule && this.parent.pdfExportModule.isPdfExport && this.parent.enableTimelineVirtualization) {
+                    if (tier === 'topTier') {
+                        this.pdfExportTopTierCollection.push(timelineCell);
+                    }
+                    else {
+                        this.pdfExportBottomTierCollection.push(timelineCell);
+                    }
                 }
                 else {
-                    this.pdfExportBottomTierCollection.push(timelineCell);
+                    tierCollection.push(timelineCell);
                 }
+                width += timelineCell.width;
+                this.weekendEndDate = timelineCell.endDate >= endDate ? endDate : timelineCell.endDate;
             }
-            else {
-                tierCollection.push(timelineCell);
-            }
-            width += timelineCell.width;
-            this.weekendEndDate = timelineCell.endDate >= endDate ? endDate : timelineCell.endDate;
         }
         while ((this.parent.enableTimelineVirtualization && (!this.parent.pdfExportModule ||
             this.parent.pdfExportModule && !this.parent.pdfExportModule.isPdfExport)) ? (width < WidthForVirtualTable) &&
@@ -1211,9 +1382,16 @@ export class Timeline {
         let timeDiff: number;
         let perDayWidth: number;
         let totWidth: number;
+        let contentWidth: number;
         const contentElement: HTMLElement = document.getElementsByClassName('e-chart-scroll-container e-content')[0] as HTMLElement;
         if (!isNullOrUndefined(contentElement)) {
-            const contentWidth: number = contentElement['offsetWidth'];
+            if (!this.parent.isLoad && this.parent.splitterModule && this.parent.splitterModule.splitterObject &&
+                this.parent.splitterSettings.view === 'Chart') {
+                contentWidth = contentElement['offsetWidth'] + this.parent.splitterModule.splitterObject['allPanes'][0].offsetWidth;
+            }
+            else {
+                contentWidth = contentElement['offsetWidth'];
+            }
             const contentHeight: number = contentElement['offsetHeight'];
             const scrollHeight: number = document.getElementsByClassName('e-chart-rows-container')[0]['offsetHeight'];
             timeDiff = Math.abs(this.timelineStartDate.getTime() - endDate.getTime());
@@ -1263,27 +1441,51 @@ export class Timeline {
      * @param {Date} startDate .
      * @param {number} count .
      * @param {string} mode .
-     * @param {boolean} isFirstCell .
+     * @param {boolean} [isFirstCell] .
+     * @param {boolean} [dateIncrement] .
      * @returns {number} .
      * @private
      */
-    public getIncrement(startDate: Date, count: number, mode: string, isFirstCell?: boolean): number {
+    public getIncrement(startDate: Date, count: number, mode: string, isFirstCell?: boolean, dateIncrement?: boolean): number {
         let firstDay: Date = new Date(startDate.getTime());
         let lastDay: Date = new Date(startDate.getTime());
         let increment: number;
+        let isDstEnd: boolean = false;
+        const dstDateCompate: Date = new Date(firstDay);
         switch (mode) {
-        case 'Year':
+        case 'Year': {
             firstDay = startDate;
             lastDay = new Date(startDate.getFullYear() + (count - 1), 11, 31);
-            increment = (lastDay.getTime() - firstDay.getTime()) + (1000 * 60 * 60 * 24);
+            const startDateUTC: number = getUniversalTime(startDate);
+            const endDateUTC: number = this.resetToNextYear(startDate, count);
+            const expectedYearDiff: number = endDateUTC - startDateUTC;
+            increment = this.adjustForDST(
+                firstDay,
+                lastDay,
+                expectedYearDiff,
+                (lastDay.getTime() - firstDay.getTime()) + (1000 * 60 * 60 * 24),
+                dateIncrement,
+                true
+            );
             break;
-        case 'Month':
+        }
+        case 'Month': {
             firstDay = startDate;
             lastDay = new Date(startDate.getFullYear(), startDate.getMonth() + count, 1);
-            increment = lastDay.getTime() - firstDay.getTime();
+            const startDateUTC: number = getUniversalTime(startDate);
+            const endDateUTC: number = this.resetToNextMonth(startDate, count);
+            const expectedMonthDiff: number = endDateUTC - startDateUTC;
+            increment = this.adjustForDST(
+                firstDay,
+                lastDay,
+                expectedMonthDiff,
+                lastDay.getTime() - firstDay.getTime(),
+                dateIncrement,
+                true
+            );
             break;
-        case 'Week':
-        {
+        }
+        case 'Week': {
             const dayIndex: number = this.parent.timelineModule.customTimelineSettings.weekStartDay;
             let dayIntervel: number = startDate.getDay() < dayIndex ? (dayIndex - startDate.getDay()) :
                 (6 - startDate.getDay()) + dayIndex;
@@ -1292,88 +1494,165 @@ export class Timeline {
             dayIntervel = startDate.getDay() < dayIndex ? dayIntervel > 0 ?
                 dayIntervel - 1 : dayIntervel : dayIntervel;
             lastDay.setDate(lastDay.getDate() + (dayIntervel + (7 * count)));
-            increment = lastDay.getTime() - firstDay.getTime();
+            const nextDayMidnightUTC: number = this.resetToNextDay(startDate);
+            const startDateUTC: number = getUniversalTime(startDate);
+            const endDateUTC: number = nextDayMidnightUTC + ((dayIntervel + (7 * count)) * 24 * 60 * 60 * 1000);
+            const expectedWeekDiff: number = endDateUTC - startDateUTC;
+            increment = this.adjustForDST(
+                firstDay,
+                lastDay,
+                expectedWeekDiff,
+                lastDay.getTime() - firstDay.getTime(),
+                dateIncrement,
+                true
+            );
             break;
         }
-        case 'Day':
+        case 'Day': {
             lastDay.setHours(24, 0, 0, 0);
-            if (this.parent.timelineModule.customTimelineSettings.bottomTier.count === 6) {
-                if (((lastDay.getHours() - firstDay.getHours()) === -2)) {
-                    // Reducing 2-hrs to match one day for firstDay:
-                    firstDay.setTime(firstDay.getTime() - (2 * 3600000));
-                }
-                if (this.parent.isInDst(firstDay)) {
-                    // Reducing 2-hrs to match one day for firstDay and 1-hr for DST handle:
-                    firstDay.setTime(firstDay.getTime() - (3 * 3600000));
-                }
-            }
+            const nextDayMidnightUTC: number = this.resetToNextDay(firstDay);
+            const startDateUTC: number = getUniversalTime(firstDay);
+            const endDateUTC: number = nextDayMidnightUTC + ((count - 1) * 24 * 60 * 60 * 1000);
+            const expectedDayDiff: number = endDateUTC - startDateUTC;
             increment = (lastDay.getTime() - firstDay.getTime()) + (1000 * 60 * 60 * 24 * (count - 1));
-            increment = this.checkDate(firstDay, lastDay, increment, count, mode);
+            const date: Date = new Date(firstDay);
+            date.setTime(date.getTime() + increment);
+            increment = this.adjustForDST(
+                firstDay,
+                date,
+                expectedDayDiff,
+                date.getTime() - firstDay.getTime(),
+                dateIncrement,
+                true
+            );
             break;
-        case 'Hour':
-        {
+        }
+        case 'Hour': {
             lastDay.setMinutes(60);
             lastDay.setSeconds(0);
+            const nextHourUtC: number = this.resetToNextHour(firstDay);
+            const startDateUTC: number = getUniversalTime(firstDay);
+            const endDateUTC: number = nextHourUtC + ((count - 1) * 60 * 60 * 1000);
+            const expectedHourDiff: number = endDateUTC - startDateUTC;
             increment = (lastDay.getTime() - firstDay.getTime()) + (1000 * 60 * 60 * (count - 1));
-            const date: Date = new Date(lastDay);
+            const date: Date = new Date(firstDay);
             date.setTime(date.getTime() + increment);
             if (isFirstCell && count === 12) {
                 if (firstDay.getHours() !== 0) {
                     date.setHours(0, 0, 0, 0);
-                    increment = date.getTime() - firstDay.getTime();
                 }
             }
-            // if (isFirstCell && count === 6) {
-            //     if (firstDay.getHours() !== 0) {
-            //         date.setHours(6, 0, 0, 0);
-            //         increment = date.getTime() - firstDay.getTime();
-            //     }
-            // }
-            increment = this.checkDate(firstDay, lastDay, increment, count, mode);
+            const dstDateCompare: Date = new Date(firstDay);
+            dstDateCompare.setHours(dstDateCompare.getHours() - count);
+            const offsetDiff: number = firstDay.getTimezoneOffset() - dstDateCompare.getTimezoneOffset();
+            if (offsetDiff === -30) {
+                date.setMinutes(date.getMinutes() + 30);
+                this.inconsistenceDstApplied = true;
+            }
+            if (date.getHours() < (dstDateCompate.getHours() + count)) {
+                isDstEnd = true;
+            }
+            increment = this.adjustForDST(
+                firstDay,
+                date,
+                expectedHourDiff,
+                date.getTime() - firstDay.getTime(),
+                dateIncrement,
+                isDstEnd
+            );
             break;
         }
-        case 'Minutes':
+        case 'Minutes': {
             lastDay.setSeconds(60);
+            const nextMinuteUtC: number = this.resetToNextMinute(firstDay);
+            const startDateUTC: number = getUniversalTime(firstDay);
+            const endDateUTC: number = nextMinuteUtC + ((count - 1) * 60 * 1000);
+            const expectedMinuteDiff: number = endDateUTC - startDateUTC;
             increment = (lastDay.getTime() - firstDay.getTime()) + (1000 * 60 * (count - 1));
-            increment = this.checkDate(firstDay, lastDay, increment, count, mode);
+            const date: Date = new Date(firstDay);
+            date.setTime(date.getTime() + increment);
+            if (date.getMinutes() <= dstDateCompate.getMinutes()) {
+                isDstEnd = true;
+            }
+            increment = this.adjustForDST(
+                firstDay,
+                date,
+                expectedMinuteDiff,
+                date.getTime() - firstDay.getTime(),
+                dateIncrement,
+                isDstEnd
+            );
             break;
         }
-        return increment;
-    }
-
-    private checkDate(firstDay: Date, lastDay: Date, increment: number, count: number, mode: string): number {
-        const date: Date = new Date(firstDay.getTime());
-        date.setTime(date.getTime() + increment);
-        if (mode === 'Day' && count !== 1 && ((date.getTime() - lastDay.getTime()) / (1000 * 60 * 60 * 24)) !== count && (firstDay.getTimezoneOffset() !== date.getTimezoneOffset())) {
-            const diffCount: number = count - (date.getTime() - lastDay.getTime()) / (1000 * 60 * 60 * 24);
-            if (!this.parent.isInDst(date)) {
-                increment += (1000 * 60 * 60 * diffCount);
-            }
-            else if (this.parent.isInDst(date) && count !== 2) {
-                increment -= (1000 * 60 * 60 * diffCount);
-            }
-        }
-        else if (mode === 'Hour' && count !== 1 && ((date.getTime() - lastDay.getTime()) / (1000 * 60 * 60)) !== count && (firstDay.getTimezoneOffset() !== date.getTimezoneOffset())) {
-            const diffCount: number = count - (date.getTime() - lastDay.getTime()) / (1000 * 60 * 60);
-            if (!this.parent.isInDst(date)) {
-                increment += (1000 * 60 * 60 * diffCount);
-            }
-            else if (this.parent.isInDst(date) && count !== 2) {
-                increment -= (1000 * 60 * 60 * diffCount);
-            }
-        }
-        else if (mode === 'Minutes' && count !== 1 && ((date.getTime() - lastDay.getTime()) / (1000 * 60)) !== count && (firstDay.getTimezoneOffset() !== date.getTimezoneOffset())) {
-            const diffCount: number = count - (date.getTime() - lastDay.getTime()) / (1000 * 60);
-            if (!this.parent.isInDst(date)) {
-                increment += (1000 * 60 * 60 * diffCount);
-            }
-            else if (this.parent.isInDst(date) && count !== 2 && count !== 15 && count !== 60) {
-                increment -= (1000 * 60 * 60 * diffCount);
-            }
         }
         return increment;
     }
+    private resetToNextYear(now: Date, count: number): number {
+        const year: number = now.getFullYear() + (count);
+        return Date.UTC(year, 0, 1, 0, 0, 0, 0);
+    }
 
+    private resetToNextMonth(now: Date, count: number): number {
+        const year: number = now.getFullYear();
+        const month: number = now.getMonth();
+        return Date.UTC(year, month + count, 1, 0, 0, 0, 0); // First day of the next month at midnight
+    }
+
+    private resetToNextDay(now: Date): number {
+        const year: number = now.getFullYear();
+        const month: number = now.getMonth();
+        const day: number = now.getDate();
+        return Date.UTC(year, month, day + 1, 0, 0, 0, 0); // Midnight of the next day
+    }
+    private resetToNextHour(now: Date): number {
+        const year: number = now.getFullYear();
+        const month: number = now.getMonth();
+        const day: number = now.getDate();
+        const hours: number = now.getHours();
+        return Date.UTC(year, month, day, hours + 1, 0, 0, 0); // Next hour with 0 minutes, seconds, and ms
+    }
+    private resetToNextMinute(now: Date): number {
+        const year: number = now.getFullYear();
+        const month: number = now.getMonth();
+        const day: number = now.getDate();
+        const hours: number = now.getHours();
+        const minutes: number = now.getMinutes();
+        return Date.UTC(year, month, day, hours, minutes + 1, 0, 0); // Next minute with 0 seconds and ms
+    }
+
+    private adjustForDST(
+        firstDay: Date,
+        lastDay: Date,
+        expectedDiff: number,
+        increment: number,
+        dateIncrement?: boolean,
+        isDstEnd?: boolean
+    ): number {
+        if (!this.parent.dataOperation.hasDSTTransition(firstDay.getFullYear())) {
+            return increment;
+        }
+        if (this.inconsistenceDstApplied) {
+            return increment;
+        }
+        const dstAdjustment: number = increment - expectedDiff;
+        if (lastDay.getTimezoneOffset() > firstDay.getTimezoneOffset() && dateIncrement) {
+            this.dstIncreaseHour = true;
+            if (this.fromDummyDate) {
+                return expectedDiff;
+            }
+            return isDstEnd ? increment + (60 * 60 * 1000) : increment; // Add one hour for DST transition (spring forward);
+        }
+        if (dstAdjustment > 0) {
+            increment -= dstAdjustment;
+        }
+        else if (dstAdjustment < 0) {
+            increment += Math.abs(dstAdjustment);
+        }
+        if (expectedDiff - increment === 0) {
+            return increment;
+        }
+        return increment;
+    }
     /**
      * Method to find header cell was weekend or not
      *
@@ -1441,7 +1720,7 @@ export class Timeline {
      * @private
      */
     /* eslint-disable-next-line */
-    private getHeaterTemplateString(scheduleWeeks: Date, mode: string, tier: string, isLast: boolean, count?: number, timelineCell?: TimelineFormat, isFirstCell?: boolean): HTMLElement{
+    private getHeaterTemplateString(scheduleWeeks: Date, mode: string, tier: string, isLast: boolean, count?: number, timelineCell?: TimelineFormat, isFirstCell?: boolean, dummystartDate?: Date): HTMLElement{
         let parentTr: string = '';
         let template : NodeList;
         let timelineTemplate: Function = null;
@@ -1459,76 +1738,31 @@ export class Timeline {
             this.parent.globalize.formatDate(scheduleWeeks, { format: this.parent.getDateFormat() }) :
             this.customFormat(scheduleWeeks, format, tier, mode, formatter);
         thWidth = Math.abs((this.getIncrement(scheduleWeeks, count, mode, isFirstCell) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
-        const incrementValue: number = this.getIncrement(scheduleWeeks, count, mode);
-        const newDate: Date = new Date(scheduleWeeks.getTime() + incrementValue);
-        const dubNewDate: Date = new Date(scheduleWeeks.getTime() + ((60 * 60 * 1000) * count));
-        const newDateOffset: number = newDate.getTime();
-        const dubNewDateOffset: number = dubNewDate.getTime();
-        const timelineStartDate: Date = this.parent.timelineModule.timelineStartDate;
-        const timelineStartTime: number = timelineStartDate.getTime();
-        const hasDST: boolean = this.parent.dataOperation.hasDSTTransition(scheduleWeeks.getFullYear());
-        const timeZone: string = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        let transitions: Object;
-        let dstStartTime: number;
-        if (hasDST) {
-            transitions = this.parent.dataOperation.getDSTTransitions(scheduleWeeks.getFullYear(), timeZone);
-            dstStartTime = transitions['dstStart'].getTime();
-        }
-        if ((!this.parent.isInDst(newDate) && this.parent.isInDst(scheduleWeeks)) ||
-            (this.parent.isInDst(newDate) && !this.parent.isInDst(scheduleWeeks)) ||
-            (newDateOffset !== dubNewDateOffset && hasDST && dubNewDateOffset > newDateOffset &&
-                timelineStartTime <= dstStartTime)) {
-            let temp: number;
-            let totalHour: number = 0;
-            const incrementHour: number = incrementValue / (1000 * 60 * 60);
-            if ((!this.parent.isInDst(newDate) && this.parent.isInDst(scheduleWeeks))) {
-                totalHour = this.calculateTotalHours(mode, count);
-                if (incrementHour !== totalHour && totalHour !== 0 && incrementHour > totalHour) {
-                    temp = this.getIncrement(scheduleWeeks, count, mode) - ((1000 * 60 * 60) * (incrementHour - totalHour));
-                    thWidth = (temp / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
-                    if (thWidth === 0 && mode === 'Minutes') {
-                        const perMinuteWidth: number = this.parent.perDayWidth / 1440;
-                        thWidth = perMinuteWidth * count;
-                    }
-                }
-            }
-            else {
-                const zoomOrTimeline: Object = this.parent.timelineModule.customTimelineSettings;
-                const bottomTierSettings: Object = zoomOrTimeline['bottomTier'] !== null ? zoomOrTimeline['bottomTier'] :
-                    zoomOrTimeline['topTier'];
-                const bottomTierCountIsOneAndUnitIsHour: boolean = ((bottomTierSettings['count'] === 1 && bottomTierSettings['unit'] === 'Hour') ||
-                    (bottomTierSettings['count'] === 60 && bottomTierSettings['unit'] === 'Minutes'));
-                totalHour = this.calculateTotalHours(mode, count);
-                if (incrementHour !== totalHour && incrementHour < totalHour && !(tier === 'topTier' && bottomTierCountIsOneAndUnitIsHour)) {
-                    temp = this.getIncrement(scheduleWeeks, count, mode) + (1000 * 60 * 60);
-                    const value: number = (temp / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
-                    const tierWidth: number = tier === 'topTier' ? this.topTierCellWidth : this.bottomTierCellWidth;
-                    if (tierWidth >= value) {
-                        thWidth = value;
-                        if (thWidth === 0 && mode === 'Minutes') {
-                            const perMinuteWidth: number = this.parent.perDayWidth / 1440;
-                            thWidth = perMinuteWidth * count;
-                        }
-                    }
-                }
-            }
-        }
         const cellWidth: number = thWidth;
         thWidth = isLast
-            ? (this.parent.isInDst(this.timelineRoundOffEndDate)
-                ? thWidth
-                : this.calculateWidthBetweenTwoDate(mode, scheduleWeeks, this.timelineRoundOffEndDate))
+            ? this.calculateWidthBetweenTwoDate(mode, scheduleWeeks, this.timelineRoundOffEndDate)
             : (isFirstCell && mode !== 'Hour')
                 ? this.calculateWidthBetweenTwoDate(mode, scheduleWeeks, this.calculateQuarterEndDate(scheduleWeeks, count))
                 : thWidth;
+        if (this.isFirstLoop && this.parent.isInDst(scheduleWeeks) && scheduleWeeks.getHours() === 1 &&
+            this.isDateAffectedByDST(scheduleWeeks)) {
+            thWidth += this.parent.perDayWidth / 24;
+        }
+        this.isFirstLoop = false;
         const isWeekendCell: boolean = this.isWeekendHeaderCell(mode, tier, scheduleWeeks);
         const textClassName: string = tier === 'topTier' ? ' e-gantt-top-cell-text' : '';
         if (isFirstCell && scheduleWeeks.getHours() === 20 && count === 12 && tier === 'bottomTier' &&
         this.parent.timelineModule.customTimelineSettings.bottomTier.unit === 'Hour') {
             scheduleWeeks.setTime(scheduleWeeks.getTime() - (1000 * 60 * 60 * 20));
         }
-        const value: string = (isNullOrUndefined(formatter) ? this.formatDateHeader(format, scheduleWeeks) :
-            this.customFormat(scheduleWeeks, format, tier, mode, formatter));
+        let value: string;
+        if (this.applyDstHour) {
+            value = (isNullOrUndefined(formatter) ? this.formatDateHeader(format, scheduleWeeks, dummystartDate) :
+                this.customFormat(scheduleWeeks, format, tier, mode, formatter));
+        } else {
+            value = (isNullOrUndefined(formatter) ? this.formatDateHeader(format, scheduleWeeks) :
+                this.customFormat(scheduleWeeks, format, tier, mode, formatter));
+        }
         if (!isNullOrUndefined(timelineTemplate)) {
             const args: Object = {
                 date: date,

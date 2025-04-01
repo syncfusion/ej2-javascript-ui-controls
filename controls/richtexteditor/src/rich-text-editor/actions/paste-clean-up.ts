@@ -37,16 +37,6 @@ export class PasteCleanup {
     private keepRadioButton : RadioButton;
     private cleanRadioButton : RadioButton;
     private plainTextRadioButton : RadioButton;
-    private inlineNode: string[] = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
-        'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'font', 'i', 'iframe', 'img', 'input',
-        'ins', 'kbd', 'label', 'map', 'mark', 'meter', 'noscript', 'object', 'output', 'picture', 'progress',
-        'q', 'ruby', 's', 'samp', 'script', 'select', 'slot', 'small', 'span', 'strong', 'sub', 'sup', 'svg',
-        'template', 'textarea', 'time', 'u', 'tt', 'var', 'video', 'wbr'];
-    private blockNode: string[] = ['div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-        'address', 'blockquote', 'button', 'center', 'dd', 'dir', 'dl', 'dt', 'fieldset',
-        'frameset', 'hr', 'iframe', 'isindex', 'li', 'map', 'menu', 'noframes', 'noscript',
-        'object', 'ol', 'pre', 'td', 'tr', 'th', 'tbody', 'tfoot', 'thead', 'table', 'ul',
-        'header', 'article', 'nav', 'footer', 'section', 'aside', 'main', 'figure', 'figcaption'];
     private isNotFromHtml: boolean = false;
     private containsHtml: boolean = false;
     private cropImageData: { [key: string]: string | boolean | number }[] = [];
@@ -55,6 +45,7 @@ export class PasteCleanup {
     private popupCloseTime: number;
     private failureTime: number;
     private iframeUploadTime: number;
+    private plainTextContent: string = '';
     private isDestroyed: boolean;
     public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -106,6 +97,7 @@ export class PasteCleanup {
             this.plainTextRadioButton = null;
         }
         this.isDestroyed = true;
+        this.plainTextContent = '';
     }
     private removeEventListener(): void {
         this.parent.off(events.pasteClean, this.pasteClean);
@@ -121,11 +113,13 @@ export class PasteCleanup {
             event: e
         };
         let value: string = null;
-        let isClipboardHTMLDataNull: boolean = false;
         let imageproperties: string | object;
         const allowedTypes: string[] = this.parent.insertImageSettings.allowedTypes;
         if (e.args && !isNOU((e.args as ClipboardEvent).clipboardData)) {
             value = (e.args as ClipboardEvent).clipboardData.getData('text/html');
+            if ((e.args as ClipboardEvent).clipboardData.getData('text/plain')) {
+                this.plainTextContent = (e.args as ClipboardEvent).clipboardData.getData('text/plain');
+            }
         }
         if (e.args && value !== null && this.parent.editorMode === 'HTML') {
             let file: File;
@@ -137,6 +131,7 @@ export class PasteCleanup {
                 value = value.replace(/</g, '&lt;');
                 value = value.replace(/>/g, '&gt;');
                 this.containsHtml = htmlRegex.test(value);
+                this.plainTextContent = value;
                 file = e && (e.args as ClipboardEvent).clipboardData &&
                 (e.args as ClipboardEvent).clipboardData.items.length > 0 ?
                     ((e.args as ClipboardEvent).clipboardData.items[0].getAsFile() === null ?
@@ -175,7 +170,6 @@ export class PasteCleanup {
                     const divElement: HTMLElement = this.parent.createElement('div');
                     divElement.innerHTML = this.splitBreakLine(value);
                     value = divElement.innerHTML;
-                    isClipboardHTMLDataNull = true;
                 }
             } else if (value.length > 0) {
                 this.parent.trigger(events.beforePasteCleanup, {value : value});
@@ -216,12 +210,12 @@ export class PasteCleanup {
             if (this.parent.pasteCleanupSettings.prompt && !e.isPlainPaste) {
                 if (isValueNotEmpty) {
                     (e.args as ClipboardEvent).preventDefault();
-                    this.pasteDialog(value, args, isClipboardHTMLDataNull);
+                    this.pasteDialog(value, args);
                 }
             }
             else if (this.parent.pasteCleanupSettings.plainText) {
                 (e.args as ClipboardEvent).preventDefault();
-                this.plainFormatting(value, args, isClipboardHTMLDataNull);
+                this.plainFormatting(value, args);
             } else if (this.parent.pasteCleanupSettings.keepFormat || e.isPlainPaste) {
                 (e.args as ClipboardEvent).preventDefault();
                 this.formatting(value, false, args);
@@ -576,9 +570,9 @@ export class PasteCleanup {
         const range: Range = this.nodeSelectionObj.getRange(currentDocument);
         this.saveSelection = this.nodeSelectionObj.save(range, currentDocument);
         if (this.parent.pasteCleanupSettings.prompt) {
-            this.pasteDialog(imageValue, pasteArgs, false);
+            this.pasteDialog(imageValue, pasteArgs);
         } else if (this.parent.pasteCleanupSettings.plainText) {
-            this.plainFormatting(imageValue, pasteArgs, false);
+            this.plainFormatting(imageValue, pasteArgs);
         } else if (this.parent.pasteCleanupSettings.keepFormat) {
             this.formatting(imageValue, false, pasteArgs);
         } else {
@@ -603,16 +597,16 @@ export class PasteCleanup {
     }
 
     private selectFormatting(
-        value: string, args: Object, keepChecked: boolean, cleanChecked: boolean, isClipboardHTMLDataNull: boolean): void {
+        value: string, args: Object, keepChecked: boolean, cleanChecked: boolean): void {
         if (keepChecked) {
             this.formatting(value, false, args);
         } else if (cleanChecked) {
             this.formatting(value, true, args);
         } else {
-            this.plainFormatting(value, args, isClipboardHTMLDataNull);
+            this.plainFormatting(value, args);
         }
     }
-    private pasteDialog(value: string, args: Object, isClipboardHTMLDataNull: boolean): void {
+    private pasteDialog(value: string, args: Object): void {
         const dialogModel: DialogModel = {
             buttons: [
                 {
@@ -624,7 +618,7 @@ export class PasteCleanup {
                             const argument: Dialog = this.dialogObj;
                             this.dialogRenderObj.close(argument);
                             this.dialogObj.destroy();
-                            this.selectFormatting(value, args, keepChecked, cleanChecked, isClipboardHTMLDataNull);
+                            this.selectFormatting(value, args, keepChecked, cleanChecked);
                         }
                     },
                     buttonModel: {
@@ -961,48 +955,16 @@ export class PasteCleanup {
     }
 
     //Plain Formatting
-    private plainFormatting(value: string, args: Object, isClipboardHTMLDataNull: boolean): void {
-        let clipBoardElem: HTMLElement = this.parent.createElement(
-            'div', { className: 'pasteContent', styles: 'display:inline;' }) as HTMLElement;
-        clipBoardElem.innerHTML = value;
-        this.detachInlineElements(clipBoardElem);
-        this.getTextContent(clipBoardElem);
+    private plainFormatting(value: string, args: Object): void {
+        const clipBoardElem: HTMLElement = this.parent.createElement(
+            'div', { className: 'pasteContent'}) as HTMLElement;
+        this.plainTextContent = this.plainTextContent.replace(/</g, '&lt;');
+        this.plainTextContent = this.plainTextContent.replace(/>/g, '&gt;');
+        const sanitizedContent: string = this.sanitizeHelper(this.plainTextContent);
+        const splitContent: string = this.splitBreakLine(sanitizedContent);
+        clipBoardElem.innerHTML = splitContent;
         if (clipBoardElem.textContent.trim() !== '') {
-            if (!isNOU(clipBoardElem.firstElementChild) && clipBoardElem.firstElementChild.tagName !== 'BR') {
-                const firstElm: Element | Node = clipBoardElem.firstElementChild;
-                if (!isNOU(clipBoardElem.firstElementChild)) {
-                    const spanElm: HTMLElement = this.parent.createElement('span') as HTMLElement;
-                    for (let i: number = 0, j: number = 0; i < firstElm.childNodes.length; i++, j++) {
-                        if (firstElm.childNodes[i as number].nodeName === '#text') {
-                            spanElm.appendChild(firstElm.childNodes[i as number]);
-                            clipBoardElem.insertBefore(spanElm, clipBoardElem.firstElementChild);
-                            i--;
-                        } else if (firstElm.childNodes[i as number].nodeName !== '#text' && j === 0) {
-                            for (let k: number = 0; k < firstElm.childNodes[i as number].childNodes.length; k++) {
-                                spanElm.appendChild(firstElm.childNodes[i as number].childNodes[k as number]);
-                                clipBoardElem.insertBefore(spanElm, clipBoardElem.firstElementChild);
-                                k--;
-                            }
-                            i--;
-                        } else {
-                            break;
-                        }
-                    }
-                    if (!firstElm.hasChildNodes()) {
-                        detach(firstElm);
-                    }
-                }
-            }
-            this.removeEmptyElements(clipBoardElem);
             this.saveSelection.restore();
-            clipBoardElem.innerHTML = this.sanitizeHelper(clipBoardElem.innerHTML);
-            this.addTempClass(clipBoardElem);
-            this.removingComments(clipBoardElem);
-            if (this.parent.enterKey === 'BR' && !isClipboardHTMLDataNull) {
-                clipBoardElem = this.reframeToBrContent(clipBoardElem);
-            } else if (this.parent.enterKey === 'DIV') {
-                clipBoardElem.innerHTML = clipBoardElem.innerHTML.replace(/<p class="pasteContent_RTE">/g, '<div>').replace(/<\/p>/g, '</div>');
-            }
             this.parent.trigger(
                 events.afterPasteCleanup,
                 { value : clipBoardElem.innerHTML, filesData: null }, (updatedArgs: PasteCleanupArgs) => { value = updatedArgs.value; });
@@ -1022,131 +984,6 @@ export class PasteCleanup {
             this.saveSelection.restore();
             extend(args, { elements: [] }, true);
             this.parent.formatter.onSuccess(this.parent, args);
-        }
-    }
-
-    private removingComments(elm: HTMLElement): void {
-        let innerElement: string = elm.innerHTML;
-        innerElement = innerElement.replace(/<!--[\s\S]*?-->/g, '');
-        elm.innerHTML = innerElement;
-    }
-
-    private reframeToBrContent(clipBoardElem: HTMLElement): HTMLElement {
-        const newClipBoardElem: HTMLElement = this.parent.createElement(
-            'div', { className: 'pasteContent', styles: 'display:inline;' }) as HTMLElement;
-        while (!isNOU(clipBoardElem.firstChild)) {
-            const brElem: HTMLElement = this.parent.createElement('br') as HTMLElement;
-            const currentFirstChild: HTMLElement = clipBoardElem.firstChild as HTMLElement;
-            if (currentFirstChild.nodeName === '#text') {
-                const isNextSibPresent: boolean = !isNOU(currentFirstChild.nextSibling);
-                newClipBoardElem.appendChild(currentFirstChild);
-                if (isNextSibPresent) { newClipBoardElem.appendChild(brElem); }
-            } else {
-                const isCurrentNodeBRElm: boolean = currentFirstChild.nodeName === 'BR';
-                if (isCurrentNodeBRElm) {
-                    newClipBoardElem.appendChild(currentFirstChild);
-                } else {
-                    newClipBoardElem.appendChild(currentFirstChild.childNodes[0]);
-                }
-                if (!isNOU(currentFirstChild) && !isNOU(currentFirstChild.nextSibling)) {
-                    newClipBoardElem.appendChild(brElem);
-                }
-                if (!isCurrentNodeBRElm && !isNOU(currentFirstChild)) {
-                    detach(currentFirstChild);
-                }
-            }
-        }
-        return newClipBoardElem;
-    }
-
-    private getTextContent(clipBoardElem: HTMLElement): void {
-        for (let i: number = 0; i < this.blockNode.length; i++) {
-            const inElem: NodeListOf<Element> = clipBoardElem.querySelectorAll(this.blockNode[i as number]);
-            for (let j: number = 0; j < inElem.length; j++) {
-                let parElem: HTMLElement;
-                for (let k: number = 0, l: number = 0, preNode: string; k < inElem[j as number].childNodes.length; k++, l++) {
-                    if (inElem[j as number].childNodes[k as number].nodeName === 'DIV' || inElem[j as number].childNodes[k as number].nodeName === 'P' ||
-            (inElem[j as number].childNodes[k as number].nodeName === '#text' &&
-            (inElem[j as number].childNodes[k as number].nodeValue.replace(/\u00a0/g, '&nbsp;') !== '&nbsp;') &&
-            inElem[j as number].childNodes[k as number].textContent.trim() === '')) {
-                        parElem = inElem[j as number].childNodes[k as number].parentElement;
-                        inElem[j as number].childNodes[k as number].parentElement.parentElement.insertBefore(
-                            inElem[j as number].childNodes[k as number], inElem[j as number].childNodes[k as number].parentElement);
-                        k--;
-                    } else {
-                        parElem = inElem[j as number].childNodes[k as number].parentElement;
-                        if (preNode === 'text') {
-                            const previousElem: Element = parElem.previousElementSibling;
-                            previousElem.appendChild(inElem[j as number].childNodes[k as number]);
-                        } else {
-                            const divElement: HTMLElement = this.parent.createElement('div', { id: 'newDiv' });
-                            divElement.appendChild(inElem[j as number].childNodes[k as number]);
-                            parElem.parentElement.insertBefore(divElement, parElem);
-                        }
-                        k--;
-                        preNode = 'text';
-                    }
-                }
-                if (!isNOU(parElem)) {
-                    detach(parElem);
-                }
-            }
-        }
-        const allElems: NodeListOf<Element> = clipBoardElem.querySelectorAll('*');
-        for (let i: number = 0; i < allElems.length; i++) {
-            const allAtr: NamedNodeMap = allElems[i as number].attributes;
-            for (let j: number = 0; j < allAtr.length; j++) {
-                allElems[i as number].removeAttribute(allAtr[j as number].name);
-                j--;
-            }
-        }
-    }
-
-    private detachInlineElements(clipBoardElem: HTMLElement): void {
-        for (let i: number = 0; i < this.inlineNode.length; i++) {
-            const inElem: NodeListOf<Element> = clipBoardElem.querySelectorAll(this.inlineNode[i as number]);
-            for (let j: number = 0; j < inElem.length; j++) {
-                if (!(inElem[j as number] === clipBoardElem.firstChild && inElem[j as number].nodeName === 'SPAN')) {
-                    let parElem: HTMLElement;
-                    for (let k: number = 0; k < inElem[j as number].childNodes.length; k++) {
-                        parElem = inElem[j as number].childNodes[k as number].parentElement;
-                        inElem[j as number].childNodes[k as number].parentElement.parentElement.insertBefore(
-                            inElem[j as number].childNodes[k as number], inElem[j as number].childNodes[k as number].parentElement);
-                        k--;
-                    }
-                    if (!isNOU(parElem)) {
-                        detach(parElem);
-                    }
-                }
-            }
-        }
-    }
-
-    private findDetachEmptyElem(element: Element): HTMLElement {
-        let removableElement: HTMLElement;
-        if (!isNOU(element) && !isNOU(element.parentElement)) {
-            const hasNbsp: boolean = element.parentElement.textContent.length > 0 && element.parentElement.textContent.match(/\u00a0/g)
-                && element.parentElement.textContent.match(/\u00a0/g).length > 0;
-            if (!hasNbsp && element.parentElement.textContent.trim() === '' &&
-                element.parentElement.getAttribute('class') !== 'pasteContent') {
-                removableElement = this.findDetachEmptyElem(element.parentElement);
-            } else {
-                removableElement = element as HTMLElement;
-            }
-        } else {
-            removableElement = null;
-        }
-        return removableElement;
-    }
-    private removeEmptyElements(element: HTMLElement): void {
-        const emptyElements: NodeListOf<Element> = element.querySelectorAll(':empty');
-        for (let i: number = 0; i < emptyElements.length; i++) {
-            if (emptyElements[i as number].tagName !== 'BR') {
-                const detachableElement: HTMLElement = this.findDetachEmptyElem(emptyElements[i as number]);
-                if (!isNOU(detachableElement)) {
-                    detach(detachableElement);
-                }
-            }
         }
     }
 

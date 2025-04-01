@@ -138,6 +138,11 @@
         .e-textarea {
           @if $theme-name == 'Material3' or $theme-name == 'material' or $theme-name == 'Material3-dark' or $theme-name == 'material-dark' {
             padding: 4px 8px 4px 12px;
+            box-sizing: border-box;
+            min-height: 30px;
+          }
+          @if ($skin-name == 'FluentUI') {
+            min-height: 34px;
           }
         }
       }

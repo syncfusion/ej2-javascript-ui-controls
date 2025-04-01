@@ -919,4 +919,38 @@ describe('column menu module', () => {
             gridObj = null;
         });
     });
+
+    describe('Coverage', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,      
+                    height: 150,
+                    width: 300,
+                    showColumnMenu: true,
+                    allowFiltering: true,
+                    filterSettings: { type: 'Excel'},
+                    columns: [
+                        { field: 'CustomerID', width: 120, headerText: 'Customer ID' },
+                        { field: 'Freight', headerText: 'Ship Country' }
+                    ]
+                }, done);
+        });
+
+        it('Click the columnmenu', (done: Function) => {
+            (gridObj as any).columnMenuModule.openColumnMenuByField('Freight');
+            done();
+        });
+
+        it('Click the filter item', (done: Function) => {
+            (document.querySelector('.e-filter-item') as HTMLElement).click();
+            done();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

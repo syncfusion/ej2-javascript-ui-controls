@@ -64,6 +64,8 @@ export class SfdtExport {
     private isBlockClosed: boolean = true;
     private isWriteInlinesFootNote = false;
     private isWriteEndFootNote = false;
+    // For spell check when serailize the page no to need to wirte the formatting. So we do this property as true it will skip the formatting.
+    private skipExporting: boolean = false;
     /**
      * @private
      */
@@ -338,7 +340,7 @@ export class SfdtExport {
             this.isExport = true;
             if (this.documentHelper.pages.length > 0) {
                 let page: Page = this.documentHelper.pages[0];
-                this.writePage(page);
+                this.writePage(page, false);
             } else {
                 this.serializeMinimal();
             }
@@ -422,14 +424,15 @@ export class SfdtExport {
     /**
      * @private
      */
-    public writePage(page: Page): any {
+    public writePage(page: Page, spellChecker: boolean): any {
+        this.skipExporting = spellChecker;
         if (page.bodyWidgets.length > 0) {
             let nextBlock: BodyWidget = page.bodyWidgets[0];
             do {
                 nextBlock = this.writeBodyWidget(nextBlock, 0);
             } while (!isNullOrUndefined(nextBlock));
         }
-
+        this.skipExporting = false;
         return this.document;
     }
     private writeBodyWidget(bodyWidget: BodyWidget, index: number): BodyWidget {
@@ -538,6 +541,9 @@ export class SfdtExport {
      * @private
      */
     public writeSectionFormat(sectionFormat: WSectionFormat, section: any, keywordIndex: number): any {
+        if (this.skipExporting) {
+            return section;
+        }
         section[pageWidthProperty[keywordIndex]] = sectionFormat.pageWidth;
         section[pageHeightProperty[keywordIndex]] = sectionFormat.pageHeight;
         section[leftMarginProperty[keywordIndex]] = sectionFormat.leftMargin;
@@ -869,7 +875,7 @@ export class SfdtExport {
             if (element instanceof ContentControl || (this.startContent && !this.blockContent)) {
                 this.writeInlinesContentControl(element, line, inlines, i);
             } else {
-                if (element instanceof TextElementBox && !isNullOrUndefined(element.previousNode) && element.previousNode instanceof TextElementBox
+                if (!this.skipExporting && element instanceof TextElementBox && !isNullOrUndefined(element.previousNode) && element.previousNode instanceof TextElementBox
                     && !this.isSpecialCharacter(element.text) && !this.isSpecialCharacter(element.previousNode.text)
                     && element.previousNode.characterFormat.isEqualFormat(element.characterFormat)
                     && element.previousNode.scriptType === element.scriptType
@@ -906,8 +912,7 @@ export class SfdtExport {
     }
     private isSpecialCharacter(text: string): boolean {
         const specialChars: string[] = ['\t', '\v', '\f', '\r', String.fromCharCode(14), String.fromCharCode(31), String.fromCharCode(8194)];
-        const endCodeURIChars: string[] = ['%02', '%03', '%04'];
-        return specialChars.indexOf(text) !== -1 || endCodeURIChars.indexOf(encodeURI(text)) !== -1;
+        return specialChars.indexOf(text) !== -1;
     }
     private inlineContentControl(element: ElementBox, nextElement: any, inlines?: any): any {
         let inline: any = {};
@@ -1691,6 +1696,9 @@ export class SfdtExport {
      */
     public writeCharacterFormat(format: WCharacterFormat, keywordIndex: number, isInline?: boolean): any {
         let characterFormat: any = {};
+        if (this.skipExporting) {
+            return characterFormat;
+        }
         HelperMethods.writeCharacterFormat(characterFormat, isInline, format, keywordIndex);
         characterFormat[boldBidiProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.boldBidi, keywordIndex) : format.getValue('boldBidi');
         characterFormat[italicBidiProperty[keywordIndex]] = isInline ? HelperMethods.getBoolInfo(format.italicBidi, keywordIndex) : format.getValue('italicBidi');
@@ -1710,6 +1718,9 @@ export class SfdtExport {
      */
     public writeParagraphFormat(format: WParagraphFormat, keywordIndex: number, isInline?: boolean): any {
         let paragraphFormat: any = {};
+        if (this.skipExporting) {
+            return paragraphFormat;
+        }
         this.keywordIndex = isNullOrUndefined(this.keywordIndex) ? 0 : this.keywordIndex;
         HelperMethods.writeParagraphFormat(paragraphFormat, isInline, format, keywordIndex);
         paragraphFormat[listFormatProperty[keywordIndex]] = this.writeListFormat(format.listFormat, isInline);

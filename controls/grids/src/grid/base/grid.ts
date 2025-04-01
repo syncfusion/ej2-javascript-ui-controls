@@ -7748,10 +7748,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * @hidden
+     * @param {boolean} accurateHeight - Defines the accurate row height
      * @returns {number} Returns row height
      */
-    public getRowHeight(): number {
-        return this.rowHeight ? this.rowHeight : getRowHeight(this.element);
+    public getRowHeight(accurateHeight?: boolean): number {
+        return this.rowHeight ? this.rowHeight : getRowHeight(this.element, accurateHeight);
     }
 
     /**

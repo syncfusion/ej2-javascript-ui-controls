@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 29.1.35 (2025-04-01)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I698597` - The issue where the task label font could not be customized using `ganttStyle` in PDF exports of the Gantt chart has been resolved.
+- `#I702960` - Undo action does not work properly when drag and drop the taskbar with timeline virtualization enabled issue has been resolved.
+- `#I703918` - A script error occurred when the context menu was used in resource view after adding a dependency to a newly added record issue has been resolved.
+- `#I702456` - The issue, where the `rowSelecting` event did not trigger correctly when selecting a row using a checkbox, has been resolved.
+- `#I698654`,`#I704950` - The issue of the splitter position dynamically changing, which caused a white space, has been resolved.
+- `#I691521` - Incorrect width update when duration is less than zero issue has been resolved.
+- `#I702366` - Extra space at the end of the timeline issue has been resolved.
+- `#I700246` - Console error occur while using rte component with cell edit template issue has been resolved.
+
 ## 28.2.11 (2025-03-11)
 
 ### GanttChart

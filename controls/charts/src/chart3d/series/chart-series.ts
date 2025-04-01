@@ -954,7 +954,7 @@ export class Chart3DSeries extends ChildProperty<Chart3DSeries> {
                     const isLogAxis: boolean = series.yAxis.valueType === 'Logarithmic';
                     const isColumnBarType: boolean = (series.type.indexOf('Column') !== -1 || series.type.indexOf('Bar') !== -1);
                     series.yMin = isLogAxis && isColumnBarType && series.yMin < 1 ? series.yMin :
-                        Math.min.apply(0, isStacking100 ? startValues : endValues);
+                        (series.yAxis.startFromZero && series.type.indexOf('100') > -1 && series.yAxis.rangePadding === 'Auto' && series.yMin >= 0) ? 0 : parseFloat((Math.min.apply(0, isStacking100 ? startValues : endValues)).toFixed(10));
                     series.yMax = Math.max.apply(0, endValues);
                     if (series.yMin > Math.min.apply(0, endValues)) {
                         series.yMin = (isStacking100) ? -100 :

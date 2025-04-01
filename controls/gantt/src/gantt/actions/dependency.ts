@@ -105,7 +105,7 @@ export class Dependency {
         for (let i: number = 0; i < prdList.length; i++) {
             const predId: number = parseInt(prdList[i as number], 10);
             if (!isNaN(predId)) {
-                const predData: IGanttData = this.parent.getRecordByID(predId.toString());
+                const predData: IGanttData = this.parent.connectorLineModule.getRecordByID(predId.toString());
                 const record: ITaskData = !isNullOrUndefined(predData) ?
                     extend({}, {}, predData.taskData, true) : null;
                 if (!isNullOrUndefined(record) && isNullOrUndefined(record[task.startDate])
@@ -627,7 +627,7 @@ export class Dependency {
                             validateRecord = flatDataCollection.get(predecessor.to);
                         }
                         else {
-                            validateRecord = this.parent.getRecordByID(predecessor.to);
+                            validateRecord = this.parent.connectorLineModule.getRecordByID(predecessor.to);
                         }
                         if (validateRecord) {
                             this.validatePredecessorDates(validateRecord, flatDataCollection);
@@ -996,6 +996,9 @@ export class Dependency {
             for (predecessorCount = 0; predecessorCount < predecessorsLength; predecessorCount++) {
                 predecessor = predecessorsCollection[predecessorCount as number];
                 const from: string = 'from'; const to: string = 'to';
+                if (predecessor[from as string] === predecessor[to as string]) {
+                    break;
+                }
                 if (this.parent.viewType === 'ProjectView' && !isNullOrUndefined(flatDataCollection))
                 {
                     parentGanttRecord = flatDataCollection.get(predecessor[from as string]);

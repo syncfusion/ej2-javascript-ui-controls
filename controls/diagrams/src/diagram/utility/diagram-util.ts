@@ -1045,7 +1045,7 @@ export function getAlignedPositionForPorts(ports : Port): number {
  * @param { PathAnnotation | ConnectorFixedUserHandle} annotation - provide the annotation  value.
  * @private
  */
-export function getOffsetOfConnector(points: PointModel[], annotation: PathAnnotation | ConnectorFixedUserHandle): SegmentInfo {
+export function getOffsetOfConnector(points: PointModel[], annotation: PathAnnotation | ConnectorFixedUserHandle | PathPort): SegmentInfo {
     // eslint-disable-next-line
     let length: number = 0; let offset: number = annotation.offset; let point: PointModel; let angle: number;
     const lengths: number[] = []; let prevLength: number; let kCount: number;

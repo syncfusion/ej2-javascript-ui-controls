@@ -110,9 +110,7 @@ export class Legend extends BaseLegend {
                     seriesType = (chart.chartAreaType === 'PolarRadar') ? <ChartDrawType>series.drawType :
                         <ChartSeriesType>series.type;
                     dashArray = !series.marker.visible && (seriesType.indexOf('Line') > -1 && seriesType.indexOf('Area') === -1) ? series.dashArray : '';
-                    // To set legend color when use pointColorMapping
-                    fill = (series.pointColorMapping && series.points.length > 0) ?
-                        (series.points[0].interior ? series.points[0].interior : series.interior) : series.interior;
+                    fill = series.interior;
                     this.legendCollections.push(new LegendOptions(
                         series.name, fill, series.legendShape, (series.category === 'TrendLine' ?
                             (this.chart as Chart).series[series.sourceIndex].trendlines[series.index].visible : series.visible),

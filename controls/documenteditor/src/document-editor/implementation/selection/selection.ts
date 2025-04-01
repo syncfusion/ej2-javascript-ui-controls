@@ -3650,7 +3650,6 @@ export class Selection {
         // }
         index = parseInt(value, 10);
         if (container instanceof TableRowWidget && index >= container.childWidgets.length) {
-            position.index = '0;0';
             index = container.childWidgets.length - 1;
         }
         let childWidget: Widget = this.getBlockByIndex(container, index, position);
@@ -4363,7 +4362,7 @@ export class Selection {
      * @returns 
      */
     public isElementInSelection(element: ElementBox, isEnd: boolean): boolean {
-        let offset: number = element.line.getOffset(element, isEnd ? 0 : 1);
+        let offset: number = element.line.getOffset(element, isEnd ? 1 : 0);
         let elemPosition: TextPosition = new TextPosition(this.owner);
         elemPosition.setPositionParagraph(element.line, offset);
         let start: TextPosition = this.start;
@@ -4372,8 +4371,8 @@ export class Selection {
             start = this.end;
             end = this.start;
         }
-        return ((elemPosition.isExistAfter(start) || elemPosition.isAtSamePosition(start))
-            && (elemPosition.isExistBefore(end) || elemPosition.isAtSamePosition(end)));
+        return ((elemPosition.isExistAfter(start) || (elemPosition.isAtSamePosition(start) && !isEnd))
+            && (elemPosition.isExistBefore(end) || (elemPosition.isAtSamePosition(end) && isEnd)));
     }
     /**
      * @private
@@ -6921,6 +6920,10 @@ export class Selection {
             }
         }
         let lineWidget: LineWidget = undefined;
+        const rowWidth: number = this.documentHelper.layout.getTableWidth(widget.ownerTable);
+        if (point.x >= widget.x && point.x <= rowWidth + widget.x) {
+            return lineWidget;
+        }
         if (widget.childWidgets.length > 0) {
             if ((widget.childWidgets[0] as Widget).x <= point.x) {
                 lineWidget = this.getLineWidgetCellWidget((widget.childWidgets[widget.childWidgets.length - 1] as TableCellWidget), point);

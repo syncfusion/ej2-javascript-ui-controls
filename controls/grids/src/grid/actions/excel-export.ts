@@ -498,12 +498,19 @@ export class ExcelExport {
                 if ((lIndex - cell.index) > 1) {
                     cell.colSpan = lIndex - cell.index;
                 }
-                while (hIndex < (headerRow.columns.length + level + dataSource.childLevels)) {
+                const captionSummaryCells: string[] = Object.keys(groupCaptionSummaryRows[0].data);
+                const cellsLength: number = captionSummaryCells ? captionSummaryCells.length : 0;
+                while (hIndex < (headerRow.columns.length - cellsLength + level + dataSource.childLevels)) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const sCell: any = {};
-                    sCell.index = (hIndex + 1);
-                    sCell.style = this.getCaptionThemeStyle(this.theme);
-                    cells.push(sCell);
+                    const summaryCell: any = {};
+                    summaryCell.index = (hIndex + 1);
+                    summaryCell.style = this.getCaptionThemeStyle(this.theme);
+                    const summaryCellArgs: ExportGroupCaptionEventArgs = { type: this.isCsvExport ? 'CSV' : 'Excel', data: item };
+                    this.parent.trigger(events.exportGroupCaption, summaryCellArgs);
+                    if (!isNullOrUndefined(summaryCellArgs.style)) {
+                        summaryCell.style = this.mergeOptions(summaryCell.style, summaryCellArgs.style);
+                    }
+                    cells.push(summaryCell);
                     hIndex++;
                 }
             } else {
@@ -942,6 +949,13 @@ export class ExcelExport {
                         if (customIndex === undefined) {
                             eCell.index = index + indent + (<{childGridLevel?: number}>gObj).childGridLevel;
                             eCell.style = this.getCaptionThemeStyle(this.theme); //{ name: gObj.element.id + 'column' + index };
+                            const args: AggregateQueryCellInfoEventArgs = {
+                                row: row,
+                                type: !isNullOrUndefined(cell.column.footerTemplate) ? 'Footer' : !isNullOrUndefined(cell.column.groupFooterTemplate) ? 'GroupFooter' : 'GroupCaption',
+                                style: eCell,
+                                cell: cell
+                            };
+                            this.parent.trigger(events.excelAggregateQueryCellInfo, args);
                             cells.push(eCell);
                         }
                     }

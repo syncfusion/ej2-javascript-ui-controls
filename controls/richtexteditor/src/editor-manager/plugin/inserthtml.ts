@@ -235,14 +235,31 @@ export class InsertHtml {
         }
     }
 
+    // Removes all empty list items from the list containing the provided list item.
     private static removeEmptyNextLI(liElement: HTMLElement): void {
-        let nextLiElement: HTMLElement = !isNOU(liElement.nextElementSibling as HTMLElement)
-            ? liElement.nextElementSibling as HTMLElement : null;
-        while (nextLiElement && nextLiElement.nodeName === 'LI' && nextLiElement.innerHTML.trim() === '') {
-            detach(nextLiElement);
-            nextLiElement = !isNOU(liElement.nextElementSibling as HTMLElement)
-                ? liElement.nextElementSibling as HTMLElement : null;
+        // Find the root-level list containing this list item
+        let rootList: HTMLElement = closest(liElement, 'ul,ol') as HTMLElement;
+        // Navigate to the topmost list if this is inside nested lists
+        while (rootList && rootList.parentElement && rootList.parentElement.nodeName === 'LI') {
+            rootList = closest(rootList.parentElement, 'ul,ol') as HTMLElement;
         }
+        // If no list was found, exit early
+        if (!rootList) {
+            return;
+        }
+        // Collect all list items in the list
+        const listItems: NodeListOf<HTMLLIElement> = rootList.querySelectorAll('li');
+        // Define a helper to check if a list item is empty (no text and no media elements)
+        const isEmptyListItem: (item: HTMLLIElement) => boolean = (item: HTMLLIElement): boolean => {
+            return item.textContent.trim() === '' &&
+                !item.querySelector('audio,video,img,table,br');
+        };
+        // Remove all empty list items
+        listItems.forEach((item: HTMLLIElement) => {
+            if (isEmptyListItem(item)) {
+                detach(item);
+            }
+        });
     }
 
     private static findFirstTextNode(node: Node | null): Node | null {
@@ -706,7 +723,7 @@ export class InsertHtml {
                 blockNode = range.startContainer;
             }
 
-            if (blockNode && (blockNode as HTMLElement).closest('LI') && editNode.contains((blockNode as HTMLElement).closest('LI')) && blockNode.nodeName !== 'TD' && blockNode.nodeName !== 'TH' && blockNode.nodeName !== 'TR' && node && (node as HTMLElement).firstElementChild &&
+            if (blockNode && blockNode.nodeName !== '#text' && (blockNode as HTMLElement).closest('LI') && editNode.contains((blockNode as HTMLElement).closest('LI')) && blockNode.nodeName !== 'TD' && blockNode.nodeName !== 'TH' && blockNode.nodeName !== 'TR' && node && (node as HTMLElement).firstElementChild &&
             (((node as HTMLElement)).firstElementChild.tagName === 'OL' || (node as HTMLElement).firstElementChild.tagName === 'UL')) {
                 let liNode: HTMLElement;
                 while ((node as HTMLElement).firstElementChild.lastElementChild && (node as HTMLElement).firstElementChild.lastElementChild.tagName === 'LI') {
@@ -746,6 +763,9 @@ export class InsertHtml {
                     }
                     if (currentNode.parentElement.nodeName === 'LI' && currentNode.parentElement.textContent === '') {
                         this.removeListfromPaste(range);
+                        if (currentNode.parentElement.childNodes.length === 1 && currentNode.nodeName === 'BR') {
+                            detach(currentNode);
+                        }
                         range.insertNode(node);
                         this.contentsDeleted = true;
                         return;

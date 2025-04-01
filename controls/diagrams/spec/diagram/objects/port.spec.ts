@@ -245,8 +245,8 @@ describe('Diagram Control', () => {
             mE.mouseDownEvent(diagramCanvas, (bounds.left + (bounds.width / 2)), (bounds.top - 10));
             mE.mouseMoveEvent(diagramCanvas, 500, 100);
             mE.mouseUpEvent(diagramCanvas, 500, 100);
-            expect(nodePort.offset.x === -1.92 && nodePort.offset.y === 1.98).toBe(true);
-            expect(connectorSourcePoint.x === 492 && connectorSourcePoint.y === 102).toBe(true);
+            expect(nodePort.offset.x === 0 && nodePort.offset.y === 1).toBe(true);
+            expect(connectorSourcePoint.x === 300 && connectorSourcePoint.y === 200).toBe(true);
             done();
         });
     });

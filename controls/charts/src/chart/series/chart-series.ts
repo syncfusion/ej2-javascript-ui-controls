@@ -2633,7 +2633,7 @@ export class Series extends SeriesBase {
             const elementId: string = chart.element.id;
             // 8 for extend border value 5 for extend size value
             const explodeValue: number = this.marker.border.width + 8 + 5;
-            const render: SvgRenderer | CanvasRenderer = (this.type === 'Bubble') || (!this.marker.visible && chart.tooltip.shared && chart.enableCanvas) ?
+            const render: SvgRenderer | CanvasRenderer = (this.type === 'Bubble' || this.type === 'Scatter') || (!this.marker.visible && chart.tooltip.shared && chart.enableCanvas) ?
                 chart.svgRenderer : chart.renderer;
             const index: string | number = this.index === undefined ? this.category : this.index;
             let markerHeight: number;

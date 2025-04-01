@@ -208,7 +208,7 @@ export class Signature {
                             }
                         }
                         if (!this.pdfViewerBase.isToolbarSignClicked && !this.pdfViewerBase.drawSignatureWithTool &&
-                             !isNullOrUndefined(this.pdfViewer.formFieldsModule.currentTarget)) {
+                            this.pdfViewer.formFieldsModule && !isNullOrUndefined(this.pdfViewer.formFieldsModule.currentTarget)) {
                             this.pdfViewer.fireFocusOutFormField(this.pdfViewer.formFieldsModule.currentTarget.name, '');
                         }
                         this.pdfViewerBase.isToolbarSignClicked = false;
@@ -514,7 +514,9 @@ export class Signature {
                 else{
                     this.initialImageString = this.saveImageString;
                 }
-                this.pdfViewer.formFieldsModule.drawSignature(null, null, this.pdfViewerBase.currentTarget, null);
+                if (this.pdfViewer.formFieldsModule) {
+                    this.pdfViewer.formFieldsModule.drawSignature(null, null, this.pdfViewerBase.currentTarget, null);
+                }
                 isSignatureAdded = true;
             }
         }
@@ -858,7 +860,9 @@ export class Signature {
                 else {
                     this.initialTypeString = this.saveTypeString;
                 }
-                this.pdfViewer.formFieldsModule.drawSignature('Type', this.textValue, this.pdfViewerBase.currentTarget);
+                if (this.pdfViewer.formFieldsModule) {
+                    this.pdfViewer.formFieldsModule.drawSignature('Type', this.textValue, this.pdfViewerBase.currentTarget);
+                }
                 isSignatureAdded = true;
                 this.hideSignaturePanel();
             }
@@ -983,7 +987,9 @@ export class Signature {
                 else {
                     this.initialUploadString = this.saveUploadString;
                 }
-                this.pdfViewer.formFieldsModule.drawSignature('Image', '', this.pdfViewerBase.currentTarget);
+                if (this.pdfViewer.formFieldsModule) {
+                    this.pdfViewer.formFieldsModule.drawSignature('Image', '', this.pdfViewerBase.currentTarget);
+                }
                 isSignatureAdded = true;
                 this.hideSignaturePanel();
             }
@@ -1837,7 +1843,9 @@ export class Signature {
             this.pdfViewerBase.currentSignatureAnnot = annot;
             this.pdfViewerBase.isAddedSignClicked = false;
         } else {
-            this.pdfViewer.formFieldsModule.drawSignature();
+            if (this.pdfViewer.formFieldsModule) {
+                this.pdfViewer.formFieldsModule.drawSignature();
+            }
         }
     }
 
@@ -2451,7 +2459,7 @@ export class Signature {
         if ((sessionSize + currentAnnotation) > 4500) {
             this.pdfViewerBase.isStorageExceed = true;
             this.pdfViewer.annotationModule.clearAnnotationStorage();
-            if (!(this.pdfViewerBase.isFormStorageExceed)){
+            if (!(this.pdfViewerBase.isFormStorageExceed) && this.pdfViewer.formFieldsModule){
                 this.pdfViewer.formFieldsModule.clearFormFieldStorage();
             }
         }

@@ -570,10 +570,10 @@ export class Selection {
             });
         } else {
             let indexes: number[] = [].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]);
-            if (frozenRow && indexes[0] < frozenRow && indexes[2] >= frozenRow && verticalContent.scrollTop) {
+            if (frozenRow && indexes[0] < frozenRow && indexes[2] >= frozenRow && verticalContent.scrollTop && !this.isColSelected) {
                 verticalContent.scrollTop = 0; indexes[2] = frozenRow;
             }
-            if (frozenCol && indexes[1] < frozenCol && indexes[3] >= frozenCol && horizontalContent.scrollLeft) {
+            if (frozenCol && indexes[1] < frozenCol && indexes[3] >= frozenCol && horizontalContent.scrollLeft && !this.isRowSelected) {
                 horizontalContent.scrollLeft = 0; indexes[3] = frozenCol;
             }
             if (this.isautoFillClicked) {

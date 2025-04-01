@@ -4971,6 +4971,7 @@ export class ToolbarModule {
         const aspectRatioWidth: HTMLElement = parent.element.querySelector('#' + id + '_resizeWidth');
         let isCropSelection: boolean = false;  let panBtn: HTMLElement; let splitWords: string[];
         let actionType: string; let actionArgs: EditCompleteEventArgs; let isRedactClick: boolean = false;
+        let zoomLevel: number = 0; let actObj: SelectionPoint; let isRedact: boolean = false;
         if (parent.activeObj.shape !== undefined) {splitWords = parent.activeObj.shape.split('-'); }
         if (splitWords === undefined && parent.currObjType.isCustomCrop) {
             isCropSelection = true;
@@ -5198,7 +5199,36 @@ export class ToolbarModule {
             case 'horizontalflip':
             case 'verticalflip':
                 parent.transformSelect(type);
+                for (let i: number = 0; i < parent.objColl.length; i++) {
+                    if (parent.objColl[i as number].shape === 'redact') {
+                        isRedact = true;
+                        break;
+                    }
+                }
+                if (isRedact) {
+                    parent.notify('draw', { prop: 'setRedactStraighten', value: { bool: true } });
+                    actObj = extend({}, parent.activeObj, {}, true) as SelectionPoint;
+                    while (parent.img.destLeft < 0 || parent.img.destTop < 0) {
+                        parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false });
+                        parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
+                            value: { zoomFactor: -.125, zoomPoint: null, isResize: false } });
+                        zoomLevel += 1;
+                    }
+                }
                 this.updateRedactObj();
+                if (isRedact) {
+                    if (zoomLevel > 0) {
+                        parent.isCropTab = true;
+                        for (let i: number = 0; i < zoomLevel; i++) {
+                            parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false });
+                            parent.notify('transform', { prop: 'zoomAction', onPropertyChange: false,
+                                value: { zoomFactor: .125, zoomPoint: null, isResize: false } });
+                        }
+                        parent.activeObj = actObj;
+                        parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: { canvas: 'duplicate' } });
+                    }
+                    parent.notify('draw', { prop: 'setRedactStraighten', value: { bool: false } });
+                }
                 if (type === 'rotateleft' || type === 'rotateright') {
                     parent.notify('draw', { prop: 'resetStraightenDestPoints' });
                     parent.notify('draw', { prop: 'setDestForStraighten' });

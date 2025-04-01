@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.1.35 (2025-04-01)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#I697134` - The issue with improper padding for the dialog component in the fluent2-highcontrast theme has been resolved.
+
 ## 21.1.35 (2023-03-23)
 
 ### Tooltip

@@ -701,7 +701,7 @@ describe('EJ2-57616: clearing all list maintains the list element', () => {
         expect(rteObj.inputElement.textContent.length).toBe(1049);
         (rteObj as any).keyDown(keyBoardEvent);
         setTimeout(() => {
-            expect(rteObj.inputElement.textContent.length).toBe(1011);
+            expect(rteObj.inputElement.textContent.length).toBe(0);
             done();
         }, 100);
     });
@@ -9309,5 +9309,29 @@ describe('945277 - Placeholder doesnt disappear on RichTextEditor component when
             rteObj.dataBind();
             expect(((rteObj as any).placeHolderWrapper as HTMLElement).classList.contains('enabled')).toBe(false);
         });
+});
+describe('935893 - List not clearing after Ctrl+A and Delete in editor', () => {
+    let rteObj: RichTextEditor;
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46 };
+    it('Clear all list content using delete', (done: Function) => {
+        rteObj = renderRTE({
+                value: `<p class="focusNodefirst" style="margin-bottom:0in;margin-top:0in;">asdasdasdasd</p><p style="margin-bottom:0in;margin-top:0in;">asdasd</p><p style="margin-bottom:0in;margin-top:0in;"><br></p><p style="margin-bottom:0in;margin-top:0in;"><br></p><p style="margin-bottom:0in;margin-top:0in;">asdasd</p><p style="margin-bottom:0in;margin-top:0in;"><br></p><p style="margin-bottom:0in;margin-top:0in;"><br></p><p style="margin-bottom: 0in; margin-top: 0in;">Support</p><ol start="1" type="1" style="margin-bottom:0in;margin-top:0in;">\n                <li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; font-size: 11pt; font-family: Aptos, sans-serif;">Kokila\n                    P</li>\n                <li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; font-size: 11pt; font-family: Aptos, sans-serif;">Bhuvaneshwari\n                    T</li>\n                </ol><p style="margin: 0in 0in 0in 0.5in; font-size: 11pt; font-family: Aptos, sans-serif; text-indent: -0.25in;">Yaswin\n                    V<span>​</span></p><ol start="1" type="1" style="margin-bottom: 0in; margin-top: 0in;">\n                <li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; font-size: 11pt; font-family: Aptos, sans-serif;">Vinitha\n                    J ( She is on maternity leave, will join 28<sup>th</sup> Jan 2025)&nbsp;</li>\n               </ol><p><br></p><ol start="1" type="1" style="margin-bottom: 0in; margin-top: 0in;"><li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; font-size: 11pt; font-family: Aptos, sans-serif;">Development</li></ol><p style="margin:0in;font-size:11.0pt;font-family:&quot;Aptos&quot;,sans-serif;"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>Thangavel E (Scrum\n               master)</p><ol start="1" type="1" style="margin-bottom:0in;margin-top:0in;"><li>\n                <ol start="1" type="1" style="margin-bottom:0in;margin-top:0in;">\n                 <li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; font-size: 11pt; font-family: Aptos, sans-serif;">Revanth\n                     G ( Internal lead) <ul type="disc" style="margin-bottom:0in;margin-top:0in;">\n                  <li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; font-size: 11pt; font-family: Aptos, sans-serif;">Sathiskumar\n                      K</li>\n                  <li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; font-size: 11pt; font-family: Aptos, sans-serif;">Dhanesh\n                      Priya</li>\n                  <li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; font-size: 11pt; font-family: Aptos, sans-serif;">Harish\n                      R</li>\n                  <li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; font-size: 11pt; font-family: Aptos, sans-serif;">Aravind\n                      P (<span>Fresher - 4 Months exp)</span></li>\n                 </ul></li>\n                 \n                 <li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; font-size: 11pt; font-family: Aptos, sans-serif;">Krishnan\n                     P </li>\n                 <li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; font-size: 11pt; font-family: Aptos, sans-serif;">Gokulraj\n                     D</li>\n                 <li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; font-size: 11pt; font-family: Aptos, sans-serif;">Vinothkumar\n                     Y</li>\n                 <li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; font-size: 11pt; font-family: Aptos, sans-serif;">Krishnakumar\n                     M</li>\n                 <li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; font-size: 11pt; font-family: Aptos, sans-serif;">Arun\n                     S (<span>Fresher - 4 Months exp)</span></li>\n                 <li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; font-size: 11pt; font-family: Aptos, sans-serif;">Hariharan\n                     S (<span>Fresher - 4 Months exp)</span></li>\n                 <li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; font-size: 11pt; font-family: Aptos, sans-serif;">Karthik\n                     Selvi (<span>Fresher - 4 Months exp)</span></li>\n                 <li style="margin-top: 0in; margin-right: 0in; margin-bottom: 0in; font-size: 11pt; font-family: Aptos, sans-serif;">Kokila\n                     V (<span class="focusNodelast">Fresher - 4 Months exp)</span></li>\n                </ol>\n               </li></ol>`
+        });
+        let node: any = rteObj.inputElement.querySelector('.focusNodefirst').childNodes[0];
+        let node2: any = rteObj.inputElement.querySelector('.focusNodelast').childNodes[0];
+        let sel = new NodeSelection().setSelectionText(document, node, node2, 0, node2.textContent.length);
+        keyBoardEvent.keyCode = 46;
+        keyBoardEvent.action = 'delete';
+        keyBoardEvent.code = 'Delete';
+        (rteObj as any).keyDown(keyBoardEvent);
+        setTimeout(() => {
+            expect(rteObj.inputElement.textContent === '').toBe(true);
+            done();
+        }, 100);
+    });
+    afterAll((done) => {
+        destroy(rteObj);
+        done();
+    });
 });
 });

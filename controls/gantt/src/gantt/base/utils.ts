@@ -77,6 +77,21 @@ export function isEmptyObject(obj: object): boolean {
     return Object.keys(obj).length === 0;
 }
 /**
+ * @param {Date} date .
+ * @returns {number} .
+ * @hidden
+ */
+export function getUniversalTime(date: Date): number {
+    const year: number = date.getFullYear();
+    const month: number = date.getMonth();
+    const day: number = date.getDate();
+    const hours: number = date.getHours();
+    const minutes: number = date.getMinutes();
+    const seconds: number = date.getSeconds();
+    const milliseconds: number = date.getMilliseconds();
+    return Date.UTC(year, month, day, hours, minutes, seconds, milliseconds);
+}
+/**
  * @param {object} dataSource .
  * @returns {boolean} .
  * @hidden

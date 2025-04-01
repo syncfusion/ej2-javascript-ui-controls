@@ -374,6 +374,7 @@ export class Filter {
                 getFilterMenuPostion(targetElement, getValue('filterModel.dialogObj', args));
             }
         }
+        element.style.display = 'block';
         if (this.parent.treeGrid.filterSettings.type === 'Menu') {
             (element.querySelector('.e-valid-input') as HTMLElement).focus();
         }

@@ -4741,6 +4741,12 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                         this.redraw = this.zoomSettings.enableAnimation && !axisChange;
                         isZooming = this.zoomSettings.enableAnimation && !axisChange;
                     }
+                    if (newProp.primaryXAxis.crosshairTooltip) {
+                        if (!newProp.primaryXAxis.crosshairTooltip.enable) {
+                            removeElement(this.element.id + '_axis_tooltip_0');
+                            removeElement(this.element.id + '_axis_tooltip_text_0');
+                        }
+                    }
                     break;
                 case 'primaryYAxis':
                     axis = <Axis>newProp.primaryYAxis;
@@ -4762,6 +4768,12 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                         this.redraw = this.zoomSettings.enableAnimation && !axisChange;
                         isZooming = this.zoomSettings.enableAnimation && !axisChange;
                     }
+                    if (newProp.primaryYAxis.crosshairTooltip) {
+                        if (!newProp.primaryYAxis.crosshairTooltip.enable) {
+                            removeElement(this.element.id + '_axis_tooltip_1');
+                            removeElement(this.element.id + '_axis_tooltip_text_1');
+                        }
+                    }
                     break;
                 case 'axes':
                     for (const index of Object.keys(newProp.axes)) {
@@ -4780,6 +4792,12 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                         this.zoomModule && (!isNullOrUndefined(axis.zoomFactor) || !isNullOrUndefined(axis.zoomPosition))) {
                             this.redraw = this.zoomSettings.enableAnimation && !axisChange;
                             isZooming = this.zoomSettings.enableAnimation && !axisChange;
+                        }
+                        if (axis.crosshairTooltip) {
+                            if (!axis.crosshairTooltip.enable) {
+                                removeElement(this.element.id + '_axis_tooltip_' + (this.axes[index as string] as Axis).index);
+                                removeElement(this.element.id + '_axis_tooltip_text_' + (this.axes[index as string] as Axis).index);
+                            }
                         }
                     }
                     if (this.scrollElement && this.zoomSettings.enableScrollbar) {
