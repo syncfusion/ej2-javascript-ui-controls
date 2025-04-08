@@ -126,7 +126,8 @@ export class ColumnWidthService {
     }
 
     private setWidth(width: string | number, index: number, clear?: boolean): void {
-        if (this.parent.groupSettings.columns.length > index && ispercentageWidth(this.parent)) {
+        if (this.parent.groupSettings.columns.length > index && ispercentageWidth(this.parent) &&
+            !(this.parent.resizeModule && this.parent.resizeModule.resizeProcess)) {
             const elementWidth: number = this.parent.element.offsetWidth;
             width = (30 / elementWidth * 100).toFixed(1) + '%';
         }

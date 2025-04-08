@@ -83,6 +83,13 @@ export class NormalEdit {
             if ((!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
                 || (!this.parent.isPersistSelection)) && (e[`${action}`] !== 'edit' && (!this.parent.editSettings.showAddNewRow ||
                 (this.parent.editSettings.showAddNewRow && e[`${action}`] !== 'add')))) {
+                if (this.parent.allowPaging && e['index'] > 0) {
+                    e['index'] = this.parent.pageSettings.currentPage === Math.floor(e['index'] / this.parent.pageSettings.pageSize) + 1 ?
+                        e['index'] % this.parent.pageSettings.pageSize : -1 ;
+                }
+                if (this.parent.enableVirtualization && e['index'] > 0) {
+                    this.parent.selectVirtualRowOnAdd = true;
+                }
                 this.parent.selectRow(e['index']);
             }
             this.parent.trigger(events.actionComplete, extend(e, {

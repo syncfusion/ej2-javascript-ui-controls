@@ -19,6 +19,7 @@ export const profile = {
     sample() {
         let newSample = getMemoryProfile();
         this.samples.push(newSample);
+        
         this.averageUsage = runningAverage(this.samples, newSample, this.averageUsage);
         let sampleLen: any = this.samples.length;
         if (sampleLen >= 2) {

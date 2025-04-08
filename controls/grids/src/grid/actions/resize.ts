@@ -444,6 +444,9 @@ export class Resize implements IAction {
                 if (!this.helper) {
                     if (this.getScrollBarWidth() === 0) {
                         this.resizeProcess = true;
+                        for (const col of this.refreshColumnWidth()) {
+                            this.widthService.setColumnWidth(col);
+                        }
                         if (this.parent.allowGrouping) {
                             for (let i: number = 0; i < this.parent.groupSettings.columns.length; i++) {
                                 this.widthService.setColumnWidth(new Column({ width: '30px' }), i);
@@ -451,9 +454,6 @@ export class Resize implements IAction {
                         }
                         if (this.parent.isRowDragable()) {
                             this.widthService.setColumnWidth(new Column({ width: '30px' }));
-                        }
-                        for (const col of this.refreshColumnWidth()) {
-                            this.widthService.setColumnWidth(col);
                         }
                         this.widthService.setWidthToTable();
                         this.resizeProcess = false;

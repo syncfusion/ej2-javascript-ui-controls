@@ -726,6 +726,12 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /** @hidden */
     public spreadsheetNoteModule: SpreadsheetNote;
 
+    /**
+     * Array to store multiple rafIds on intial rendering.
+     *
+     * @hidden */
+    public rafIds: number[] = [];
+
     /** @hidden */
     public renderModule: Render;
 

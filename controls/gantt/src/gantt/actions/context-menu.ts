@@ -274,13 +274,15 @@ export class ContextMenu {
         };
         // eslint-disable-next-line
         this.parent.trigger('actionBegin', eventArgs, (eventArgs: ActionBeginArgs) => {
-            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-                this.parent.showMaskRow();
-            } else {
-                this.parent.showSpinner();
+            if (!eventArgs.cancel) {
+                if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
+                    this.parent.showMaskRow();
+                } else {
+                    this.parent.showSpinner();
+                }
+                this.parent.chartRowsModule.splitTask(this.rowData[taskSettings.id], currentClickedDate);
+                this.parent.chartRowsModule.updateSegment(this.rowData.ganttProperties.segments, this.rowData.ganttProperties.taskId);
             }
-            this.parent.chartRowsModule.splitTask(this.rowData[taskSettings.id], currentClickedDate);
-            this.parent.chartRowsModule.updateSegment(this.rowData.ganttProperties.segments, this.rowData.ganttProperties.taskId);
         });
     }
     private mergeCall(item: string): void {
@@ -300,12 +302,12 @@ export class ContextMenu {
             target: this.targetElement
         };
         this.parent.trigger('actionBegin', eventArgs, (eventArgs: ActionBeginArgs) => {
-            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-                this.parent.showMaskRow();
-            } else {
-                this.parent.showSpinner();
-            }
             if (eventArgs.cancel === false) {
+                if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
+                    this.parent.showMaskRow();
+                } else {
+                    this.parent.showSpinner();
+                }
                 this.parent.chartRowsModule.mergeTask(this.rowData[taskSettings.id], segmentIndexes);
             }
         });

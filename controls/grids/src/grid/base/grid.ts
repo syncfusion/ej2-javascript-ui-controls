@@ -1044,6 +1044,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public isAddNewRow: boolean = false;
     /** @hidden */
     public addNewRowFocus: boolean = true;
+    /** @hidden */
+    public selectVirtualRowOnAdd: boolean = false;
     public isSelectedRowIndexUpdating: boolean;
     private defaultLocale: Object;
     private keyConfigs: { [key: string]: string };

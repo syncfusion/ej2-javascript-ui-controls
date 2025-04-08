@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 29.1.37 (2025-04-08)
+
+### Grid
+
+#### Bug Fixes
+
+- `#FB66257` - Fixed an issue where the expand and collapse icon was hidden when resizing a column with its width set as a percentage.
+- `#I701100` - Support has been provided for adding custom font in server side `PDF Export`.
+- `#F196312` - Resolved an issue where focus incorrectly moved to a disabled toolbar button on the first tab attempt.
+- `#I705050` - Resolved an issue where the selection was not applied to a newly added row when using a customized index higher than the page size.
+
 ## 29.1.35 (2025-04-01)
 
 ### Grid

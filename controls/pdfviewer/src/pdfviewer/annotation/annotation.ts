@@ -124,6 +124,10 @@ export class Annotation {
     /**
      * @private
      */
+    public isUndoActionImageLoad: boolean = false;
+    /**
+     * @private
+     */
     public stickyNotesAnnotationModule: StickyNotesAnnotation;
     private popupNote: HTMLElement;
     private popupNoteAuthor: HTMLElement;
@@ -155,7 +159,10 @@ export class Annotation {
      */
     public isUndoRedoAction: boolean = false;
     private isFreeTextFontsizeChanged: boolean = false;
-    private isUndoAction: boolean = false;
+    /**
+     * @private
+     */
+    public isUndoAction: boolean = false;
     private annotationSelected: boolean = true;
     private isAnnotDeletionApiCall: boolean = false;
     private removedDocumentAnnotationCollection: any = [];
@@ -1490,6 +1497,7 @@ export class Annotation {
             let shapeType: string = actionObject.annotation.shapeAnnotationType;
             this.isUndoRedoAction = true;
             this.isUndoAction = true;
+            this.isUndoActionImageLoad = true;
             switch (actionObject.action) {
             case 'Text Markup Added':
             case 'Text Markup Deleted':
@@ -1914,7 +1922,7 @@ export class Annotation {
                 if (this.pdfViewer.formDesigner && actionObject.annotation.formFieldAnnotationType) {
                     actionObject.redoElement.bounds.x = actionObject.redoElement.wrapper.bounds.x;
                     actionObject.redoElement.bounds.y = actionObject.redoElement.wrapper.bounds.y;
-                    this.pdfViewer.formDesigner.drawFormField(actionObject.redoElement as any);
+                    this.pdfViewer.formDesigner.drawFormField(actionObject.redoElement as any, null, 'Addition');
                 } else {
                     if (shapeType === 'Line' || shapeType === 'LineWidthArrowHead' || shapeType === 'Polygon' || shapeType === 'Ellipse' || shapeType === 'Rectangle' || shapeType === 'Radius' || shapeType === 'Distance') {
                         if (actionObject.annotation.measureType === '' || isNullOrUndefined(actionObject.annotation.measureType)) {
@@ -3914,28 +3922,31 @@ export class Annotation {
      * @param {boolean} isAnnotOrderAction - isAnnotOrderAction
      * @param {any} freeTextAnnotation - freeTextAnnotation
      * @param {any} inkAnnotation - inkAnnotation
+     * @param {boolean} isLastAnnot - last annotation in document
      * @private
      * @returns {void}
      */
     public renderAnnotations(pageNumber: number, shapeAnnotation: any, measureShapeAnnotation: any,
                              textMarkupAnnotation: any, canvas?: any, isImportAnnotations?: boolean, isAnnotOrderAction?: boolean,
-                             freeTextAnnotation?: any, inkAnnotation?: any): void {
-        this.clearAnnotationCanvas(pageNumber);
-        if (this.shapeAnnotationModule) {
+                             freeTextAnnotation?: any, inkAnnotation?: any, isLastAnnot?: boolean): void {
+        if (isNullOrUndefined(isLastAnnot) || isLastAnnot) {
+            this.clearAnnotationCanvas(pageNumber);
+        }
+        if (this.shapeAnnotationModule && shapeAnnotation) {
             if (isImportAnnotations) {
                 this.shapeAnnotationModule.renderShapeAnnotations(shapeAnnotation, pageNumber, true);
             } else {
                 this.shapeAnnotationModule.renderShapeAnnotations(shapeAnnotation, pageNumber, null, isAnnotOrderAction);
             }
         }
-        if (this.measureAnnotationModule) {
+        if (this.measureAnnotationModule && measureShapeAnnotation) {
             if (isImportAnnotations) {
                 this.measureAnnotationModule.renderMeasureShapeAnnotations(measureShapeAnnotation, pageNumber, true);
             } else {
                 this.measureAnnotationModule.renderMeasureShapeAnnotations(measureShapeAnnotation, pageNumber, null, isAnnotOrderAction);
             }
         }
-        if (this.freeTextAnnotationModule) {
+        if (this.freeTextAnnotationModule && freeTextAnnotation) {
             if (isImportAnnotations) {
                 this.freeTextAnnotationModule.renderFreeTextAnnotations(freeTextAnnotation, pageNumber, true);
             }
@@ -3943,7 +3954,7 @@ export class Annotation {
                 this.freeTextAnnotationModule.renderFreeTextAnnotations(freeTextAnnotation, pageNumber, null, isAnnotOrderAction);
             }
         }
-        if (this.inkAnnotationModule) {
+        if (this.inkAnnotationModule && inkAnnotation) {
             if (isImportAnnotations) {
                 this.inkAnnotationModule.renderExistingInkSignature(inkAnnotation, pageNumber, true);
             }
@@ -3951,7 +3962,9 @@ export class Annotation {
                 this.inkAnnotationModule.renderExistingInkSignature(inkAnnotation, pageNumber, null, isAnnotOrderAction);
             }
         }
-        this.pdfViewer.drawing.refreshCanvasDiagramLayer(canvas as HTMLCanvasElement, pageNumber);
+        if (isNullOrUndefined(isLastAnnot) || isLastAnnot) {
+            this.pdfViewer.drawing.refreshCanvasDiagramLayer(canvas as HTMLCanvasElement, pageNumber);
+        }
         const highlighCanvas: HTMLElement = this.pdfViewerBase.getElement('_blendAnnotationsIntoCanvas_' + pageNumber);
         if (highlighCanvas) {
             this.pdfViewer.drawing.refreshCanvasDiagramLayer(canvas as HTMLCanvasElement, pageNumber);
@@ -3995,7 +4008,7 @@ export class Annotation {
                 this.pdfViewer.toolbar.annotationToolbarModule.inkAnnotationSelected = true;
             }
         }
-        if (this.textMarkupAnnotationModule) {
+        if (this.textMarkupAnnotationModule && (isNullOrUndefined(isLastAnnot) || isLastAnnot)) {
             if (isImportAnnotations) {
                 this.textMarkupAnnotationModule.renderTextMarkupAnnotationsInPage(textMarkupAnnotation, pageNumber, true);
             } else {

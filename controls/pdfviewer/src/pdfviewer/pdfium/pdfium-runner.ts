@@ -408,6 +408,7 @@ export function PdfiumRunner(): void {
                     PDFiumModule.asm.free(documentDetails.processor.wasmData.wasmBuffer);
                     FPDF.CloseDocument(documentDetails.processor.wasmData.wasm);
                     FPDF.DestroyLibrary();
+                    documentDetails = null;
                 }
             }
         }

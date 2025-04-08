@@ -2815,7 +2815,7 @@ export class AnnotationToolbar {
                 fields: { text: 'FontName', value: 'FontName' },
                 cssClass: 'e-pv-prop-dropdown',
                 itemTemplate: initializeCSPTemplate(
-                    function (data: any): string { return `<span style="font-family: ${data.FontName};">${data.FontName}</span>`; }
+                    function (data: any): string { return `<span data-font="${data.FontName}">${data.FontName}</span>`; }
                 ),
                 allowCustom: true,
                 showClearButton: false,
@@ -2829,7 +2829,7 @@ export class AnnotationToolbar {
                 fields: { text: 'FontName', value: 'FontName' },
                 cssClass: 'e-pv-prop-dropdown-rtl',
                 itemTemplate: initializeCSPTemplate(
-                    function (data: any): string { return `<span style="font-family: ${data.FontName};">${data.FontName}</span>`; }
+                    function (data: any): string { return `<span data-font="${data.FontName}">${data.FontName}</span>`; }
                 ),
                 allowCustom: true,
                 showClearButton: false,

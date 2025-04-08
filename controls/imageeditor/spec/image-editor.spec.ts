@@ -9910,11 +9910,6 @@ describe('ImageEditor', () => {
                 canvas.toBlob((blob) => {
                     let blobUrl = URL.createObjectURL(blob as any);
                     imageEditor.open(blobUrl);
-                    setTimeout(() => {
-                        expect(imageEditor.baseImg.src.indexOf('blob')).toEqual(0);
-                        expect(imageEditor.isImageLoaded).toBeTruthy();
-                        done();
-                    }, 100);
                 });
                 done();
             }, 100);

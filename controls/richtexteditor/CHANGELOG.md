@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.1.37 (2025-04-08)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I707199` - Now, when pasting content with spaces before and after it while `enableHtmlSanitizer` is disabled, the Rich Text Editor no longer inserts `&nbsp;` for spaces.
+
 ## 29.1.35 (2025-04-01)
 
 ### RichTextEditor

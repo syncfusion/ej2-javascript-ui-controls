@@ -545,6 +545,20 @@ export class Print {
         }
     }
 
+    /**
+     * @param {any} printDocument - It describes printdocument element
+     * @param {string} styleContent - It describes styles text content
+     * @private
+     * @returns {void}
+     */
+    private createStyleSheet(printDocument: any, styleContent: string): void {
+        const blob: any = new Blob([styleContent], { type: 'text/css' });
+        const linkElement: any = printDocument.createElement('link');
+        linkElement.rel = 'stylesheet';
+        linkElement.href = URL.createObjectURL(blob);
+        printDocument.head.appendChild(linkElement);
+    }
+
     private printWindowOpen(): void {
         const browserUserAgent: string = navigator.userAgent;
         let printDocument: any;
@@ -558,8 +572,16 @@ export class Print {
             Create a new Base64-encoded image with increased quality
             Also help to reduce the file size while save as pdf
             */
+            if (i === 0) {
+                printDocument.write('<!DOCTYPE html>');
+                printDocument.write('<html moznomarginboxes mozdisallowselectionprint><head></head><body>');
+            }
             const canvasUrl: string = (this.printViewerContainer.children[parseInt(i.toString(), 10)] as HTMLCanvasElement).toDataURL('image/jpeg');
-            printDocument.write('<div style="margin:0mm;width:' + this.printWidth.toString() + 'px;height:' + this.printHeight.toString() + 'px;position:relative"><img src="' + canvasUrl + '" id="' + 'image_' + i + '" /><div id="' + 'fields_' + i + '" style="margin:0px;top:0px;left:0px;position:absolute;width:' + this.printWidth.toString() + 'px;height:' + this.printHeight.toString() + 'px;z-index:2"></div></div>');
+            printDocument.write('<div id="' + 'imageElementPdf_' + i + '"><img src="' + canvasUrl + '" id="' + 'image_' + i + '" /><div id="' + 'fields_' + i + '"></div></div>');
+            const imageElement: any = printDocument.getElementById('imageElementPdf_' + i);
+            imageElement.style.cssText = `margin:0mm;width:${this.printWidth}px;height:${this.printHeight}px;position:relative`;
+            const fieldElement: any = printDocument.getElementById('fields_' + i);
+            fieldElement.style.cssText = `margin:0px;top:0px;left:0px;position:absolute;width:${this.printWidth}px;height:${this.printHeight}px;z-index:2`;
             if (this.pdfViewer.formFieldsModule || this.pdfViewer.formDesignerModule) {
                 const pageWidth: number = this.pdfViewerBase.pageSize[parseInt(i.toString(), 10)].width;
                 const pageHeight: number = this.pdfViewerBase.pageSize[parseInt(i.toString(), 10)].height;
@@ -577,18 +599,32 @@ export class Print {
             if (i === 0) {
                 if ((browserUserAgent.indexOf('Chrome') !== -1) || (browserUserAgent.indexOf('Safari') !== -1) ||
                     (browserUserAgent.indexOf('Firefox')) !== -1) {
-                    printDocument.write('<!DOCTYPE html>');
-                    printDocument.write('<html moznomarginboxes mozdisallowselectionprint><head><style>html, body { height: 100%; width:100% }'
-                        + ' img { height: 100%; width: 100%; display: block; }@media print { body { margin: 0cm; }'
-                        + ' img { width:100%; width:100%; box-sizing: border-box; }br, button { display: none; }'
-                        + ' div{ page-break-inside: avoid; }} @page{margin:0mm;  size:' + this.printWidth.toString() + 'px ' + this.printHeight.toString() + 'px; }</style></head><body>');
+                    const styleContent: string = `
+                        html, body { height: 100%; width: 100%; }
+                        img { height: 100%; width: 100%; display: block; }
+                        @media print { 
+                            body { margin: 0cm; }
+                            img { width: 100%; box-sizing: border-box; }
+                            br, button { display: none; }
+                            div { page-break-inside: avoid; }
+                        }
+                        @page { margin: 0mm; size: ${this.printWidth.toString()}px ${this.printHeight.toString()}px; }
+                    `;
+                    this.createStyleSheet(printDocument, styleContent);
                 }
                 else {
-                    printDocument.write('<!DOCTYPE html>');
-                    printDocument.write('<html><head>'
-                        + '<style>html, body { height: 100%; } img { height: 100%; width: 100%; }@media print { body { margin: 0cm; }'
-                        + 'img { width:100%; width:100%; box-sizing: border-box; }br, button { display: none; } '
-                        + 'div{ page-break-inside: avoid; }} @page{margin:0mm;  size:' + this.printWidth.toString() + 'px ' + this.printHeight.toString() + 'px; }</style></head><body>');
+                    const styleContent: string = `
+                        html, body { height: 100%; }
+                        img { height: 100%; width: 100%; }
+                        @media print { 
+                            body { margin: 0cm; }
+                            img { width: 100%; box-sizing: border-box; }
+                            br, button { display: none; }
+                            div { page-break-inside: avoid; }
+                        }
+                        @page { margin: 0mm; size: ${this.printWidth.toString()}px ${this.printHeight.toString()}px; }
+                    `;
+                    this.createStyleSheet(printDocument, styleContent);
                 }
             }
         }

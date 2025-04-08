@@ -359,17 +359,24 @@ export class WParagraphFormat {
     private getDefaultValue(property: string): Object {
         const propertyType: number = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
         const docParagraphFormat: WParagraphFormat = this.getDocumentParagraphFormat();
-        let isInsideBodyWidget: boolean = true;
-        if (this.ownerBase && this.ownerBase instanceof ParagraphWidget) {
-            isInsideBodyWidget = this.ownerBase.containerWidget instanceof BlockContainer ||  this.ownerBase.containerWidget instanceof TextFrame ||
-                this.ownerBase.containerWidget instanceof TableCellWidget;
+        if (isNullOrUndefined(docParagraphFormat) || isNullOrUndefined(docParagraphFormat.uniqueParagraphFormat)) {
+            return WParagraphFormat.getPropertyDefaultValue(property);
         }
-        let isPaste: boolean = !isNullOrUndefined(this.ownerBase) && !isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget)
-            && (this.ownerBase as ParagraphWidget).bodyWidget.page && !isNullOrUndefined((this.ownerBase as ParagraphWidget).bodyWidget.page.documentHelper) && (this.ownerBase as ParagraphWidget).bodyWidget.page.documentHelper.owner.editorModule
-            && (this.ownerBase as ParagraphWidget).bodyWidget.page.documentHelper.owner.editorModule.isPaste;
-        if (isInsideBodyWidget && !isPaste
-            && !isNullOrUndefined(docParagraphFormat) && !isNullOrUndefined(docParagraphFormat.uniqueParagraphFormat)) {
-            const propValue: Object = docParagraphFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);
+        const ownerBase = this.ownerBase;
+        let isInsideBodyWidget = false;
+        let isPaste = false;
+        if (ownerBase && ownerBase instanceof ParagraphWidget) {
+            const containerWidget = ownerBase.containerWidget;
+            isInsideBodyWidget = containerWidget instanceof BlockContainer || containerWidget instanceof TextFrame || containerWidget instanceof TableCellWidget;
+            const bodyWidget = ownerBase.bodyWidget;
+            if (bodyWidget && bodyWidget.page && bodyWidget.page.documentHelper &&
+                bodyWidget.page.documentHelper.owner && bodyWidget.page.documentHelper.owner.editorModule) {
+                isPaste = bodyWidget.page.documentHelper.owner.editorModule.isPaste;
+            }
+        }
+        // Check and return property value early
+        if (isInsideBodyWidget && !isPaste) {
+            const propValue = docParagraphFormat.uniqueParagraphFormat.propertiesHash.get(propertyType);
             if (!isNullOrUndefined(propValue)) {
                 return propValue;
             }

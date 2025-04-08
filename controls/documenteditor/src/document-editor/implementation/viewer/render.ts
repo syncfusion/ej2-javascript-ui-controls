@@ -1168,6 +1168,8 @@ private calculatePathBounds(data: string): Rect {
         if (paraWidget.isInsideTable) {
             let cell = paraWidget.associatedCell;
             return (cell.width + cell.margin.left + cell.margin.right) - cell.leftBorderWidth;
+        } else if (paraWidget.containerWidget instanceof TextFrame) {
+            return paraWidget.width;
         } else {
             if (this.viewer instanceof WebLayoutViewer) {
                 let indent: number = HelperMethods.convertPointToPixel(paraWidget.leftIndent + paraWidget.rightIndent);

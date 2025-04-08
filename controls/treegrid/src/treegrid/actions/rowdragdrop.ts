@@ -710,7 +710,7 @@ export class RowDD {
                 const regex: RegExp = /index(\d+)|level(\d+)/g;
                 const parentIndexLevel: number = e === null || e === undefined ? undefined : e.cells[`${treeColIndex}`].className.match(regex);
                 const dropIndexLevel: number = targetRow[0].cells[`${treeColIndex}`].className.match(regex);
-                if (isNullOrUndefined(dropIndexLevel) || isNullOrUndefined(dropIndexLevel)) {
+                if (isNullOrUndefined(dropIndexLevel) || isNullOrUndefined(dropIndexLevel) || isNullOrUndefined(parentIndexLevel)) {
                     return true;
                 }
                 const parentLevel: number = +parentIndexLevel[1].match(/\d+/)[0];
@@ -984,6 +984,9 @@ export class RowDD {
     private removetopOrBottomBorder(): void {
         let border: HTMLElement[] = [];
         border = [].slice.call(this.parent.element.querySelectorAll('.e-dropbottom, .e-droptop'));
+        if (this.parent.rowDropSettings.targetID) {
+            border = [].slice.call(document.querySelectorAll('.e-dropbottom, .e-droptop'));
+        }
         if (border.length) {
             this.addRemoveClasses(border, false, 'e-dropbottom');
             this.addRemoveClasses(border, false, 'e-droptop');
@@ -1073,6 +1076,7 @@ export class RowDD {
             if (dropElement && dropElement.id === this.parent.rowDropSettings.targetID) {
                 const srcControl: TreeGrid = (<EJ2Intance>dropElement).ej2_instances[0];
                 srcControl.rowDragAndDropModule.updateIcon(args.rows, rowIdx, args);
+                this.dropPosition = srcControl.rowDragAndDropModule.dropPosition;
             }
         }
         if (args.target && closest(args.target, '#' + tObj.rowDropSettings.targetID)) {

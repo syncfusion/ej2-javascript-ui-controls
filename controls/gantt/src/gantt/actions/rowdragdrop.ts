@@ -190,12 +190,12 @@ export class RowDD {
         if (!args.cancel) {
             args.requestType = 'beforeDrop';
             this.parent.trigger('actionBegin', args);
-            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-                this.parent.showMaskRow();
-            } else {
-                this.parent.showSpinner();
-            }
             if (!args.cancel) {
+                if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
+                    this.parent.showMaskRow();
+                } else {
+                    this.parent.showSpinner();
+                }
                 this.dropRows(args, true); // method to update the data collections based on drop action
                 args.cancel = true;
             }

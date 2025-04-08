@@ -742,7 +742,6 @@ export class Toolbar {
     }
     private toggleEditing(): void {
         this.container.restrictEditing = !this.container.restrictEditing;
-        this.container.showPropertiesPane = !this.container.restrictEditing;
     }
     /**
      * @private

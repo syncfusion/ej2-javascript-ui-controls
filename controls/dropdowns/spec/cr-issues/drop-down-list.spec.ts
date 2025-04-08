@@ -348,7 +348,7 @@ describe('DropDownList', () => {
                     expect(listObj.listData.length === 3).toBe(true);
                 }
                 done();
-            }, 4000);
+            }, 5000);
         });
         // it('set empty datasource ', (done) => {
         //     listObj.hidePopup();

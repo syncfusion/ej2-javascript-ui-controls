@@ -152,8 +152,8 @@ export function bBoxText(textContent: string, options: TextAttributes): number {
     let svg: SVGElement = window[measureElement].children[2];
     let text: SVGTextElement = getChildNode(svg)[1] as SVGTextElement;
     text.textContent = textContent;
-    text.setAttribute('style', 'font-size:' + options.fontSize + 'px; font-family:'
-        + options.fontFamily + ';font-weight:' + (options.bold ? 'bold' : 'normal'));
+    text.style.cssText = `font-size: ${options.fontSize}px; font-family: ${options.fontFamily};
+    font-weight: ${options.bold ? 'bold' : 'normal'}`;
     let bBox: number = text.getBBox().width;
     // eslint-disable-next-line
     window[measureElement].style.visibility = 'hidden';
@@ -168,8 +168,8 @@ export function bBoxTextHeight(textContent: string, options: TextAttributes): nu
     let svg: SVGElement = window[measureElement].children[2];
     let text: SVGTextElement = getChildNode(svg)[1] as SVGTextElement;
     text.textContent = textContent;
-    text.setAttribute('style', 'font-size:' + options.fontSize + 'px; font-family:'
-        + options.fontFamily + ';font-weight:' + (options.bold ? 'bold' : 'normal'));
+    text.style.cssText = `font-size: ${options.fontSize}px; font-family: ${options.fontFamily};
+    font-weight: ${options.bold ? 'bold' : 'normal'}`;
     let bBox: number = text.getBBox().height;
     // eslint-disable-next-line
     window[measureElement].style.visibility = 'hidden';

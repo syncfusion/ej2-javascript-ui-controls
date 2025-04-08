@@ -1900,11 +1900,14 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 ele.classList.remove(CLS_DISABLE);
                 if (!isNOU(ele.firstElementChild)) {
                     ele.firstElementChild.setAttribute('aria-disabled', 'false');
+                    this.updateTabIndex('0');
                 }
             } else {
                 ele.classList.add(CLS_DISABLE);
                 if (!isNOU(ele.firstElementChild)) {
                     ele.firstElementChild.setAttribute('aria-disabled', 'true');
+                    ele.firstElementChild.setAttribute('tabindex', '-1');
+                    this.updateTabIndex('0');
                 }
             }
         };

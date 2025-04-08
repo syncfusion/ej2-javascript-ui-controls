@@ -330,7 +330,7 @@ export class Resize extends ActionBase {
         if (!isTop) {
             offsetValue += this.actionObj.clone.offsetHeight;
         }
-        const minutes: number = (offsetValue / this.actionObj.cellHeight) * this.actionObj.slotInterval;
+        const minutes: number = (offsetValue / Math.round(this.actionObj.cellHeight)) * this.actionObj.slotInterval;
         const element: Element = this.actionObj.clone.offsetParent;
         if (isNullOrUndefined(element)) {
             return;

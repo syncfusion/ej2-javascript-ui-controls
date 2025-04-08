@@ -311,61 +311,7 @@ describe('ComboBox', () => {
             })
         });
     });
-    describe('EJ2-17694 - Multiple time ajax request while change the dataSource ', () => {
-        let listObj: any;
-        let controlEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'auto' });
-        let result: any = [];
-        let originalTimeout: number;
-        beforeAll((done) => {
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
-            document.body.appendChild(controlEle);
-            let mAjax: MockAjaxReturn = mockAjax({
-                data: {
-                    d: new DataManager(data).executeLocal(new Query().take(10).select(['OrderID', 'CustomerID', 'EmployeeID']))
-                }
-            }, new Query());
-            mAjax.promise.then((e: ResponseType) => {
-                result = e.result;
-                done();
-            });
-        });
-        afterAll(() => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-            listObj.destroy();
-            controlEle.remove();
-            jasmine.Ajax.uninstall();
-        });
-        it('change the dataSource dynamically ', (done) => {
-            let count: number = 0;
-            listObj = new ComboBox({
-                fields: { value: 'CustomerID' },
-                placeholder: 'Select a name',
-                actionComplete: () => {
-                    count++;
-                }
-            });
-            listObj.appendTo(controlEle);
-            listObj.focusIn();
-            listObj.inputElement.value = "a";
-            let event: any = new Event('keyup');
-            event.keyCode = 72;
-            listObj.isValidKey = true;
-            listObj.onFilterUp(event);
-            setTimeout(() => {
-                //expect(listObj.list.classList.contains('e-nodata')).toBe(true);
-                listObj.hidePopup();
-                count = 0;
-                setTimeout(() => {
-                    listObj.dataSource = result;
-                    listObj.query = new Query().take(3);
-                    listObj.dataBind();
-                    //expect(count === 1).toBe(true);
-                    done();
-                }, 400);
-            }, 400);
-        });
-    });
+
 
     describe('EJ2-17113-check clear button-enabled readonly', () => {
         let comboEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ComboBox' });

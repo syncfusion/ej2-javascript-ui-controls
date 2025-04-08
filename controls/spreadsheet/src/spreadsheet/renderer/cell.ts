@@ -21,6 +21,7 @@ export class CellRenderer implements ICellRenderer {
     private element: HTMLTableCellElement;
     private th: HTMLTableCellElement;
     private tableRow: HTMLElement;
+    private isFormulaCell: boolean;
     constructor(parent?: Spreadsheet) {
         this.parent = parent;
         this.element = this.parent.createElement('td') as HTMLTableCellElement;
@@ -170,6 +171,7 @@ export class CellRenderer implements ICellRenderer {
             if (args.fillType && args.fillType === 'FillWithoutFormatting') {
                 delete args.cell.format;
             }
+            if (!args.isRefresh) { this.isFormulaCell = true; }
         }
         const formatArgs: NumberFormatArgs = { value: args.cell && args.cell.value,
             type: args.cell && getTypeFromFormat(args.cell.format), format: args.cell && args.cell.format,
@@ -237,10 +239,11 @@ export class CellRenderer implements ICellRenderer {
             this.parent.notify(deleteNote, {rowIndex: args.rowIdx, columnIndex: args.colIdx});
         }
         if (args.isRefresh) { this.removeStyle(args.td, args.rowIdx, args.colIdx); }
-        if (args.lastCell && this.parent.chartColl && this.parent.chartColl.length) {
+        if (args.lastCell && (this.isFormulaCell || args.isRefresh) && this.parent.chartColl && this.parent.chartColl.length) {
             this.parent.notify(refreshChart, {
                 cell: args.cell, rIdx: args.rowIdx, cIdx: args.colIdx, sheetIdx: this.parent.activeSheetIndex, isSelectAll: args.isSelectAll
             });
+            if (!args.isRefresh) { this.isFormulaCell = false; }
         }
         this.applyStyle(args, style);
         if (args.checkNextBorder === 'Row') {

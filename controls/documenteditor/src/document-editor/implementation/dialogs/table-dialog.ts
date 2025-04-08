@@ -72,6 +72,7 @@ export class TableDialog {
             format: '#',
             value: 2,
             min: 1,
+            max: 63,
             strictMode: true,
             enablePersistence: false,
             placeholder: localValue.getConstant('Number of columns'),

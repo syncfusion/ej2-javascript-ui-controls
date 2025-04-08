@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 29.1.35 (2025-04-01)
+## 29.1.37 (2025-04-08)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#F61040` - Fixed a script error issue when reordering columns with frozen columns and persistence enabled.
+- `#F66017` - Fixed an issue where the drop position was not properly registering during drag and drop operations between tree grids, resulting in data disappearing.
+
+## 29.1.33 (2025-03-25)
 
 ### Tree Grid
 

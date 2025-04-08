@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 29.1.37 (2025-04-08)
+
+### Tab
+
+#### Bug Fixes
+
+- `#I703472` - The issue with misalignment of the tab header text and close icon in Tailwind 3 and Fluent 2 themes has been resolved.
+
+### Toolbar
+
+#### Bug Fixes
+
+- `#I705438` - An issue where focus was maintained on a disabled toolbar item has been fixed.
+
 ## 29.1.33 (2025-03-25)
 
 ### Menu

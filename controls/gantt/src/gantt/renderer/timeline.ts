@@ -165,12 +165,12 @@ export class Timeline {
             cancel: false
         };
         this.parent.trigger('actionBegin', args);
-        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-            this.parent.showMaskRow();
-        } else {
-            this.parent.showSpinner();
-        }
         if (!args.cancel) {
+            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
+                this.parent.showMaskRow();
+            } else {
+                this.parent.showSpinner();
+            }
             newTimeline = args.timeline;
             this.changeTimelineSettings(newTimeline);
         }
@@ -375,13 +375,15 @@ export class Timeline {
             this.parent.toolbarModule.enableItems([this.parent.controlId + '_zoomin', this.parent.controlId + '_zoomout'], true);
         }
         this.parent.trigger('actionBegin', args);
-        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-            this.parent.showMaskRow();
-        } else {
-            this.parent.showSpinner();
+        if (!args.cancel) {
+            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
+                this.parent.showMaskRow();
+            } else {
+                this.parent.showSpinner();
+            }
+            this.changeTimelineSettings(newTimeline);
+            this.parent.isTimelineRoundOff = isNullOrUndefined(this.parent.projectStartDate) ? true : false;
         }
-        this.changeTimelineSettings(newTimeline);
-        this.parent.isTimelineRoundOff = isNullOrUndefined(this.parent.projectStartDate) ? true : false;
         this.isZoomToFit = false;
     }
 

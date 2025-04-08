@@ -1028,12 +1028,12 @@ export class TaskbarEdit extends DateProcessor {
                         }
                     }
                 }
-                if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer' && this.parent.showIndicator) {
-                    this.parent.showMaskRow();
-                } else if (this.parent.showIndicator) {
-                    this.parent.showSpinner();
-                }
                 if (arg.cancel === false) {
+                    if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer' && this.parent.showIndicator) {
+                        this.parent.showMaskRow();
+                    } else if (this.parent.showIndicator) {
+                        this.parent.showSpinner();
+                    }
                     this.taskBarEditingAction(event, false);
                 }
             });

@@ -2473,8 +2473,13 @@ export class ListBox extends DropDownBase {
                     text = value;
                 }
                 if (typeof(text) === 'string') {
-                    text = text.split('\\').join('\\\\');
-                    li = this.list.querySelector('[data-value="' + text.replace(/"/g, '\\"') + '"]');
+                    if (text.indexOf('\n') !== -1) {
+                        const txt: string = CSS.escape(text);
+                        li = this.list.querySelector('[data-value="' + txt + '"]');
+                    } else {
+                        text = text.split('\\').join('\\\\');
+                        li = this.list.querySelector('[data-value="' + text.replace(/"/g, '\\"') + '"]');
+                    }
                 } else {
                     li = this.list.querySelector('[data-value="' + text + '"]');
                 }

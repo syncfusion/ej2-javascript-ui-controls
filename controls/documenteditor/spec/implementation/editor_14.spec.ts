@@ -360,3 +360,68 @@ describe('Content control delete', () => {
         expect(editor.selection.start.currentWidget.children[2] instanceof ContentControl).toBe(true);
     });
 });
+
+describe('single delete in content control', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true, enableEditorHistory: true, enableSfdtExport: true });
+
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Backspace at the end of the content control', () => {
+        console.log('Backspace at the end of the content control');
+        editor.editorModule.insertText('Syncfusion');
+        editor.selectionModule.selectAll();
+        editor.editorModule.insertContentControl('RichText');
+        editor.selectionModule.select('0;0;12', '0;0;12');
+        editor.editorModule.onBackSpace();
+        expect(editor.selection.start.offset).toBe(1);
+        expect(editor.selection.end.offset).toBe(11);
+    });
+    it('Backspace at the end of the content control but cannot be edited', () => {
+        console.log('Backspace at the end of the content control but cannot be edited');
+        editor.openBlank();
+        editor.editorModule.insertContentControl({type: 'RichText', title: 'Text', canEdit: false, tag: 'Text', canDelete: true, value: 'Syncfusion'});
+        editor.selectionModule.select('0;0;12', '0;0;12');
+        editor.editorModule.onBackSpace();
+        expect(editor.selection.start.offset).toBe(0);
+        expect(editor.selection.end.offset).toBe(12);
+    });
+    it('Delete at the start of the content control', () => {
+        console.log('Delete at the start of the content control');
+        editor.openBlank();
+        editor.editorModule.insertText('Syncfusion');
+        editor.selectionModule.selectAll();
+        editor.editorModule.insertContentControl('RichText');
+        editor.selectionModule.select('0;0;0', '0;0;0');
+        editor.editorModule.delete();
+        expect(editor.selection.start.offset).toBe(1);
+        expect(editor.selection.end.offset).toBe(11);
+    });
+    it('Delete at the start of the content control but cannot be edited', () => {
+        console.log('Delete at the start of the content control but cannot be edited');
+        editor.openBlank();
+        editor.editorModule.insertContentControl({type: 'RichText', title: 'Text', canEdit: false, tag: 'Text', canDelete: true, value: 'Syncfusion'});
+        editor.selectionModule.select('0;0;0', '0;0;0');
+        editor.editorModule.delete();
+        expect(editor.selection.start.offset).toBe(0);
+        expect(editor.selection.end.offset).toBe(12);
+    });
+});

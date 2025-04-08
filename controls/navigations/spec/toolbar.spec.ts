@@ -13227,6 +13227,102 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
         });
     });
 
+    describe('Toolbar with enable/disable buttons testing', () => {
+        let toolbar: Toolbar;
+        let disableBtn: Button;
+        let enableBtn: Button;
+
+        beforeEach((): void => {
+            let ele: HTMLElement = createElement('div', { id: 'toolbar_default' });
+            document.body.appendChild(ele);
+
+            let disableEle: HTMLElement = createElement('button', { id: 'disable' });
+            document.body.appendChild(disableEle);
+
+            let enableEle: HTMLElement = createElement('button', { id: 'enable' });
+            document.body.appendChild(enableEle);
+        });
+
+        afterEach((): void => {
+            if (toolbar) {
+                toolbar.destroy();
+            }
+            if (disableBtn) {
+                disableBtn.destroy();
+            }
+            if (enableBtn) {
+                enableBtn.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+
+        it('should render toolbar with icons and tooltips', () => {
+            toolbar = new Toolbar({
+                items: [
+                    { prefixIcon: 'e-icons e-cut', tooltipText: 'Cut', id: 'cut', text: 'Cut', disabled: false },
+                    { prefixIcon: 'e-icons e-paste', tooltipText: 'Paste', text: 'Paste' }
+                ]
+            });
+            toolbar.appendTo('#toolbar_default');
+
+            const element: HTMLElement = document.getElementById('toolbar_default');
+            const items = element.querySelectorAll('.e-toolbar-item');
+            expect(items.length).toEqual(2);
+            expect(items[0].querySelector('.e-tbar-btn-text').textContent).toEqual('Cut');
+            expect(items[0].classList.contains('e-overlay')).toBe(false);
+            expect(items[1].querySelector('.e-tbar-btn-text').textContent).toEqual('Paste');
+            expect(items[1].classList.contains('e-overlay')).toBe(false);
+            expect(items[0].getAttribute('title')).toEqual('Cut');
+            expect(items[1].getAttribute('title')).toEqual('Paste');
+            expect(items[0].querySelector('.e-icons.e-cut')).not.toBeNull();
+            expect(items[1].querySelector('.e-icons.e-paste')).not.toBeNull();
+        });
+
+        it('should enable and disable items through external buttons', () => {
+            toolbar = new Toolbar({
+                items: [
+                    { prefixIcon: 'e-icons e-cut', tooltipText: 'Cut', id: 'cut', text: 'Cut', disabled: false },
+                    { prefixIcon: 'e-icons e-paste', tooltipText: 'Paste', id: 'paste', text: 'Paste' }
+                ]
+            });
+            toolbar.appendTo('#toolbar_default');
+
+            disableBtn = new Button();
+            disableBtn.appendTo('#disable');
+            disableBtn.element.onclick = (): void => {
+                toolbar.enableItems(toolbar.element.querySelector('#cut').parentElement, false);
+            };
+
+            enableBtn = new Button();
+            enableBtn.appendTo('#enable');
+            enableBtn.element.onclick = (): void => {
+                toolbar.enableItems(toolbar.element.querySelector('#cut').parentElement, true);
+            };
+
+            const element: HTMLElement = document.getElementById('toolbar_default');
+            const cutItem = element.querySelector('#cut').parentElement as HTMLElement;
+            const pasteItem = element.querySelector('#paste').parentElement as HTMLElement;
+
+            expect(cutItem.classList.contains('e-overlay')).toBe(false);
+            expect(cutItem.querySelector('button').getAttribute('aria-disabled')).toEqual('false');
+            expect(cutItem.querySelector('button').getAttribute('tabindex')).toEqual('0');
+            expect(pasteItem.querySelector('button').getAttribute('tabindex')).toEqual('-1');
+
+            (document.getElementById('disable') as HTMLElement).click();
+
+            expect(cutItem.classList.contains('e-overlay')).toBe(true);
+            expect(cutItem.querySelector('button').getAttribute('aria-disabled')).toEqual('true');
+            expect(cutItem.querySelector('button').getAttribute('tabindex')).toEqual('-1');
+            expect(pasteItem.querySelector('button').getAttribute('tabindex')).toEqual('0');
+
+            (document.getElementById('enable') as HTMLElement).click();
+
+            expect(cutItem.classList.contains('e-overlay')).toBe(false);
+            expect(cutItem.querySelector('button').getAttribute('aria-disabled')).toEqual('false');
+            expect(cutItem.querySelector('button').getAttribute('tabindex')).toEqual('0');
+        });
+    });
+
     it('memory leak', () => {     
         profile.sample();
         let average: any = inMB(profile.averageChange)

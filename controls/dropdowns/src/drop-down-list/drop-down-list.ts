@@ -2074,6 +2074,9 @@ export class DropDownList extends DropDownBase implements IInput {
                         if ((this.value === dataItem.value && this.text !== dataItem.text) ||
                         (this.value !== dataItem.value && this.text === dataItem.text)){
                             this.setProperties({ 'text': dataItem.text ? dataItem.text.toString() : dataItem.text, 'value': value });
+                            if (isNullOrUndefined(li)) {
+                                this.previousValue = this.value;
+                            }
                         }
                     }
                 }

@@ -1421,11 +1421,6 @@ export class Edit {
                 );
             }
             this.parent.chartRowsModule.updateSegment(eventArg.data['ganttProperties'].segments, eventArg.data['ganttProperties'].taskId);
-            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-                this.parent.showMaskRow();
-            } else {
-                this.parent.showSpinner();
-            }
             if (eventArg.cancel) {
                 this.reUpdatePreviousRecords();
                 this.parent.chartRowsModule.refreshRecords([args.data]);
@@ -1433,6 +1428,11 @@ export class Edit {
                 // Trigger action complete event with save canceled request type
             } else {
                 // To update task data for modified records.
+                if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
+                    this.parent.showMaskRow();
+                } else {
+                    this.parent.showSpinner();
+                }
                 if (eventArg.modifiedRecords) {
                     for (let i: number = 0; i < eventArg.modifiedRecords.length; i++) {
                         this.parent.dataOperation.updateTaskData(eventArg.modifiedRecords[i as number]);
@@ -2550,11 +2550,6 @@ export class Edit {
         eventArgs.modifiedRecords = args.updatedRecordCollection;
         eventArgs.modifiedTaskData = getTaskData(args.updatedRecordCollection, null, null, this.parent);
         this.parent.trigger('actionBegin', eventArgs, (eventArg: IActionBeginEventArgs) => {
-            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-                this.parent.showMaskRow();
-            } else {
-                this.parent.showSpinner();
-            }
             if (eventArg.cancel) {
                 const deleteRecords: IGanttData[] = this.deletedTaskDetails;
                 for (let d: number = 0; d < deleteRecords.length; d++) {
@@ -2565,6 +2560,11 @@ export class Edit {
                 this.parent.initiateEditAction(false);
                 this.parent.hideSpinner();
             } else {
+                if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
+                    this.parent.showMaskRow();
+                } else {
+                    this.parent.showSpinner();
+                }
                 if (isRemoteData(this.parent.dataSource)) {
                     const data: DataManager = this.parent.dataSource as DataManager;
                     if (this.parent.timezone) {
@@ -3618,11 +3618,6 @@ export class Edit {
             }
             this.parent.trigger('actionBegin', args, (args: ITaskAddedEventArgs) => {
                 this.parent.previousRecords = {};
-                if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-                    this.parent.showMaskRow();
-                } else {
-                    this.parent.showSpinner();
-                }
                 const tasks: TaskFieldsModel = this.parent.taskFields;
                 let ganttData: IGanttData;
                 if (this.parent.viewType === 'ResourceView') {
@@ -3656,6 +3651,11 @@ export class Edit {
                     }
                 }
                 if (!args.cancel) {
+                    if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
+                        this.parent.showMaskRow();
+                    } else {
+                        this.parent.showSpinner();
+                    }
                     const record: Object = {};
                     if (isRemoteData(this.parent.dataSource)) {
                         const data: DataManager = this.parent.dataSource as DataManager;
@@ -4200,12 +4200,12 @@ export class Edit {
                 cancel: false
             };
             this.parent.trigger('actionBegin', actionArgs, (actionArg: IActionBeginEventArgs) => {
-                if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-                    this.parent.showMaskRow();
-                } else {
-                    this.parent.showSpinner();
-                }
                 if (!actionArg.cancel) {
+                    if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
+                        this.parent.showMaskRow();
+                    } else {
+                        this.parent.showSpinner();
+                    }
                     this.reArrangeRows(args, isByMethod);
                 } else {
                     if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {

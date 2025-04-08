@@ -4,10 +4,11 @@ import { RangeModel, SheetModel, UsedRangeModel } from './sheet-model';
 import { RowModel } from './row-model';
 import { ColumnModel } from './column-model';
 import { processIdx } from './data';
-import { SheetState, ProtectSettingsModel, ConditionalFormat, ConditionalFormatModel, ExtendedRange, getCellIndexes, moveOrDuplicateSheet, workbookFormulaOperation, duplicateSheetFilterHandler, ExtendedSheet, moveSheetHandler, updateSortCollection } from '../common/index';
+import { SheetState, ProtectSettingsModel, ConditionalFormat, ConditionalFormatModel, ExtendedRange, getCellIndexes, moveOrDuplicateSheet, workbookFormulaOperation, duplicateSheetFilterHandler, ExtendedSheet, moveSheetHandler, updateSortCollection, ChartModel } from '../common/index';
 import { ProtectSettings, getCellAddress } from '../common/index';
 import { isUndefined, ChildProperty, Property, Complex, Collection, extend } from '@syncfusion/ej2-base';
 import { WorkbookModel } from './workbook-model';
+import { CellModel } from './cell-model';
 
 /**
  * Configures the range processing for the spreadsheet.
@@ -689,6 +690,26 @@ export function duplicateSheet(context: Workbook, sheetIndex?: number, action?: 
         }
         context.notify(duplicateSheetFilterHandler, {sheetIndex: sheetIndex, newSheetIndex: sheetIndex + 1});
         context.notify(updateSortCollection, { isDuplicate: true, curSheetIndex: sheetIndex, newSheetIndex: sheetIndex + 1});
+        for (let i: number = 0; i <= sheet.usedRange.rowIndex; i++) {
+            const row: RowModel = sheet.rows[i as number];
+            if (!row || !row.cells) {
+                continue;
+            }
+            for (let j: number = 0; j <= sheet.usedRange.colIndex; j++) {
+                const cell: CellModel = row.cells[j as number];
+                if (!cell || !cell.chart) {
+                    continue;
+                }
+                const charts: ChartModel[] = cell.chart;
+                charts.forEach((chart: ChartModel) => {
+                    const lastIndex: number = chart.range.lastIndexOf('!');
+                    const chartRange: string = chart.range.substring(0, lastIndex);
+                    if (chartRange === originalSheet.name) {
+                        chart.range = sheet.name + chart.range.substring(lastIndex);
+                    }
+                });
+            }
+        }
         context.createSheet(sheetIndex + 1, [sheet]);
         context.notify(
             workbookFormulaOperation, { action: 'addSheet', sheetName: 'Sheet' + sheet.id, visibleName: sheet.name, sheetId: sheet.id });

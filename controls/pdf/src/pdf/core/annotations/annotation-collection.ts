@@ -123,6 +123,12 @@ export class PdfAnnotationCollection {
         if (typeof annotation === 'undefined' || annotation === null) {
             throw Error('annotation cannot be null or undefined');
         }
+        if (annotation instanceof PdfPopupAnnotation && (annotation._isReview || annotation._isComment)) {
+            if (annotation.bounds) {
+                annotation.bounds.y = -annotation.bounds.y;
+                annotation.bounds.height = -annotation.bounds.height;
+            }
+        }
         if (annotation._isLoaded) {
             throw Error('cannot add an existing annotation');
         }

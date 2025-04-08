@@ -280,10 +280,8 @@ export class FormDesigner {
             }
             textLayer.appendChild(htmlElement);
             const point: PointModel = this.pdfViewerBase.getMousePosition(event as any);
-            htmlElement.setAttribute(
-                'style', 'height:' + bounds.height * zoomValue + 'px; width:' + bounds.width * zoomValue + 'px;left:' + point.x * zoomValue + 'px; top:' + point.y * zoomValue + 'px;' +
-            'position:absolute;opacity: 0.5;'
-            );
+            htmlElement.style.cssText = `height: ${bounds.height * zoomValue}px;width: ${bounds.width * zoomValue}px;
+            left: ${point.x * zoomValue}px;top: ${point.y * zoomValue}px;position: absolute;opacity: 0.5;`;
         }
     }
 
@@ -295,12 +293,13 @@ export class FormDesigner {
      * @param {PdfViewer} commandHandler - It describes about the command handler
      * @param {string} fieldId - It describes about the field id
      * @param {boolean} isAddedProgrammatically - It describes about the isAddedProgrammatically
+     * @param {boolean} action - It describes about the action
      * @private
      * @returns {HTMLElement} - html element
      */
     public drawHTMLContent(formFieldAnnotationType: string, element: DiagramHtmlElement,
                            drawingObject: PdfFormFieldBaseModel, pageIndex?: number,
-                           commandHandler?: PdfViewer, fieldId?: string, isAddedProgrammatically?: boolean): HTMLElement {
+                           commandHandler?: PdfViewer, fieldId?: string, isAddedProgrammatically?: boolean, action?: string): HTMLElement {
         const textLayer: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageIndex);
         const canvasElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageCanvas_' + pageIndex);
         const formFieldElement: HTMLElement = document.getElementById('form_field_' + element.id + '_html_element');
@@ -349,8 +348,8 @@ export class FormDesigner {
                     'className': 'e-pv-checkbox-outer-div'
                 };
                 const outerDiv: HTMLElement = createElement('div', outerDivAttribute);
-                outerDiv.setAttribute('style', 'height:' + outerDivHeight * zoomValue + 'px; width:' + outerDivWidth * zoomValue + 'px;left:' + bounds.x * zoomValue + 'px; top:' + bounds.y * zoomValue + 'px;' +
-                    'position:absolute; opacity: 1;');
+                outerDiv.style.cssText = `height: ${outerDivHeight * zoomValue}px;width: ${outerDivWidth * zoomValue}px;
+                left: ${bounds.x * zoomValue}px;top: ${bounds.y * zoomValue}px;position: absolute;opacity: 1;`;
                 htmlElement.appendChild(divElement);
                 outerDiv.addEventListener('click', this.setCheckBoxState.bind(this));
                 parentHtmlElement.appendChild(htmlElement);
@@ -381,32 +380,37 @@ export class FormDesigner {
             }
             const point: PointModel = cornersPointsBeforeRotation(element).topLeft;
             if (formFieldAnnotationType === 'Checkbox' && (Browser.isDevice)) {
-                htmlElement.setAttribute(
-                    'style', 'height:' + (element.actualSize.height * zoomValue) + 'px; width:' + (element.actualSize.width * zoomValue) +
-                    'px;left:' + point.x * zoomValue + 'px; top:' + point.y * zoomValue + 'px;' +
-                    'transform:rotate(' + (element.rotateAngle + element.parentTransform) + 'deg);' +
-                    'pointer-events:' + ((this.pdfViewer.designerMode) ? 'none' : 'all')
-                    + ';visibility:' + ((element.visible) ? 'visible' : 'hidden') + ';opacity:' + element.style.opacity + ';'
-                );
+                htmlElement.style.cssText = `height: ${element.actualSize.height * zoomValue}px;
+                width: ${element.actualSize.width * zoomValue}px;left: ${point.x * zoomValue}px;top: ${point.y * zoomValue}px;
+                transform: rotate(${element.rotateAngle + element.parentTransform}deg);
+                pointer-events: ${this.pdfViewer.designerMode ? 'none' : 'all'};visibility: ${element.visible ? 'visible' : 'hidden'};
+                opacity: ${element.style.opacity};`;
             } else {
-                htmlElement.setAttribute(
-                    'style', 'height:' + (element.actualSize.height * zoomValue) + 'px; width:' + (element.actualSize.width * zoomValue) +
-                    'px;left:' + point.x * zoomValue + 'px; top:' + point.y * zoomValue + 'px;' +
-                    'position:absolute;transform:rotate(' + (element.rotateAngle + element.parentTransform) + 'deg);' +
-                    'pointer-events:' + ((this.pdfViewer.designerMode) ? 'none' : 'all')
-                    + ';visibility:' + ((element.visible) ? 'visible' : 'hidden') + ';opacity:' + element.style.opacity + ';'
-                );
+                htmlElement.style.cssText = `height: ${element.actualSize.height * zoomValue}px;
+                width: ${element.actualSize.width * zoomValue}px;left: ${point.x * zoomValue}px;top: ${point.y * zoomValue}px;
+                position: absolute;transform: rotate(${element.rotateAngle + element.parentTransform}deg);
+                pointer-events: ${this.pdfViewer.designerMode ? 'none' : 'all'};visibility: ${element.visible ? 'visible' : 'hidden'};
+                opacity: ${element.style.opacity};`;
             }
             this.updateFormDesignerFieldInSessionStorage(point, element, formFieldAnnotationType, drawingObject);
             if (formFieldAnnotationType === 'SignatureField' || formFieldAnnotationType === 'InitialField'){
-                if (drawingObject.value){
-                    const elementId: string = this.pdfViewer.drawing.copiedElementID + '_content';
+                if (drawingObject.value && action !== 'Addition') {
+                    const elementId: string = this.pdfViewer.drawing.copiedElementID !== '' ? this.pdfViewer.drawing.copiedElementID + '_content' : element.id;
+                    let value: any;
                     if (!isNullOrUndefined((this.pdfViewer.nameTable as any)[`${elementId}`])) {
-                        const value: any = (this.pdfViewer.nameTable as any)[`${elementId}`].value;
-                        const signatureType: 'Type' | 'Path' | 'Image' = (value.indexOf('base64')) > -1 ? 'Image' : ((value.startsWith('M') && value.split(',')[1].split(' ')[1].startsWith('L')) ? 'Path' : 'Type');
-                        if (this.pdfViewer.formFieldsModule) {
-                            this.pdfViewer.formFieldsModule.drawSignature(signatureType, value, element.template, drawingObject.fontFamily);
+                        value = (this.pdfViewer.nameTable as any)[`${elementId}`].value ? (this.pdfViewer.nameTable as any)[`${elementId}`].value : (this.pdfViewer.nameTable as any)[`${elementId}`].data;
+                    }
+                    else
+                    {
+                        value = drawingObject.value;
+                    }
+                    if (value && this.pdfViewer.formFieldsModule) {
+                        let signatureType: 'Type' | 'Path' | 'Image' = (value.indexOf('base64')) > -1 ? 'Image' : ((value.startsWith('M') && value.split(',')[1].split(' ')[1].startsWith('L') || (value.startsWith('M') && value.split(' ')[3].startsWith('L'))) ? 'Path' : 'Type');
+                        if (this.pdfViewerBase.isSignaturePathData(value))
+                        {
+                            signatureType = 'Path';
                         }
+                        this.pdfViewer.formFieldsModule.drawSignature(signatureType, value, element.template, drawingObject.fontFamily);
                     }
                 }
             }
@@ -1079,22 +1083,22 @@ export class FormDesigner {
                     'className': 'e-pv-checkbox-outer-div'
                 };
                 const outerDiv: HTMLElement = createElement('div', outerDivAttribute);
-                outerDiv.setAttribute('style', 'height:' + outerDivHeight * zoomValue + 'px; width:' + outerDivWidth * zoomValue + 'px;left:' + point.x * zoomValue + 'px; top:' + point.y * zoomValue + 'px;' +
-                    'position:absolute; opacity: 1;');
+                outerDiv.style.cssText = `height: ${outerDivHeight * zoomValue}px;width: ${outerDivWidth * zoomValue}px;
+                left: ${point.x * zoomValue}px;top: ${point.y * zoomValue}px;position: absolute;opacity: 1;`;
                 outerDiv.appendChild(parentHtmlElement);
                 outerDiv.addEventListener('click', this.setCheckBoxState.bind(this));
                 textLayer.appendChild(outerDiv);
-                htmlElement.setAttribute('style', 'height:' + (element.actualSize.height * zoomValue) + 'px; width:' + (element.actualSize.width * zoomValue) +
-                    'px;left:' + point.x * zoomValue + 'px; top:' + point.y * zoomValue + 'px;' +
-                    'transform:rotate(' + (element.rotateAngle + element.parentTransform) + 'deg);' +
-                    'pointer-events:' + ((this.pdfViewer.designerMode) ? 'none' : 'all')
-                    + ';visibility:' + ((element.visible) ? 'visible' : 'hidden') + ';opacity:' + element.style.opacity + ';');
+                htmlElement.style.cssText = `height: ${element.actualSize.height * zoomValue}px;
+                width: ${element.actualSize.width * zoomValue}px;left: ${point.x * zoomValue}px;top: ${point.y * zoomValue}px;
+                transform: rotate(${element.rotateAngle + element.parentTransform}deg);
+                pointer-events: ${this.pdfViewer.designerMode ? 'none' : 'all'};visibility: ${element.visible ? 'visible' : 'hidden'};
+                opacity: ${element.style.opacity};`;
             } else {
-                htmlElement.setAttribute('style', 'height:' + (element.actualSize.height * zoomValue) + 'px; width:' + (element.actualSize.width * zoomValue) +
-                    'px;left:' + point.x * zoomValue + 'px; top:' + point.y * zoomValue + 'px;' +
-                    'position:absolute;transform:rotate(' + (element.rotateAngle + element.parentTransform) + 'deg);' +
-                    'pointer-events:' + ((this.pdfViewer.designerMode) ? 'none' : 'all')
-                    + ';visibility:' + ((element.visible) ? 'visible' : 'hidden') + ';opacity:' + element.style.opacity + ';');
+                htmlElement.style.cssText = `height: ${element.actualSize.height * zoomValue}px;
+                width: ${element.actualSize.width * zoomValue}px;left: ${point.x * zoomValue}px;top: ${point.y * zoomValue}px;
+                position: absolute;transform: rotate(${element.rotateAngle + element.parentTransform}deg);
+                pointer-events: ${this.pdfViewer.designerMode ? 'none' : 'all'};visibility: ${element.visible ? 'visible' : 'hidden'};
+                opacity: ${element.style.opacity};`;
             }
             currentData.lineBound = { X: point.x * zoomValue, Y: point.y * zoomValue, Width: element.actualSize.width *
                  zoomValue, Height: element.actualSize.height * zoomValue };
@@ -1213,13 +1217,11 @@ export class FormDesigner {
             const htmlElement: HTMLElement = document.getElementById(element.id + '_html_element');
             if (!isNullOrUndefined(htmlElement)) {
                 const point: PointModel = cornersPointsBeforeRotation(actualObject.wrapper.children[0]).topLeft;
-                htmlElement.setAttribute(
-                    'style', 'height:' + (element.actualSize.height * zoomValue) + 'px; width:' + (element.actualSize.width * zoomValue) +
-                    'px;left:' + point.x * zoomValue + 'px; top:' + point.y * zoomValue + 'px;' +
-                    'position:absolute;transform:rotate(' + (element.rotateAngle + element.parentTransform) + 'deg);' +
-                    'pointer-events:' + ((this.pdfViewer.designerMode) ? 'none' : 'all')
-                    + ';visibility:' + ((element.visible) ? 'visible' : 'hidden') + ';opacity:' + element.style.opacity + ';'
-                );
+                htmlElement.style.cssText = `height: ${element.actualSize.height * zoomValue}px;
+                width: ${element.actualSize.width * zoomValue}px;left: ${point.x * zoomValue}px;top: ${point.y * zoomValue}px;
+                position: absolute;transform: rotate(${element.rotateAngle + element.parentTransform}deg);
+                pointer-events: ${this.pdfViewer.designerMode ? 'none' : 'all'};visibility: ${element.visible ? 'visible' : 'hidden'};
+                opacity: ${element.style.opacity};`;
                 const data: string = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
                 if (actualObject.formFieldAnnotationType === 'RadioButton') {
                     const labelContainer: Element = htmlElement.firstElementChild.firstElementChild;
@@ -2610,10 +2612,11 @@ export class FormDesigner {
     /**
      * @param {PdfFormFieldBaseModel} obj - It describes about the pdf formfield base model
      * @param {boolean} isAddedProgrammatically - It describes about the isAddedProgrammatically
+     * @param {boolean} action - It describes about the action
      * @private
      * @returns {void}
      */
-    public drawFormField(obj: PdfFormFieldBaseModel, isAddedProgrammatically?: boolean): HTMLElement {
+    public drawFormField(obj: PdfFormFieldBaseModel, isAddedProgrammatically?: boolean, action?: string): HTMLElement {
         const node: PdfAnnotationBaseModel = this.pdfViewer.add(obj as PdfAnnotationBase);
         const index: number = this.pdfViewer.formFieldCollections.findIndex(function (el: any): boolean { return el.id === node.id; });
         let data: any;
@@ -2654,7 +2657,8 @@ export class FormDesigner {
             this.pdfViewer.formFieldCollections.push(formField);
         }
         const HTMLElement: HTMLElement = this.drawHTMLContent(node.formFieldAnnotationType, node.wrapper.children[0] as DiagramHtmlElement,
-                                                              node, obj.pageNumber - 1, this.pdfViewer, null, isAddedProgrammatically);
+                                                              node, obj.pageNumber - 1, this.pdfViewer, null, isAddedProgrammatically,
+                                                              action);
         return HTMLElement;
     }
 
@@ -3151,13 +3155,11 @@ export class FormDesigner {
             const point: PointModel = cornersPointsBeforeRotation(formField.wrapper.children[0]).topLeft;
             const hEment: HTMLElement = document.getElementById(element.id + '_html_element');
             if (!isNullOrUndefined(hEment)) {
-                hEment.setAttribute(
-                    'style', 'height:' + (element.actualSize.height * zoomValue) + 'px; width:' + (element.actualSize.width * zoomValue) +
-                    'px;left:' + point.x * zoomValue + 'px; top:' + point.y * zoomValue + 'px;' +
-                    'position:absolute;transform:rotate(' + (element.rotateAngle + element.parentTransform) + 'deg);' +
-                    'pointer-events:' + ((this.pdfViewer.designerMode) ? 'none' : 'all')
-                    + ';visibility:' + ((element.visible) ? 'visible' : 'hidden') + ';opacity:' + element.style.opacity + ';'
-                );
+                hEment.style.cssText = `height: ${element.actualSize.height * zoomValue}px;
+                width: ${element.actualSize.width * zoomValue}px;left: ${point.x * zoomValue}px;top: ${point.y * zoomValue}px;
+                position: absolute;transform: rotate(${element.rotateAngle + element.parentTransform}deg);
+                pointer-events: ${this.pdfViewer.designerMode ? 'none' : 'all'};visibility: ${element.visible ? 'visible' : 'hidden'};
+                opacity: ${element.style.opacity};`;
             }
             this.isFormFieldSizeUpdated = true;
             this.pdfViewer.select([formFieldObject.id]);

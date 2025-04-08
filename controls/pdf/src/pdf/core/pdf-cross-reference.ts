@@ -725,6 +725,7 @@ export class _PdfCrossReference {
         const objectStreamCollection: Map<_PdfReference, _PdfArchievedStream> = new Map<_PdfReference, _PdfArchievedStream>();
         this._indexes = [];
         this._indexes.push(0, 1);
+        this._offsets = [];
         this._cacheMap.forEach((value: any, key: _PdfReference) => { // eslint-disable-line
             let dictionary: _PdfDictionary;
             if (value instanceof _PdfBaseStream) {
@@ -986,15 +987,19 @@ export class _PdfCrossReference {
     _writeFontDictionary(dictionary: _PdfDictionary): void {
         if (dictionary.has('DescendantFonts')) {
             const fonts: any = dictionary.get('DescendantFonts'); // eslint-disable-line
-            const reference: _PdfReference = this._getNextReference();
-            this._cacheMap.set(reference, fonts);
-            dictionary.update('DescendantFonts', [reference]);
+            if (!Array.isArray(fonts)) {
+                const reference: _PdfReference = this._getNextReference();
+                this._cacheMap.set(reference, fonts);
+                dictionary.update('DescendantFonts', [reference]);
+            }
         }
         if (dictionary.has('ToUnicode')) {
             const fonts: any = dictionary.get('ToUnicode'); // eslint-disable-line
-            const reference: _PdfReference = this._getNextReference();
-            this._cacheMap.set(reference, fonts);
-            dictionary.update('ToUnicode', reference);
+            if (!(fonts instanceof _PdfReference)) {
+                const reference: _PdfReference = this._getNextReference();
+                this._cacheMap.set(reference, fonts);
+                dictionary.update('ToUnicode', reference);
+            }
         }
         if (dictionary.has('FontFile2')) {
             const fonts: any = dictionary.get('FontFile2'); // eslint-disable-line

@@ -7302,3 +7302,52 @@ describe('Coverage test case', () => {
         gridObj = null;
     });
 });
+
+describe('EJ2-948229: Focus Border Not Displayed on Cell After Clicking Header and Returning to Same Cell', () => {
+    let gridObj: Grid;
+    let rows: any;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID', freeze: 'Right' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: "ShipCity", headerText: "Ship City", width: 250, freeze: 'Left' },
+                ],
+                height: 700,
+            }, done);
+    });
+    it('click any rowcell', (done: Function) => {
+        rows = gridObj.getRows();
+        let rowSelected = (args: any) => {
+            gridObj.rowSelected = null;
+            done();
+        };
+        gridObj.rowSelected = rowSelected;
+        rows[2].cells[2].click();
+        done();
+    });
+
+    it('click any headercell', (done: Function) => {
+        (gridObj.getHeaderTable() as any).rows[0].cells[0].click();
+        done();
+    });
+
+    it('click same rowcell', (done: Function) => {
+        let rowDeselected = (args: any) => {
+            expect(args.target.classList.contains('e-focused')).toBeTruthy();
+            gridObj.rowDeselected = null;
+            done();
+        };
+        gridObj.rowDeselected = rowDeselected;
+        rows[2].cells[2].click();
+    });
+
+    
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

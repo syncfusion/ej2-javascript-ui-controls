@@ -5126,3 +5126,51 @@ describe('EJ2-936148: The dropdownlist popup does not open with "alt + down arro
         gridObj = null;
     });
 });
+
+describe('EJ2-948682: Selection not applied for newly added row with customized index higher than the page size', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal', newRowPosition: 'Top' },
+                allowPaging: true,
+                pageSettings: { pageCount: 5, pageSize: 5 },
+                height: 300,
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: false, validationRules: { required: true } },
+                    { field: 'CustomerID', type: 'string' },
+                    { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                    { field: 'Verified', type: 'boolean', editType: 'booleanedit' },
+                ],                
+                actionComplete: actionComplete
+            }, done);
+    });
+
+    it('Go to next page', () => {
+        (<any>gridObj).goToPage(2);
+    });
+
+    it('Add record using AddRecord method', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            if (args.requestType === 'save') {
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        (<any>gridObj.editModule).editModule.addRecord({ OrderID: 1001, CustomerID: 'John' }, 7);
+    });
+
+    it('Check the record is selected or not', (done: Function) => {
+        expect(gridObj.selectedRowIndex).toBe(2);
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = preventDefault = null;
+    });
+});

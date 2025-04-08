@@ -19,13 +19,29 @@ import { keyCodes } from './constant';
  * The function used to update Dom using requestAnimationFrame.
  *
  * @param  {Function} fn - Function that contains the actual action
+ * @param {Spreadsheet} context - Specify the spreadsheet.
  * @returns {void}
  * @hidden
  */
-export function getUpdateUsingRaf(fn: Function): void {
-    requestAnimationFrame(() => {
-        fn();
-    });
+export function getUpdateUsingRaf(fn: Function, context?: Spreadsheet): void {
+    if (context) {
+        if (context.rafIds.length > 0) {
+            context.rafIds.forEach((id: number) => cancelAnimationFrame(id));
+            context.rafIds.length = 0;
+        }
+        const rafId: number = requestAnimationFrame(() => {
+            fn();
+            const index: number = context.rafIds.indexOf(rafId);
+            if (index !== -1) {
+                context.rafIds.splice(index, 1);
+            }
+        });
+        context.rafIds.push(rafId);
+    } else {
+        requestAnimationFrame(() => {
+            fn();
+        });
+    }
 }
 
 /**

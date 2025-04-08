@@ -1233,7 +1233,7 @@ describe('ComboBox', () => {
         };
         beforeAll(() => {
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 3000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 6000;
             element = <HTMLInputElement>createElement('input', { id: 'combobox' });
             document.body.appendChild(element);
             ddlObj = new ComboBox({

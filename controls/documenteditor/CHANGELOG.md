@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 29.1.37 (2025-04-08)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I702414` - Fixed an issue where a paragraph was inserted outside the editable region after pressing the End key in a restricted editing document.
+- `#I703674` - Addressed the issue where paragraph borders were not fully visible.
+- `#I697400` - Resolved a looping issue encountered when opening certain documents.
+- `#I701520` - Fixed a formatting issue that occurred after inserting a hyperlink.
+- `#I700199` - Resolved a paragraph splitting issue that occurred when removing multiple bookmarks programmatically.
+- `#I698715` - Fixed key input issues caused by the timing of composition end for Japanese text.
+- `#I698829` - Resolved a discrepancy in the `isComplete` property during selection changes made using the keyboard.
+- `#I702270` - Fixed an issue where an extra new line was added in server-side exported documents.
+
 ## 29.1.35 (2025-04-01)
 
 ### DocumentEditor

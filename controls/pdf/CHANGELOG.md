@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 29.1.37 (2025-04-08)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an issue where form fields were not retrieved properly from a specific PDF document.
+- Resolved an issue where annotations with reviews created in EJ2 PDF appeared as a pop up icon in safari and fire fox browsers on mac.
+- Resolved an exception that occurs while saving the imported annotation in FDF format.
+- Resolved an issue with preserving the appearance of the beginning and ending line styles in poly line annotations.
+- Resolved an issue where stamp annotations were not preserved during export and import with Unicode text in true type fonts.
+
 ## 29.1.35 (2025-04-01)
 
 ### PDF Parser
@@ -18,6 +30,7 @@
 - Fixed an exception that occurred when parsing the destination of a document link annotation in a specific PDF document.
 - Resolved an exception that occurs when importing annotations in FDF format.
 - Resolved a corruption issue while drawing PNG images in a specific PDF document.
+- Resolved a pdf corruption issue when saving a second time after adding a new highlight.
 
 ## 29.1.33 (2025-03-25)
 

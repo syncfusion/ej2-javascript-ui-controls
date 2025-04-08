@@ -1628,3 +1628,37 @@ describe('Drag and drop with detailTemplate', () => {
     destroy(TreeGridObj);
   });
 });
+
+describe('coverage', () => {
+  let TreeGridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    TreeGridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        detailTemplate: 'Test',
+        treeColumnIndex: 1,
+        height: 450,
+        allowRowDragAndDrop: true,
+        columns: [
+          { field: "taskID", headerText: "Task Id", width: 90, isPrimaryKey: true },
+          { field: 'taskName', headerText: 'taskName', width: 60 },
+          { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
+          { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
+        ],
+      }, done);
+  });
+
+  it('coverage', () => {
+    let draggedRecords: any = TreeGridObj.getCurrentViewRecords()[0];
+    let currentData: any = TreeGridObj.getCurrentViewRecords()[2];
+    let row: any = TreeGridObj.getRows()[0];
+    row.classList.add('e-cloneproperties');
+    TreeGridObj.rowDragAndDropModule['ensuredropPosition']([draggedRecords], currentData);
+  });
+
+  afterAll(() => {
+    destroy(TreeGridObj);
+    TreeGridObj = null;
+  });
+});

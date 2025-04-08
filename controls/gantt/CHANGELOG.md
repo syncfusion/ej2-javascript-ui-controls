@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.1.37 (2025-04-08)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I709572` - The spinner is incorrectly loading when performing zoom-in or zoom-out actions, even when `args.cancel` is set as true issue has been resolved.
+
 ## 29.1.35 (2025-04-01)
 
 ### GanttChart
@@ -16,6 +24,8 @@
 - `#I691521` - Incorrect width update when duration is less than zero issue has been resolved.
 - `#I702366` - Extra space at the end of the timeline issue has been resolved.
 - `#I700246` - Console error occur while using rte component with cell edit template issue has been resolved.
+- `#I702969` - The flickering issue that occurred when hovering over the filter menu option in the column menu has been resolved.
+- `#I701758` - The issue where hovering over the filter in the column menu caused the filter dialog to appear under the column menu has been resolved.
 
 ## 28.2.11 (2025-03-11)
 

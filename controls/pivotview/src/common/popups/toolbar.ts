@@ -1641,11 +1641,7 @@ export class Toolbar {
                     width: formatUnit(this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber()),
                     height: formatUnit(this.parent.pivotChartModule.getChartHeight())
                 }, true);
-                if (this.parent.chartSettings.chartSeries.type === type && !isMultiAxis) {
-                    this.parent.chart.refresh();
-                } else {
-                    this.parent.chartSettings.chartSeries.type = type;
-                }
+                this.parent.chartSettings.chartSeries.type = type;
                 const actionInfo: PivotActionInfo = {
                     toolbarInfo: {
                         displayOption: this.parent.displayOption as DisplayOption,
@@ -1653,6 +1649,9 @@ export class Toolbar {
                     }
                 };
                 this.parent.actionObj.actionInfo = actionInfo;
+                if (this.parent.chartSettings.chartSeries.type === type && !isMultiAxis) {
+                    this.parent.chart.refresh();
+                }
             }
         }
     }

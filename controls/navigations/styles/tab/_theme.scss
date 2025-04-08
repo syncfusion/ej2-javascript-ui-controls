@@ -109,7 +109,7 @@
               display: $tab-active-wrap-before-display;
               position: $tab-active-wrap-before-position;
               width: $tab-active-wrap-before-width;
-              @if ($skin-name == 'Material3') {
+              @if ($skin-name == 'Material3' or $skin-name == 'tailwind3') {
                 border-radius: 3px 3px 0 0;
                 bottom: $tab-active-wrap-before-top;
               }

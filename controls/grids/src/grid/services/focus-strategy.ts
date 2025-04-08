@@ -790,10 +790,11 @@ export class FocusStrategy {
             if (data.isAdd || Object.keys(data.virtualData).length || isKeyFocus || data.isCancel || isSelected) {
                 this.parent.notify(event.resetVirtualFocus, { isCancel: false });
                 data.isCancel = false;
-                if ((this.parent.enableVirtualization && (!e || (e && e.action !== 'ctrlHome' && e.action !== 'ctrlEnd'))) ||
+                if (((this.parent.enableVirtualization && !this.parent.selectVirtualRowOnAdd) && (!e || (e && e.action !== 'ctrlHome' && e.action !== 'ctrlEnd'))) ||
                     !this.parent.enableVirtualization) {
                     (<{ selectedRowIndex?: number }>this.parent.contentModule).selectedRowIndex = -1;
                 }
+                this.parent.selectVirtualRowOnAdd = false;
                 if (isKeyFocus) {
                     this.activeKey = this.empty;
                     this.parent.notify('virtaul-key-handler', e);
@@ -1585,6 +1586,10 @@ export class ContentFocus implements IFocus {
         return current;
     }
 
+    private checkRowCellFocus(target: Element): boolean {
+        return target.classList.contains(literals.rowCell) ? target.classList.contains('e-focused') : true;
+    }
+
     public onClick(e: Event, force?: boolean): void | boolean {
         let target: HTMLTableCellElement = <HTMLTableCellElement>e.target;
         this.target = target;
@@ -1602,7 +1607,7 @@ export class ContentFocus implements IFocus {
         const [rowIndex, cellIndex]: number[] = [rowIdx, target.cellIndex];
         const [oRowIndex, oCellIndex]: number[] = this.matrix.current;
         const val: number = getValue(`${rowIndex}.${cellIndex}`, this.matrix.matrix);
-        if (this.matrix.inValid(val) || (!force && oRowIndex === rowIndex && oCellIndex === cellIndex) ||
+        if (this.matrix.inValid(val) || (!force && oRowIndex === rowIndex && oCellIndex === cellIndex && this.checkRowCellFocus(target)) ||
             (!parentsUntil(e.target as Element, literals.rowCell) && !parentsUntil(e.target as Element, 'e-groupcaption')
             && !parentsUntil(e.target as Element, 'e-recordpluscollapse') && !parentsUntil(e.target as Element, 'e-recordplusexpand')
             && !parentsUntil(e.target as Element, 'e-detailrowcollapse') && !parentsUntil(e.target as Element, 'e-detailrowexpand')

@@ -28,12 +28,10 @@ export class WorkbookImage {
             if (args.isPositionChanged) {
                 for (let i: number = 0; i < oldImgData.length; i++) {
                     for (let j: number = 0; j < imgData.length; j++) {
-                        if (oldImgData[i as number].id === imgData[j as number].id) {
-                            oldImgData[i as number] = imgData[j as number];
-                            if (document.getElementById(imgData[j as number].id)) {
-                                args.isElementRemoved = true;
-                                document.getElementById(imgData[j as number].id).remove();
-                            }
+                        oldImgData[i as number] = imgData[j as number];
+                        if (document.getElementById(imgData[j as number].id)) {
+                            args.isElementRemoved = true;
+                            document.getElementById(imgData[j as number].id).remove();
                         }
                     }
                 }

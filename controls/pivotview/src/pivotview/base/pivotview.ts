@@ -2254,7 +2254,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             (this.toolbar && this.showToolbar) || this.allowGrouping || this.gridSettings.contextMenuItems || this.allowDrillThrough) {
             this.commonModule = new Common(this);
         }
-        if (this.allowPdfExport && (this.displayOption.view === 'Both' || this.displayOption.view === 'Chart')) {
+        if (this.chartSettings.enableExport && (this.displayOption.view === 'Both' || this.displayOption.view === 'Chart')) {
             this.chartExportModule = new ChartExport(this);
         }
         this.defaultLocale = {
@@ -4453,7 +4453,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             type: type, currentExportView: 'Chart', pdfMargins: {}
         };
         this.trigger(events.beforeExport, args);
-        this.chartExportModule.exportProperties = args;
+        if (this.chartExportModule) {
+            this.chartExportModule.exportProperties = args;
+        }
         let pdfDocument: Promise<Object> | void;
         const fileName: string = args.fileName ? args.fileName : (!isNullOrUndefined(pdfExportProperties) &&
         !isNullOrUndefined(pdfExportProperties.fileName)) ? pdfExportProperties.fileName : 'default';

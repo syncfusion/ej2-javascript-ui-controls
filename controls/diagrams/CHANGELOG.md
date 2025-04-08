@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 29.1.37 (2025-04-08)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I704269` - Right-click now works properly while drag constraint is disabled, retaining multiple selection.
+- `#I698439` - The connector will now follow the shortest path when drawn from a port with the connection Direction set to Auto.
+
 ## 29.1.35 (2025-04-01)
 
 ### Diagram

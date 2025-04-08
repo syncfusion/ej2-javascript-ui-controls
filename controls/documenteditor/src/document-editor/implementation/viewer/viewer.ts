@@ -659,6 +659,12 @@ export class DocumentHelper {
     private isMappedContentControlUpdated: boolean = true;
     private isAutoResizeCanStart: boolean = false;
     private isRestartNumbering: boolean = false;
+    private isKeySelection: boolean = false;
+    /**
+     * @private
+     * Indicates whether the composition end event has been triggered.
+     */
+    private isCompositionEndTriggered: boolean = false;
     private hRuler:HTMLElement;
     private vRuler:HTMLElement;
     private markIndicator:HTMLElement
@@ -1469,6 +1475,7 @@ export class DocumentHelper {
         }
         this.editableDiv.addEventListener('blur', this.onFocusOut);
         this.editableDiv.addEventListener('keydown', this.onKeyDownInternal);
+        this.editableDiv.addEventListener('keyup', this.onViewerKeyUpInternal);
         this.editableDiv.addEventListener('compositionstart', this.compositionStart);
         this.editableDiv.addEventListener('compositionupdate', this.compositionUpdated);
         this.editableDiv.addEventListener('compositionend', this.compositionEnd);
@@ -1485,7 +1492,7 @@ export class DocumentHelper {
      * @returns {void}
      */
     private onTextInput = (event: TextEvent): void => {
-        if (!this.isComposingIME) {
+        if (!this.isComposingIME && !this.isCompositionEndTriggered) {
             event.preventDefault();
             const text: string = event.data;
             this.owner.editorModule.handleTextInput(text);
@@ -1505,8 +1512,12 @@ export class DocumentHelper {
             if (this.owner.editorHistoryModule) {
                 this.owner.editorModule.initComplexHistory('IMEInput');
             }
+            if(this.editableDiv && this.editableDiv.innerHTML != ""){
+                this.editableDiv.innerHTML = "";
+            }
         }
         this.isCompositionStart = true;
+        this.isCompositionEndTriggered = false;
     };
     /**
      * Fires on every input during composition.
@@ -1531,31 +1542,30 @@ export class DocumentHelper {
      */
     private compositionEnd = (event: CompositionEvent): void => {
         if (this.isComposingIME && !this.owner.isReadOnlyMode) {
+            this.isCompositionEndTriggered = true;
             const text: string = this.getEditableDivTextContent();
-            setTimeout(() => {
+            if (text !== '') {
+                this.owner.editorModule.insertIMEText(text, false);
+            }
+            this.isComposingIME = false;
+            this.lastComposedText = '';
+            const cssText: string = 'pointer-events:none;position:absolute;left:' + this.owner.viewer.containerLeft + 'px;top:' + this.owner.viewer.containerTop + 'px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden';
+            updateCSSText(this.iframe, cssText);
+            this.editableDiv.innerHTML = '';
+            if (this.owner.editorHistoryModule) {
                 if (text !== '') {
-                    this.owner.editorModule.insertIMEText(text, false);
+                    this.owner.editorModule.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
                 }
-                this.isComposingIME = false;
-                this.lastComposedText = '';
-                const cssText: string = 'pointer-events:none;position:absolute;left:' + this.owner.viewer.containerLeft + 'px;top:' + this.owner.viewer.containerTop + 'px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden';
-                updateCSSText(this.iframe, cssText);
-                this.editableDiv.innerHTML = '';
-                if (this.owner.editorHistoryModule) {
-                    if (text !== '') {
-                        this.owner.editorModule.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
-                    }
-                    this.owner.editorHistoryModule.updateComplexHistory();
-                    if (text === '') {
-                        //When the composition in live. The Undo operation will terminate the composition and empty text will be return from text box.
-                        //At that time the the history should be updated. Undo the operation and clear the redo stack. This undo operation will not be saved for redo operation.
-                        this.owner.editorModule.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
-                        this.owner.editorHistoryModule.undo();
-                        this.owner.editorHistoryModule.redoStack.pop();
-                    }
-                    this.owner.editorModule.isSkipOperationsBuild = false;
+                this.owner.editorHistoryModule.updateComplexHistory();
+                if (text === '') {
+                    //When the composition in live. The Undo operation will terminate the composition and empty text will be return from text box.
+                    //At that time the the history should be updated. Undo the operation and clear the redo stack. This undo operation will not be saved for redo operation.
+                    this.owner.editorModule.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
+                    this.owner.editorHistoryModule.undo();
+                    this.owner.editorHistoryModule.redoStack.pop();
                 }
-            }, 0);
+                this.owner.editorModule.isSkipOperationsBuild = false;
+            }
         }
         event.preventDefault();
         this.isCompositionUpdated = false;
@@ -2068,7 +2078,7 @@ export class DocumentHelper {
         if (vtHeight > this.pageContainer.offsetHeight) {
             this.viewerContainer.scrollTop = this.owner.viewer.containerTop - (vtHeight - this.pageContainer.offsetHeight);
         }
-        if (this.owner.viewer instanceof PageLayoutViewer && !isNullOrUndefined(this.owner)) {
+        if (!isNullOrUndefined(this.owner) && this.owner.viewer instanceof PageLayoutViewer) {
             this.owner.fireViewChange();
         }
         this.isScrollHandler = false;
@@ -3558,7 +3568,7 @@ export class DocumentHelper {
                 lineWidget = prevLineWidget;
             }
         }
-        let height: number = lineWidget.height;
+        let height: number = lineWidget.height * this.zoomFactor;
         //Gets current page.
         let endPage: Page = this.selection.getPage(lineWidget.paragraph);
         this.currentPage = endPage;
@@ -3588,8 +3598,11 @@ export class DocumentHelper {
             //vertical scroll bar update
             if ((scrollTop + 20) > y) {
                 this.viewerContainer.scrollTop = (y - 10);
-            } else if (scrollTop + pageHeight < y + caretHeight) {
-                this.viewerContainer.scrollTop = y + caretHeight - pageHeight + 10;
+            } else if (scrollTop + pageHeight < y + height) {
+                if (this.owner.rulerHelper && this.owner.hRuler) {
+                    y += this.owner.rulerHelper.getRulerSize(this.owner).height;
+                }
+                this.viewerContainer.scrollTop = y + height - pageHeight + 10;
             }
         } else {
             // As per MS Word behaviour, update vertical scroll bar using static value while navigate bookmark
@@ -3927,6 +3940,24 @@ export class DocumentHelper {
         }
         if (event.ctrlKey || (event.keyCode === 17 || event.which === 17)) {
             this.isControlPressed = false;
+        }
+    }
+    /**
+     * Fired on keyup event.
+     * 
+     * @private
+     * @param {KeyboardEvent} event - Specifies keyboard event.
+     * @returns {void}
+     */
+    public onViewerKeyUpInternal = (event: KeyboardEvent): void => {
+        let key: number = event.which || event.keyCode;
+        let shift: boolean = event.shiftKey ? event.shiftKey : ((key === 16) ? true : false);
+        if ((shift && ((key >= 33 && key <= 40)))) {
+            this.isKeySelection = true;
+        }
+        if ((this.isKeySelection && shift && key == 16)) {
+            this.owner.fireSelectionChange();
+            this.isKeySelection = false;
         }
     }
     /**
@@ -4486,6 +4517,7 @@ export class DocumentHelper {
         this.viewerContainer.removeEventListener('contextmenu', this.onContextMenu);
         this.editableDiv.removeEventListener('blur', this.onFocusOut);
         this.editableDiv.removeEventListener('keydown', this.onKeyDownInternal);
+        this.editableDiv.removeEventListener('keyup', this.onViewerKeyUpInternal);
         this.editableDiv.removeEventListener('compositionstart', this.compositionStart);
         this.editableDiv.removeEventListener('compositionupdate', this.compositionUpdated);
         this.editableDiv.removeEventListener('compositionend', this.compositionEnd);
@@ -5491,7 +5523,12 @@ export abstract class LayoutViewer {
                             && textWrappingStyle === 'TopAndBottom')) {
                             //Skip to wrap the immediate paragraph of floating table based on corresponding floating table. 
                             if (isWord2013 || !((floatingItem instanceof TableWidget) && previousItem === floatingItem)) {
-
+                                const width: number = this.documentHelper.textHelper.getParagraphMarkWidth(paragraph.characterFormat);
+                                if (this.documentHelper.compatibilityMode === 'Word2007' && isEmptyPara && !paragraph.bidi &&
+                                    !isNullOrUndefined(paragraph.paragraphFormat) && paragraph.paragraphFormat.textAlignment !== 'Left'
+                                    && paragraph.paragraphFormat.textAlignment !== 'Center' && this.clientActiveArea.x + width < textWrappingBounds.x) {
+                                    continue;
+                                }
                                 this.updateBoundsBasedOnTextWrap(textWrappingBounds.bottom);
                                 // Sets true to update bottom position of first inline item in page
                                 // when this item's bottom position already updated based on previous floating item.

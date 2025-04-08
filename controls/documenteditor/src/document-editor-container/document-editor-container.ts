@@ -354,6 +354,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * @private
      */
     public showHeaderProperties: boolean = true;
+    /**
+     * This will hold the value of showPropertiesPane during initial rendering or whenever the propertyChange occurs
+     *
+     * @private
+     */
+    public showPane: boolean = true;
 
     /**
      * Defines the settings for DocumentEditor customization.
@@ -653,6 +659,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                     break;
                 case 'showPropertiesPane':
                     this.showHidePropertiesPane(newModel.showPropertiesPane);
+                    this.showPane = this.showPropertiesPane;
                     break;
                 case 'enableTrackChanges':
                     if (this.documentEditor.documentHelper.isTrackedOnlyMode && !newModel.enableTrackChanges && newModel.enableTrackChanges !== this.enableTrackChanges) {
@@ -835,8 +842,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             this.toolbarModule.enableDisableToolBarItem(!restrictEditing, false);
             this.toolbarModule.toggleRestrictEditing(restrictEditing);
         }
-        this.showPropertiesPane = !restrictEditing;
-        this.showHidePropertiesPane(!restrictEditing);
+        if (this.showPane) {
+            this.showPropertiesPane = !restrictEditing;
+            this.showHidePropertiesPane(!restrictEditing);
+        }
         this.documentEditor.trackChangesPane.enableDisableButton(!restrictEditing && !this.documentEditor.documentHelper.isDocumentProtected);
     }
 
@@ -1054,6 +1063,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.customizeDocumentEditorSettings();
         this.documentEditor.enableAllModules();
         this.documentEditor.enableComment = this.enableComment;
+        this.showPane = this.showPropertiesPane;
         this.editorContainer.insertBefore(documentEditorTarget, this.editorContainer.firstChild);
         this.setFormat();
         this.documentEditor.appendTo(documentEditorTarget);

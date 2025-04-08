@@ -160,6 +160,10 @@ export class SpreadsheetImage {
         if (isPositionChanged && setImageEventArgs.isElementRemoved) {
             overlayProps = overlayObj.insertOverlayElement(id, range, sheetIndex);
             overlayProps.element.style.backgroundImage = 'url(\'' + args.options.src + '\')';
+            if (args.options.height && args.options.width) {
+                overlayProps.element.style.height = args.options.height + 'px';
+                overlayProps.element.style.width = args.options.width + 'px';
+            }
         }
         const currCell: CellModel = getCell(indexes[0], indexes[1], sheet);
         if (!currCell.image[currCell.image.length - 1].id) {

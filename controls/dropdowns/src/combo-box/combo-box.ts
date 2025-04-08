@@ -332,7 +332,8 @@ export class ComboBox extends DropDownList {
     protected onBlurHandler(e: MouseEvent): void {
         const inputValue: string = this.inputElement && this.inputElement.value === '' ?
             null : this.inputElement && this.inputElement.value;
-        if (!isNullOrUndefined(this.listData) && !isNullOrUndefined(inputValue) && inputValue !== this.text) {
+        const text: string = !isNullOrUndefined(this.text) ? this.text.replace(/\r\n|\n|\r/g, '') : this.text;
+        if (!isNullOrUndefined(this.listData) && !isNullOrUndefined(inputValue) && inputValue !== text) {
             this.customValue(e);
         }
         super.onBlurHandler(e);
@@ -461,6 +462,9 @@ export class ComboBox extends DropDownList {
                         if ((this.value === dataItem.value && this.text !== dataItem.text)
                             || (this.value !== dataItem.value && this.text === dataItem.text)) {
                             this.setProperties({ 'text': dataItem.text ? dataItem.text.toString() : dataItem.text, 'value': value });
+                            if (isNullOrUndefined(li)) {
+                                this.previousValue = this.value;
+                            }
                         }
                     }
                 }
@@ -1153,8 +1157,9 @@ export class ComboBox extends DropDownList {
                 this.removeFillSelection();
             }
             const dataItem: { [key: string]: string } = this.isSelectCustom ? { text: '' } : this.getItemData();
+            const text: string = !isNullOrUndefined(dataItem.text) ? dataItem.text.replace(/\r\n|\n|\r/g, '') : dataItem.text;
             const selected: HTMLElement = !isNullOrUndefined(this.list) ? <HTMLElement>this.list.querySelector('.' + dropDownListClasses.selected) : null;
-            if (this.inputElement && dataItem.text === this.inputElement.value && !isNullOrUndefined(selected)) {
+            if (this.inputElement && text === this.inputElement.value && !isNullOrUndefined(selected)) {
                 if (this.isSelected) {
                     this.onChangeEvent(e);
                     this.isSelectCustom = false;

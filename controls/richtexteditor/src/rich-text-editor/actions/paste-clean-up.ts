@@ -748,7 +748,10 @@ export class PasteCleanup {
             clipBoardElem = this.allowedStyle(clipBoardElem);
         }
         this.saveSelection.restore();
-        const newText: string = clipBoardElem.innerHTML.split('&').join('&amp;');
+        let newText: string = clipBoardElem.innerHTML;
+        if (this.parent.enableHtmlSanitizer) {
+            newText = clipBoardElem.innerHTML.split('&').join('&amp;');
+        }
         clipBoardElem.innerHTML = this.sanitizeHelper(newText);
         const allImg: NodeListOf<HTMLImageElement> = clipBoardElem.querySelectorAll('img');
         for (let i: number = 0; i < allImg.length; i++) {

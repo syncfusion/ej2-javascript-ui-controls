@@ -4249,10 +4249,12 @@ export class Gantt extends Component<HTMLElement>
      */
     public actionBeginTask(args: object): boolean | void {
         this.trigger('actionBegin', args);
-        if (!isNullOrUndefined(this.loadingIndicator) &&  this.loadingIndicator.indicatorType === 'Shimmer') {
-            this.showMaskRow();
-        } else {
-            this.showSpinner();
+        if (!getValue('cancel', args)) {
+            if (!isNullOrUndefined(this.loadingIndicator) && this.loadingIndicator.indicatorType === 'Shimmer') {
+                this.showMaskRow();
+            } else {
+                this.showSpinner();
+            }
         }
     }
 

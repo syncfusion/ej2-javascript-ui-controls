@@ -6942,10 +6942,12 @@ export class PdfViewerBase {
                     }
                     break;
                 case 'shape_measure':
-                    this.pdfViewer.annotationModule.renderAnnotations(pageIndex, null, annotData, null, null, null, true);
+                    this.pdfViewer.annotationModule.
+                        renderAnnotations(pageIndex, null, annotData, null, null, null, true, null, null, (l + 1 === collection.length));
                     break;
                 case 'shape':
-                    this.pdfViewer.annotationModule.renderAnnotations(pageIndex, annotData, null, null, null, null, true);
+                    this.pdfViewer.annotationModule.
+                        renderAnnotations(pageIndex, annotData, null, null, null, null, true, null, null, (l + 1 === collection.length));
                     break;
                 case 'sticky':
                     this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderStickyNotesAnnotations(annotData, pageIndex);
@@ -10146,10 +10148,8 @@ export class PdfViewerBase {
                                     } else {
                                         (formFieldElement.firstElementChild.firstElementChild as HTMLElement).style.visibility = 'visible';
                                     }
-                                    formFieldElement.setAttribute(
-                                        'style', 'height:' + bounds.height + 'px; width:' + bounds.width + 'px;left:' + point.x + 'px; top:' + point.y + 'px;' +
-                                    'position:absolute;opacity: 0.5;'
-                                    );
+                                    formFieldElement.style.cssText = `height: ${bounds.height}px;width: ${bounds.width}px;
+                                    left: ${point.x}px;top: ${point.y}px;position: absolute;opacity: 0.5;`;
                                 }
                             }
                         } else if (this.currentPosition.x > pageWidth || this.currentPosition.y > pageHeight) {
@@ -10159,8 +10159,8 @@ export class PdfViewerBase {
                                                                              obj, evt);
                             } else if (formFieldElement) {
                                 const point: any = this.getMousePosition(event as any);
-                                formFieldElement.setAttribute('style', 'height:' + bounds.height + 'px; width:' + bounds.width + 'px;left:' + point.x + 'px; top:' + point.y + 'px;' +
-                                    'position:absolute;opacity: 0.5;');
+                                formFieldElement.style.cssText = `height: ${bounds.height}px;width: ${bounds.width}px;left: ${point.x}px;
+                                top: ${point.y}px;position: absolute;opacity: 0.5;`;
                                 if ((this.currentPosition.x + parseInt(formFieldElement.style.width, 10)) >
                                 parseInt(pageDiv.style.width, 10)) {
                                     if (obj.formFieldAnnotationType === 'Checkbox' && formFieldElement.firstElementChild.firstElementChild.lastElementChild) {
@@ -10351,7 +10351,11 @@ export class PdfViewerBase {
                                 maxLength: (currentObject as any).maxLength, isRequired: (currentObject as any).isRequired,
                                 isPrint: currentObject.isPrint, rotation: (currentObject as any).rotateAngle,
                                 tooltip: (currentObject as any).tooltip, options: (currentObject as any).options,
-                                isChecked: (currentObject as any).isChecked, isSelected: (currentObject as any).isSelected
+                                isChecked: (currentObject as any).isChecked, isSelected: (currentObject as any).isSelected,
+                                customData : (currentObject as any).customData, lineBound: (currentObject as any).bounds,
+                                pageNumber: (currentObject as any).pageIndex, insertSpaces: (currentObject as any).insertSpaces,
+                                formFieldAnnotationType: (currentObject as any).formFieldAnnotationType,
+                                isTransparent: (currentObject as any).isTransparent
                             };
                             this.pdfViewer.fireFormFieldMouseoverEvent('formFieldMouseover', field, currentObject.pageIndex, relativePosition.x, relativePosition.y, currentPosition.x, currentPosition.y);
                         } else {
@@ -10417,7 +10421,11 @@ export class PdfViewerBase {
                             maxLength: (currentObject as any).maxLength, isRequired: (currentObject as any).isRequired,
                             isPrint: currentObject.isPrint, rotation: (currentObject as any).rotateAngle,
                             tooltip: (currentObject as any).tooltip, options: (currentObject as any).options,
-                            isChecked: (currentObject as any).isChecked, isSelected: (currentObject as any).isSelected
+                            isChecked: (currentObject as any).isChecked, isSelected: (currentObject as any).isSelected,
+                            isTransparent: (currentObject as any).isTransparent, customData : (currentObject as any).customData,
+                            lineBound: (currentObject as any).bounds, pageNumber: (currentObject as any).pageIndex,
+                            insertSpaces: (currentObject as any).insertSpaces,
+                            formFieldAnnotationType: (currentObject as any).formFieldAnnotationType
                         };
                         this.fromTarget = currentObject;
                         this.pdfViewer.fireFormFieldMouseoverEvent('formFieldMouseover', field, currentObject.pageIndex, relativePosition.x, relativePosition.y, currentPosition.x, currentPosition.y);
@@ -10473,7 +10481,11 @@ export class PdfViewerBase {
                                     isPrint: this.fromTarget.isPrint, rotation: (this.fromTarget as any).rotateAngle,
                                     tooltip: (this.fromTarget as any).tooltip, options: (this.fromTarget as any).options,
                                     isChecked: (this.fromTarget as any).isChecked,
-                                    isSelected: (this.fromTarget as any).isSelected
+                                    isSelected: (this.fromTarget as any).isSelected,
+                                    customData : (this.fromTarget as any).customData, lineBound: (this.fromTarget as any).bounds,
+                                    pageNumber: (this.fromTarget as any).pageIndex, insertSpaces: (this.fromTarget as any).insertSpaces,
+                                    formFieldAnnotationType: (this.fromTarget as any).formFieldAnnotationType,
+                                    isTransparent: (this.fromTarget as any).isTransparent
                                 };
                                 this.pdfViewer.fireFormFieldMouseLeaveEvent('formFieldMouseLeave', field, pageIndex);
                             }
@@ -13632,7 +13644,16 @@ export class PdfViewerBase {
     public isSignaturePathData(data: any): boolean {
         // eslint-disable-next-line
         const pathRegex = /^([Mm]\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?(\s+[Ll]\s*\d+(\.\d+)?\s*,\s*\d+(\.\d+)?)*\s*)+$/;
-        return pathRegex.test(data);
+        // eslint-disable-next-line
+        const regex = /^(?:(?:\{(?:\s*"[^"]*"\s*:\s*(?:(?:"[^"]*")|(?:\d+)|(?:true|false)|null|(?:\{.*\}|(?:\[[^\]]*\])))\s*,\s*)*(?:\s*"[^"]*"\s*:\s*(?:(?:"[^"]*")|(?:\d+)|(?:true|false)|null|(?:\{.*\}|(?:\[[^\]]*\]))))?\s*\})|(?:\[(?:(?:"[^"]*")|(?:\d+)|(?:true|false)|null|(?:\{.*\}|(?:\[[^\]]*\])))\s*,\s*)*(?:(?:"[^"]*")|(?:\d+)|(?:true|false)|null|(?:\{.*\}|(?:\[[^\]]*\])))?\s*\])$/;
+        if (pathRegex.test(data) || regex.test(data))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     /**

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 29.1.37 (2025-04-08)
+
+### Schedule
+
+- `#I704571` - The issue with non-integer pixel values causing incorrect time when resizing an appointment has been resolved.
+
 ## 29.1.33 (2025-03-25)
 
 ### Schedule

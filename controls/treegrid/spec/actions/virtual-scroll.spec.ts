@@ -24,6 +24,7 @@ import { ITreeData } from "../../src/treegrid/base/interface";
 import { Selection } from "../../src/treegrid/actions/selection";
 import { Freeze } from "../../src/treegrid/actions/freeze-column";
 import { VirtualTreeContentRenderer } from "../../src/treegrid/renderer/virtual-tree-content-render";
+import { DataManager, WebApiAdaptor } from '@syncfusion/ej2-data';
 
 /**
  * TreeGrid Virtual Scroll spec
@@ -5345,5 +5346,50 @@ describe("Virtualization coverage", () => {
   afterAll(() => {
     destroy(gridObj);
     gridObj = null;
+  });
+});
+
+describe('Remote data', () => {
+  let gridObj: TreeGrid;
+  let data: Object = new DataManager({
+      url: 'https://ej2services.syncfusion.com/js/development/api/SelfReferenceData',
+      adaptor: new WebApiAdaptor,
+      crossDomain: true
+  });
+  beforeAll((done: Function) => {
+      gridObj = createGrid(
+          {
+              dataSource: data,
+              hasChildMapping: 'isParent',
+              idMapping: 'TaskID',
+              parentIdMapping: 'ParentItem',
+              enableVirtualization: true,
+              editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                mode: 'Row',
+                newRowPosition: 'Below'
+            },
+              height: 400,
+              treeColumnIndex: 1,
+              columns: [
+                  { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 120, isPrimaryKey: true  },
+                  { field: 'TaskName', headerText: 'Task Name', width: 150 },
+                  { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120 }
+              ],
+          },
+          done
+      );
+  });
+
+  it('Delete the record', () => {
+    gridObj.selectRow(0);
+    gridObj.deleteRecord();
+  });
+
+  afterAll(() => {
+      destroy(gridObj);
+      gridObj = null;
   });
 });

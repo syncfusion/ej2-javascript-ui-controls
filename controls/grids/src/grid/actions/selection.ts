@@ -3696,7 +3696,7 @@ export class Selection implements IAction {
             && !(e.byKey && e.keyArgs.action === 'space');
         if (!e.byKey || clear) {
             if (clear && !(this.parent.isCheckBoxSelection || (this.selectionSettings.persistSelection && (e.parent.classList.contains('e-recordplusexpand') ||
-                e.parent.classList.contains('e-groupcaption'))))) { this.clearSelection(); }
+            e.parent.classList.contains('e-recordpluscollapse') || e.parent.classList.contains('e-groupcaption'))))) { this.clearSelection(); }
             return;
         }
         let [rowIndex, cellIndex]: number[] = e.container.isContent ? e.container.indexes : e.indexes;

@@ -2640,12 +2640,12 @@ export class Layout {
     /**
     * @private
     */
-    public adjustPosition(element: ElementBox, bodyWidget: BlockContainer) {
+    public adjustPosition(element: ElementBox, bodyWidget: BlockContainer, isEmptyPara?: boolean) {
         let clientArea: Rect = this.viewer.clientActiveArea;
         const previousLeft: number = this.viewer.clientActiveArea.x;
         const previousTop: number = this.viewer.clientActiveArea.y;
         const previousWidth: number = this.viewer.clientActiveArea.width;
-        let adjustedRect: Rect = this.adjustClientAreaBasedOnTextWrap(element, new Rect(clientArea.x, clientArea.y, clientArea.width, clientArea.height));
+        let adjustedRect: Rect = this.adjustClientAreaBasedOnTextWrap(element, new Rect(clientArea.x, clientArea.y, clientArea.width, clientArea.height), isEmptyPara);
         this.viewer.clientActiveArea.width = adjustedRect.width;
         //Updated element padding for wrapping.
         // if (this.isWrapText) {
@@ -2899,7 +2899,7 @@ export class Layout {
         }
         return nextSibling as TextElementBox;
     }
-    private adjustClientAreaBasedOnTextWrap(elementBox: ElementBox, rect: Rect): Rect {
+    private adjustClientAreaBasedOnTextWrap(elementBox: ElementBox, rect: Rect, isEmptyPara: boolean): Rect {
         let ownerPara: ParagraphWidget = elementBox.line.paragraph;
         let bodyWidget: BlockContainer = ownerPara.bodyWidget;
         let yValue: number = 0;
@@ -3281,6 +3281,12 @@ export class Layout {
                         //     textWrappingBounds = this.getBottomPositionForTightAndThrough(floattingItemBottomPosition, textWrappingBounds, ownerPara, rect.y, size.height);
                         // }
                         //Updates top margin of the paragraph when paragraph mark not wrap based on the floating table.
+                        const paraWidth: number = this.documentHelper.textHelper.getParagraphMarkWidth(ownerPara.characterFormat);
+                        if (this.documentHelper.compatibilityMode === 'Word2007' && isEmptyPara && !ownerPara.bidi && !isNullOrUndefined(ownerPara.paragraphFormat)
+                            && ownerPara.paragraphFormat.textAlignment !== 'Right' && ownerPara.paragraphFormat.textAlignment !== 'Center'
+                            && ownerPara.x + elementBox.margin.left + paraWidth < textWrappingBounds.x) {
+                            continue;
+                        }
                         let topMarginValue: number = 0;
                         // topMarginValue = this.getTopMarginValueForFloatingTable(ownerPara,
                         //     layouter.floatingItems[i].floatingEntity, rect.y);
@@ -3869,7 +3875,7 @@ export class Layout {
             elementBox.text = '¶';
             elementBox.characterFormat = paragraph.characterFormat;
             elementBox.width = this.documentHelper.textHelper.getTextSize(elementBox, elementBox.characterFormat);
-            this.adjustPosition(elementBox, paragraph.bodyWidget);
+            this.adjustPosition(elementBox, paragraph.bodyWidget, true);
             paragraph.x += elementBox.padding.left;
             if (elementBox.padding.left !== 0)
             {

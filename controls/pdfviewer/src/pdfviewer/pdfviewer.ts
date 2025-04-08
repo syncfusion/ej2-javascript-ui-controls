@@ -9411,7 +9411,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @returns {void}
      */
     public unload(): void {
-        if (!isNullOrUndefined(this.viewerBase.pdfViewerRunner) && !this.viewerBase.isPasswordProtected) {
+        if (!isNullOrUndefined(this.viewerBase.pdfViewerRunner) && this.viewerBase.pageCount > 0 && !this.viewerBase.isPasswordProtected) {
             this.viewerBase.pdfViewerRunner.addTask({ message: 'unloadFPDF' }, TaskPriorityLevel.High);
         }
         this.viewerBase.clear(true);

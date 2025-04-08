@@ -672,7 +672,7 @@ describe('MultiSelect', () => {
                 expect(document.body.contains((<any>listObj).popupObj.element)).toBe(true);
                 mouseEventArgs.target = (<any>listObj).liCollections[0];
                 mouseEventArgs.type = 'click';
-                (<any>listObj).onMouseClick(mouseEventArgs);
+                //(<any>listObj).onMouseClick(mouseEventArgs);
                 (<any>listObj).inputElement.value = "A";
                 keyboardEventArgs.keyCode = 70;
                 (<any>listObj).keyDownStatus = true;

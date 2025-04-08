@@ -1115,7 +1115,7 @@ export class FormFields {
                         }
                     }
                     let currentValue: string = value ? value : this.pdfViewerBase.signatureModule.outputString;
-                    if (signatureType === 'Path' && !this.pdfViewer.drawing.isPasted) {
+                    if (signatureType === 'Path' && !this.pdfViewer.drawing.isPasted && !this.pdfViewer.annotation.isUndoAction) {
                         if (value && this.pdfViewerBase.signatureModule.outputString === '') {
                             const parsenew: Object[] = JSON.parse(currentValue);
                             const newArray: Object[] = splitArrayCollection(parsenew);
@@ -1249,7 +1249,7 @@ export class FormFields {
                             this.updateDataInSession(currentField, annot.data, annot.bounds, signatureFontFamily, signatureFontSize);
                         }
                         currentField.style.pointerEvents = 'none';
-                        if (this.pdfViewer.annotation) {
+                        if (this.pdfViewer.annotation && !this.pdfViewer.annotation.isUndoActionImageLoad) {
                             this.pdfViewer.annotation.addAction(annot.pageIndex, null, annot, 'FormField Value Change', '', annot, annot);
                         }
                         if (annot.shapeAnnotationType === 'Path' || annot.shapeAnnotationType === 'SignatureText') {
@@ -1257,6 +1257,7 @@ export class FormFields {
                                                             annot.bounds, annot.opacity, null, null, signString);
                         }
                         this.pdfViewer.fireFocusOutFormField(currentField.name, currentValue);
+                        this.pdfViewer.annotation.isUndoActionImageLoad = false;
                     }
                 }
             }
@@ -1329,7 +1330,7 @@ export class FormFields {
             this.updateDataInSession(currentField, annot.data, annot.bounds, signatureFontFamily, signatureFontSize);
         }
         currentField.style.pointerEvents = 'none';
-        if (this.pdfViewer.annotation) {
+        if (this.pdfViewer.annotation && !this.pdfViewer.annotation.isUndoActionImageLoad) {
             this.pdfViewer.annotation.addAction(annot.pageIndex, null, annot, 'FormField Value Change', '', annot, annot);
         }
         if ( annot.shapeAnnotationType === 'SignatureImage'){
@@ -1340,6 +1341,7 @@ export class FormFields {
         this.pdfViewerBase.signatureModule.hideSignaturePanel();
         this.pdfViewerBase.drawSignatureWithTool = false;
         this.pdfViewer.isInitialFieldToolbarSelection = false;
+        this.pdfViewer.annotation.isUndoActionImageLoad = false;
     }
 
     private updateSignatureDataInSession(annot: any, key: string): void {

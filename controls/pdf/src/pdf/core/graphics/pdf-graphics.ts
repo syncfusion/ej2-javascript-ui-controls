@@ -1502,13 +1502,13 @@ export class PdfGraphics {
                     sourceDictionary.update(keyName.name, ref);
                 } else if (font instanceof PdfTrueTypeFont) {
                     const internal: _UnicodeTrueTypeFont = font._fontInternal;
-                    if (internal && internal._fontDictionary) {
+                    if (internal && internal._fontDictionary && !internal._fontDictionary._currentObj) {
                         this._crossReference._cacheMap.set(ref, internal._fontDictionary);
                     }
                     sourceDictionary.update(keyName.name, ref);
                 }
             }
-            if (!hasResource) {
+            if (!hasResource && ref) {
                 this._resources.set(ref, keyName);
             }
         }
@@ -1634,6 +1634,17 @@ export class PdfGraphics {
             }
 
             this._drawLayoutResult(result, font, format, layoutRectangle);
+            const internal: _UnicodeTrueTypeFont = this._currentFont._fontInternal;
+            if (internal && internal._fontDictionary && internal._fontDictionary._currentObj) {
+                this._resourceMap.forEach((value: _PdfName, key: _PdfReference) => {
+                    if (this._crossReference && this._crossReference._cacheMap
+                        && !this._crossReference._cacheMap.has(key)) {
+                        internal._fontDictionary._currentObj._beginSave();
+                        this._crossReference._writeFontDictionary(internal._fontDictionary);
+                        this._crossReference._cacheMap.set(key, internal._fontDictionary);
+                    }
+                });
+            }
             if (verticalAlignShift !== 0) {
                 this._sw._startNextLine(0, -(verticalAlignShift - result._lineHeight));
             }

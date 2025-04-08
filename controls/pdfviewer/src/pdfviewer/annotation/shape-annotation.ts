@@ -214,24 +214,14 @@ export class ShapeAnnotation {
                                 }
                             }
                             let vertexPoints: IPoint[] = null;
-                            if (annotation.VertexPoints) {
-                                vertexPoints = [];
-                                if (isImportAcion && this.pdfViewerBase.isJsonImported) {
-                                    vertexPoints =
-                                     this.pdfViewerBase.calculateVertexPoints(annotation.Rotate, pageNumber, annotation.VertexPoints,
-                                                                              annotation.AnnotationRotation);
-                                } else {
-                                    for (let j: number = 0; j < annotation.VertexPoints.length; j++) {
-                                        const x: number = annotation.VertexPoints[parseInt(j.toString(), 10)].X ?
-                                            annotation.VertexPoints[parseInt(j.toString(), 10)].X :
-                                            annotation.VertexPoints[parseInt(j.toString(), 10)].x;
-                                        const y: number = annotation.VertexPoints[parseInt(j.toString(), 10)].Y ?
-                                            annotation.VertexPoints[parseInt(j.toString(), 10)].Y :
-                                            annotation.VertexPoints[parseInt(j.toString(), 10)].y;
-                                        const point: IPoint = { x: x, y: y };
-                                        vertexPoints.push(point);
-                                    }
-                                }
+                            if (!isNullOrUndefined(annotation.VertexPoints)) {
+                                vertexPoints = isImportAcion && this.pdfViewerBase.isJsonImported
+                                    ? this.pdfViewerBase.calculateVertexPoints(annotation.Rotate, pageNumber, annotation.VertexPoints,
+                                                                               annotation.AnnotationRotation)
+                                    : annotation.VertexPoints.map((point: { X: any; x: any; Y: any; y: any; }) => ({
+                                        x: !isNullOrUndefined(point.X) ? point.X : point.x,
+                                        y: !isNullOrUndefined(point.Y) ? point.Y : point.y
+                                    }));
                             }
                             if (annotation.Bounds && annotation.EnableShapeLabel === true) {
                                 annotation.LabelBounds = this.pdfViewer.annotationModule.inputElementModule.

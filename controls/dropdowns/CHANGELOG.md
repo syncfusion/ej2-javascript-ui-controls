@@ -2,7 +2,35 @@
 
 ## [Unreleased]
 
-## 29.1.35 (2025-04-01)
+## 29.1.37 (2025-04-08)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#F196369` - Issue with "Script error thrown while setting the values with a new line (\n) in the list item text of the list box" has been resolved.
+
+### ComboBox
+
+#### Bug Fixes
+
+- `#I6988657` - Fixed the issue where an itemTemplate element not render while opens ComboBox popup twice when filtering enabled.
+
+- `#I697381` - Fixed an issue where the selected value would disappear when the item template was enabled.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I697553` - Fixed an issue where using the Chip icon removed all selected values instead of removing a specific chip.
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I702413` - An issue getting empty tree data after performing the filtering and reopening the popup, when both the itemTemplate and filtering support are enabled in the Dropdown Tree component has been resolved.
+
+## 29.1.33 (2025-03-25)
 
 ### DropDownTree
 

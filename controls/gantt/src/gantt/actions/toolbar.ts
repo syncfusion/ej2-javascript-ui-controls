@@ -272,17 +272,17 @@ export class Toolbar {
         const gID: string = this.id;
         this.parent.isToolBarClick = false;
         extend(arg, { cancel: false });
-        if (arg.item['properties'].id === this.parent.element.id + '_pdfexport' || arg.item['properties'].id === this.parent.element.id + '_critical-path') {
-            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-                this.parent.showMaskRow();
-            } else {
-                this.parent.showSpinner();
-            }
-        }
         gObj.trigger(events.toolbarClick, arg, (args: ClickEventArgs) => {
             if (args.cancel) {
                 return;
             } else {
+                if (arg.item['properties'].id === this.parent.element.id + '_pdfexport' || arg.item['properties'].id === this.parent.element.id + '_critical-path') {
+                    if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
+                        this.parent.showMaskRow();
+                    } else {
+                        this.parent.showSpinner();
+                    }
+                }
                 if (this.parent.isAdaptive === true) {
                     if (args.item.id === gID + '_edit' || args.item.id === gID + '_add' || args.item.id === gID + '_delete'
                         || args.item.id === gID + '_searchbutton' || args.item.id === gID + '_expandall'

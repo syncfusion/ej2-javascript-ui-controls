@@ -1320,7 +1320,8 @@ function preventDefaults(clonedObject: Object, model: object, defaultObject?: ob
                 clonedObject[`${property}`] = preventDefaults(clonedObject[`${property}`], model[`${property}`], defaultObject[`${property}`], isNodeShape);
             }
         } else if ((defaultObject && clonedObject[`${property}`] === defaultObject[`${property}`]) || clonedObject[`${property}`] === undefined) {
-            if (!(isNodeShape && property === 'type') && !(model instanceof SwimLane && property === 'orientation')) {
+            if (!(isNodeShape && property === 'type') && !(model instanceof SwimLane && property === 'orientation')
+                && !(model instanceof ShapeAnnotation && property === 'content')) {
                 delete clonedObject[`${property}`];
             }
         }

@@ -333,7 +333,7 @@ export class XmlPane {
                     if (this.documentHelper.owner.isXmlMapCC && !isNullOrUndefined(this.documentHelper.owner.editor.xmlData.length) && this.documentHelper.owner.editor.xmlData.length > 0) {
                         this.getXmlPath();
                     }
-                    this.documentHelper.owner.selection.selectContentInternal(contentControl);
+                    this.documentHelper.owner.selection.selectContentControlInternal(contentControl);
                     if (contentControl.contentControlProperties.type !== 'CheckBox') {
                         this.insertContent(contentControl);
                     }

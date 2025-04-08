@@ -802,7 +802,7 @@ export class PivotChart {
                         theme: this.chartSettings.theme,
                         selectionMode: this.chartSettings.accumulationSelectionMode,
                         isMultiSelect: this.chartSettings.isMultiSelect,
-                        enableExport: this.parent.allowPdfExport,
+                        enableExport: this.chartSettings.enableExport,
                         selectedDataIndexes: this.chartSettings.selectedDataIndexes,
                         enableAnimation: this.chartSettings.enableAnimation,
                         useGroupingSeparator: this.chartSettings.useGroupingSeparator,
@@ -865,7 +865,7 @@ export class PivotChart {
                         crosshair: this.chartSettings.crosshair,
                         selectionMode: this.chartSettings.selectionMode,
                         isMultiSelect: this.chartSettings.isMultiSelect,
-                        enableExport: this.parent.allowPdfExport,
+                        enableExport: this.chartSettings.enableExport,
                         selectedDataIndexes: this.chartSettings.selectedDataIndexes,
                         isTransposed: this.chartSettings.isTransposed,
                         enableAnimation: this.chartSettings.enableAnimation,
@@ -913,7 +913,7 @@ export class PivotChart {
             this.parent.chart.theme = this.parent.chartSettings.theme;
             this.parent.chart.legendSettings = currentLegendSettings;
             this.parent.chart.selectionMode = this.parent.chartSettings.selectionMode;
-            this.parent.chart.enableExport = this.parent.allowPdfExport;
+            this.parent.chart.enableExport = this.chartSettings.enableExport;
             this.parent.chart.isMultiSelect = this.parent.chartSettings.isMultiSelect;
             this.parent.chart.enableAnimation = this.parent.chartSettings.enableAnimation;
             this.parent.chart.useGroupingSeparator = this.parent.chartSettings.useGroupingSeparator;

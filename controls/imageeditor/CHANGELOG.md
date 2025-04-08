@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.1.37 (2025-04-08)
+
+### Image Editor
+
+#### Bug Fixes
+
+- `#I704085` - The issue with "Page crashes when changing color in freehand pen tool with custom toolbar" has been resolved.
+
 ## 29.1.35 (2025-04-01)
 
 ### Image Editor
@@ -9,7 +17,6 @@
 #### Bug Fixes
 
 - `#I703503` - The issue with "Redact feature not working properly in straightened image" has been resolved.
-- `#I704085` - The issue with "Page crashes when changing color in freehand pen tool with custom toolbar" has been resolved.
 - `#I701384` - The issue with "Error after changing outline color in text annotation" has been resolved.
 
 ## 28.1.33 (2024-12-12)

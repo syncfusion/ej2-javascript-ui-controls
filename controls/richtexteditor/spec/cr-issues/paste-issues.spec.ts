@@ -400,6 +400,35 @@ describe('Paste CR issues ', ()=> {
         });
     });
 
+    describe('Bug 949454: Copy and pasting a text with space is not pasting properly in the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: "",
+                enableHtmlSanitizer: false,
+                pasteCleanupSettings: {
+                    prompt: false
+                }
+            });
+        });
+        it(' should check &nbsp is added in text content', (done: DoneFn) => {
+            rteObj.focusIn();
+            const clipBoardData: string = '<!--StartFragment--><span style="color: rgb(0, 0, 0); font - family: & amp; quot;Segoe UI & amp; quot;, sans - serif; font - size: 14.6667px; font - style: normal; font - weight: 400; text - align: left; text - indent: 0px; text - transform: none; white - space: normal; background - color: rgb(255, 255, 255); float: none; display: inline!important; "><span>&nbsp;</span>is<span>&nbsp;</span></span><!--EndFragment-->';
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.onPaste(pasteEvent);
+            setTimeout(() => {
+                const expectedElem: string = ' is ';
+                expect(rteObj.inputElement.textContent).toBe(expectedElem);
+                done();
+            }, 100);
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
     describe('896578 - Copy and pasting justified content from Word web app is not working properly in RichTextEditor', () => {
         let rteObject : RichTextEditor ;
         let innerHTML: string =`\n\n\x3C!--StartFragment--><span style="color: rgb(28, 27, 31); font-family: Roboto, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">hello world this is a sample made for editor to check that alignment is working&nbsp; properly or not for the feature that is checking to work that how it is working in real time sb sample to check that it is working properly or not so that it could be working effectively. this has to be the sample for that it should be working proeperly or not formagt option denied tags denied attributes , allowed style propertied</span>\x3C!--EndFragment-->\n\n`; 

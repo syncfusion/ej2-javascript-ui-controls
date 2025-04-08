@@ -3269,4 +3269,42 @@ describe('Chart ->', () => {
             });
         });
     });
+
+    describe('EJ2-947829 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Duplicated sheets chart still reference original sheet data ', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.insertChart([{ type: "Pie", range: 'Sheet1!D1:H11' }]);
+            expect(spreadsheet.sheets[0].rows[0].cells[3].chart[0].type).toBe('Pie');
+            expect(spreadsheet.sheets[0].rows[0].cells[3].chart.length).toBe(1);
+            expect(spreadsheet.sheets[0].rows[0].cells[3].chart[0].range).toBe('Sheet1!D1:H11');
+            expect(spreadsheet.sheets.length).toBe(1);
+            expect(spreadsheet.activeSheetIndex).toBe(0);
+            helper.invoke('duplicateSheet', [0]);
+            setTimeout(() => {
+                expect(spreadsheet.sheets.length).toBe(2);
+                expect(spreadsheet.activeSheetIndex).toBe(1);
+                expect(spreadsheet.sheets[1].rows[0].cells[3].chart.length).toBe(1);
+                expect(spreadsheet.sheets[1].rows[0].cells[3].chart[0].type).toBe('Pie');
+                expect(spreadsheet.sheets[1].rows[0].cells[3].chart[0].range).toBe('Sheet1 (2)!D1:H11');
+                helper.invoke('duplicateSheet', [0]);
+                setTimeout(() => {
+                    expect(spreadsheet.sheets.length).toBe(3);
+                    expect(spreadsheet.activeSheetIndex).toBe(1);
+                    expect(spreadsheet.sheets[1].rows[0].cells[3].chart.length).toBe(1);
+                    expect(spreadsheet.sheets[1].rows[0].cells[3].chart[0].type).toBe('Pie');
+                    expect(spreadsheet.sheets[1].rows[0].cells[3].chart[0].range).toBe('Sheet1 (3)!D1:H11');
+                    expect(spreadsheet.sheets[2].rows[0].cells[3].chart.length).toBe(1);
+                    expect(spreadsheet.sheets[2].rows[0].cells[3].chart[0].type).toBe('Pie');
+                    expect(spreadsheet.sheets[2].rows[0].cells[3].chart[0].range).toBe('Sheet1 (2)!D1:H11');
+                    done();
+                });
+            });
+        });
+    });
 });

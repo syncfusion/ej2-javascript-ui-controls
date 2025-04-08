@@ -90,10 +90,6 @@ export class Selection {
     /**
      * @private
      */
-    public isSelectionisInCC: boolean = false;
-    /**
-     * @private
-     */
     public skipFormatRetrieval: boolean = false;
     /**
      * @private
@@ -907,17 +903,15 @@ export class Selection {
      * @param contentControl
      * @returns {void}
      */
-    public selectContentInternal(contentControl: ContentControl): void {
+    public selectContentConterol(contentControl: ContentControl): void {
         if (contentControl) {
             let fieldEnd: ElementBox = contentControl.reference;
             const offset: number = contentControl.line.getOffset(contentControl, 0);
             const startPosition: TextPosition = new TextPosition(this.owner);
             startPosition.setPositionParagraph(contentControl.line, offset);
-            const endoffset: number = fieldEnd.line.getOffset(fieldEnd, 0);
+            const endoffset: number = fieldEnd.line.getOffset(fieldEnd, 1);
             const endPosition: TextPosition = new TextPosition(this.owner);
             endPosition.setPositionParagraph(fieldEnd.line, endoffset);
-            startPosition.offset++;
-            endPosition.offset;
             this.documentHelper.selection.selectRange(startPosition, endPosition);
         }
     }
@@ -1801,6 +1795,9 @@ export class Selection {
                 this.selectPrevNextFormField(true, formField);
             }
         }
+        if ((!isNullOrUndefined(this.previousSelectedContentControl) || !isNullOrUndefined(this.currentContentControl)) && this.previousSelectedContentControl !== this.currentContentControl ) {
+            this.documentHelper.viewer.updateScrollBars();
+        }
     }
     /**
      * Move to next paragraph
@@ -1951,6 +1948,9 @@ export class Selection {
                 formField = this.getFormFieldInFormFillMode();
                 this.selectPrevNextFormField(false, formField);
             }
+        }
+        if ((!isNullOrUndefined(this.previousSelectedContentControl) || !isNullOrUndefined(this.currentContentControl)) && this.previousSelectedContentControl !== this.currentContentControl ) {
+            this.documentHelper.viewer.updateScrollBars();
         }
     }
     /**
@@ -11592,7 +11592,7 @@ export class Selection {
      * @returns {void}
      */
     public highlightContentControlEditRegionInternal(editRangeStart: ContentControl): void {
-        let positionInfo: PositionInfo = this.getPosition(editRangeStart);
+        let positionInfo: PositionInfo = this.getPosition(editRangeStart, true);
         if (!isNullOrUndefined(positionInfo.startPosition) && !isNullOrUndefined(positionInfo.endPosition)) {
             let startPosition: TextPosition = positionInfo.startPosition;
             let endPosition: TextPosition = positionInfo.endPosition;
@@ -11942,7 +11942,7 @@ export class Selection {
         if (endElement) {
             let line: LineWidget = endElement.line as LineWidget;
             if (!isNullOrUndefined(endElement.line) && !isNullOrUndefined(line.children)) {
-                offset = endElement.line.getOffset(endElement, isNavigateToNextEditRegion || (endElement instanceof ContentControl && this.isSelectionisInCC) ? 0 : 1);
+                offset = endElement.line.getOffset(endElement, isNavigateToNextEditRegion ? 0 : 1);
                 endPosition = new TextPosition(this.owner);
                 endPosition.setPositionParagraph(endElement.line, offset);
             } else {
@@ -11956,13 +11956,12 @@ export class Selection {
      */
     public checkContentControlLocked(checkFormat?: boolean): boolean {
         this.owner.editorModule.isXmlMapped = false;
-        this.isSelectionisInCC = true;
         for (let i: number = 0; i < this.documentHelper.contentControlCollection.length; i++) {
             let contentControlStart: ContentControl = this.documentHelper.contentControlCollection[i];
             if (isNullOrUndefined(contentControlStart.reference) || contentControlStart.reference.indexInOwner === -1) {
                 continue;
             }
-            let position: PositionInfo = this.getPosition(contentControlStart);
+            let position: PositionInfo = this.getPosition(contentControlStart, true);
             let cCstart: TextPosition = position.startPosition;
             let cCend: TextPosition = position.endPosition;
             let start: TextPosition = this.start;

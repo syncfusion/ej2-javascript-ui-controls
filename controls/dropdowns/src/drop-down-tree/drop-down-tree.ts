@@ -2433,6 +2433,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.trigger('beforeOpen', args, (args: DdtBeforeOpenEventArgs) => {
             if (!args.cancel) {
                 addClass([this.inputWrapper], [ICONANIMATION]);
+                if ((this as any).isReact && this.isFilterRestore) {
+                    this.treeObj.refresh();
+                }
                 if (this.isFirstRender) {
                     this.popupEle = this.createElement('div', {
                         id: this.element.id + '_options', className: POPUP_CLASS + ' ' + (this.cssClass != null ? this.cssClass : '')
@@ -2444,7 +2447,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 } else {
                     this.popupEle = this.popupObj.element;
                     if ((this as any).isReact && this.isFilterRestore) {
-                        this.treeObj.refresh();
                         this.isFilteredData = true;
                         this.popupEle.removeChild(this.filterContainer);
                     }

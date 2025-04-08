@@ -1078,7 +1078,8 @@ export class SpellChecker {
     public createErrorElementWithInfo(result: TextSearchResult, errorElement: ElementBox): ErrorTextElementBox {
         const element: ErrorTextElementBox = new ErrorTextElementBox();
         let isUpdated: boolean = false;
-        if (errorElement instanceof ErrorTextElementBox && (isNullOrUndefined(result.start) || isNullOrUndefined(result.end) || isNullOrUndefined(result.text))) {
+        const text: string = this.documentHelper.selection.getTextInternal(result.start, result.end, false);
+        if (errorElement instanceof ErrorTextElementBox && (isNullOrUndefined(result.start) || isNullOrUndefined(result.end) || isNullOrUndefined(text))) {
             element.text = errorElement.text;
             let line: LineWidget = errorElement.line;
             for (let i = 0; i < line.children.length; i++) {
@@ -1105,7 +1106,7 @@ export class SpellChecker {
             }
         }
         if (!isUpdated) {
-            element.text = result.text;
+            element.text = text;
             element.start = result.start;
             element.end = result.end;
         }

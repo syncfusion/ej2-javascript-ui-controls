@@ -11,6 +11,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Selection } from './selection';
 import { HyperlinkType } from '../../index';
 import { ShapeBase } from '../viewer';
+import { EditRangeEndElementBox } from '../viewer/page';
 /* eslint-disable */
 /**
  * @private
@@ -47,7 +48,7 @@ export class TextPosition {
      * @private
      */
     public get isAtParagraphStart(): boolean {
-        return this.offset === this.owner.selectionModule.getStartOffset(this.paragraph);
+        return this.currentWidget.paragraph && this.currentWidget === this.currentWidget.paragraph.firstChild && this.offset === this.owner.selectionModule.getStartOffset(this.paragraph);
     }
     /**
      * @private
@@ -2009,7 +2010,17 @@ export class TextPosition {
             if (index === lastElement.length
                 && isNullOrUndefined(lastElement.nextNode) && selection.isParagraphLastLine(this.currentWidget)) {
                 const length: number = selection.getLineLength(this.currentWidget);
-                this.offset = moveToNextLine ? length + 1 : length;
+                let editRangeEndLength: number = 0;
+                for (let i: number = this.currentWidget.children.length - 1; i >= 0; i--) {
+                    var element: ElementBox = this.currentWidget.children[i];
+                    if (element instanceof EditRangeEndElementBox) {
+                        editRangeEndLength += element.length;
+                    }
+                    else {
+                        break;
+                    }
+                }
+                this.offset = moveToNextLine ? length + 1 : length - editRangeEndLength;
             } else {
                 let inline: ElementBox = lastElement;
                 while (!isNullOrUndefined(inline) && inline.length === index && inline.nextNode instanceof FieldElementBox) {

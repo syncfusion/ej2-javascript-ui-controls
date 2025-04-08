@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 29.1.35 (2025-04-01)
+## 29.1.37 (2025-04-08)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I704581` - The 'actionComplete' event now accurately returns the correct 'actionInfo' details when transitioning between pivot table and pivot chart views.
+- The pivot chart can now be successfully exported as PNG, JPEG, and SVG files, even when the 'allowPdfExport' property is disabled.
+
+## 29.1.33 (2025-03-25)
 
 ### Pivot Table
 

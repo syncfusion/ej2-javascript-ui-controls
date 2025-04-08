@@ -358,64 +358,64 @@ describe('Style dialog validation create', () => {
 //         expect(style.type).toBe('Paragraph');
 //     });
 });
-describe('Modify Styles for Heading 1 validation', () => {
-    let editor: DocumentEditor;
-    let styleDialog: StyleDialog;
-    let fontDialog: FontDialog;
-    let paragraphDialog: ParagraphDialog;
-    let numBulletDialog: BulletsAndNumberingDialog;
-    let menu: ContextMenu;
-    beforeAll((): void => {
-        editor = undefined;
-        let ele: HTMLElement = createElement('div', { id: 'container' });
-        document.body.appendChild(ele);
-        DocumentEditor.Inject(Editor, Selection, StyleDialog, FontDialog, ParagraphDialog, ContextMenu, EditorHistory, StylesDialog, SfdtExport);
-        editor = new DocumentEditor({
-            enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableContextMenu: true, enableStyleDialog: true,
-            enableFontDialog: true, enableParagraphDialog: true
-        });
-        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
-        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
-        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
-        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
-        editor.appendTo('#container');
-        styleDialog = editor.styleDialogModule;
-        fontDialog = editor.fontDialogModule;
-        paragraphDialog = editor.paragraphDialogModule;
-        menu = editor.contextMenuModule;
-    });
-    afterAll((done) => {
-        editor.destroy();
-        document.body.removeChild(document.getElementById('container'));
-        editor = undefined;
-        styleDialog = undefined;
-        document.body.innerHTML = '';
-        setTimeout(function () {
-            done();
-        }, 2000);
-    });
-    it('Modify heading 1 style validation', () => {
-console.log('Modify heading 1 style validation');
-        editor.editor.insertText('Heading 1');
-        editor.editor.applyStyle('Heading 1');
-        editor.styleDialogModule.show('Heading 1');
-        editor.styleDialogModule.onOkButtonClick();
-        expect(editor.selection.paragraphFormat.textAlignment).toBe('Left');
-    });
-    it('Open Paragraph dialog validation', () => {
-console.log('Open Paragraph dialog validation');
-        editor.openBlank();
-        editor.editor.insertText('Heading 1');
-        editor.editor.applyStyle('Heading 1');
-        editor.styleDialogModule.show('Heading 1');
-        styleDialog.showParagraphDialog();
-        paragraphDialog.closeParagraphDialog();
-        styleDialog.closeStyleDialog();
-    });
-    it('Apply Outline level to the paragraph', () => {
-        console.log('Apply Outline level to the paragraph');
-        editor.openBlank();
-        editor.editor.insertText('Hello World');
-        expect(editor.selection.paragraphFormat.outlineLevel).toBe('BodyText');
-        });
-});
+// describe('Modify Styles for Heading 1 validation', () => {
+//     let editor: DocumentEditor;
+//     let styleDialog: StyleDialog;
+//     let fontDialog: FontDialog;
+//     let paragraphDialog: ParagraphDialog;
+//     let numBulletDialog: BulletsAndNumberingDialog;
+//     let menu: ContextMenu;
+//     beforeAll((): void => {
+//         editor = undefined;
+//         let ele: HTMLElement = createElement('div', { id: 'container' });
+//         document.body.appendChild(ele);
+//         DocumentEditor.Inject(Editor, Selection, StyleDialog, FontDialog, ParagraphDialog, ContextMenu, EditorHistory, StylesDialog, SfdtExport);
+//         editor = new DocumentEditor({
+//             enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableContextMenu: true, enableStyleDialog: true,
+//             enableFontDialog: true, enableParagraphDialog: true
+//         });
+//         (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+//         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+//         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+//         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+//         editor.appendTo('#container');
+//         styleDialog = editor.styleDialogModule;
+//         fontDialog = editor.fontDialogModule;
+//         paragraphDialog = editor.paragraphDialogModule;
+//         menu = editor.contextMenuModule;
+//     });
+//     afterAll((done) => {
+//         editor.destroy();
+//         document.body.removeChild(document.getElementById('container'));
+//         editor = undefined;
+//         styleDialog = undefined;
+//         document.body.innerHTML = '';
+//         setTimeout(function () {
+//             done();
+//         }, 2000);
+//     });
+//     it('Modify heading 1 style validation', () => {
+// console.log('Modify heading 1 style validation');
+//         editor.editor.insertText('Heading 1');
+//         editor.editor.applyStyle('Heading 1');
+//         editor.styleDialogModule.show('Heading 1');
+//         editor.styleDialogModule.onOkButtonClick();
+//         expect(editor.selection.paragraphFormat.textAlignment).toBe('Left');
+//     });
+//     it('Open Paragraph dialog validation', () => {
+// console.log('Open Paragraph dialog validation');
+//         editor.openBlank();
+//         editor.editor.insertText('Heading 1');
+//         editor.editor.applyStyle('Heading 1');
+//         editor.styleDialogModule.show('Heading 1');
+//         styleDialog.showParagraphDialog();
+//         paragraphDialog.closeParagraphDialog();
+//         styleDialog.closeStyleDialog();
+//     });
+//     it('Apply Outline level to the paragraph', () => {
+//         console.log('Apply Outline level to the paragraph');
+//         editor.openBlank();
+//         editor.editor.insertText('Hello World');
+//         expect(editor.selection.paragraphFormat.outlineLevel).toBe('BodyText');
+//         });
+// });

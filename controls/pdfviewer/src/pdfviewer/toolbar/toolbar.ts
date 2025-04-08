@@ -1094,8 +1094,14 @@ export class Toolbar {
                 }
                 //Generate a text button template
                 if ((isNullOrUndefined(customToolbarItem.prefixIcon) || customToolbarItem.prefixIcon === '') && isNullOrUndefined(customToolbarItem.template)) {
-                    const text: string = !isNullOrUndefined(customToolbarItem.text) ? customToolbarItem.text : 'Custom Toolbar Item';
-                    customToolbarItem.template = '<button id="Custom" class="e-tbar-btn" style="font-size:14px"><span>' + text + '</span></button>';
+                    const customButton: HTMLButtonElement = document.createElement('button');
+                    customButton.id = 'Custom';
+                    customButton.className = 'e-tbar-btn';
+                    customButton.style.fontSize = '14px';
+                    const customSpan: HTMLSpanElement = document.createElement('span');
+                    customSpan.textContent = !isNullOrUndefined(customToolbarItem.text) ? customToolbarItem.text : 'Custom Toolbar Item';
+                    customButton.appendChild(customSpan);
+                    customToolbarItem.template = customButton;
                 }
                 this.toolItems.push(customToolbarItem);
                 if (isNullOrUndefined(customToolbarItem.align) || customToolbarItem.align === 'left' || customToolbarItem.align === 'Left') {
@@ -1112,7 +1118,15 @@ export class Toolbar {
         const currentPageInputTemplate: string = this.createCurrentPageInputTemplate();
         const totalPageTemplate: string = this.createTotalPageTemplate();
         const zoomDropDownTemplateString: string = this.createZoomDropdownElement();
-        const submitButton: string = '<button id="' + this.pdfViewer.element.id + '_submitForm" class="e-tbar-btn" style="font-size:15px"><span id="' + this.pdfViewer.element.id + '_submitFormSpan" class="e-tbar-btn-text e-pv-submitform-text">' + this.pdfViewer.localeObj.getConstant('SubmitForm') + '</span></button>';
+        const submitButton: HTMLButtonElement = document.createElement('button');
+        submitButton.id = this.pdfViewer.element.id + '_submitForm';
+        submitButton.className = 'e-tbar-btn';
+        submitButton.style.fontSize = '15px';
+        const spanElement: HTMLSpanElement = document.createElement('span');
+        spanElement.id = this.pdfViewer.element.id + '_submitFormSpan';
+        spanElement.className = 'e-tbar-btn-text e-pv-submitform-text';
+        spanElement.textContent = this.pdfViewer.localeObj.getConstant('SubmitForm');
+        submitButton.appendChild(spanElement);
         const defaultToolbarOrder: any = ['OpenOption', 'PageNavigationTool', 'MagnificationTool', 'SelectionTool', 'PanTool', 'UndoRedoTool', 'CommentTool', 'SubmitForm', 'SearchOption', 'AnnotationEditTool', 'FormDesignerEditTool', 'PrintOption', 'DownloadOption'];
         for (let i: number = 0; i < defaultToolbarOrder.length; i++) {
             if (i === 0) {

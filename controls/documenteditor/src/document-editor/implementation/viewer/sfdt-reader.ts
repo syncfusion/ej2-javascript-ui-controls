@@ -1284,7 +1284,7 @@ export class SfdtReader {
                 textElement.characterFormat = new WCharacterFormat(textElement);
                 this.parseCharacterFormat(this.keywordIndex, inline[characterFormatProperty[this.keywordIndex]], textElement.characterFormat, writeInlineFormat);
                 this.applyCharacterStyle(inline, textElement);
-                textElement.text = textElement instanceof BreakElementBox ? "\v" : inline[textProperty[this.keywordIndex]];
+                textElement.text = textElement instanceof BreakElementBox ? "\v" : inline[textProperty[this.keywordIndex]].replace(/\n/g, ' ');
                 fieldCode = textElement.text;
                 if (this.isHtmlPaste && (textElement instanceof TextElementBox || textElement instanceof BreakElementBox)) {
                     let previousElement: ElementBox;

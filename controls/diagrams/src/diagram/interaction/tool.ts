@@ -395,7 +395,7 @@ export class SelectTool extends ToolBase {
      * @param args
      * @private
      */
-    public mouseUp(args: MouseEventArgs): void {
+    public mouseUp(args: MouseEventArgs, button?: number): void {
         this.checkPropertyValue();
         //rubber band selection
         if (!this.commandHandler.isUserHandle(this.currentPosition)) {
@@ -406,12 +406,15 @@ export class SelectTool extends ToolBase {
                 //single selection
                 const arrayNodes: (NodeModel | ConnectorModel | AnnotationModel)[] = this.commandHandler.getSelectedObject();
                 if (!this.commandHandler.hasSelection() || !args.info || !args.info.ctrlKey) {
-                    this.commandHandler.clearSelection(args.source === null ? true : false);
-                    if (this.action === 'LabelSelect') {
-                        this.commandHandler.labelSelect(args.source, args.sourceWrapper, arrayNodes);
-                    }
-                    else if (args.source) {
-                        this.commandHandler.selectObjects([args.source], false, arrayNodes);
+                    // 948882: Improper Selection Behavior When Node Drag Constraint is Disabled
+                    if (button !== 2) {
+                        this.commandHandler.clearSelection(args.source === null ? true : false);
+                        if (this.action === 'LabelSelect') {
+                            this.commandHandler.labelSelect(args.source, args.sourceWrapper, arrayNodes);
+                        }
+                        else if (args.source) {
+                            this.commandHandler.selectObjects([args.source], false, arrayNodes);
+                        }
                     }
                 } else {
                     //handling multiple selection

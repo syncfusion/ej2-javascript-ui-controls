@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 29.1.37 (2025-04-08)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I708196` - The script error no longer occurs when loading the PDF document after it has been programmatically unloaded from the PDF Viewer.
+- `#I196344` - Fixed an issue where the signature value did not appear while adding the field programmatically.
+- `#I700063` - The annotation rendering is now optimized for documents with more annotations.
+- `#I698822` - Fixed an issue where the locked custom stamp remains editable.
+- `#I704815` - Enhanced the `fireFormFieldMoveEvent`, `fireFormFieldMouseLeaveEvent`, `fireFormFieldMouseOverEvent`, `fireFormFieldSelectEvent`, `fireFormFieldUnSelectEvent`, and `fireFormFieldResizeEvent` to include additional relevant details.
+
 ## 29.1.35 (2025-04-01)
 
 ### PDF Viewer

@@ -12,6 +12,7 @@ import { StraightSegment, BezierSegment, OrthogonalSegment } from './../objects/
 import { PathElement } from './../core/elements/path-element';
 import { cornersPointsBeforeRotation, rotatePoint } from './base-util';
 import { Segment } from '../interaction/scroller';
+import { Diagram } from '../diagram';
 
 /**
  * Connector modules are used to dock and update the connectors
@@ -142,7 +143,11 @@ function terminateConnection(
             source.direction = sourcePort.connectionDirection;
         }
         else {
-            source.direction = getPortDirection(port, sourceCorners, sourceNode.bounds, false);
+            if ((sourcePort as any).isPathPort) {
+                source.direction = determineConnectorDirection((element as any).parentObj, element.sourceID, sourcePort, tarPoint);
+            } else {
+                source.direction = getPortDirection(port, sourceCorners, sourceNode.bounds, false);
+            }
         }
     }
     if (targetPort !== undefined) {
@@ -151,7 +156,11 @@ function terminateConnection(
             target.direction = targetPort.connectionDirection;
         }
         else {
-            target.direction = getPortDirection(tarPortPt, targetCorners, targetNode.bounds, false);
+            if ((targetPort as any).isPathPort) {
+                target.direction = determineConnectorDirection((element as any).parentObj, element.targetID, targetPort, srcPoint);
+            } else {
+                target.direction = getPortDirection(tarPortPt, targetCorners, targetNode.bounds, false);
+            }
         }
     }
 
@@ -238,6 +247,87 @@ function terminateConnection(
     return intermeditatePoints;
 }
 
+/**
+ * determineConnectorDirection method \
+ *
+ * @returns {Direction | null} Determines the direction of a connector relative to a port and target point.\
+ * @param {Diagram} diagram - The diagram object containing connectors and elements.
+ * @param {string} connectorId - The Id of the connector in which the port is located.
+ * @param {DiagramElement} port - The port attached to the connector.
+ * @param {PointModel} tarPoint - The target point used to determine direction.
+ *
+ * @private
+ */
+function determineConnectorDirection(
+    diagram: Diagram,
+    connectorId: string,
+    port: DiagramElement,
+    tarPoint: PointModel
+): Direction | null {
+    let direction: Direction | null = null;
+    const parentConnector: Connector = diagram.nameTable[`${connectorId}`];
+    if (port && parentConnector) {
+        const portPosition: PointModel = { x: port.offsetX, y: port.offsetY };
+        const segment: string = getSegmentOrientation(portPosition, parentConnector);
+        if (segment) {
+            direction = (segment === 'Horizontal') ? ((tarPoint.y > portPosition.y) ? 'Bottom' : 'Top') : ((tarPoint.x > portPosition.x) ? 'Right' : 'Left');
+        }
+    }
+    return direction;
+}
+
+/**
+ * getSegmentOrientation method \
+ *
+ * @returns {'Horizontal' | 'Vertical' | null} Identifies if the port position is on a horizontal or vertical segment of the connector.\
+ * @param {PointModel} portPosition - The position of the port on the connector.
+ * @param {Connector} parentConnector - The connector being analyzed for segments.
+ *
+ * @private
+ */
+function getSegmentOrientation(
+    portPosition: PointModel,
+    parentConnector: Connector
+): 'Horizontal' | 'Vertical' | null {
+    const points: PointModel[] = parentConnector.intermediatePoints;
+    for (let i: number = 0; i < points.length - 1; i++) {
+        const point1: PointModel = points[parseInt(i.toString(), 10)];
+        const point2: PointModel = points[i + 1];
+        if (isPortOnConnectorSegment(portPosition, point1, point2)) {
+            return point1.x === point2.x ? 'Vertical' : 'Horizontal';
+        }
+    }
+    if (points.length >= 2) {
+        const lastPoint1: PointModel = points[points.length - 2];
+        const lastPoint2: PointModel = points[points.length - 1];
+        return lastPoint1.x === lastPoint2.x ? 'Vertical' : 'Horizontal';
+    }
+    return null;
+}
+
+/**
+ * isPortOnConnectorSegment method \
+ *
+ * @returns {boolean} Checks if a port position lies between two given points on the same line.\
+ * @param {PointModel} portPosition - The position of the port.
+ * @param {PointModel} point1 - The first point of the line segment.
+ * @param {PointModel} point2 - The second point of the line segment.
+ *
+ * @private
+ */
+function isPortOnConnectorSegment(
+    portPosition: PointModel,
+    point1: PointModel,
+    point2: PointModel
+): boolean {
+    if (point1.x === point2.x && portPosition.x === point1.x) {
+        return portPosition.y >= Math.min(point1.y, point2.y) && portPosition.y <= Math.max(point1.y, point2.y);
+    }
+    if (point1.y === point2.y && portPosition.y === point1.y) {
+        return portPosition.x >= Math.min(point1.x, point2.x) && portPosition.x <= Math.max(point1.x, point2.x);
+    }
+    return false;
+}
 
 /**
  * updateSegmentPoints method \

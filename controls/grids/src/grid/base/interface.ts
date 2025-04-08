@@ -671,6 +671,7 @@ export interface IGrid extends Component<HTMLElement> {
     preventAutoFit?: boolean;
     isPrinting?: boolean;
     id?: string;
+    selectVirtualRowOnAdd: boolean;
     isSelectedRowIndexUpdating?: boolean;
     pagerModule?: Page;
     invokedFromMedia?: boolean;

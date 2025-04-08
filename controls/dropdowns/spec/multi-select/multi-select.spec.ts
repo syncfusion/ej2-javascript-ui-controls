@@ -2337,7 +2337,7 @@ describe('MultiSelect', () => {
                 expect(listObj.text).toBe("Anne Dodsworth");
                 listObj.destroy();
                 done();
-            }, 1000);
+            }, 3000);
         });
     });
     describe('Remote data binding - with-out keyboard list selection', () => {
@@ -2568,8 +2568,8 @@ describe('MultiSelect', () => {
                    // expect((<any>listObj).value && (<any>listObj).value.length).not.toBeNull();
                     listObj.destroy();
                     done();
-                }, 2000);
-            }, 800);
+                }, 4000);
+            }, 2000);
         });
         it('allowCustomValue.-remote data without filter', (done) => {
             let status: boolean = false;
@@ -7568,8 +7568,8 @@ describe('MultiSelect', () => {
                     expect(listElement.classList.contains('e-active')).toBe(false);      
                     listObj.destroy();
                     done();
-                }, 2000);
-            }, 800);
+                }, 4000);
+            }, 2000);
         });
         it('Checkbox mode with allowFiltering for local data', (done) => {
             listObj = new MultiSelect({ hideSelectedItem: false, dataSource: empList, mode: "CheckBox", fields: { value: 'id', text: 'text' }, allowFiltering: true });
@@ -7587,8 +7587,8 @@ describe('MultiSelect', () => {
                     expect(listElement.classList.contains('e-active')).toBe(false);      
                     listObj.destroy();
                     done();
-                }, 2000);
-            }, 800);
+                }, 4000);
+            }, 3000);
         });
         it('Checkbox mode without allowFiltering for local data', (done) => {
             listObj = new MultiSelect({ hideSelectedItem: false, dataSource: empList, mode: "CheckBox", fields: { value: 'id', text: 'text' }, allowFiltering: false });

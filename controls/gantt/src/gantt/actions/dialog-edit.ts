@@ -760,12 +760,12 @@ export class DialogEdit {
         }
         this.beforeOpenArgs.requestType = this.isEdit ? 'beforeOpenEditDialog' : 'beforeOpenAddDialog';
         this.parent.trigger('actionBegin', this.beforeOpenArgs, (arg: ActionBeginArgs | CObject) => {
-            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
-                this.parent.showMaskRow();
-            } else {
-                this.parent.showSpinner();
-            }
             if (!arg.cancel) {
+                if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
+                    this.parent.showMaskRow();
+                } else {
+                    this.parent.showSpinner();
+                }
                 this.renderTabItems();
                 tabModel.selected = this.tabSelectedEvent.bind(this);
                 tabModel.height = this.parent.isAdaptive ? '100%' : 'auto';

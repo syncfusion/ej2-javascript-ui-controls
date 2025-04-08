@@ -513,12 +513,16 @@ export class PdfForm {
         let hasNoKids: boolean = false;
         let count: number = 0;
         const nodes = []; // eslint-disable-line
-        while (typeof fields !== 'undefined' && fields !== null) {
+        const formNames: string[] = [];
+        while (typeof fields !== 'undefined' && fields !== null && fields.length > 0) {
             for (; count < fields.length; count++) {
                 const ref: _PdfReference = fields[count]; // eslint-disable-line
                 let fieldDictionary: _PdfDictionary;
                 if (ref && ref instanceof _PdfReference) {
                     fieldDictionary = this._crossReference._fetch(ref);
+                    if (fieldDictionary && fieldDictionary.has('T')) {
+                        formNames.push(fieldDictionary.get('T'));
+                    }
                 }
                 let fieldFlags: number = 0;
                 const flag: number = _getInheritableProperty(fieldDictionary, 'Ff', false, true, 'Parent');
@@ -559,6 +563,26 @@ export class PdfForm {
                         if (hasNoKids && (fieldFlags & _FieldFlag.radio) !== 0) {
                             continue;
                         } else {
+                            this._fields.push(ref);
+                        }
+                    }
+                }
+            }
+            const document: PdfDocument = this._crossReference._document;
+            for (let i: number = 0; i < document.pageCount; i++) {
+                const page: PdfPage = document.getPage(Number.parseInt(i.toString(), 10));
+                const pageDictionary: _PdfDictionary = page._pageDictionary;
+                let widgetAnnots: _PdfReference[] = [];
+                if (pageDictionary.has('Annots')) {
+                    widgetAnnots = pageDictionary.getRaw('Annots');
+                }
+                for (let j: number = 0; j < widgetAnnots.length; j++) {
+                    const ref: _PdfReference = widgetAnnots[Number.parseInt(j.toString(), 10)]; // eslint-disable-line
+                    if (ref && ref instanceof _PdfReference && this._fields.indexOf(ref) === -1) {
+                        const annotDictionary: _PdfDictionary = this._crossReference._fetch(ref);
+                        if (annotDictionary && annotDictionary.has('FT') && annotDictionary.has('Subtype')
+                            && annotDictionary.get('Subtype').name === 'Widget' && annotDictionary.has('T')
+                            && formNames.indexOf(annotDictionary.get('T')) === -1) {
                             this._fields.push(ref);
                         }
                     }

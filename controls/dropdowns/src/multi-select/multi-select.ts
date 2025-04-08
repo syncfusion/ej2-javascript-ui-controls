@@ -1363,7 +1363,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
             if (!this.enableVirtualization || (this.enableVirtualization && (!(this.dataSource instanceof DataManager)))){
                 this.initialValueUpdate();
-            } else {
+            } else if (!this.isRemoveSelection) {
                 this.initialValueUpdate(this.listData, true);
             }
             this.initialUpdate();

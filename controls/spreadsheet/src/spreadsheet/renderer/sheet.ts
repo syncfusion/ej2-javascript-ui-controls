@@ -335,6 +335,7 @@ export class SheetRender implements IRenderer {
         }
         updateMergeBorder(this.parent, mergeBorderRows);
         cTBody.parentElement.insertBefore(colGrp.cloneNode(true), cTBody);
+        const isOpenFromJsonEvent: boolean = args.openOptions && args.openOptions.eventArgs && args.openOptions.eventArgs.triggerEvent;
         getUpdateUsingRaf((): void => {
             if (!this.parent) { return; }
             const content: HTMLElement = this.parent.getMainContent();
@@ -368,7 +369,7 @@ export class SheetRender implements IRenderer {
             setAriaOptions(content, { busy: false });
             this.parent.trigger(dataBound, {});
             if (this.parent.isEdit) { this.parent.notify(initiateEdit, null); }
-            if (args.openOptions && args.openOptions.eventArgs && args.openOptions.eventArgs.triggerEvent) {
+            if (isOpenFromJsonEvent) {
                 this.parent.trigger('openComplete', { response: args.openOptions });
             }
             if (args.initLoad) {
@@ -393,7 +394,7 @@ export class SheetRender implements IRenderer {
                     this.parent.hideSpinner();
                 }
             }
-        });
+        }, args.initLoad || isOpenFromJsonEvent ? undefined : this.parent);
     }
     private triggerCreatedEvent(): void {
         if (!this.parent.isOpen) {

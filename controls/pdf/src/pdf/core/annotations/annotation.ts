@@ -1229,7 +1229,7 @@ export abstract class PdfAnnotation {
         }
         return cropOrMediaBox;
     }
-    _getBoundsValue(linePoints: number[]): {x: number, y: number, width: number, height: number} {
+    _getBoundsValue(linePoints: number[], borderWidth ?: number): {x: number, y: number, width: number, height: number} {
         let count: number = 0;
         if (_isNullOrUndefined(linePoints)) {
             count = linePoints.length;
@@ -1256,7 +1256,13 @@ export abstract class PdfAnnotation {
         }
         x.sort((a: number, b: number) => a > b ? 1 : -1);
         y.sort((a: number, b: number) => a > b ? 1 : -1);
-        return {x: x[0], y: y[0], width: x[x.length - 1] - x[0], height: y[y.length - 1] - y[0]};
+        if (borderWidth) {
+            const extraPadding: number = this.border.width * 2;
+            return {x: x[0] - extraPadding, y: y[0] - extraPadding, width: x[x.length - 1] - x[0] + (2 * extraPadding),
+                height: y[y.length - 1] - y[0] + (2 * extraPadding)};
+        } else {
+            return {x: x[0], y: y[0], width: x[x.length - 1] - x[0], height: y[y.length - 1] - y[0]};
+        }
     }
     abstract _doPostProcess(isFlatten?: boolean): void;
     _validateTemplateMatrix(dictionary: _PdfDictionary) : boolean;
@@ -2049,9 +2055,133 @@ export abstract class PdfAnnotation {
         }
         return angle;
     }
-    _getAxisValue(value: number[], angle: number, length: number): number[] {
+    _getAxisValue(value: number[], angle: number, length?: number): number[] {
+        if (length === null || typeof length === 'undefined') {
+            length = 0;
+        }
         return [value[0] + Math.cos(angle * this._degreeToRadian) * length,
             value[1] + Math.sin(angle * this._degreeToRadian) * length];
+    }
+    _prepareOpenArrow(isBegin: boolean, axisPoint: number[], angle: number, length: number):
+    {startPoint: number[], first: number[], second: number[]} {
+        const arraowAngle: number = isBegin ? 30 : 150;
+        const count: number = 9 * length;
+        const startPoint: number[] = this._getAxisValue(axisPoint, angle, (isBegin ? length : (-length)));
+        const first: number[] = this._getAxisValue(startPoint, (angle + arraowAngle), count);
+        const second: number[] = this._getAxisValue(startPoint, (angle - arraowAngle), count);
+        return {startPoint: startPoint, first: first, second: second};
+    }
+    _prepareReverseOpenArrow(isBegin: boolean, axisPoint: number[], angle: number, length: number):
+    {startPoint: number[], first: number[], second: number[]} {
+        const arraowAngle: number = isBegin ? 150 : 30;
+        const count: number = 9 * length;
+        const startPoint: number[] = this._getAxisValue(axisPoint, angle, (isBegin ? (-length) : length));
+        const first: number[] = this._getAxisValue(startPoint, (angle + arraowAngle), count);
+        const second: number[] = this._getAxisValue(startPoint, (angle - arraowAngle), count);
+        return {startPoint: startPoint, first: first, second: second};
+    }
+    _prepareClosedArrow(isBegin: boolean, axisPoint: number[], angle: number, length: number) :
+    {startPoint: number[], first: number[], second: number[]} {
+        const arraowAngle: number = isBegin ? 30 : 150;
+        const count: number = 9 * length;
+        const startPoint: number[] = this._getAxisValue(axisPoint, angle, (isBegin ? length : (-length)));
+        const first: number[] = this._getAxisValue(startPoint, (angle + arraowAngle), count);
+        const second: number[] = this._getAxisValue(startPoint, (angle - arraowAngle), count);
+        return {startPoint: startPoint, first: first, second: second};
+    }
+    _prepareReverseCloseArrow(isBegin: boolean, axisPoint: number[], angle: number, length: number) :
+    {startPoint: number[], first: number[], second: number[]} {
+        const arraowAngle: number = isBegin ? 150 : 30;
+        const count: number = 9 * length;
+        const startPoint: number[] = this._getAxisValue(axisPoint, angle, (isBegin ? (-length) : length));
+        const first: number[] = this._getAxisValue(startPoint, (angle + arraowAngle), count);
+        const second: number[] = this._getAxisValue(startPoint, (angle - arraowAngle), count);
+        return {startPoint: startPoint, first: first, second: second};
+    }
+    _prepareSlash(axisPoint: number[], angle: number, length: number): {first: number[], second: number[]} {
+        const count: number = 9 * length;
+        const first: number[] = this._getAxisValue(axisPoint, (angle + 60), count);
+        const second: number[] = this._getAxisValue(axisPoint, (angle - 120), count);
+        return {first: first, second: second};
+    }
+    _prepareDiamond(axisPoint: number[], length: number): {first: number[], second: number[], third: number[], fourth: number[]} {
+        const count: number = 3 * length;
+        const first: number[] = this._getAxisValue(axisPoint, 180, count);
+        const second: number[] = this._getAxisValue(axisPoint, 90, count);
+        const third: number[] = this._getAxisValue(axisPoint, 0, count);
+        const fourth: number[] = this._getAxisValue(axisPoint, -90, count);
+        return {first: first, second: second, third: third, fourth: fourth};
+    }
+    _prepareButt(axisPoint: number[], angle: number, length: number): {first: number[], second: number[]} {
+        const count: number = 3 * length;
+        const first: number[] = this._getAxisValue(axisPoint, (angle + 90), count);
+        const second: number[] = this._getAxisValue(axisPoint, (angle - 90), count);
+        return {first: first, second: second};
+    }
+    _getBoundsFromLineEndStyle(axisPoint: number[],
+                               angle: number,
+                               pen: PdfPen,
+                               style: PdfLineEndingStyle,
+                               length: number, isBegin: boolean): {x: number, y: number, width: number, height: number} {
+        let result: {x: number, y: number, width: number, height: number};
+        let path: PdfPath;
+        let bounds: number[];
+        let values: any; // eslint-disable-line
+        switch (style) {
+        case PdfLineEndingStyle.square:
+        case PdfLineEndingStyle.circle:
+            result = {x: axisPoint[0] - (3 * length),
+                y: axisPoint[1] + (3 * length),
+                width: (6 * length),
+                height: (6 * length)};
+            break;
+        case PdfLineEndingStyle.openArrow:
+            values = this._prepareOpenArrow(isBegin, axisPoint, angle, length);
+            path = new PdfPath();
+            path._pen = pen;
+            path.addLine(values.startPoint[0], values.startPoint[1], values.first[0], values.first[1]);
+            path.addLine(values.startPoint[0], values.startPoint[1], values.second[0], values.second[1]);
+            bounds = path._getBounds();
+            result = {x: bounds[0], y: bounds[1], width: bounds[2], height: bounds[3]};
+            break;
+        case PdfLineEndingStyle.closedArrow:
+            values = this._prepareClosedArrow(isBegin, axisPoint, angle, length);
+            result = this._getBoundsValue([values.startPoint[0], values.startPoint[1],
+                values.first[0], values.first[1],
+                values.second[0], values.second[1]]);
+            break;
+        case PdfLineEndingStyle.rOpenArrow:
+            values = this._prepareReverseOpenArrow(isBegin, axisPoint, angle, length);
+            path = new PdfPath();
+            path._pen = pen;
+            path.addLine(values.startPoint[0], values.startPoint[1], values.first[0], values.first[1]);
+            path.addLine(values.startPoint[0], values.startPoint[1], values.second[0], values.second[1]);
+            bounds = path._getBounds();
+            result = {x: bounds[0], y: bounds[1], width: bounds[2], height: bounds[3]};
+            break;
+        case PdfLineEndingStyle.rClosedArrow:
+            values = this._prepareReverseCloseArrow(isBegin, axisPoint, angle, length);
+            result = this._getBoundsValue([values.startPoint[0], values.startPoint[1],
+                values.first[0], values.first[1],
+                values.second[0], values.second[1]]);
+            break;
+        case PdfLineEndingStyle.slash:
+            values = this._prepareSlash(axisPoint, angle, length);
+            result = this._getBoundsValue([axisPoint[0], axisPoint[1], values.first[0],
+                values.first[1], values.second[0], values.second[1]]);
+            break;
+        case PdfLineEndingStyle.diamond:
+            values = this._prepareDiamond(axisPoint, length);
+            result = this._getBoundsValue([values.first[0], values.first[1], values.second[0],
+                values.second[1], values.third[0], values.third[1],
+                values.fourth[0], values.fourth[1]]);
+            break;
+        case PdfLineEndingStyle.butt:
+            values = this._prepareButt(axisPoint, angle, length);
+            result = this._getBoundsValue([values.first[0], values.first[1], values.second[0], values.second[1]]);
+            break;
+        }
+        return result;
     }
     _drawLineEndStyle(axisPoint: number[],
                       graphics: PdfGraphics,
@@ -2060,14 +2190,8 @@ export abstract class PdfAnnotation {
                       brush: PdfBrush,
                       style: PdfLineEndingStyle,
                       length: number, isBegin: boolean): void {
-        let arraowAngle: number;
-        let count: number;
-        let startPoint: number[];
-        let first: number[];
-        let second: number[];
-        let third: number[];
-        let fourth: number[];
         let path: PdfPath;
+        let values: any; // eslint-disable-line
         switch (style) {
         case PdfLineEndingStyle.square:
             graphics.drawRectangle(axisPoint[0] - (3 * length),
@@ -2086,73 +2210,67 @@ export abstract class PdfAnnotation {
                                  brush);
             break;
         case PdfLineEndingStyle.openArrow:
-            arraowAngle = isBegin ? 30 : 150;
-            count = 9 * length;
-            startPoint = this._getAxisValue(axisPoint, angle, (isBegin ? length : (-length)));
-            first = this._getAxisValue(startPoint, (angle + arraowAngle), count);
-            second = this._getAxisValue(startPoint, (angle - arraowAngle), count);
+            values = this._prepareOpenArrow(isBegin, axisPoint, angle, length);
             path = new PdfPath();
             path._pen = pen;
-            path.addLine(startPoint[0], -startPoint[1], first[0], -first[1]);
-            path.addLine(startPoint[0], -startPoint[1], second[0], -second[1]);
+            path.addLine(values.startPoint[0], -values.startPoint[1], values.first[0], -values.first[1]);
+            path.addLine(values.startPoint[0], -values.startPoint[1], values.second[0], -values.second[1]);
             graphics._stateControl(pen, null, null);
             graphics._buildUpPath(path._points, path._pathTypes);
             graphics._drawGraphicsPath(pen, null, path._fillMode, false);
             break;
         case PdfLineEndingStyle.closedArrow:
-            arraowAngle = isBegin ? 30 : 150;
-            count = 9 * length;
-            startPoint = this._getAxisValue(axisPoint, angle, (isBegin ? length : (-length)));
-            first = this._getAxisValue(startPoint, (angle + arraowAngle), count);
-            second = this._getAxisValue(startPoint, (angle - arraowAngle), count);
-            graphics.drawPolygon([[startPoint[0], -startPoint[1]], [first[0], -first[1]], [second[0], -second[1]]], pen, brush);
+            values = this._prepareClosedArrow(isBegin, axisPoint, angle, length);
+            graphics.drawPolygon([[values.startPoint[0], -values.startPoint[1]],
+                [values.first[0], -values.first[1]], [values.second[0],
+                    -values.second[1]]], pen, brush);
             break;
         case PdfLineEndingStyle.rOpenArrow:
-            arraowAngle = isBegin ? 150 : 30;
-            count = 9 * length;
-            startPoint = this._getAxisValue(axisPoint, angle, (isBegin ? (-length) : length));
-            first = this._getAxisValue(startPoint, (angle + arraowAngle), count);
-            second = this._getAxisValue(startPoint, (angle - arraowAngle), count);
+            values = this._prepareReverseOpenArrow(isBegin, axisPoint, angle, length);
             path = new PdfPath();
             path._pen = pen;
-            path.addLine(startPoint[0], -startPoint[1], first[0], -first[1]);
-            path.addLine(startPoint[0], -startPoint[1], second[0], -second[1]);
+            path.addLine(values.startPoint[0], -values.startPoint[1], values.first[0], -values.first[1]);
+            path.addLine(values.startPoint[0], -values.startPoint[1], values.second[0], -values.second[1]);
             graphics._stateControl(pen, null, null);
             graphics._buildUpPath(path._points, path._pathTypes);
             graphics._drawGraphicsPath(pen, null, path._fillMode, false);
             break;
         case PdfLineEndingStyle.rClosedArrow:
-            arraowAngle = isBegin ? 150 : 30;
-            count = 9 * length;
-            startPoint = this._getAxisValue(axisPoint, angle, (isBegin ? (-length) : length));
-            first = this._getAxisValue(startPoint, (angle + arraowAngle), count);
-            second = this._getAxisValue(startPoint, (angle - arraowAngle), count);
-            graphics.drawPolygon([[startPoint[0], -startPoint[1]], [first[0], -first[1]], [second[0], -second[1]]], pen, brush);
+            values = this._prepareReverseCloseArrow(isBegin, axisPoint, angle, length);
+            graphics.drawPolygon([[values.startPoint[0], -values.startPoint[1]],
+                [values.first[0], -values.first[1]], [values.second[0],
+                    -values.second[1]]], pen, brush);
             break;
         case PdfLineEndingStyle.slash:
-            count = 9 * length;
-            first = this._getAxisValue(axisPoint, (angle + 60), count);
-            second = this._getAxisValue(axisPoint, (angle - 120), count);
-            graphics.drawLine(pen, axisPoint[0], -axisPoint[1], first[0], -first[1]);
-            graphics.drawLine(pen, axisPoint[0], -axisPoint[1], second[0], -second[1]);
+            values = this._prepareSlash(axisPoint, angle, length);
+            graphics.drawLine(pen, axisPoint[0], -axisPoint[1], values.first[0], -values.first[1]);
+            graphics.drawLine(pen, axisPoint[0], -axisPoint[1], values.second[0], -values.second[1]);
             break;
         case PdfLineEndingStyle.diamond:
-            count = 3 * length;
-            first = this._getAxisValue(axisPoint, 180, count);
-            second = this._getAxisValue(axisPoint, 90, count);
-            third = this._getAxisValue(axisPoint, 0, count);
-            fourth = this._getAxisValue(axisPoint, -90, count);
-            graphics.drawPolygon([[first[0], -first[1]], [second[0], -second[1]], [third[0], -third[1]], [fourth[0], -fourth[1]]],
-                                 pen,
-                                 brush);
+            values = this._prepareDiamond(axisPoint, length);
+            graphics.drawPolygon([[values.first[0], -values.first[1]],
+                [values.second[0], -values.second[1]], [values.third[0], -values.third[1]],
+                [values.fourth[0], -values.fourth[1]]], pen, brush);
             break;
         case PdfLineEndingStyle.butt:
-            count = 3 * length;
-            first = this._getAxisValue(axisPoint, (angle + 90), count);
-            second = this._getAxisValue(axisPoint, (angle - 90), count);
-            graphics.drawLine(pen, first[0], -first[1], second[0], -second[1]);
+            values = this._prepareButt(axisPoint, angle, length);
+            graphics.drawLine(pen, values.first[0], -values.first[1], values.second[0], -values.second[1]);
             break;
         }
+    }
+    _getCombinedRectangleBounds(rect1: {x: number, y: number, width: number, height: number},
+                                rect2: {x: number, y: number, width: number, height: number}):
+        {x: number, y: number, width: number, height: number} {
+        const left: number = Math.min(rect1.x, rect2.x);
+        const top: number = Math.min(rect1.y, rect2.y);
+        const right: number = Math.max(rect1.x + rect1.width, rect2.x + rect2.width);
+        const bottom: number = Math.max(rect1.y + rect1.height, rect2.y + rect2.height);
+        return {
+            x: left,
+            y: top,
+            width: right - left,
+            height: bottom - top
+        };
     }
     _drawLineStyle(start: number[],
                    end: number[],
@@ -6140,12 +6258,39 @@ export class PdfPolyLineAnnotation extends PdfComment {
             appearance.update('N', reference);
         }
     }
+    _transformToPdfCoordinates(points: number[]): number[] {
+        const transformedPoints: number[] = [];
+        for (let i: number = 0; i < points.length; i += 2) {
+            transformedPoints.push(points[Number.parseInt(i.toString(), 10)]);
+            transformedPoints.push(-points[Number.parseInt(i.toString(), 10) + 1]);
+        }
+        return transformedPoints;
+    }
+    _updateBorder(boundsValue: {x: number, y: number, width: number, height: number}, borderWidth: number):
+    {x: number, y: number, width: number, height: number} {
+        return {x: boundsValue.x - borderWidth,
+            y: boundsValue.y - borderWidth, width: boundsValue.width + (2 * borderWidth),
+            height: boundsValue.height + (2 * borderWidth)};
+    }
+    _prepareStartEndAngle(path: PdfPath): {startAngle: number, endAngle: number, transformedStart: number[], transformedEnd: number[]} {
+        const transformedStart: number[] = this._transformToPdfCoordinates(path._points[0]);
+        const transformedNext: number[] = this._transformToPdfCoordinates(path._points[1]);
+        const transformedEnd: number[] = this._transformToPdfCoordinates(path._points[path._points.length - 1]);
+        const transformedPrev: number[] = this._transformToPdfCoordinates(path._points[path._points.length - 2]);
+        const startAngle: number = this._getAngle([transformedStart[0], transformedStart[1], transformedNext[0], transformedNext[1]]);
+        const endAngle: number = this._getAngle([transformedPrev[0], transformedPrev[1], transformedEnd[0], transformedEnd[1]]);
+        return {startAngle: startAngle, endAngle: endAngle, transformedStart: transformedStart, transformedEnd: transformedEnd};
+    }
     _createPolyLineAppearance(flatten: boolean): PdfTemplate {
         const color: number[] = this.color ? this.color : [0, 0, 0];
         if (typeof flatten !== 'undefined' && flatten) {
             let borderPen: PdfPen;
             if (this.border.width > 0) {
                 borderPen = new PdfPen(color, this.border.width);
+            }
+            let backBrush: PdfBrush;
+            if (this.innerColor) {
+                backBrush = new PdfBrush(this._innerColor);
             }
             const graphics: PdfGraphics = this._page.graphics;
             if (borderPen) {
@@ -6164,7 +6309,30 @@ export class PdfPolyLineAnnotation extends PdfComment {
                     const path: PdfPath = new PdfPath();
                     path._points = points;
                     path._pathTypes = pathTypes;
+                    const angles: {startAngle: number, endAngle: number,
+                        transformedStart: number[], transformedEnd: number[]} = this._prepareStartEndAngle(path);
+                    const startPoint: number[] = this._getAxisValue(angles.transformedStart, angles.startAngle + 90);
+                    const endPoint: number[] = this._getAxisValue(angles.transformedEnd, angles.endAngle + 90);
+                    let startPoint1: number[] = startPoint;
+                    let endPoint1: number[] = endPoint;
+                    if (this.beginLineStyle === PdfLineEndingStyle.closedArrow || this.beginLineStyle === PdfLineEndingStyle.openArrow) {
+                        startPoint1 = this._getAxisValue(startPoint, angles.startAngle, this.border.width);
+                        path._points[0][0] = startPoint1[0];
+                        path._points[0][1] = -startPoint1[1];
+                    }
+                    if (this.endLineStyle === PdfLineEndingStyle.closedArrow || this.endLineStyle === PdfLineEndingStyle.openArrow) {
+                        endPoint1 = this._getAxisValue(endPoint, angles.endAngle, -this.border.width);
+                        path._points[path._points.length - 1][0] = endPoint1[0];
+                    }
                     graphics.drawPath(path, borderPen);
+                    if (this.beginLineStyle !== PdfLineEndingStyle.none) {
+                        this._drawLineEndStyle(startPoint, graphics, angles.startAngle, borderPen, backBrush,
+                                               this.beginLineStyle, this.border.width, true);
+                    }
+                    if (this.endLineStyle !== PdfLineEndingStyle.none) {
+                        this._drawLineEndStyle(endPoint, graphics, angles.endAngle, borderPen, backBrush,
+                                               this.endLineStyle, this.border.width, false);
+                    }
                     if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
                         graphics.restore(state);
                     }
@@ -6172,24 +6340,11 @@ export class PdfPolyLineAnnotation extends PdfComment {
             }
             return graphics._template;
         } else {
-            let boundsValue: {x: number, y: number, width: number, height: number};
-            const rect: {x: number, y: number, width: number, height: number} = {x: 0, y: 0, width: 0, height: 0};
-            if (typeof this._points === 'undefined' && this._dictionary.has('Vertices')) {
+            let rect: {x: number, y: number, width: number, height: number} = {x: 0, y: 0, width: 0, height: 0};
+            if ((typeof this._points === 'undefined' || (this._points && this._points.length === 0)) && this._dictionary.has('Vertices')) {
                 this._points = this._dictionary.get('Vertices');
-                boundsValue = this._getBoundsValue(this._points);
-            } else {
-                boundsValue = this._getBoundsValue(this._points);
             }
-            rect.x = boundsValue.x - this.border.width;
-            rect.y = boundsValue.y - this.border.width;
-            rect.width = boundsValue.width + (2 * this.border.width);
-            rect.height = boundsValue.height + (2 * this.border.width);
-            const appearance: PdfAppearance = new PdfAppearance(this, [rect.x, rect.y, rect.width, rect.height]);
-            appearance.normal = new PdfTemplate([rect.x, rect.y, rect.width, rect.height], this._crossReference);
-            const template: PdfTemplate =  appearance.normal;
-            _setMatrix(template, this._getRotationAngle());
-            template._writeTransformation = false;
-            const graphics: PdfGraphics = appearance.normal.graphics;
+            rect = this._updateBorder(this._getBoundsValue(this._points), this.border.width);
             const parameter: _PaintParameter = new _PaintParameter();
             if (this.innerColor) {
                 parameter.backBrush = new PdfBrush(this._innerColor);
@@ -6199,12 +6354,6 @@ export class PdfPolyLineAnnotation extends PdfComment {
             }
             if (color) {
                 parameter.foreBrush = new PdfBrush(color);
-            }
-            if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
-                graphics.save();
-                graphics.setTransparency(this._opacity);
-            } else {
-                graphics.save();
             }
             const path: PdfPath = new PdfPath();
             if (typeof this._polylinePoints !== 'undefined' && this._polylinePoints !== null) {
@@ -6222,17 +6371,66 @@ export class PdfPolyLineAnnotation extends PdfComment {
                 }
                 path._pathTypes = this._pathTypes;
             }
-            graphics.drawPath(path, parameter.borderPen, parameter.backBrush);
+            const angles: {startAngle: number, endAngle: number,
+                transformedStart: number[], transformedEnd: number[]} = this._prepareStartEndAngle(path);
+            const startPoint: number[] = this._getAxisValue(angles.transformedStart, angles.startAngle + 90);
+            const endPoint: number[] = this._getAxisValue(angles.transformedEnd, angles.endAngle + 90);
+            let newStart: number[] = startPoint;
+            let newEnd: number[] = endPoint;
+            if (this.beginLineStyle === PdfLineEndingStyle.closedArrow || this.beginLineStyle === PdfLineEndingStyle.openArrow) {
+                newStart = this._getAxisValue(startPoint, angles.startAngle, this.border.width);
+                path._points[0][0] = newStart[0];
+                path._points[0][1] = -newStart[1];
+            }
+            if (this.endLineStyle === PdfLineEndingStyle.closedArrow || this.endLineStyle === PdfLineEndingStyle.openArrow) {
+                newEnd = this._getAxisValue(endPoint, angles.endAngle, -this.border.width);
+                path._points[path._points.length - 1][0] = newEnd[0];
+            }
+            let beginLineStyleBounds: {x: number, y: number, width: number, height: number};
+            if (this.beginLineStyle !== PdfLineEndingStyle.none) {
+                beginLineStyleBounds = this._getBoundsFromLineEndStyle(startPoint,
+                                                                       angles.startAngle,
+                                                                       parameter.borderPen,
+                                                                       this.beginLineStyle,
+                                                                       this.border.width, true);
+                rect = this._getCombinedRectangleBounds(rect, beginLineStyleBounds);
+            }
+            let endLineStyleBounds: {x: number, y: number, width: number, height: number};
+            if (this.endLineStyle !== PdfLineEndingStyle.none) {
+                endLineStyleBounds = this._getBoundsFromLineEndStyle(endPoint, angles.endAngle,
+                                                                     parameter.borderPen,
+                                                                     this.endLineStyle,
+                                                                     this.border.width, false);
+                rect = this._getCombinedRectangleBounds(rect, endLineStyleBounds);
+            }
+            const appearance: PdfAppearance = new PdfAppearance(this, [rect.x, rect.y, rect.width, rect.height]);
+            appearance.normal = new PdfTemplate([rect.x, rect.y, rect.width, rect.height], this._crossReference);
+            const template: PdfTemplate = appearance.normal;
+            _setMatrix(template, this._getRotationAngle());
+            template._writeTransformation = false;
+            const graphics: PdfGraphics = appearance.normal.graphics;
+            if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
+                graphics.save();
+                graphics.setTransparency(this._opacity);
+            } else {
+                graphics.save();
+            }
+            graphics.drawPath(path, parameter.borderPen);
+            if (this.beginLineStyle !== PdfLineEndingStyle.none) {
+                this._drawLineEndStyle(startPoint, graphics, angles.startAngle, parameter.borderPen, parameter.backBrush,
+                                       this.beginLineStyle, this.border.width, true);
+            }
+            if (this.endLineStyle !== PdfLineEndingStyle.none) {
+                this._drawLineEndStyle(endPoint, graphics, angles.endAngle, parameter.borderPen, parameter.backBrush,
+                                       this.endLineStyle, this.border.width, false);
+            }
             if (typeof this.opacity !== 'undefined' && this._opacity < 1) {
                 graphics.restore();
             }
             graphics.restore();
             if (this._isBounds) {
                 template._content.dictionary._updated = true;
-                const lineStyle: _PdfName[] = [];
-                lineStyle.push(_PdfName.get(_reverseMapEndingStyle(this.beginLineStyle)));
-                lineStyle.push(_PdfName.get(_reverseMapEndingStyle(this.endLineStyle)));
-                this._dictionary.update('LE', lineStyle);
+                this._dictionary.update('LE', [_PdfName.get(_reverseMapEndingStyle(this.beginLineStyle)), _PdfName.get(_reverseMapEndingStyle(this.endLineStyle))]);
                 this._dictionary.update('LLE', this.lineExtension);
                 this._dictionary.update('Vertices', this._points);
             }
@@ -10764,7 +10962,7 @@ export class PdfRubberStampAnnotation extends PdfComment {
                     this._appearanceTemplate = new PdfTemplate(appearanceStream, this._crossReference);
                     isStamp = true;
                     isTransformBBox = isRotated ? true : false;
-                    if (isTransformBBox) {
+                    if (isTransformBBox && appearanceStream instanceof _PdfBaseStream) {
                         const matrix: number[] = appearanceStream.dictionary.getArray('Matrix');
                         if (matrix) {
                             const mMatrix: number[] = [];

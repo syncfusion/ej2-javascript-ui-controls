@@ -458,7 +458,13 @@ export class SelectTool extends ToolBase {
                             maxLength: (formField as any).maxLength,  isRequired: (formField as any).isRequired,
                             isPrint: formField.isPrint, rotation: (formField as any).rotation, tooltip: (formField as any).tooltip,
                             options: (formField as any).options, isChecked: (formField as any).isChecked,
-                            isSelected: (formField as any).isSelected };
+                            isSelected: (formField as any).isSelected,
+                            customData : (formField as any).customData, lineBound: (formField as any).bounds,
+                            pageNumber: (formField as any).pageIndex, insertSpaces: (formField as any).insertSpaces,
+                            formFieldAnnotationType: (formField as any).formFieldAnnotationType,
+                            borderColor: (formField as any).borderColor, thickness: (formField as any).thickness,
+                            isTransparent: (formField as any).isTransparent
+                        };
                         this.commandHandler.fireFormFieldUnselectEvent('formFieldUnselect', field, formField.pageIndex);
                     }
                     else if (this.pdfViewerBase.currentTarget && this.pdfViewerBase.currentTarget.id && this.commandHandler.formFields && event.type === 'mousedown') {
@@ -630,11 +636,17 @@ export class MoveTool extends ToolBase {
                     isReadonly: (node as any).isReadonly, visibility: (node as any).visibility,
                     maxLength: (node as any).maxLength, isRequired: (node as any).isRequired, isPrint: node.isPrint,
                     rotation: (node as any).rotateAngle, tooltip: (node as any).tooltip, options: (node as any).options,
-                    isChecked: (node as any).isChecked, isSelected: (node as any).isSelected
+                    isChecked: (node as any).isChecked, isSelected: (node as any).isSelected, id: args.source ?  args.source.id : '',
+                    name: (node as any).name, customData : (node as any).customData, lineBound: (node as any).bounds,
+                    pageNumber: (node as any).pageIndex, insertSpaces: (node as any).insertSpaces,
+                    formFieldAnnotationType: (node as any).formFieldAnnotationType, isTransparent: (node as any).isTransparent
                 };
-                const currentPosition: IFormFieldBound = { X: args.source.wrapper.offsetX, Y: args.source.wrapper.offsetY,
-                    Width: args.source.wrapper.actualSize.width, Height: args.source.wrapper.actualSize.height };
-                const previousPosition: IFormFieldBound = { X: this.offset.x, Y: this.offset.y,
+                const actualWidth: any = args.source.wrapper.actualSize.width;
+                const actualHeight: any = args.source.wrapper.actualSize.height;
+                const currentPosition: IFormFieldBound = { X: args.source.wrapper.offsetX - actualWidth / 2,
+                    Y: args.source.wrapper.offsetY - actualHeight / 2,
+                    Width: actualWidth, Height: actualHeight };
+                const previousPosition: IFormFieldBound = { X: this.offset.x - actualWidth / 2, Y: this.offset.y - actualHeight / 2,
                     Width: args.source.wrapper.actualSize.width, Height: args.source.wrapper.actualSize.height };
                 this.commandHandler.fireFormFieldMoveEvent('formFieldMove', field, node.pageIndex, previousPosition, currentPosition);
             }
@@ -1379,10 +1391,20 @@ export class ResizeTool extends ToolBase {
                     visibility: (node as any).visibility,
                     maxLength: (node as any).maxLength,  isRequired: (node as any).isRequired, isPrint: node.isPrint,
                     rotation: (node as any).rotateAngle, tooltip: (node as any).tooltip,
-                    options: (node as any).options, isChecked: (node as any).isChecked, isSelected: (node as any).isSelected };
-                const currentPosition: IFormFieldBound = { X: args.source.wrapper.offsetX, Y: args.source.wrapper.offsetY,
-                    Width: args.source.wrapper.actualSize.width, Height: args.source.wrapper.actualSize.height };
-                const previousPosition: IFormFieldBound = { X: this.initialBounds.x, Y: this.initialBounds.y,
+                    options: (node as any).options, isChecked: (node as any).isChecked, isSelected: (node as any).isSelected,
+                    name: (node as any).name, customData : (node as any).customData, lineBound: (node as any).bounds,
+                    pageNumber: (node as any).pageIndex, insertSpaces: (node as any).insertSpaces,
+                    isTransparent: (node as any).isTransparent,
+                    formFieldAnnotationType: (node as any).formFieldAnnotationType, borderColor: (node as any).borderColor,
+                    thickness: (node as any).thickness
+                };
+                const actualWidth: any = args.source.wrapper.actualSize.width;
+                const actualHeight: any = args.source.wrapper.actualSize.height;
+                const currentPosition: IFormFieldBound = { X: args.source.wrapper.offsetX - actualWidth / 2,
+                    Y: args.source.wrapper.offsetY - actualHeight / 2,
+                    Width: actualWidth, Height: actualHeight };
+                const previousPosition: IFormFieldBound = { X: this.initialBounds.x - this.initialBounds.width / 2,
+                    Y: this.initialBounds.y - this.initialBounds.height / 2,
                     Width: this.initialBounds.width, Height: this.initialBounds.height };
                 this.commandHandler.fireFormFieldResizeEvent('formFieldResize', field, node.pageIndex, previousPosition, currentPosition);
             }

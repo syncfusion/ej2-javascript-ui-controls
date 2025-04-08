@@ -61,7 +61,9 @@ export class _UnicodeTrueTypeFont {
     }
     _fontDictionaryBeginSave(): void {
         if (this._usedChars !== null && typeof this._usedChars !== 'undefined' && this._usedChars._size() > 0) {
-            this._fontDictionary.update('ToUnicode', this._cmap);
+            if (this._fontDictionary && !this._fontDictionary.has('ToUnicode')) {
+                this._fontDictionary.update('ToUnicode', this._cmap);
+            }
         }
     }
     _createInternals(): void {

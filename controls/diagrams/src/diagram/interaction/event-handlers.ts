@@ -1079,7 +1079,12 @@ export class DiagramEventHandler {
                             }
                         }
                         this.isSwimlaneSelected = false;
-                        this.tool.mouseUp(this.eventArgs);
+                        // 948882: Improper Selection Behavior When Node Drag Constraint is Disabled
+                        if (this.tool instanceof SelectTool) {
+                            this.tool.mouseUp(this.eventArgs, evt.button);
+                        } else {
+                            this.tool.mouseUp(this.eventArgs);
+                        }
                         if (this.diagram.checkMenu && (window.navigator.userAgent.indexOf('Linux') !== -1 || window.navigator.userAgent.indexOf('X11') !== -1)) {
                             if (!evt.pageY && (evt instanceof TouchEvent) && evt.changedTouches) {
                                 window.getSelection().removeAllRanges();
