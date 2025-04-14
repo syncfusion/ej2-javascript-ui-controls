@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 29.1.38 (2025-04-15)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I709549` - Added condition before accessing the `getPageSize` and `exportHyperlinks` methods.
+- `#I705240` - The form field positions are correct after updating them using the `updateFormField` method.
+- `#I704004` - The `ajaxRequestSuccess` event is triggered properly after the download action is completed.
+- `#I701556` - The image signature in the signature/initial field is preserved correctly when printing the document.
+- `#I702570` - The form fields on non-rendered pages are now visible when printing the document.
+- `#I705546` - The form field position is updated correctly for non-rendered pages using the `updateFormField` method.
+
 ## 29.1.37 (2025-04-08)
 
 ### PDF Viewer
@@ -13,6 +26,7 @@
 - `#I700063` - The annotation rendering is now optimized for documents with more annotations.
 - `#I698822` - Fixed an issue where the locked custom stamp remains editable.
 - `#I704815` - Enhanced the `fireFormFieldMoveEvent`, `fireFormFieldMouseLeaveEvent`, `fireFormFieldMouseOverEvent`, `fireFormFieldSelectEvent`, `fireFormFieldUnSelectEvent`, and `fireFormFieldResizeEvent` to include additional relevant details.
+- `#I680814` - Fixed an issue where the custom font is not rendered properly in reloaded document.
 
 ## 29.1.35 (2025-04-01)
 

@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 29.1.38 (2025-04-15)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I699159` - Fixed the issue where indent was decreasing incorrectly in a list for the entire selection.
+- `#I699123` - Fixed the issue with applying numbering and bullet lists.
+- `#I703013` - Fixed the issue where the paragraph mark was not included when inserting a bookmark.
+- `#I700209` - Fixed the issue where inserting a nested content control only inserted text instead of another content control.
+- `#I702581` - Fixed the content control border rendering issue when the paragraph had an indent.
+- `#I706170` - Fixed the content overlapping issue with the previous page footer during paragraph deletion.
+- `#I705530` - Fixed the rendering issue of double underlines for spell check inside table cell.
+
 ## 29.1.37 (2025-04-08)
 
 ### DocumentEditor

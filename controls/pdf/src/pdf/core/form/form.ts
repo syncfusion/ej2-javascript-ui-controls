@@ -570,14 +570,14 @@ export class PdfForm {
             }
             const document: PdfDocument = this._crossReference._document;
             for (let i: number = 0; i < document.pageCount; i++) {
-                const page: PdfPage = document.getPage(Number.parseInt(i.toString(), 10));
+                const page: PdfPage = document.getPage(i);
                 const pageDictionary: _PdfDictionary = page._pageDictionary;
                 let widgetAnnots: _PdfReference[] = [];
                 if (pageDictionary.has('Annots')) {
                     widgetAnnots = pageDictionary.getRaw('Annots');
                 }
                 for (let j: number = 0; j < widgetAnnots.length; j++) {
-                    const ref: _PdfReference = widgetAnnots[Number.parseInt(j.toString(), 10)]; // eslint-disable-line
+                    const ref: _PdfReference = widgetAnnots[<number>j];
                     if (ref && ref instanceof _PdfReference && this._fields.indexOf(ref) === -1) {
                         const annotDictionary: _PdfDictionary = this._crossReference._fetch(ref);
                         if (annotDictionary && annotDictionary.has('FT') && annotDictionary.has('Subtype')

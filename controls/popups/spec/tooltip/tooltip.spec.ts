@@ -1701,6 +1701,29 @@ describe('Tooltip Control', () => {
             triggerMouseEvent(closeele, 'mousedown');
             expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
         });
+        it('Should handle race condition between targetHover and closePopupHandler', (done) => {
+            Browser.userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36';
+            tooltip = new Tooltip({
+                position: 'BottomCenter', width: '150', content: 'Tooltip Content'
+            }, '.tooltiptarget');
+            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+            triggerMouseEvent(tooltip.element, 'mouseover');
+            setTimeout(function () {
+                expect(isVisible(document.querySelector('.e-tooltip-wrap'))).not.toBeNull();
+                triggerMouseEvent(tooltip.element, 'mouseleave', 1, 1, tooltip.element);
+                setTimeout(function () {
+                    triggerMouseEvent(tooltip.element, 'mouseover');
+                    setTimeout(function () {
+                        expect(isVisible(document.querySelector('.e-tooltip-wrap'))).not.toBeNull();
+                        triggerMouseEvent(tooltip.element, 'mouseleave');
+                        setTimeout(function () {
+                            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+                            done();
+                        }, 1000);
+                    }, 1000);
+                }, 10);
+            }, 900);
+        });
     });
     describe("Animation open property and openDelay test cases", function () {
         let originalTimeout: number;

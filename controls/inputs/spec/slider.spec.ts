@@ -441,6 +441,13 @@ describe('Slider Control', () => {
             expect((document.getElementsByClassName('e-slider-container')[0]).querySelectorAll('.e-tick-value')[5].textContent).toBe('-7.5');
         });
 
+        it('Slider largeStep in decimal values', () => {
+            slider = new Slider({ min: 0, max: 100, step: 5, ticks: { placement: 'After', largeStep: 12.5 } });
+            slider.appendTo('#slider');
+            expect((document.getElementsByClassName('e-slider-container')[0]).querySelectorAll('.e-tick-value')[4].textContent).toBe('50');
+            expect((document.getElementsByClassName('e-slider-container')[0]).querySelectorAll('.e-tick-value')[8].textContent).toBe('100');
+        });
+
         it('Slider Ticks enabled testing', () => {
             slider = new Slider({ ticks: { placement: 'Both', largeStep: 10, smallStep: 1, showSmallTicks: true } });
             slider.appendTo('#slider');

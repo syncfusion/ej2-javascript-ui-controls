@@ -22,7 +22,10 @@
 
 #### Bug Fixes
 
+- `#I687522` - Issue with "Resolving the text is overlapping the clear icon in the Multi Select dropdown" has been resolved.
 - `#I697553` - Fixed an issue where using the Chip icon removed all selected values instead of removing a specific chip.
+
+- `#I696602` - Fixed an issue where the popup remains open if the MultiSelect input is not visible in the viewport.
 
 ### DropDownTree
 

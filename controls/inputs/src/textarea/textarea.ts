@@ -524,6 +524,9 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
         }
         this.element.value = this.element.defaultValue;
         this.element.classList.remove('e-input', RESIZE_X, RESIZE_Y, RESIZE_XY, RESIZE_NONE);
+        if (this.textareaWrapper.container.style.width.includes('%')) {
+            EventHandler.remove(this.element, 'mousemove', this.onMouseMove);
+        }
         this.removeAttributes(['aria-disabled', 'aria-readonly', 'aria-labelledby', 'aria-multiline']);
         if (!isNullOrUndefined(this.textareaWrapper)) {
             this.textareaWrapper.container.insertAdjacentElement('afterend', this.element);
@@ -738,18 +741,33 @@ export class TextArea extends Component<HTMLTextAreaElement> implements INotifyP
      */
     private setWrapperWidth(): void {
         if (this.enabled && ((this.resizeMode !== 'None' && this.resizeMode !== 'Vertical') || (this.cols || this.element.getAttribute('cols')))) {
-            if (this.resizeMode !== 'None' && this.resizeMode !== 'Vertical') {
-                if (this.textareaWrapper.container.style.width) {
-                    this.setElementWidth(this.textareaWrapper.container.style.width);
-                    this.textareaWrapper.container.style.width = '';
-                    this.textareaWrapper.container.classList.add(AUTO_WIDTH);
-                }
+            if (this.resizeMode !== 'None' && this.resizeMode !== 'Vertical' && !this.textareaWrapper.container.style.width.includes('%')) {
+                this.setElementWidth(this.textareaWrapper.container.style.width);
             }
-            this.textareaWrapper.container.classList.add(AUTO_WIDTH);
+            if (!this.textareaWrapper.container.style.width.includes('%')) {
+                this.textareaWrapper.container.classList.add(AUTO_WIDTH);
+                this.textareaWrapper.container.style.width = '';
+            }
+
+            if (this.textareaWrapper.container.style.width.includes('%')) {
+                EventHandler.add(this.element, 'mousemove', this.onMouseMove, this);
+            }
         } else {
             if (this.textareaWrapper.container.classList.contains(AUTO_WIDTH)) {
                 this.textareaWrapper.container.classList.remove(AUTO_WIDTH);
             }
+        }
+    }
+
+    private onMouseMove(): void {
+        if (this.textareaWrapper.container.style.width !== 'auto') {
+            const initialWidth: string = this.element.style.width;
+            setTimeout(() => {
+                const currentWidth: string = this.element.style.width;
+                if (initialWidth !== currentWidth) {
+                    this.textareaWrapper.container.style.width = 'auto';
+                }
+            }, 5);
         }
     }
 

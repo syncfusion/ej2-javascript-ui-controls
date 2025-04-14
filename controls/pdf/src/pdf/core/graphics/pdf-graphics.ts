@@ -589,9 +589,11 @@ export class PdfGraphics {
         if (points.length > 0) {
             const result: {pen: PdfPen, brush: PdfBrush} = this._setPenBrush(first, second);
             this._sw._beginPath(points[0][0], points[0][1]);
-            for (let i: number = 1; i < points.length; i++) {
-                this._sw._appendLineSegment(points[Number.parseInt(i.toString(), 10)][0], points[Number.parseInt(i.toString(), 10)][1]);
-            }
+            points.forEach((point: number[], index: number) => {
+                if (index > 0) {
+                    this._sw._appendLineSegment(point[0], point[1]);
+                }
+            });
             this._drawGraphicsPath(result.pen, result.brush, PdfFillMode.winding, true);
         }
         this._endMarkContent();
@@ -830,7 +832,10 @@ export class PdfGraphics {
                 this._resourceObject.update('XObject', sourceDictionary);
             }
             if (typeof keyName === 'undefined') {
-                keyName = _PdfName.get(_getNewGuidString());
+                if (!arg1._key) {
+                    arg1._key = _getNewGuidString();
+                }
+                keyName = _PdfName.get(arg1._key);
             }
             if (this._crossReference) {
                 this._updateImageResource(arg1, keyName, sourceDictionary, this._crossReference);
@@ -881,6 +886,7 @@ export class PdfGraphics {
      */
     drawTemplate(template: PdfTemplate, bounds: {x: number, y: number, width: number, height: number}): void {
         this._beginMarkContent();
+        let hasPendingTemplate: boolean = true;
         if (typeof template !== 'undefined') {
             if (template._isExported || template._isResourceExport) {
                 if (this._crossReference) {
@@ -889,6 +895,7 @@ export class PdfGraphics {
                 } else {
                     template._importStream(false, template._isResourceExport);
                     this._pendingResource.push(template);
+                    hasPendingTemplate = false;
                 }
             }
             const scaleX: number = (template && template._size[0] > 0) ? bounds.width / template._size[0] : 1;
@@ -984,13 +991,19 @@ export class PdfGraphics {
                 this._resourceObject.update('XObject', sourceDictionary);
             }
             if (typeof keyName === 'undefined') {
-                keyName = _PdfName.get(_getNewGuidString());
+                if (!template._key) {
+                    template._key = _getNewGuidString();
+                }
+                keyName = _PdfName.get(template._key);
                 if (template && template._content.reference) {
                     ref = template._content.reference;
                 } else if (this._crossReference) {
                     ref = this._crossReference._getNextReference();
                 } else {
                     this._pendingResource.push({'resource': template._content, 'key': keyName, 'source': sourceDictionary});
+                    if (this._template && hasPendingTemplate) {
+                        this._pendingResource.push(template);
+                    }
                 }
                 if (ref && this._crossReference) {
                     if (!this._crossReference._cacheMap.has(ref) && template && template._content) {
@@ -1000,6 +1013,9 @@ export class PdfGraphics {
                     this._resources.set(ref, keyName);
                 }
                 this._resourceObject._updated = true;
+            }
+            if (template._isNew && this._crossReference) {
+                template.graphics._processResources(this._crossReference);
             }
             if (isReference) {
                 this._resourceObject._updated = true;
@@ -1019,12 +1035,15 @@ export class PdfGraphics {
     _processResources(crossReference: _PdfCrossReference): void {
         this._crossReference = crossReference;
         if (this._pendingResource.length > 0) {
-            for (let i: number = 0; i < this._pendingResource.length; i++) {
-                const entry: any = this._pendingResource[Number.parseInt(i.toString(), 10)]; // eslint-disable-line
+            this._pendingResource.forEach((entry: any, index: number): void => { // eslint-disable-line
                 if (entry instanceof PdfTemplate) {
                     entry._crossReference = crossReference;
-                    entry._updatePendingResource(crossReference);
-                } else if (entry.resource instanceof _PdfBaseStream) {
+                    if (entry._isNew) {
+                        entry.graphics._processResources(crossReference);
+                    } else {
+                        entry._updatePendingResource(crossReference);
+                    }
+                } else if (entry.resource instanceof _PdfBaseStream || entry.resource instanceof _PdfDictionary) {
                     let reference: _PdfReference;
                     if (entry.resource._reference) {
                         reference = entry.resource._reference;
@@ -1044,7 +1063,7 @@ export class PdfGraphics {
                 }
                 this._source.update('Resources', this._resourceObject);
                 this._source._updated = true;
-            }
+            });
             this._pendingResource = [];
         }
     }
@@ -1403,12 +1422,12 @@ export class PdfGraphics {
             }
         }
     }
-    _getBezierPoint(points: Array<number[]>, types: PathPointType[], index: number): {index: number, point: number[]} {
-        if (types[Number.parseInt(index.toString(), 10)] !== PathPointType.bezier) {
+    _getBezierPoint(points: Array<number[]>, types: PathPointType[], index: number): { index: number, point: number[] } {
+        if (types[index as number] !== PathPointType.bezier) {
             throw new Error('Malforming path.');
         }
         index++;
-        return { 'index': index, 'point': points[Number.parseInt(index.toString(), 10)] };
+        return { 'index': index, 'point': points[index as number] };
     }
     _initialize(): void {
         this._mediaBoxUpperRightBound = 0;
@@ -1482,7 +1501,10 @@ export class PdfGraphics {
             this._resourceObject.update('Font', sourceDictionary);
         }
         if (typeof keyName === 'undefined') {
-            keyName = _PdfName.get(_getNewGuidString());
+            if (!font._key) {
+                font._key = _getNewGuidString();
+            }
+            keyName = _PdfName.get(font._key);
             if (!ref) {
                 if (font._reference) {
                     ref = font._reference;
@@ -1725,7 +1747,7 @@ export class PdfGraphics {
         const ttfFont: PdfTrueTypeFont = font as PdfTrueTypeFont;
         const unicode: boolean = (ttfFont !== null && ttfFont.isUnicode);
         for (let i: number = 0, len: number = lines.length; (i < len && i !== this._startCutIndex); i++) {
-            const lineInfo: _LineInfo = lines[Number.parseInt(i.toString(), 10)];
+            const lineInfo: _LineInfo = lines[<number>i];
             const lineWidth: number = lineInfo._width;
             const hAlignShift: number = this._getHorizontalAlignShift(lineWidth, layoutRectangle[2], format) +
                 this._getLineIndent(lineInfo, format, layoutRectangle[2], (i === 0));
@@ -1737,7 +1759,7 @@ export class PdfGraphics {
             } else {
                 this._drawAsciiLine(lineInfo, layoutRectangle[2], format, font);
             }
-            if ((i + 1 !== len)) {
+            if (i + 1 !== len) {
                 const vAlignShift: number = this._getTextVerticalAlignShift(result._actualSize[1], layoutRectangle[3], format);
                 const matrix: _PdfTransformationMatrix = new _PdfTransformationMatrix();
                 const baseline: number = ((-(layoutRectangle[1] + font._metrics._getHeight(format)) -
@@ -1835,15 +1857,14 @@ export class PdfGraphics {
             }
         }
     }
-    _breakUnicodeLine(line: string, ttfFont: PdfTrueTypeFont, words: string[]): {tokens: string[], words: string[]} {
+    _breakUnicodeLine(line: string, ttfFont: PdfTrueTypeFont, words: string[]): { tokens: string[], words: string[] } {
         const tokens: string[] = [];
         if (line !== null && typeof line !== 'undefined' && line.length > 0) {
             words = line.split(null);
-            for (let i: number = 0; i < words.length; i++) {
-                const word: string = words[i]; //eslint-disable-line
+            words.forEach((word: string) => {
                 const token: string = this._convertToUnicode(word, ttfFont);
-                tokens[Number.parseInt(i.toString(), 10)] = token;
-            }
+                tokens.push(token);
+            });
         }
         return { tokens: tokens, words: words };
     }
@@ -1900,15 +1921,15 @@ export class PdfGraphics {
         this._justifyLine(lineInfo, width, format, font);
         let value: string = '';
         if (lineInfo._text.indexOf('(') !== -1 || lineInfo._text.indexOf(')') !== -1) {
-            for (let i: number = 0; i < lineInfo._text.length; i ++) {
-                if (lineInfo._text[Number.parseInt(i.toString(), 10)] === '(') {
-                    value += '\\\('; // eslint-disable-line
-                } else if (lineInfo._text[Number.parseInt(i.toString(), 10)] === ')') {
-                    value += '\\\)'; // eslint-disable-line
+            Array.from(lineInfo._text).forEach((char: string) => {
+                if (char === '(') {
+                    value += '\\(';
+                } else if (char === ')') {
+                    value += '\\)';
                 } else {
-                    value += lineInfo._text[Number.parseInt(i.toString(), 10)];
+                    value += char;
                 }
-            }
+            });
         }
         if (value === '') {
             value = lineInfo._text;
@@ -1955,8 +1976,7 @@ export class PdfGraphics {
                 let underlineYOffset: number = layoutRectangle[1] + shift + font._metrics._getAscent(format) + 1.5 * linePen._width;
                 let strikeoutYOffset: number = layoutRectangle[1] + shift + font._metrics._getHeight(format) / 2 + 1.5 * linePen._width;
                 const lines: _LineInfo[] = result._lines;
-                for (let i: number = 0; i < result._lineCount; i++) {
-                    const lineInfo: _LineInfo = lines[Number.parseInt(i.toString(), 10)];
+                lines.forEach((lineInfo: _LineInfo, i: number) => {
                     const lineWidth: number = lineInfo._width;
                     const hShift: number = this._getHorizontalAlignShift(lineWidth, layoutRectangle[2], format);
                     const lineIndent: number = this._getLineIndent(lineInfo, format, layoutRectangle[2], (i === 0));
@@ -1972,7 +1992,7 @@ export class PdfGraphics {
                         this.drawLine(linePen, x1, strikeoutYOffset, x2, strikeoutYOffset);
                         strikeoutYOffset += result._lineHeight;
                     }
-                }
+                });
             }
         }
     }
@@ -2367,12 +2387,9 @@ export class PdfGraphics {
             transparencyDict.update('CA', stroke);
             transparencyDict.update('ca', fill);
             transparencyDict.update('BM', _reverseMapBlendMode(mode));
-            const ref: _PdfReference = this._crossReference._getNextReference();
-            this._crossReference._cacheMap.set(ref, transparencyDict);
             transparencyData._dictionary = transparencyDict;
             transparencyData._key = transparencyKey;
             transparencyData._name = _PdfName.get(_getNewGuidString());
-            transparencyData._reference = ref;
             let dictionary: _PdfDictionary;
             let isReference: boolean = false;
             if (this._resourceObject.has('ExtGState')) {
@@ -2389,7 +2406,14 @@ export class PdfGraphics {
                 dictionary = new _PdfDictionary(this._crossReference);
                 this._resourceObject.update('ExtGState', dictionary);
             }
-            dictionary.update(transparencyData._name.name, ref);
+            if (this._crossReference) {
+                const ref: _PdfReference = this._crossReference._getNextReference();
+                this._crossReference._cacheMap.set(ref, transparencyDict);
+                transparencyData._reference = ref;
+                dictionary.update(transparencyData._name.name, ref);
+            } else {
+                this._pendingResource.push({'resource': transparencyDict, 'key': transparencyData._name, 'source': dictionary});
+            }
             if (isReference) {
                 this._resourceObject._updated = true;
             }
@@ -2482,9 +2506,9 @@ export class _PdfTransformationMatrix {
     }
     _toString(): string {
         let builder: string = '';
-        for (let i: number = 0, len: number = this._matrix._elements.length; i < len; i++) {
-            builder += _floatToString(this._matrix._elements[Number.parseInt(i.toString(), 10)]) + ' ';
-        }
+        this._matrix._elements.forEach((element: number) => {
+            builder += _floatToString(element) + ' ';
+        });
         return builder;
     }
     _skew(angleX: number, angleY: number): void {

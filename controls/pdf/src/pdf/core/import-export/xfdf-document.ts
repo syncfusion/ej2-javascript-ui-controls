@@ -2,7 +2,7 @@ import { _XmlWriter } from './xml-writer';
 import { PdfDocument } from './../pdf-document';
 import { PdfPage } from './../pdf-page';
 import { PdfForm } from './../form/form';
-import { PdfWidgetAnnotation, PdfAnnotation, PdfLineAnnotation, PdfFileLinkAnnotation, PdfTextWebLinkAnnotation, PdfDocumentLinkAnnotation, PdfUriAnnotation, PdfRadioButtonListItem, PdfStateItem } from './../annotations/annotation';
+import { PdfWidgetAnnotation, PdfAnnotation, PdfLineAnnotation, PdfFileLinkAnnotation, PdfTextWebLinkAnnotation, PdfDocumentLinkAnnotation, PdfUriAnnotation, PdfRadioButtonListItem, PdfStateItem, Pdf3DAnnotation, PdfPopupAnnotation } from './../annotations/annotation';
 import { PdfAnnotationCollection } from './../annotations/annotation-collection';
 import { _PdfAnnotationType, PdfAnnotationFlag } from './../enumerator';
 import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
@@ -382,6 +382,8 @@ export abstract class _ExportHelper {
                 }
             } else if (typeof primitive === 'number') {
                 value = primitive.toString();
+            } else if (primitive instanceof _PdfReference) {
+                value = this._getValue(this._crossReference._fetch(primitive), isJson);
             }
         }
         return value;
@@ -788,6 +790,9 @@ export class _XfdfDocument extends _ExportHelper {
                     const annotations: PdfAnnotationCollection = page.annotations;
                     for (let j: number = 0; j < annotations.count; j++) {
                         const annotation: PdfAnnotation = annotations.at(j);
+                        if (annotation instanceof PdfPopupAnnotation && annotation._dictionary.has('Parent')) {
+                            continue;
+                        }
                         if (annotation && (!this._annotationTypes ||
                             this._annotationTypes.length === 0 ||
                             (this._annotationTypes && this._annotationTypes.length > 0 && this._checkAnnotationType(annotation)))) {
@@ -968,7 +973,8 @@ export class _XfdfDocument extends _ExportHelper {
             !(annotation instanceof PdfFileLinkAnnotation ||
             annotation instanceof PdfTextWebLinkAnnotation ||
             annotation instanceof PdfDocumentLinkAnnotation ||
-            annotation instanceof PdfUriAnnotation)) {
+            annotation instanceof PdfUriAnnotation ||
+            annotation instanceof Pdf3DAnnotation)) {
             this._writeAnnotationData(writer, pageIndex, annotation);
         }
     }
@@ -987,9 +993,7 @@ export class _XfdfDocument extends _ExportHelper {
         const type: string = this._getAnnotationType(dictionary);
         this._skipBorderStyle = false;
         if (type && type !== '') {
-            if (!this._annotationAttributes) {
-                this._annotationAttributes = [];
-            }
+            this._annotationAttributes = [];
             writer._writeStartElement(type.toLowerCase());
             writer._writeAttributeString('page', pageIndex.toString());
             this._annotationAttributes.push('page');
@@ -1027,16 +1031,17 @@ export class _XfdfDocument extends _ExportHelper {
             isBorderStyle = (type && type.name === 'Border' && this._skipBorderStyle);
         }
         dictionary.forEach((key: string, value: any) => { // eslint-disable-line
-            if (!((!hasAppearance && key === 'AP') || key === 'P' || key === 'Parent')) {
+            if (!((!hasAppearance && key === 'AP') || key === 'P' || key === 'Parent'
+                || key === 'Measure' || key === 'Popup') && key.indexOf(':') === -1) {
                 let entry: any; // eslint-disable-line
                 if (value instanceof _PdfReference) {
                     entry = dictionary.get(key);
+                } else {
+                    entry = value;
                 }
                 if (entry && entry instanceof _PdfDictionary) {
                     switch (key) {
                     case 'BS':
-                        this._writeDictionary(entry, pageIndex, writer, false);
-                        break;
                     case 'BE':
                         this._writeDictionary(entry, pageIndex, writer, false);
                         break;
@@ -1045,11 +1050,12 @@ export class _XfdfDocument extends _ExportHelper {
                             writer._writeAttributeString('inreplyto', this._getValue(entry.get('NM')));
                         }
                         break;
+                    default:
+                        this._writeDictionary(entry, pageIndex, writer, false);
+                        break;
                     }
-                } else if (value instanceof _PdfDictionary) {
-                    this._writeDictionary(value, pageIndex, writer, false);
                 } else if ((!isBorderStyle) || (isBorderStyle && key !== 'S')) {
-                    this._writeAttribute(writer, key, value);
+                    this._writeAttribute(writer, key, entry);
                 }
             }
         });
@@ -1098,6 +1104,7 @@ export class _XfdfDocument extends _ExportHelper {
                 }
             }
         } else if (dictionary.has('FS')) {
+            writer._writeStartElement('data');
             const fsDictionary: _PdfDictionary = dictionary.get('FS');
             if (fsDictionary) {
                 if (fsDictionary.has('F')) {
@@ -1149,6 +1156,7 @@ export class _XfdfDocument extends _ExportHelper {
                     }
                 }
             }
+            writer._writeEndElement();
         }
         if (dictionary.has('Vertices')) {
             writer._writeStartElement('vertices');
@@ -1792,6 +1800,9 @@ export class _XfdfDocument extends _ExportHelper {
                                 annotation._ref = reference;
                                 const index: number = annotations._annotations.length;
                                 annotations._annotations.push(reference);
+                                if (annotationDictionary.has('Popup')) {
+                                    annotations._annotations.push(annotationDictionary.getRaw('Popup'));
+                                }
                                 if (annotations._comments && annotations._comments.length > 0) {
                                     annotations._comments = [];
                                 }

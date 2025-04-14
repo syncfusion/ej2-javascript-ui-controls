@@ -154,7 +154,12 @@ export class Drawing {
         return obj;
     }
 
-    private initNode(obj: PdfAnnotationBaseModel | PdfFormFieldBaseModel): void {
+    /**
+     * @private
+     * @param {PdfAnnotationBaseModel} obj - Specified the annotation object.
+     * @returns {void}
+     */
+    public initNode(obj: PdfAnnotationBaseModel | PdfFormFieldBaseModel): void {
         const canvas: Container = this.initContainer(obj);
         let content: DrawingElement;
         if (!canvas.children) {
@@ -956,6 +961,16 @@ export class Drawing {
                             }
                             if ((<any>window).customStampCollection && !(<any>window).customStampCollection.get(renderElement.id)) {
                                 (<any>window).customStampCollection.set(renderElement.id, image);
+                            }
+                        }
+                        else if (!isNullOrUndefined(uniqueObject.properties.value) && uniqueObject.properties.value.includes('base64')) {
+                            const image: HTMLImageElement = new Image();
+                            image.src = uniqueObject.properties.value;
+                            if ((<any>window).signatureCollection == null && (<any>window).signatureCollection === undefined) {
+                                (<any>window).signatureCollection = new Map();
+                            }
+                            if ((<any>window).signatureCollection && !(<any>window).signatureCollection.get(renderElement.id)) {
+                                (<any>window).signatureCollection.set(renderElement.id, image);
                             }
                         }
                         refreshDiagramElements(diagramLayer, [renderElement], this.renderer);

@@ -321,6 +321,14 @@ export class Editor {
     public isFieldOperation: boolean = false;
     /**
      * @private
+     */
+    public decreasedIndent: boolean = false;
+    /**
+     * @private
+     */
+    public increasedIndent: boolean = false;
+    /**
+     * @private
      * @returns {boolean} - Returns the restrict formatting
      */
     public get restrictFormatting(): boolean {
@@ -2727,37 +2735,50 @@ export class Editor {
         }
     }
     private applyRichText(value?: string, title?: string, tag?: string, lock?: boolean, lockContents?: boolean): void {
-        let positionStart: TextPosition = this.selection.isForward ? this.selection.start.clone() : this.selection.end.clone();
-        let positionEnd: TextPosition = this.selection.isForward ? this.selection.end.clone() : this.selection.start.clone();
-        if (this.selection.isParagraphMarkSelected()) {
-            positionEnd.offset -= 1;
-        }
-        if (positionStart.paragraph !== positionEnd.paragraph) {
-            if (!positionStart.isAtParagraphStart) {
-                positionEnd.setPositionParagraph(positionStart.paragraph.lastChild as LineWidget, (positionStart.paragraph.lastChild as LineWidget).getEndOffset());
-            } else if (positionStart.isAtParagraphStart && !positionEnd.isAtParagraphEnd) {
-                let previousParagraph: ParagraphWidget;
-                if (positionEnd.paragraph.previousRenderedWidget instanceof TableWidget) {
-                    previousParagraph = this.selection.getLastBlockInLastCell(positionEnd.paragraph.previousRenderedWidget) as ParagraphWidget;
-                } else {
-                    previousParagraph = positionEnd.paragraph.previousRenderedWidget as ParagraphWidget;
-                }
-                positionEnd.setPositionParagraph(previousParagraph.lastChild as LineWidget, (previousParagraph.lastChild as LineWidget).getEndOffset());
-            }
-        }
+        let positionStart: TextPosition;
+        let positionEnd: TextPosition;
         let isInline: boolean = true;
-        if (positionStart.isAtParagraphStart && positionEnd.isAtParagraphEnd) {
-            isInline = false;
-        }
-        this.updateContentControlPosition(positionStart, positionEnd);
-        if (this.editorHistory) {
-            this.initComplexHistory('InsertContentControl');
+        if (!isNullOrUndefined(this.selection.currentContentControl) && this.selection.currentContentControl.contentControlProperties.hasPlaceHolderText) {
+            if (this.editorHistory) {
+                this.initComplexHistory('InsertContentControl');
+            }
+            this.delete();
+            this.selection.selectContentControlInternal(this.selection.currentContentControl);
+            positionStart = this.selection.isForward ? this.selection.start.clone() : this.selection.end.clone();
+            positionEnd = this.selection.isForward ? this.selection.end.clone() : this.selection.start.clone();
+            isInline = this.selection.currentContentControl.contentControlWidgetType === 'Block' ? false : true;
+        } else {
+            positionStart = this.selection.isForward ? this.selection.start.clone() : this.selection.end.clone();
+            positionEnd = this.selection.isForward ? this.selection.end.clone() : this.selection.start.clone();
+            if (this.selection.isParagraphMarkSelected()) {
+                positionEnd.offset -= 1;
+            }
+            if (positionStart.paragraph !== positionEnd.paragraph) {
+                if (!positionStart.isAtParagraphStart) {
+                    positionEnd.setPositionParagraph(positionStart.paragraph.lastChild as LineWidget, (positionStart.paragraph.lastChild as LineWidget).getEndOffset());
+                } else if (positionStart.isAtParagraphStart && !positionEnd.isAtParagraphEnd) {
+                    let previousParagraph: ParagraphWidget;
+                    if (positionEnd.paragraph.previousRenderedWidget instanceof TableWidget) {
+                        previousParagraph = this.selection.getLastBlockInLastCell(positionEnd.paragraph.previousRenderedWidget) as ParagraphWidget;
+                    } else {
+                        previousParagraph = positionEnd.paragraph.previousRenderedWidget as ParagraphWidget;
+                    }
+                    positionEnd.setPositionParagraph(previousParagraph.lastChild as LineWidget, (previousParagraph.lastChild as LineWidget).getEndOffset());
+                }
+            }
+            this.updateContentControlPosition(positionStart, positionEnd);
+            if (positionStart.isAtParagraphStart && positionEnd.isAtParagraphEnd) {
+                isInline = false;
+            }
+            if (this.editorHistory) {
+                this.initComplexHistory('InsertContentControl');
+            }
         }
         const blockStartContentControl: ContentControl = new ContentControl(isInline ? 'Inline' : 'Block');
         const blockEndContentControl: ContentControl = new ContentControl(isInline ? 'Inline' : 'Block');
         let properties: ContentControlProperties = new ContentControlProperties(isInline ? 'Inline' : 'Block');
         properties.color = "#00000000";
-        positionStart.isAtSamePosition(positionEnd) ? properties.hasPlaceHolderText = true : properties.hasPlaceHolderText = false;
+        properties.hasPlaceHolderText = positionStart.isAtSamePosition(positionEnd) ? true : false;
         properties.isTemporary = false;
         properties.lockContentControl = !isNullOrUndefined(lock) ? !lock : false;
         properties.lockContents = !isNullOrUndefined(lockContents) ? !lockContents : false;
@@ -7238,6 +7259,9 @@ export class Editor {
                         if (lineWidget.children[k].characterFormat.fontColor !== insertFormat.fontColor) {
                             lineWidget.children[k].characterFormat.fontColor = insertFormat.fontColor;
                         }
+                        if (lineWidget.children[k].characterFormat.highlightColor !== insertFormat.highlightColor) {
+                            lineWidget.children[k].characterFormat.highlightColor = insertFormat.highlightColor;
+                        }
                         if (lineWidget.children[k].characterFormat.fontSize !== insertFormat.fontSize) {
                             lineWidget.children[k].characterFormat.fontSize = insertFormat.fontSize;
                             lineWidget.children[k].characterFormat.fontSizeBidi = insertFormat.fontSizeBidi;
@@ -11215,7 +11239,9 @@ export class Editor {
      */
     public increaseIndent(): void {
         if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
+            this.increasedIndent = true;
             this.onApplyParagraphFormat('leftIndent', this.documentHelper.defaultTabWidth, true, false);
+            this.increasedIndent = false;
         }
     }
     /**
@@ -11225,7 +11251,9 @@ export class Editor {
      */
     public decreaseIndent(): void {
         if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
+            this.decreasedIndent = true;
             this.onApplyParagraphFormat('leftIndent', -this.documentHelper.defaultTabWidth, true, false);
+            this.decreasedIndent = false;
         }
     }
     /**
@@ -13103,15 +13131,21 @@ export class Editor {
         // Increment or Decrement list level for Multilevel lists.
         let documentHelper: DocumentHelper = this.documentHelper;
         let listFormat: WListFormat = this.documentHelper.selection.start.paragraph.paragraphFormat.listFormat;
-        let paragraphFormat: WParagraphFormat = this.documentHelper.selection.start.paragraph.paragraphFormat;
+        let paragraphFormat: WParagraphFormat = undefined;
+        if (!this.documentHelper.selection.isForward) {
+            paragraphFormat = documentHelper.selection.end.paragraph.paragraphFormat;
+        } else {
+            paragraphFormat = documentHelper.selection.start.paragraph.paragraphFormat;
+        }
         let list: WList = documentHelper.getListById(paragraphFormat.listFormat.listId);
         let listLevel: WListLevel = documentHelper.layout.getListLevel(list, paragraphFormat.listFormat.listLevelNumber);
+        const paraListLevelNumber: number = paragraphFormat.listFormat.listLevelNumber;
         let levelNumber: number;
         if (increaseLevel) {
-            levelNumber = paragraphFormat.listFormat.listLevelNumber + 1;
+            levelNumber = paraListLevelNumber === 8 ? paraListLevelNumber : paraListLevelNumber + 1;
         }
         else {
-            levelNumber = paragraphFormat.listFormat.listLevelNumber - 1;
+            levelNumber = paraListLevelNumber === 0 ? paraListLevelNumber : paraListLevelNumber - 1;
         }
         let nextListLevel: WListLevel = documentHelper.layout.getListLevel(list, levelNumber);
         if (!isNullOrUndefined(nextListLevel)) {
@@ -13824,8 +13858,17 @@ export class Editor {
         block = this.documentHelper.selection.getNextRenderedBlock(block);
         if (!isNullOrUndefined(block)) { //Goto the next block.
             if (block instanceof ParagraphWidget) {
-                if (property === 'listFormat' && value instanceof WListFormat && block.paragraphFormat.listFormat.hasValue("listLevelNumber") && value["listLevelNumber"] < block.paragraphFormat.listFormat.listLevelNumber) {
-                    value["listLevelNumber"] = block.paragraphFormat.listFormat.listLevelNumber;
+                if (value instanceof WListFormat && block.paragraphFormat.listFormat.hasValue("listLevelNumber")) {
+                    const paraListLevelNumber: number = block.paragraphFormat.listFormat.listLevelNumber;
+                    if (property === 'listFormat' && value["listLevelNumber"] < paraListLevelNumber && !this.increasedIndent && !this.decreasedIndent) {
+                        value["listLevelNumber"] = paraListLevelNumber;
+                    }
+                    if (this.increasedIndent && value["listLevelNumber"] - 1 !== paraListLevelNumber) {
+                        value["listLevelNumber"] = paraListLevelNumber === 8 ? paraListLevelNumber : paraListLevelNumber + 1;
+                    }
+                    if (this.decreasedIndent && value["listLevelNumber"] + 1 !== paraListLevelNumber) {
+                        value["listLevelNumber"] = paraListLevelNumber === 0 ? paraListLevelNumber : paraListLevelNumber - 1;
+                    }
                 }
                 this.applyParaFormat(block, start, end, property, value, update);
             } else {
@@ -17960,7 +18003,14 @@ export class Editor {
         let levelNumber: number = -1;
         let initialListLevel: WListLevel = undefined;
         let isSameList: boolean = false;
-        if (currentParagraph.paragraphFormat.listFormat.listId !== -1 && !isNullOrUndefined(currentParagraph.paragraphFormat.listFormat.listLevel)) {
+        let isRestartList: boolean = false;
+        if (!isNullOrUndefined(list) && start.paragraph.paragraphFormat.listFormat.listId === -1 
+            && currentParagraph.paragraphFormat.listFormat.listId !== -1 && currentParagraph.paragraphFormat.listFormat.listLevelNumber > 0 
+            && currentParagraph.paragraphFormat.listFormat.listLevel.listLevelPattern !== listLevelPattern) {
+            isRestartList = true;
+            list = undefined;
+        }
+        if (!isRestartList && currentParagraph.paragraphFormat.listFormat.listId !== -1 && !isNullOrUndefined(currentParagraph.paragraphFormat.listFormat.listLevel)) {
             const listFormat: WListFormat = currentParagraph.paragraphFormat.listFormat;
             this.listFormatInfo = {
                 listNumberFormat: listFormat.listLevel.numberFormat,
@@ -17968,17 +18018,17 @@ export class Editor {
                 listCharacterFormat: listFormat.listLevel.characterFormat.hasValue('fontFamily') ? listFormat.listLevel.characterFormat.fontFamily : undefined,
                 listId: listFormat.listId
             };
-            if (isNullOrUndefined(currentParagraph.previousWidget) && currentParagraph.paragraphFormat.listFormat.listLevelNumber > 0) {
-                this.listFormatInfo.listLevelNumber = this.listLevelNumber = this.documentHelper.selection.start.paragraph.paragraphFormat.listFormat.listLevelNumber;
+            if (isNullOrUndefined(currentParagraph.previousWidget) && listFormat.listLevelNumber > 0) {
+                this.listFormatInfo.listLevelNumber = this.listLevelNumber = start.paragraph.paragraphFormat.listFormat.listLevelNumber;
             }
             else {
                 this.listFormatInfo.listLevelNumber = this.listLevelNumber = listFormat.listLevelNumber;
             }
         }
         if (!isNullOrUndefined(list)) {
-            if (isNullOrUndefined(currentParagraph.previousWidget) && currentParagraph.paragraphFormat.listFormat.listLevelNumber > 0)
+            if (isNullOrUndefined(currentParagraph.previousWidget) && currentParagraph.paragraphFormat.listFormat.listLevelNumber > 0) 
             {
-                levelNumber = this.documentHelper.selection.start.paragraph.paragraphFormat.listFormat.listLevelNumber;
+                levelNumber = start.paragraph.paragraphFormat.listFormat.listLevelNumber;
             }
             else
             {
@@ -23909,6 +23959,7 @@ export class Editor {
         }
         this.owner.isShiftingEnabled = true;
         this.insertElements([editEnd], [editStart]);
+        editStart.editRangeEnd.line = editEnd.line;
         if (this.editorHistory) {
             this.editorHistory.updateComplexHistoryInternal();
         }

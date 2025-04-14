@@ -32,12 +32,14 @@ export class _PdfLexicalOperator {
     _hexStringNumber: number;
     beginInlineImagePosition: number;
     currentChar: number;
-    constructor(stream: any) { // eslint-disable-line
+    _isFormsDataFormat: boolean;
+    constructor(stream: any, isFormDataFormat: boolean = false) { // eslint-disable-line
         this.stream = stream;
         this.nextChar();
         this.stringBuffer = [];
         this._hexStringNumber = 0;
         this.beginInlineImagePosition = -1;
+        this._isFormsDataFormat = isFormDataFormat;
     }
     nextChar(): number {
         return (this.currentChar = this.stream.getByte());
@@ -377,7 +379,7 @@ export class _PdfLexicalOperator {
         ch = this.nextChar();
         while (ch >= 0 && !specialChars[ch]) { // eslint-disable-line
             const possibleCommand: string = str + String.fromCharCode(ch);
-            if (str.length === 128) {
+            if (!this._isFormsDataFormat && str.length === 128) {
                 throw new FormatError(`Command token too long: ${str.length}`);
             }
             str = possibleCommand;
@@ -915,15 +917,14 @@ export class _PdfParser {
         if (Array.isArray(filter)) {
             const filterArray: any = filter; // eslint-disable-line
             const paramsArray: any = params; // eslint-disable-line
-            for (let i: number = 0; i < filterArray.length; ++i) {
-                const reference: any = filterArray[Number.parseInt(i.toString(), 10)]; // eslint-disable-line
+            filterArray.forEach((reference: any, i: number) => { // eslint-disable-line
                 filter = reference instanceof _PdfReference ? this.xref._fetch(reference) : reference;
                 if (!(filter instanceof _PdfName) && !(filter instanceof _PdfCommand)) {
                     throw new FormatError(`Bad filter name '${filter}'`);
                 }
                 params = null;
-                if (Array.isArray(paramsArray) && i in paramsArray) {
-                    const ref: any = paramsArray[Number.parseInt(i.toString(), 10)]; // eslint-disable-line
+                if (Array.isArray(paramsArray) && i !== null && typeof i !== 'undefined' && i in paramsArray) {
+                    const ref: any = paramsArray[<number>i]; // eslint-disable-line
                     params = ref instanceof _PdfReference ? this.xref._fetch(ref) : ref;
                 }
                 if (filter instanceof _PdfName) {
@@ -932,7 +933,7 @@ export class _PdfParser {
                     stream = this.makeFilter(stream, filter.command, maybeLength, params);
                 }
                 maybeLength = null;
-            }
+            });
         }
         return stream;
     }

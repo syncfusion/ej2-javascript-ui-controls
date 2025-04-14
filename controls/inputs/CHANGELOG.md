@@ -2,7 +2,35 @@
 
 ## [Unreleased]
 
-## 29.1.37 (2025-04-08)
+## 29.1.38 (2025-04-15)
+
+### TextArea
+
+#### Bug Fixes
+
+`#I698848` - Fixed an issue where the width property was not functioning correctly in the textarea component.
+
+## 29.1.33 (2025-03-25)
+
+### SpeechToText
+
+The SpeechToText control provides seamless voice-to-text conversion in web applications. It features real-time transcription with interim results, multilingual recognition, customizable buttons and tooltips, and error handling, ensuring intuitive and accessible speech recognition.
+
+Explore the demo [here](https://ej2.syncfusion.com/demos/#/fluent2/speech-to-text/default.html)
+
+**Key features**
+
+- **Real-time transcription**: Instantly captures spoken input and converts it into text, ensuring smooth speech recognition.
+- **Interim results**: Provides partial transcriptions as the user speaks, offering dynamic real-time experience before finalizing the text.
+- **Multilingual recognition**: Supports multiple languages allowing users to transcribe speech in their preferred language.
+- **Tooltips**: Tooltips display information about start and stop actions, guiding users throughout the speech recognition process.
+- **Appearance**: Supports predefined styles and allows customization of content and icons to meet the application's design and user preferences.
+
+### Slider
+
+#### Bug Fixes
+
+- `#I695740` - An issue with large tick values in the Range Slider component when setting decimal values for `largeStep` has been resolved.
 
 ### ColorPicker
 

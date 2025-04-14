@@ -74,11 +74,10 @@ export class _PdfMergeHelper {
                         const pageContent: any = isSplitDocument ?  this._copier._copy(contents) : contents; // eslint-disable-line
                         newPage._pageDictionary.update(key, pageContent);
                     } else if (contents instanceof Array) {
-                        for (let i: number = 0; i < contents.length; i++) {
-                            const newContent: any = isSplitDocument ? (this._copier._copy(contents[Number.parseInt(i.toString(), 10)])) : // eslint-disable-line
-                                contents[Number.parseInt(i.toString(), 10)];
+                        contents.forEach((content: any) => { // eslint-disable-line
+                            const newContent: any = isSplitDocument ? this._copier._copy(content) : content; // eslint-disable-line
                             newContents.push(newContent);
-                        }
+                        });
                         newPage._pageDictionary.update(key, newContents);
                     }
                 } else if (key === 'Resources' && value) {
@@ -112,9 +111,9 @@ export class _PdfMergeHelper {
             const bookMarkMap: Map<PdfPage, PdfBookmarkBase[]> = this._sourceDocument._parseBookmarkDestination();
             if (bookMarkMap && bookMarkMap.has(page)) {
                 const bookmarks: PdfBookmarkBase[] = bookMarkMap.get(page);
-                for (let i: number = 0; i < bookmarks.length; i++) {
-                    this._bookmarks.push(bookmarks[Number.parseInt(i.toString(), 10)]);
-                }
+                bookmarks.forEach((bookmark: PdfBookmarkBase) => {
+                    this._bookmarks.push(bookmark);
+                });
             }
         }
         if ((!isCopiedPage && layers) || !this._options.optimizeResources) {
@@ -127,9 +126,8 @@ export class _PdfMergeHelper {
         let dest: any[]; // eslint-disable-line
         let isDestination: boolean = false;
         const oldCollection: PdfAnnotationCollection = page.annotations;
-        const count: number = oldCollection.count;
-        for (let i: number = 0; i < count; i++) {
-            const annotationReference: _PdfReference = oldCollection._annotations[Number.parseInt(i.toString(), 10)];
+        const annotations: Array<_PdfReference> = oldCollection._annotations;
+        annotations.forEach((annotationReference: _PdfReference, i: number) => {
             if (annotationReference) {
                 const annotationDictionary: _PdfDictionary = this._sourceDocument._crossReference._fetch(annotationReference);
                 if (annotationDictionary) {
@@ -137,11 +135,10 @@ export class _PdfMergeHelper {
                         dest = [];
                         const destinationArray: any = annotationDictionary.get('Dest'); // eslint-disable-line
                         const destination: any = annotationDictionary._get('Dest'); // eslint-disable-line
-                        if (destinationArray instanceof Array) {
-                            const destArray: any[] = destinationArray; // eslint-disable-line
-                            for (let j: number = 0; j < destArray.length; j++) {
-                                dest.push(destArray[Number.parseInt(j.toString(), 10)]);
-                            }
+                        if (Array.isArray(destinationArray)) {
+                            destinationArray.forEach((d: any) => { // eslint-disable-line
+                                dest.push(d);
+                            });
                             isDestination = true;
                         } else if (destination instanceof _PdfReference) {
                             dest.push(destination);
@@ -169,7 +166,7 @@ export class _PdfMergeHelper {
             }
             isDestination = false;
             dest = [];
-        }
+        });
         if (array.length > 0) {
             newPage._pageDictionary.update('Annots', array);
         }
@@ -239,22 +236,28 @@ export class _PdfMergeHelper {
     _groupFormFieldsKids(destinationField: PdfField, field: PdfField, kidsArray: _PdfReference[], destKids: _PdfReference[], oldKids:
                          _PdfReference[], ref: _PdfReference, array: _PdfReference[], index?: number, fieldIndex?: number, drEntry?: _PdfDictionary, widget?: any) : _PdfReference[] { // eslint-disable-line
         if (field._dictionary.has('Kids') && destinationField._dictionary.has('Kids')) {
-            if (kidsArray.indexOf(oldKids[Number.parseInt(index.toString(), 10)]) !== -1) {
-                const oldDictionary: _PdfDictionary = field._crossReference._fetch(oldKids[Number.parseInt(index.toString(), 10)]);
-                const dictionary: _PdfDictionary = this._copier._copyDictionary(oldDictionary, !this._isDuplicatePage);
-                dictionary.update('P', ref);
-                const reference: _PdfReference = this._crossReference._getNextReference();
-                this._crossReference._cacheMap.set(reference, dictionary);
-                array.push(reference);
-                dictionary.update('Parent', destinationField._ref);
-                destKids.push(reference);
-                dictionary._updated = true;
-                destinationField._dictionary._updated = true;
-                if (!this._isDuplicatePage) {
-                    if ((destinationField instanceof PdfTextBoxField || destinationField instanceof PdfButtonField || destinationField instanceof PdfComboBoxField) && dictionary.has('AS')) {
-                        delete dictionary._map.AS;
+            if (index !== null && typeof index !== 'undefined' && index >= 0 && oldKids.length > index) {
+                const oldKid: _PdfReference = oldKids[<number>index];
+                if (oldKid && kidsArray.indexOf(oldKid) !== -1) {
+                    const oldDictionary: _PdfDictionary = field._crossReference._fetch(oldKid);
+                    const dictionary: _PdfDictionary = this._copier._copyDictionary(oldDictionary, !this._isDuplicatePage);
+                    dictionary.update('P', ref);
+                    const reference: _PdfReference = this._crossReference._getNextReference();
+                    this._crossReference._cacheMap.set(reference, dictionary);
+                    array.push(reference);
+                    dictionary.update('Parent', destinationField._ref);
+                    destKids.push(reference);
+                    dictionary._updated = true;
+                    destinationField._dictionary._updated = true;
+                    if (!this._isDuplicatePage) {
+                        if ((destinationField instanceof PdfTextBoxField ||
+                             destinationField instanceof PdfButtonField ||
+                             destinationField instanceof PdfComboBoxField) &&
+                             dictionary.has('AS')) {
+                            delete dictionary._map.AS;
+                        }
+                        this._createAppearance(destinationField, field, oldDictionary, dictionary, drEntry, widget);
                     }
-                    this._createAppearance(destinationField, field, oldDictionary, dictionary, drEntry, widget);
                 }
             }
         } else if (field._dictionary.has('Kids') && !destinationField._dictionary.has('Kids') || this._isDuplicatePage) {
@@ -293,8 +296,8 @@ export class _PdfMergeHelper {
         this._updateFieldDictionary(fieldDictionary, ref, newFieldReference);
         this._destinationDocument.form._dictionary._updated = true;
         let oldDictionary: _PdfDictionary;
-        if (oldKids !== undefined && oldKids.length > 0) {
-            oldDictionary = field._crossReference._fetch(oldKids[Number.parseInt(index.toString(), 10)]);
+        if (oldKids !== undefined && oldKids.length > 0 && typeof index !== 'undefined' && index !== null && oldKids.length > index && index >= 0) {
+            oldDictionary = field._crossReference._fetch(oldKids[<number>index]);
         } else {
             oldDictionary = formFieldDictionary;
         }

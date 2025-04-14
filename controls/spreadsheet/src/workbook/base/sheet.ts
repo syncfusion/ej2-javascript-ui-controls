@@ -671,6 +671,7 @@ export function duplicateSheet(context: Workbook, sheetIndex?: number, action?: 
     }
     if (!args.eventArgs.cancel) {
         const originalSheet: SheetModel = getSheet(context, sheetIndex);
+        const originalSheetName: string = originalSheet.name;
         const sheet: SheetModel = extend({}, (originalSheet as { properties: Object }).properties ?
             (originalSheet as { properties: Object }).properties : originalSheet, {}, true);
         sheet.id = getMaxSheetId(context.sheets);
@@ -690,26 +691,31 @@ export function duplicateSheet(context: Workbook, sheetIndex?: number, action?: 
         }
         context.notify(duplicateSheetFilterHandler, {sheetIndex: sheetIndex, newSheetIndex: sheetIndex + 1});
         context.notify(updateSortCollection, { isDuplicate: true, curSheetIndex: sheetIndex, newSheetIndex: sheetIndex + 1});
-        for (let i: number = 0; i <= sheet.usedRange.rowIndex; i++) {
-            const row: RowModel = sheet.rows[i as number];
+        sheet.rows.forEach((row: RowModel) => {
             if (!row || !row.cells) {
-                continue;
+                return;
             }
-            for (let j: number = 0; j <= sheet.usedRange.colIndex; j++) {
-                const cell: CellModel = row.cells[j as number];
-                if (!cell || !cell.chart) {
-                    continue;
+            row.cells.forEach((cell: CellModel) => {
+                if (!cell) {
+                    return;
                 }
                 const charts: ChartModel[] = cell.chart;
-                charts.forEach((chart: ChartModel) => {
-                    const lastIndex: number = chart.range.lastIndexOf('!');
-                    const chartRange: string = chart.range.substring(0, lastIndex);
-                    if (chartRange === originalSheet.name) {
-                        chart.range = sheet.name + chart.range.substring(lastIndex);
-                    }
-                });
-            }
-        }
+                if (charts) {
+                    charts.forEach((chart: ChartModel) => {
+                        const lastIndex: number = chart.range.lastIndexOf('!');
+                        let chartSheet: string = chart.range.substring(0, lastIndex);
+                        let duplicateSheetName: string = sheet.name;
+                        if (chartSheet.startsWith('\'') && chartSheet.endsWith('\'')) {
+                            chartSheet = chartSheet.slice(1, -1);
+                            duplicateSheetName = `'${duplicateSheetName}'`;
+                        }
+                        if (chartSheet === originalSheetName) {
+                            chart.range = duplicateSheetName + chart.range.substring(lastIndex);
+                        }
+                    });
+                }
+            });
+        });
         context.createSheet(sheetIndex + 1, [sheet]);
         context.notify(
             workbookFormulaOperation, { action: 'addSheet', sheetName: 'Sheet' + sheet.id, visibleName: sheet.name, sheetId: sheet.id });

@@ -4,6 +4,14 @@
 
 ## 29.1.37 (2025-04-08)
 
+### Tooltip
+
+#### Bug Fixes
+
+- `#I701814`, `#I687776` - Resolved an issue where the Tooltip remained visible when the cursor quickly left the target element.
+
+## 29.1.35 (2025-04-01)
+
 ### Dialog
 
 #### Bug Fixes

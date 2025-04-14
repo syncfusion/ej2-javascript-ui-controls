@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.1.38 (2025-04-15)
+
+### Image Editor
+
+#### Bug Fixes
+
+- The issue with "Crop selection resizing beyond image bounds on mobile" has been resolved.
+
 ## 29.1.37 (2025-04-08)
 
 ### Image Editor

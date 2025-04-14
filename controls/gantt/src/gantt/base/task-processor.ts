@@ -137,6 +137,10 @@ export class TaskProcessor extends DateProcessor {
         let hierarchicalData: Object[] = [];
         if (!isNullOrUndefined(taskIdMapping) && !isNullOrUndefined(parentIdMapping)) {
             const data: object[] = [];
+            let tempDataArray: Object[];
+            if (this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping && !this.parent.enableVirtualization) {
+                tempDataArray = JSON.parse(JSON.stringify(this.dataArray));
+            }
             for (let i: number = 0; i < this.dataArray.length; i++) {
                 const tempData: Object = this.dataArray[i as number];
                 if (tempData['parentItem']) {
@@ -150,7 +154,12 @@ export class TaskProcessor extends DateProcessor {
             if (!this.parent.taskFields.child) {
                 this.parent.setProperties({ taskFields: { child: 'Children' } }, true);
             }
-            this.constructDataSource(data);
+            if (!isNullOrUndefined(tempDataArray)) {
+                this.constructDataSource(this.dataArray);
+                this.dataArray = tempDataArray;
+            } else {
+                this.constructDataSource(data);
+            }
             hierarchicalData = this.hierarchyData;
         } else {
             hierarchicalData = this.dataArray;
@@ -391,7 +400,14 @@ export class TaskProcessor extends DateProcessor {
         const predecessors: string | number | object[] = data[taskSettings.dependency];
         const baselineStartDate: Date = this.getDateFromFormat(data[taskSettings.baselineStartDate], true);
         let baselineEndDate: Date = this.getDateFromFormat(data[taskSettings.baselineEndDate], true);
-        const ganttData: IGanttData = {} as IGanttData;
+        let ganttData: IGanttData;
+        let unModifiedData: Object;
+        if (this.parent.loadChildOnDemand && taskSettings.hasChildMapping && !this.parent.enableVirtualization) {
+            ganttData = data;
+            unModifiedData = JSON.parse(JSON.stringify(data));
+        } else {
+            ganttData = {} as IGanttData;
+        }
         const ganttProperties: ITaskData = {} as ITaskData;
         const autoSchedule: boolean = (this.parent.taskMode === 'Auto') ? true :
             (this.parent.taskMode === 'Manual') ? false :
@@ -527,7 +543,11 @@ export class TaskProcessor extends DateProcessor {
             this.parent.setRecordValue('autoDuration', ganttData.ganttProperties.duration, ganttProperties);
         }
         this.parent.setRecordValue('expanded', (ganttData.hasChildRecords && this.parent.collapseAllParentTasks) ? false : true, ganttData);
-        this.updateExpandStateMappingValue(ganttData, data);
+        if (isNullOrUndefined(unModifiedData)) {
+            this.updateExpandStateMappingValue(ganttData, data);
+        } else {
+            this.updateExpandStateMappingValue(ganttData, unModifiedData);
+        }
         if (!isLoad) {
             this.parent.setRecordValue('width', this.calculateWidth(ganttData), ganttProperties, true);
             this.parent.setRecordValue('left', this.calculateLeft(ganttProperties, ganttData), ganttProperties, true);
@@ -961,6 +981,9 @@ export class TaskProcessor extends DateProcessor {
         if (expandStateMapping && ganttData.hasChildRecords) {
             if (!isNullOrUndefined(mappingValue)) {
                 updatableValue = mappingValue.toString() === 'true' ? true : false;
+                if (this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping && !this.parent.enableVirtualization && (data as Record<string, any>)['expanded']) {
+                    updatableValue = true;
+                }
             } else if (isNullOrUndefined(mappingValue) && !this.parent.collapseAllParentTasks) {
                 updatableValue = true;
             } else if (isNullOrUndefined(mappingValue) && this.parent.collapseAllParentTasks) {

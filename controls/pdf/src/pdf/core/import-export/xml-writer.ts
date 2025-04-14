@@ -306,6 +306,7 @@ export class _XmlWriter {
         text = text.replace(/\&/g, '&amp;'); // eslint-disable-line
         text = text.replace(/\</g, '&lt;'); // eslint-disable-line
         text = text.replace(/\>/g, '&gt;'); // eslint-disable-line
+        text = text.replace(/\u0000/g, ''); // eslint-disable-line
         if (inAttributeValue) {
             text = text.replace(/\"/g, '&quot;'); // eslint-disable-line
         }

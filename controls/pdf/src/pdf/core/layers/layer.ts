@@ -690,7 +690,7 @@ export class PdfLayer {
         if (dictionary.has('Name') && dictionary.has('OCGs')) {
             const refArray: _PdfReference[] = dictionary.get('OCGs') as [];
             if (!refArray) {
-                reference = dictionary.getArray('OCGs') as _PdfReference;
+                reference = dictionary.getRaw('OCGs') as _PdfReference;
                 dictionary = dictionary.get('OCGs') as _PdfDictionary;
                 if (dictionary && dictionary.has('Name')) {
                     isPresent = this._setLayerPage(reference, pageBase, layerID);

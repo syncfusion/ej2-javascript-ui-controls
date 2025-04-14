@@ -2,7 +2,7 @@ import { _PdfDictionary, _PdfName } from './../pdf-primitives';
 import { _PdfBaseStream, _PdfContentStream } from './../base-stream';
 import { PdfGraphics } from './pdf-graphics';
 import { _PdfCrossReference } from './../pdf-cross-reference';
-import { _toRectangle } from './../utils';
+import { _toRectangle, Rectangle, Size } from './../utils';
 import { _JsonDocument } from './../import-export/json-document';
 /**
  * `PdfTemplate` class represents the template of the PDF.
@@ -66,29 +66,96 @@ export class PdfTemplate {
      * @private
      */
     constructor(bounds: number[], crossReference: _PdfCrossReference)
-    constructor(value?: number[] | _PdfBaseStream, crossReference?: _PdfCrossReference) {
-        this._crossReference = crossReference;
-        if (value instanceof _PdfBaseStream) {
-            this._content = value;
-            if (!this._content.dictionary.has('Type') || !this._content.dictionary.has('Subtype')) {
-                this._initialize();
-            }
-            const bounds: number[] = this._content.dictionary.getArray('BBox');
-            if (bounds && bounds.length > 3) {
-                const rect: { x: number, y: number, width: number, height: number } = _toRectangle(bounds);
-                this._size = [rect.width, rect.height];
-                this._templateOriginalSize = this._size;
-            }
+    /**
+     * Initializes a new instance of the `PdfTemplate` class.
+     *
+     * @param {Size} size - The size of the template.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create a template
+     * const template: PdfTemplate = new PdfTemplate({ width: 400, height: 200 });
+     * // Create new image object by using JPEG image data as Base64 string format
+     * let image: PdfImage = new PdfBitmap('/9j/4AAQSkZJRgABAQEAkACQAAD/4....QB//Z');
+     * // Draw the image into the template graphics
+     * template.graphics.drawImage(image, 0, 0, 100, 50);
+     * // Draw template to the page
+     * page.graphics.drawTemplate(template, {x: 0, y: 0, width: 100, height: 50});
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    constructor(size: Size)
+    /**
+     * Initializes a new instance of the `PdfTemplate` class.
+     *
+     * @param {Rectangle} bounds - The bounding rectangle of the template.
+     * ```typescript
+     * // Load an existing PDF document
+     * let document: PdfDocument = new PdfDocument(data, password);
+     * // Get the first page
+     * let page: PdfPage = document.getPage(0) as PdfPage;
+     * // Create a template
+     * const template: PdfTemplate = new PdfTemplate({ x: 100, y: 100, width: 400, height: 200 });
+     * // Create new image object by using JPEG image data as Base64 string format
+     * let image: PdfImage = new PdfBitmap('/9j/4AAQSkZJRgABAQEAkACQAAD/4....QB//Z');
+     * // Draw the image into the template graphics
+     * template.graphics.drawImage(image, 0, 0, 100, 50);
+     * // Draw template to the page
+     * page.graphics.drawTemplate(template, {x: 0, y: 0, width: 100, height: 50});
+     * // Save the document
+     * document.save('output.pdf');
+     * // Destroy the document
+     * document.destroy();
+     * ```
+     */
+    constructor(bounds: Rectangle)
+    constructor(value?: number[] | _PdfBaseStream | Size | Rectangle, crossReference?: _PdfCrossReference) {
+        if (crossReference) {
+            this._crossReference = crossReference;
+        }
+        if (value === null || typeof value === 'undefined') {
             this._isReadOnly = true;
         } else {
-            if (typeof value !== 'undefined') {
+            if (value instanceof _PdfBaseStream) {
+                this._content = value;
+                if (!this._content.dictionary.has('Type') || !this._content.dictionary.has('Subtype')) {
+                    this._initialize();
+                }
+                const bounds: number[] = this._content.dictionary.getArray('BBox');
+                if (bounds && bounds.length > 3) {
+                    const rect: Rectangle = _toRectangle(bounds);
+                    this._size = [rect.width, rect.height];
+                    this._templateOriginalSize = this._size;
+                }
+                this._isReadOnly = true;
+            } else if (Array.isArray(value)) {
                 this._size = [value[2], value[3]];
                 this._content = new _PdfContentStream([]);
                 this._content.dictionary._crossReference = this._crossReference;
                 this._initialize();
                 this._content.dictionary.set('BBox', [value[0], value[1], value[0] + value[2], value[1] + value[3]]);
-            } else {
-                this._isReadOnly = true;
+            } else if (value.width !== null && value.height !== null && typeof value.width !== 'undefined' && typeof value.height !== 'undefined') {
+                let bounds: Rectangle;
+                let values: any = value; // eslint-disable-line
+                if (values.x !== null && typeof values.x !== 'undefined' && values.y !== null && typeof values.y !== 'undefined') {
+                    bounds = { x: values.x, y: values.y, width: values.width, height: values.height };
+                } else {
+                    bounds = { x: 0, y: 0, width: values.width, height: values.height };
+                }
+                this._size = [bounds.width, bounds.height];
+                this._content = new _PdfContentStream([]);
+                if (this._crossReference) {
+                    this._content.dictionary._crossReference = this._crossReference;
+                } else {
+                    this._isNew = true;
+                }
+                this._initialize();
+                this._content.dictionary.set('BBox', [bounds.x, bounds.y, bounds.x + bounds.width, bounds.y + bounds.height]);
             }
         }
         this._writeTransformation = true;

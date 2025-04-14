@@ -329,6 +329,7 @@ type SliderHandleNumber = 1 | 2;
 
 const bootstrapTooltipOffset: number = 6;
 const bootstrap4TooltipOffset: number = 3;
+const tolerance: number = 1e-10;
 
 const classNames: { [key: string]: string } = {
     root: 'e-slider',
@@ -470,7 +471,6 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private tooltipFormatInfo: NumberFormatOptions;
     private ticksFormatInfo: NumberFormatOptions;
     private customAriaText: string = null;
-    private noOfDecimals: number;
     private tickElementCollection: HTMLElement[];
     private limitBarFirst: HTMLElement;
     private limitBarSecond: HTMLElement;
@@ -792,14 +792,6 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private makeRoundNumber(value: number, precision: number): number {
         const decimals: number = precision || 0;
         return Number(value.toFixed(decimals));
-    }
-
-    private fractionalToInteger(value: number | string): number {
-        value = (this.numberOfDecimals(value) === 0) ? Number(value).toFixed(this.noOfDecimals) : value;
-        let tens: number = 1;
-        for (let i: number = 0; i < this.noOfDecimals; i++) { tens *= 10; }
-        value = Number((<number>value * tens).toFixed(0));
-        return value;
     }
 
     /**
@@ -1612,7 +1604,6 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
 
     private renderScale(): void {
         const orien: string = this.orientation === 'Vertical' ? 'v' : 'h';
-        this.noOfDecimals = this.numberOfDecimals(this.step);
         this.ul = this.createElement('ul', {
             className: classNames.scale + ' ' + 'e-' + orien + '-scale ' + classNames.tick + '-' + this.ticks.placement.toLowerCase(),
             attrs: { role: 'presentation', 'aria-hidden': 'true' }
@@ -1631,9 +1622,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         } else if (smallStep <= 0) {
             smallStep = parseFloat(formatUnit(this.step));
         }
-        const min: number = this.fractionalToInteger(<number>this.min);
-        const max: number = this.fractionalToInteger(<number>this.max);
-        const steps: number = this.fractionalToInteger(<number>smallStep);
+        const min: number = parseFloat(formatUnit(this.min));
+        const max: number = parseFloat(formatUnit(this.max));
+        const steps: number = parseFloat(formatUnit(smallStep));
         const bigNum: number = !isNullOrUndefined(this.customValues) && this.customValues.length > 0 && this.customValues.length - 1;
         const customStep: number = this.customTickCounter(bigNum);
         const count: number = !isNullOrUndefined(this.customValues) && this.customValues.length > 0 ?
@@ -1672,17 +1663,21 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 if (this.numberOfDecimals(this.max) === 0 && this.numberOfDecimals(this.min) === 0 &&
                     this.numberOfDecimals(this.step) === 0) {
                     if (orien === 'h') {
-                        islargeTick = ((start - parseFloat(this.min.toString())) % this.ticks.largeStep === 0) ? true : false;
+                        const reminder: number = (start - parseFloat(this.min.toString())) % this.ticks.largeStep;
+                        islargeTick = (Math.abs(reminder) < tolerance || Math.abs(this.ticks.largeStep - reminder) < tolerance);
                     } else {
-                        islargeTick = (Math.abs(start - parseFloat(this.max.toString())) % this.ticks.largeStep === 0) ? true : false;
+                        const reminder: number = Math.abs(start - parseFloat(this.max.toString())) % this.ticks.largeStep;
+                        islargeTick = (Math.abs(reminder) < tolerance || Math.abs(this.ticks.largeStep - reminder) < tolerance);
                     }
                 } else {
-                    const largestep: number = this.fractionalToInteger(<number>this.ticks.largeStep);
-                    const startValue: number = this.fractionalToInteger(<number>start);
+                    const largestep: number = this.ticks.largeStep;
+                    const startValue: number = start;
                     if (orien === 'h') {
-                        islargeTick = ((startValue - min) % largestep === 0) ? true : false;
+                        const reminder: number = ((startValue - min) % largestep);
+                        islargeTick = Math.abs(reminder) < tolerance || Math.abs(largestep - reminder) < tolerance;
                     } else {
-                        islargeTick = (Math.abs(startValue - parseFloat(max.toString())) % largestep === 0) ? true : false;
+                        const reminder: number = Math.abs(startValue - parseFloat(max.toString())) % largestep;
+                        islargeTick = Math.abs(reminder) < tolerance || Math.abs(largestep - reminder) < tolerance;
                     }
                 }
             }

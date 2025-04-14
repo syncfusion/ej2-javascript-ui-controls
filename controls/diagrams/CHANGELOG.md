@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.1.38 (2025-04-15)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I706720` - Added localization support for `SearchResults` and `noItemsToDisplay` texts in the symbol palette.
+
 ## 29.1.37 (2025-04-08)
 
 ### Diagram

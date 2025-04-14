@@ -865,7 +865,10 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             enableOptimizedRendering: this.pivotGridModule && (this.pivotGridModule.enableVirtualization &&
                 this.pivotGridModule.virtualScrollSettings && this.pivotGridModule.virtualScrollSettings.allowSinglePage),
             requestType: 'string',
-            headers: { 'Content-type': 'application/json' }
+            headers: { 'Content-type': 'application/json' },
+            enablePaging: this.pivotGridModule && this.pivotGridModule.enablePaging,
+            enableVirtualization: this.pivotGridModule && this.pivotGridModule.enableVirtualization,
+            allowDataCompression: this.pivotGridModule && this.pivotGridModule.allowDataCompression
         };
         if (this.request.readyState === XMLHttpRequest.UNSENT || this.request.readyState === XMLHttpRequest.OPENED) {
             this.request.withCredentials = false;
@@ -989,6 +992,10 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     this.engineModule.colStartPos = JSON.parse(engine.pivotCount).ColumnStartPosition;
                     this.engineModule.rowFirstLvl = JSON.parse(engine.pivotCount).RowFirstLevel;
                     this.engineModule.colFirstLvl = JSON.parse(engine.pivotCount).ColumnFirstLevel;
+                    if (this.pivotGridModule && this.pivotGridModule.enablePaging) {
+                        this.engineModule.rowPageCount = JSON.parse(engine.pivotCount).RowPageCount;
+                        this.engineModule.columnPageCount = JSON.parse(engine.pivotCount).ColumnPageCount;
+                    }
                     let rowPos: number;
                     const pivotValues: IAxisSet[][] = PivotUtil.formatPivotValues(JSON.parse(engine.pivotValue));
                     for (let rCnt: number = 0; rCnt < pivotValues.length; rCnt++) {

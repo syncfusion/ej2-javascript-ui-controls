@@ -1595,6 +1595,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                 this.notify(events.modelChanged, { module: 'navigationpane', newProp: newProp, oldProp: oldProp });
                 break;
             case 'path':
+                this.oldPath = oldProp.path;
                 this.setPath();
                 break;
             case 'searchSettings':

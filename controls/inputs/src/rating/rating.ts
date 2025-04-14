@@ -484,6 +484,9 @@ export class Rating extends Component<HTMLElement> implements INotifyPropertyCha
 
     private updateResetButton(): void {
         if (this.allowReset) {
+            if (this.resetElement) {
+                this.resetElement.blur();
+            }
             const isDisabled: boolean = (this.value <= this.min) || this.disabled;
             this.resetElement.classList[isDisabled ? 'add' : 'remove'](DISABLED);
             attributes(this.resetElement, { 'tabindex': (isDisabled ? '-1' : '0'), 'aria-hidden': isDisabled.toString() });

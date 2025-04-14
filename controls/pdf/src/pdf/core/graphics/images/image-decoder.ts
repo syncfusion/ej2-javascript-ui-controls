@@ -15,7 +15,7 @@ export abstract class _ImageDecoder {
         this._position = 0;
     }
     _getBuffer(index: number): number {
-        return this._stream[Number.parseInt(index.toString(), 10)];
+        return this._stream[<number>index];
     }
     _read(buffer: Uint8Array, offset: number, count: number): void
     _read(buffer: number[], offset: number, count: number, stream: number[]): {outputBuffer: number[], offset: number, length: number}

@@ -881,9 +881,21 @@ export class Toolbar {
                 } else {
                     if (!isNullOrUndefined(this.undoItem) && !isNullOrUndefined(this.undoItem.parentElement)) {
                         this.enableCollectionAvailable(this.pdfViewer.annotationModule.actionCollection, this.undoItem.parentElement);
+                        if (this.pdfViewer.annotationModule.actionCollection.length > 0) {
+                            this.undoItem.setAttribute('tabindex', '0');
+                        }
+                        else {
+                            this.undoItem.setAttribute('tabindex', '-1');
+                        }
                     }
                     if (!isNullOrUndefined(this.redoItem) && !isNullOrUndefined(this.redoItem.parentElement)) {
                         this.enableCollectionAvailable(this.pdfViewer.annotationModule.redoCollection, this.redoItem.parentElement);
+                        if (this.pdfViewer.annotationModule.redoCollection.length > 0) {
+                            this.redoItem.setAttribute('tabindex', '0');
+                        }
+                        else {
+                            this.redoItem.setAttribute('tabindex', '-1');
+                        }
                     }
                 }
             } else {

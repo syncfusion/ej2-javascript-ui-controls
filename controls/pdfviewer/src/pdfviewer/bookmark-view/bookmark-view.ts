@@ -384,13 +384,9 @@ export class BookmarkView {
             this.pdfViewerBase.mobileScrollerContainer.style.display = '';
             this.pdfViewerBase.updateMobileScrollerPosition();
         }
-        if (!this.isKeyboardNavigation) {
-            this.pdfViewerBase.focusViewerContainer();
-        }
         if (pageIndex > 0 && pageIndex <= this.pdfViewerBase.pageCount && this.pdfViewerBase.currentPageNumber !== pageIndex + 1) {
             this.pdfViewerBase.updateScrollTop(pageIndex, false);
         }
-        this.isKeyboardNavigation = false;
         return false;
     }
 

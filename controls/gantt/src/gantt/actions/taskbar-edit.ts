@@ -1035,6 +1035,8 @@ export class TaskbarEdit extends DateProcessor {
                         this.parent.showSpinner();
                     }
                     this.taskBarEditingAction(event, false);
+                } else {
+                    this.editTooltip.updateTooltip(this.segmentIndex);
                 }
             });
         } else if (!this.parent.isAdaptive && !this.taskBarEditAction) {

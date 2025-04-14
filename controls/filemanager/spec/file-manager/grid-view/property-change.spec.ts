@@ -7,7 +7,7 @@ import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement } from '@syncfusion/ej2-base';
 import { BeforePopupOpenCloseEventArgs } from '../../../src/file-manager/base/interface';
-import { toolbarItems, toolbarItems1, data1, data16, data17, dataHidden, idData1, idData2, idData4, noSorting, ascendingData, descendingData, singleSelectionDetails, data2} from '../data';
+import { toolbarItems, toolbarItems1, data1, data16, data17, dataHidden, idData1, idData2, idData4, noSorting, ascendingData, descendingData, singleSelectionDetails, data2, InvalidPath} from '../data';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -993,7 +993,18 @@ describe('FileManager control Grid view', () => {
                     expect(feObj.path).toBe('/Documents/');
                     expect(feObj.selectedItems.length).toBe(0);
                     expect(gridLi[0].getAttribute('aria-selected')).toBe(null);
-                    done();
+                    feObj.path = '/InvalidPath/';
+                    feObj.dataBind();
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request.respondWith({
+                        status: 200,
+                        responseText: JSON.stringify(InvalidPath)
+                    });
+                    setTimeout(function () {
+                        expect(feObj.element.querySelector('#file_dialog .e-dlg-content').innerText).toEqual('Could not find a part of the path');
+                        expect(feObj.path).toEqual('/Documents/');
+                        done();
+                    }, 500);
                 }, 500);
             }, 500);
         });

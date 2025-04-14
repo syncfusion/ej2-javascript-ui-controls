@@ -3660,6 +3660,17 @@ export class PdfButtonField extends PdfField {
                 if (reference) {
                     appearanceStream.reference = reference;
                 }
+                if (appearanceStream && appearanceStream instanceof _PdfDictionary && source._dictionary.has('AS')) {
+                    const name: _PdfName = source._dictionary.get('AS');
+                    if (name && name instanceof _PdfName && appearanceStream.has(name.name)) {
+                        const reference: _PdfReference = appearanceStream.getRaw(name.name);
+                        const value: _PdfBaseStream = appearanceStream.get(name.name);
+                        if (reference && value && value instanceof _PdfBaseStream) {
+                            appearanceStream = value;
+                            appearanceStream.reference = reference;
+                        }
+                    }
+                }
                 if (appearanceStream) {
                     template = new PdfTemplate(appearanceStream, this._crossReference);
                 }

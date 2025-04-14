@@ -407,7 +407,7 @@ export class SelectTool extends ToolBase {
                 const arrayNodes: (NodeModel | ConnectorModel | AnnotationModel)[] = this.commandHandler.getSelectedObject();
                 if (!this.commandHandler.hasSelection() || !args.info || !args.info.ctrlKey) {
                     // 948882: Improper Selection Behavior When Node Drag Constraint is Disabled
-                    if (button !== 2) {
+                    if (button !== 2 || !arrayNodes.some((obj: NodeModel | ConnectorModel | AnnotationModel) => obj === args.source)) {
                         this.commandHandler.clearSelection(args.source === null ? true : false);
                         if (this.action === 'LabelSelect') {
                             this.commandHandler.labelSelect(args.source, args.sourceWrapper, arrayNodes);

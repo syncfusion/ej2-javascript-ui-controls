@@ -1493,10 +1493,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         if ((!this.enableVirtualization && ((searchCount === searchActiveCount || searchActiveCount === this.maximumSelectionLength)
             && (this.mode === 'CheckBox' && this.showSelectAll))) || (this.enableVirtualization && this.mode === 'CheckBox' &&
-                this.showSelectAll && this.virtualSelectAll && this.value && this.value.length === this.totalItemCount)) {
+                this.showSelectAll && this.value && this.value.length === this.totalItemCount)) {
             this.notify('checkSelectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'check' });
-        } else if ((searchCount !== searchActiveCount) && (this.mode === 'CheckBox' && this.showSelectAll) &&
-            ((!this.enableVirtualization) || (this.enableVirtualization && !this.virtualSelectAll))) {
+        } else if ((searchCount !== searchActiveCount) && (this.mode === 'CheckBox' && this.showSelectAll)) {
             this.notify('checkSelectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'uncheck' });
         }
         if (this.enableGroupCheckBox && this.fields.groupBy && !this.enableSelectionOrder) {
@@ -1917,6 +1916,17 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         if (!(this.targetElement() && this.targetElement() !== '')) {
             e.preventDefault();
+        }
+        this.checkAndScrollParent();
+    }
+    private checkAndScrollParent(): void {
+        const parentElement: HTMLElement = this.overAllWrapper ? (this.overAllWrapper.parentElement as HTMLElement | null) : null;
+        if (parentElement) {
+            const wrapperHeight: number = parseFloat(getComputedStyle(this.overAllWrapper as HTMLElement).height);
+            const parentMaxHeight: number = parseFloat(getComputedStyle(parentElement).maxHeight);
+            if (!isNaN(parentMaxHeight) && wrapperHeight > parentMaxHeight) {
+                parentElement.scrollTop = parentElement.scrollHeight;
+            }
         }
     }
     private enable(state: boolean): void {
@@ -4718,6 +4728,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         } else {
             this.removeValue(value, e, length);
         }
+        this.checkAndScrollParent();
     }
     private updateListSelectEventCallback(
         value: string | number | boolean |object,
@@ -5289,7 +5300,8 @@ export class MultiSelect extends DropDownBase implements IInput {
                         this.updateWrapperText(this.viewWrapper, data);
                     }
                     wrapperleng = this.viewWrapper.offsetWidth +
-                        parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10);
+                        parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10) +
+                        parseInt(window.getComputedStyle(this.viewWrapper).paddingLeft, 10);
                     overAllContainer = this.componentWrapper.offsetWidth -
                         parseInt(window.getComputedStyle(this.componentWrapper).paddingLeft, 10) -
                         parseInt(window.getComputedStyle(this.componentWrapper).paddingRight, 10);
@@ -5301,14 +5313,16 @@ export class MultiSelect extends DropDownBase implements IInput {
                         this.updateWrapperText(this.viewWrapper, temp);
                         remaining = this.value.length - index;
                         wrapperleng = this.viewWrapper.offsetWidth +
-                            parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10);
+                            parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10) +
+                            parseInt(window.getComputedStyle(this.viewWrapper).paddingLeft, 10);
                         while (((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) > overAllContainer) && wrapperleng !== 0
                             && this.viewWrapper.innerHTML !== '') {
                             const textArr: string[] = [];
                             this.viewWrapper.innerHTML = textArr.join(this.delimiterChar);
                             remaining = this.value.length;
                             wrapperleng = this.viewWrapper.offsetWidth +
-                                parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10);
+                                parseInt(window.getComputedStyle(this.viewWrapper).paddingRight, 10) +
+                                parseInt(window.getComputedStyle(this.viewWrapper).paddingLeft, 10);
                         }
                         break;
                     } else if ((wrapperleng + remainSize + downIconWidth + this.clearIconWidth) <= overAllContainer) {
@@ -5337,13 +5351,13 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private checkClearIconWidth(): void {
         if (this.showClearButton) {
-            this.clearIconWidth = this.overAllClear.offsetWidth;
+            this.clearIconWidth = parseInt(window.getComputedStyle(this.overAllClear).width, 10);
         }
     }
     private updateRemainWidth(viewWrapper: HTMLElement, totalWidth: number): void {
         if (viewWrapper.classList.contains(TOTAL_COUNT_WRAPPER) && totalWidth < (viewWrapper.offsetWidth +
             parseInt(window.getComputedStyle(viewWrapper).paddingLeft, 10)
-            + parseInt(window.getComputedStyle(viewWrapper).paddingLeft, 10))) {
+            + parseInt(window.getComputedStyle(viewWrapper).paddingRight, 10))) {
             viewWrapper.style.width = totalWidth + 'px';
         }
     }
@@ -5625,6 +5639,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                                     li[index - 1].classList.remove('e-item-focus');
                                 }
                             }
+                            this.checkSelectAll();
                         },
                         0
                     );
@@ -5653,6 +5668,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 });
             }
         }
+        this.checkSelectAll();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const virtualTrackElement: Element = this.list.getElementsByClassName('e-virtual-ddl')[0];
         if (virtualTrackElement) {

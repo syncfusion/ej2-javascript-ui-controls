@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.1.38 (2025-04-15)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I710876` - The 'cellClick' event now accurately returns the correct cell information when the 'allowReordering' property is enabled in the pivot table.
+
 ## 29.1.37 (2025-04-08)
 
 ### Pivot Table

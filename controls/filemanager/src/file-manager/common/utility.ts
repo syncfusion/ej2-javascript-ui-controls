@@ -616,7 +616,7 @@ export function getSortedData(parent: IFileManager, items: Object[]): Object[] {
 export function getObject(parent: IFileManager, key: string, value: string): Object {
     const currFiles: Object[] = getValue(parent.pathId[parent.pathId.length - 1], parent.feFiles);
     const result: object[] = currFiles.filter((data: { [key: string]: string | number }) => data[key as string].toString() === value);
-    return result.length > 0 ? result[0] : null;
+    return result[0];
 }
 
 /**
@@ -833,16 +833,13 @@ export function setNextPath(parent: IFileManager, path: string): void {
         const eventName: string = (folders[i + 1] === '') ? events.finalizeEnd : events.initialEnd;
         const newPath: string = (folders[i as number] === '') ? '/' : (parent.path + folders[i as number] + '/');
         const data: Object = getObject(parent, key, folders[parseInt(i.toString(), 10)]);
-        if (!isNullOrUndefined(data)) {
-            const id: string = getValue('_fm_id', data);
-            parent.setProperties({ path: newPath }, true);
+        const id: string = getValue('_fm_id', data);
+        parent.setProperties({ path: newPath }, true);
+        if (!isNullOrUndefined(id)) {
             parent.pathId.push(id);
-            parent.itemData = [data];
-            parent.pathNames.push(getValue('name', data));
         }
-        else {
-            parent.originalPath = newPath;
-        }
+        parent.itemData = [data];
+        parent.pathNames.push(getValue('name', data));
         read(parent, eventName, parent.path);
         break;
     }

@@ -1578,13 +1578,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     if (this.sortOrder !== 'None') {
                         dataSource = this.getSortedDataSource(dataSource);
                     }
-                    if (this.element.querySelector('optgroup') && this.isGroupChecking && this.getModuleName() === 'multiselect') {
-                        dataSource = ListBase.groupDataSource(
-                            dataSource, (fields as FieldSettingsModel & { properties: Object }), this.sortOrder);
-                    } else {
-                        dataSource = ListBase.groupDataSource(
-                            dataSource, (fields as FieldSettingsModel & { properties: Object }).properties, this.sortOrder);
-                    }
+                    const fieldSet: FieldSettingsModel = (fields as FieldSettingsModel & { properties: Object }).properties ||
+                    (fields as FieldSettingsModel & { properties: Object });
+                    dataSource = ListBase.groupDataSource(dataSource, fieldSet, this.sortOrder);
                 }
                 addClass([this.list], dropDownBaseClasses.grouping);
             } else if (this.getModuleName() !== 'listbox' || (this.getModuleName() === 'listbox' && !this.preventDefActionFilter)) {

@@ -59,38 +59,32 @@ export class _JpegDecoder extends _ImageDecoder {
         }
     }
     _getImageDictionary(): _PdfStream {
-        const data: any = []; // eslint-disable-line
-        this._imageStream = new _PdfStream(data, new _PdfDictionary());
-        this._imageStream.isImageStream = true;
-        let tempString: string = '';
-        let decodedString: string = '';
-        for (let i: number = 0; i < this._imageDataAsNumberArray.byteLength; i++ ) {
-            tempString += ' ' + String.fromCharCode(this._getBuffer(i));
-        }
-        for (let i: number = 0; i < tempString.length; i++) {
-            if (i % 2 !== 0) {
-                decodedString += tempString[Number.parseInt(i.toString(), 10)];
+        if (this._imageStream && this._imageStream.length > 0) {
+            return this._imageStream;
+        } else {
+            const data: any = []; // eslint-disable-line
+            this._imageStream = new _PdfStream(data, new _PdfDictionary());
+            this._imageStream.isImageStream = true;
+            const entryLength: number = this._imageDataAsNumberArray.byteLength;
+            this._imageStream.bytes = new Uint8Array(entryLength);
+            for (let i: number = 0; i < entryLength; i++) {
+                this._imageStream.bytes[<number>i] = this._getBuffer(i);
             }
+            this._imageStream._isCompress = false;
+            const dictionary: _PdfDictionary = new _PdfDictionary();
+            dictionary.set('Type', new _PdfName('XObject'));
+            dictionary.set('Subtype', new _PdfName('Image'));
+            dictionary.set('Width', this._width);
+            dictionary.set('Height', this._height);
+            dictionary.set('BitsPerComponent', this._bitsPerComponent);
+            dictionary.set('Filter', new _PdfName('DCTDecode'));
+            dictionary.set('ColorSpace', new _PdfName(this._getColorSpace() as string));
+            dictionary.set('DecodeParms', this._getDecodeParams());
+            this._imageStream.dictionary = dictionary;
+            this._imageStream.end = this._imageStream.bytes.length;
+            this._imageStream.dictionary._updated = true;
+            return this._imageStream;
         }
-        this._imageStream.data = [decodedString];
-        this._imageStream._isCompress = false;
-        const dictionary: _PdfDictionary = new _PdfDictionary();
-        dictionary.set('Type', new _PdfName('XObject'));
-        dictionary.set('Subtype', new _PdfName('Image'));
-        dictionary.set('Width', this._width);
-        dictionary.set('Height', this._height);
-        dictionary.set('BitsPerComponent', this._bitsPerComponent);
-        dictionary.set('Filter', new _PdfName('DCTDecode'));
-        dictionary.set('ColorSpace', new _PdfName(this._getColorSpace() as string));
-        dictionary.set('DecodeParms', this._getDecodeParams());
-        this._imageStream.dictionary = dictionary;
-        this._imageStream.bytes = new Uint8Array(this._imageStream.data[0].length);
-        for (let i: number = 0; i < this._imageStream.data[0].length; i++) {
-            this._imageStream.bytes[Number.parseInt(i.toString(), 10)] = this._imageStream.data[0].charCodeAt(i);
-        }
-        this._imageStream.end = this._imageStream.bytes.length;
-        this._imageStream.dictionary._updated = true;
-        return this._imageStream;
     }
     _getColorSpace(): string {
         if (this._noOfComponents === 1) {

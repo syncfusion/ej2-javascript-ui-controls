@@ -3593,7 +3593,7 @@ export class AnnotationRenderer {
         freeTextAnnotation.Color = new AnnotColor(backgroundColor[0], backgroundColor[1], backgroundColor[2]);
         freeTextAnnotation.Flatten = freeTextAnnot.flatten;
         freeTextAnnotation.FlattenPopups = !isNullOrUndefined(freeTextAnnot.flattenPopups) ? freeTextAnnot.flattenPopups : false; // returns undefined
-        freeTextAnnotation.FontFamily = this.getFontFamilyString((freeTextAnnot.font as PdfStandardFont)._fontFamily);
+        freeTextAnnotation.FontFamily = freeTextAnnot._obtainFontDetails().name;
         freeTextAnnotation.FontSize = this.convertPointToPixel(freeTextAnnot.font.size);
         freeTextAnnotation.Font = new FontBase(freeTextAnnot.font, freeTextAnnotation.FontFamily); // need to be checked
         freeTextAnnotation.Thickness = freeTextAnnot.border.width;

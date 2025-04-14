@@ -97,7 +97,6 @@ export class _PdfStream extends _PdfBaseStream {
     start: number;
     isImageStream: boolean = false;
     end: number;
-    dataStream2 : string[];
     /**
      * Gets the position of the stream.
      *
@@ -129,23 +128,6 @@ export class _PdfStream extends _PdfBaseStream {
      */
     get isEmpty(): boolean {
         return this.length === 0;
-    }
-    /**
-     * Gets the data of the stream.
-     *
-     * @returns {string[]} data of the stream.
-     */
-    get data(): string[] {
-        return this.dataStream2;
-    }
-    /**
-     * Sets the data of the stream.
-     *
-     * @param {string[]} value data.
-     */
-    set data(value: string[]) {
-        this.dataStream2 = [];
-        this.dataStream2 = value;
     }
     getByte(): number {
         if (this.position >= this.end) {
@@ -198,16 +180,12 @@ export class _PdfStream extends _PdfBaseStream {
     _write(text: string): void {
         this.bytes = new Uint8Array(text.length);
         for (let i: number = 0; i < text.length; i++) {
-            this.bytes[Number.parseInt(i.toString(), 10)] = text.charCodeAt(i);
+            this.bytes[<number>i] = text.charCodeAt(i);
         }
         this.end = this.bytes.length;
         this.dictionary._updated = true;
     }
     _writeBytes(data: number[]): void {
-        let text: string = '';
-        for (let i: number = 0; i < data.length; i++) {
-            text = text + String.fromCharCode(data[Number.parseInt(i.toString(), 10)]);
-        }
         this.bytes = new Uint8Array(data);
         this.end = this.bytes.length;
         this.dictionary._updated = true;
@@ -235,9 +213,9 @@ export class _PdfContentStream extends _PdfBaseStream {
                 this._bytes.push(data.charCodeAt(i));
             }
         } else {
-            for (let i: number = 0; i < data.length; i++) {
-                this._bytes.push(data[Number.parseInt(i.toString(), 10)]);
-            }
+            data.forEach((element: number) => {
+                this._bytes.push(element);
+            });
         }
         this.dictionary._updated = true;
     }

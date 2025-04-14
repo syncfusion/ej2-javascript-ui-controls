@@ -211,7 +211,6 @@ export class PivotChart {
             if (this.parent.gridSettings.layout === 'Tabular' && (!this.parent.dataSourceSettings.showSubTotals ||
                 (!this.parent.dataSourceSettings.showRowSubTotals && this.parent.dataSourceSettings.showColumnSubTotals))) {
                 if (firstRowCell && pivotValues[rowIndex - (rowReduction === firstRowCell.level ? 1 : (rowReduction + 1))] &&
-                    !this.dataSourceSettings.showSubTotals &&
                     pivotValues[rowIndex - indexReduction][this.parent.engineModule.rowMaxLevel]) {
                     const previousRowCell: IAxisSet = rowsInclude ?
                         pivotValues[rowIndex - (rowReduction + 1)][this.parent.engineModule.rowMaxLevel]
@@ -504,14 +503,14 @@ export class PivotChart {
                                 this.columnGroupObject[columnSeries as string].push({
                                     x: this.dataSourceSettings.rows.length === 0 ? firstRowCell.formattedText : rowHeaders,
                                     y: yValue,
-                                    rIndex: rowIndex,
+                                    rIndex: rowIndex - rowReduction,
                                     cIndex: cellIndex
                                 });
                             } else {
                                 this.columnGroupObject[columnSeries as string] = [{
                                     x: this.dataSourceSettings.rows.length === 0 ? firstRowCell.formattedText : rowHeaders,
                                     y: yValue,
-                                    rIndex: rowIndex,
+                                    rIndex: rowIndex - rowReduction,
                                     cIndex: cellIndex
                                 }];
                             }

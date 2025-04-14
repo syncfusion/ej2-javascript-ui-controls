@@ -306,6 +306,7 @@ export class Filter {
                 }
                 parentNodeTop = parentNode.getBoundingClientRect().top;
             }
+            parentNode = this.parent.element.parentNode;
             parentNodeLeft = parentNode.getBoundingClientRect().left;
             marginLeft = parentNode.style.marginLeft;
             while (isValid) {
@@ -325,6 +326,7 @@ export class Filter {
         }
         /* eslint-disable-next-line */
         const liPos: any = li.getBoundingClientRect();
+        const ulPos: any = ul.getBoundingClientRect();
         let left: number = liPos.right + window.scrollX;
         let top: number = isNonBodyTag ? liPos.top - gridPosTop : liPos.top + window.scrollY;
         if (gridPos.right < (left + ul.offsetWidth)) {
@@ -340,12 +342,44 @@ export class Filter {
             }
         }
         if (!isNullOrUndefined(paddingTop) && !isNullOrUndefined(paddingLeft)) {
-            ul.style.top = typeof(parseInt(marginTop as string, 10)) === 'string' ? (top + paddingTop + parseInt(marginTop as string, 10)) + 'px' : (top + paddingTop) + 'px';
-            ul.style.left = typeof(parseInt(marginLeft as string, 10)) === 'string' ? (left + paddingLeft + parseInt(marginLeft as string, 10) + 8) + 'px' : (left + paddingLeft) + 'px';
+            let updatedTopValue: number = liPos.top;
+            const isValid: boolean = this.hasParentWithLeftSpacing(document.getElementsByClassName('e-gantt')[0]);
+            if (isValid) {
+                updatedTopValue = liPos.top - this.parent.element.getBoundingClientRect().top;
+            }
+            let updatedLeftValue: number = liPos.width + parseInt(li.parentElement.style.left, 10);
+            const updateTop: boolean = liPos.top > ulPos.top;
+            if (!updateTop) {
+                updatedTopValue = top;
+            }
+            const updateLeft: boolean = ulPos.left !== (liPos.left + liPos.width);
+            if (!(updateLeft && !isValid)) {
+                updatedLeftValue = left;
+            }
+            ul.style.top = updatedTopValue + window.scrollY + 'px';
+            ul.style.left = updatedLeftValue + 'px';
         } else {
             ul.style.top = top + 'px';
             ul.style.left = left + 'px';
         }
+    }
+
+    private hasParentWithLeftSpacing(element: any): boolean {
+        let current: Element = element.parentElement;
+        while (current) {
+            const style: CSSStyleDeclaration = window.getComputedStyle(current);
+            const marginLeft: number = parseFloat(style.marginLeft);
+            const paddingLeft: number = parseFloat(style.paddingLeft);
+            if (paddingLeft > 0 || marginLeft > 0) {
+                let currentSibling: boolean = false;
+                if (current.previousElementSibling && parseInt(current.previousElementSibling['style'].width, 10) > 0) {
+                    currentSibling = true;
+                }
+                return currentSibling;
+            }
+            current = current.parentElement;
+        }
+        return false;
     }
 
     private updateFilterMenuPosition(element: HTMLElement, args: GroupEventArgs): void {

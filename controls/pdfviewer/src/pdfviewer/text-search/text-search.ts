@@ -69,7 +69,10 @@ export class TextSearch {
      * @private
      */
     public isTextSearchHandled: boolean = false;
-    private textSearchOpen: boolean = false;
+    /**
+     * @private
+     */
+    public textSearchOpen: boolean = false;
     /**
      * @private
      */

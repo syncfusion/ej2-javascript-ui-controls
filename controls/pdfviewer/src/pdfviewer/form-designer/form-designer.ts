@@ -2881,20 +2881,46 @@ export class FormDesigner {
         const bound: any = (actualObject as any).bounds;
         const wrapper: DiagramHtmlElement = actualObject.wrapper.children[0];
         const type : string = actualObject.formFieldAnnotationType;
+        let isEdited: boolean = false;
         if (!isNullOrUndefined(options.customData) && (actualObject as any).customData !== options.customData) {
             (actualObject as any).customData = options.customData;
+            isEdited = true;
         }
         if (!isNullOrUndefined(options.name) && (actualObject as any).name !== options.name) {
             (actualObject as any).name = options.name;
+            isEdited = true;
         }
         if (!isNullOrUndefined(options.borderColor) && (actualObject as any).borderColor !== options.borderColor) {
             (actualObject as any).borderColor = options.borderColor;
+            isEdited = true;
         }
         if (!isNullOrUndefined(options.backgroundColor) && (actualObject as any).backgroundColor !== options.backgroundColor) {
             (actualObject as any).backgroundColor = options.backgroundColor;
+            isEdited = true;
         }
         if (!isNullOrUndefined(options.value) && (actualObject as any).value !== options.value) {
             (actualObject as any).value = options.value;
+            isEdited = true;
+        }
+        if (!isNullOrUndefined(options.bounds) && actualObject.bounds.properties !== options.bounds) {
+            const { X, Y, Width, Height } = options.bounds;
+            const updatedBounds: any = { x: X, y: Y, width: Width, height: Height };
+            if (
+                actualObject.bounds.x !== updatedBounds.x ||
+                actualObject.bounds.y !== updatedBounds.y ||
+                actualObject.bounds.width !== updatedBounds.width ||
+                actualObject.bounds.height !== updatedBounds.height
+            ) {
+                actualObject.bounds = updatedBounds;
+            }
+            updatedBounds.x = updatedBounds.x + updatedBounds.width * 0.5;
+            updatedBounds.y = updatedBounds.y + updatedBounds.height * 0.5;
+            options.bounds = updatedBounds;
+            this.pdfViewer.drawing.nodePropertyChange(actualObject, options);
+            isEdited = true;
+        }
+        if (isEdited) {
+            this.pdfViewerBase.updateDocumentEditedProperty(isEdited);
         }
         this.updateFormDesignerFieldInSessionStorage(bound, wrapper, type, actualObject);
     }
@@ -2908,26 +2934,53 @@ export class FormDesigner {
      */
     private updateFormFieldsInFieldsSession(formFieldId: any, options: any): void {
         const fieldsData: string = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
+        let isEdited: boolean = false;
         if (!isNullOrUndefined(fieldsData)) {
             const data: any = JSON.parse(fieldsData);
             for (let x: number = 0; x < data.length; x++) {
                 if (data[`${x}`].FieldName === formFieldId.name) {
                     if (!isNullOrUndefined(options.customData) && data[`${x}`].CustomData !== options.customData) {
                         data[`${x}`].CustomData = options.customData;
+                        isEdited = true;
                     }
                     if (!isNullOrUndefined(options.backgroundColor) && data[`${x}`].BackColor !== options.backgroundColor) {
                         data[`${x}`].BackColor = this.getRgbCode(options.backgroundColor);
+                        isEdited = true;
                     }
                     if (!isNullOrUndefined(options.borderColor) && data[`${x}`].BorderColor !== options.borderColor) {
                         data[`${x}`].BorderColor = this.getRgbCode(options.borderColor);
+                        isEdited = true;
                     }
                     if (!isNullOrUndefined(options.name) && data[`${x}`].Name !== options.name) {
                         data[`${x}`].Name = options.name;
+                        isEdited = true;
                     }
                     if (!isNullOrUndefined(options.value) && data[`${x}`].Value !== options.value) {
                         data[`${x}`].Value = options.value;
+                        isEdited = true;
+                    }
+                    if (!isNullOrUndefined(options.bounds)) {
+                        const lineBounds: any = {
+                            X: this.pdfViewer.formFieldsModule.ConvertPointToPixel(data['' + x].LineBounds.X),
+                            Y: this.pdfViewer.formFieldsModule.ConvertPointToPixel(data['' + x].LineBounds.Y),
+                            Width: this.pdfViewer.formFieldsModule.ConvertPointToPixel(data['' + x].LineBounds.Width),
+                            Height: this.pdfViewer.formFieldsModule.ConvertPointToPixel(data['' + x].LineBounds.Height)
+                        };
+                        if (JSON.stringify(lineBounds) !== JSON.stringify(options.bounds)) {
+                            const newLineBounds: any = {
+                                X: PdfViewerUtils.convertPixelToPoint(options.bounds.X),
+                                Y: PdfViewerUtils.convertPixelToPoint(options.bounds.Y),
+                                Width: PdfViewerUtils.convertPixelToPoint(options.bounds.Width),
+                                Height: PdfViewerUtils.convertPixelToPoint(options.bounds.Height)
+                            };
+                            data['' + x].LineBounds = newLineBounds;
+                        }
+                        isEdited = true;
                     }
                 }
+            }
+            if (isEdited) {
+                this.pdfViewerBase.updateDocumentEditedProperty(isEdited);
             }
             this.pdfViewerBase.setItemInSessionStorage(data, '_formfields');
         }
@@ -2964,6 +3017,18 @@ export class FormDesigner {
     private updateFormFieldData(currentData: any, options: any): void {
         if (options.name && currentData.name !== options.name) {
             currentData.name = options.name;
+        }
+        if (options.bounds) {
+            const { X, Y, Width, Height } = options.bounds;
+            const updatedBounds: any = { x: X, y: Y, width: Width, height: Height };
+            if (
+                currentData.bounds.x !== updatedBounds.x ||
+                currentData.bounds.y !== updatedBounds.y ||
+                currentData.bounds.width !== updatedBounds.width ||
+                currentData.bounds.height !== updatedBounds.height
+            ) {
+                currentData.bounds = updatedBounds;
+            }
         }
         if (currentData.type !== 'SignatureField' || currentData.type !== 'InitialField') {
             if (options.thickness && currentData.thickness !== options.thickness) {
@@ -3060,6 +3125,7 @@ export class FormDesigner {
         let isRequiredChanged: boolean = false; let isPrintChanged: boolean = false; let isToolTipChanged: boolean = false;
         let isCustomDataChanged: boolean = false;
         let isNameChanged: boolean = false;
+        let isBoundsChanged: boolean = false;
         let oldValue: any; let newValue: any;
         const zoomValue: number = this.pdfViewerBase.getZoomFactor();
         if (options.name) {
@@ -3140,6 +3206,18 @@ export class FormDesigner {
             }
         }
         if (options.bounds) {
+            const formBounds: any = formFieldObject.bounds;
+            const optionBounds: any = options.bounds;
+            if (
+                formBounds.x !== optionBounds.X ||
+                formBounds.y !== optionBounds.Y ||
+                formBounds.width !== optionBounds.Width ||
+                formBounds.height !== optionBounds.Height
+            ) {
+                isBoundsChanged = true;
+            }
+            options.bounds.X = options.bounds.X + options.bounds.Width * 0.5;
+            options.bounds.Y  = options.bounds.Y + options.bounds.Height * 0.5;
             formFieldObject.bounds = { x: options.bounds.X, y: options.bounds.Y, width: options.bounds.Width,
                 height: options.bounds.Height };
             const formField: PdfFormFieldBaseModel = (this.pdfViewer.nameTable as any)[formFieldObject.id.split('_')[0]];
@@ -3611,7 +3689,7 @@ export class FormDesigner {
         if (isValueChanged || isFontFamilyChanged || isFontSizeChanged || isFontStyleChanged || isColorChanged ||
             isBackgroundColorChanged || isBorderColorChanged || isBorderWidthChanged || isAlignmentChanged || isReadOnlyChanged
             || isVisibilityChanged || isRequiredChanged || isPrintChanged || isToolTipChanged || isCustomDataChanged ||
-            isNameChanged || isMaxLengthChanged) {
+            isNameChanged || isMaxLengthChanged || isBoundsChanged) {
             this.pdfViewerBase.updateDocumentEditedProperty(true);
         }
     }
@@ -4544,29 +4622,7 @@ export class FormDesigner {
         if (data || (this.pdfViewer.formDesignerModule && this.pdfViewer.formFieldCollections.length > 0)) {
             const formFieldsData: any = !isNullOrUndefined(data) ? JSON.parse(data) : [];
             // Get Formfields present in non rendered pages
-            if (formFieldsData && formFieldsData.length !== this.pdfViewer.formFieldCollections.length) {
-                const formFieldNotContains: FormFieldModel[] = this.pdfViewer.formFieldCollections.filter(
-                    ({ id: id1 }: { id: string }) =>
-                        !this.pdfViewer.formFieldCollection.some(
-                            ({ id: id2 }: { id: string }) => id2 === id1
-                        )
-                );
-                for (let k: number = 0; k < formFieldNotContains.length; k++) {
-                    const items: any = this.loadedFormFieldValue(formFieldNotContains[parseInt(k.toString(), 10)]);
-                    if (items.formFieldAnnotationType === 'RadioButton') {
-                        const index: number = formFieldsData.findIndex((field: any) => field.FormField.name === items.name);
-                        if (index && index >= 0) {
-                            formFieldsData[parseInt(index.toString(), 10)].FormField.radiobuttonItem.push(items);
-                        }
-                        else {
-                            formFieldsData.push({ Key: items.id + '_content', FormField: items });
-                        }
-                    }
-                    else {
-                        formFieldsData.push({ Key: items.id + '_content', FormField: items });
-                    }
-                }
-            }
+            this.updateMissingFormFields(formFieldsData);
             for (let i: number = 0; i < formFieldsData.length; i++) {
                 const currentData: any = formFieldsData[parseInt(i.toString(), 10)].FormField;
                 if (!isNullOrUndefined(currentData)) {
@@ -4718,6 +4774,40 @@ export class FormDesigner {
             return null;
         }
     }
+
+    /**
+     * @private
+     * @param {any} formFieldsData - It describes about the fields in session
+     * @returns {void}
+     */
+    public updateMissingFormFields(formFieldsData: { Key: string; FormField: any }[]): void {
+        if (formFieldsData && formFieldsData.length !== this.pdfViewer.formFieldCollections.length) {
+            const formFieldNotContains: FormFieldModel[] = this.pdfViewer.formFieldCollections.filter(
+                ({ id: id1 }: { id: string }) =>
+                    !this.pdfViewer.formFieldCollection.some(
+                        ({ id: id2 }: { id: string }) => id2 === id1
+                    )
+            );
+            for (let k: number = 0; k < formFieldNotContains.length; k++) {
+                const items: any = this.pdfViewer.formDesignerModule.loadedFormFieldValue(
+                    formFieldNotContains[parseInt(k.toString(), 10)]
+                );
+                if (items.formFieldAnnotationType === 'RadioButton') {
+                    const index: number = formFieldsData.findIndex(
+                        (field: any) => field.FormField.name === items.name
+                    );
+                    if (index && index >= 0) {
+                        formFieldsData[parseInt(index.toString(), 10)].FormField.radiobuttonItem.push(items);
+                    } else {
+                        formFieldsData.push({ Key: items.id + '_content', FormField: items });
+                    }
+                } else {
+                    formFieldsData.push({ Key: items.id + '_content', FormField: items });
+                }
+            }
+        }
+    }
+
     private getTextToImage(currentData: any): any {
         const signTypeCanvas: HTMLCanvasElement = createElement('canvas') as HTMLCanvasElement;
         signTypeCanvas.width = currentData.lineBound.Width / this.pdfViewerBase.getZoomFactor() || 150;
@@ -4738,7 +4828,7 @@ export class FormDesigner {
      * @private
      * @returns {any} - any
      */
-    private loadedFormFieldValue(currentData: any): any {
+    public loadedFormFieldValue(currentData: any): any {
         const backgroundColor: any = this.getRgbCode(currentData.backgroundColor);
         const bounds: any = currentData.bounds;
         const backColor: any = currentData.backgroundColor ? { r: backgroundColor.r, g: backgroundColor.g,
@@ -4841,6 +4931,7 @@ export class FormDesigner {
             signatureType: currentData.signatureType ? currentData.signatureType : signType, id: currentData.id,
             insertSpaces: currentData.insertSpaces ? currentData.insertSpaces : false,
             isChecked: currentData.isChecked ? currentData.isChecked : false,
+            isPrint: currentData.isPrint ? currentData.isPrint : false,
             isSelected: currentData.isSelected ? currentData.isSelected : false, fontFamily: currentData.fontFamily,
             fontStyle: currentData.fontStyle, backgroundColor: backColor, fontColor: foreColor, borderColor: borderRGB,
             thickness: currentData.thickness,
@@ -4869,6 +4960,7 @@ export class FormDesigner {
                 fontColor: foreColor, borderColor: borderRGB, thickness: currentData.thickness, fontSize: currentData.fontSize, rotation: 0,
                 isReadOnly: currentData.isReadOnly ? currentData.isReadOnly : false, isRequired: currentData.isRequired ?
                     currentData.isRequired : false,
+                isPrint: currentData.isPrint ? currentData.isPrint : false,
                 textAlign: currentData.alignment, formFieldAnnotationType: currentData.type, zoomValue: 1,
                 maxLength: currentData.maxLength ? currentData.maxLength : 0, visibility: currentData.visibility,
                 font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false },
@@ -5301,7 +5393,7 @@ export class FormDesigner {
      * @param {string} color - It describes about the color
      * @returns {void}
      */
-    private getRgbToHex(color: any): string {
+    public getRgbToHex(color: any): string {
         return ('#' + this.hex(color.r) + this.hex(color.g) + this.hex(color.b));
     }
 

@@ -464,6 +464,8 @@ export class CanvasRenderer {
         let image: HTMLImageElement;
         if ((<any>window).customStampCollection && (<any>window).customStampCollection.get(obj.printID)) {
             image = (<any>window).customStampCollection.get(obj.printID);
+        } else if ((<any>window).signatureCollection && (<any>window).signatureCollection.get(obj.printID)) {
+            image = (<any>window).signatureCollection.get(obj.printID);
         } else {
             // Check if it is a sticky note type annotation
             if (window && (<any>window).stickyNote && (<any>window).stickyNote.src && annotationType && annotationType == 'StickyNotes') {

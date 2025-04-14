@@ -655,6 +655,17 @@ export let data2: any = {
     "cwd": { "name": "FileContent", "size": "0", "dateModified": "1-23-2019 9:21:31 PM", "dateCreated": "12-24-2018 5:14:59 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": null },
 };
 
+export let InvalidPath: any = {
+    "files": null,
+    "error": {
+        "code": "417",
+        "message": "Could not find a part of the path",
+        "fileExists": null
+    },
+    "details": null,
+    "cwd": null,
+};
+
 export let data3: any = {
     "files": [],
     "error": null,

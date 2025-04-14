@@ -2393,6 +2393,12 @@ export class Layout {
                 } else {
                     this.layoutEmptyLineWidget(line.paragraph, false, line, false);
                 }
+            } else if (isNullOrUndefined(element.nextElement) && this.viewer.clientActiveArea.width === 0) {
+                this.moveToNextLine(line);
+                if (line.paragraph.lastChild === line && !isNullOrUndefined(line.nextLine) &&
+                    this.viewer.clientActiveArea.height >= 0) {
+                    this.moveFromNextPage(line);
+                }
             }
             return;
         }
@@ -9963,6 +9969,7 @@ export class Layout {
                             const footWidgets: BodyWidget[] = this.getFootNoteWidgetsOf(curretBlock);
                             this.moveFootNotesToPage(footWidgets, prevBodyWidget, newBodyWidget);
                             if (curretBlock.bodyWidget.sectionFormat.breakCode !== 'NoBreak' || (curretBlock.bodyWidget.index === (prevWidget as BlockWidget).bodyWidget.index)) {
+                                this.viewer.updateClientArea((prevWidget as BlockWidget).bodyWidget, (prevWidget as BlockWidget).bodyWidget.page, true);
                                 this.viewer.cutFromTop(prevWidget.y + prevWidget.height);
                                 this.updateContainerWidget(curretBlock as Widget, newBodyWidget as BodyWidget, prevWidget.indexInOwner + 1, false);
                             } else if (curretBlock.bodyWidget.sectionIndex !== (prevWidget as BlockWidget).bodyWidget.sectionIndex && (prevWidget as BlockWidget).bodyWidget.sectionFormat.numberOfColumns > 1 && curretBlock.bodyWidget.page === (prevWidget as BlockWidget).bodyWidget.page) {

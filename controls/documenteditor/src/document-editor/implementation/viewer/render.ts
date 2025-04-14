@@ -1397,14 +1397,16 @@ private calculatePathBounds(data: string): Rect {
                             for (var j = 0; j < widget.length; j++) {
                                 let paragraph: ParagraphWidget = lineWidget.paragraph;
                                 let startX: number = 0;
-                                const firstLineIndent = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
-                                const leftIndent = HelperMethods.convertPointToPixel(paragraph.leftIndent);
+                                let firstLineIndent = paragraph.firstChild === lineWidget ? HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent) : 0;
+                                let leftIndent = HelperMethods.convertPointToPixel(paragraph.leftIndent);
                                 if (paragraph.paragraphFormat.listFormat.listId !== -1) {
-                                    startX = widget[j].left - leftIndent - 2;
+                                    firstLineIndent = 0;
                                 }
-                                else {
-                                    startX = widget[j].left - leftIndent - firstLineIndent - 2;
+                                if (contentControl.line === lineWidget && (paragraph.x + firstLineIndent !== widget[j].left || (contentControl.reference && contentControl.reference.line === lineWidget))) {
+                                    firstLineIndent = 0;
+                                    leftIndent = 0;
                                 }
+                                startX = widget[j].left - leftIndent - firstLineIndent - 2;
                                 let endX = widget[j].left + widget[j].width + 2;
                                 if (widgetInfo.length - 1 > lineIndex) {
                                     endX = this.documentHelper.getParagraphLeftPosition(paragraph) + this.getContainerWidth(paragraph, page) + HelperMethods.convertPointToPixel(paragraph.paragraphFormat.borders.right.space);
@@ -1512,7 +1514,7 @@ private calculatePathBounds(data: string): Rect {
         }
     }
     private renderEditRegionHighlight(page: Page, lineWidget: LineWidget, top: number): void {
-        if (page.documentHelper.selection && !isNullOrUndefined(page.documentHelper.selection.editRegionHighlighters)) {
+        if (!this.isPrinting && page.documentHelper.selection && !isNullOrUndefined(page.documentHelper.selection.editRegionHighlighters)) {
             let renderHighlight: boolean = this.documentHelper.selection.editRegionHighlighters.containsKey(lineWidget);
             if (!renderHighlight && lineWidget.paragraph.isInHeaderFooter) {
                 let keys: LineWidget[] = this.documentHelper.selection.editRegionHighlighters.keys;
@@ -2660,7 +2662,7 @@ private calculatePathBounds(data: string): Rect {
 
     public drawWavy(from: Point, to: Point, frequency: number, amplitude: number, step: number, color: string, height: number, backColor: string, negative?: number): void {
         this.pageContext.save();
-        this.pageContext.fillStyle = (!isNullOrUndefined(backColor) ? backColor : this.documentHelper.backgroundColor);
+        this.pageContext.fillStyle = (!isNullOrUndefined(backColor) && backColor !== "empty" ? backColor : this.documentHelper.backgroundColor);
         this.pageContext.fillRect(from.x, from.y - amplitude, (to.x - from.x), amplitude * 3);
         this.pageContext.restore();
         this.pageContext.lineWidth = 1;

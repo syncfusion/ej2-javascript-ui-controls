@@ -873,18 +873,16 @@ export class PdfDocument {
         if (bookMarkMap && bookMarkMap.has(pageToRemove)) {
             const bookmarks: PdfBookmarkBase[] = bookMarkMap.get(pageToRemove);
             if (bookmarks) {
-                for (let i: number = 0; i < bookmarks.length; i++) {
-                    const bookmark: PdfBookmarkBase = bookmarks[Number.parseInt(i.toString(), 10)];
-                    if (bookmark) {
-                        const bookmarkDictionary: _PdfDictionary = bookmark._dictionary;
-                        if (bookmarkDictionary) {
-                            if (bookmarkDictionary.has('A')) {
-                                bookmarkDictionary.update('A', null);
+                bookmarks.forEach((bookmark: PdfBookmarkBase) => {
+                    if (bookmark && bookmark._dictionary) {
+                        if (bookmark._dictionary) {
+                            if (bookmark._dictionary.has('A')) {
+                                bookmark._dictionary.update('A', null);
                             }
-                            bookmarkDictionary.update('Dest', null);
+                            bookmark._dictionary.update('Dest', null);
                         }
                     }
-                }
+                });
             }
         }
         this._removePageTemplates(pageToRemove);
@@ -998,7 +996,7 @@ export class PdfDocument {
     _getUpdatedPageTemplates(namedPages: _PdfDictionary[], page: PdfPage): _PdfDictionary[] {
         if (namedPages.length > 0) {
             for (let i: number = 1; i <= namedPages.length; i = i + 2) {
-                const pageDictionary: _PdfDictionary = namedPages[Number.parseInt(i.toString(), 10)];
+                const pageDictionary: _PdfDictionary = namedPages[<number>i];
                 if (pageDictionary && page._pageDictionary === pageDictionary) {
                     namedPages.pop();
                     namedPages.pop();
@@ -1034,13 +1032,13 @@ export class PdfDocument {
         const inputArray: number[] = Array.from({ length: this.pageCount }, (_: number, i: number) => i);
         const pagesToRemove: number[] = inputArray.filter((element: number) => sortedArray.indexOf(element) === -1);
         for (let i: number = pagesToRemove.length - 1; i >= 0; i--) {
-            this.removePage(pagesToRemove[Number.parseInt(i.toString(), 10)]);
+            this.removePage(pagesToRemove[<number>i]);
         }
         const newkids: _PdfReference[] = [];
         const newPages: Map<number, PdfPage> = new Map<number, PdfPage>();
         const parentReference: _PdfReference = this._catalog._catalogDictionary._get('Pages');
-        for (let i: number = 0; i < sortedArray.length; i++) {
-            const indexPage: PdfPage = this.getPage(ascendingOrder.indexOf(sortedArray[Number.parseInt(i.toString(), 10)]));
+        sortedArray.forEach((sortedItem: number, i: number) => {
+            const indexPage: PdfPage = this.getPage(ascendingOrder.indexOf(sortedItem));
             indexPage._pageIndex = i;
             newPages.set(i, indexPage);
             const sectionDictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
@@ -1079,7 +1077,7 @@ export class PdfDocument {
             this._crossReference._cacheMap.set(sectionReference, sectionDictionary);
             const pageSection: _PdfDictionary = this._crossReference._fetch(indexPage._ref);
             pageSection.update('Parent', sectionReference);
-        }
+        });
         this._pages = newPages;
         if (this._catalog) {
             const parentDictionary: _PdfDictionary = this._catalog._topPagesDictionary;
@@ -2054,20 +2052,19 @@ export class PdfDocument {
         const pageCount: number = this.pageCount;
         if (this.splitEvent) {
             let splitIndex: number = 0;
-            for (let i: number = 0; i < ranges.length; i++) {
-                const range: number[] = ranges[Number.parseInt(i.toString(), 10)];
+            ranges.forEach((range: number[]) => {
                 if (Array.isArray(range) && range.length < 2) {
                     throw new Error('Invalid page range. Start and end page indexes should be specified.');
                 }
                 const start: number = range[0];
                 const end: number = range[1];
                 if (start < 0 || end < 0 || start >= pageCount || end >= pageCount || start > end) {
-                    throw new Error('Invalid page range: start (${start}) and end (${end}).');
+                    throw new Error(`Invalid page range: start (${start}) and end (${end}).`);
                 }
                 const pdfData: Uint8Array = this._importDocumentPages(start, end);
                 this._invokeSplitEvent(splitIndex, pdfData);
                 splitIndex++;
-            }
+            });
         }
     }
     private _importDocumentPages(startIndex: number, endIndex: number): Uint8Array {

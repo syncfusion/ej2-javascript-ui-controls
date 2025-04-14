@@ -288,6 +288,11 @@ export class GanttTreeGrid {
         }
     }
     private collapsed(args: object): void {
+        const collapsingNodeData: any = (args as Record<string, any>).data;
+        const expanded: boolean = collapsingNodeData && collapsingNodeData.expanded;
+        if (this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping && !this.parent.enableVirtualization && !expanded) {
+            (args as Record<string, any>)['data'][this.parent.taskFields.expandState] = false;
+        }
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart  && !this.parent.isExpandCollapseLevelMethod) {
             let collapsedArgs: object;
             const record: IGanttData | [] = getValue('data', args);

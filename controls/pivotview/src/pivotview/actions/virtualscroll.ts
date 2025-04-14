@@ -208,7 +208,7 @@ export class VirtualScroll {
                             this.parent.getEngine('onScroll', null, null, null, null, null, null);
                         } else {
                             this.parent.engineModule.generateGridData(
-                                this.parent.dataSourceSettings, true, false, this.parent.engineModule.headerCollection);
+                                this.parent.dataSourceSettings, true, false, this.parent.engineModule.headerCollection, true);
                             rowStartPos = this.parent.engineModule.rowStartPos;
                         }
                     } else {

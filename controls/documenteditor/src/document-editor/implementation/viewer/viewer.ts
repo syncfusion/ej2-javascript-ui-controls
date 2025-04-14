@@ -3568,7 +3568,7 @@ export class DocumentHelper {
                 lineWidget = prevLineWidget;
             }
         }
-        let height: number = lineWidget.height * this.zoomFactor;
+        let height: number = lineWidget.height;
         //Gets current page.
         let endPage: Page = this.selection.getPage(lineWidget.paragraph);
         this.currentPage = endPage;
@@ -3598,11 +3598,11 @@ export class DocumentHelper {
             //vertical scroll bar update
             if ((scrollTop + 20) > y) {
                 this.viewerContainer.scrollTop = (y - 10);
-            } else if (scrollTop + pageHeight < y + height) {
+            } else if (scrollTop + pageHeight < y + caretHeight) {
                 if (this.owner.rulerHelper && this.owner.hRuler) {
                     y += this.owner.rulerHelper.getRulerSize(this.owner).height;
                 }
-                this.viewerContainer.scrollTop = y + height - pageHeight + 10;
+                this.viewerContainer.scrollTop = y + caretHeight - pageHeight + 10;
             }
         } else {
             // As per MS Word behaviour, update vertical scroll bar using static value while navigate bookmark
@@ -3968,7 +3968,9 @@ export class DocumentHelper {
      * @returns {void}
      */
     public onKeyDownInternal = (event: KeyboardEvent): void => {
-        if (!isNullOrUndefined(event.target) && (event.target as HTMLElement) !== this.editableDiv && (event.target as HTMLElement).id !== "container_editor_iconsplitbtn") {
+        const pasteElement: HTMLElement = !isNullOrUndefined(this.selection) && !isNullOrUndefined(this.selection.pasteElement) ? this.selection.pasteElement : undefined;
+        if (!isNullOrUndefined(event.target) && (event.target as HTMLElement) !== this.editableDiv && (event.target as HTMLElement) !== pasteElement
+            && (event.target as HTMLElement).id !== this.owner.containerId + '_iconsplitbtn') {
             return;
         }
         this.owner.focusIn();

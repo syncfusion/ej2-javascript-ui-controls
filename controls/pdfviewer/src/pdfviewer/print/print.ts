@@ -1,10 +1,12 @@
-import { PdfViewer } from '../index';
+import { PdfFormFieldBase, PdfViewer } from '../index';
 import { PdfViewerBase, PdfAnnotationBaseModel } from '../index';
 import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { AjaxHandler } from '../index';
 import { DiagramHtmlElement } from '../drawing/html-element';
 import { Size } from '@syncfusion/ej2-drawings';
 import { TaskPriorityLevel } from '../base/pdfviewer-utlis';
+import { FormFieldModel } from '../pdfviewer-model';
+import { PdfFormFieldBaseModel } from '../drawing';
 
 /**
  * Print module
@@ -401,18 +403,29 @@ export class Print {
             if (this.pdfViewer.formDesignerModule) {
                 formDesignerData = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
             }
-            if (formDesignerData) {
-                const formDesignerFieldsData: any = JSON.parse(formDesignerData);
+            if (formDesignerData || this.pdfViewer.formFieldCollections.length > 0) {
+                const formFieldsData: any = !isNullOrUndefined(formDesignerData) ? JSON.parse(formDesignerData) : [];
+                this.pdfViewer.formDesignerModule.updateMissingFormFields(formFieldsData);
+                const formDesignerFieldsData : any = formFieldsData;
                 for (let i: number = 0; i < formDesignerFieldsData.length; i++) {
                     const currentData: any = formDesignerFieldsData[parseInt(i.toString(), 10)].FormField;
                     if (currentData.pageNumber - 1 === pageIndex && currentData.isPrint) {
                         let signatureField: PdfAnnotationBaseModel = (this.pdfViewer.nameTable as any)[formDesignerFieldsData[parseInt(i.toString(), 10)].Key.split('_')[0]];
-                        const element: DiagramHtmlElement = signatureField.wrapper.children[0] as DiagramHtmlElement;
+                        let element: DiagramHtmlElement = null;
+                        if (!isNullOrUndefined(signatureField)) {
+                            element = signatureField.wrapper.children[0] as DiagramHtmlElement;
+                        } else {
+                            signatureField = this.createSignatureField(currentData);
+                            element = signatureField.wrapper.children[0] as DiagramHtmlElement;
+                        }
                         let htmlElement: HTMLElement;
                         if (element) {
                             if (currentData.formFieldAnnotationType === 'RadioButton') {
                                 for (let j: number = 0; j < currentData.radiobuttonItem.length; j++) {
                                     signatureField = (this.pdfViewer.nameTable as any)[currentData.radiobuttonItem[parseInt(j.toString(), 10)].id.split('_')[0]];
+                                    if (isNullOrUndefined(signatureField)) {
+                                        signatureField = this.createSignatureField(currentData.radiobuttonItem[parseInt(j.toString(), 10)]);
+                                    }
                                     htmlElement = this.createFormDesignerFields(currentData.radiobuttonItem[parseInt(j.toString(), 10)],
                                                                                 element, signatureField);
                                     if (htmlElement) {
@@ -441,6 +454,28 @@ export class Print {
                 }
             }
         }
+    }
+
+    private createSignatureField(data: any): PdfFormFieldBaseModel {
+        const cloneCurrentData: any = JSON.parse(JSON.stringify(data));
+        if (data.lineBound) {
+            const { X: x, Y: y, Width: width, Height: height } = data.lineBound;
+            cloneCurrentData.bounds = { x, y, width, height };
+            delete cloneCurrentData.lineBound;
+        }
+        if (data.option && (data.formFieldAnnotationType === 'DropdownList' || data.formFieldAnnotationType === 'ListBox')) {
+            cloneCurrentData.options = cloneCurrentData.option;
+            delete cloneCurrentData.option;
+        }
+        const signatureField: PdfFormFieldBase = new PdfFormFieldBase(this.pdfViewer, 'formFields', cloneCurrentData as PdfFormFieldBase, true);
+        this.pdfViewer.drawing.initNode(signatureField);
+        signatureField.backgroundColor = typeof signatureField.backgroundColor === 'string' ?
+            signatureField.backgroundColor :
+            this.pdfViewer.formDesignerModule.getRgbToHex(signatureField.backgroundColor);
+        signatureField.borderColor = typeof signatureField.borderColor === 'string' ?
+            signatureField.borderColor :
+            this.pdfViewer.formDesignerModule.getRgbToHex(signatureField.borderColor);
+        return signatureField as unknown as PdfFormFieldBaseModel;
     }
 
     private createFormDesignerFields(currentData: any, element: any, signatureField: any): HTMLElement {

@@ -54,7 +54,7 @@ export class _ContentParser {
     _createRecord(): void {
         const operand: string = this._lexer._operatorParams;
         const record: _PdfRecord = new _PdfRecord(operand, this._operands);
-        record._splittedText = this._lexer._text;
+        record._splitText = this._lexer._text;
         this._recordCollection.push(record);
     }
     _getNextToken(): _TokenType {
@@ -204,13 +204,13 @@ export class _ContentLexer {
             } else {
                 if (value === '(') {
                     if (char !== '') {
-                        this._text[Number.parseInt(index.toString(), 10)] = char.slice(0, -1);
+                        this._text[<number>index] = char.slice(0, -1);
                         char = '';
                         index++;
                     }
                     value = this._consumeValue();
                     literal = this._getLiteralStringValue(value);
-                    this._text[Number.parseInt(index.toString(), 10)] = '(' + literal;
+                    this._text[<number>index] = '(' + literal;
                     index++;
                     this._operatorParams += literal;
                     value = this._getNextChar();
@@ -221,12 +221,12 @@ export class _ContentLexer {
                     value = this._consumeValue();
                     break;
                 } else if (value === '>') {
-                    this._text[Number.parseInt(index.toString(), 10)] = '<' + char;
+                    this._text[<number>index] = '<' + char;
                     index++;
                     char = '';
                 } else if (value === '<') {
                     if (char !== '' ) {
-                        this._text[Number.parseInt(index.toString(), 10)] = char.slice(0, -1);
+                        this._text[<number>index] = char.slice(0, -1);
                         index++;
                     }
                     char = '';
@@ -365,7 +365,7 @@ export class _ContentLexer {
 export class _PdfRecord {
     _operator: string;
     _operands: string[];
-    _splittedText: string[];
+    _splitText: string[];
     constructor(operator: string, operands: string[]) {
         this._operator = operator;
         this._operands = operands;

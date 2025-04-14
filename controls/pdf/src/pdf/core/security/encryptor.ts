@@ -1426,13 +1426,13 @@ export abstract class _AdvancedEncryptionBaseCipher extends _Cipher {
             iv = new Uint8Array(16);
         }
         for (let i: number = 0; i < sourceLength; ++i) {
-            buffer[Number.parseInt(bufferLength.toString(), 10)] = data[Number.parseInt(i.toString(), 10)];
+            buffer[<number>bufferLength] = data[<number>i];
             ++bufferLength;
             if (bufferLength < 16) {
                 continue;
             }
             for (let j: number = 0; j < 16; ++j) {
-                buffer[Number.parseInt(j.toString(), 10)] ^= iv[Number.parseInt(j.toString(), 10)];
+                buffer[<number>j] ^= iv[<number>j];
             }
             const cipher: Uint8Array = this._encryptBlock(buffer, this._key);
             iv = cipher;
@@ -1449,7 +1449,7 @@ export abstract class _AdvancedEncryptionBaseCipher extends _Cipher {
         const outputLength: number = 16 * result.length;
         const output: Uint8Array = new Uint8Array(outputLength);
         for (let i: number = 0, j: number = 0; i < result.length; ++i, j += 16) {
-            output.set(result[Number.parseInt(i.toString(), 10)], j);
+            output.set(result[<number>i], j);
         }
         return output;
     }
@@ -1497,13 +1497,13 @@ export class _AdvancedEncryption128Cipher extends _AdvancedEncryptionBaseCipher 
             let t2: number = result[j - 2];
             let t3: number = result[j - 1];
             let t4: number = result[j - 4];
-            t1 = s[Number.parseInt(t1.toString(), 10)];
-            t2 = s[Number.parseInt(t2.toString(), 10)];
-            t3 = s[Number.parseInt(t3.toString(), 10)];
-            t4 = s[Number.parseInt(t4.toString(), 10)];
-            t1 ^= rcon[Number.parseInt(i.toString(), 10)];
+            t1 = s[<number>t1];
+            t2 = s[<number>t2];
+            t3 = s[<number>t3];
+            t4 = s[<number>t4];
+            t1 ^= rcon[<number>i];
             for (let n: number = 0; n < 4; ++n) {
-                result[Number.parseInt(j.toString(), 10)] = t1 ^= result[j - 16];
+                result[<number>j] = t1 ^= result[j - 16];
                 result[j + 1] = t2 ^= result[j - 15];
                 result[j + 2] = t3 ^= result[j - 14];
                 result[j + 3] = t4 ^= result[j - 13];
@@ -1532,19 +1532,19 @@ export class _AdvancedEncryption256Cipher extends _AdvancedEncryptionBaseCipher 
         let t4: number;
         for (let j: number = 32, i: number = 1; j < count; ++i) {
             if (j % 32 === 16) {
-                t1 = s[Number.parseInt(t1.toString(), 10)];
-                t2 = s[Number.parseInt(t2.toString(), 10)];
-                t3 = s[Number.parseInt(t3.toString(), 10)];
-                t4 = s[Number.parseInt(t4.toString(), 10)];
+                t1 = s[<number>t1];
+                t2 = s[<number>t2];
+                t3 = s[<number>t3];
+                t4 = s[<number>t4];
             } else if (j % 32 === 0) {
                 t1 = result[j - 3];
                 t2 = result[j - 2];
                 t3 = result[j - 1];
                 t4 = result[j - 4];
-                t1 = s[Number.parseInt(t1.toString(), 10)];
-                t2 = s[Number.parseInt(t2.toString(), 10)];
-                t3 = s[Number.parseInt(t3.toString(), 10)];
-                t4 = s[Number.parseInt(t4.toString(), 10)];
+                t1 = s[<number>t1];
+                t2 = s[<number>t2];
+                t3 = s[<number>t3];
+                t4 = s[<number>t4];
                 t1 ^= r;
                 r = r << 1;
                 if (r >= 256) {
@@ -1552,7 +1552,7 @@ export class _AdvancedEncryption256Cipher extends _AdvancedEncryptionBaseCipher 
                 }
             }
             for (let n: number = 0; n < 4; ++n) {
-                result[Number.parseInt(j.toString(), 10)] = t1 ^= result[j - 32];
+                result[<number>j] = t1 ^= result[j - 32];
                 result[j + 1] = t2 ^= result[j - 31];
                 result[j + 2] = t3 ^= result[j - 30];
                 result[j + 3] = t4 ^= result[j - 29];
@@ -1595,7 +1595,7 @@ export class _CipherTransform {
                 crypto.getRandomValues(iv);
             } else {
                 for (let i: number = 0; i < 16; i++) {
-                    iv[Number.parseInt(i.toString(), 10)] = Math.floor(256 * Math.random());
+                    iv[<number>i] = Math.floor(256 * Math.random());
                 }
             }
             const data: Uint8Array = this._stringCipher._encrypt(_stringToBytes(s, false, true) as Uint8Array, iv);

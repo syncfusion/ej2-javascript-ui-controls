@@ -8740,6 +8740,7 @@ export class PdfDocumentLinkAnnotation extends PdfAnnotation {
         this._dictionary.update('Rect', _updateBounds(this));
     }
     _obtainDestination(): PdfDestination {
+        let index: number;
         if (this._dictionary.has('Dest')) {
             let array: any[] = this._dictionary.get('Dest');// eslint-disable-line
             let holder: _PdfReference;
@@ -8777,8 +8778,11 @@ export class PdfDocumentLinkAnnotation extends PdfAnnotation {
                 }
             }
             if (holder) {
-                const index: number = _getPageIndex(this._crossReference._document, this._crossReference._fetch(holder));
-                if (index >= 0 && index < this._crossReference._document.pageCount) {
+                const pageDictionary: _PdfDictionary = this._crossReference._fetch(holder);
+                if (pageDictionary && pageDictionary instanceof _PdfDictionary) {
+                    index = _getPageIndex(this._crossReference._document, pageDictionary);
+                }
+                if (typeof index === 'number' && index >= 0 && index < this._crossReference._document.pageCount) {
                     const page: PdfPage = this._crossReference._document.getPage(index);
                     if (page && array[1] instanceof _PdfName) {
                         const mode: _PdfName = array[1];
@@ -8841,9 +8845,9 @@ export class PdfDocumentLinkAnnotation extends PdfAnnotation {
                     }
                     if (referenceArray && (referenceArray[0] instanceof _PdfReference || typeof referenceArray[0] === 'number')) {
                         const document: PdfDocument = this._crossReference._document;
-                        let index: number;
                         if (referenceArray[0] instanceof _PdfReference) {
-                            index = _getPageIndex(document, this._crossReference._fetch(referenceArray[0]));
+                            const pageDictionary: _PdfDictionary = this._crossReference._fetch(referenceArray[0]);
+                            index = _getPageIndex(document, pageDictionary);
                         } else {
                             index = referenceArray[0];
                         }

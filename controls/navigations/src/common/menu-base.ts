@@ -2243,6 +2243,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         let pElement: HTMLElement;
         const animateElement: HTMLElement = (this.enableScrolling && !this.isMenu && closest(ul, '.e-menu-vscroll'))
             ? closest(ul, '.e-menu-vscroll') as HTMLElement : ul;
+        Animation.stop(animateElement);
         if (this.animationSettings.effect === 'None' || !isMenuOpen) {
             if (this.hamburgerMode && ul) {
                 ul.style.top = '0px';
@@ -2250,6 +2251,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             this.isAnimationNone = this.animationSettings.effect === 'None';
             this.end(ul, isMenuOpen);
         } else {
+            animateElement.style.maxHeight = '';
             this.animation.animate(animateElement, {
                 name: this.animationSettings.effect,
                 duration: this.animationSettings.duration,
@@ -2263,7 +2265,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         if (pElement) { pElement.style.maxHeight = ''; }
                     } else {
                         options.element.style.display = 'block';
-                        options.element.style.maxHeight = this.isMenu ? options.element.getBoundingClientRect().height + 'px' : options.element.scrollHeight + 'px';
+                        options.element.style.maxHeight = options.element.getBoundingClientRect().height + 'px';
                     }
                 },
                 progress: (options: AnimationOptions) => {

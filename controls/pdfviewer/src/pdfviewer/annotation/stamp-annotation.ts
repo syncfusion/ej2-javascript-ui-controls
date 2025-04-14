@@ -756,7 +756,11 @@ export class StampAnnotation {
                 subject = (this.pdfViewer.annotationSettings.subject !== '' && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.customStampSettings.subject ? this.pdfViewer.customStampSettings.subject : '';
             }
             if (annotation.IsLocked) {
-                annotation.AnnotationSettings.isLock = annotation.IsLocked;
+                if (annotation.AnnotationSettings) {
+                    annotation.AnnotationSettings.isLock = annotation.IsLocked;
+                } else {
+                    annotationSettings.isLock = annotation.IsLocked;
+                }
             }
         } else {
             annotationName = this.pdfViewer.annotation.createGUID();

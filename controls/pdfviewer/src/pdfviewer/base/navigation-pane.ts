@@ -1150,6 +1150,7 @@ export class NavigationPane {
         proxy.removeThumbnailSelectionIconTheme();
         proxy.removeBookmarkSelectionIconTheme();
         proxy.updateViewerContainerOnClose();
+        proxy.pdfViewerBase.focusViewerContainer();
         proxy.isThumbnailAddedProgrammatically = false;
         proxy.isBookmarkOpenProgrammatically = false;
         proxy.isThumbnail = false;
@@ -1461,7 +1462,9 @@ export class NavigationPane {
     }
 
     private sideBarTitleOnMouseup(event: MouseEvent): void {
-        this.pdfViewerBase.focusViewerContainer();
+        if (event.target === this.sideBarToolbar) {
+            this.pdfViewerBase.focusViewerContainer();
+        }
     }
 
     /**
@@ -1509,6 +1512,9 @@ export class NavigationPane {
         if (proxy.pdfViewer.annotationModule && proxy.pdfViewer.annotationModule.inkAnnotationModule) {
             const currentPageNumber: number = parseInt(proxy.pdfViewer.annotationModule.inkAnnotationModule.currentPageNumber, 10);
             proxy.pdfViewer.annotationModule.inkAnnotationModule.drawInkAnnotation(currentPageNumber);
+        }
+        if (proxy.isBookmarkOpen) {
+            document.getElementById(proxy.pdfViewer.element.id + '_bookmark_view').focus();
         }
     }
 

@@ -1149,6 +1149,12 @@ export class PivotUtil {
                 sortOrder === 'Descending' ?
                     (sortMembersOrder.sort((a: IAxisSet, b: IAxisSet): number => (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : (a.actualText === 'Out of Range') ? -1 : (b.actualText === 'Out of Range') ? 1 : (Number(a.actualText.toString().match(/\d+/)) < Number(b.actualText.toString().match(/\d+/))) ? 1 : ((Number(b.actualText.toString().match(/\d+/)) < Number(a.actualText.toString().match(/\d+/))) ? -1 : 0))) :
                     sortMembersOrder;
+        } else if (type === 'string') {
+            const sortElements: (a: IAxisSet, b: IAxisSet) => number = (a: IAxisSet, b: IAxisSet): number =>
+                sortOrder === 'Ascending'
+                    ? (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : (a.actualText as string).localeCompare((b.actualText as string), undefined, { sensitivity: 'base' })
+                    : (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : (b.actualText as string).localeCompare((a.actualText as string), undefined, { sensitivity: 'base' });
+            sortMembersOrder.sort(sortElements);
         } else {
             sortMembersOrder = sortOrder === 'Ascending' ?
                 (sortMembersOrder.sort(function (a: IAxisSet, b: IAxisSet): number { return (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : ((a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0)); })) :

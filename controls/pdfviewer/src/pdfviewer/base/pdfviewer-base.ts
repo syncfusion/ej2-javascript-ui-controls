@@ -1164,9 +1164,10 @@ export class PdfViewerBase {
         } else {
             if (!isNullOrUndefined(pageIndex)) {
                 const pageDiv: HTMLElement = this.getElement('_pageDiv_' + pageIndex);
-                const pageWidth: number = this.pageSize[parseInt(pageIndex.toString(), 10)].width;
-                const pageHeight: number = this.pageSize[parseInt(pageIndex.toString(), 10)].height;
-                if (pageDiv) {
+                const pageSize: ISize = this.pageSize[parseInt(pageIndex.toString(), 10)];
+                if (pageDiv && pageSize && pageSize.width && pageSize.height) {
+                    const pageWidth: number = pageSize.width;
+                    const pageHeight: number = pageSize.height;
                     canvas = this.createAnnotationLayer(pageDiv, pageWidth, pageHeight, pageIndex);
                     if (this.isShapeBasedAnnotationsEnabled()) {
                         const commonStyle: string = 'position:absolute;top:0px;left:0px;overflow:hidden;pointer-events:none;z-index:1000';
@@ -2922,6 +2923,9 @@ export class PdfViewerBase {
         if ((<any>window).customStampCollection instanceof Map) {
             (<any>window).customStampCollection.clear();
         }
+        if ((<any>window).signatureCollection instanceof Map) {
+            (<any>window).signatureCollection.clear();
+        }
     }
 
     /**
@@ -4439,6 +4443,11 @@ export class PdfViewerBase {
                     this.pdfViewer.tool = '';
                     this.focusViewerContainer();
                 }
+                if (this.pdfViewer.textSearchModule) {
+                    if (this.pdfViewer.textSearchModule.textSearchOpen) {
+                        this.pdfViewer.textSearchModule.showSearchBox(false);
+                    }
+                }
                 break;
             case 13:
                 if (this.pdfViewer.formDesignerModule) {
@@ -4549,6 +4558,24 @@ export class PdfViewerBase {
                             };
                             this.pdfViewer.fireFocusOutFormField((field as any), (formField as any).pageIndex);
                         }
+                    }
+                }
+                break;
+            case 40:
+                if (event.key === 'ArrowDown') {
+                    const targetElement: HTMLElement = event.target as HTMLElement;
+                    if (targetElement.id === this.pdfViewer.element.id + '_zoomDropDown') {
+                        this.pdfViewer.magnificationModule.zoomIn();
+                        targetElement.focus();
+                    }
+                }
+                break;
+            case 38:
+                if (event.key === 'ArrowUp') {
+                    const targetElement: HTMLElement = event.target as HTMLElement;
+                    if (targetElement.id === this.pdfViewer.element.id + '_zoomDropDown') {
+                        this.pdfViewer.magnificationModule.zoomOut();
+                        targetElement.focus();
                     }
                 }
                 break;
@@ -6094,10 +6121,7 @@ export class PdfViewerBase {
     private async renderPagesVirtually(): Promise<void> {
         // eslint-disable-next-line
         const proxy: any = this;
-        setTimeout(
-            () => {
-                this.initiateRenderPagesVirtually(proxy);
-            }, 500);
+        this.initiateRenderPagesVirtually(proxy);
     }
 
     private initiateRenderPagesVirtually(proxy: any): void {
@@ -8286,7 +8310,7 @@ export class PdfViewerBase {
                     if (this.pdfViewer.enableHtmlSanitizer && proxy.pdfViewer.downloadFileName) {
                         proxy.pdfViewer.downloadFileName = SanitizeHtmlHelper.sanitize(proxy.pdfViewer.downloadFileName);
                     }
-                    if (proxy.clientSideRendering && !isOrganizeSaveAsRequest) {
+                    if (!isOrganizeSaveAsRequest) {
                         proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.download, data);
                     }
                     const blobUrl: string = proxy.createBlobUrl(data.split('base64,')[1], 'application/pdf');

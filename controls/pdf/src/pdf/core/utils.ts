@@ -16,6 +16,30 @@ import { _JpegDecoder } from './graphics/images/jpeg-decoder';
 import { _PngDecoder } from './graphics/images/png-decoder';
 import { CompressedStreamWriter } from '@syncfusion/ej2-compression';
 /**
+ * Represents a bounding rectangle with an origin (x, y) and size (width, height).
+ *
+ * @property {number} x - The horizontal coordinate of the rectangle's origin.
+ * @property {number} y - The vertical coordinate of the rectangle's origin.
+ * @property {number} width - The width of the rectangle.
+ * @property {number} height - The height of the rectangle.
+ */
+export type Rectangle = {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+};
+/**
+ * Represents the size.
+ *
+ * @property {number} width - The width.
+ * @property {number} height - The height.
+ */
+export type Size = {
+    width: number;
+    height: number;
+};
+/**
  * Gets the unsigned value.
  *
  * @param {number} value input value.
@@ -53,18 +77,19 @@ export function _toSigned32(value: number): number {
  * @param {number} end end index.
  * @returns {void} Returns nothing.
  */
-export function _copyRange(target: number[], at: number, source: number[], start?: number, end?: number): void {
-    if (start === null || typeof start === 'undefined') {
-        start = 0;
-    }
-    end = (typeof end === 'undefined') ? source.length : end;
+export function _copyRange(
+    target: number[],
+    at: number,
+    source: number[],
+    start: number = 0,
+    end: number = source.length
+): void {
     start = Math.max(0, Math.min(source.length, start));
     end = Math.max(0, Math.min(source.length, end));
-    if (at + (end - start) > target.length) {
-        target.length = at + (end - start);
-    }
-    for (let i: number = start, j: number = at; i < end; i++, j++) {
-        target[Number.parseInt(j.toString(), 10)] = source[Number.parseInt(i.toString(), 10)];
+    const length: number = end - start;
+    target.length = Math.max(target.length, at + length);
+    for (let i: number = 0; i < length; i++) {
+        target[at + i] = source[start + i];
     }
 }
 /**
@@ -76,7 +101,7 @@ export function _copyRange(target: number[], at: number, source: number[], start
  */
 export function _checkType(imageData: Uint8Array, header: number[]): boolean {
     for (let i: number = 0; i < header.length; i++) {
-        if (header[Number.parseInt(i.toString(), 10)] !== imageData[Number.parseInt(i.toString(), 10)]) {
+        if (header[<number>i] !== imageData[<number>i]) {
             return false;
         }
     }
@@ -129,11 +154,14 @@ export function _checkRotation(page: PdfPage, height: number, left: number): num
  */
 export function _getPageIndex(loadedDocument: PdfDocument, pageDictionary: _PdfDictionary): number {
     let index: number = -1;
-    for (let i: number = 0; i < loadedDocument.pageCount; i++) {
-        const page: PdfPage = loadedDocument.getPage(i);
-        if (page._pageDictionary === pageDictionary || page._pageDictionary.objId === pageDictionary.objId) {
-            index = i;
-            break;
+    if (pageDictionary && pageDictionary instanceof _PdfDictionary) {
+        for (let i: number = 0; i < loadedDocument.pageCount; i++) {
+            const page: PdfPage = loadedDocument.getPage(i);
+            if (page && page._pageDictionary && (page._pageDictionary === pageDictionary ||
+               page._pageDictionary.objId === pageDictionary.objId)) {
+                index = i;
+                break;
+            }
         }
     }
     return index;
@@ -305,15 +333,7 @@ export function _stringToBytes(value: string, isDirect: boolean = false,
  * @returns {boolean} Equal or not
  */
 export function _areArrayEqual(first: Uint8Array | number[], second: Uint8Array | number[]): boolean {
-    if (first.length !== second.length) {
-        return false;
-    }
-    for (let i: number = 0; i < first.length; i++) {
-        if (first[Number.parseInt(i.toString(), 10)] !== second[Number.parseInt(i.toString(), 10)]) {
-            return false;
-        }
-    }
-    return true;
+    return first.length === second.length && first.every((val: number, i: number) => val === second[<number>i]);
 }
 /**
  * Convert number to string as round value with fixed decimal points 2.
@@ -424,15 +444,14 @@ export function _stringToUnicodeArray(value: string): Uint8Array {
  * @returns {string} Hex string.
  */
 export function _byteArrayToHexString(byteArray: Uint8Array): string {
-    let nextHexByte: string;
     const stringBuffer: string[] = [];
-    for (let i: number = 0; i < byteArray.length; i++) {
-        nextHexByte = byteArray[Number.parseInt(i.toString(), 10)].toString(16).toUpperCase();
+    byteArray.forEach((byte: number) => {
+        let nextHexByte: string = byte.toString(16).toUpperCase();
         if (nextHexByte.length < 2) {
             nextHexByte = '0' + nextHexByte;
         }
         stringBuffer.push(nextHexByte);
-    }
+    });
     return stringBuffer.join('');
 }
 /**
@@ -606,15 +625,11 @@ function _encodeChunk(bytes: Uint8Array, isLastChunk: boolean = false): string {
         const byte1: number = bytes[i++];
         const byte2: number = i < length ? bytes[i++] : 0;
         const byte3: number = i < length ? bytes[i++] : 0;
-        const value1: number = byte1 >> 2;
-        const value2: number = ((byte1 & 3) << 4) | (byte2 >> 4);
-        const value3: number = ((byte2 & 15) << 2) | (byte3 >> 6);
-        const value4: number = byte3 & 63;
         output.push(
-            key[Number.parseInt(value1.toString(), 10)],
-            key[Number.parseInt(value2.toString(), 10)],
-            i - 1 > length ? '=' : key[Number.parseInt(value3.toString(), 10)],
-            i > length ? '=' : key[Number.parseInt(value4.toString(), 10)]
+            key[byte1 >> 2],
+            key[((byte1 & 3) << 4) | (byte2 >> 4)],
+            i - 1 > length ? '=' : key[((byte2 & 15) << 2) | (byte3 >> 6)],
+            i > length ? '=' : key[byte3 & 63]
         );
     }
     if (isLastChunk) {
@@ -658,25 +673,25 @@ export function _encode(bytes: Uint8Array): string {
         let currentChar: number = 0;
         for (let i: number = 0; i < bytes.length; i++) {
             if (i % 3 === 0) {
-                currentChar = (bytes[Number.parseInt(i.toString(), 10)] >> 2);
-                output += key[Number.parseInt(currentChar.toString(), 10)];
-                currentChar = (bytes[Number.parseInt(i.toString(), 10)] << 4) & 63;
+                currentChar = (bytes[<number>i] >> 2);
+                output += key[<number>currentChar];
+                currentChar = (bytes[<number>i] << 4) & 63;
             } else if (i % 3 === 1) {
-                currentChar += (bytes[Number.parseInt(i.toString(), 10)] >> 4);
-                output += key[Number.parseInt(currentChar.toString(), 10)];
-                currentChar = (bytes[Number.parseInt(i.toString(), 10)] << 2) & 63;
+                currentChar += (bytes[<number>i] >> 4);
+                output += key[<number>currentChar];
+                currentChar = (bytes[<number>i] << 2) & 63;
             } else if (i % 3 === 2) {
-                currentChar += (bytes[Number.parseInt(i.toString(), 10)] >> 6);
-                output += key[Number.parseInt(currentChar.toString(), 10)];
-                currentChar = bytes[Number.parseInt(i.toString(), 10)] & 63;
-                output += key[Number.parseInt(currentChar.toString(), 10)];
+                currentChar += (bytes[<number>i] >> 6);
+                output += key[<number>currentChar];
+                currentChar = bytes[<number>i] & 63;
+                output += key[<number>currentChar];
             }
         }
         if (bytes.length % 3 === 1) {
-            output += `${key[Number.parseInt(currentChar.toString(), 10)]}==`;
+            output += `${key[<number>currentChar]}==`;
         }
         if (bytes.length % 3 === 2) {
-            output += `${key[Number.parseInt(currentChar.toString(), 10)]}=`;
+            output += `${key[<number>currentChar]}=`;
         }
         return output;
     }
@@ -1381,13 +1396,10 @@ export function _findPage(document: PdfDocument, reference: _PdfReference): PdfP
         const entry: PdfPage = document.getPage(i);
         if (entry && entry._pageDictionary.has('Annots')) {
             const annots: _PdfReference[] = entry._pageDictionary.get('Annots');
-            if (annots !== null && typeof annots !== 'undefined' && annots.length > 0) {
-                for (let j: number = 0; j < annots.length && typeof page === 'undefined'; j++) {
-                    const ref: _PdfReference = annots[Number.parseInt(j.toString(), 10)];
-                    if (ref !== null && typeof ref !== 'undefined' && ref instanceof _PdfReference && ref === reference) {
-                        page = entry;
-                    }
-                }
+            if (Array.isArray(annots) &&
+                typeof page === 'undefined' &&
+                annots.some((ref: _PdfReference) => ref instanceof _PdfReference && ref === reference)) {
+                page = entry;
             }
         }
     }
@@ -1439,16 +1451,13 @@ export function _getItemValue(itemDictionary: _PdfDictionary): string {
                 appearance = appearance.dictionary;
             }
             if (appearance && appearance instanceof _PdfDictionary) {
-                const keys: string[] = [];
+                let hasKey: boolean = false;
                 appearance.forEach((key: string, value: any) => { // eslint-disable-line
-                    keys.push(key);
-                });
-                for (let i: number = 0; i < keys.length; i++) {
-                    if (keys[Number.parseInt(i.toString(), 10)] !== 'Off') {
-                        itemValue = keys[Number.parseInt(i.toString(), 10)];
-                        break;
+                    if (!hasKey && key !== 'off') {
+                        itemValue = key;
+                        hasKey = true;
                     }
-                }
+                });
             }
         }
     }
@@ -3610,16 +3619,15 @@ export function _obtainFontDetails(form: PdfForm, widget: PdfWidgetAnnotation, f
             defaultAppearance = field._dictionary.get('DA');
         }
     }
-    if (defaultAppearance && defaultAppearance !== '' && defaultAppearance.indexOf('Tf') !== -1) {
-        const textCollection: string[] = defaultAppearance.split(' ');
-        for (let i: number = 0; i < textCollection.length; i++) {
-            if (textCollection[Number.parseInt(i.toString(), 10)].indexOf('Tf') !== -1) {
-                fontFamily = textCollection[i - 2];
-                while (fontFamily !== '' && fontFamily.length > 1 && fontFamily[0] === '/') {
-                    fontFamily = fontFamily.substring(1);
-                }
-                fontSize = Number.parseFloat(textCollection[i - 1]);
+    if (defaultAppearance && defaultAppearance.includes('Tf')) {
+        const parts: string[] = defaultAppearance.trim().split(/\s+/);
+        const index: number = parts.indexOf('Tf');
+        if (index >= 2) {
+            fontFamily = parts[index - 2];
+            if (fontFamily.startsWith('/')) {
+                fontFamily = fontFamily.slice(1);
             }
+            fontSize = parseFloat(parts[index - 1]);
         }
     }
     if (fontFamily) {
@@ -3862,12 +3870,11 @@ export function _getFontFromDescriptor(dictionary: _PdfDictionary): Uint8Array {
     if (dictionary && dictionary.has('DescendantFonts')) {
         let descendant: any[] = dictionary.getArray('DescendantFonts'); // eslint-disable-line
         if (descendant && descendant.length > 0) {
-            for (let i: number = 0; i < descendant.length; i++) {
-                const descendantFont: any = descendant[Number.parseInt(i.toString(), 10)]; // eslint-disable-line
+            descendant.forEach((descendantFont: any) => { // eslint-disable-line
                 if (descendantFont && descendantFont instanceof _PdfDictionary && descendantFont.has('FontDescriptor')) {
                     fontDescriptor = descendantFont.get('FontDescriptor');
                 }
-            }
+            });
         }
     } else if (dictionary && dictionary.has('FontDescriptor')) {
         fontDescriptor = dictionary.get('FontDescriptor');
@@ -3897,8 +3904,7 @@ export function _checkInkPoints(inkPointsCollection: Array<number[]>, previousCo
         return false;
     }
     for (let i: number = 0; i < inkPointsCollection.length; i++) {
-        if (!_areArrayEqual(inkPointsCollection[Number.parseInt(i.toString(), 10)],
-                            previousCollection[Number.parseInt(i.toString(), 10)])) {
+        if (!_areArrayEqual(inkPointsCollection[<number>i], previousCollection[<number>i])) {
             return false;
         }
     }
@@ -4106,14 +4112,11 @@ export function _decodeText(text: string, isColorSpace: boolean, isPassword: boo
                 text = text.substring(0, text.length - 2);
             }
             const bytes: Uint8Array = _stringToBytes(text, false, true) as Uint8Array;
-            let result: string = '';
+            const codeUnits: number[] = [];
             for (let i: number = 0; i < bytes.length; i += 2) {
-                const x: number = bytes[Number.parseInt(i.toString(), 10)] << 8;
-                const y: number = bytes[Number.parseInt((i + 1).toString(), 10)];
-                const codeUnit: number = x | y;
-                result += String.fromCharCode(codeUnit);
+                codeUnits.push((bytes[<number>i] << 8) | bytes[i + 1]);
             }
-            text = result;
+            text = String.fromCharCode(...codeUnits);
         }
     }
     return text;
@@ -4251,27 +4254,6 @@ export function _isNullOrUndefined (value: any): boolean { // eslint-disable-lin
         return true;
     }
     return false;
-}
-/**
- * Compare two arrays of numbers to determine if they are equal.
- *
- * This function checks if two arrays have the same length and
- * identical elements in the same order.
- *
- * @param {number[]} arr1 - The first array to compare.
- * @param {number[]} arr2 - The second array to compare.
- * @returns {boolean} 'true' if the arrays are equal, otherwise 'false'.
- */
-export function _isArrayEqual(arr1: number[], arr2: number[]): boolean {
-    if (arr1.length !== arr2.length) {
-        return false;
-    }
-    for (let i: number = 0, ii: number = arr1.length; i < ii; i++) {
-        if (arr1[Number.parseInt(i.toString(), 10)] !== arr2[Number.parseInt(i.toString(), 10)]) {
-            return false;
-        }
-    }
-    return true;
 }
 /**
  * Defines a property on an object with specific attributes.

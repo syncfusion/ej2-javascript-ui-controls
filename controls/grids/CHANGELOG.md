@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.1.38 (2025-04-15)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I705939` - Resolved the issue where the Grid column header text overlapped with the column menu in `Bootstrap 5.3` and `Tailwind 3` themes.
+
 ## 29.1.37 (2025-04-08)
 
 ### Grid

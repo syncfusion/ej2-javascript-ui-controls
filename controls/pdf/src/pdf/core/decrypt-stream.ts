@@ -29,12 +29,9 @@ export class _PdfDecryptStream extends _PdfDecodeStream {
         this._nextChunk = this.stream.getBytes(this._chunkSize);
         const hasMoreData: boolean = this._nextChunk && this._nextChunk.length > 0;
         chunk = this._cipher._decryptBlock(chunk, !hasMoreData);
-        let bufferLength: number = this.bufferLength;
         const n: number = chunk.length;
-        const buffer: Uint8Array = this.ensureBuffer(bufferLength + n);
-        for (let i: number = 0; i < n; i++) {
-            buffer[bufferLength++] = chunk[Number.parseInt(i.toString(), 10)];
-        }
-        this.bufferLength = bufferLength;
+        const buffer: Uint8Array = this.ensureBuffer(this.bufferLength + n);
+        buffer.set(chunk, this.bufferLength);
+        this.bufferLength += n;
     }
 }

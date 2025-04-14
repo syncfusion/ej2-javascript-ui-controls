@@ -685,7 +685,8 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      */
     private defaultLocale(): Object
     {
-        return{ SearchShapes: 'Search Shapes'};
+        //EJ2-949570 - Add Localization Support for "SearchResults" and "No Items To Display"
+        return { SearchShapes: 'Search Shapes', SearchResults: 'Search Results', NoItemsToDisplay: 'No Items To Display' };
     }
     /**
      * Renders the rulers.
@@ -2229,7 +2230,8 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             }
         } else if (value !== '') {
             const emptyDiv: HTMLElement = createHtmlElement('div', { 'id': 'EmptyDiv', 'style': 'text-align:center;font-style:italic' });
-            emptyDiv.innerHTML = 'No Items To Display';
+            //EJ2-949570 - Add Localization Support for "SearchResults" and "No Items To Display"
+            emptyDiv.innerHTML = this.l10n.getConstant('NoItemsToDisplay');
             element.appendChild(emptyDiv);
         } else {
             const element: HTMLElement = document.getElementById('iconSearch');
@@ -2248,7 +2250,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         paletteDiv = createHtmlElement('div', { 'id': 'SearchPalette', 'style': 'display:none;overflow:auto;' });
         this.element.appendChild(paletteDiv);
         const paletteCollection: AccordionItemModel = {
-            header: 'Search Results', expanded: true,
+            //EJ2-949570 - Add Localization Support for "SearchResults" and "No Items To Display"
+            header: this.l10n.getConstant('SearchResults'),
+            expanded: true,
             content: '#SearchPalette'
         };
         this.accordionElement.addItem(paletteCollection, 0);

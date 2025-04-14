@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 29.1.37 (2025-04-08)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I708564` - The issue preventing the error dialog from appearing when a path was unavailable in the File Manager component has been fixed.
+
+**Note**
+
+Additionally, if you want to prevent the error dialog when a folder is unavailable and load the available parent directory instead, you can use the `beforePopupOpen` and `failure` events of the File Manager component. The `beforePopupOpen` event allows you to prevent the error dialog from appearing, while the `failure` event provides the failed location through `path` property. By setting the previous valid location to the File Manager's path and refreshing it, you can ensure that the available parent directory is loaded instead of displaying an error dialog.
+
 ## 29.1.33 (2025-03-25)
 
 ### FileManager

@@ -374,14 +374,18 @@ export class PdfRenderer {
      * @returns {void}
      */
     public getPageSize(pageNumber: number): Size {
-        const page: PdfPage = this.loadedDocument.getPage(pageNumber);
-        const size: number[] = page.size;
-        const rotation: PdfRotationAngle = page.rotation % 4;
-        if (rotation === PdfRotationAngle.angle0 || rotation === PdfRotationAngle.angle180) {
-            return new Size(this.convertPointToPixel(size[0]), this.convertPointToPixel(size[1]));
-        } else {
-            return new Size(this.convertPointToPixel(size[1]), this.convertPointToPixel(size[0]));
+        let newSize: Size = new Size();
+        if (pageNumber >= 0 && pageNumber < this.loadedDocument.pageCount) {
+            const page: PdfPage = this.loadedDocument.getPage(pageNumber);
+            const size: number[] = page.size;
+            const rotation: PdfRotationAngle = page.rotation % 4;
+            if (rotation === PdfRotationAngle.angle0 || rotation === PdfRotationAngle.angle180) {
+                newSize = new Size(this.convertPointToPixel(size[0]), this.convertPointToPixel(size[1]));
+            } else {
+                newSize = new Size(this.convertPointToPixel(size[1]), this.convertPointToPixel(size[0]));
+            }
         }
+        return newSize;
     }
 
     private convertPointToPixel(number: number): number {
@@ -1090,58 +1094,60 @@ export class PdfRenderer {
     }
 
     private exportHyperlinks(pageIndex: number, pageSize: Size, isExport: boolean, isAnnotationNeeded: boolean): void {
-        const page: PdfPage = this.loadedDocument.getPage(pageIndex);
-        this.renderer.hyperlinks = [];
-        this.renderer.hyperlinkBounds = [];
-        this.renderer.annotationDestPage = [];
-        this.renderer.annotationList = [];
-        this.renderer.annotationYPosition = [];
-        for (let i: number = 0; i < page.annotations.count; i++) {
-            if (page.annotations.at(i) instanceof PdfUriAnnotation){
-                const pdfLoadedUriAnnotation: PdfUriAnnotation = page.annotations.at(i) as PdfUriAnnotation;
-                const rectangle: AnnotBounds = this.getHyperlinkBounds(pdfLoadedUriAnnotation.bounds as Rect, pageSize, page.rotation);
-                if (isNullOrUndefined(this.renderer.hyperlinks)){
-                    this.renderer.hyperlinks = [];
-                    this.renderer.hyperlinkBounds = [];
-                }
-                this.renderer.hyperlinks.push(pdfLoadedUriAnnotation.uri);
-                this.renderer.hyperlinkBounds.push(rectangle);
-            }
-            else if (page.annotations.at(i) instanceof PdfTextWebLinkAnnotation) {
-                const pdfLoadedTextWebLinkAnnotation: PdfTextWebLinkAnnotation = page.annotations.at(i) as PdfTextWebLinkAnnotation;
-                const rectangle: AnnotBounds = this.getHyperlinkBounds(pdfLoadedTextWebLinkAnnotation.bounds as Rect,
-                                                                       pageSize, page.rotation);
-                if (isNullOrUndefined(this.renderer.hyperlinks)){
-                    this.renderer.hyperlinks = [];
-                    this.renderer.hyperlinkBounds = [];
-                }
-                this.renderer.hyperlinks.push(pdfLoadedTextWebLinkAnnotation.url);
-                this.renderer.hyperlinkBounds.push(rectangle);
-            }
-            else if (page.annotations.at(i) instanceof PdfDocumentLinkAnnotation) {
-                const pdfLoadedDocumentLinkAnnotation: PdfDocumentLinkAnnotation = page.annotations.at(i) as PdfDocumentLinkAnnotation;
-                const rectangle: AnnotBounds = this.getHyperlinkBounds(pdfLoadedDocumentLinkAnnotation.bounds as Rect,
-                                                                       pageSize, page.rotation);
-                if (isNullOrUndefined(this.renderer.annotationDestPage)){
-                    this.renderer.annotationDestPage = [];
-                    this.renderer.annotationList = [];
-                    this.renderer.annotationYPosition = [];
-                }
-                if (!isNullOrUndefined(pdfLoadedDocumentLinkAnnotation.destination)){
-                    const linkPageIndex: number = pdfLoadedDocumentLinkAnnotation.destination.pageIndex;
-                    this.renderer.annotationDestPage.push(linkPageIndex);
-                    this.renderer.annotationList.push(rectangle);
-                    if (page.rotation === PdfRotationAngle.angle180){
-                        this.renderer.annotationYPosition.push(this.convertPointToPixel(Math.abs(pdfLoadedDocumentLinkAnnotation.
-                            destination.location[1])));
+        if (pageIndex >= 0 && pageIndex < this.loadedDocument.pageCount) {
+            const page: PdfPage = this.loadedDocument.getPage(pageIndex);
+            this.renderer.hyperlinks = [];
+            this.renderer.hyperlinkBounds = [];
+            this.renderer.annotationDestPage = [];
+            this.renderer.annotationList = [];
+            this.renderer.annotationYPosition = [];
+            for (let i: number = 0; i < page.annotations.count; i++) {
+                if (page.annotations.at(i) instanceof PdfUriAnnotation) {
+                    const pdfLoadedUriAnnotation: PdfUriAnnotation = page.annotations.at(i) as PdfUriAnnotation;
+                    const rectangle: AnnotBounds = this.getHyperlinkBounds(pdfLoadedUriAnnotation.bounds as Rect, pageSize, page.rotation);
+                    if (isNullOrUndefined(this.renderer.hyperlinks)) {
+                        this.renderer.hyperlinks = [];
+                        this.renderer.hyperlinkBounds = [];
                     }
-                    else if (page.rotation === PdfRotationAngle.angle90 || page.rotation === PdfRotationAngle.angle270){
-                        this.renderer.annotationYPosition.push(pageSize.width -
-                            this.convertPointToPixel(Math.abs(pdfLoadedDocumentLinkAnnotation.destination.location[1])));
+                    this.renderer.hyperlinks.push(pdfLoadedUriAnnotation.uri);
+                    this.renderer.hyperlinkBounds.push(rectangle);
+                }
+                else if (page.annotations.at(i) instanceof PdfTextWebLinkAnnotation) {
+                    const pdfLoadedTextWebLinkAnnotation: PdfTextWebLinkAnnotation = page.annotations.at(i) as PdfTextWebLinkAnnotation;
+                    const rectangle: AnnotBounds = this.getHyperlinkBounds(pdfLoadedTextWebLinkAnnotation.bounds as Rect,
+                                                                           pageSize, page.rotation);
+                    if (isNullOrUndefined(this.renderer.hyperlinks)) {
+                        this.renderer.hyperlinks = [];
+                        this.renderer.hyperlinkBounds = [];
                     }
-                    else{
-                        this.renderer.annotationYPosition.push(pageSize.height -
-                            this.convertPointToPixel(Math.abs(pdfLoadedDocumentLinkAnnotation.destination.location[1])));
+                    this.renderer.hyperlinks.push(pdfLoadedTextWebLinkAnnotation.url);
+                    this.renderer.hyperlinkBounds.push(rectangle);
+                }
+                else if (page.annotations.at(i) instanceof PdfDocumentLinkAnnotation) {
+                    const pdfLoadedDocumentLinkAnnotation: PdfDocumentLinkAnnotation = page.annotations.at(i) as PdfDocumentLinkAnnotation;
+                    const rectangle: AnnotBounds = this.getHyperlinkBounds(pdfLoadedDocumentLinkAnnotation.bounds as Rect,
+                                                                           pageSize, page.rotation);
+                    if (isNullOrUndefined(this.renderer.annotationDestPage)) {
+                        this.renderer.annotationDestPage = [];
+                        this.renderer.annotationList = [];
+                        this.renderer.annotationYPosition = [];
+                    }
+                    if (!isNullOrUndefined(pdfLoadedDocumentLinkAnnotation.destination)) {
+                        const linkPageIndex: number = pdfLoadedDocumentLinkAnnotation.destination.pageIndex;
+                        this.renderer.annotationDestPage.push(linkPageIndex);
+                        this.renderer.annotationList.push(rectangle);
+                        if (page.rotation === PdfRotationAngle.angle180) {
+                            this.renderer.annotationYPosition.push(this.convertPointToPixel(Math.abs(pdfLoadedDocumentLinkAnnotation.
+                                destination.location[1])));
+                        }
+                        else if (page.rotation === PdfRotationAngle.angle90 || page.rotation === PdfRotationAngle.angle270) {
+                            this.renderer.annotationYPosition.push(pageSize.width -
+                                this.convertPointToPixel(Math.abs(pdfLoadedDocumentLinkAnnotation.destination.location[1])));
+                        }
+                        else {
+                            this.renderer.annotationYPosition.push(pageSize.height -
+                                this.convertPointToPixel(Math.abs(pdfLoadedDocumentLinkAnnotation.destination.location[1])));
+                        }
                     }
                 }
             }

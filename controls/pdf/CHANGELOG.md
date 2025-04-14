@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 29.1.38 (2025-04-15)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an exception that occurs when importing annotations in FDF format.
+- Fixed an exception that occurred when exporting annotations in XFDF format in certain PDF documents.
+- Fixed an exception that occurred when exporting annotations in XFDF format in a specific PDF document.
+- Resolved the null reference issue encountered while parsing the destination of document link annotations.
+- Resolved the performance issue while rendering the image in PDF page.
+
+#### Features
+
+- The PDF now supports template creation and drawing on graphics. This enhancement enables PDF resource optimization while drawing text, images, and graphical content.
+
 ## 29.1.37 (2025-04-08)
 
 ### PDF Parser

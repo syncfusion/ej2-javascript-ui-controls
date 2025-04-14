@@ -32,6 +32,7 @@ export abstract class PdfImage {
     _maskStream: _PdfStream;
     _reference: _PdfReference;
     _maskReference: _PdfReference;
+    _key: string;
     /**
      * Gets the width of the PDF image.
      *

@@ -1919,6 +1919,12 @@
       @include grid-margin-padding($grid-column-menu-margin, $grid-column-menu-padding);
     }
 
+    .e-table:not(.e-sortfilter) .e-headercell .e-columnmenu {
+      @if $grid-skin == 'bootstrap5.3' or $grid-skin == 'bootstrap5'  {
+        margin-top: -11px;
+      }
+    }
+
     &.e-wrap .e-columnmenu,
     &.e-wrap &.e-rtl .e-columnmenu {
       @if $grid-skin == 'material' or $grid-skin == 'material3' {
@@ -4080,6 +4086,17 @@
     .e-icon-grightarrow,
     .e-icon-gdownarrow {
       line-height: normal;
+    }
+  }
+  .e-grid.sf-grid.e-grid-min-height .e-virtualtable {
+    /* stylelint-disable declaration-no-important */
+    .e-table {
+      border-spacing: 0 !important;
+    }
+    /* stylelint-enable declaration-no-important */
+  
+    .e-rowcell {
+      line-height: 1;
     }
   }
 }

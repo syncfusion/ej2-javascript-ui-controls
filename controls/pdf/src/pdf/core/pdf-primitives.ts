@@ -147,6 +147,7 @@ export class _PdfDictionary {
     isCatalog: boolean;
     _currentObj: any;
     _isFont: boolean = false;
+    _reference: _PdfReference;
     get size(): number {
         return Object.keys(this._map).length;
     }
@@ -166,18 +167,14 @@ export class _PdfDictionary {
         }
         return value;
     }
-    getArray(key1: string, key2?: string, key3?: string) {
-        let value = this.get(key1, key2, key3);
-        if (this._crossReference && typeof value !== 'undefined' && Array.isArray(value)) {
-            value = value.slice();
-            for (let i: number = 0; i < value.length; i++) {
-                const reference: _PdfReference = value[Number.parseInt(i.toString(), 10)];
-                if (reference !== null && typeof reference !== 'undefined' && reference instanceof _PdfReference) {
-                    value[Number.parseInt(i.toString(), 10)] = this._crossReference._fetch(reference);
-                }
-            }
+    getArray(key1: string, key2?: string, key3?: string): any[] | undefined {
+        const rawValue = this.get(key1, key2, key3);
+        if (this._crossReference && Array.isArray(rawValue)) {
+            return rawValue.map((item: any) => {
+                return item instanceof _PdfReference ? this._crossReference._fetch(item) : item;
+            });
         }
-        return value;
+        return rawValue;
     }
     set(key: string, value: any): void {
         this._map[key] = value;

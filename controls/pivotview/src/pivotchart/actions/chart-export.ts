@@ -58,6 +58,9 @@ export class ChartExport {
         const width: number = chartInfo.width;
         const height: number = chartInfo.height;
         let element: HTMLCanvasElement = this.parent.chart.svgObject as HTMLCanvasElement;
+        if (this.parent.enableRtl && chartInfo.svg) {
+            chartInfo.svg.querySelector('#' + this.parent.element.id + '_chart_svg').setAttribute('direction', 'rtl');
+        }
         const isCanvas: boolean = (this.parent.chart as Chart).enableCanvas;
         if (!isCanvas) {
             element = <HTMLCanvasElement>createElement('canvas', {

@@ -882,6 +882,10 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             target = this.element;
         }
         if (isNullOrUndefined(target) || (target.getAttribute('data-tooltip-id') !== null && this.closeDelay === 0)) { return; }
+        if (!isNullOrUndefined(this.tooltipEle) && this.tooltipEle.getAttribute('e-animation-id')) {
+            PopupAnimation.stop(this.tooltipEle);
+            this.clear();
+        }
         const targetList: Element[] = [].slice.call(selectAll('[data-tooltip-id= "' + this.ctrlId + '_content"]', document));
         for (const target of targetList) {
             this.restoreElement(target as HTMLElement);

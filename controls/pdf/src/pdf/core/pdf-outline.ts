@@ -133,7 +133,7 @@ export class PdfBookmarkBase {
             throw Error('Index out of range.');
         }
         if (_isNullOrUndefined(this._bookMarkList) && this._bookMarkList.length > 0 && index < this._bookMarkList.length) {
-            bookmark = this._bookMarkList[Number.parseInt(index.toString(), 10)];
+            bookmark = this._bookMarkList[<number>index];
         }
         return bookmark;
     }
@@ -411,9 +411,9 @@ export class PdfBookmarkBase {
     }
     _updateBookmarkList(index: number, bookmark?: PdfBookmark): void {
         const updatedList: PdfBookmark[] = [];
+        let i: number = 0;
         if (typeof bookmark === 'undefined') {
-            for (let i: number = 0; i < this.count; i++) {
-                const entry: PdfBookmark = this._bookMarkList[Number.parseInt(i.toString(), 10)];
+            this._bookMarkList.forEach((entry: PdfBookmark) => {
                 if (i !== index) {
                     updatedList.push(entry);
                 } else {
@@ -422,14 +422,16 @@ export class PdfBookmarkBase {
                         this._crossReference._cacheMap.get(reference)._updated = false;
                     }
                 }
-            }
+                i++;
+            });
         } else {
-            for (let i: number = 0; i < this.count; i++) {
+            this._bookMarkList.forEach((entry: PdfBookmark) => {
                 if (i === index) {
                     updatedList.push(bookmark);
                 }
-                updatedList.push(this._bookMarkList[Number.parseInt(i.toString(), 10)]);
-            }
+                updatedList.push(entry);
+                i++;
+            });
         }
         this._bookMarkList = updatedList;
     }
@@ -820,12 +822,11 @@ export class PdfBookmark extends PdfBookmarkBase {
                 }
                 if (value) {
                     const namedDestinations: PdfNamedDestination[] = destinationCollection._namedDestinations;
-                    for (let i: number = 0; i < namedDestinations.length; i++) {
-                        const namedDest: PdfNamedDestination = namedDestinations[Number.parseInt(i.toString(), 10)];
-                        if (namedDest._title === value) {
-                            destination = namedDest;
-                            namedDestination = namedDest;
-                            break;
+                    if (namedDestinations && namedDestinations.length > 0) {
+                        const entry: PdfNamedDestination = namedDestinations.find((dest: PdfNamedDestination) => dest._title === value);
+                        if (entry) {
+                            destination = entry;
+                            namedDestination = entry;
                         }
                     }
                 }
@@ -1045,9 +1046,9 @@ export class _PdfNamedDestinationCollection {
                     this._addCollection(destination);
                 } else if (destination.has('Kids')) {
                     const destinationArray: any[] = destination.getArray('Kids'); // eslint-disable-line
-                    for (let i: number = 0; i < destinationArray.length; i++) {
-                        this._findDestination(destinationArray[Number.parseInt(i.toString(), 10)]);
-                    }
+                    destinationArray.forEach((entry: any) => { // eslint-disable-line
+                        this._findDestination(entry);
+                    });
                 }
             }
         }
@@ -1059,9 +1060,9 @@ export class _PdfNamedDestinationCollection {
             } else if (destination.has('Kids')) {
                 const kids: any = destination.getArray('Kids'); // eslint-disable-line
                 if (kids && Array.isArray(kids) && kids.length > 0) {
-                    for (let i: number = 0; i < kids.length; i++) {
-                        this._findDestination(kids[Number.parseInt(i.toString(), 10)]);
-                    }
+                    kids.forEach((entry: any) => { // eslint-disable-line
+                        this._findDestination(entry);
+                    });
                 }
             }
         }

@@ -136,7 +136,7 @@ export class _FdfDocument extends _ExportHelper {
         this._checkFdf(_bytesToString(data));
         const stream: _PdfStream = new _PdfStream(data);
         this._isAnnotationImport = true;
-        const parser: _PdfParser = new _PdfParser(new _PdfLexicalOperator(stream), null, true, false);
+        const parser: _PdfParser = new _PdfParser(new _PdfLexicalOperator(stream, true), null, true, false);
         this._readFdfData(parser);
         if (_isNullOrUndefined(this._annotationObjects) && this._annotationObjects.size > 0) {
             this._annotationObjects.clear();
@@ -151,7 +151,7 @@ export class _FdfDocument extends _ExportHelper {
         this._isAnnotationExport = false;
         this._checkFdf(_bytesToString(data));
         const stream: _PdfStream = new _PdfStream(data);
-        const parser: _PdfParser = new _PdfParser(new _PdfLexicalOperator(stream), null, false, false);
+        const parser: _PdfParser = new _PdfParser(new _PdfLexicalOperator(stream, true), null, false, false);
         this._readFdfData(parser);
     }
     _readFdfData(parser: any): void { // eslint-disable-line
@@ -240,10 +240,10 @@ export class _FdfDocument extends _ExportHelper {
                 }
                 while (token !== null && typeof token !== 'undefined' && token !== 'EOF') {
                     if (token instanceof _PdfDictionary) {
-                        const t: string = token.getArray('T');
-                        let v: string;
-                        if (token._map.V instanceof _PdfName) {
-                            v = token.getArray('V').name;
+                        const t: any[] = token.getArray('T'); // eslint-disable-line
+                        let v: any; // eslint-disable-line
+                        if (token._map && token._map.V instanceof _PdfName) {
+                            v = token.get('V').name;
                         } else {
                             v = token.getArray('V');
                         }
@@ -263,10 +263,10 @@ export class _FdfDocument extends _ExportHelper {
                                 for (let i: number = 0; i < token.length; i++) {
                                     const field: _PdfDictionary = token[Number.parseInt(i.toString(), 10)] as _PdfDictionary;
                                     if (field instanceof _PdfDictionary && field !== null && field !== undefined) {
-                                        const t: string = field.getArray('T');
-                                        let v: string;
-                                        if (field._map.V instanceof _PdfName) {
-                                            v = field.getArray('V').name;
+                                        const t: any[] = field.getArray('T'); // eslint-disable-line
+                                        let v: any; // eslint-disable-line
+                                        if (field._map && field._map.V instanceof _PdfName) {
+                                            v = field.get('V').name;
                                         } else {
                                             v = field.getArray('V');
                                         }

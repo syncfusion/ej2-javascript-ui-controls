@@ -765,8 +765,10 @@ export class _PdfCrossReference {
     _writeXrefStream(buffer: number[]): void {
         this._objectStreamCollection.forEach((value: _PdfArchievedStream, key: _PdfReference) => {
             value._save(buffer, this._currentLength);
-            for (let i: number = 0; i < value._collection.length; i++) {
-                this._indexes.push(value._collection[Number.parseInt(i.toString(), 10)]);
+            if (Array.isArray(value._collection)) {
+                value._collection.forEach((item: any) => { // eslint-disable-line
+                    this._indexes.push(item);
+                });
             }
             this._indexes.push(key.objectNumber, 1);
         });
@@ -1088,8 +1090,7 @@ export class _PdfCrossReference {
         const byteValues: number[] = _stringToBigEndianBytes(value);
         byteValues.unshift(254, 255);
         const data: number[] = [];
-        for (let i: number = 0; i < byteValues.length; i++) {
-            const byte: number = byteValues[Number.parseInt(i.toString(), 10)];
+        byteValues.forEach((byte: number) => {
             switch (byte) {
             case 40:
             case 41:
@@ -1108,11 +1109,11 @@ export class _PdfCrossReference {
                 data.push(byte);
                 break;
             }
-        }
+        });
         buffer.push('('.charCodeAt(0) & 0xff);
-        for (let i: number = 0; i < data.length; i++) {
-            buffer.push(data[Number.parseInt(i.toString(), 10)] & 0xff);
-        }
+        data.forEach((byte: number) => {
+            buffer.push(byte & 0xff);
+        });
         buffer.push(')'.charCodeAt(0) & 0xff);
     }
     _writeString(value: string, buffer: Array<number>): void {

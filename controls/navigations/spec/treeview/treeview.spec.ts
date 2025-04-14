@@ -5479,6 +5479,98 @@ describe('TreeView control', () => {
                 expect(treeObj1.getTreeData().length).toBe(2);
             });
         });
+        describe('Drag and drop with different TreeView testing with self referential data', () => {
+            let treeObj: any;
+            let treeObj1: any;
+            let originalTimeout: any
+            let mouseEventArgs: any;
+            let tapEvent: any;
+            var localData1 = [
+                { id: 1, name: 'ASP.NET MVC Team', hasChild: true, expanded: true },
+                { id: 2, pid: 1, name: 'Johnson', hasChild: true },
+                { id: 3, pid: 2, name: 'Intern A' },
+            ];
+            var localData2 = [
+                { id: 5, name: 'Javascript' },
+                { id: 6, name: 'Web Team' },
+            ];
+            beforeEach((done: Function): void => {
+                mouseEventArgs = {
+                    preventDefault: (): void => {},
+                    stopImmediatePropagation: (): void => {},
+                    target: null,
+                    type: null,
+                    shiftKey: false,
+                    ctrlKey: false
+                };
+                tapEvent = {
+                    originalEvent: mouseEventArgs,
+                    tapCount: 1
+                };
+                treeObj = undefined;
+                let ele: HTMLElement = createElement('div', { id: 'tree1' });
+                document.body.appendChild(ele);
+                treeObj = new TreeView({ 
+                    fields: {
+                        dataSource: localData1,
+                        id: 'id',
+                        parentID: 'pid',
+                        text: 'name',
+                        hasChildren: 'hasChild',
+                    },
+                    allowDragAndDrop: true,
+                    fullRowSelect: false,
+                },'#tree1');
+                let ele1: HTMLElement = createElement('div', { id: 'tree2' });
+                document.body.appendChild(ele1);
+                treeObj1 = undefined;
+                treeObj1 = new TreeView({ 
+                    fields: {
+                        dataSource: localData2,
+                        id: 'id',
+                        parentID: 'pid',
+                        text: 'name',
+                        hasChildren: 'hasChild',
+                    },
+                    allowDragAndDrop: true,
+                    fullRowSelect: false,
+                },'#tree2');
+                originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+                done();
+            });
+            afterEach((): void => {
+                if (treeObj)
+                    treeObj.destroy();
+                if (treeObj1)
+                    treeObj1.destroy();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+                document.body.innerHTML = '';
+            });
+            it('testing with dropped node child data', (done: Function) => {
+                expect(treeObj.getTreeData().length).toBe(3);
+                expect(treeObj1.getTreeData().length).toBe(2);
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                let newli: Element[] = <Element[] & NodeListOf<Element>>treeObj1.element.querySelectorAll('li');
+                let mousedown: any = getEventObject('MouseEvents', 'mousedown', treeObj.element, li[1].querySelector('.e-list-text'), 25, 10);
+                EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
+                let mousemove: any = getEventObject('MouseEvents', 'mousemove', treeObj.element, li[1].querySelector('.e-list-text'), 25, 90);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                mousemove.srcElement = mousemove.target = mousemove.toElement = newli[1].querySelector('.e-list-text');
+                mousemove = setMouseCordinates(mousemove, 25, 90);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj1.element, newli[1].querySelector('.e-list-text'));
+                mouseup.type = 'mouseup';
+                EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+                setTimeout(() => {
+                    treeObj1.expandedNodes.push('2');
+                    expect(treeObj1.getTreeData('3')[0].name).toBe('Intern A');
+                    expect(treeObj.getTreeData().length).toBe(1);
+                    expect(treeObj1.getTreeData().length).toBe(4);
+                    done();
+                }, 10000); 
+            });
+        });
         describe('Performance testing', () => {
             let treeObj: TreeView;
             let mouseEventArgs: any;

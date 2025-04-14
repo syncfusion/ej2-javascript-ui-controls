@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## 29.1.38 (2025-04-15)
+
+### Schedule
+
+- `#F708016` - The issue with the Schedules `virtualScroll` feature causing missing resources while scrolling has been resolved.
+- `I708699` - The issue with the excessive button padding in the Toolbar Calendar has been resolved.
+
 ## 29.1.37 (2025-04-08)
 
 ### Schedule

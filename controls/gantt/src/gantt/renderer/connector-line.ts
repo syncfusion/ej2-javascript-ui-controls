@@ -103,7 +103,7 @@ export class ConnectorLine {
      * @param {IGanttData} parentGanttData .
      * @param {IGanttData} childGanttData .
      * @param {IPredecessor}  predecessor .
-     * @param {number} [rowHeight=0].
+     * @param {number} rowHeight .
      * @returns {void}
      * @private
      */

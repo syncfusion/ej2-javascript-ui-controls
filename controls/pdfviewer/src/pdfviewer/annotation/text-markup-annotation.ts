@@ -873,49 +873,76 @@ export class TextMarkupAnnotation {
         let currentLeft: number = 0;
         let nextLeft: number = 0;
         let currentRotation: number = 0;
-        let nextRotation: number = 0;
+        let isEqual: boolean = false;
         for (let i: number = 0; i < newAnnotation.bounds.length; i++) {
-            currentTop = newAnnotation.bounds[parseInt(i.toString(), 10)].top ?
-                newAnnotation.bounds[parseInt(i.toString(), 10)].top : newAnnotation.bounds[parseInt(i.toString(), 10)].Top;
+            const newAnnotationBounds: any = newAnnotation.bounds[parseInt(i.toString(), 10)];
+            currentTop = newAnnotationBounds.top ? newAnnotationBounds.top : newAnnotationBounds.Top;
             nextTop = !isNullOrUndefined(newAnnotation.bounds[i + 1]) ? newAnnotation.bounds[i + 1].top ?
                 newAnnotation.bounds[i + 1].top : newAnnotation.bounds[i + 1].Top : 0;
+            currentLeft = newAnnotationBounds.left ?
+                newAnnotationBounds.left : newAnnotationBounds.Left;
+            nextLeft = !isNullOrUndefined(newAnnotation.bounds[i + 1]) ? newAnnotation.bounds[i + 1].left ?
+                newAnnotation.bounds[i + 1].left : newAnnotation.bounds[i + 1].Left : 0;
             let rotation180Exists: boolean;
+            const pageRotate: number = this.pdfViewerBase.pageSize[newAnnotation.pageNumber].rotation;
             if (this.pdfViewerBase.clientSideRendering) {
-                currentLeft = newAnnotation.bounds[parseInt(i.toString(), 10)].left ?
-                    newAnnotation.bounds[parseInt(i.toString(), 10)].left : newAnnotation.bounds[parseInt(i.toString(), 10)].Left;
-                nextLeft = !isNullOrUndefined(newAnnotation.bounds[i + 1]) ? newAnnotation.bounds[i + 1].left ?
-                    newAnnotation.bounds[i + 1].left : newAnnotation.bounds[i + 1].Left : 0;
-                currentRotation = newAnnotation.bounds[parseInt(i.toString(), 10)].rotation;
-                nextRotation = !isNullOrUndefined(newAnnotation.bounds[i + 1]) ? newAnnotation.bounds[i + 1].rotation : 0;
-                rotation180Exists = (currentRotation === 0) || (currentRotation === 180);
+                currentRotation = !isNullOrUndefined(newAnnotationBounds.rotation) ? newAnnotationBounds.rotation :
+                    pageRotate ? pageRotate : 0;
+                rotation180Exists = (currentRotation === 0) || (currentRotation === 2) || (currentRotation === 180);
+                if (rotation180Exists) {
+                    const currentRight: number = newAnnotationBounds.right ?
+                        newAnnotationBounds.right : newAnnotationBounds.Right;
+                    const nextRight: number = !isNullOrUndefined(newAnnotation.bounds[i + 1]) ?
+                        newAnnotation.bounds[i + 1].right ? newAnnotation.bounds[i + 1].right : newAnnotation.bounds[i + 1].Right : 0;
+                    isEqual = ((nextRight === 0 || Math.abs(currentLeft - nextRight) < 0.5) ||
+                        (nextLeft === 0 || Math.abs(currentRight - nextLeft) < 0.5));
+                }
+                else {
+                    const currentBottom: number = newAnnotationBounds.bottom ? newAnnotationBounds.bottom : newAnnotationBounds.Bottom;
+                    const nextBottom: number = !isNullOrUndefined(newAnnotation.bounds[i + 1]) ? newAnnotation.bounds[i + 1].bottom ?
+                        newAnnotation.bounds[i + 1].bottom : newAnnotation.bounds[i + 1].Bottom : 0;
+                    isEqual = (nextBottom === 0 || (Math.abs(nextBottom - currentTop) < 0.5) || Math.abs(nextTop - currentBottom) < 0.5);
+                }
             }
-            if (newAnnotation.bounds.length > 1 && i < newAnnotation.bounds.length - 1 && currentTop === nextTop) {
-                newBounds.push(newAnnotation.bounds[parseInt(i.toString(), 10)]);
+            isEqual = this.pdfViewerBase.clientSideRendering ? isEqual : true;
+            if (newAnnotation.bounds.length > 1 && i < newAnnotation.bounds.length - 1 && (currentTop === nextTop ||
+                currentLeft === nextLeft) && isEqual) {
+                newBounds.push(newAnnotationBounds);
             } else {
                 if (i === newAnnotation.bounds.length - 1 || newAnnotation.bounds.length >= 1) {
-                    newBounds.push(newAnnotation.bounds[parseInt(i.toString(), 10)]);
+                    newBounds.push(newAnnotationBounds);
                 }
                 if (newBounds.length >= 1) {
-                    x = newBounds[0].left ? newBounds[0].left : newBounds[0].Left;
-                    y = newBounds[0].top ? newBounds[0].top : newBounds[0].Top;
-                    height = newBounds[0].height ? newBounds[0].height : newBounds[0].Height;
-                    for (let j: number = 0; j < newBounds.length; j++) {
-                        if ((!isNaN(newBounds[parseInt(j.toString(), 10)].width) &&
-                            newBounds[parseInt(j.toString(), 10)].width > 0) || (!isNaN(newBounds[parseInt(j.toString(), 10)].Width) &&
-                            newBounds[parseInt(j.toString(), 10)].Width > 0)) {
-                            width += newBounds[parseInt(j.toString(), 10)].width ?
-                                newBounds[parseInt(j.toString(), 10)].width : newBounds[parseInt(j.toString(), 10)].Width;
+                    x = newBounds.reduce((min: number, rect: any) => (rect.left ? rect.left : rect.Left || 0) < min ?
+                        (rect.left ? rect.left : rect.Left || 0) : min, Infinity);
+                    y = newBounds.reduce((min: number, rect: any) => (rect.top ? rect.top : rect.Top || 0) < min ?
+                        (rect.top ? rect.top : rect.Top || 0) : min, Infinity);
+                    if (!this.pdfViewerBase.clientSideRendering || rotation180Exists) {
+                        height = newBounds[0].height ? newBounds[0].height : newBounds[0].Height;
+                        for (let j: number = 0; j < newBounds.length; j++) {
+                            if ((!isNaN(newBounds[parseInt(j.toString(), 10)].width) &&
+                                newBounds[parseInt(j.toString(), 10)].width > 0) || (!isNaN(newBounds[parseInt(j.toString(), 10)].Width) &&
+                                newBounds[parseInt(j.toString(), 10)].Width > 0)) {
+                                width += newBounds[parseInt(j.toString(), 10)].width ?
+                                    newBounds[parseInt(j.toString(), 10)].width : newBounds[parseInt(j.toString(), 10)].Width;
+                            }
                         }
+                    }
+                    else {
+                        width += newBounds[0].width ? newBounds[0].width : newBounds[0].Width;
+                        height = newBounds.reduce((sum: number, rect: any) => sum + (rect.height ? rect.height : rect.Height || 0), 0);
                     }
                     if (!newcanvas) {
                         const canvasId: string = newAnnotation.textMarkupAnnotationType === 'Highlight' ? '_blendAnnotationsIntoCanvas_' : '_annotationCanvas_';
                         newcanvas = (canvasId === '_blendAnnotationsIntoCanvas_') ? this.pdfViewerBase.getElement(canvasId + newAnnotation.pageNumber) :
                             this.pdfViewerBase.getAnnotationCanvas(canvasId, newAnnotation.pageNumber);
                     }
-                    this.drawAnnotationSelectRect(newcanvas, this.getMagnifiedValue(x - 0.5, this.pdfViewerBase.getZoomFactor()),
-                                                  this.getMagnifiedValue(y - 0.5, this.pdfViewerBase.getZoomFactor()),
-                                                  this.getMagnifiedValue(width + 0.5, this.pdfViewerBase.getZoomFactor()),
-                                                  this.getMagnifiedValue(height + 0.5, this.pdfViewerBase.getZoomFactor()), annotation);
+                    if (width !== 0 && height !== 0) {
+                        this.drawAnnotationSelectRect(newcanvas, this.getMagnifiedValue(x - 0.5, this.pdfViewerBase.getZoomFactor()),
+                                                      this.getMagnifiedValue(y - 0.5, this.pdfViewerBase.getZoomFactor()),
+                                                      this.getMagnifiedValue(width + 0.5, this.pdfViewerBase.getZoomFactor()),
+                                                      this.getMagnifiedValue(height + 0.5, this.pdfViewerBase.getZoomFactor()), annotation);
+                    }
                     newBounds = [];
                     width = 0;
                 }

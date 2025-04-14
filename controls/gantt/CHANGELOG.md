@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 29.1.38 (2025-04-15)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I707530` - Filter menu does not render in the correct position, when the Gantt chart is rendered with a sidebar issue has been resolved.
+- `#I704479` - Expand action does not work properly with `loadChildOnDemand` and virtualization disabled issue has been fixed.
+- `#I705099` - Taskbar tooltip misaligned when dragging the taskbar issue has been fixed.
+
 ## 29.1.37 (2025-04-08)
 
 ### GanttChart

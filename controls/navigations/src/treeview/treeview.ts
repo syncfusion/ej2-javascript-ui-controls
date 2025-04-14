@@ -3172,7 +3172,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private getChildGroup(data: { [key: string]: Object }[][], parentId: string, isRoot: boolean): { [key: string]: Object }[] {
-        let childNodes: { [key: string]: Object }[];
+        const childNodes: { [key: string]: Object }[] = [];
         if (isNOU(data)) {
             return childNodes;
         }
@@ -3184,8 +3184,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 }
             } else if (isRoot) {
                 return data[parseInt(i.toString(), 10)];
-            } else {
-                return [];
             }
         }
         return childNodes;
@@ -5142,17 +5140,15 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private removeChildNodes(parentId: string): { [key: string]: Object }[] {
         const cNodes: { [key: string]: Object }[] = this.getChildGroup(this.groupedData, parentId, false);
         const childData: { [key: string]: Object }[] = [];
-        if (cNodes) {
-            for (let i: number = 0, len: number = cNodes.length; i < len; i++) {
-                const dm: DataManager = new DataManager(this.treeData);
-                const id: string = getValue(this.fields.id, cNodes[parseInt(i.toString(), 10)]).toString();
-                const data: { [key: string]: string | number } = {};
-                const currId: string | number = this.isNumberTypeId ? parseFloat(id) : id;
-                data[this.fields.id] = currId;
-                const nodeData: { [key: string]: string }[] = <{ [key: string]: string }[]>dm.remove(this.fields.id, data);
-                childData.push(nodeData[0]);
-                this.removeChildNodes(id);
-            }
+        for (let i: number = 0, len: number = cNodes.length; i < len; i++) {
+            const dm: DataManager = new DataManager(this.treeData);
+            const id: string = getValue(this.fields.id, cNodes[parseInt(i.toString(), 10)]).toString();
+            const data: { [key: string]: string | number } = {};
+            const currId: string | number = this.isNumberTypeId ? parseFloat(id) : id;
+            data[this.fields.id] = currId;
+            const nodeData: { [key: string]: string }[] = <{ [key: string]: string }[]>dm.remove(this.fields.id, data);
+            childData.push(nodeData[0]);
+            this.removeChildNodes(id);
         }
         return childData;
     }

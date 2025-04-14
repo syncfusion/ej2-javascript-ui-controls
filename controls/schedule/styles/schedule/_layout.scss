@@ -2148,6 +2148,11 @@
     }
 
     .e-virtual-scroll {
+      .e-content-wrap.e-transition,
+      .e-resource-column-wrap.e-transition {
+        overscroll-behavior: none;
+      }
+      
       &.e-vertical-view,
       &.e-month-view {
         .e-content-table {

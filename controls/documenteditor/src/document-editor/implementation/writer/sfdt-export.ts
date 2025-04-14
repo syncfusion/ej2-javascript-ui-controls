@@ -872,7 +872,7 @@ export class SfdtExport {
                 inlines.push(this.writeInlinesFootNote(element));
                 continue;
             }
-            if (element instanceof ContentControl || (this.startContent && !this.blockContent)) {
+            if (element instanceof ContentControl || this.startContent || this.blockContent) {
                 this.writeInlinesContentControl(element, line, inlines, i);
             } else {
                 if (!this.skipExporting && element instanceof TextElementBox && !isNullOrUndefined(element.previousNode) && element.previousNode instanceof TextElementBox
@@ -1038,8 +1038,18 @@ export class SfdtExport {
             inline[metaFileImageStringProperty[this.keywordIndex]] = element.metaFileImageString;
             inline[isMetaFileProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(element.isMetaFile, this.keywordIndex);
             inline[isCompressedProperty[this.keywordIndex]] = element.isCompressed;
-            inline[widthProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.width);
-            inline[heightProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.height);
+            if (isNaN(element.width)) {
+                inline[widthProperty[this.keywordIndex]] = element.width.toString();
+            }
+            else {
+                inline[widthProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.width);
+            }
+            if (isNaN(element.height)) {
+                inline[heightProperty[this.keywordIndex]] = element.height.toString();
+            }
+            else {
+                inline[heightProperty[this.keywordIndex]] = HelperMethods.convertPixelToPoint(element.height);
+            }
             //inline.iscrop = element.isCrop;
             if (element.isCrop) {
                 inline[bottomProperty[this.keywordIndex]] = element.bottom;
@@ -1607,11 +1617,6 @@ export class SfdtExport {
                 if (lineWidget.children[i - 1] instanceof ContentControl) {
                     if ((lineWidget.children[i - 1] as ContentControl).contentControlWidgetType === 'Block') {
                         this.blockContent = true;
-                    }
-                }
-                if (!isNullOrUndefined((lineWidget.children[i + 1]) && lineWidget.children[i + 1] instanceof ContentControl)) {
-                    if ((lineWidget.children[i + 1] as ContentControl).contentControlWidgetType === 'Inline') {
-                        this.blockContent = false;
                     }
                 }
                 if (!this.blockContent) {

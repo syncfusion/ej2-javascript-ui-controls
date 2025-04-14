@@ -656,10 +656,9 @@ export class PdfPage {
         const list: Uint8Array[] = [];
         let array: Uint8Array;
         this._loadContents();
-        const count: number = this._contents.length;
         list.push(new Uint8Array([32, 113, 32, 10]));
-        for (let i: number = 0; i < count; i++) {
-            const reference: _PdfReference = this._contents[Number.parseInt(i.toString(), 10)];
+        const contents: Array<_PdfReference> = this._contents;
+        contents.forEach((reference: _PdfReference) => {
             const base: any = this._crossReference._fetch(reference); // eslint-disable-line
             if (base) {
                 if (base instanceof _PdfContentStream) {
@@ -672,7 +671,7 @@ export class PdfPage {
                     list.push(new Uint8Array([13, 10]));
                 }
             }
-        }
+        });
         list.push(new Uint8Array([32, 81, 32, 10]));
         list.push(new Uint8Array([13, 10]));
         const targetArray: Uint8Array = this._combineIntoSingleArray(list);

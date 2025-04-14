@@ -1276,6 +1276,7 @@ describe('Filtering duration Column With Parent Div element', () => {
         triggerMouseEvent(columnMenuIcon, 'click');
         const filterMenuIcon: HTMLElement = document.getElementsByClassName('e-filter-item')[0] as HTMLElement;
         triggerMouseEvent(filterMenuIcon, 'click');
+        ganttObj.filterModule['setPosition'](ganttObj.element,ganttObj.chartPane);
     });
     afterAll(() => {
         if (ganttObj) {

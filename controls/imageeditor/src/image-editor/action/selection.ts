@@ -1465,11 +1465,15 @@ export class Selection {
         let endY: number = isStart ? actPoint.endY : actPoint.startY;
         const wrapperWidth: number = parent.upperCanvas.width;
         const wrapperHeight: number = parent.upperCanvas.height;
+        const minX: number = destLeft < 0 ? 0 : destLeft;
+        const minY: number = destTop < 0 ? 0 : destTop;
+        const maxX: number = destLeft + destWidth > wrapperWidth ? wrapperWidth : destLeft + destWidth;
+        const maxY: number = destTop + destHeight > wrapperHeight ? wrapperHeight : destTop + destHeight;
         if (Browser.isDevice) {
-            if (startX < 0 && destLeft < 0) {startX = 0; }
-            if (startY < 0 && destTop < 0) {startY = 0; }
-            if (endX > wrapperWidth && destLeft + destWidth > wrapperWidth) {endX = wrapperWidth; }
-            if (endY > wrapperHeight && destTop + destHeight > wrapperHeight) {endY = wrapperHeight; }
+            if (startX < minX) {startX = minX; }
+            if (startY < minY) {startY = minY; }
+            if (endX > maxX) {endX = maxX; }
+            if (endY > maxY) {endY = maxY; }
         } else {
             if (startX < destLeft) {startX = destLeft; }
             if (startY < destTop) {startY = destTop; }

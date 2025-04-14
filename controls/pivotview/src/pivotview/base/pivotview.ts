@@ -2775,17 +2775,17 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             vertical: 0, horizontal: 0, verticalSection: 0,
             horizontalSection: 0, top: 0, left: 0, scrollDirection: { direction: '', position: 0 }
         };
-        this.queryCellInfo = this.gridSettings.queryCellInfo ? this.gridSettings.queryCellInfo.bind(this) : undefined;
-        this.headerCellInfo = this.gridSettings.headerCellInfo ? this.gridSettings.headerCellInfo.bind(this) : undefined;
-        this.resizing = this.gridSettings.resizing ? this.gridSettings.resizing.bind(this) : undefined;
-        this.resizeStop = this.gridSettings.resizeStop ? this.gridSettings.resizeStop.bind(this) : undefined;
+        this.queryCellInfo = this.gridSettings.queryCellInfo ? this.gridSettings.queryCellInfo : undefined;
+        this.headerCellInfo = this.gridSettings.headerCellInfo ? this.gridSettings.headerCellInfo : undefined;
+        this.resizing = this.gridSettings.resizing ? this.gridSettings.resizing : undefined;
+        this.resizeStop = this.gridSettings.resizeStop ? this.gridSettings.resizeStop : undefined;
         this.pdfHeaderQueryCellInfo = this.gridSettings.pdfHeaderQueryCellInfo ? this.gridSettings.pdfHeaderQueryCellInfo : undefined;
         this.pdfQueryCellInfo = this.gridSettings.pdfQueryCellInfo ? this.gridSettings.pdfQueryCellInfo : undefined;
         this.excelHeaderQueryCellInfo = this.gridSettings.excelHeaderQueryCellInfo ? this.gridSettings.excelHeaderQueryCellInfo : undefined;
         this.excelQueryCellInfo = this.gridSettings.excelQueryCellInfo ? this.gridSettings.excelQueryCellInfo : undefined;
-        this.columnDragStart = this.gridSettings.columnDragStart ? this.gridSettings.columnDragStart.bind(this) : undefined;
-        this.columnDrag = this.gridSettings.columnDrag ? this.gridSettings.columnDrag.bind(this) : undefined;
-        this.columnDrop = this.gridSettings.columnDrop ? this.gridSettings.columnDrop.bind(this) : undefined;
+        this.columnDragStart = this.gridSettings.columnDragStart ? this.gridSettings.columnDragStart : undefined;
+        this.columnDrag = this.gridSettings.columnDrag ? this.gridSettings.columnDrag : undefined;
+        this.columnDrop = this.gridSettings.columnDrop ? this.gridSettings.columnDrop : undefined;
         this.beforeColumnsRender = this.gridSettings.columnRender ? this.gridSettings.columnRender : undefined;
         this.selected = this.gridSettings.cellSelected ? this.gridSettings.cellSelected : undefined;
         this.selecting = this.gridSettings.cellSelecting ? this.gridSettings.cellSelecting : undefined;
@@ -2802,8 +2802,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.chartPointClick = this.chartSettings.pointClick ? this.chartSettings.pointClick : undefined;
         this.contextMenuClick = this.gridSettings.contextMenuClick ? this.gridSettings.contextMenuClick : undefined;
         this.contextMenuOpen = this.gridSettings.contextMenuOpen ? this.gridSettings.contextMenuOpen : undefined;
-        this.beforePdfExport = this.gridSettings.beforePdfExport ? this.gridSettings.beforePdfExport.bind(this) : undefined;
-        this.beforeExcelExport = this.gridSettings.beforeExcelExport ? this.gridSettings.beforeExcelExport.bind(this) : undefined;
+        this.beforePdfExport = this.gridSettings.beforePdfExport ? this.gridSettings.beforePdfExport : undefined;
+        this.beforeExcelExport = this.gridSettings.beforeExcelExport ? this.gridSettings.beforeExcelExport : undefined;
         this.beforePrint = this.chartSettings.beforePrint ? this.chartSettings.beforePrint : undefined;
         this.animationComplete = this.chartSettings.animationComplete ? this.chartSettings.animationComplete : undefined;
         this.legendRender = this.chartSettings.legendRender ? this.chartSettings.legendRender : undefined;
@@ -4318,7 +4318,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 this.getEngine('onPageChange', null, null, null, null, null, null);
             } else {
                 this.engineModule.generateGridData(
-                    this.dataSourceSettings, true, false, this.engineModule.headerCollection);
+                    this.dataSourceSettings, true, false, this.engineModule.headerCollection, true);
             }
             this.setProperties({ pivotValues: this.engineModule.pivotValues }, true);
             this.enginePopulatedEventMethod('updateDataSource');
@@ -5445,7 +5445,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         }
         let ele: Element = null;
         const rowHeaderCell: Element = target.closest('td.e-rowsheader');
-        const axis: string = rowHeaderCell ? 'row' : 'column';
+        const valueCell: Element = target.closest('td.e-valuescontent');
+        const axis: string = (rowHeaderCell || valueCell) ? 'row' : 'column';
         ele = axis === 'column' ? closest(target, 'th') : closest(target, 'td');
         if (axis === 'column' && !ele && this.gridSettings.selectionSettings.mode !== 'Row') {
             ele = closest(target, 'td');
@@ -5466,11 +5467,11 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     if (this.actionBeginMethod()) {
                         return;
                     }
-                    let colIndex: number = parseInt(ele.getAttribute('aria-colindex'), 10) - 1;
+                    let colIndex: number = this.isTabular ? this.engineModule.rowMaxLevel : parseInt(ele.getAttribute('aria-colindex'), 10) - 1;
                     let rowIndex: number = Number(ele.getAttribute('index'));
                     if (this.dataSourceSettings.valueAxis === 'row' && (this.dataSourceSettings.values.length > 1 || this.dataSourceSettings.alwaysShowValueHeader)) {
                         const header: IAxisSet = this.pivotValues[rowIndex as number][colIndex as number] as IAxisSet;
-                        if (this.dataSourceSettings.valueIndex === -1) {
+                        if (this.dataSourceSettings.valueIndex === -1 && !this.isTabular) {
                             rowIndex = header.type === 'value' || header.memberType === 3 ? rowIndex : (rowIndex + 1);
                         } else {
                             const level: number = this.getLevel(header);

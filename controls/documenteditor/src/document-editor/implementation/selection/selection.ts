@@ -3919,8 +3919,9 @@ export class Selection {
             let properties: { [key: string]: string | boolean } = {};
             // isAfterParagraphMark
             // In Ms Word, If the paragraph mark is selected and the bookmark end is inside the table, then the bookmark end is considered to be after the paragraph mark.
-            if (this.isParagraphMarkSelected() && this.end.paragraph.isInsideTable) {
-                properties.isAfterParagraphMark = true;
+            let paraElement: ParagraphWidget = this.isForward ? this.start.paragraph : this.end.paragraph;
+            if (this.isParagraphMarkSelected() && !isNullOrUndefined(paraElement) && !isNullOrUndefined(paraElement.nextRenderedWidget)) {
+               properties.isAfterParagraphMark = true;
             }
             // isAfterCellMark
             let bookmarkStart = bookmark.reference;
@@ -5722,10 +5723,33 @@ export class Selection {
      * @private
      */
     public highlightTable(table: TableWidget, start: TextPosition, end: TextPosition): void {
-        this.highlightInternal(table.childWidgets[0] as TableRowWidget, start, end);
+        if (this.isHightlightEditRegionInternal) {
+            this.highlightTableCells(table, start, end);
+        } else {
+            this.highlightInternal(table.childWidgets[0] as TableRowWidget, start, end);
+        }
         if (!end.paragraph.isInsideTable //Selection end is outside the table cell.
             || !table.contains(end.paragraph.associatedCell)) {//Selection end is not inside the current table.
             this.highlightNextBlock(table, start, end);
+        }
+    }
+    private highlightTableCells(table: TableWidget, start: TextPosition, end: TextPosition): void {
+        for (let i: number = 0; i < table.childWidgets.length; i++) {
+            let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
+            for (let j: number = 0; j < row.childWidgets.length; j++) {
+                let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                for (let k: number = 0; k < cell.childWidgets.length; k++) {
+                    let block: IWidget = cell.childWidgets[k];
+                    if (block instanceof ParagraphWidget) {
+                        this.highlight(block, start, end);
+                    } else {
+                        this.highlightTable(block as TableWidget, start, end);
+                    }
+                }
+                if (end.paragraph && end.paragraph.associatedCell === cell) {
+                    return;
+                }
+            }
         }
     }
     /**
