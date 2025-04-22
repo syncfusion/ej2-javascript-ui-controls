@@ -1,0 +1,239 @@
+@include export-module('querybuilder-theme') {
+  .e-query-builder {
+    background: $qrybldr-bg-color;
+    border-color: $qrybldr-brdr-color;
+
+    & .e-group-header .e-btn-group {
+      border-color: $qrybldr-brdr-color;
+    }
+
+    & .e-disable .e-drag-qb-rule,
+    & .e-disable.e-drag-qb-rule {
+      color: $qrybldr-brdr-color;
+    }
+
+    & .e-group-header .e-dropdown-btn.e-add-btn,
+    .e-deletegroup,
+    & .e-group-header .e-clone-grp-btn,
+    & .e-group-header .e-lock-grp-btn {
+      @if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+        background: $qrybldr-btngroup-bgcolor;
+        box-shadow: none;
+        color: $qrybldr-icon-color;
+      }
+      @else if $skin-name == 'FluentUI' {
+        background: $qrybldr-btngroup-bgcolor;
+        border: 0 solid $qrybldr-btngroup-bgcolor;
+      }
+    }
+
+    &.e-rtl .e-btn-group.e-rtl {
+      & .e-qb-toggle.e-btn.e-small {
+        @if $skin-name == 'highcontrast' or $skin-name == 'highcontrast-dark' or $skin-name == 'fabric-dark' {
+          border-right: 1px solid $qrybldr-brdr-color;
+        }
+
+        @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap-dark' {
+          border-left: 1px solid $qrybldr-brdr-color;
+          border-right: 1px solid $qrybldr-brdr-color;
+        }
+      }
+
+      & .e-qb-toggle.e-btn.e-small.e-active-toggle {
+        @if $skin-name == 'highcontrast' or $skin-name == 'highcontrast-dark' or $skin-name == 'fabric-dark' {
+          border-right: 1px solid $qrybldr-btngroup-active-bgcolor;
+        }
+
+        @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap-dark' {
+          border-left: 1px solid $qrybldr-btngroup-active-bgcolor;
+          border-right: 1px solid $qrybldr-btngroup-active-bgcolor;
+        }
+      }
+
+      & .e-btn.e-btngroup-and-lbl.e-not {
+        @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-dark' {
+          border-right: transparent;
+        }
+      }
+    }
+
+    & .e-group-container {
+      border-color: $groupborder-color;
+    }
+
+    & .e-rule-container {
+      background: $groupfill-bgcolor;
+      border-color: $groupborder-color;
+    }
+
+    & .e-rule-container.e-joined-rule {
+      border-top-color: $qrybldr-rule-list-border-color;
+    }
+
+    & .e-rule-list .e-group-container {
+      background: $qrybldr-bg-color;
+    }
+
+    & .e-rule-list > ::after,
+    & .e-rule-list > ::before {
+      border-color: $qrybldr-rule-list-border-color;
+    }
+
+    & .e-btn-group input:checked + label.e-btn,
+    & .e-btn-group .e-btn.e-qb-toggle.e-active-toggle {
+      background: $qrybldr-btngroup-active-bgcolor;
+      border-color: $qrybldr-btngroup-active-bgcolor;
+      color: $qrybldr-btngroup-active-color;
+    }
+
+    & .e-btn-group:not(.e-rtl) .e-qb-toggle.e-btn.e-small {
+      @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-dark' {
+        border-right: transparent;
+      }
+    }
+
+    & .e-btn-group:not(.e-rtl) .e-btn.e-btngroup-and-lbl.e-not {
+      @if $skin-name == 'highcontrast' or $skin-name == 'highcontrast-dark' {
+        border-left: transparent;
+      }
+    }
+
+    & .e-btn-group input + label.e-btn,
+    & .e-group-action .e-btn,
+    & .e-qb-toggle,
+    & .e-removerule.e-btn.e-round,
+    & .e-removerule.e-btn.e-round:hover {
+      @if $skin-name == 'bootstrap4' {
+        background: $qrybldr-btngroup-bgcolor;
+        border-color: $qrybldr-brdr-color;
+        color: $qrybldr-btngroup-color;
+      }
+    }
+
+    & .e-group-header .e-btn-group:not(.e-rtl) .e-qb-toggle:last-of-type {
+      @if $skin-name == 'highcontrast' {
+        border-left: 1px solid;
+      }
+      @else if $skin-name == 'FluentUI' {
+        background: $qrybldr-btngroup-bgcolor;
+        border: 0 solid $qrybldr-btngroup-bgcolor;
+      }
+    }
+
+    & .e-group-header .e-btn-group .e-qb-toggle.e-active-toggle:last-of-type {
+      @if $skin-name == 'highcontrast' {
+        border-left-color: $qrybldr-btngroup-active-bgcolor;
+      }
+    }
+
+    & .e-removerule.e-btn.e-round,
+    & .e-lock-rule.e-btn.e-round,
+    & .e-clone-rule.e-btn.e-round {
+      background: $groupfill-color;
+      @if $skin-name == 'bootstrap4' {
+        background: $qrybldr-btngroup-bgcolor;
+      }
+      @else if $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3' {
+        background: $qrybldr-btngroup-bgcolor;
+        color: $qrybldr-icon-color;
+      }
+      @else if $skin-name == 'FluentUI' {
+        background: $qrybldr-btngroup-bgcolor;
+        border: 0 solid $qrybldr-btngroup-bgcolor;
+      }
+
+      &.e-readonly {
+        display: none;
+      }
+    }
+
+    & .e-summary-content textarea {
+      background: $qrybldr-bg-color;
+      color: $qrybldr-color;
+    }
+
+    & .e-collapse-rule {
+      background: $qrybldr-bg-color;
+      border-color: $qrybldr-collapse-brdr-color;
+      color: $qrybldr-color;
+      @if $skin-name == 'tailwind3' {
+        color: $icon-color;
+      }
+
+      &:focus,
+      &:active,
+      &:hover {
+        background: $qrybldr-brdr-color;
+      }
+
+      @if $skin-name == 'tailwind3' {
+        &:focus,
+        &:hover {
+          background: $content-bg-color-hover;
+          color: $icon-color-hover;
+        }
+        &:active {
+          background: $content-bg-color-pressed;
+          color: $icon-color-pressed;
+        }
+      }
+    }
+
+    &.e-multi-connector {
+      & .e-group-container:not(:first-child),
+      & .e-rule-list > .e-group-container:first-child {
+        border-color: $qrybldr-brdr-color;
+      }
+    }
+  }
+}
+
+.e-tooltip-wrap.e-querybuilder-error,
+.e-control.e-tooltip-wrap.e-popup.e-querybuilder-error {
+  background: $qrybldr-val-error-bg-color;
+  border-color: $qrybldr-val-error-bg-color;
+}
+
+.e-tooltip-wrap.e-querybuilder-error .e-arrow-tip-inner.e-tip-top,
+.e-tooltip-wrap.e-querybuilder-error .e-arrow-tip-outer.e-tip-top {
+  border-bottom-color: $qrybldr-val-error-bg-color;
+  color: $qrybldr-val-error-bg-color;
+}
+
+.e-tooltip-wrap.e-querybuilder-error .e-arrow-tip-outer.e-tip-bottom,
+.e-tooltip-wrap.e-querybuilder-error .e-arrow-tip-inner.e-tip-bottom {
+  border-top-color: $qrybldr-val-error-bg-color;
+  color: $qrybldr-val-error-bg-color;
+}
+
+.e-tooltip-wrap.e-querybuilder-error .e-tip-content,
+.e-tooltip-wrap.e-querybuilder-error .e-tip-content label {
+  color: $qrybldr-val-error-color;
+}
+
+.e-query-builder .e-btn.e-round.e-small {
+  @if $theme-name == 'fluent2' or $theme-name == 'fluent2-dark' or $theme-name == 'fluent2-highcontrast' {
+    &:hover {
+      background: $content-bg-color-hover !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    &:focus {
+      background: $content-bg-color-hover !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    &:active {
+      background: $content-bg-color-pressed !important; /* stylelint-disable-line declaration-no-important */
+    }
+
+    &:disabled {
+      background: $content-bg-color-alt1 !important; /* stylelint-disable-line declaration-no-important */
+    }
+  }
+  @if $theme-name == 'bootstrap5.3' or $theme-name == 'bootstrap5.3-dark' {
+    &:focus-visible {
+      background-color: $content-bg-color !important; /* stylelint-disable-line declaration-no-important */
+      color: $icon-color !important; /* stylelint-disable-line declaration-no-important */
+      box-shadow: $keyboard-focus-shadow !important; /* stylelint-disable-line declaration-no-important */
+    }
+  }
+}

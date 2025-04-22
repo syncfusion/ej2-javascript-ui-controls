@@ -9,6 +9,7 @@
 #### Bug Fixes
 
 - `#I706720` - Added localization support for `SearchResults` and `noItemsToDisplay` texts in the symbol palette.
+- `#I709691` - The connector will now be routed properly without overlapping nodes in the child-to-parent connection flow.
 
 ## 29.1.37 (2025-04-08)
 

@@ -1067,6 +1067,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             this.setHeightAndWidth(el, panelModel);
         }
         removeClass([el], [dragging]);
+        args.panels = this.getChangingPanels();
         this.trigger('resizeStop', args);
         this.resizeCalled = false;
         this.lastMouseX = this.lastMouseY = undefined;
@@ -1078,6 +1079,12 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.updatePanels();
         this.updateCloneArrayObject();
         this.checkForChanges(true);
+    }
+    private getChangingPanels(): PanelModel[] {
+        if (!this.resizeCalled) {
+            this.updatePanels();
+        }
+        return this.getChangedPanels();
     }
     protected getResizeRowColumn(item: PanelModel): PanelModel {
         let isChanged: boolean = false;
@@ -1929,7 +1936,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     }
 
     protected checkForSwapping(collisions: HTMLElement[], element: HTMLElement): boolean {
-        if (!this.mainElement || collisions.length === 0) {
+        if (Object.keys(this.cloneObject).length === 0 || !this.mainElement || collisions.length === 0) {
             return false;
         }
         let direction: number;
@@ -2337,6 +2344,16 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         return value;
     }
     protected checkForChanges(isInteracted: boolean, added?: PanelModel[], removed?: PanelModel[]): void {
+        const changedPanels: PanelModel[] = this.getChangedPanels(removed);
+        if (changedPanels.length > 0 || this.removeAllCalled) {
+            const changedArgs: ChangeEventArgs = {
+                changedPanels: changedPanels, isInteracted: isInteracted,
+                addedPanels: !isNullOrUndefined(added) ? added : [], removedPanels: !isNullOrUndefined(removed) ? removed : []
+            };
+            this.trigger('change', changedArgs);
+        }
+    }
+    private getChangedPanels(removed?: PanelModel[]): PanelModel[] {
         let changedPanels: PanelModel[] = [];
         if (this.removeAllCalled) {
             changedPanels = [];
@@ -2349,13 +2366,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                 }
             }
         }
-        if (changedPanels.length > 0 || this.removeAllCalled) {
-            const changedArgs: ChangeEventArgs = {
-                changedPanels: changedPanels, isInteracted: isInteracted,
-                addedPanels: !isNullOrUndefined(added) ? added : [], removedPanels: !isNullOrUndefined(removed) ? removed : []
-            };
-            this.trigger('change', changedArgs);
-        }
+        return changedPanels;
     }
     protected enableDraggingContent(collections: HTMLElement[]): void {
         for (let i: number = 0; i < collections.length; i++) {
@@ -2371,7 +2382,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                     abort: abortArray,
                     dragStart: this.onDraggingStart.bind(this),
                     dragStop: (args: DragEventArgs) => {
-                        this.trigger('dragStop', args);
+                        const dragStopArgs: DragStopArgs = args as DragStopArgs;
+                        dragStopArgs.panels = this.getChangingPanels();
+                        this.trigger('dragStop', dragStopArgs);
                         if (isNullOrUndefined(args.cancel)) {
                             args.cancel = false;
                         }
@@ -3045,6 +3058,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.updatePanelLayout(ele, panelInstance);
         this.updatePanels();
         this.updateRowHeight();
+        args.panels = this.getChangingPanels();
         this.resizeCalled = false;
         this.trigger('resizeStop', args);
         this.checkForChanges(false);
@@ -3390,17 +3404,13 @@ export interface DraggedEventArgs {
 /**
  * Defines the dragstop event arguments
  */
-export interface DragStopArgs {
-
+export interface DragStopArgs extends DragEventArgs {
     /**
-     * Specifies the original event.
+     * Represents the model values of panels that have been modified.
+     * This property retrieves panel data whose positions have changed
+     * due to a drag action before the drop action is completed.
      */
-    event: MouseEvent | TouchEvent;
-
-    /**
-     * Specifies the cell element being dragged.
-     */
-    element: HTMLElement;
+    panels?: PanelModel[];
 }
 
 
@@ -3422,6 +3432,12 @@ export interface ResizeArgs {
      * Specifies that event has triggered by user interaction.
      */
     isInteracted: boolean;
+    /**
+     * Represents the model values of panels that have been modified.
+     * This property retrieves panel data whose positions have changed
+     * due to a resize action before the action is completed.
+     */
+    panels?: PanelModel[];
 }
 
 interface IAttributes {

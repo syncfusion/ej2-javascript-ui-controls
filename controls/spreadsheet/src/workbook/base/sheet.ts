@@ -6,7 +6,7 @@ import { ColumnModel } from './column-model';
 import { processIdx } from './data';
 import { SheetState, ProtectSettingsModel, ConditionalFormat, ConditionalFormatModel, ExtendedRange, getCellIndexes, moveOrDuplicateSheet, workbookFormulaOperation, duplicateSheetFilterHandler, ExtendedSheet, moveSheetHandler, updateSortCollection, ChartModel } from '../common/index';
 import { ProtectSettings, getCellAddress } from '../common/index';
-import { isUndefined, ChildProperty, Property, Complex, Collection, extend } from '@syncfusion/ej2-base';
+import { isUndefined, ChildProperty, Property, Complex, Collection, extend, getUniqueID } from '@syncfusion/ej2-base';
 import { WorkbookModel } from './workbook-model';
 import { CellModel } from './cell-model';
 
@@ -711,6 +711,7 @@ export function duplicateSheet(context: Workbook, sheetIndex?: number, action?: 
                         }
                         if (chartSheet === originalSheetName) {
                             chart.range = duplicateSheetName + chart.range.substring(lastIndex);
+                            chart.id = getUniqueID(chart.id || 'e_spreadsheet_chart');
                         }
                     });
                 }

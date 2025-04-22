@@ -197,7 +197,12 @@ export class ChartRows extends DateProcessor {
                     this.getTemplateID('TaskLabelTemplate'), false, undefined, progressDiv[0]);
                 if (taskLabelTemplateNode && taskLabelTemplateNode.length > 0) {
                     append(taskLabelTemplateNode, tempDiv);
-                    labelString = tempDiv.innerHTML;
+                    labelString =  tempDiv.innerHTML;
+                    labelString = this.getTaskLabel(this.parent.labelSettings.taskLabel);
+                    labelString = labelString === 'isCustomTemplate' ? tempDiv.innerHTML : labelString;
+                    if (this.parent.enableHtmlSanitizer && typeof (labelString) === 'string') {
+                        labelString = SanitizeHtmlHelper.sanitize(labelString);
+                    }
                 }
             } else {
                 const field: string = this.parent.labelSettings.taskLabel;
@@ -269,7 +274,7 @@ export class ChartRows extends DateProcessor {
                     progressDiv[0].appendChild(templateElement);
                     if ((progressDiv[0] as Element).querySelectorAll('.e-task-label')[0].textContent !== '' &&
                         !this.isTemplate(childLabel) &&
-                        (progressDiv[0] as Element).querySelectorAll('.e-task-label')[0].children[0]) {
+                        (progressDiv[0] as Element).querySelectorAll('.e-task-label')[0].children[0] && this.parent.disableHtmlEncode ) {
                         (progressDiv[0] as Element).querySelectorAll('.e-task-label')[0].children[0].remove();
                     }
                     if ((progressDiv[0] as Element).querySelectorAll('.e-task-label')[0].textContent === '' &&
@@ -1068,6 +1073,11 @@ export class ChartRows extends DateProcessor {
                 if (parentTaskLabelNode && parentTaskLabelNode.length > 0) {
                     append(parentTaskLabelNode, div);
                     labelString = div.innerHTML;
+                    labelString = this.getTaskLabel(this.parent.labelSettings.taskLabel);
+                    labelString = labelString === 'isCustomTemplate' ? div.innerHTML : labelString;
+                    if (this.parent.enableHtmlSanitizer && typeof (labelString) === 'string') {
+                        labelString = SanitizeHtmlHelper.sanitize(labelString);
+                    }
                 }
             } else {
                 labelString = this.getTaskLabel(this.parent.labelSettings.taskLabel);
@@ -1111,7 +1121,7 @@ export class ChartRows extends DateProcessor {
                 progressBarInnerDiv[0].appendChild(labelElement);
                 if ((progressBarInnerDiv[0] as Element).querySelectorAll('.e-task-label')[0].textContent !== '' &&
                    !this.isTemplate(parentLabel) &&
-                   (progressBarInnerDiv[0] as Element).querySelectorAll('.e-task-label')[0].children[0]) {
+                   (progressBarInnerDiv[0] as Element).querySelectorAll('.e-task-label')[0].children[0] && this.parent.disableHtmlEncode) {
                     (progressBarInnerDiv[0] as Element).querySelectorAll('.e-task-label')[0].children[0].remove();
                 }
                 if ((progressBarInnerDiv[0] as Element).querySelectorAll('.e-task-label')[0].textContent === '' &&

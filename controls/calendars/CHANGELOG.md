@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 29.1.38 (2025-04-15)
+## 29.1.39 (2025-04-22)
+
+### TimePicker
+
+#### Bug Fixes
+
+- `#I705507` - Fixed an issue where a null value still displayed as `12:00` when the mask was enabled.
+
+## 29.1.35 (2025-04-01)
 
 ### DatePicker
 

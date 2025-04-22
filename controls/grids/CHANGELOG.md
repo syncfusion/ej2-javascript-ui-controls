@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 29.1.39 (2025-04-22)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I707297` - Resolved an issue where the month format in the group caption was incorrect during server side `Excel Export`.
+- `#I699927` - The issue with partial selection with pagination has been resolved.
+
 ## 29.1.38 (2025-04-15)
 
 ### Grid

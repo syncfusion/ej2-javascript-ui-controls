@@ -40,7 +40,7 @@ export class Formatter {
             (value as IVideoCommandsArgs).cssClass !== 'e-video-inline');
         if (self.editorMode === 'HTML') {
             if (!isNOU(args) && !isKeyboardVideoInsert) {
-                if (isNOU(args.name) || (!isNOU(args.name) && args.name !== 'showDialog')) {
+                if (isNOU(args.name) || (!isNOU(args.name) && args.name !== 'showDialog') && !isNOU(args.item.command)) {
                     if (newRange) {
                         saveSelection = this.editorManager.nodeSelection.save(newRange, self.contentModule.getDocument());
                     }

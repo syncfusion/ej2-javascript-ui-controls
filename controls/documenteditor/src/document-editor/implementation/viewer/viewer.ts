@@ -654,6 +654,10 @@ export class DocumentHelper {
     /**
      * @private
      */
+    public isSelectionActive: boolean = false;
+    /**
+     * @private
+     */
     public isBookmarkInserted: boolean = true;
     private L10n: L10n;
     private isMappedContentControlUpdated: boolean = true;
@@ -1681,6 +1685,10 @@ export class DocumentHelper {
         }
         if (this.scrollMoveTimer) {
             this.isMouseEntered = true;
+            if (this.isMouseDown) {
+                this.isSelectionActive = false;
+                this.owner.fireSelectionChange();
+            }
             clearInterval(this.scrollMoveTimer);
         }
 
@@ -2340,6 +2348,7 @@ export class DocumentHelper {
                             const touchPoint: Point = new Point(xPosition, touchY);
                             if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible
                                 || this.owner.imageResizerModule.isShapeResize) {
+                                this.isSelectionActive = true;
                                 this.isCompleted = false;
                                 this.owner.selectionModule.moveTextPosition(touchPoint, textPosition);
                             }
@@ -2403,10 +2412,12 @@ export class DocumentHelper {
             clearInterval(this.scrollMoveTimer);
             if (event.offsetY + viewerTop > viewerTop) {
                 this.scrollMoveTimer = setInterval((): void => {
+                    this.isCompleted = false;
                     this.scrollForwardOnSelection(cursorPoint);
                 }, 100);
             } else {
                 this.scrollMoveTimer = setInterval((): void => {
+                    this.isCompleted = false;
                     this.scrollBackwardOnSelection(cursorPoint);
                 }, 100);
             }
@@ -2742,6 +2753,7 @@ export class DocumentHelper {
                     this.selection.triggerContentControlFillEvent();
                 }
                 if(this.isSelectionChangedOnMouseMoved){
+                    this.isSelectionActive = false;
                     this.selection.fireSelectionChanged(true);
                 }
             }
@@ -3111,6 +3123,7 @@ export class DocumentHelper {
                 cursorPoint = this.getTouchOffsetValue(event);
                 let touchPoint: Point = this.owner.viewer.findFocusedPage(cursorPoint, true);
                 if (this.touchDownOnSelectionMark > 0 /*|| !this.useTouchSelectionMark*/) {
+                    this.isSelectionActive = true;
                     this.isCompleted = false;
                     event.preventDefault();
                     let touchY: number = touchPoint.y;
@@ -3184,6 +3197,7 @@ export class DocumentHelper {
                     }
                 }
                 if(this.isSelectionChangedOnMouseMoved){
+                    this.isSelectionActive = false;
                     this.selection.fireSelectionChanged(true);
                 }
                 this.isMouseDown = false;

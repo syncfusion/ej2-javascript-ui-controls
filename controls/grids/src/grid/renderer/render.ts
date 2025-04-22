@@ -151,6 +151,9 @@ export class Render {
             if (gObj.allowSelection && (args.action === 'clearFilter' || args.action === 'clear-filter' ||
                 (args.requestType === 'searching' && args.searchString === '') || args.action === 'add')) {
                 gObj.selectionModule['rmtHdrChkbxClicked'] = false;
+                if (gObj.selectionModule.isPartialSelection) {
+                    gObj.selectionModule['isHdrSelectAllClicked'] = false;
+                }
             }
             if (gObj.allowPaging && gObj.pageSettings.pageSizes && gObj.pagerModule.pagerObj.isAllPage &&
                 (args.action === 'add' && args.requestType === 'save' as Action) && gObj.pagerModule.pagerObj.checkAll) {

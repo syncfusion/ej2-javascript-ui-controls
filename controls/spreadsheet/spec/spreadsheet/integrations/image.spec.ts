@@ -3,7 +3,7 @@ import { defaultData } from '../util/datasource.spec';
 import { Overlay } from '../../../src/spreadsheet/services/index';
 import { Spreadsheet } from '../../../src/spreadsheet/index';
 import { EventHandler } from '@syncfusion/ej2-base';
-import { ImageModel } from '../../../src/index';
+import { ImageModel, setImage } from '../../../src/index';
 
 describe('Image ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -468,6 +468,53 @@ describe('Image ->', () => {
                 helper.invoke('insertImage', [[{ src: "https://www.w3schools.com/images/w3schools_green.jpg", id: 'SelectImage'}], 'A1']);
                 const image: ImageModel = spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[0].cells[0].image[0];
                 expect(image.id).toBe('SelectImage');
+                done();
+            });
+        });
+        describe('EJ2-947278 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ rows: [{ cells: [{ image: [{ id: 'Chart-13', src: "https://www.w3schools.com/images/w3schools_green.jpg", width: 481, height: 289, top: 51, left: 44 }] }] }] }, {}]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Image positioning not maintained during spreadsheet resizings', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[0].cells[0].image.length).toBe(0);
+                expect(spreadsheet.sheets[0].rows[2].cells[0].image.length).toBe(1);
+                spreadsheet.resize();
+                expect(spreadsheet.sheets[0].rows[0].cells[0].image.length).toBe(0);
+                expect(spreadsheet.sheets[0].rows[2].cells[0].image.length).toBe(1);
+                const imageArr: ImageModel = spreadsheet.sheets[0].rows[2].cells[0].image[0];
+                expect(imageArr.height).toBe(289);
+                expect(imageArr.width).toBe(481);
+                expect(imageArr.top).toBe(51);
+                expect(imageArr.left).toBe(44);
+                done();
+            });
+            it('Checking with public method for spreadsheet resize', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('insertImage', [[{ src: "https://www.w3schools.com/images/w3schools_green.jpg", width: 481, height: 289, top: 65, left: 48 }], 'A1']);
+                expect(spreadsheet.sheets[0].rows[0].cells[0].image.length).toBe(0);
+                expect(spreadsheet.sheets[0].rows[3].cells[0].image.length).toBe(1);
+                spreadsheet.resize();
+                expect(spreadsheet.sheets[0].rows[0].cells[0].image.length).toBe(0);
+                expect(spreadsheet.sheets[0].rows[3].cells[0].image.length).toBe(1);
+                const imageArr: ImageModel = spreadsheet.sheets[0].rows[3].cells[0].image[0];
+                expect(imageArr.height).toBe(289);
+                expect(imageArr.width).toBe(481);
+                expect(imageArr.top).toBe(65);
+                expect(imageArr.left).toBe(48);
+                done();
+            });
+            it('Checking isImport property in image model->', (done: Function) => {
+                helper.getInstance().spreadsheetImageModule.createImageElement({ options: { src: 'https://www.w3schools.com/images/w3schools_green.jpg', preservePos: true, top: 980, id: 'Chart1' }, range: 'C50' });
+                expect(helper.getInstance().sheets[0].rows[49].cells[2].image.length).toBe(1);
+                helper.getInstance().notify(setImage, { options: [{ src: 'https://www.w3schools.com/images/w3schools_green.jpg', top: 980, id: 'Chart1' }], range: 'C50', isPositionChanged: true });
+                helper.getInstance().spreadsheetImageModule.createImageElement({ options: { src: 'https://www.w3schools.com/images/w3schools_green.jpg', preservePos: true, left: 200, id: 'Chart2' }, range: 'C51' });
+                expect(helper.getInstance().sheets[0].rows[50].cells[2].image.length).toBe(1);
                 done();
             });
         });

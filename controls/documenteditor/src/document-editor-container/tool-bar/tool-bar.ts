@@ -8,7 +8,7 @@ import { showSpinner, hideSpinner, DialogUtility } from '@syncfusion/ej2-popups'
 import { ToolbarItem, BeforeFileOpenArgs } from '../../document-editor/base';
 import { XmlHttpRequestHandler, beforePaneSwitchEvent, toolbarClickEvent, beforeFileOpenEvent } from '../../document-editor/base/index';
 import { CustomToolbarItemModel } from '../../document-editor/base/events-helper';
-import { beforeXmlHttpRequestSend, XmlHttpRequestEventArgs, ProtectionType, SectionBreakType } from './../../index';
+import { beforeXmlHttpRequestSend, XmlHttpRequestEventArgs, ProtectionType, SectionBreakType, TextPosition } from './../../index';
 import { ListView, SelectEventArgs as ListSelectEventArgs } from '@syncfusion/ej2-lists';
 import { HelperMethods } from './../../index';
 
@@ -1056,6 +1056,9 @@ export class Toolbar {
                         this.toolbar.enableItems(document.getElementById(id + CONTENT_CONTROL_ID).parentElement, false);
                     }
                 }
+            }
+            if (this.documentEditor.selection.isCellOrRowSelected()) {
+                this.toolbar.enableItems(document.getElementById(id + INSERT_LINK_ID).parentElement, false);
             }
             if (!isProtectedContent || this.container.showPropertiesPane) {
                 if (isProtectedContent) {

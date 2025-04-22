@@ -2,7 +2,7 @@ import { Spreadsheet } from '../base/index';
 import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell, deleteNote, showNote, PreviousCellDetails } from '../common/index';
 import { createHyperlinkElement, checkPrevMerge, createImageElement, IRenderer, createNoteIndicator } from '../common/index';
 import { removeAllChildren, setRowEleHeight } from '../common/index';
-import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
+import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes, getRangeAddress, ExtendedImageModel } from '../../workbook/common/index';
 import { CellStyleExtendedModel, setChart, refreshChart, getCellAddress, ValidationModel, MergeArgs } from '../../workbook/common/index';
 import { CellModel, SheetModel, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol, isImported } from '../../workbook/index';
 import { getRowHeight, getCell, getColumnWidth, getSheet, setCell, ColumnModel, checkColumnValidation } from '../../workbook/base/index';
@@ -308,7 +308,8 @@ export class CellRenderer implements ICellRenderer {
                         options: {
                             src: args.cell.image[i as number].src, id: args.cell.image[i as number].id,
                             height: args.cell.image[i as number].height, width: args.cell.image[i as number].width,
-                            top: args.cell.image[i as number].top, left: args.cell.image[i as number].left
+                            top: args.cell.image[i as number].top, left: args.cell.image[i as number].left,
+                            preservePos: (args.cell.image[i as number] as ExtendedImageModel).preservePos
                         },
                         range: getRangeAddress([args.rowIdx, args.colIdx, args.rowIdx, args.colIdx]), isPublic: false
                     });

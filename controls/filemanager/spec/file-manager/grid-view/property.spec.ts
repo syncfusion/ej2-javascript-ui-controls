@@ -889,6 +889,83 @@ describe('FileManager control Grid view', () => {
                 done();
             }, 400);
         });
+        it('for enableRangeSelection', (done) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload',
+                    downloadUrl: '/Download',
+                    getImageUrl: '/GetImage'
+                },
+                enableRangeSelection: true
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(noSorting)
+            });
+            setTimeout(() => {
+                const gridElement: HTMLElement = feObj.element.querySelector('.e-gridcontent') as HTMLElement;
+                const startEvent = new MouseEvent('mousedown', {
+                    clientX: 220,
+                    clientY: 220
+                });
+                gridElement.dispatchEvent(startEvent);
+                const moveEvent = new MouseEvent('mousemove', {
+                    clientX: 510,
+                    clientY: 110
+                });
+                gridElement.dispatchEvent(moveEvent);
+                const mouseUpEvent = new MouseEvent('mouseup', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                gridElement.dispatchEvent(mouseUpEvent);
+                expect(feObj.selectedItems.length).not.toBe(0);
+                done();
+            }, 400);
+        });
+        it('for enableRangeSelection with showItemCheckBoxes as false', (done) => {
+            feObj = new FileManager({
+                view: 'Details',
+                showItemCheckBoxes:false,
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload',
+                    downloadUrl: '/Download',
+                    getImageUrl: '/GetImage'
+                },
+                enableRangeSelection: true
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(noSorting)
+            });
+            setTimeout(() => {
+                const gridElement: HTMLElement = feObj.element.querySelector('.e-gridcontent') as HTMLElement;
+                const startEvent = new MouseEvent('mousedown', {
+                    clientX: 220,
+                    clientY: 220
+                });
+                gridElement.dispatchEvent(startEvent);
+                const moveEvent = new MouseEvent('mousemove', {
+                    clientX: 510,
+                    clientY: 110
+                });
+                gridElement.dispatchEvent(moveEvent);
+                const mouseUpEvent = new MouseEvent('mouseup', {
+                    bubbles: true,
+                    cancelable: true
+                });
+                gridElement.dispatchEvent(mouseUpEvent);
+                expect(feObj.selectedItems.length).not.toBe(0);
+                done();
+            }, 400);
+        });
        
     });
     describe('popupTarget property testing', () => {

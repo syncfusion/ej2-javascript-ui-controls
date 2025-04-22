@@ -391,6 +391,7 @@
       .e-cc-lab-name,
       .e-checkbox-wrapper .e-label {
         text-overflow: ellipsis;
+        width: $grid-columnchooser-checkbox-label-width;
       }
 
       .e-cc-chbox {

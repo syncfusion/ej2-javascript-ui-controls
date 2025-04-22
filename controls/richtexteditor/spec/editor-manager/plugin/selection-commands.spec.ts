@@ -1447,8 +1447,8 @@ describe('EJ2-46956: Applying background color to multiple span element does not
         let noColorItem: HTMLElement = <HTMLElement>document.querySelector(".e-nocolor-item");
         noColorItem.click();
         expect(rteObj.element.querySelectorAll('.e-content span > span')[2].style.backgroundColor).toBe('');
-        expect(rteObj.element.querySelectorAll('.e-content span > span')[4].style.backgroundColor).toBe('transparent');
-        expect(rteObj.element.querySelectorAll('.e-content span > span')[6].style.backgroundColor).toBe('transparent');
+        expect(rteObj.element.querySelectorAll('.e-content span > span')[4].style.backgroundColor).toBe('');
+        expect(rteObj.element.querySelectorAll('.e-content span > span')[6].style.backgroundColor).toBe('');
     });
     afterEach(() => {
         destroy(rteObj);
@@ -2517,6 +2517,32 @@ describe('943182 - Font Weight Normal added to the List item.', () => {
         expect(rteObj.inputElement.querySelector('OL LI').style.fontStyle === 'italic').toBe(true);
         rteObj.element.querySelector('#' + rteObj.getID() + '_toolbar_Italic').click();
         expect(rteObj.inputElement.querySelector('OL LI').style.fontStyle === '').toBe(true);
+        done();
+    });
+});
+describe(' - remove inline code from pre/code blocks', function () {
+    var innerValue = "<pre class=\"skip-highlight-pre-element highlight hightlight-theme tab null\" style=\"background-color: rgb(255, 255, 255); border: 0px; border-radius: 0px; color: rgb(51, 51, 51); font-size: 14px; line-height: inherit; margin: 0px; overflow: visible; padding: 0px; white-space: pre-wrap; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none;\">\n<code class=\"null hljs language-pgsql\" style=\"background: rgba(157, 157, 157, 0.15); color: rgb(237, 72, 76);\">The school improvement grants <span class=\"hljs-keyword\">and</span> motor vehicle accidents analysis, helps the government <span class=\"hljs-keyword\">to</span> <span class=\"hljs-keyword\">analyse</span> the rational <span class=\"hljs-keyword\">grant</span> distribution <span class=\"hljs-keyword\">and</span> rate <span class=\"hljs-keyword\">of</span> accidents <span class=\"hljs-keyword\">on</span> roads <span class=\"hljs-keyword\">using</span> metrices such <span class=\"hljs-keyword\">as</span> total amount granted.</code>\n</pre>";
+    var rteObj: any;
+    beforeAll(function (done) {
+        rteObj = renderRTE({
+            value: innerValue,
+            toolbarSettings: {
+                items: ['InlineCode']
+            }
+        });
+        done();
+    });
+    afterAll(function (done) {
+        destroy(rteObj);
+        done();
+    });
+    it('remove inline code and unwrap inner content', function (done) {
+        var preElem = rteObj.inputElement.querySelector('pre');
+        var codeElem = preElem.querySelector('code');
+        rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, codeElem, codeElem, 0, codeElem.childNodes.length);
+        SelectionCommands.applyFormat(document, 'inlinecode', rteObj.inputElement, 'PRE');
+        expect(rteObj.inputElement.innerHTML).toEqual(`<pre class="skip-highlight-pre-element highlight hightlight-theme tab null" style="background-color: rgb(255, 255, 255); border: 0px; border-radius: 0px; color: rgb(51, 51, 51); font-size: 14px; line-height: inherit; margin: 0px; overflow: visible; padding: 0px; white-space: pre-wrap; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none;">The school improvement grants <span class="hljs-keyword">and</span> motor vehicle accidents analysis, helps the government <span class="hljs-keyword">to</span> <span class="hljs-keyword">analyse</span> the rational <span class="hljs-keyword">grant</span> distribution <span class="hljs-keyword">and</span> rate <span class="hljs-keyword">of</span> accidents <span class="hljs-keyword">on</span> roads <span class="hljs-keyword">using</span> metrices such <span class="hljs-keyword">as</span> total amount granted.
+</pre>`);
         done();
     });
 });

@@ -620,7 +620,13 @@ export class UndoRedo {
                 if (diagram.diagramActions & DiagramAction.UndoRedo) {
                     isUndoRedo = true;
                 }
-                updateSwimLaneObject(diagram, node, swimlane, obj);
+                //Swimlane break - Phase collapsed upon serialization after resizing and undo-redo.
+                let widthDiff: number = 0; let heightDiff: number = 0;
+                if (obj.wrapper && obj.wrapper.actualSize && node.wrapper && node.wrapper.actualSize) {
+                    widthDiff = obj.wrapper.actualSize.width - node.wrapper.actualSize.width;
+                    heightDiff = obj.wrapper.actualSize.height - node.wrapper.actualSize.height;
+                }
+                updateSwimLaneObject(diagram, node, swimlane, obj, widthDiff, heightDiff);
                 if (isRow) {
                     grid.updateRowHeight(obj.rowIndex, obj.wrapper.actualSize.height, true, padding, isUndoRedo);
                     swimlane.height = swimlane.wrapper.height = grid.height;

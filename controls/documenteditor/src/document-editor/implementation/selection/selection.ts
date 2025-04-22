@@ -3462,11 +3462,18 @@ export class Selection {
                     let ind: number = block.containerWidget.bodyWidgets.indexOf(block);
                     index = ind + ';' + offset;
                 } else {
+                    let blockIndex: number = block.index;
+                    if (block instanceof TableCellWidget && block.cellFormat.rowSpan > 1) {
+                        let cellWidget: Widget[] = block.getSplitWidgets();
+                        if (!isNullOrUndefined(cellWidget) && cellWidget.length > 0) {
+                            blockIndex = block.getSplitWidgets()[0].index;
+                        }
+                    }
                     // if (block instanceof BodyWidget && block.sectionFormat.columns.length > 1) {
                     //         index = block.indexInOwner + ';' + offset;
                     // }
                     // else {
-                    index = block.index + ';' + offset;
+                    index = blockIndex + ';' + offset;
                     // }
                 }
             }
@@ -5884,13 +5891,26 @@ export class Selection {
      *
      * @private
      */
-    public isCellSelected(cell: TableCellWidget, startPosition: TextPosition, endPosition: TextPosition): boolean {
+    public isCellSelected(cell: TableCellWidget, startPosition: TextPosition, endPosition: TextPosition, skipParaMark?: boolean): boolean {
         const lastParagraph: ParagraphWidget = this.getLastParagraph(cell as TableCellWidget) as ParagraphWidget;
 
-        const isAtCellEnd: boolean = lastParagraph === endPosition.paragraph && endPosition.offset === this.getParagraphLength(lastParagraph) + 1;
+        const isAtCellEnd: boolean = lastParagraph === endPosition.paragraph && endPosition.offset === this.getParagraphLength(lastParagraph) + (!skipParaMark ? 1 : 0);
 
         return isAtCellEnd || (!this.containsCell(cell, startPosition.paragraph.associatedCell) ||
             !this.containsCell(cell, endPosition.paragraph.associatedCell));
+    }
+    /**
+    * Return true if cell or row selected
+    *
+    * @private
+    */
+    public isCellOrRowSelected(): boolean {
+        let start: TextPosition = this.start;
+        let end: TextPosition = this.end;
+        let cellOrRowSelected: boolean = start.paragraph.isInsideTable && (!end.paragraph.isInsideTable
+            || start.paragraph.associatedCell !== end.paragraph.associatedCell
+            || this.isCellSelected(start.paragraph.associatedCell, start, end));
+        return cellOrRowSelected;
     }
     /**
      * Return Container cell

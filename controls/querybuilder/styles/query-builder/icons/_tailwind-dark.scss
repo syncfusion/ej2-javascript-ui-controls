@@ -1,0 +1,11 @@
+@include export-module('query-builder-tailwind-dark-icons') {
+  .e-query-builder {
+    & .e-collapse-rule::before {
+      content: '\e853';
+    }
+
+    & .e-drag-qb-rule::before {
+      content: '\e726';
+    }
+  }
+}

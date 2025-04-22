@@ -1148,4 +1148,37 @@ describe('Grid checkbox selection functionality', () => {
             gridObj = null;
         });
     });
+
+    describe('951094 - Changing Header Checkbox State to Intermediate in partial selection', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowSelection:true,
+                    selectionSettings: { type: 'Multiple', persistSelection: true },
+                    allowPaging: true,
+                    pageSettings: { pageSize: 5 },
+                    columns: [
+                        { type: 'checkbox', field: 'Verified', width: 120 },
+                        { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID',  width: 150 },
+                        { field: 'CustomerID', headerText: 'CustomerID',  width: 150 },
+                    ],
+                    rowDataBound: function (args: any) {
+                        args.isSelectable = args.data.OrderID % 5 === 0;
+                    }
+                }, done);
+        });
+
+        it('click selectAll header checkbox', function () {
+            let headerChkBox: HTMLElement = (<HTMLElement>gridObj.element.querySelector('.e-checkselectall'));
+            headerChkBox.click();
+            expect(headerChkBox.nextElementSibling.classList.contains('e-stop')).toBeTruthy();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

@@ -305,8 +305,8 @@ export class SelectionCharacterFormat {
      * @param {string} propertyName
      */
     private notifyPropertyChanged(propertyName: string): void {
-        if (!isNullOrUndefined(this.selection) && (this.selection.isCleared || (this.selection.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) ||
-            !this.selection.owner.isDocumentLoaded || this.selection.owner.isPastingContent) && !this.selection.isRetrieveFormatting) {
+        if (!isNullOrUndefined(this.selection) && !this.selection.isRetrieveFormatting && (this.selection.isCleared || (this.selection.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) ||
+            !this.selection.owner.isDocumentLoaded || this.selection.owner.isPastingContent)) {
             return;
         }
         if (!isNullOrUndefined(this.selection) && !isNullOrUndefined(this.selection.start) && !this.selection.isRetrieveFormatting) {
@@ -710,9 +710,8 @@ export class SelectionBorder {
      * @returns {void}
      */
     private notifyPropertyChanged(propertyName: string): void {
-        if (!isNullOrUndefined(this.selection) &&
-            ((this.selection.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) || !this.selection.owner.isDocumentLoaded)
-            && !this.selection.isRetrieveFormatting) {
+        if (!isNullOrUndefined(this.selection) && !this.selection.isRetrieveFormatting &&
+            ((this.selection.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) || !this.selection.owner.isDocumentLoaded)) {
             return;
         }
         if (!isNullOrUndefined(this.selection) && !isNullOrUndefined(this.selection.start) && !this.selection.isRetrieveFormatting) {
@@ -1384,9 +1383,8 @@ export class SelectionParagraphFormat {
      * @param {string} propertyName
      */
     private notifyPropertyChanged(propertyName: string): void {
-        if (!isNullOrUndefined(this.selection) &&
-            ((this.selection.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) || !this.selection.owner.isDocumentLoaded)
-            && !this.selection.isRetrieveFormatting) {
+        if (!isNullOrUndefined(this.selection) && !this.selection.isRetrieveFormatting &&
+            ((this.selection.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) || !this.selection.owner.isDocumentLoaded)) {
             return;
         }
         if (!isNullOrUndefined(this.selection) && !isNullOrUndefined(this.selection.start) && !this.selection.isRetrieveFormatting) {
@@ -1752,9 +1750,8 @@ export class SelectionHeaderFooter {
 
     private notifyPropertyChanged(propertyName: string): void {
         const selection: Selection = this.selection;
-        if (!isNullOrUndefined(selection) && (selection.isCleared || selection.owner.isPastingContent
-            || selection.owner.isReadOnlyMode || !selection.owner.isDocumentLoaded)
-            && !selection.isRetrieveFormatting) {
+        if (!isNullOrUndefined(selection) && !selection.isRetrieveFormatting && (selection.isCleared || selection.owner.isPastingContent
+            || selection.owner.isReadOnlyMode || !selection.owner.isDocumentLoaded)) {
             return;
         }
         if (!isNullOrUndefined(selection) && !isNullOrUndefined(selection.start) && !selection.isRetrieveFormatting) {
@@ -2363,9 +2360,8 @@ export class SelectionSectionFormat {
     }
     private notifyPropertyChanged(propertyName: string): void {
         const selection: Selection = this.selection;
-        if (!isNullOrUndefined(selection) && (selection.isCleared || selection.owner.isPastingContent
-            || selection.owner.isReadOnlyMode || !selection.owner.isDocumentLoaded)
-            && !selection.isRetrieveFormatting) {
+        if (!isNullOrUndefined(selection) && !selection.isRetrieveFormatting && (selection.isCleared || selection.owner.isPastingContent
+            || selection.owner.isReadOnlyMode || !selection.owner.isDocumentLoaded)) {
             return;
         }
         if (!isNullOrUndefined(selection) && !isNullOrUndefined(selection.start) && !selection.isRetrieveFormatting) {
@@ -2930,9 +2926,9 @@ export class SelectionTableFormat {
         }
     }
     private notifyPropertyChanged(propertyName: string): void {
-        if (!isNullOrUndefined(this.selection) && (this.selection.isCleared
+        if (!isNullOrUndefined(this.selection) && !this.selection.isRetrieveFormatting && (this.selection.isCleared
             || !this.selection.owner.isDocumentLoaded || this.selection.owner.isReadOnlyMode
-            || this.selection.owner.isPastingContent) && !this.selection.isRetrieveFormatting) {
+            || this.selection.owner.isPastingContent)) {
             return;
         }
         if (!isNullOrUndefined(this.selection) && !isNullOrUndefined(this.selection.start) && !this.selection.isRetrieveFormatting) {
@@ -3191,8 +3187,8 @@ export class SelectionCellFormat {
     private notifyPropertyChanged(propertyName: string): void {
         const selection: Selection = this.selection;
         if (!isNullOrUndefined(selection)) {
-            if ((selection.isCleared || !selection.owner.isDocumentLoaded
-                || selection.owner.isReadOnlyMode || selection.owner.isPastingContent) && !selection.isRetrieveFormatting) {
+            if (!selection.isRetrieveFormatting && (selection.isCleared || !selection.owner.isDocumentLoaded
+                || selection.owner.isReadOnlyMode || selection.owner.isPastingContent)) {
                 return;
             }
             if (!isNullOrUndefined(this.selection.start) && !this.selection.isRetrieveFormatting) {
@@ -3438,8 +3434,8 @@ export class SelectionRowFormat {
     }
     private notifyPropertyChanged(propertyName: string): void {
         const selection: Selection = this.selection;
-        if (!isNullOrUndefined(selection) && (selection.isCleared || selection.owner.isReadOnlyMode
-            || !selection.owner.isDocumentLoaded || selection.owner.isPastingContent) && !selection.isRetrieveFormatting) {
+        if (!isNullOrUndefined(selection) && !selection.isRetrieveFormatting && (selection.isCleared || selection.owner.isReadOnlyMode
+            || !selection.owner.isDocumentLoaded || selection.owner.isPastingContent)) {
             return;
         }
         if (!isNullOrUndefined(selection) && !isNullOrUndefined(selection.start) && !selection.isRetrieveFormatting) {

@@ -12369,17 +12369,7 @@ export class PdfViewerBase {
                 }
             }
             if (isRefreshRequired) {
-                // Both canvases need to be refresh. The 'blendAnnotationsIntoCanvas' method is used to highlight annotations.
-                const canvasIds: string[] = [
-                    '_annotationCanvas_' + pageIndex,
-                    '_blendAnnotationsIntoCanvas_' + pageIndex
-                ];
-                canvasIds.forEach((id: string) => {
-                    const canvas: HTMLElement = this.getElement(id);
-                    if (canvas) {
-                        this.pdfViewer.drawing.refreshCanvasDiagramLayer(canvas as HTMLCanvasElement, pageIndex);
-                    }
-                });
+                this.pdfViewer.annotationModule.renderAnnotations(pageIndex, null, null, null);
             }
         }
 

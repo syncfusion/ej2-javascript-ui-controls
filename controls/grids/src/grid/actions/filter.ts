@@ -1097,7 +1097,8 @@ export class Filter implements IAction {
 
     private setFormatForFlColumn(value: Date | number, column: Column): string {
         const formater: IValueFormatter = this.serviceLocator.getService<IValueFormatter>('valueFormatter');
-        return formater.toView(value, column.getFormatter()).toString();
+        const formatValue: string | Object = formater.toView(value, column.getFormatter());
+        return isNullOrUndefined(formatValue) ? formatValue as string : formatValue.toString();
     }
 
     private checkForSkipInput(column: Column, value: string): boolean {

@@ -127,7 +127,7 @@ export class WorkbookSave extends SaveWorker {
      * @returns {void} - Process sheets properties.
      */
     private processSheets(autoDetectFormat?: boolean, jsonConfig?: SerializationOptions): void {
-        const skipProps: string[] = ['dataSource', 'startCell', 'query', 'showFieldAsHeader', 'result'];
+        const skipProps: string[] = ['dataSource', 'startCell', 'query', 'showFieldAsHeader', 'result', 'preservePos'];
         if (this.parent.isAngular) {
             skipProps.push('template');
         }

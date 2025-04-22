@@ -2,7 +2,17 @@
 
 ## [Unreleased]
 
-## 29.1.38 (2025-04-15)
+## 29.1.39 (2025-04-22)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I698253` - Now, The issue with the page becoming unresponsive when removing inline code in the RichTextEditor has been resolved.
+- `#I706947` - Now, The issue with the Two new lines created when using Shift Enter key in the RichTextEditor has been resolved.
+- `#I712784` - Now, the issue with the cursor position not being restored when inserting a table using the `showDialog` method in the RichTextEditor component has been resolved.
+
+## 29.1.37 (2025-04-08)
 
 ### RichTextEditor
 

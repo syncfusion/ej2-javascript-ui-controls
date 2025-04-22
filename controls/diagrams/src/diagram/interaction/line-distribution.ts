@@ -841,13 +841,15 @@ export class LineDistribution {
             let overlappCollection = [];
             if (sourceLevel < targetLevel) {
                 for (let i = 0; i < collection.length; i++) {
-                    if (i > sourceLevel && i < targetLevel) {
+                    //EJ2-949872 - Connector Lines Overlapping Nodes in Child-to-Parent Flow
+                    if (i >= sourceLevel && i <= targetLevel) {
                         overlappCollection.push(collection[parseInt(i.toString(), 10)]);
                     }
                 }
             } else {
                 for (let i = 0; i < collection.length; i++) {
-                    if (i < sourceLevel && i > targetLevel) {
+                    //EJ2-949872 - Connector Lines Overlapping Nodes in Child-to-Parent Flow
+                    if (i <= sourceLevel && i >= targetLevel) {
                         overlappCollection.push(collection[parseInt(i.toString(), 10)]);
                     }
                 }
@@ -867,28 +869,64 @@ export class LineDistribution {
                 (diagram as any).routingConnectors = [];
             }
             //To find whether the connector is overlapping with the nodes in the overlapping collection.
+            let connectorBounds: Rect = this.getConnectorBounds(connector);
             // eslint-disable-next-line no-labels
             overlapping:
             for(let count = 0; count < overLapNodesCollection.length;count++){
                 let bounds = overLapNodesCollection[parseInt(count.toString(), 10)].wrapper.bounds;
-                for (let i = 0; i < connector.segments.length; i++) {
-                    let points = (connector.segments[parseInt(i.toString(), 10)] as any).points;
-                    for (let j = 0; j < points.length; j++) {
-                        let lineStart = points[parseInt(j.toString(), 10)];
-                        let lineEnd = points[j + 1];
-                        if (lineEnd) {
-                            let connectorPoints = this.pointsAlongLine(lineStart, lineEnd);
-                            isInsideBounds = this.pointInsideBounds(connectorPoints, bounds);
-                            if (isInsideBounds) {
-                                (diagram as any).routingConnectors.push(connector);
-                                // eslint-disable-next-line no-labels
-                                break overlapping;
+                //EJ2-949872 - Connector Lines Overlapping Nodes in Child-to-Parent Flow
+                if(connectorBounds.intersects(bounds)){
+                    for (let i = 0; i < connector.segments.length; i++) {
+                        let points = (connector.segments[parseInt(i.toString(), 10)] as any).points;
+                        for (let j = 0; j < points.length; j++) {
+                            let lineStart = points[parseInt(j.toString(), 10)];
+                            let lineEnd = points[j + 1];
+                            if (lineEnd) {
+                                let connectorPoints = this.pointsAlongLine(lineStart, lineEnd);
+                                isInsideBounds = this.pointInsideBounds(connectorPoints, bounds);
+                                if (isInsideBounds) {
+                                    (diagram as any).routingConnectors.push(connector);
+                                    // eslint-disable-next-line no-labels
+                                    break overlapping;
+                                }
                             }
                         }
                     }
                 }
             }
         }
+    }
+    /**
+     * Calculates the bounds of a connector by iterating through its segments and points.
+     * @param connector Provide the connector value.
+     * @returns An object representing the bounds of the connector.
+     */
+    private getConnectorBounds(connector: Connector): Rect {
+        let minX : number = Number.MAX_VALUE;
+        let minY : number = Number.MAX_VALUE;
+        let maxX : number= Number.MIN_VALUE;
+        let maxY : number= Number.MIN_VALUE;
+        // Iterate through all segments of the connector
+        /* eslint-disable */
+        for (let i = 0; i < connector.segments.length; i++) {
+            const segment = connector.segments[i];
+            const points = (segment as any).points;
+            // Iterate through all points in the segment
+            for (let j = 0; j < points.length; j++) {
+                const point = points[j];
+                minX = Math.min(minX, point.x);
+                minY = Math.min(minY, point.y);
+                maxX = Math.max(maxX, point.x);
+                maxY = Math.max(maxY, point.y);
+            }
+        }
+        //Return the bounds as an object
+        return new Rect(
+            minX,
+            minY,
+            maxX - minX,
+            maxY - minY
+        );
     }
     /**
      * Calculates points along a line between two given points.

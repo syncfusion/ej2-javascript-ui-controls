@@ -143,7 +143,14 @@ export class SelectionCommands {
             }
             isCursor = isTableSelect ? false : range.collapsed;
             let isSubSup: boolean = false;
-            let isRemoved: boolean = false;
+            let formattedCount: number = 0;
+            for (let index: number = 0; index < nodes.length; index++) {
+                const existingFormatNode: Node | null = isFormatted.getFormattedNode(nodes[index as number], format, endNode);
+                if (existingFormatNode) {
+                    formattedCount++;
+                }
+            }
+            const shouldApplyRemoval: boolean = formattedCount === nodes.length;
             for (let index: number = 0; index < nodes.length; index++) {
                 let formatNode: Node = isFormatted.getFormattedNode(nodes[index as number], format, endNode);
                 if (formatNode === null) {
@@ -154,7 +161,6 @@ export class SelectionCommands {
                         formatNode = isFormatted.getFormattedNode(nodes[index as number], 'subscript', endNode);
                         isSubSup = formatNode === null ? false : true;
                     }
-                    isRemoved = false;
                 }
                 if (index === 0 && formatNode === null) {
                     isFormat = true;
@@ -175,9 +181,8 @@ export class SelectionCommands {
                         domSelection,
                         endNode,
                         domNode);
-                    isRemoved = true;
                 }
-                if (!isRemoved && formatNode === null) {
+                if (formatNode === null && !shouldApplyRemoval) {
                     nodes[index as number] = this.insertFormat(
                         docElement,
                         nodes,

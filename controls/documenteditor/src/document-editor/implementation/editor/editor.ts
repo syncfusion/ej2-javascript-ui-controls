@@ -55,7 +55,8 @@ import {
     VerticalOrigin,
     VerticalAlignment,
     HorizontalOrigin,
-    HorizontalAlignment
+    HorizontalAlignment,
+    ContentControlWidgetType
 } from '../../base/types';
 import { DocumentEditor } from '../../document-editor';
 import { showSpinner, hideSpinner, Dialog } from '@syncfusion/ej2-popups';
@@ -553,7 +554,7 @@ export class Editor {
                 const section: BodyWidget = new BodyWidget();
                 section.sectionFormat = new WSectionFormat(section);
                 section.childWidgets.push(paragraph);
-                this.pasteContentsInternal([section], false);
+                this.pasteContentsInternal([section], false, startParagraph.paragraphFormat);
             }
         this.isInsertField = false;
     }
@@ -1523,7 +1524,7 @@ export class Editor {
         if (protectionType === 'RevisionsOnly') {
             this.toggleTrackChangesProtection(true);
         }
-        this.owner.trackChangesPane.enableDisableButton(false);
+        this.owner.trackChangesPane.enableDisableButton(false, true);
         if (!this.documentHelper.owner.enableCollaborativeEditing) {
             this.fireContentChange();
         }
@@ -1687,7 +1688,7 @@ export class Editor {
         if (previousProtectionType === 'RevisionsOnly' && !this.owner.enableTrackChanges) {
             this.toggleTrackChangesProtection(false);
         }
-        this.owner.trackChangesPane.enableDisableButton(true);
+        this.owner.trackChangesPane.enableDisableButton(true, true);
         if (!isNullOrUndefined(this.editorHistory)) {
             this.owner.editorHistoryModule.clearHistory();
         }
@@ -2710,18 +2711,22 @@ export class Editor {
      */
     public updatePropertiesToBlock(contentControl: ContentControl, isUpdate?: boolean): void {
         const properties = contentControl.contentControlProperties;
-        if (properties.contentControlWidgetType !== 'Block') {
+        if (properties.contentControlWidgetType === 'Inline') {
             return;
         }
         const startParagraph = (contentControl.line as LineWidget).paragraph;
         const endParagraph = (contentControl.reference.line as LineWidget).paragraph;
-        let startBlock: BlockWidget = startParagraph.isInsideTable ? this.documentHelper.layout.getParentTable(startParagraph)
-            : startParagraph;
-        const endBlock: BlockWidget = endParagraph.isInsideTable ? this.documentHelper.layout.getParentTable(endParagraph)
-            : endParagraph;
-        while (startBlock) {
-            startBlock.contentControlProperties = isUpdate ? contentControl.contentControlProperties : undefined;
-            startBlock = startBlock !== endBlock ? startBlock.nextRenderedWidget as BlockWidget : undefined;
+        if (properties.contentControlWidgetType === 'Cell' && startParagraph.associatedCell) {
+            startParagraph.associatedCell.contentControlProperties = isUpdate ? contentControl.contentControlProperties : undefined;
+        } else if (properties.contentControlWidgetType === 'Block') {
+            let startBlock: BlockWidget = startParagraph.isInsideTable ? this.documentHelper.layout.getParentTable(startParagraph)
+                : startParagraph;
+            const endBlock: BlockWidget = endParagraph.isInsideTable ? this.documentHelper.layout.getParentTable(endParagraph)
+                : endParagraph;
+            while (startBlock) {
+                startBlock.contentControlProperties = isUpdate ? contentControl.contentControlProperties : undefined;
+                startBlock = startBlock !== endBlock ? startBlock.nextRenderedWidget as BlockWidget : undefined;
+            }
         }
     }
     private updateContentControlPosition(start: TextPosition, end: TextPosition): void {
@@ -2737,16 +2742,16 @@ export class Editor {
     private applyRichText(value?: string, title?: string, tag?: string, lock?: boolean, lockContents?: boolean): void {
         let positionStart: TextPosition;
         let positionEnd: TextPosition;
-        let isInline: boolean = true;
+        let contentControlWidgetType: ContentControlWidgetType = 'Inline';
         if (!isNullOrUndefined(this.selection.currentContentControl) && this.selection.currentContentControl.contentControlProperties.hasPlaceHolderText) {
             if (this.editorHistory) {
                 this.initComplexHistory('InsertContentControl');
             }
             this.delete();
             this.selection.selectContentControlInternal(this.selection.currentContentControl);
-            positionStart = this.selection.isForward ? this.selection.start.clone() : this.selection.end.clone();
-            positionEnd = this.selection.isForward ? this.selection.end.clone() : this.selection.start.clone();
-            isInline = this.selection.currentContentControl.contentControlWidgetType === 'Block' ? false : true;
+            positionStart = this.selection.start.clone();
+            positionEnd = this.selection.end.clone();
+            contentControlWidgetType = this.selection.currentContentControl.contentControlWidgetType;
         } else {
             positionStart = this.selection.isForward ? this.selection.start.clone() : this.selection.end.clone();
             positionEnd = this.selection.isForward ? this.selection.end.clone() : this.selection.start.clone();
@@ -2768,15 +2773,22 @@ export class Editor {
             }
             this.updateContentControlPosition(positionStart, positionEnd);
             if (positionStart.isAtParagraphStart && positionEnd.isAtParagraphEnd) {
-                isInline = false;
+                contentControlWidgetType = 'Block';
+            }
+            //If the selection is in same cell, then the content control widget type is cell.
+            if (positionStart.paragraph.isInsideTable && positionEnd.paragraph.isInsideTable && positionStart.paragraph.associatedCell === positionEnd.paragraph.associatedCell) {
+                const cell: TableCellWidget = positionStart.paragraph.associatedCell as TableCellWidget;
+                if (cell.isEmpty() || (!positionStart.isAtSamePosition(positionEnd) && this.selection.isCellSelected(cell, positionStart, positionEnd, true))) {
+                    contentControlWidgetType = 'Cell';
+                }
             }
             if (this.editorHistory) {
                 this.initComplexHistory('InsertContentControl');
             }
         }
-        const blockStartContentControl: ContentControl = new ContentControl(isInline ? 'Inline' : 'Block');
-        const blockEndContentControl: ContentControl = new ContentControl(isInline ? 'Inline' : 'Block');
-        let properties: ContentControlProperties = new ContentControlProperties(isInline ? 'Inline' : 'Block');
+        const blockStartContentControl: ContentControl = new ContentControl(contentControlWidgetType);
+        const blockEndContentControl: ContentControl = new ContentControl(contentControlWidgetType);
+        let properties: ContentControlProperties = new ContentControlProperties(contentControlWidgetType);
         properties.color = "#00000000";
         properties.hasPlaceHolderText = positionStart.isAtSamePosition(positionEnd) ? true : false;
         properties.isTemporary = false;
@@ -2805,7 +2817,7 @@ export class Editor {
             this.insertElementsInternal(positionStart, [blockEndContentControl]);
         }
         else {
-            if (positionStart.currentWidget === positionEnd.currentWidget) {
+            if (positionStart.paragraph === positionEnd.paragraph) {
                 positionEnd.offset++;
             }
             const blockInfo: ParagraphInfo = this.selection.getParagraphInfo(positionEnd);
@@ -2861,18 +2873,25 @@ export class Editor {
             if (positionStart.paragraph !== positionEnd.paragraph) {
                 positionEnd.setPositionParagraph(positionStart.paragraph.lastChild as LineWidget, (positionStart.paragraph.lastChild as LineWidget).getEndOffset());
             }
-            let isInline: boolean = true;
+            let contentControlWidgetType: ContentControlWidgetType = 'Inline';
             if (positionStart.isAtParagraphStart && positionEnd.isAtParagraphEnd) {
-                isInline = false;
+                contentControlWidgetType = 'Block';
             }
             let isEmpty: boolean = positionStart.isAtSamePosition(positionEnd);
             if (!isEmpty && this.isInvalidElementPresent(positionStart, positionEnd)) {
                 this.openContentDialog(false);
                 return;
             }
-            const blockStartContentControl: ContentControl = new ContentControl(isInline ? 'Inline' : 'Block');
-            const blockEndContentControl: ContentControl = new ContentControl(isInline ? 'Inline' : 'Block');
-            let properties: ContentControlProperties = new ContentControlProperties(isInline ? 'Inline' : 'Block');
+            //If the selection is in same cell, then the content control widget type is cell.
+            if (positionStart.paragraph.isInsideTable && positionEnd.paragraph.isInsideTable && positionStart.paragraph.associatedCell === positionEnd.paragraph.associatedCell) {
+                const cell: TableCellWidget = positionStart.paragraph.associatedCell as TableCellWidget;
+                if (cell.isEmpty() || (!isEmpty && this.selection.isCellSelected(cell, positionStart, positionEnd, true))) {
+                    contentControlWidgetType = 'Cell';
+                }
+            }
+            const blockStartContentControl: ContentControl = new ContentControl(contentControlWidgetType);
+            const blockEndContentControl: ContentControl = new ContentControl(contentControlWidgetType);
+            let properties: ContentControlProperties = new ContentControlProperties(contentControlWidgetType);
             properties.color = "#00000000";
             isEmpty ? properties.hasPlaceHolderText = true : properties.hasPlaceHolderText = false;
             properties.isTemporary = false;
@@ -2910,7 +2929,7 @@ export class Editor {
 
             }
             else {
-                if (positionStart.currentWidget === positionEnd.currentWidget) {
+                if (positionStart.paragraph === positionEnd.paragraph) {
                     positionEnd.offset++;
                 }
                 const blockInfo: ParagraphInfo = this.selection.getParagraphInfo(positionEnd);
@@ -3148,7 +3167,7 @@ export class Editor {
     */
     private applyPictureContentControl(type: ContentControlType, value?: string, title?: string, tag?: string, lock?: boolean, lockContents?: boolean): void {
         let contentControl: ContentControl = this.selection.currentContentControl;
-        if(isNullOrUndefined(contentControl) || contentControl.contentControlProperties.type === 'RichText'){
+        if (isNullOrUndefined(contentControl) || contentControl.contentControlProperties.type === 'RichText') {
             const blockStartContentControl: ContentControl = new ContentControl('Inline');
             const blockEndContentControl: ContentControl = new ContentControl('Inline');
             //blockStartContentControl.contentControlProperties.lockContents=true;
@@ -5142,34 +5161,7 @@ export class Editor {
         let lastBlock: BlockWidget;
         let firstBlock: BlockWidget;
         if (selection.start.paragraph.isInsideTable) {
-            let table: TableWidget = this.documentHelper.layout.getParentTable(selection.start.paragraph);
-            table = table.combineWidget(this.owner.viewer) as TableWidget;
-            let insertBefore: boolean = false;
-            if (selection.start.paragraph.associatedCell.rowIndex === 0) {
-                insertBefore = true;
-            }
-            let newParagraph: ParagraphWidget = new ParagraphWidget();
-            let previousBlock: BlockWidget = table.previousRenderedWidget as BlockWidget;
-            if (!insertBefore) {
-                lastBlock = this.splitTable(table, selection.start.paragraph.associatedCell.ownerRow);
-                this.documentHelper.layout.layoutBodyWidgetCollection(lastBlock.index, lastBlock.containerWidget, lastBlock, false);
-                lastBlock = lastBlock.getSplitWidgets().pop() as BlockWidget;
-            } else {
-                lastBlock = table;
-            }
-            let insertIndex: number = 0;
-            if ((isNullOrUndefined(previousBlock) || !previousBlock.bodyWidget.equals(lastBlock.bodyWidget)) && insertBefore) {
-                insertIndex = 0;
-                newParagraph.index = 0;
-            } else {
-                insertIndex = lastBlock.indexInOwner + 1;
-                newParagraph.index = lastBlock.index + 1;
-            }
-            lastBlock.containerWidget.childWidgets.splice(insertIndex, 0, newParagraph);
-            newParagraph.containerWidget = lastBlock.containerWidget;
-            this.updateNextBlocksIndex(newParagraph, true);
-            this.documentHelper.layout.layoutBodyWidgetCollection(newParagraph.index, newParagraph.containerWidget, newParagraph, false);
-            lastBlock = newParagraph;
+            lastBlock = this.splitTableBasedonBreak(selection, true) as BlockWidget;
         } else {
             let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(selection.start);
             let selectionStart: string = this.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
@@ -8533,7 +8525,7 @@ export class Editor {
             let isUndoing: boolean = !isNullOrUndefined(this.editorHistory) ? (this.editorHistory.isUndoing || this.editorHistory.isRedoing) : false;
             (paragraph.childWidgets[0] as LineWidget).children.push(element);
             element.line = (paragraph.childWidgets[0] as LineWidget);
-            if (this.owner.enableTrackChanges && element.isValidNodeForTracking && !isUndoing) {
+            if (this.owner.enableTrackChanges && element.isValidNodeForTracking && !isUndoing && !(!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo) && this.editorHistory.currentBaseHistoryInfo.action === 'InsertHyperlink')) {
                 this.insertRevision(element, revisionType);
             }
             if (element.removedIds.length > 0 || isUndoing) {
@@ -9075,7 +9067,7 @@ export class Editor {
                 block.isGridUpdated = true;
             }
             this.updateNextBlocksIndex(block, true);
-            if (!this.isInsertingTOC && this.owner.enableTrackChanges && !this.skipTracking() && block instanceof ParagraphWidget && !isSkipRevision) {
+            if (!this.isInsertingTOC && this.owner.enableTrackChanges && !this.skipTracking() && block instanceof ParagraphWidget && !isSkipRevision && !(!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo) && this.editorHistory.currentBaseHistoryInfo.action === 'InsertHyperlink')) {
                 this.insertRevisionForBlock(block, 'Insertion');
             } else if (block instanceof ParagraphWidget) {
                 this.constructRevisionsForBlock(block, true);
@@ -9838,10 +9830,10 @@ export class Editor {
     }
     private getOwnerTable(isStart: boolean): TableWidget {
         let table: TableWidget = undefined;
-        let startTable: TableWidget = this.selection.start.paragraph.associatedCell.ownerTable;
-        let endTable: TableWidget = this.selection.end.paragraph.associatedCell.ownerTable;
+        let startTable: TableWidget = this.selection.start.paragraph.isInsideTable ? this.selection.start.paragraph.associatedCell.ownerTable : undefined;
+        let endTable: TableWidget = this.selection.end.paragraph.isInsideTable ? this.selection.end.paragraph.associatedCell.ownerTable : undefined;
         table = isStart ? startTable : endTable;
-        while (table.containerWidget instanceof TableCellWidget && table !== (isStart ? endTable : startTable)) {
+        while (!isNullOrUndefined(table) && table.containerWidget instanceof TableCellWidget && table !== (isStart ? endTable : startTable)) {
             table = (table.containerWidget as TableCellWidget).ownerTable;
         }
         return table;
@@ -10756,6 +10748,7 @@ export class Editor {
             this.documentHelper.renderedLists.clear();
             this.documentHelper.renderedLevelOverrides = [];
             this.documentHelper.layout.shiftLayoutedItems(false);
+            this.documentHelper.layout.checkAndShiftEndnote(false);
         }
 
     }
@@ -14894,10 +14887,14 @@ export class Editor {
             this.deleteSelectedContent(end.paragraph, selection, start, end, editAction);
             return;
         }
+        let isTableDelete: boolean = false;
+        if (start.paragraph.isInsideTable && this.editorHistory && this.editorHistory.isUndoing && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action === 'InsertTable') {
+            isTableDelete = true;
+        }
         //  Selection start in cell.
         if (end.paragraph.isInsideTable && (!start.paragraph.isInsideTable
             || (start.paragraph.associatedCell && !start.paragraph.associatedCell.equals(end.paragraph.associatedCell))
-            || (selection.isCellSelected(end.paragraph.associatedCell, start, end) && isDeletecell))) {
+            || (selection.isCellSelected(end.paragraph.associatedCell, start, end) && isDeletecell) || isTableDelete)) {
                 end.paragraph.associatedCell.ownerTable.combineWidget(this.owner.viewer);
             this.deleteTableCell(end.paragraph.associatedCell, selection, start, end, editAction, isDeletecell);
         } else {
@@ -15509,7 +15506,7 @@ export class Editor {
                     paragraph.characterFormat.revisions = [];
                 } else {
 
-                    if (this.owner.enableTrackChanges && !this.skipTracking() && this.editorHistory.currentBaseHistoryInfo.action !== 'TOC' && this.editorHistory.currentBaseHistoryInfo.action !== 'Reject Change') {
+                    if (this.owner.enableTrackChanges && !this.skipTracking() && this.editorHistory.currentBaseHistoryInfo.action !== 'TOC' && this.editorHistory.currentBaseHistoryInfo.action !== 'Reject Change' && this.editorHistory.currentBaseHistoryInfo.action !== 'InsertHyperlink') {
                         if (isCombineNextParagraph) {
 
                             currentParagraph = this.splitParagraph(paragraph, paragraph.firstChild as LineWidget, 0, startLine, startOffset, true, undefined, isSelectionInsideTable);
@@ -15595,7 +15592,7 @@ export class Editor {
                     skipParaMarkdeletion = true;
                 }
                 //Checks whether this is last paragraph of owner text body and previousBlock is not paragraph.
-                if (this.owner.enableTrackChanges && !this.skipTracking() && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action !== 'TOC') {
+                if (this.owner.enableTrackChanges && !this.skipTracking() && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action !== 'TOC'  && this.editorHistory.currentBaseHistoryInfo.action !== 'InsertHyperlink') {
                     let removedNodeLength: number = -1;
                     if (this.editorHistory.currentBaseHistoryInfo) {
                         removedNodeLength = this.editorHistory.currentBaseHistoryInfo.removedNodes.length;
@@ -16491,7 +16488,7 @@ export class Editor {
             //Selection end is outside table.
             let cell: TableCellWidget = selection.getContainerCell(cellAdv);
             //Added the condition to remove the entire table when the selection contains a table with the above paragraph.
-            if (!isNullOrUndefined(this.editorHistory) && (this.editorHistory.isUndoing || this.editorHistory.isRedoing)) {
+            if (selection.containsRow(cell.ownerTable.lastChild as TableRowWidget, end.paragraph.associatedCell) && !isNullOrUndefined(this.editorHistory) && (this.editorHistory.isUndoing || this.editorHistory.isRedoing)) {
                 this.deleteTableBlock(cell.ownerTable, selection, start, end, editAction);
                 deletePreviousBlock = false;
             } else {
@@ -17310,10 +17307,14 @@ export class Editor {
     private checkClearCells(selection: Selection): boolean {
 
         return this.editorHistory && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action !== 'ClearCells';
-    }
+}
     private isEndInAdjacentTable(paragraph: ParagraphWidget, endParagraph: ParagraphWidget): boolean {
-        let start: string = this.selection.getHierarchicalIndex(paragraph, '');
-        let end: string = this.selection.getHierarchicalIndex(endParagraph, '');
+    let table: TableWidget = this.getOwnerTable(false);
+    if (!isNullOrUndefined(table) && isNullOrUndefined(table.containerWidget)) {
+        return true;
+    }
+    let start: string = this.selection.getHierarchicalIndex(paragraph, '');
+    let end: string = this.selection.getHierarchicalIndex(endParagraph, '');
         let selectionStart: string[] = start.split(';');
         let selectionEnd: string[] = end.split(';');
         return selectionStart.length < selectionEnd.length;
@@ -18108,6 +18109,10 @@ export class Editor {
             } else {
                 listLevel.listLevelPattern = listLevelPattern;
                 listLevel.characterFormat.fontFamily = fontFamily;
+                listLevel.characterFormat.fontFamilyAscii = fontFamily;
+                listLevel.characterFormat.fontFamilyBidi = fontFamily;
+                listLevel.characterFormat.fontFamilyFarEast = fontFamily;
+                listLevel.characterFormat.fontFamilyNonFarEast = fontFamily;
                 listLevel.startAt = 1;
                 let currentFormat: string = listLevel.numberFormat.substring(listLevel.numberFormat.length - 1);
                 if (listLevel.numberFormat.length !== format.length && levelNumber > 0) {
@@ -18163,8 +18168,7 @@ export class Editor {
      */
     public insertPageBreak(): void {
         if (!this.owner.isReadOnlyMode) {
-            if (this.documentHelper.selection.start.paragraph.isInsideTable ||
-                this.documentHelper.selection.start.paragraph.isInHeaderFooter) {
+            if (this.documentHelper.selection.start.paragraph.isInHeaderFooter) {
                 return;
             }
             this.initComplexHistory('PageBreak');
@@ -18205,6 +18209,51 @@ export class Editor {
             if (this.owner.enableAutoFocus) {
                 this.selection.checkForCursorVisibility();
             }
+        }
+    }
+    private splitTableBasedonBreak(selection: Selection, isSectionBreakInsideTable: boolean): BlockWidget | void {
+        let pageBreak: TextElementBox = new TextElementBox();
+        let lastBlock: BlockWidget;
+        let table: TableWidget = this.documentHelper.layout.getParentTable(selection.start.paragraph);
+        table = table.combineWidget(this.owner.viewer) as TableWidget;
+        let insertBefore: boolean = false;
+        if (selection.start.paragraph.associatedCell.rowIndex === 0) {
+            insertBefore = true;
+        }
+        let newParagraph: ParagraphWidget = new ParagraphWidget();
+        if (!isSectionBreakInsideTable) {
+            pageBreak.text = '\f';
+            let line: LineWidget = new LineWidget(newParagraph);
+            line.children.push(pageBreak);
+            pageBreak.line = line;
+            newParagraph.childWidgets.push(line);
+        }
+        let previousBlock: BlockWidget = table.previousRenderedWidget as BlockWidget;
+        if (!insertBefore) {
+            lastBlock = this.splitTable(table, selection.start.paragraph.associatedCell.ownerRow);
+            this.documentHelper.layout.layoutBodyWidgetCollection(lastBlock.index, lastBlock.containerWidget, lastBlock, false);
+            lastBlock = lastBlock.getSplitWidgets().pop() as BlockWidget;
+        } else {
+            lastBlock = table;
+        }
+        let insertIndex: number = 0;
+        if ((isNullOrUndefined(previousBlock) || !previousBlock.bodyWidget.equals(lastBlock.bodyWidget)) && insertBefore) {
+            insertIndex = 0;
+            newParagraph.index = 0;
+        } else {
+            insertIndex = lastBlock.indexInOwner + 1;
+            newParagraph.index = lastBlock.index + 1;
+        }
+        lastBlock.containerWidget.childWidgets.splice(insertIndex, 0, newParagraph);
+        newParagraph.containerWidget = lastBlock.containerWidget;
+        this.updateNextBlocksIndex(newParagraph, true);
+        this.documentHelper.layout.layoutBodyWidgetCollection(newParagraph.index, newParagraph.containerWidget, newParagraph, false);
+        lastBlock = newParagraph;
+        if (!isSectionBreakInsideTable) {
+            selection.selectParagraphInternal(lastBlock as ParagraphWidget, true);
+        }
+        if (isSectionBreakInsideTable) {
+            return lastBlock;
         }
     }
     /**
@@ -18256,6 +18305,7 @@ export class Editor {
             // this.initHistoryWithSelection(selection, 'Enter');
             isRemoved = this.removeSelectedContents(selection);
         }
+        let isSplitTable: boolean = false;
         if (isRemoved) {
             if (selection.isImageSelected && !selection.isForward) {
                 let start = selection.start;
@@ -18264,44 +18314,51 @@ export class Editor {
             }
             selection.owner.isShiftingEnabled = true;
             this.updateInsertPosition();
-            let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(selection.start);
-            let initialStart: string = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
-            let characterFormat: WCharacterFormat = this.copyInsertFormat(this.selection.start.paragraph.characterFormat, true);
-            this.splitParagraphInternal(selection, selection.start.paragraph, selection.start.currentWidget, selection.start.offset, characterFormat, isInsertParaBeforeTable);
-            this.setPositionForCurrentIndex(selection.start, initialStart);
-            if (!isNullOrUndefined(breakType) && (breakType === 'PageBreak' || breakType === 'ColumnBreak')) {
-                let currentParagraph: ParagraphWidget = selection.start.paragraph;
-                let breakParagraph: ParagraphWidget = new ParagraphWidget();
-                breakParagraph.characterFormat.copyFormat(currentParagraph.characterFormat);
-                breakParagraph.paragraphFormat.copyFormat(currentParagraph.paragraphFormat);
-                let pageBreak: TextElementBox = new TextElementBox();
-                switch (breakType) {
-                    case 'PageBreak':
-                        pageBreak.text = '\f';
-                        break;
-                    case 'ColumnBreak':
-                        pageBreak.text = String.fromCharCode(14);
-                        break;
+            if (selection.start.paragraph.isInsideTable && !isNullOrUndefined(breakType) && breakType === 'PageBreak') {
+                isSplitTable = true;
+                this.splitTableBasedonBreak(selection, false);
+            } else {
+                let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(selection.start);
+                let initialStart: string = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+                let characterFormat: WCharacterFormat = this.copyInsertFormat(this.selection.start.paragraph.characterFormat, true);
+                this.splitParagraphInternal(selection, selection.start.paragraph, selection.start.currentWidget, selection.start.offset, characterFormat, isInsertParaBeforeTable);
+                this.setPositionForCurrentIndex(selection.start, initialStart);
+                if (!isNullOrUndefined(breakType) && (breakType === 'PageBreak' || breakType === 'ColumnBreak')) {
+                    let currentParagraph: ParagraphWidget = selection.start.paragraph;
+                    let breakParagraph: ParagraphWidget = new ParagraphWidget();
+                    breakParagraph.characterFormat.copyFormat(currentParagraph.characterFormat);
+                    breakParagraph.paragraphFormat.copyFormat(currentParagraph.paragraphFormat);
+                    let pageBreak: TextElementBox = new TextElementBox();
+                    switch (breakType) {
+                        case 'PageBreak':
+                            pageBreak.text = '\f';
+                            break;
+                        case 'ColumnBreak':
+                            pageBreak.text = String.fromCharCode(14);
+                            break;
+                    }
+                    let line: LineWidget = new LineWidget(breakParagraph);
+                    line.children.push(pageBreak);
+                    pageBreak.line = line;
+                    breakParagraph.childWidgets.push(line);
+                    if (this.owner.enableTrackChanges && currentParagraph.characterFormat.revisions.length > 0) {
+                        let currentRevision: Revision = this.retrieveRevisionInOder(currentParagraph.characterFormat);
+                        currentRevision.range.push(breakParagraph.characterFormat);
+                        breakParagraph.characterFormat.revisions.push(currentRevision);
+                        this.owner.trackChangesPane.updateCurrentTrackChanges(currentRevision);
+                        breakParagraph.characterFormat.removedIds = [];
+                    }
+                    this.insertParagraph(breakParagraph, true);
+                    selection.selectParagraphInternal(breakParagraph, true);
                 }
-                let line: LineWidget = new LineWidget(breakParagraph);
-                line.children.push(pageBreak);
-                pageBreak.line = line;
-                breakParagraph.childWidgets.push(line);
-                if (this.owner.enableTrackChanges && currentParagraph.characterFormat.revisions.length > 0) {
-                    let currentRevision: Revision = this.retrieveRevisionInOder(currentParagraph.characterFormat);
-                    currentRevision.range.push(breakParagraph.characterFormat);
-                    breakParagraph.characterFormat.revisions.push(currentRevision);
-                    this.owner.trackChangesPane.updateCurrentTrackChanges(currentRevision);
-                    breakParagraph.characterFormat.removedIds = [];
-                }
-                this.insertParagraph(breakParagraph, true);
-                selection.selectParagraphInternal(breakParagraph, true);
             }
             let nextNode: BlockWidget = selection.start.paragraph.nextWidget as BlockWidget;
             if (isNullOrUndefined(nextNode)) {
                 nextNode = selection.getNextRenderedBlock(selection.start.paragraph);
             }
-            selection.selectParagraphInternal(isInsertParaBeforeTable ? selection.start.paragraph : nextNode as ParagraphWidget, true);
+            if (!isSplitTable) {
+                selection.selectParagraphInternal(isInsertParaBeforeTable ? selection.start.paragraph : nextNode as ParagraphWidget, true);
+            }
             if(!isInsertParaBeforeTable) {
                 this.updateEndPosition();
             }
@@ -18325,11 +18382,13 @@ export class Editor {
                 }
             }
             // }
-            let paragraph: ParagraphWidget = selection.start.paragraph.previousWidget as ParagraphWidget;
-            if (!isNullOrUndefined(paragraph) && !paragraph.isEmpty() &&
+            if (!isSplitTable) {
+                let paragraph: ParagraphWidget = selection.start.paragraph.previousWidget as ParagraphWidget;
+                if (!isNullOrUndefined(paragraph) && !paragraph.isEmpty() &&
 
                 (paragraph.lastChild as LineWidget).children[(paragraph.lastChild as LineWidget).children.length - 1] instanceof TextElementBox) {
-                this.checkAndConvertToHyperlink(selection, true, paragraph);
+                    this.checkAndConvertToHyperlink(selection, true, paragraph);
+                }
             }
         }
         if (!isNullOrUndefined(format) && !isNullOrUndefined(selection.start.paragraph) && selection.start.paragraph.isEmpty() && !isInsertParaBeforeTable) {
@@ -24651,7 +24710,25 @@ export class Editor {
             }
             if (contentControl.contentControlProperties.type === 'RichText') {
                 try {
-                    if (typeof value !== 'object') {
+                    if (/^\d+$/.test(value)) {
+                        var sfdt = {
+                            "sections": [
+                                {
+                                    "blocks": [
+                                        {
+                                            "inlines": [
+                                                {
+                                                    "text": value
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        };
+                        value = JSON.stringify(sfdt);
+                    }
+                    else if (typeof value !== 'object') {
                         value = JSON.parse(value as string);
                     }
                 } catch (e) {

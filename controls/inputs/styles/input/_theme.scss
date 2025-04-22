@@ -1735,7 +1735,8 @@
   .e-small .e-outline.e-float-input.e-error.e-input-focus input ~ label.e-float-text,
   .e-outline.e-float-input.e-control-wrapper.e-error.e-input-focus input ~ label.e-float-text,
   .e-outline.e-float-input.e-control-wrapper.e-small.e-error.e-input-focus input ~ label.e-float-text,
-  .e-small .e-outline.e-float-input.e-control-wrapper.e-error.e-input-focus input ~ label.e-float-text {
+  .e-small .e-outline.e-float-input.e-control-wrapper.e-error.e-input-focus input ~ label.e-float-text,
+  .e-outline.e-float-input.e-control-wrapper.e-input-group.e-error.e-valid-input.e-input-focus label.e-label-top {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
       color: $input-error-color;
     }

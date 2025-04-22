@@ -243,6 +243,7 @@ export class Renderer {
             type = type + ' -' + l10n.getConstant('Section') + ' ' + sectionMarkIndex + '-';
         }
         ctx.font = '9pt Arial';
+        (ctx as any).letterSpacing = '0pt';
         let width: number = ctx.measureText(type).width;
         this.renderHeaderFooterMark(ctx, left + 5, top + y, width + 10, 20);
         this.renderHeaderFooterMarkText(ctx, type, left + 10, y + top + 15);
@@ -1378,7 +1379,7 @@ private calculatePathBounds(data: string): Rect {
         }
         return undefined;
     }
-    private renderEditregionContentHighlight(page: Page, lineWidget: LineWidget, top: number): void {
+    private renderContentControlBorder(page: Page, lineWidget: LineWidget, top: number): void {
         if (!isNullOrUndefined(this.documentHelper.owner.editorModule) && page.documentHelper.selection && !isNullOrUndefined(page.documentHelper.selection.contentControleditRegionHighlighters)) {
             let contentControls: ContentControl[] = page.documentHelper.selection.contentControls;
             if (!isNullOrUndefined(contentControls)) {
@@ -1461,9 +1462,13 @@ private calculatePathBounds(data: string): Rect {
                                         if (widgetInfo.length > 1) {
                                             let widgets: SelectionWidgetInfo[] = widgetInfo.get(widgetInfo.keys[lineIndex - 1]);
                                             let endUpdated = this.documentHelper.getParagraphLeftPosition(paragraph) + this.getContainerWidth(paragraph, page) + HelperMethods.convertPointToPixel(paragraph.paragraphFormat.borders.right.space);
-                                            this.renderSingleBorder(color, endX, startY, endUpdated, startY, 1, 'single');
-                                            if (startX < widgets[j].left - 2  && contentControl.contentControlWidgetType !== 'Block') {
-                                                this.renderSingleBorder(color, widgets[j].left - 2, startY, startX, startY, 1, 'single');
+                                            let updatedEndX: boolean = false;
+                                            if (lineIndex === 1 && endX < widgets[j].left - 2) {
+                                                updatedEndX = true;
+                                            }
+                                            this.renderSingleBorder(color, updatedEndX ? widgets[j].left - 2 : endX, startY, endUpdated, startY, 1, 'single');
+                                            if (startX < widgets[j].left - 2 && contentControl.contentControlWidgetType !== 'Block') {
+                                                this.renderSingleBorder(color, updatedEndX ? endX : widgets[j].left - 2, startY, startX, startY, 1, 'single');
                                             }
                                         }
                                     }
@@ -1859,7 +1864,7 @@ private calculatePathBounds(data: string): Rect {
             }
         }
         // Content region border
-        this.renderEditregionContentHighlight(page, lineWidget, top);
+        this.renderContentControlBorder(page, lineWidget, top);
         if (this.documentHelper.owner.documentEditorSettings.showBookmarks && bookmarks.length > 0) {
             for (let i = 0; i < bookmarks.length; i++) {
                 let bookmark = bookmarks[i];

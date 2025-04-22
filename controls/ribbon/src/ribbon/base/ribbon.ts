@@ -2539,6 +2539,12 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 }
             }
         }
+        if (this.tabsInternal !== this.tabs) {
+            this.tabsInternal = this.tabs;
+            const tabItems: TabItemModel[] = this.createTabItems(this.tabs);
+            if (this.selectedTab >= this.tabs.length) { this.selectedTab = this.tabs.length - 1; }
+            this.tabObj.setProperties({ items: tabItems, selectedItem: this.selectedTab });
+        }
         const activeContent: HTMLElement = this.tabObj.element.querySelector('#' + this.tabs[this.selectedTab].id + constants.CONTENT_ID);
         this.checkOverflow(this.selectedTab, activeContent);
     }

@@ -1,0 +1,11 @@
+@include export-module('query-builder-material-icons') {
+  .e-query-builder {
+    & .e-collapse-rule::before {
+      content: '\e906';
+    }
+
+    & .e-drag-qb-rule::before {
+      content: '\e330';
+    }
+  }
+}

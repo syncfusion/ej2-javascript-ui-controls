@@ -279,6 +279,13 @@ export class InsertHtml {
         nodes: Node[], node: Node, range: Range,
         nodeSelection: NodeSelection, nodeCutter: NodeCutter,
         docElement: Document, isCollapsed: boolean, closestParentNode: Node, editNode?: Element, enterAction?: string): void {
+        const blockElement: HTMLElement = this.getImmediateBlockNode(nodes[nodes.length - 1], editNode) as HTMLElement;
+        if (blockElement && blockElement.textContent.length === 0) {
+            const brElement: HTMLBRElement | null = blockElement.querySelector('br:last-of-type');
+            if (brElement) {
+                brElement.classList.add('rte-temp-br');
+            }
+        }
         const isCursor: boolean = range.startOffset === range.endOffset &&
         range.startContainer === range.endContainer;
         if (isCursor && range.startContainer === editNode && editNode.textContent === '' && range.startOffset === 0 && range.endOffset === 0) {
@@ -485,6 +492,21 @@ export class InsertHtml {
         }
         this.alignCheck(editNode as HTMLElement);
         this.listCleanUp(nodeSelection, docElement);
+        this.removeEmptyBrFromParagraph(editNode as HTMLElement);
+    }
+    /**
+     * Removes a <br> element that was temporarily marked with 'rte-temp-br' class.
+     * This is used to clean up unnecessary line breaks after paste actions.
+     *
+     * @private
+     * @param {HTMLElement} editNode - The container element where the temporary <br> may exist.
+     * @returns {void}
+     */
+    private static removeEmptyBrFromParagraph(editNode: HTMLElement): void {
+        const tempBr: HTMLBRElement | null = editNode.querySelector('br.rte-temp-br');
+        if (tempBr) {
+            tempBr.remove();
+        }
     }
 
     private static compareParentElements(el1: HTMLElement | null, el2: HTMLElement | null): boolean {

@@ -797,6 +797,18 @@ export class Selection implements IAction {
             if (this.parent.isPersistSelection) {
                 this.persistSelectedData = [];
                 this.selectedRowState = {};
+                this.parent.partialSelectedRecords = [];
+                this.parent.disableSelectedRecords = [];
+                const rowObjects: Row<Column>[] = this.parent.getRowsObject();
+                for ( let i: number = 0; i < rowObjects.length; i++ ) {
+                    if (rowObjects[i as number].isDataRow) {
+                        if (rowObjects[i as number].isSelectable) {
+                            this.parent.partialSelectedRecords.push(rowObjects[i as number].data);
+                        } else {
+                            this.parent.disableSelectedRecords.push(rowObjects[i as number].data);
+                        }
+                    }
+                }
             }
             this.clearRowSelection();
             this.clearCellSelection();
@@ -2905,8 +2917,8 @@ export class Selection implements IAction {
         return this.parent.getDataModule().dataManager.executeLocal(this.parent.getDataModule().generateQuery(true));
     }
 
-    private getAvailableSelectedData(): object[] {
-        let filteredSearchedSelectedData: Object[] = new DataManager(this.persistSelectedData).executeLocal(
+    private getAvailableSelectedData(data: Object[]): Object[] {
+        let filteredSearchedSelectedData: Object[] = new DataManager(data).executeLocal(
             this.parent.getDataModule().generateQuery(true));
         if (this.parent.groupSettings.columns.length && filteredSearchedSelectedData &&
             (<{ records?: Object[] }>filteredSearchedSelectedData).records) {
@@ -2979,10 +2991,6 @@ export class Selection implements IAction {
                 || (!isNullOrUndefined(this.parent.dataSource) && (<{result: object[]}>this.parent.dataSource).result))) {
                 this.selectedRowIndexes = [];
             }
-            if (e.requestType === 'filtering' || e.requestType === 'searching') {
-                this.parent.partialSelectedRecords = [];
-                this.parent.disableSelectedRecords = [];
-            }
         }
     }
 
@@ -3041,8 +3049,9 @@ export class Selection implements IAction {
                 this.isPrevRowSelection = true;
             }
         }
-        if ((this.parent.getDataModule().isRemote() || (!isNullOrUndefined(this.parent.dataSource)
-         && (<{result: object[]}>this.parent.dataSource).result)) && this.rmtHdrChkbxClicked) {
+        if (((this.parent.getDataModule().isRemote() || (!isNullOrUndefined(this.parent.dataSource)
+         && (<{result: object[]}>this.parent.dataSource).result)) && this.rmtHdrChkbxClicked)
+         || (this.isPartialSelection && this.parent.isPersistSelection && this.isHdrSelectAllClicked)) {
             if (this.parent.checkAllRows === 'Intermediate') {
                 this.setRowSelection(true);
             }
@@ -3144,16 +3153,31 @@ export class Selection implements IAction {
                 state = this.getCurrentBatchRecordChanges().some((data: Object) =>
                     this.getPkValue(this.primaryKey, data) in this.selectedRowState);
             }
-            if ((this.parent.getDataModule().isRemote() || (!isNullOrUndefined(this.parent.dataSource)
-                && (<{ result: object[] }>this.parent.dataSource).result)) && this.parent.isPersistSelection) {
-                for (let i: number = 0; i < this.getCurrentBatchRecordChanges().length; i++) {
-                    if (!isNullOrUndefined(this.getPkValue(this.primaryKey, this.getCurrentBatchRecordChanges()[`${i}`]))) {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        if ((Object.keys(this.selectedRowState) as any).includes((this.getPkValue(this.primaryKey, this.getCurrentBatchRecordChanges()[`${i}`])).toString())) {
-                            state = true;
-                        } else {
+            if (this.parent.isPersistSelection) {
+                if (this.parent.allowPaging && this.isPartialSelection) {
+                    const rowObjects: Row<Column>[] = this.parent.getRowsObject();
+                    for (let i: number = 0; i < rowObjects.length; i++) {
+                        if (rowObjects[i as number].isDataRow && rowObjects[i as number].isSelectable &&
+                            !rowObjects[i as number].isSelected) {
                             state = false;
                             break;
+                        } else {
+                            state = true;
+                        }
+                    }
+
+                }
+                else if ((this.parent.getDataModule().isRemote() || (!isNullOrUndefined(this.parent.dataSource)
+                    && (<{ result: object[] }>this.parent.dataSource).result))) {
+                    for (let i: number = 0; i < this.getCurrentBatchRecordChanges().length; i++) {
+                        if (!isNullOrUndefined(this.getPkValue(this.primaryKey, this.getCurrentBatchRecordChanges()[`${i}`]))) {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            if ((Object.keys(this.selectedRowState) as any).includes((this.getPkValue(this.primaryKey, this.getCurrentBatchRecordChanges()[`${i}`])).toString())) {
+                                state = true;
+                            } else {
+                                state = false;
+                                break;
+                            }
                         }
                     }
                 }
@@ -3297,11 +3321,12 @@ export class Selection implements IAction {
     private isAllSelected(count?: number): boolean {
         if (this.parent.getDataModule().isRemote()
         || (!isNullOrUndefined(this.parent.dataSource) && (<{result: object[]}>this.parent.dataSource).result)) {
-            return this.getAvailableSelectedData().length === (this.parent.enableVirtualization || this.parent.enableInfiniteScrolling
-                ? this.parent.totalDataRecordsCount : this.totalRecordsCount);
+            return this.getAvailableSelectedData(this.persistSelectedData).length === (this.parent.enableVirtualization
+                || this.parent.enableInfiniteScrolling ? this.parent.totalDataRecordsCount : this.totalRecordsCount);
         } else {
             if (this.isPartialSelection) {
-                if (this.parent.allowPaging && this.parent.pageSettings.pageSize < this.parent.pageSettings.totalRecordsCount) {
+                if (this.parent.allowPaging && !this.selectionSettings.persistSelection
+                    && this.parent.pageSettings.pageSize < this.parent.pageSettings.totalRecordsCount) {
                     const data: object[] = this.parent.partialSelectedRecords;
                     for (let i: number = 0; i < data.length; i++) {
                         const pKey: string = this.getPkValue(this.primaryKey, data[parseInt(i.toString(), 10)]);
@@ -3333,7 +3358,7 @@ export class Selection implements IAction {
         if ((this.parent.getDataModule().isRemote() || (!isNullOrUndefined(this.parent.dataSource)
             && (<{result: object[]}>this.parent.dataSource).result))
             && (this.parent.searchSettings.key.length || this.parent.filterSettings.columns.length)) {
-            const filteredSearchedSelectedData: Object[] = this.getAvailableSelectedData();
+            const filteredSearchedSelectedData: Object[] = this.getAvailableSelectedData(this.persistSelectedData);
             for (let i: number = 0; i < filteredSearchedSelectedData.length; i++) {
                 const pKey: string = this.getPkValue(this.primaryKey, filteredSearchedSelectedData[parseInt(i.toString(), 10)]);
                 if (this.selectedRowState[`${pKey}`]) {
@@ -3341,7 +3366,7 @@ export class Selection implements IAction {
                 }
             }
         }
-        const data: object[] = this.isPartialSelection ? this.parent.partialSelectedRecords
+        const data: object[] = this.isPartialSelection ? this.getAvailableSelectedData(this.parent.partialSelectedRecords)
             : (this.parent.getDataModule().isRemote() || (!isNullOrUndefined(this.parent.dataSource)
           && (<{result: object[]}>this.parent.dataSource).result)) ? [] : this.getData();
         for (let i: number = 0; i < data.length; i++) {
@@ -3392,7 +3417,8 @@ export class Selection implements IAction {
                         || (!isNullOrUndefined(this.parent.dataSource) && (<{result: object[]}>this.parent.dataSource).result))
                          || this.parent.allowPaging)) ||
                     (!this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling
-                    && this.isPartialSelection && (this.isSelectAllRowCount(checkedLen) || this.isHdrSelectAllClicked))
+                    && this.isPartialSelection && (this.isSelectAllRowCount(checkedLen)
+                    || (this.isHdrSelectAllClicked && !this.parent.isPersistSelection)))
                     || ((this.parent.enableVirtualization || this.parent.enableInfiniteScrolling)
                         && !this.parent.allowPaging && ((!(this.parent.getDataModule().isRemote()
                         || (!isNullOrUndefined(this.parent.dataSource) && (<{result: object[]}>this.parent.dataSource).result)) &&
@@ -3474,12 +3500,11 @@ export class Selection implements IAction {
 
         } else {
             if (this.parent.allowPaging && this.parent.selectionSettings.persistSelection) {
-                rowCount = this.parent.partialSelectedRecords.length + this.parent.disableSelectedRecords.length;
-                if (rowCount === this.totalRecordsCount) {
-                    return this.parent.partialSelectedRecords.length && count === this.parent.partialSelectedRecords.length;
-                } else {
-                    return false;
-                }
+                const disableSelectedRecordsCount: number = this.getAvailableSelectedData(this.parent.disableSelectedRecords).length;
+                const partialSelectedRecordsCount: number = this.getAvailableSelectedData(this.parent.partialSelectedRecords).length;
+                const selectedRowCount: number = this.getAvailableSelectedData(this.persistSelectedData).length;
+                rowCount = disableSelectedRecordsCount + partialSelectedRecordsCount;
+                return rowCount === this.totalRecordsCount && selectedRowCount !== 0 && selectedRowCount === partialSelectedRecordsCount;
             } else {
                 rowCount = rowObj.filter((e: Row<Column>) => e.isSelectable).length;
                 return rowCount && count === rowCount;

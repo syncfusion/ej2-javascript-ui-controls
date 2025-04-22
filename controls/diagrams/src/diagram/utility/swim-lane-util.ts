@@ -967,7 +967,7 @@ export function updateSwimLaneObject(diagram: Diagram, obj: Node, swimLane: Node
                     if (curPhase) {
                         const gridPhase: Canvas = grid.rows[curPhase.rowIndex].cells[curPhase.columnIndex];
                         const gridPhaseMinWidth: number = gridPhase.minWidth;
-                        if ( phases[parseInt(p.toString(), 10)].offset < gridPhaseMinWidth) {
+                        if ( phases[parseInt(p.toString(), 10)].offset < gridPhaseMinWidth && !isUndoRedo) {
                             phases[parseInt(p.toString(), 10)].offset = gridPhaseMinWidth;
                         }
                     }
@@ -989,7 +989,7 @@ export function updateSwimLaneObject(diagram: Diagram, obj: Node, swimLane: Node
                     if (curPhase) {
                         const gridPhase: Canvas = grid.rows[curPhase.rowIndex].cells[curPhase.columnIndex];
                         const gridPhaseMinHeight: number = gridPhase.minHeight;
-                        if ( phases[parseInt(p.toString(), 10)].offset < gridPhaseMinHeight) {
+                        if ( phases[parseInt(p.toString(), 10)].offset < gridPhaseMinHeight && !isUndoRedo) {
                             phases[parseInt(p.toString(), 10)].offset = gridPhaseMinHeight;
                         }
                     }

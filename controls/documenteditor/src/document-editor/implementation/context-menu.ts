@@ -963,17 +963,17 @@ export class ContextMenu {
             editField.style.display = 'block';
         } else {
             let start: TextPosition = selection.start;
-            let end: TextPosition = selection.end;
+            // let end: TextPosition = selection.end;
             if (selection.contextType === 'List'
                 && owner.selectionModule.getListLevel(start.paragraph).listLevelPattern !== 'Bullet') {
                 continueNumbering.style.display = 'block';
                 restartAt.style.display = 'block';
                 (restartAt.nextSibling as HTMLElement).style.display = 'block';
             }
-            let isCellOrRowSelected: boolean = start.paragraph.isInsideTable && (!end.paragraph.isInsideTable
-                || start.paragraph.associatedCell !== end.paragraph.associatedCell
-                || selection.isCellSelected(start.paragraph.associatedCell, start, end));
-            if (isCellOrRowSelected) {
+            // let isCellOrRowSelected: boolean = start.paragraph.isInsideTable && (!end.paragraph.isInsideTable
+            //     || start.paragraph.associatedCell !== end.paragraph.associatedCell
+            //     || selection.isCellSelected(start.paragraph.associatedCell, start, end));
+            if (selection.isCellOrRowSelected()) {
                 hyperlink.classList.add('e-disabled');
             } else {
                 if (hyperlink.classList.contains('e-disabled')) {

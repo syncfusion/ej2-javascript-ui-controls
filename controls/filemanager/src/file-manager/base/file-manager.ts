@@ -1370,20 +1370,22 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         if (isBind) {
             this.viewElem = this.view === 'LargeIcons' ? this.largeiconsviewModule.element : this.element.querySelector('.e-gridcontent');
         }
-        if (!this.viewElem) {
-            return;
-        }
         if (isBind) {
             if (this.allowMultiSelection) {
-                EventHandler.add(this.viewElem, 'mousedown', this.onDragStart, this);
                 this.on(events.layoutChange, this.onLayoutChange, this);
                 this.on(events.selectionChanged, this.onLayoutChange, this);
             }
         }
         else {
-            EventHandler.remove(this.viewElem, 'mousedown', this.onDragStart);
             this.off(events.layoutChange, this.onLayoutChange);
             this.off(events.selectionChanged, this.onLayoutChange);
+        }
+        if (this.viewElem) {
+            if (isBind && this.allowMultiSelection) {
+                EventHandler.add(this.viewElem, 'mousedown', this.onDragStart, this);
+            } else {
+                EventHandler.remove(this.viewElem, 'mousedown', this.onDragStart);
+            }
         }
     }
 
@@ -1498,7 +1500,9 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                     addClass(selectAll('.e-rowcell', item), ['e-active']);
                     this.dragSelectedItems.push(item.querySelector('.e-drag-text').textContent);
                 }
-                item.querySelector('.e-frame').classList.add('e-check');
+                if (this.showItemCheckBoxes) {
+                    item.querySelector('.e-frame').classList.add('e-check');
+                }
             }
         }
     }

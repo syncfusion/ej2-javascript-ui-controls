@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 29.1.39 (2025-04-22)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I705934` - Fixed the issue where paragraph borders were splitting during merge field insertion using the `insertField` API.
+- `#I706158` - Improved cell content control insertion behaviour and resolved border rendering issues.
+- `#I708026` - Fixed the overlapping issue with header tags.
+- `#I705207` - Addressed the layout issue caused by section breaks during document editing.
+- `#I705451` - Resolved the revision pane issue when opening documents using the Document Editor open API.
+- `#I703602` - Fixed the `isComplete` flag incorrectly remaining true when dragging the mouse outside the Document Editor view.
+
 ## 29.1.38 (2025-04-15)
 
 ### DocumentEditor

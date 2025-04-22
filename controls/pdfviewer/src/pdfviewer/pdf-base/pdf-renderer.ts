@@ -251,7 +251,7 @@ export class PdfRenderer {
             pdfRenderedFormFields = this.formFieldsBase.PdfRenderedFormFields;
         }
         if (this.formFieldsBase.mIsDigitalSignaturePresent) {
-            const digitalSignatureDoc: PdfDocument = new PdfDocument(documentData, '');
+            const digitalSignatureDoc: PdfDocument = new PdfDocument(documentData, password ? password : '');
             const loadedForm: PdfForm = digitalSignatureDoc.form;
             if (!isNullOrUndefined(loadedForm) && !isNullOrUndefined(loadedForm._fields)) {
                 for (let i: number = 0; i < loadedForm.count; i++) {

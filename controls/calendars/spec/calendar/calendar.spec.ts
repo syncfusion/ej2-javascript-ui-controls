@@ -4002,7 +4002,7 @@ describe(' Islamic Calendar', () => {
             calendar.appendTo('#calendar');
             calendar.values = [new Date('5/5/2017'), new Date('5/6/2017'), new Date('5/9/2017')];
             calendar.dataBind();
-            expect(calendar.values.length).toBe(3);
+            expect(calendar.values.length).toBe(2);
         });
 
         // it('Islamic calendar-enabling the date values of disabled dates', function () {debugger

@@ -1,4 +1,4 @@
-import { CellStyleModel, ConditionalFormatModel, DefineNameModel, HyperlinkModel, SortCollectionModel } from './class-model';
+import { CellStyleModel, ConditionalFormatModel, DefineNameModel, HyperlinkModel, ImageModel, SortCollectionModel } from './class-model';
 import { SaveType, SortOrder, FormatType, BorderType, ModelType, MergeType, ClearType, DataBar, ColorScale, IconSet } from './index';
 import { Sheet, RangeModel, CellModel, SheetModel, ColumnModel, RowModel, UsedRangeModel, TopBottom, HighlightCell } from '../index';
 import { CFColor, Workbook, PdfPageOrientation } from '../index';
@@ -363,6 +363,11 @@ export interface SetCellFormatArgs {
 /** @hidden */
 export interface ExtendedRange extends RangeModel {
     info?: RangeInfo;
+}
+
+/** @hidden */
+export interface ExtendedImageModel extends ImageModel {
+    preservePos?: boolean;
 }
 
 /** @hidden */

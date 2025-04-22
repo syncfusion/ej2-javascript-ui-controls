@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.1.39 (2025-04-22)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#F66780` - Fixed an issue where `allowMultiSorting` API was not functioning properly in the tree grid.
+
 ## 29.1.37 (2025-04-08)
 
 ### Tree Grid

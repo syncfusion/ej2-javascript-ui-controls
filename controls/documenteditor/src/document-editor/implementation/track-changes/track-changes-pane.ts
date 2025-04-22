@@ -371,9 +371,11 @@ export class TrackChangesPane {
         this.setNoChangesVisibility = !isRevisionVisible;
     }
 
-    public enableDisableButton(enableButton: boolean): void {
+    public enableDisableButton(enableButton: boolean, isProtection?: boolean): void {
         this.enableButtons = enableButton;
-        this.updateTrackChanges();
+        if (!isProtection || this.owner.showRevisions) {
+            this.updateTrackChanges();
+        }
     }
     public isUpdateTrackChanges(revisionCount: number): boolean {
         let isUpdate: boolean = false;

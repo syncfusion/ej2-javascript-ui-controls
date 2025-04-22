@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.1.39 (2025-04-22)
+
+### NumericTextBox
+
+#### Bug Fixes
+
+- `#I704942` - Fixed an issue where the numeric textbox was not functioning correctly when setting `v-model` binding.
+
 ## 29.1.38 (2025-04-15)
 
 ### TextArea

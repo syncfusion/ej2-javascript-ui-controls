@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 29.1.39 (2025-04-22)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I706265` - Resolved the issue where text markup annotations disappear when adding the free text annotation programmatically.
+- `#I710824` - Resolved an exception that occurs when opening a password-protected document with a digital signature.
+
 ## 29.1.38 (2025-04-15)
 
 ### PDF Viewer

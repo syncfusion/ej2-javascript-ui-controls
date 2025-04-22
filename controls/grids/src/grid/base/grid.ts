@@ -8476,7 +8476,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             if (columns[parseInt(i.toString(), 10)].format) {
                 columns[parseInt(i.toString(), 10)].format = getNumberFormat(
                     this.getFormat(columns[parseInt(i.toString(), 10)].format),
-                    columns[parseInt(i.toString(), 10)].type, this.isExcel, defaultCurrencyCode);
+                    columns[parseInt(i.toString(), 10)].type, false, defaultCurrencyCode);
+                if (column.type === 'datetime' || column.type === 'date' || column.type === 'time') {
+                    columns[parseInt(i.toString(), 10)].format = columns[parseInt(i.toString(), 10)].format.toString().replace('AM/PM', 'tt');
+                }
             }
             if (columns[parseInt(i.toString(), 10)].columns) {
                 this.setHeaderText(columns[parseInt(i.toString(), 10)].columns as Column[], include);

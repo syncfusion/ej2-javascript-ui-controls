@@ -611,6 +611,10 @@ export class BaseHistoryInfo {
             if (!isNullOrUndefined(this.listInfo.listCharacterFormat)) {
                 let currentListCharacterFormat: string = abstractList.characterFormat.fontFamily;
                 abstractList.characterFormat.fontFamily = this.listInfo.listCharacterFormat;
+                abstractList.characterFormat.fontFamilyAscii = this.listInfo.listCharacterFormat;
+                abstractList.characterFormat.fontFamilyBidi = this.listInfo.listCharacterFormat;
+                abstractList.characterFormat.fontFamilyFarEast = this.listInfo.listCharacterFormat;
+                abstractList.characterFormat.fontFamilyNonFarEast = this.listInfo.listCharacterFormat;
                 this.listInfo.listCharacterFormat = currentListCharacterFormat;
             }
         }
@@ -942,7 +946,17 @@ export class BaseHistoryInfo {
             (!isNullOrUndefined(insertTextPosition.paragraph.containerWidget)
                 && !isNullOrUndefined(endTextPosition.paragraph.containerWidget)
                 && insertTextPosition.paragraph.containerWidget instanceof TextFrame
-                && endTextPosition.paragraph.containerWidget instanceof TextFrame)) {
+                && endTextPosition.paragraph.containerWidget instanceof TextFrame) ||
+            (!isNullOrUndefined(insertTextPosition.paragraph.containerWidget) &&
+                insertTextPosition.paragraph.containerWidget instanceof BodyWidget &&
+                (!isNullOrUndefined(endTextPosition.paragraph.containerWidget)
+                    && endTextPosition.paragraph.containerWidget instanceof TableCellWidget)
+                && !isNullOrUndefined(endTextPosition.paragraph.bodyWidget)) ||
+            (!isNullOrUndefined(insertTextPosition.paragraph.containerWidget) &&
+                insertTextPosition.paragraph.containerWidget instanceof TableCellWidget &&
+                (!isNullOrUndefined(endTextPosition.paragraph.containerWidget)
+                    && endTextPosition.paragraph.containerWidget instanceof BodyWidget)
+                && !isNullOrUndefined(insertTextPosition.paragraph.bodyWidget))) {
             //Removes if any empty paragraph is added while delete.
             this.owner.selectionModule.selectRange(insertTextPosition, endTextPosition);
             this.documentHelper.updateFocus();
@@ -1114,7 +1128,7 @@ export class BaseHistoryInfo {
                         this.cellOperation.push(operation);
                     }
                     this.owner.editorModule.insertTableInternal(block as TableWidget, lastNode as TableWidget, false);
-                    if (this.action === 'PasteColumn' || this.action === 'PasteRow' || this.action === 'PasteOverwrite' || this.action === 'PasteNested') {
+                    if (this.action === 'PasteColumn' || this.action === 'PasteRow' || this.action === 'PasteOverwrite' || this.action === 'PasteNested' || this.action === 'Borders') {
                         this.removedNodes.push(block);
                     } else {
                         deletedNodes.splice(deletedNodes.indexOf(lastNode), 1);

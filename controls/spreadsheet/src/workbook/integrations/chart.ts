@@ -48,16 +48,14 @@ export class WorkbookChart {
         if (chart.length > 0) {
             while (i < chart.length) {
                 if (args.isCut === false) {
-                    if (document.getElementById(args.chart[i as number].id)) {
-                        chart[i as number] = {
-                            range: chart[i as number].range, id: getUniqueID('e_spreadsheet_chart'), theme: chart[i as number].theme,
-                            isSeriesInRows: chart[i as number].isSeriesInRows, type: chart[i as number].type,
-                            markerSettings: chart[i as number].markerSettings,
-                            title: chart[i as number].title, legendSettings: chart[i as number].legendSettings,
-                            primaryXAxis: chart[i as number].primaryXAxis, primaryYAxis: chart[i as number].primaryYAxis,
-                            dataLabelSettings: chart[i as number].dataLabelSettings
-                        };
-                    }
+                    chart[i as number] = {
+                        range: chart[i as number].range, id: getUniqueID('e_spreadsheet_chart'), theme: chart[i as number].theme,
+                        isSeriesInRows: chart[i as number].isSeriesInRows, type: chart[i as number].type,
+                        markerSettings: chart[i as number].markerSettings,
+                        title: chart[i as number].title, legendSettings: chart[i as number].legendSettings,
+                        primaryXAxis: chart[i as number].primaryXAxis, primaryYAxis: chart[i as number].primaryYAxis,
+                        dataLabelSettings: chart[i as number].dataLabelSettings
+                    };
                 }
                 if (document.getElementById(args.chart[i as number].id)) {
                     return;
@@ -82,8 +80,7 @@ export class WorkbookChart {
                 const rangeAddress: string = getRangeAddress(rangeIdx);
                 if (chartModel.range.indexOf('!') > 0) {
                     chartModel.range = chartModel.range.substring(0, chartModel.range.lastIndexOf('!')) + '!' + rangeAddress;
-                }
-                else {
+                } else {
                     chartModel.range = this.parent.getActiveSheet().name + '!' + rangeAddress;
                 }
                 if (isNullOrUndefined(chartModel.id)) {
@@ -103,7 +100,9 @@ export class WorkbookChart {
                     option: chartModel, isInitCell: args.isInitCell, triggerEvent: args.isUndoRedo,
                     dataSheetIdx: args.dataSheetIdx, range: args.range, isPaste: args.isPaste
                 });
-                this.parent.chartColl.push(chartModel);
+                if (this.parent.chartColl.every((chartobj: ChartModel) => chartobj.id !== chartModel.id)) {
+                    this.parent.chartColl.push(chartModel);
+                }
                 if (!args.isInitCell || args.isPaste || args.isUndo || args.isRedo) {
                     let sheetIdx: number; let rowIdx: number; let colIdx: number;
                     if (args.range && (args.isUndo || args.isRedo)) {
@@ -164,7 +163,7 @@ export class WorkbookChart {
             if (chartCnt) {
                 while (chartCnt--) {
                     const chart: ChartModel = this.parent.chartColl[chartCnt as number];
-                    if (!isNullOrUndefined(args.overlayEle.querySelector('#' + chart.id))) {
+                    if (args.overlayEle && !isNullOrUndefined(args.overlayEle.querySelector('#' + chart.id))) {
                         const chartObj: HTMLElement = this.parent.element.querySelector('.' + chart.id);
                         const excelFilter: { height: string, width: string } = getComponent(chartObj, 'chart') || getComponent(chartObj, 'accumulationchart');
                         if (excelFilter) {

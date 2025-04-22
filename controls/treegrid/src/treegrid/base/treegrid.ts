@@ -2265,6 +2265,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.grid.pagerTemplate = this.pagerTemplate as any;
         this.grid.showColumnMenu = this.showColumnMenu;
         this.grid.allowSorting = this.allowSorting;
+        this.grid.allowMultiSorting = this.allowMultiSorting;
         this.grid.allowFiltering = this.allowFiltering;
         this.grid.enableVirtualization = this.enableVirtualization;
         this.grid.enableColumnVirtualization = this.enableColumnVirtualization;

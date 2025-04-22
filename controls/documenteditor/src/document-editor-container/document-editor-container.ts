@@ -1275,6 +1275,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         setTimeout(() => {
             if (!isNullOrUndefined(this.documentEditor)) {
                 this.showPropertiesPaneOnSelection();
+                if (this.documentEditor.documentHelper.isSelectionActive) {
+                    this.documentEditor.documentHelper.isSelectionCompleted = false;
+                }
                 let eventArgs: ContainerSelectionChangeEventArgs = { source: this, isCompleted: this.documentEditor.documentHelper.isSelectionCompleted };
                 this.trigger(selectionChangeEvent, eventArgs);
                 this.documentEditor.documentHelper.isSelectionCompleted = true;

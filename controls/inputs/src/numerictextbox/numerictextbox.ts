@@ -1037,7 +1037,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             }
         }
         this.inputValue = value;
-        this.changeValue(value === null || isNaN(value) ? null : this.strictMode ? this.trimValue(value) : value);
+        if (!(this.isVue && this.element && this.element.hasAttribute('modelvalue') && this.isDynamicChange)) {
+            this.changeValue(value === null || isNaN(value) ? null : this.strictMode ? this.trimValue(value) : value);
+        }
         /* istanbul ignore next */
         if (!this.isDynamicChange) {
             this.raiseChangeEvent(event);

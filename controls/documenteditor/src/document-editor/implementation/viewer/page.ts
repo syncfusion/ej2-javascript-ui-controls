@@ -3703,6 +3703,21 @@ export class TableCellWidget extends BlockWidget {
     /**
      * @private
      */
+    public isEmpty(): boolean {
+        if (this.childWidgets.length > 1) {
+            return false;
+        } else {
+            let block: BlockWidget = this.childWidgets[0] as BlockWidget;
+            if (block instanceof ParagraphWidget) {
+                return block.isEmpty();
+            } else {
+                return false;
+            }
+        }
+    }
+    /**
+     * @private
+     */
     public getNextSplitWidget(): TableCellWidget {
         let rowSpan: number = this.cellFormat.rowSpan;
         if (this.containerWidget instanceof TableRowWidget) {

@@ -655,6 +655,37 @@ describe('FileManager control LargeIcons view', () => {
                     cancelable: true,
                 });
                 viewElement.dispatchEvent(mouseUpEvent);
+                expect(feObj.selectedItems.length).not.toBe(0);
+                done();
+            }, 400);
+        });
+        it('for enableRangeSelection with showItemCheckBoxes as false', (done) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                showItemCheckBoxes:false,
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                }, enableRangeSelection: true
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(noSorting)
+            });
+            setTimeout(function () {
+                let viewElement: Element = document.querySelector(".e-large-icons");
+                const startEvent = new MouseEvent('mousedown', { clientX: 220, clientY: 220 });
+                viewElement.dispatchEvent(startEvent);
+                const moveEvent = new MouseEvent('mousemove', { clientX: 510, clientY: 110 });
+                viewElement.dispatchEvent(moveEvent);
+                const mouseUpEvent = new MouseEvent('mouseup', {
+                    bubbles: true,
+                    cancelable: true,
+                });
+                viewElement.dispatchEvent(mouseUpEvent);
+                expect(feObj.selectedItems.length).not.toBe(0);
                 done();
             }, 400);
         });

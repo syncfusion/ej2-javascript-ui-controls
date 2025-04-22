@@ -7532,6 +7532,9 @@ export class Layout {
                 splittedWidget = this.getSplittedWidgetForSpannedRow(bottom, tableRowWidget, tableCollection, rowCollection, footNoteCollection);
                 splittedCell = undefined;
             }
+            if (cellWidget.height > maximumCellWidgetHeight && !cellWidget.ownerTable.isInsideTable) {
+                maximumCellWidgetHeight = cellWidget.height;
+            }
             if (!isNullOrUndefined(splittedCell)) {
                 if (splittedCell === cellWidget) {
                     // if the previous cell Widget is already splitted, in that case need to combine the splitted row widgets to single row widget.
@@ -7551,8 +7554,6 @@ export class Layout {
                     if (maximumCellWidgetHeight < nestedCellHeight) {
                         maximumCellWidgetHeight = nestedCellHeight;
                     }
-                } else if (cellWidget.height > maximumCellWidgetHeight) {
-                    maximumCellWidgetHeight = cellWidget.height;
                 }
                 if (tableRowWidget.childWidgets.indexOf(splittedCell) !== -1) {
                     tableRowWidget.childWidgets.splice(tableRowWidget.childWidgets.indexOf(splittedCell), 1);
@@ -10889,21 +10890,22 @@ export class Layout {
                 endBlock = this.getParentTable(endBlock);
             }
             if (endBlock && !endBlock.isInHeaderFooter && !(endBlock.bodyWidget.containerWidget instanceof FootNoteWidget) && (isNullOrUndefined(endBlock.nextRenderedWidget) || isRelayout)) {
-                if (!(endBlock.bodyWidget instanceof FootNoteWidget) && !this.isRelayoutFootnote
-                    && endBlock.bodyWidget.page.endnoteWidget) {
-                    const page: Page = endBlock.bodyWidget.page;
-                    let clientActiveArea: Rect = this.viewer.clientActiveArea.clone();
-                    const bodyWidget: BodyWidget = this.getBodyWidget(page.bodyWidgets[page.bodyWidgets.length - 1], true);
-                    this.viewer.updateClientArea(bodyWidget, bodyWidget.page);
-                    const height: number = this.getNextWidgetHeight(bodyWidget);
-                    if (height > 0) {
-                        this.viewer.clientActiveArea.height -= height - this.viewer.clientActiveArea.y;
-                        this.viewer.clientActiveArea.y = height;
+                if (!(endBlock.bodyWidget instanceof FootNoteWidget) && !this.isRelayoutFootnote) {
+                    const page: Page = this.documentHelper.pages[this.documentHelper.pages.length - 1];
+                    if (page && page.endnoteWidget) {
+                        let clientActiveArea: Rect = this.viewer.clientActiveArea.clone();
+                        const bodyWidget: BodyWidget = this.getBodyWidget(page.bodyWidgets[page.bodyWidgets.length - 1], true);
+                        this.viewer.updateClientArea(bodyWidget, bodyWidget.page);
+                        const height: number = this.getNextWidgetHeight(bodyWidget);
+                        if (height > 0) {
+                            this.viewer.clientActiveArea.height -= height - this.viewer.clientActiveArea.y;
+                            this.viewer.clientActiveArea.y = height;
+                        }
+                        this.layoutfootNote(page.endnoteWidget);
+                        this.viewer.clientActiveArea = clientActiveArea;
                     }
-                    this.layoutfootNote(page.endnoteWidget);
-                    this.viewer.clientActiveArea = clientActiveArea;
                 }
-            } else if (this.isEndnoteContentChanged && isRelayout && !this.isRelayoutFootnote) {
+            } else if ((this.isEndnoteContentChanged && isRelayout && !this.isRelayoutFootnote) || (endBlock.bodyWidget.containerWidget instanceof FootNoteWidget && endBlock.bodyWidget.containerWidget.footNoteType === "Footnote")) {
                 this.reLayoutEndnote();
             }
         }
@@ -12200,7 +12202,7 @@ export class Layout {
                         this.viewer.updateClientArea(nextBody, nextBody.page);
                         nextBody.y = this.viewer.clientActiveArea.y;
                     }
-                } else if (!isNullOrUndefined(nextPage) && nextPage.bodyWidgets.length !== 0 && body.sectionFormat.pageHeight === nextPage.bodyWidgets[0].sectionFormat.pageHeight && body.sectionFormat.pageWidth === nextPage.bodyWidgets[0].sectionFormat.pageWidth && body.sectionFormat.breakCode === 'NoBreak') {
+                } else if (!isNullOrUndefined(nextPage) && nextPage.bodyWidgets.length !== 0 && body.equals(nextPage.bodyWidgets[0]) && body.sectionFormat.breakCode === 'NoBreak') {
                     if (nextPage.bodyWidgets[0].index === body.index) {
                         nextBody = nextPage.bodyWidgets[0];
                         this.viewer.updateClientArea(nextBody, nextBody.page);

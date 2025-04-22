@@ -1719,11 +1719,17 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             for (let skipIndex: number = 0; skipIndex < copyValues.length; skipIndex++) {
                 const tempValue: Date = copyValues[skipIndex as number];
                 const type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
+                let tempValueFormat: object;
                 let tempValueString: string;
+                let tempValueDate: object;
                 if (this.calendarMode === 'Gregorian') {
-                    tempValueString = this.globalize.formatDate(tempValue, { type: 'date', skeleton: 'yMd' });
+                    tempValueFormat = { type: 'date', skeleton: 'yMd' };
+                    tempValueString = this.globalize.formatDate(tempValue, tempValueFormat);
+                    tempValueDate = this.globalize.parseDate(tempValueString, tempValueFormat);
                 } else {
-                    tempValueString = this.globalize.formatDate(tempValue, { type: 'dateTime', skeleton: 'full', calendar: 'islamic' });
+                    tempValueFormat = { type: 'date', skeleton: 'yMd', calendar: 'islamic' };
+                    tempValueString = this.globalize.formatDate(tempValue, tempValueFormat);
+                    tempValueDate = this.globalize.parseDate(tempValueString, tempValueFormat);
                 }
                 const minFormatOption: object = { type: 'date', skeleton: 'yMd', calendar: type };
                 const minStringValue: string = this.globalize.formatDate(this.min, minFormatOption);
@@ -1731,8 +1737,10 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 const maxFormatOption: object = { type: 'date', skeleton: 'yMd', calendar: type };
                 const maxStringValue: string = this.globalize.formatDate(this.max, maxFormatOption);
                 const maxString: string = maxStringValue;
-                if (+new Date(tempValueString) < +new Date(minString) ||
-                    +new Date(tempValueString) > +new Date(maxString)) {
+                const minDate: object = this.globalize.parseDate(minString, minFormatOption);
+                const maxDate: object = this.globalize.parseDate(maxString, maxFormatOption);
+
+                if (+tempValueDate < +minDate || +tempValueDate > +maxDate) {
                     copyValues.splice(skipIndex, 1);
                     skipIndex = -1;
                 }

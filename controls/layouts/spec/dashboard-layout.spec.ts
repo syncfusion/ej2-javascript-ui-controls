@@ -2089,6 +2089,74 @@ describe('GridLayout', () => {
             expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
+        it('resizeStop event args value testing with allowFloating true', () => {
+            gridLayOut = new DashboardLayout({
+                columns: 10,
+                allowResizing: true,
+                allowFloating: true,
+                panels: [
+                    { "id": '0', "sizeX": 4, "sizeY": 1, "row": 0, "col": 0, content: generateTemplate('0') },
+                    { "id": '1', "sizeX": 2, "sizeY": 1, "row": 1, "col": 0, content: generateTemplate('1') },
+                    { "id": '2', "sizeX": 2, "sizeY": 1, "row": 1, "col": 2, content: generateTemplate('2') },
+                ],
+                resizeStop: function (args: ResizeArgs) {
+                    expect(args.panels[0].id).toBe('2');
+                }
+            });
+            gridLayOut.appendTo('#gridlayout');
+            gridLayOut.resizePanel('0', 2, 1);
+        });
+
+        it('resizeStop event args value testing with allowFloating false', () => {
+            gridLayOut = new DashboardLayout({
+                columns: 10,
+                allowResizing: true,
+                allowFloating: false,
+                panels: [
+                    { "id": '0', "sizeX": 4, "sizeY": 1, "row": 0, "col": 0, content: generateTemplate('0') },
+                    { "id": '1', "sizeX": 2, "sizeY": 1, "row": 1, "col": 0, content: generateTemplate('1') },
+                    { "id": '2', "sizeX": 2, "sizeY": 1, "row": 1, "col": 2, content: generateTemplate('2') },
+                ],
+                resizeStop: function (args: ResizeArgs) {
+                    expect(args.panels[0].id).toBe('2');
+                }
+            });
+            gridLayOut.appendTo('#gridlayout');
+            gridLayOut.resizePanel('1', 3, 1);
+        });
+
+        it('dragStop event args value testing', () => {
+            gridLayOut = new DashboardLayout({
+                columns: 10,
+                allowResizing: true,
+                allowFloating: false,
+                panels: [
+                    { "id": '0', "sizeX": 4, "sizeY": 1, "row": 0, "col": 0, content: generateTemplate('0') },
+                    { "id": '1', "sizeX": 2, "sizeY": 1, "row": 1, "col": 0, content: generateTemplate('1') },
+                    { "id": '2', "sizeX": 2, "sizeY": 1, "row": 1, "col": 2, content: generateTemplate('2') },
+                ],
+                dragStop: function (args: ResizeArgs) {
+                    expect(args.panels[0].id).toBe('1');
+                    expect(args.panels[1].id).toBe('2');
+                }
+            });
+            gridLayOut.appendTo('#gridlayout');
+            let movingElemnt: HTMLElement = document.getElementById('2');
+            let targetElemnt: HTMLElement = document.getElementById('1');
+            let mousedown: any = getEventObject('MouseEvents', 'mousedown', movingElemnt, targetElemnt, 150, 0);
+            EventHandler.trigger(<HTMLElement>movingElemnt, 'mousedown', mousedown);
+            let mousemove: any = getEventObject('MouseEvents', 'mousemove', movingElemnt, targetElemnt, 0, 150);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
+            mousemove = setMouseCordinates(mousemove, 60, 0);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove = setMouseCordinates(mousemove, 62, 0);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
+            mouseup.type = 'mouseup';
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+        });
+
         it('Resizing test case in south direction alone touch', () => {
             gridLayOut = new DashboardLayout({
                 cellAspectRatio: 1,
@@ -6931,7 +6999,7 @@ describe('GridLayout', () => {
             mouseup.currentTarget = document;
             EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             expect((<any>gridLayOut).getCellInstance('0').row == 0).toBe(true);
-            expect((<any>gridLayOut).getCellInstance('0').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('0').col == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('2').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('2').col == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('3').row == 2).toBe(true);

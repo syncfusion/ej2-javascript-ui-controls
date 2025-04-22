@@ -2384,7 +2384,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         const formatStr: string = null;
         let today: string = this.globalize.formatDate(new Date(), { format: formatStr, skeleton: 'short', type: 'date' });
         let value: Date = null;
-        if (typeof val === 'string') {
+        if (typeof val === 'string' && !(this.enableMask && this.maskedDateValue &&
+            this.inputElement.value === this.maskedDateValue && !this.value)) {
             if (val.toUpperCase().indexOf('AM') > -1 || val.toUpperCase().indexOf('PM') > -1) {
                 today = this.defaultCulture.formatDate(new Date(), { format: formatStr,  skeleton: 'short', type: 'date' });
                 value = isNaN(+new Date(today + ' ' + val)) ? null : new Date(new Date(today + ' ' + val).setMilliseconds(0));

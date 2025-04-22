@@ -1,5 +1,5 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
-import { defaultData, GDPData } from '../util/datasource.spec';
+import { defaultData, GDPData, productData } from '../util/datasource.spec';
 import { CellModel, ChartModel, getColumnsWidth, getFormatFromType, setCell, SheetModel, Spreadsheet } from '../../../src/index';
 import { Overlay } from '../../../src/spreadsheet/services/index';
 import { getComponent, EventHandler } from '@syncfusion/ej2-base';
@@ -503,14 +503,23 @@ describe('Chart ->', () => {
         });
         it('EJ2-943526 - Chart is missing after deleting it and performing an undo action in a duplicated sheet', (done: Function) => {
             helper.invoke('insertChart', [[{ type: 'Column', range: 'H2:H11', id: 'e_spreadsheet_chart_1' }]]);
-            expect(helper.getElementFromSpreadsheet('#' + helper.getInstance().sheets[0].rows[1].cells[7].chart[0].id).classList).toContain('e-chart');
+            const parentCell: CellModel = helper.getInstance().sheets[0].rows[1].cells[7];
+            expect(parentCell.chart[0].range).toBe('Sheet1!H2:H11');
+            expect(helper.getElementFromSpreadsheet('#' + parentCell.chart[0].id).classList).toContain('e-chart');
             helper.invoke('duplicateSheet', [0]);
             setTimeout(() => {
-                expect(helper.getElementFromSpreadsheet('#' + helper.getInstance().sheets[1].rows[1].cells[7].chart[0].id).classList).toContain('e-chart');
-                helper.invoke('deleteChart', ['e_spreadsheet_chart_1']);
-                expect(helper.getElementFromSpreadsheet('#' + helper.getInstance().sheets[1].rows[1].cells[7].chart[0])).toEqual(null);
+                const cell: CellModel = helper.getInstance().sheets[1].rows[1].cells[7];
+                const chartId: string = cell.chart[0].id;
+                expect(cell.chart[0].range).toBe('Sheet1 (2)!H2:H11');
+                expect(parentCell.chart[0].id).not.toEqual(chartId);
+                expect(helper.getElementFromSpreadsheet('#' + chartId).classList).toContain('e-chart');
+                helper.invoke('deleteChart', [cell.chart[0].id]);
+                expect(cell.chart[0]).toBeUndefined();
+                expect(helper.getElementFromSpreadsheet('#' + chartId)).toBeNull();
                 helper.invoke('undo');
-                expect(helper.getElementFromSpreadsheet('#' + helper.getInstance().sheets[1].rows[1].cells[7].chart[0].id).classList).toContain('e-chart');
+                expect(cell.chart[0].range).toBe('Sheet1 (2)!H2:H11');
+                expect(cell.chart[0].id).toEqual(chartId);
+                expect(helper.getElementFromSpreadsheet('#' + chartId).classList).toContain('e-chart');
                 done();
             });
         });
@@ -2317,6 +2326,36 @@ describe('Chart ->', () => {
                 done();
             });
         });
+        describe('EJ2-947846 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{
+                        ranges: [{ dataSource: productData }],
+                        rows: [
+                            { index: 1, cells: [{ index: 1, chart: [{ id: 'chart1', type: 'Line', range: 'A1:F75', markerSettings: { visible: true } }] }] },
+                            { index: 53, cells: [{ index: 6, formula: '=SUM(A51:A54)' }] },
+                            { index: 54, cells: [{ index: 6, formula: '=SUM(A51:A54)' }] }
+                        ]
+                    }]
+                }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Spreadsheet became unresponsive when rendering a chart with a large data range and scrolling', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[1].cells[1].chart.length).toBe(1);
+                helper.invoke('goTo', ['A55']);
+                setTimeout(() => {
+                    expect(spreadsheet.sheets[0].paneTopLeftCell).toEqual('A55');
+                    helper.invoke('goTo', ['A1']);
+                    setTimeout(() => {
+                        expect(spreadsheet.sheets[0].paneTopLeftCell).toEqual('A1');
+                        done();
+                    }, 20);
+                }, 20);
+            });
+        });
     });
     describe('Provide support for inserting a line chart with/without marker options in the spreadsheet', () => {
         beforeAll((done: Function) => {
@@ -3209,7 +3248,7 @@ describe('Chart ->', () => {
         });
     });
 
-    describe('EJ2-914951, , EJ2-914955 ->', () => {
+    describe('EJ2-914951, EJ2-914955 ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
         });
@@ -3263,7 +3302,8 @@ describe('Chart ->', () => {
                     expect(spreadsheet.sheets[0].name.toString()).toBe('Sheet1 (2)');
                     chart = helper.getElement().querySelector('.e-accumulationchart');
                     expect(chart).not.toBeNull();
-                    expect(chart.id).toBe('Custom_Chart');
+                    expect(chart.id).not.toEqual('Custom_Chart');
+                    expect(chart.id).toContain('Custom_Chart');
                     done();
                 });
             });

@@ -7,7 +7,7 @@ import { insertImage, refreshImgCellObj, getRowIdxFromClientY } from '../common/
 import { Overlay, Dialog } from '../services/index';
 import { overlay, dialog, BeforeImageData, BeforeImageRefreshData, addDPRValue } from '../common/index';
 import { L10n, isUndefined, getUniqueID, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { ImageModel, CellModel, getCell, setCell, getSheetIndex, getRowsHeight, getColumnsWidth, Workbook, beginAction, getCellAddress, getSheet, isReadOnlyCells } from '../../workbook/index';
+import { ImageModel, CellModel, getCell, setCell, getSheetIndex, getRowsHeight, getColumnsWidth, Workbook, beginAction, getCellAddress, getSheet, isReadOnlyCells, getRangeAddress, ExtendedImageModel } from '../../workbook/index';
 import { getRangeIndexes, SheetModel, setImage } from '../../workbook/index';
 
 export class SpreadsheetImage {
@@ -95,11 +95,11 @@ export class SpreadsheetImage {
     }
     /* eslint-enable */
     private createImageElement(args: {
-        options: { src: string, id?: string, height?: number, width?: number, top?: number, left?: number }, range?: string,
-        isPublic?: boolean, isUndoRedo?: boolean, isAction?: boolean
+        options: { src: string, id?: string, height?: number, width?: number, top?: number, left?: number, preservePos?: boolean },
+        range?: string, isPublic?: boolean, isUndoRedo?: boolean, isAction?: boolean
     }): void {
         const lastIndex: number = args.range ? args.range.lastIndexOf('!') : 0;
-        const range: string = args.range ? (lastIndex > 0) ? args.range.substring(lastIndex + 1) : args.range
+        let range: string = args.range ? (lastIndex > 0) ? args.range.substring(lastIndex + 1) : args.range
             : this.parent.getActiveSheet().selectedRange;
         const sheetIndex: number = (args.range && lastIndex > 0) ?
             getSheetIndex(this.parent as Workbook, args.range.substring(0, lastIndex)) : this.parent.activeSheetIndex;
@@ -133,6 +133,25 @@ export class SpreadsheetImage {
             if (!isNullOrUndefined(args.options.left)) {
                 overlayProps.element.style.left = Number(addDPRValue(args.options.left).toFixed(2)) + 'px';
             }
+            if (!args.options.preservePos && !isNullOrUndefined(args.options.top) && !isNullOrUndefined(args.options.left)) {
+                const imgTop: { clientY: number, isImage?: boolean } = { clientY: args.options.top, isImage: true };
+                const imgleft: { clientX: number, isImage?: boolean } = { clientX: args.options.left, isImage: true };
+                this.parent.notify(getRowIdxFromClientY, imgTop);
+                this.parent.notify(getColIdxFromClientX, imgleft);
+                const rowIdx: number = imgTop.clientY; const colIdx: number = imgleft.clientX;
+                if (indexes[0] !== rowIdx || indexes[1] !== colIdx) {
+                    const eventArgs: BeforeImageRefreshData = {
+                        prevTop: args.options.top, prevLeft: args.options.left, prevRowIdx: indexes[0],
+                        prevColIdx: indexes[1], prevHeight: args.options.height, prevWidth: args.options.width,
+                        currentTop: args.options.top, currentLeft: args.options.left, currentRowIdx: rowIdx,
+                        currentColIdx: colIdx, currentHeight: args.options.height, currentWidth: args.options.width,
+                        id: args.options.id, requestType: 'imagePositionRefresh'
+                    };
+                    this.refreshImgCellObj(eventArgs);
+                    indexes[0] = rowIdx; indexes[1] = colIdx;
+                    range = getRangeAddress([rowIdx, colIdx]);
+                }
+            }
         }
         if (sheet.frozenRows || sheet.frozenColumns) {
             overlayObj.adjustFreezePaneSize(args.options, overlayProps.element, range);
@@ -140,8 +159,12 @@ export class SpreadsheetImage {
         const imgData: ImageModel = {
             src: args.options.src, id: id, height: parseFloat(overlayProps.element.style.height.replace('px', '')),
             width: parseFloat(overlayProps.element.style.width.replace('px', '')),
-            top: sheet.frozenRows || sheet.frozenColumns ? (indexes[0] ? getRowsHeight(sheet, 0, indexes[0] - 1) : 0) : overlayProps.top,
-            left: sheet.frozenRows || sheet.frozenColumns ? (indexes[1] ? getColumnsWidth(sheet, 0, indexes[1] - 1) : 0) : overlayProps.left
+            top: sheet.frozenRows || sheet.frozenColumns ? (indexes[0] ? getRowsHeight(sheet, 0, indexes[0] - 1) : 0) :
+                (isNullOrUndefined(args.options.top) || (args.options.preservePos && overlayProps.top > args.options.top) ?
+                    overlayProps.top : args.options.top),
+            left: sheet.frozenRows || sheet.frozenColumns ? (indexes[1] ? getColumnsWidth(sheet, 0, indexes[1] - 1) : 0) :
+                (isNullOrUndefined(args.options.left) || (args.options.preservePos && overlayProps.left > args.options.left) ?
+                    overlayProps.left : args.options.left)
         };
         this.parent.setUsedRange(indexes[0], indexes[1]);
         let isPositionChanged: boolean = false;
@@ -151,7 +174,7 @@ export class SpreadsheetImage {
             args.options.left = imgData.left;
             isPositionChanged = true;
         }
-        const setImageEventArgs: any = {
+        const setImageEventArgs: { options: ImageModel[], range: string, isPositionChanged: boolean, isElementRemoved: boolean } = {
             options: [imgData], range: sheet.name + '!' + range, isPositionChanged: isPositionChanged, isElementRemoved
         };
         if (args.isPublic || args.isUndoRedo || isPositionChanged) {

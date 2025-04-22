@@ -15,6 +15,7 @@ import { MarkdownSelection } from '../../../src/markdown-parser/index';
 import { DialogModel} from '@syncfusion/ej2-popups';
 import { BASIC_MOUSE_EVENT_INIT } from '../../constant.spec';
 import { getImageFIle } from '../online-service.spec';
+import { NodeSelection } from '../../../src/selection/index';
 
 describe('Paste Cleanup Module ', () => {
 
@@ -1010,7 +1011,7 @@ describe("To paste content inside table", () => {
     setTimeout(() => {
       let pastedElm: any = (rteObj as any).inputElement.querySelector('.firsttd').innerHTML;
       let expected: boolean = false;
-      let expectedElem: string = '<p style="margin: 0px 0px 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255);">content to be pasted inside RTE table</p><p style="margin: 0px 0px 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255);"><span style="color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255); float: none; display: inline !important;">content to be pasted inside RTE table</span><span>&nbsp;</span><br></p><p style="margin: 0px 0px 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255);"><span style="color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255); float: none; display: inline !important;">content to be pasted inside RTE table</span>&nbsp;</p><br>';
+      let expectedElem: string = '<p style="margin: 0px 0px 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255);">content to be pasted inside RTE table</p><p style="margin: 0px 0px 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255);"><span style="color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255); float: none; display: inline !important;">content to be pasted inside RTE table</span><span>&nbsp;</span><br></p><p style="margin: 0px 0px 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255);"><span style="color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255); float: none; display: inline !important;">content to be pasted inside RTE table</span>&nbsp;</p>';
       if (pastedElm === expectedElem) {
         expected = true;
       }
@@ -1047,7 +1048,7 @@ describe("To paste content inside table", () => {
     setTimeout(() => {
       let pastedElm: any = (rteObj as any).inputElement.querySelector('.firsttd').innerHTML;
       let expected: boolean = false;
-      let expectedElem: string = '<p style="margin: 0px 0px 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255);">content to be pasted inside RTE table</p><p style="margin: 0px 0px 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255);"><span style="color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255); float: none; display: inline !important;">content to be pasted inside RTE table</span><span>&nbsp;</span><br></p><p style="margin: 0px 0px 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255);"><span style="color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255); float: none; display: inline !important;">content to be pasted inside RTE table</span>&nbsp;</p><br>';
+      let expectedElem: string = '<p style="margin: 0px 0px 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255);">content to be pasted inside RTE table</p><p style="margin: 0px 0px 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255);"><span style="color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255); float: none; display: inline !important;">content to be pasted inside RTE table</span><span>&nbsp;</span><br></p><p style="margin: 0px 0px 10px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255);"><span style="color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, sans-serif, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; white-space: normal; background-color: rgb(255, 255, 255); float: none; display: inline !important;">content to be pasted inside RTE table</span>&nbsp;</p>';
       if (pastedElm === expectedElem) {
         expected = true;
       }
@@ -2553,7 +2554,7 @@ describe("852026 - pasting plain text when BR is configured in enterkey", () => 
             let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
             pasteOK[0].click();
         }
-        const expectedElem: string = 'dsvsdv<br>sdvsdv<br>sdvdsv<br><br>sdvsdv<br>sdvdsv<br><br><br><br>sdvsdvdsv<br>sdvdsvdsvdsv<br>sdvsdvsdvsvv<br><br>';
+        const expectedElem: string = 'dsvsdv<br>sdvsdv<br>sdvdsv<br><br>sdvsdv<br>sdvdsv<br><br><br><br>sdvsdvdsv<br>sdvdsvdsvdsv<br>sdvsdvsdvsvv<br>';
         const pastedElem: string = (rteObj as any).inputElement.innerHTML;
         expect(expectedElem === pastedElem).toBe(true);
         done();
@@ -2613,7 +2614,7 @@ describe("852026 - pasting plain text when DIV is configured in enterkey", () =>
             let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
             pasteOK[0].click();
         }
-        const expectedElem: string = '<div>dsvsdv<br>sdvsdv<br>sdvdsv<br><br>sdvsdv<br>sdvdsv<br><br><br><br>sdvsdvdsv<br>sdvdsvdsvdsv<br>sdvsdvsdvsvv<br></div>';
+        const expectedElem: string = '<div>dsvsdv<br>sdvsdv<br>sdvdsv<br><br>sdvsdv<br>sdvdsv<br><br><br><br>sdvsdvdsv<br>sdvdsvdsvdsv<br>sdvsdvsdvsvv</div>';
         const pastedElem: string = rteObj.inputElement.innerHTML;
         expect(expectedElem === pastedElem).toBe(true);
         done();
@@ -2673,7 +2674,7 @@ describe("852026 - pasting plain text when P is configured in enterkey", () => {
             let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
             pasteOK[0].click();
         }
-        const expectedElem: string = '<p>dsvsdv<br>sdvsdv<br>sdvdsv<br><br>sdvsdv<br>sdvdsv<br><br><br><br>sdvsdvdsv<br>sdvdsvdsvdsv<br>sdvsdvsdvsvv<br></p>';
+        const expectedElem: string = '<p>dsvsdv<br>sdvsdv<br>sdvdsv<br><br>sdvsdv<br>sdvdsv<br><br><br><br>sdvsdvdsv<br>sdvdsvdsvdsv<br>sdvsdvsdvsvv</p>';
         const pastedElem: string = rteObj.inputElement.innerHTML;
         expect(expectedElem === pastedElem).toBe(true);
         done();
@@ -4997,6 +4998,36 @@ StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times Ne
                 expect(editor.inputElement.querySelector('img')).not.toBe(null);
                 done();
             }, 100);
+        });
+    });
+    describe('Should remove <br> element while pasting', () => {
+        let editorInstance: RichTextEditor;
+        const clipboardHtml: string = `
+            <p style="text-align: left;">
+                <span style="color: rgb(66, 66, 66); font-family: 'Segoe UI', sans-serif; font-size: 15px; font-style: normal; font-weight: 400; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); float: none; display: inline !important;">
+                    After copy and pasting some contents into the Editor, pressing Shift + Enter key creates two new lines into the RichTextEditor. Need to resolve this issue
+                </span>
+            </p>`;
+        beforeAll(() => {
+            editorInstance = renderRTE({
+                value: `<p id="start"><br></p>`
+            });
+        });
+        afterAll(() => {
+            destroy(editorInstance);
+        });
+        it('should paste content without <br> inside an empty <p>', (done: DoneFn) => {
+            const startElement: HTMLElement | null = document.getElementById('start');
+            const selection = new NodeSelection();
+            if (startElement) {
+                selection.setCursorPoint(document, startElement, 0);
+            }
+            const dataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipboardHtml);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editorInstance.onPaste(pasteEvent);
+            expect(editorInstance.inputElement.innerHTML).not.toContain('<br>');
+            done();
         });
     });
 });// Add the spec above this.

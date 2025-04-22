@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.1.39 (2025-04-22)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#F196559` - The problem related to range selection in the File Manager component has been resolved.
+
 ## 29.1.37 (2025-04-08)
 
 ### FileManager

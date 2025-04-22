@@ -579,7 +579,7 @@ export class CheckBoxFilterBase {
                     coll = this.complexQueryPredicate(checked, defaults, isNotEqual);
                 }
             }
-            if ((this.options.type === 'date' || this.options.type === 'datetime') && check.length) {
+            if ((this.options.type === 'date' || this.options.type === 'dateonly' || this.options.type === 'datetime') && check.length) {
                 length = check.length - 1;
                 val = this.values[parentsUntil(check[parseInt(length.toString(), 10)], 'e-ftrchk').getAttribute('uid')];
                 if (isNullOrUndefined(val) && isNotEqual) {

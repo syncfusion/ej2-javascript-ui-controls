@@ -149,6 +149,9 @@ export class WorkbookOpen {
                         context: this, data: impData, guid: workbookData.Guid, eventArgs: eventArgs,
                         isOpenFromJson: isOpenFromJson
                     });
+                if (<string>impData === openError[0]) {
+                    this.parent.isOpen = false;
+                }
                 return;
             }
             this.updateModel(impData, isOpenFromJson, isImport);
