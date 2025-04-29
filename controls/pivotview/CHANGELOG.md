@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 29.1.39 (2025-04-22)
+## 29.1.40 (2025-04-29)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- Horizontal scrolling using the mouse wheel will now work properly when virtualization is enabled in the pivot table.
+
+## 29.1.38 (2025-04-15)
 
 ### Pivot Table
 

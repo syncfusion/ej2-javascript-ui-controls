@@ -123,7 +123,6 @@ export class MultiSelect extends DropDownBase implements IInput {
     private isBlurDispatching: boolean = false;
     private isFilterPrevented: boolean = false;
     private isFilteringAction: boolean = false;
-    private isVirtualReorder: boolean = false;
 
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
@@ -1645,7 +1644,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 }
             }
         }
-        if ((this.allowFiltering && isSkip) || !isReOrder || (!this.allowFiltering && isSkip) && !this.isVirtualReorder) {
+        if (((this.allowFiltering && isSkip) || !isReOrder || (!this.allowFiltering && isSkip)) && !this.isVirtualReorder) {
             if (!isReOrder){
                 filterQuery.skip(this.viewPortInfo.startIndex);
             }
@@ -1811,10 +1810,13 @@ export class MultiSelect extends DropDownBase implements IInput {
                 if (this.allowObjectBinding) {
                     const keys: string[] = this.listData && this.listData.length > 0 ? Object.keys(this.listData[0]) : this.firstItem ?
                         Object.keys(this.firstItem) : Object.keys(dataItem);
+                    const isNumberType: boolean = (typeof getValue((this.fields.value ? this.fields.value : 'value'), customData as { [key: string]: Object })
+                        === 'number' && this.fields.value !== this.fields.text);
                     // Create an empty object with predefined keys
                     keys.forEach((key: string) => {
                         emptyObject[key as any] = ((key === fields.value) || (key === fields.text)) ?
-                            getValue(fields.value, dataItem) : null;
+                            ((key === fields.text) && isNumberType) ? getValue(fields.text, dataItem) :
+                                getValue(fields.value, dataItem) : null;
                     });
                 }
                 dataItem = this.allowObjectBinding ? emptyObject : dataItem;
@@ -2114,6 +2116,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.preventChange = false;
             } else {
                 this.trigger('change', eventArgs);
+            }
+            if (this.enableVirtualization && this.enableSelectionOrder && this.mode === 'CheckBox') {
+                this.preventSetCurrentData = false;
             }
             this.updateTempValue();
             if (!this.changeOnBlur) {
@@ -2668,6 +2673,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.value && this.validateValues(this.value, temp)) {
             if (this.mode !== 'CheckBox') {
                 this.value = temp;
+                if (this.allowFiltering || this.allowCustomValue) {
+                    this.refreshListItems(null);
+                }
                 this.initialValueUpdate();
             }
             if (this.mode !== 'Delimiter' && this.mode !== 'CheckBox') {
@@ -5866,6 +5874,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected updateDataSource(prop?: MultiSelectModel): void {
+        this.checkAndResetCache();
         if (isNullOrUndefined(this.list)) {
             this.renderPopup();
         } else {

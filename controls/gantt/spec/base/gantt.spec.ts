@@ -5996,3 +5996,100 @@ describe('Coverage for timezone issue Four', () => {
         }
     });
 });
+describe('autoCalculateDateScheduling property false  ', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            { dataSource: [
+                {
+                    TaskID: 1,
+                    TaskName: 'Project initiation',
+                    StartDate: new Date('03/29/2024'),
+                    EndDate: new Date('04/21/2024'),
+                    subtasks: [
+                        {
+                            TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('2025-03-25T00:00:00'), Duration: 3, EndDate: new Date('2025-04-04T00:00:00'),
+                            Progress: 30, work: 10, resources: [{ resourceId: 1, resourceUnit: 50 }]
+                        },
+                    ]
+                },
+            ],
+                resources: [
+                    { resourceId: 1, resourceName: 'Martin Tamer', resourceGroup: 'Planning Team', isExpand: false },
+                ],
+                taskType: "FixedWork",
+                allowSorting: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    //duration: 'Duration',
+                    //dependency: 'Predecessor',
+                    progress: 'Progress',
+                    resourceInfo: 'resources',
+                    //work:'work',
+                    expandState: 'isExpand',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'unit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                viewType: "ResourceView",
+                showOverAllocation: true,
+                workUnit: "Hour",
+                autoCalculateDateScheduling: false,
+                includeWeekend: true,
+                enablePredecessorValidation: false,
+                treeColumnIndex: 1,
+                dayWorkingTime: [{ from: 0, to: 24 }],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                    'PrevTimeSpan', 'NextTimeSpan'],
+                allowSelection: true,
+                allowTaskbarOverlap: true,
+                gridLines: "Both",
+                showColumnMenu: false,
+                highlightWeekends: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                columns: [{ field: 'TaskID', visible: false },
+                { field: 'TaskName', headerText: 'Task Name', width: '250' },
+                //{ field: 'work', headerText: 'Work' },
+                { field: 'Progress' },
+                { field: 'resourceGroup', headerText: 'Group' },
+                { field: 'StartDate' },
+                { field: 'EndDate' },
+                { field: 'Duration' }],
+                labelSettings: {
+                    taskLabel: 'TaskName'
+                },
+                height: '550px',
+            }, done);
+    });
+    it('Check enddate ', () => {
+        expect(ganttObj.getFormatedDate(ganttObj.flatData[1].ganttProperties.endDate,'M/d/yyyy')).toBe('4/4/2025');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

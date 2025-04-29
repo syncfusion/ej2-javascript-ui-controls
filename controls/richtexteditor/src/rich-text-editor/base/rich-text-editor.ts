@@ -1924,7 +1924,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.RTERender();
         // eslint-disable-next-line
         const execCommandCallBack: ExecCommandCallBack = new ExecCommandCallBack(this);
-        this.userAgentData = new CustomUserAgentData(Browser.userAgent, false);
+        if (this.element.dataset.rteUnitTesting === 'true') {
+            this.userAgentData = new CustomUserAgentData(Browser.userAgent, true);
+        } else {
+            this.userAgentData = new CustomUserAgentData(Browser.userAgent, false);
+        }
         this.notify(events.initialEnd, {});
         if (this.enableXhtml) {
             this.setProperties({ value: this.getXhtml() }, true);
@@ -2948,25 +2952,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 getTextArea.value = '';
             }
             if (this.editorMode === 'HTML') {
-                this.inputElement.innerHTML = '';
-                const brElement: HTMLElement = this.createElement('br');
                 if (this.enterKey === 'DIV') {
-                    const divElement: HTMLElement = this.createElement('DIV');
-                    divElement.appendChild(brElement);
-                    this.inputElement.appendChild(divElement);
+                    this.inputElement.innerHTML = '<div><br/></div>';
                 } else if (this.enterKey === 'BR') {
-                    this.inputElement.appendChild(brElement);
+                    this.inputElement.innerHTML = '<br/>';
                 } else {
-                    const pElement: HTMLElement = this.createElement('P');
-                    pElement.appendChild(brElement);
-                    this.inputElement.appendChild(pElement);
-                }
-                if (this.formatter && this.formatter.editorManager && this.formatter.editorManager.nodeSelection) {
-                    this.formatter.editorManager.nodeSelection.setCursorPoint(
-                        this.contentModule.getDocument(),
-                        brElement,
-                        0
-                    );
+                    this.inputElement.innerHTML = '<p><br/></p>';
                 }
             } else {
                 (this.inputElement as HTMLTextAreaElement).value = '';

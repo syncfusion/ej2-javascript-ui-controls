@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 //default
 $btn-border: 1px solid !default;
 $btn-border-color: $border-fg !default;
@@ -149,7 +151,7 @@ $btn-success-hover-color: $content-font !default;
 $btn-success-focus-bgcolor: $btn-success-hover-bgcolor !default;
 $btn-success-focus-color: $btn-success-color !default;
 $btn-success-active-bgcolor: $content-font !default;
-$btn-success-active-color: lighten($btn-success-bgcolor, 20%) !default;
+$btn-success-active-color: color.adjust($btn-success-bgcolor, $lightness: 20%) !default;
 $btn-success-border-color: $btn-success-bgcolor !default;
 $btn-success-hover-border-color: $hover-border !default;
 $btn-success-focus-border-color: $success-bg !default;

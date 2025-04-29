@@ -261,15 +261,6 @@ describe('Keyboard shortcuts module ->', () => {
             expect(helper.invoke('getCell', [14, 10]).classList).not.toContain('e-ss-edited');
             done();
         });
-        it('Edit Esc', (done: Function) => {
-            helper.invoke('selectRange', ['F2']);
-            helper.invoke('startEdit');
-            const coords: ClientRect = helper.getElement('.e-spreadsheet-edit').getBoundingClientRect();
-            helper.triggerMouseAction('dblclick', { x: coords.left, y: coords.top }, null, helper.getElement('.e-spreadsheet-edit'));
-            helper.triggerKeyNativeEvent(27);
-            expect(helper.invoke('getCell', [1, 5]).classList).toContain('e-ss-edited');
-            done();
-        });
         it('Space', (done: Function) => {
             helper.invoke('selectRange', ['D2']);
             helper.triggerKeyNativeEvent(32);

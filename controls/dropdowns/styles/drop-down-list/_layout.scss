@@ -199,6 +199,11 @@
     }
   }
 
+  .e-data-form .e-ddl.e-input-group.e-control-container input[readonly].e-input.e-dropdownlist {
+    cursor: pointer;
+    pointer-events: auto;
+  }
+
   .e-ddl.e-popup.e-popup-open .e-list-item.e-disabled {
     opacity: .7;
     pointer-events: none;
@@ -259,6 +264,21 @@
     @if $skin-name == 'bootstrap-dark' or $skin-name == 'material-dark' or $skin-name == 'tailwind-dark' or $skin-name == 'material3-dark' or $skin-name == 'bootstrap5-dark' or $skin-name == 'fluent-dark'  or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast'  {
       background: transparent;
       color: rgb(221, 218, 218);
+    }
+  }
+  .e-ddl.e-input-group:not(.e-disabled):active:not(.e-success):not(.e-warning):not(.e-error),
+  .e-ddl.e-input-group.e-control-wrapper:not(.e-disabled):active:not(.e-success):not(.e-warning):not(.e-error) {
+    @if $skin-name =='fabric' or $skin-name =='bootstrap' or $skin-name =='bootstrap4' or $skin-name =='bootstrap5' or $skin-name =='bootstrap5.3' or $skin-name =='highcontrast' {
+      border-color: $ddl-box-border-color;
+    }
+
+    @if $skin-name =='bootstrap' or $skin-name =='bootstrap4' {
+      -webkit-box-shadow: none;
+      box-shadow: none;
+    }
+
+    @if $skin-name =='bootstrap5' or $skin-name =='bootstrap5.3' {
+      box-shadow: none;
     }
   }
 }

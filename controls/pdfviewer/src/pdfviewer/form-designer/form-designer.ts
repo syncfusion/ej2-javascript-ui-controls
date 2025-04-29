@@ -4268,6 +4268,7 @@ export class FormDesigner {
         inputElement.style.color = obj.color ? obj.color : 'black';
         inputElement.style.borderWidth = !isNullOrUndefined(obj.thickness) ? obj.thickness + 'px' : '1px';
         inputElement.style.textAlign = obj.alignment ? obj.alignment.toLowerCase() : 'left';
+        inputElement.style.direction = this.pdfViewer.enableRtl ? 'rtl' : '';
         inputElement.style.visibility = obj.visibility ? obj.visibility : 'visible';
         inputElement.style.pointerEvents = obj.isReadonly ? (obj.isMultiline ? 'default' : 'none') : 'default';
         inputElement.style.resize = obj.isMultiline && !this.pdfViewer.isFormDesignerToolbarVisible ?  'none' : 'default';
@@ -4316,6 +4317,7 @@ export class FormDesigner {
         inputElement.style.backgroundColor = obj.backgroundColor ? obj.backgroundColor : '#daeaf7ff';
         inputElement.style.borderColor = obj.borderColor ? obj.borderColor : '#303030';
         inputElement.style.textAlign = obj.alignment ? obj.alignment.toLowerCase() : 'left';
+        inputElement.style.direction = this.pdfViewer.enableRtl ? 'rtl' : '';
         inputElement.style.visibility = obj.visibility ? obj.visibility : 'visible';
         inputElement.style.pointerEvents = obj.isReadonly ? 'none' : 'default';
         if (obj.isReadonly) {

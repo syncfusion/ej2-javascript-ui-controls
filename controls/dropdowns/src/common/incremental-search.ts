@@ -158,7 +158,7 @@ export function Search(
                     Array.prototype.slice.call(fieldValue).forEach((value: string | number): void => {
                         /* eslint-disable security/detect-object-injection */
                         if (
-                            (type === 'object' && !data.isHeader && checkField.textContent.toString().indexOf(data[value]) !== -1 && checkField.getAttribute('data-value') === data[fields.value].toString()) ||
+                            (type === 'object' && !data.isHeader && checkField.textContent.toString().indexOf(data[value]) !== -1 && data[fields.value] != null && checkField.getAttribute('data-value') === data[fields.value].toString()) ||
                             (type === 'string' && checkField.textContent.toString().indexOf(data) !== -1)
                         ) {
                             filterValue = type === 'object' ? data[value] : data;

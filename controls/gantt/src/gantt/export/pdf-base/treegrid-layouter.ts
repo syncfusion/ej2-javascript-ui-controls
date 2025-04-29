@@ -23,6 +23,8 @@ export class PdfTreeGridLayouter extends ElementLayouter {
     private cellEndIndex: number;
     private repeatRowIndex: number = -1;
     private treegridHeight: number;
+    public pageHeightCollection: { pageNumber: number; totalHeight: number }[] = [];
+    public headerHeight: number = 0;
     constructor(baseFormat: PdfTreeGrid) {
         super(baseFormat);
         this.currentBounds = new RectangleF(0, 0, 0, 0);
@@ -32,9 +34,6 @@ export class PdfTreeGridLayouter extends ElementLayouter {
     }
 
     public layoutInternal(param: PdfLayoutParams): PdfLayoutResult {
-        if (isNullOrUndefined(param)) {
-            throw Error('Argument Null Expection');
-        }
         this.currentPage = param.page;
         const format: PdfTreeGridLayoutFormat = param.format;
         if (this.currentPage !== null) {
@@ -50,8 +49,6 @@ export class PdfTreeGridLayouter extends ElementLayouter {
         if (this.treegrid.rows.count !== 0) {
             this.currentBounds.width = (param.bounds.width > 0) ? param.bounds.width :
                 (this.currentBounds.width - this.treegrid.rows.getRow(0).cells.getCell(0).style.borders.left.width / 2);
-        } else {
-            throw Error('Please add row or header into grid');
         }
         this.startLocation = new PointF(param.bounds.x, param.bounds.y);
         if (param.bounds.height > 0) {
@@ -91,7 +88,9 @@ export class PdfTreeGridLayouter extends ElementLayouter {
                 this.columnRanges.push([startColumn, endColumn]);
                 startColumn = endColumn + 1;
                 //endColumn = startColumn;
-                cellWidths = (endColumn <= i) ? this.treegrid.columns.getColumn(i).width : 0;
+                if (endColumn <= i) {
+                    cellWidths = this.treegrid.columns.getColumn(i).width;
+                }
             }
         }
         this.columnRanges.push([startColumn, this.treegrid.columns.count - 1]);
@@ -102,7 +101,27 @@ export class PdfTreeGridLayouter extends ElementLayouter {
         return f;
     }
 
+    private updateCollection(currentPage: PdfPage, totalDetail: { height: number, pageNumber: number }[],
+                             rowDetails: { rowIndex: number; height: number; pageNumber: number }[],
+                             rowIndex: number, rowHeight: number, pageNumber: number, updatePage: number): void {
+        if (currentPage != null) {
+            let currentPageNumber: number = pageNumber;
+            if (totalDetail.length > 0) {
+                currentPageNumber = totalDetail[totalDetail.length - 1].pageNumber;
+            }
+            rowDetails.push({
+                rowIndex: rowIndex,
+                height: rowHeight,
+                pageNumber: currentPageNumber + updatePage
+            });
+        }
+    }
+
     private layoutOnPage(param: PdfLayoutParams): PdfTreeGridLayoutResult {
+        let totalHeight: number = 0;
+        let pageNumber: number = 0;
+        const totalDetail: { height: number, pageNumber: number }[] = [];
+        const rowDetails: { rowIndex: number; height: number; pageNumber: number }[] = [];
         const format: PdfTreeGridLayoutFormat = this.getFormat(param.format);
         let result: PdfTreeGridLayoutResult = null;
         const layoutedPages: TemporaryDictionary<PdfPage, number[]> = new TemporaryDictionary<PdfPage, number[]>();
@@ -120,6 +139,9 @@ export class PdfTreeGridLayouter extends ElementLayouter {
                 i++;
                 const originalHeight: number = this.currentBounds.y;
                 if (this.currentPage !== null && !layoutedPages.containsKey(this.currentPage)) {
+                    totalDetail.push({ height: totalHeight, pageNumber: pageNumber });
+                    pageNumber++;
+                    totalHeight = 0;
                     layoutedPages.add(this.currentPage, range);
                 }
                 let rowResult: RowLayoutResult = this.drawRow(row);
@@ -130,6 +152,7 @@ export class PdfTreeGridLayouter extends ElementLayouter {
                 } else {
                     repeatRow = false;
                     this.repeatRowIndex = -1;
+                    this.updateCollection(this.currentPage, totalDetail, rowDetails, j, row.height, pageNumber, 0);
                 }
                 while (!rowResult.isFinish && startPage !== null) {
                     if (this.treegrid.allowRowBreakAcrossPages) {
@@ -140,6 +163,8 @@ export class PdfTreeGridLayouter extends ElementLayouter {
                         }
                         this.checkBounds(format);
                         rowResult = this.drawRow(row);
+                        totalHeight = totalHeight + row.height;
+                        this.updateCollection(this.currentPage, totalDetail, rowDetails, j, row.height, pageNumber, 1);
                     } else if (!this.treegrid.allowRowBreakAcrossPages && i < length) {
                         this.currentPage = this.getNextPageFormat(format);
                         if (this.treegrid.enableHeader) {
@@ -159,6 +184,9 @@ export class PdfTreeGridLayouter extends ElementLayouter {
                     this.startLocation.y = this.currentBounds.y;
                     if (format.paginateBounds === new RectangleF(0, 0, 0, 0)) {
                         this.currentBounds.x += this.startLocation.x;
+                    } else {
+                        const currentBoundsx: any = this.currentBounds.x;
+                        this.currentBounds.x = currentBoundsx;
                     }
                     if (this.currentBounds.x === PdfBorders.default.left.width / 2) {
                         this.currentBounds.y += this.startLocation.x;
@@ -167,6 +195,7 @@ export class PdfTreeGridLayouter extends ElementLayouter {
                     if (this.currentPage !== null && !layoutedPages.containsKey(this.currentPage)) {
                         layoutedPages.add(this.currentPage, range);
                     }
+                    this.updateCollection(this.currentPage, totalDetail, rowDetails, j, row.height, pageNumber, 0);
                 }
             }
             if (this.columnRanges.indexOf(range) < this.columnRanges.length - 1 &&
@@ -180,6 +209,25 @@ export class PdfTreeGridLayouter extends ElementLayouter {
             && this.treegrid.style.horizontalOverflowType === PdfHorizontalOverflowType.NextPage) {
             this.reArrangePages(layoutedPages);
         }
+        totalDetail.push({ height: totalHeight, pageNumber: pageNumber });
+        const groupedHeights: Record<number, number[]> = {};
+        this.headerHeight = rowDetails[0].height;
+        rowDetails.forEach((row: any) => {
+            if (!groupedHeights[row.pageNumber]) {
+                groupedHeights[row.pageNumber] = [];
+            }
+            groupedHeights[row.pageNumber].push(row.height);
+        });
+        const pageHeightSummary: { pageNumber: number, totalHeight: number }[] = Object.keys(groupedHeights).map((key: any) => {
+            const pageNumber: number = parseInt(key, 10);
+            const heights: number[] = groupedHeights[pageNumber as number];
+            const totalHeight: number = heights.reduce((sum: number, h: number) => sum + h, 0);
+            return {
+                pageNumber,
+                totalHeight
+            };
+        });
+        this.pageHeightCollection = pageHeightSummary;
         return result;
     }
 

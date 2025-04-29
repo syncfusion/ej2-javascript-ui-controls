@@ -250,12 +250,12 @@ export class PdfTreeGridCell {
         if (this.image && this.value) {
             let imageBounds: RectangleF;
             if (this.image.width <= innerLayoutArea.width) {
-                imageBounds = new RectangleF(innerLayoutArea.x, innerLayoutArea.y, this.image.width, this.image.height);
+                imageBounds = new RectangleF(innerLayoutArea.x + leftAdjustment, innerLayoutArea.y, this.image.width, this.image.height);
             }
             else {
                 imageBounds = innerLayoutArea;
             }
-            graphics.drawImage(this.image, imageBounds.x, imageBounds.y - 5, imageBounds.width, imageBounds.height);
+            graphics.drawImage(this.image, imageBounds.x + leftAdjustment, imageBounds.y - 5, imageBounds.width, imageBounds.height);
             let temp: string = null;
             // font = new PdfStandardFont(this.row.treegrid.ganttStyle.fontFamily, this.style.fontSize, this.style.fontStyle);
             let customisedFont: PdfFont;
@@ -281,7 +281,7 @@ export class PdfTreeGridCell {
             if (this.finishedDrawingCell) {
                 temp = (this.remainingString === '') ? this.remainingString : this.value as string;
                 /* eslint-disable-next-line */
-                graphics.drawString(temp, customisedFont, textPen, customisedBrush, (innerLayoutArea.x + leftAdjustment + (this.isHeaderCell && imageBounds.width ? imageBounds.width + 8 : 0)), this.isHeaderCell ? innerLayoutArea.y - 16 : innerLayoutArea.y, (innerLayoutArea.width - leftAdjustment - padding), (innerLayoutArea.height - padding), this.style.format);
+                graphics.drawString(temp, customisedFont, textPen, customisedBrush, (innerLayoutArea.x + leftAdjustment + ( imageBounds.width ? imageBounds.width + 8 : 0)), this.isHeaderCell ? innerLayoutArea.y - 16 : innerLayoutArea.y, (innerLayoutArea.width - leftAdjustment - padding), (innerLayoutArea.height - padding), this.style.format);
             } else {
                 /* eslint-disable-next-line */
                 graphics.drawString(this.remainingString, customisedFont, textPen, customisedBrush, (innerLayoutArea.x + leftAdjustment), this.isHeaderCell ? innerLayoutArea.y - 16 : innerLayoutArea.y, this.style.format);

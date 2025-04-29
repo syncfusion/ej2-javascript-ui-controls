@@ -2,7 +2,27 @@
 
 ## [Unreleased]
 
-## 29.1.39 (2025-04-22)
+## 29.1.40 (2025-04-29)
+
+### Tab
+
+#### Bug Fixes
+
+- `#I700929` - The issue that occurred when closing the Tab using the close icon with the `headerPlacement` set to `Bottom` has been fixed.
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I715484` - Resolved the collision issue with submenu of the Context Menu component.
+
+## 29.1.38 (2025-04-15)
+
+### Carousel
+
+#### Bug Fixes
+
+- `#F196435` - Carousel `SwipeMode` property not working properly while enabling touch action and disabling mouse actions has been resolved
 
 ### TreeView
 

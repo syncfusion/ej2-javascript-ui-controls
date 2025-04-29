@@ -4,6 +4,12 @@
   margin: $margin;
 }
 
+.e-bigger {
+  .e-drag-indicator {
+    height: $chip-touch-height;
+  }
+}
+
 @include export-module('chip-bigger') {
   .e-bigger .e-chip-list,
   .e-bigger.e-chip-list {

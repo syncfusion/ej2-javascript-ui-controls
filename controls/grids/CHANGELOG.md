@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 29.1.40 (2025-04-29)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I712313` - The issue with the checkbox filter in the Grid when using infinite scrolling has been resolved.
+- `#F196492` - Resolved an issue where data was not restored after edit and cancel a record in the Grid when `InfiniteScrolling` and `Grouping` were enabled.
+
 ## 29.1.39 (2025-04-22)
 
 ### Grid

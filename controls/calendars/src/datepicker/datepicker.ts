@@ -499,6 +499,7 @@ export class DatePicker extends Calendar implements IInput {
             timeZoneDiff = this.isDayLightSaving() ? timeZoneDiff-- : timeZoneDiff;
             this.value = new Date((this.value).getTime() + (timeZoneDiff * 60 * 60 * 1000));
             this.updateInput();
+            this.changeTrigger(null);
         }
     }
     protected isDayLightSaving(): boolean {

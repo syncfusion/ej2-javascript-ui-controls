@@ -306,7 +306,7 @@ export class PdfAnnotationCollection {
                     }
                     break;
                 case 'Square':
-                    if (size[2] === size[3]) {
+                    if (size && size.length >= 4 && size[2] === size[3]) {
                         annot = PdfSquareAnnotation._load(this._page, dictionary);
                     } else {
                         annot = PdfRectangleAnnotation._load(this._page, dictionary);

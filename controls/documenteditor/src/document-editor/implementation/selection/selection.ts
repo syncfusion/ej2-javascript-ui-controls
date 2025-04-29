@@ -3463,10 +3463,12 @@ export class Selection {
                     index = ind + ';' + offset;
                 } else {
                     let blockIndex: number = block.index;
+                    // If the cell's row span is greater than 1, then the cell is spitted into mutiple page. We should not consider spitted cell. Becuase the cell index may change.
+                    // So need to consider the split widget index. 
                     if (block instanceof TableCellWidget && block.cellFormat.rowSpan > 1) {
                         let cellWidget: Widget[] = block.getSplitWidgets();
                         if (!isNullOrUndefined(cellWidget) && cellWidget.length > 0) {
-                            blockIndex = block.getSplitWidgets()[0].index;
+                            blockIndex = cellWidget[0].index;
                         }
                     }
                     // if (block instanceof BodyWidget && block.sectionFormat.columns.length > 1) {
@@ -11668,7 +11670,7 @@ export class Selection {
      */
     public isPlainContentControl(): boolean {
         let contentControl: ContentControl = this.owner.editorModule.getContentControl();
-        if (contentControl && contentControl.contentControlProperties && contentControl.contentControlProperties.type === 'Text') {
+        if (contentControl && contentControl.contentControlProperties && (contentControl.contentControlProperties.type === 'Text' || contentControl.contentControlProperties.lockContents)) {
             return true;
         }
         return false;

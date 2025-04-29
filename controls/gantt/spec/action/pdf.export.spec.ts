@@ -2,7 +2,7 @@
  * Gantt toolbar spec
  */
 import { Gantt, Edit, Toolbar, Selection, ZoomTimelineSettings, Filter, PdfQueryCellInfoEventArgs, PdfExport, CriticalPath, DayMarkers, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, ContextMenu, ExcelExport, PdfQueryTimelineCellInfoEventArgs, PdfTreeGridLayoutFormat } from '../../src/index';
-import { exportData, image, adventProFont, GanttData1, pdfData1, customZoomingdata, templateData, projectResourcestemplate, virtual1, criticalData1, resourcesData1, resourceCollection1, coulmntemplate, resourceCollectiontemplate1, splitTasks, headerFooter, weekEndData,pdfData, images, milestoneTemplate,editingResourcess, editingDatas, pdfquerycelldata,editingResources,CR911356manualTask, CR912356font, GanttData, adventProFonts1, editingData4, editingResources4, GanttDataPdf, projectNewDatapdf, projectpdfNewData,GanttDatapdf1,segmentprojectNewData,GanttDatapdf,ganttdatamanual, GanttDataIndicator} from '../base/data-source.spec';
+import { exportData, image, adventProFont, GanttData1, pdfData1, customZoomingdata, templateData, projectResourcestemplate, virtual1, criticalData1, resourcesData1, resourceCollection1, coulmntemplate, resourceCollectiontemplate1, splitTasks, headerFooter, weekEndData,pdfData, images, milestoneTemplate,editingResourcess, editingDatas, pdfquerycelldata,editingResources,CR911356manualTask, CR912356font, GanttData, adventProFonts1, editingData4, editingResources4, GanttDataPdf, projectNewDatapdf, projectpdfNewData,GanttDatapdf1,segmentprojectNewData,GanttDatapdf,ganttdatamanual, GanttDataIndicator, pdfWorkWeekData} from '../base/data-source.spec';
 import { PdfExportProperties } from '../../src/gantt/base/interface';
 import { createGantt, destroyGantt } from '../base/gantt-util.spec';
 import { PdfDocument, PdfColor, PdfStandardFont, PdfFontFamily, PdfPen, PdfFontStyle, PdfDashStyle, PdfTextAlignment, PdfVerticalAlignment } from '@syncfusion/ej2-pdf-export';
@@ -14537,6 +14537,568 @@ describe('pdfexport testcase for code coverage', () => {
     it('pdfexport testcase for code coverage', () => {
         ganttObj.pdfExport();
        });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('pdfexport testcase for code coverage', () => {
+    let ganttObj: Gantt;
+    const data: Object =  [
+        {
+            'TaskID': 1,
+            'TaskName': 'Parent Task 1',
+            'StartDate': new Date('02/27/2017'),
+            'EndDate': new Date('03/03/2017'),
+            'Progress': '40',
+            'isManual': true,
+            'Predecessor': "5" ,
+            'Children': [
+                { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Progress': '40' },
+                { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('02/26/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Progress': '40', 'isManual': true },
+                { 'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('02/27/2017'),
+                    'EndDate': new Date('03/03/2017'), 'Duration': 5, 'Progress': '40', }
+            ]
+        },
+        {
+            'TaskID': 5,
+            'TaskName': 'Parent Task 2',
+            'StartDate': new Date('03/05/2017'),
+            'EndDate': new Date('03/09/2017'),
+            'Progress': '40',
+            'isManual': true,
+        },
+       
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: data,
+                allowSorting: true,
+                enableContextMenu: true,
+                height: '450px',
+                allowSelection: true,
+                highlightWeekends: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    endDate: 'EndDate',
+                    dependency: 'Predecessor',
+                    child: 'Children',
+                    manual: 'isManual',
+                },
+                taskMode: "Manual",
+                toolbar: ['PdfExport'],
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowRowDragAndDrop: true,
+                splitterSettings: {
+                    position: "50%",
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                  labelSettings: {
+                            rightLabel: 'TaskName',
+                           taskLabel: 'TaskName',
+                        },
+                allowFiltering: true,
+                columns: [
+                    { field: 'TaskID', visible: true },
+                    { field: 'TaskName' },
+                    { field: 'isManual' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' }
+                ],
+                validateManualTasksOnLinking: true,
+                treeColumnIndex: 1,
+                allowReordering: true,
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                gridLines: "Both",
+                projectStartDate: new Date('02/20/2017'),
+                projectEndDate: new Date('03/30/2017'),
+            }, done);
+    });
+    it('pdfexport testcase for code coverage', () => {
+        ganttObj.pdfExport();
+    });
+    it('pdfexport testcase for code coverage autofit', () => {
+        let exportProperties: PdfExportProperties = {
+            fitToWidthSettings: {
+                isFitToWidth: true,
+            },
+        };
+        ganttObj.pdfExport(exportProperties);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt PDF Export with baseline', () => {
+
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Product Concept',
+                        StartDate: new Date('04/02/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            { TaskID: 2, TaskName: 'Defining the product and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                            {
+                                TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3,
+                                Indicators: [
+                                    {
+                                        'date': '04/10/2019',
+                                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                                        'name': 'Indicator title',
+                                        'tooltip': 'tooltip'
+                                    }
+                                ]
+                            },
+                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2", Progress: 30 },
+                        ]
+                    }],
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    dependency: 'Predecessor'
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                toolbar: ['PdfExport'],
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                rowHeight: 40,
+                taskbarHeight: 20,
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    {
+                        field: 'TaskName',
+                        headerText: 'Task Name',
+                        width: '250',
+                        clipMode: 'EllipsisWithTooltip',
+                    },
+                    { field: 'StartDate', headerText: 'Start Date', format: 'dd-MMM-yy' },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'EndDate', headerText: 'End Date' },
+                    { field: 'Predecessor', headerText: 'Predecessor' },
+                ],
+                treeColumnIndex: 0,
+                height: '450px',
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Export data with baseline', () => {
+        let exportProperties: PdfExportProperties = {
+            fitToWidthSettings: {
+                isFitToWidth: true,
+            },
+        };
+        ganttObj.pdfExport(exportProperties);
+    });
+});
+describe('Gantt PDF Export indicator', () => {
+
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: GanttData1,
+                height: '450px',
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                allowPdfExport: true,
+                toolbar: ['PdfExport'],
+                toolbarClick: (args?: any) => {
+                    if (args.item.id === 'ganttContainer_pdfexport') {
+                        ganttObj.pdfExport();
+                    }
+                }
+            }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('Export data with indicator', () => {
+        let exportProperties: PdfExportProperties = {
+            fitToWidthSettings: {
+                isFitToWidth: true,
+            },
+        };
+        ganttObj.pdfExport(exportProperties);
+    });
+});
+describe('Gantt PDF Export by setting showWeekend as false with workWeek', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: pdfWorkWeekData,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                workWeek: ['Monday', 'Tuesday', 'Thursday','Friday'],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency:'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false  },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false }, 
+                    { field: 'CustomColumn', headerText: 'CustomColumn' }
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel',  'PdfExport'],
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowSelection: true,
+                allowRowDragAndDrop: true,
+                selectedRowIndex: 1,
+                allowFiltering: true,
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    showWeekend:false,
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                labelSettings: {
+                    leftLabel: 'TaskID',
+                    rightLabel: 'Task Name: ${taskData.TaskName}',
+                    taskLabel: '${Progress}%'
+                },
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+            }, done);
+    });
+    it('Gantt PDF Export by setting showWeekend as false with workWeek', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt PDF Export by setting showWeekend as false with workWeek', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: pdfWorkWeekData,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                workWeek: ['Monday', 'Tuesday', 'Thursday','Friday'],
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency:'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false  },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false }, 
+                    { field: 'CustomColumn', headerText: 'CustomColumn' }
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel',  'PdfExport'],
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowSelection: true,
+                allowRowDragAndDrop: true,
+                selectedRowIndex: 1,
+                allowFiltering: true,
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    showWeekend:false,
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Day',
+                    },
+                    bottomTier: {
+                        unit: 'Hour',
+                        count: 1
+                    }
+                },
+                labelSettings: {
+                    leftLabel: 'TaskID',
+                    rightLabel: 'Task Name: ${taskData.TaskName}',
+                    taskLabel: '${Progress}%'
+                },
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+            }, done);
+    });
+    it('Gantt PDF Export by setting showWeekend as false with workWeek', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt PDF Export with taskbar template fontbrush', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: coulmntemplate,
+                resources: resourceCollectiontemplate1,
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    resourceInfo: 'resources',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                pdfQueryTaskbarInfo: (args: any) => {
+                    if (!args.data.hasChildRecords) {
+                        args.taskbar.taskColor = new PdfColor(109, 97, 155);
+                        if (args.data.ganttProperties.resourceNames) {
+                            args.taskbarTemplate.image = [{
+                                width: 20, base64: (args as any).data.taskData.resourcesImage, height: 20
+                            }]
+                        }
+                        args.taskbarTemplate.value = args.data.TaskName;
+                        args.taskbarTemplate.fontStyle = {
+                            fontBrush: new PdfColor(255, 255, 255),
+                            fontFamily: 'TimesRoman',
+
+                        }
+                    }
+                    if (args.data.hasChildRecords) {
+                        args.taskbar.milestoneColor = new PdfColor(0, 2, 0);
+                        if (args.data.ganttProperties.resourceNames) {
+                            args.taskbarTemplate.image = [{
+                                width: 20, base64: (args as any).data.taskData.resourcesImage, height: 20
+                            }]
+                        }
+                        args.taskbarTemplate.value = args.data.TaskName;
+                        args.taskbarTemplate.fontStyle = {
+                            fontBrush: new PdfColor(255, 255, 255),
+                            fontFamily: 'TimesRoman',
+                            fontSize : 12
+                        }
+                    }
+                    if (args.data.ganttProperties.duration === 0) {
+                        args.taskbar.taskColor = new PdfColor(0, 2, 92);
+                        if (args.data.ganttProperties.resourceNames) {
+                            args.taskbarTemplate.image = [{
+                                width: 20, base64: (args as any).data.taskData.resourcesImage, height: 20,
+                            }]
+                        }
+                        args.taskbarTemplate.value = args.data.TaskName,
+                            args.taskbarTemplate.fontStyle = {
+                                fontBrush: new PdfColor(255, 255, 255),
+                                fontFamily: 'TimesRoman'
+                            }
+                    }
+                },
+                columns: [
+                    { field: 'TaskID' },
+                    { field: 'TaskName', headerTemplate: '#projectName', width: 250 },
+                    { field: 'StartDate', headerTemplate: '#dateTemplate' }
+                ],
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                height: '450px',
+            }, done);
+    });
+    it('Export data with tasklabel template', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt PDF Export with tasklabel template for font color', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: coulmntemplate,
+                resources: resourceCollectiontemplate1,
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    resourceInfo: 'resources',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                pdfQueryTaskbarInfo: (args: any) => {
+                    args.labelSettings.leftLabel.value = args.data.ganttProperties.taskName + '[' + args.data.ganttProperties.progress + ']';
+                    args.labelSettings.leftLabel.fontStyle.fontSize = 6;
+                    args.labelSettings.leftLabel.fontStyle.fontColor = new PdfColor(255, 255, 255);
+                    if (args.data.ganttProperties.resourceNames) {
+                        args.labelSettings.rightLabel.value = args.data.ganttProperties.resourceNames;
+                        args.labelSettings.rightLabel.fontStyle.fontSize = 6;
+                        args.labelSettings.rightLabel.fontStyle.fontColor = new PdfColor(255, 255, 255);
+                        args.labelSettings.rightLabel.image = [{
+                            base64: (args as any).data.taskData.resourcesImage, width: 20, height: 20
+                        }]
+
+                    }
+                    args.labelSettings.taskLabel.value = args.data.ganttProperties.progress + '%';
+                },
+                columns: [
+                    { field: 'TaskID' },
+                    { field: 'TaskName', headerTemplate: '#projectName', width: 250 },
+                    { field: 'StartDate', headerTemplate: '#dateTemplate' }
+                ],
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                height: '450px',
+            }, done);
+    });
+    it('Export data with tasklabel template', () => {
+        ganttObj.pdfExport();
+    });
     afterAll(() => {
         if (ganttObj) {
             destroyGantt(ganttObj);

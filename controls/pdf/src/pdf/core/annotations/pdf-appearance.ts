@@ -3,6 +3,7 @@ import { _PdfDictionary } from './../pdf-primitives';
 import { PdfTemplate } from './../graphics/pdf-template';
 import { PdfAnnotation } from './annotation';
 import { _isNullOrUndefined } from '../utils';
+import { PdfPage } from '../pdf-page';
 /**
  * `PdfAppearance` class represents the appearance of the annotation.
  * ```typescript
@@ -29,6 +30,7 @@ import { _isNullOrUndefined } from '../utils';
 export class PdfAppearance {
     _annotations: PdfAnnotation;
     _bounds: number[];
+    _isNormalKey: boolean = true;
     private _crossReference: _PdfCrossReference;
     private _templateNormal: PdfTemplate;
     private  _dictionary: _PdfDictionary = new _PdfDictionary();
@@ -39,13 +41,17 @@ export class PdfAppearance {
      * @param {number[]} bounds - The bounds.
      * @private
      */
-    constructor(annot: PdfAnnotation, bounds: number[]) {
+    constructor(annot: PdfAnnotation | PdfPage, bounds: number[]) {
         if (_isNullOrUndefined(bounds)) {
             this._bounds = bounds;
         } else {
             this._bounds = [];
         }
-        this._annotations = annot;
+        if (annot instanceof PdfAnnotation) {
+            this._annotations = annot;
+        } else {
+            this._isNormalKey = false;
+        }
         this._crossReference = annot._crossReference;
         this._initialize();
     }
@@ -118,7 +124,9 @@ export class PdfAppearance {
     set normal(value: PdfTemplate) {
         if (value) {
             this._templateNormal = value;
-            this._dictionary.set('N', this._templateNormal);
+            if (this._isNormalKey) {
+                this._dictionary.set('N', this._templateNormal);
+            }
         }
     }
     _initialize(): void {

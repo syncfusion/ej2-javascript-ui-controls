@@ -11,6 +11,7 @@ import { PdfBorders } from './../export/pdf-base/pdf-borders';
 
 export class EventMarker {
     public parent: Gantt;
+    public renderHeight: number = 0;
     constructor(parent?: Gantt) {
         this.parent = parent;
     }
@@ -65,45 +66,50 @@ export class EventMarker {
             const diff: number = 10;
             if (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) {
                 taskGraphics.drawLine(eventLine, new PointF(startPoint.x + (left - cumulativeWidth) + diff, cumulativeHeight),
-                                      new PointF(startPoint.x + (left - cumulativeWidth) + diff, pageSize.height));
+                                      new PointF(startPoint.x + (left - cumulativeWidth) + diff, this.renderHeight));
                 if (!isNullOrUndefined(eventMarker.label) && eventMarker.label.length > 0) {
-                    taskGraphics.save();
-                    taskGraphics.translateTransform(
-                        startPoint.x + (left - cumulativeWidth) + 7 + diff, cumulativeHeight + pixelToPoint(50) + strSize.height / 2);
-                    taskGraphics.rotateTransform(45);
-                    taskGraphics.drawRectangle(border, eventBrush, 0, 0, triangle, triangle);
-                    taskGraphics.restore();
-                    taskGraphics.drawRectangle(
-                        border, eventBrush, startPoint.x + (left - cumulativeWidth) + 7 + diff, cumulativeHeight + pixelToPoint(50),
-                        strSize.width + 10, strSize.height * 2);
-                    taskGraphics.drawString(
-                        eventMarker.label, customizedFont, customizedFontBrush, fontColor, (startPoint.x +
-                            (left - cumulativeWidth) + 12 + diff) - (padding.left + padding.right),
-                        (cumulativeHeight + pixelToPoint(50) + pixelToPoint(strSize.height / 2)) - (padding.top + padding.bottom),
-                        strSize.width, strSize.height, textFormat);
-
+                    const renderBox: number = cumulativeHeight + pixelToPoint(50) + (strSize.height * 2);
+                    if (renderBox < this.renderHeight) {
+                        taskGraphics.save();
+                        taskGraphics.translateTransform(
+                            startPoint.x + (left - cumulativeWidth) + 7 + diff, cumulativeHeight + pixelToPoint(50) + strSize.height / 2);
+                        taskGraphics.rotateTransform(45);
+                        taskGraphics.drawRectangle(border, eventBrush, 0, 0, triangle, triangle);
+                        taskGraphics.restore();
+                        taskGraphics.drawRectangle(
+                            border, eventBrush, startPoint.x + (left - cumulativeWidth) + 7 + diff, cumulativeHeight + pixelToPoint(50),
+                            strSize.width + 10, strSize.height * 2);
+                        taskGraphics.drawString(
+                            eventMarker.label, customizedFont, customizedFontBrush, fontColor, (startPoint.x +
+                                (left - cumulativeWidth) + 12 + diff) - (padding.left + padding.right),
+                            (cumulativeHeight + pixelToPoint(50) + pixelToPoint(strSize.height / 2)) - (padding.top + padding.bottom),
+                            strSize.width, strSize.height, textFormat);
+                    }
                 }
             }
             else {
                 taskGraphics.drawLine(
                     eventLine, new PointF(startPoint.x + pixelToPoint(left - cumulativeWidth) + diff, cumulativeHeight),
-                    new PointF(startPoint.x + pixelToPoint(left - cumulativeWidth) + diff, pageSize.height));
+                    new PointF(startPoint.x + pixelToPoint(left - cumulativeWidth) + diff, this.renderHeight));
                 if (!isNullOrUndefined(eventMarker.label) && eventMarker.label.length > 0) {
-                    taskGraphics.save();
-                    taskGraphics.translateTransform(
-                        startPoint.x + pixelToPoint(left - cumulativeWidth) + 7 + diff,
-                        cumulativeHeight + pixelToPoint(50) + strSize.height / 2);
-                    taskGraphics.rotateTransform(45);
-                    taskGraphics.drawRectangle(border, eventBrush, 0, 0, triangle, triangle);
-                    taskGraphics.restore();
-                    taskGraphics.drawRectangle(
-                        border, eventBrush, startPoint.x + pixelToPoint(left - cumulativeWidth) + 7 + diff,
-                        cumulativeHeight + pixelToPoint(50), strSize.width + 10, strSize.height * 2);
-                    taskGraphics.drawString(
-                        eventMarker.label, customizedFont, customizedFontBrush, fontColor,
-                        (startPoint.x + pixelToPoint(left - cumulativeWidth) + 12 + diff) - (padding.left + padding.right),
-                        (cumulativeHeight + pixelToPoint(50) + pixelToPoint(strSize.height / 2)) - (padding.top + padding.bottom),
-                        strSize.width, strSize.height, textFormat);
+                    const renderBox: number = cumulativeHeight + pixelToPoint(50) + (strSize.height * 2);
+                    if (renderBox < this.renderHeight) {
+                        taskGraphics.save();
+                        taskGraphics.translateTransform(
+                            startPoint.x + pixelToPoint(left - cumulativeWidth) + 7 + diff,
+                            cumulativeHeight + pixelToPoint(50) + strSize.height / 2);
+                        taskGraphics.rotateTransform(45);
+                        taskGraphics.drawRectangle(border, eventBrush, 0, 0, triangle, triangle);
+                        taskGraphics.restore();
+                        taskGraphics.drawRectangle(
+                            border, eventBrush, startPoint.x + pixelToPoint(left - cumulativeWidth) + 7 + diff,
+                            cumulativeHeight + pixelToPoint(50), strSize.width + 10, strSize.height * 2);
+                        taskGraphics.drawString(
+                            eventMarker.label, customizedFont, customizedFontBrush, fontColor,
+                            (startPoint.x + pixelToPoint(left - cumulativeWidth) + 12 + diff) - (padding.left + padding.right),
+                            (cumulativeHeight + pixelToPoint(50) + pixelToPoint(strSize.height / 2)) - (padding.top + padding.bottom),
+                            strSize.width, strSize.height, textFormat);
+                    }
                 }
             }
         }

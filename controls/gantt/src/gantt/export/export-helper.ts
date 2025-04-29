@@ -183,7 +183,8 @@ export class ExportHelper {
     private processColumnHeader(column: ColumnModel, index: number): void {
         this.gantt.columns.add(1);
         const pdfColumn: PdfTreeGridColumn = this.gantt.columns.getColumn(index);
-        if (this.parent.treeColumnIndex === index) {
+        const colFieldName : string = this.columns[this.parent.treeColumnIndex].field;
+        if (colFieldName === column.field) {
             pdfColumn.isTreeColumn = true;
         }
         const width: string | number = parseInt(column.width as string, 10);
@@ -521,7 +522,10 @@ export class ExportHelper {
                 taskbar.taskLabel = data[this.parent.labelSettings.taskLabel].toString();
             }
             const reduceLeft: number = ganttProp.isMilestone ? Math.floor(this.parent.chartRowsModule.taskBarHeight / 2) + 33 : 33; // 33 indicates default timeline cell width
-            taskbar.rightTaskLabel.left = ganttProp.left + ganttProp.width + reduceLeft; // right label left value
+            const isManualParent: boolean = !(data.hasChildRecords && !data.ganttProperties.isAutoSchedule);
+            const baseLeft: number = isManualParent ? ganttProp.left : ganttProp.autoLeft;
+            const baseWidth: number = isManualParent ? ganttProp.width : ganttProp.autoWidth;
+            taskbar.rightTaskLabel.left = baseLeft + baseWidth + reduceLeft; // right label left value
             taskbar.fontFamily = this.ganttStyle.fontFamily;
             taskbar.progressWidth = ganttProp.progressWidth;
             taskbar.labelColor = new PdfColor(this.ganttStyle.label.fontColor);

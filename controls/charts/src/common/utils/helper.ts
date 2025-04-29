@@ -1077,12 +1077,26 @@ export function getMinPointsDelta(axis: Axis | Chart3DAxis, seriesCollection: Se
             });
             xValues.sort((first: Object, second: Object) => { return <number>first - <number>second; });
             if (xValues.length === 1) {
-                const timeOffset: number = seriesCollection.length === 1 ? 25920000 : 2592000000;
-                seriesMin = (axis.valueType === 'DateTime' && series.xMin === series.xMax) ? (series.xMin - timeOffset) : series.xMin;
-                minVal = <number>xValues[0] - (!isNullOrUndefined(seriesMin) ?
-                    seriesMin : axis.visibleRange.min);
-                if (minVal !== 0) {
-                    minDelta = Math.min(minDelta, minVal);
+                if (axis.valueType === 'Category') {
+                    const minValue: number = series.xAxis.visibleRange.min;
+                    const delta: number = <number>xValues[0] - minValue;
+                    if (delta !== 0) {
+                        minDelta = Math.min(minDelta, delta);
+                    }
+                } else if (axis.valueType.indexOf('DateTime') > -1) {
+                    const timeOffset: number = seriesCollection.length === 1 ? 25920000 : 2592000000;
+                    seriesMin = (series.xMin === series.xMax) ? (series.xMin - timeOffset) : series.xMin;
+                    minVal = <number>xValues[0] - (!isNullOrUndefined(seriesMin) ? seriesMin : axis.visibleRange.min);
+                    if (minVal !== 0) {
+                        minDelta = Math.min(minDelta, minVal);
+                    }
+                } else {
+                    seriesMin = series.xMin;
+                    minVal = <number>xValues[0] - (!isNullOrUndefined(seriesMin) ?
+                        seriesMin : axis.visibleRange.min);
+                    if (minVal !== 0) {
+                        minDelta = Math.min(minDelta, minVal);
+                    }
                 }
             } else {
                 for (let index: number = 0; index < xValues.length; index++) {
@@ -1834,10 +1848,10 @@ export function createTemplate(
         }
         let reactCallback: Function;
         if (chart.getModuleName() === 'accumulationchart') {
-            reactCallback = accReactTemplate.bind(
+            reactCallback =  (points.length && points[pointIndex as number]) ? accReactTemplate.bind(
                 this, childElement, chart, isTemplate, points, argsData, points[pointIndex as number],
                 datalabelGroup, id, dataLabel, redraw
-            );
+            ) : reactCallback;
             if ((chart as any).isReact) { (chart as any).renderReactTemplates(reactCallback); }
         } else if (chart.getModuleName() === 'chart') {
             reactCallback = (point && series) ? chartReactTemplate.bind(

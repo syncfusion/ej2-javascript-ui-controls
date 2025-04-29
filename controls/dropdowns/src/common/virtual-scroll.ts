@@ -165,7 +165,11 @@ export class VirtualScroll {
         if (this.component === 'multiselect' && this.parent.mode === 'CheckBox' && this.parent.value && Array.isArray(this.parent.value) && this.parent.value.length > 0 && this.parent.enableSelectionOrder && this.parent.targetElement().trim() === '') {
             if (this.parent.viewPortInfo.startIndex < this.parent.value.length) {
                 endIndex = this.parent.viewPortInfo.endIndex - this.parent.value.length;
-                if (this.parent.viewPortInfo.startIndex === 0){
+                if (this.parent.viewPortInfo.startIndex === 0) {
+                    const oldUlElement: Element = this.parent.list.querySelector('.e-list-parent' + ':not(.e-reorder)');
+                    if (oldUlElement) {
+                        this.parent.list.querySelector('.e-virtual-ddl-content').removeChild(oldUlElement);
+                    }
                     this.parent.updateVirtualReOrderList(true);
                     if (this.parent.value.length < this.parent.itemCount && this.parent.value.length !== this.parent.totalItemCount) {
                         const oldUlElement: Element = this.parent.list.querySelector('.e-list-parent' + ':not(.e-reorder)');
@@ -207,6 +211,10 @@ export class VirtualScroll {
                     query = query.skip(0).take(this.parent.itemCount - (this.parent.value.length - this.parent.viewPortInfo.startIndex));
                     this.parent.appendUncheckList = true;
                     this.parent.setCurrentView = false;
+                    const oldUlElement: HTMLElement = this.parent.list.querySelector('.e-list-parent' + ':not(.e-reorder)');
+                    if (oldUlElement) {
+                        this.parent.list.querySelector('.e-virtual-ddl-content').removeChild(oldUlElement);
+                    }
                     this.parent.resetList(this.parent.dataSource, this.parent.fields, query);
                     isListUpdated = false;
                     this.parent.appendUncheckList = this.parent.dataSource instanceof DataManager ? this.parent.appendUncheckList : false;

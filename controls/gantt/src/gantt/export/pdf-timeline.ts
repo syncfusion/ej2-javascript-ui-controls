@@ -44,6 +44,8 @@ export class PdfTimeline {
     public lastWidth: number = 0;
     public fontFamily: PdfFontFamily;
     private topTierValueLeftPadding: number = 8;
+    public pageIndex: number;
+    public timelineHeight: number = 0;
 
     constructor(gantt?: PdfGantt) {
         this.width = 0;
@@ -61,10 +63,13 @@ export class PdfTimeline {
      * @param {PdfPage} page .
      * @param {PointF} startPoint .
      * @param {TimelineDetails} detail .
+     * @param {number} pageIndex .
      * @returns {void}
      */
-    public drawTimeline(page: PdfPage, startPoint: PointF, detail: TimelineDetails): void {
+    public drawTimeline(page: PdfPage, startPoint: PointF, detail: TimelineDetails, pageIndex: number): void {
         this.detailsTimeline = detail;
+        this.pageIndex = pageIndex;
+        this.timelineHeight = this.gantt.layouter.headerHeight;
         let remainWidth: number = (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ?
             pointToPixel(Math.floor(detail.totalWidth)) : Math.round(detail.totalWidth);
         let renderWidth: number = 0;
@@ -150,7 +155,9 @@ export class PdfTimeline {
      * @private
      */
     /* eslint-disable-next-line */
-    public drawPageTimeline(page: PdfPage, startPoint: PointF, detail: TimelineDetails): void {
+    public drawPageTimeline(page: PdfPage, startPoint: PointF, detail: TimelineDetails,pageIndex:number): void {
+        this.pageIndex = pageIndex;
+        this.timelineHeight = 0;
         this.topTierPoint = extend({}, {}, startPoint, true) as PointF;
         for (let index: number = this.prevTopTierIndex; index <= this.topTierIndex; index++) {
             if (this.topTier.length > index) {
@@ -265,7 +272,8 @@ export class PdfTimeline {
         const gridLineColor: PdfPen = isHoliday && (ganttStyle.holiday.borderColor || ganttStyle.holiday.borders) ?
             timelineborder : rectPen;
         // rectangle for chart side timeline
-        graphics.drawRectangle(gridLineColor, cellBackgroundColor, x, y + pixelToPoint(height), adjustedWidth, page.getClientSize().height);
+        graphics.drawRectangle(gridLineColor, cellBackgroundColor, x, y + pixelToPoint(height), adjustedWidth,
+                               this.gantt.layouter.pageHeightCollection[this.pageIndex].totalHeight - this.timelineHeight);
         let font1: PdfTrueTypeFont | PdfFont = new PdfStandardFont(ganttStyle.fontFamily, e.fontSize, e.fontStyle);
         if (ganttStyle.font) {
             font1 = ganttStyle.font;
@@ -290,47 +298,53 @@ export class PdfTimeline {
             strSize = font1.measureString(this.holidayLabel);
         }
         if (this.holidayCompleted) {
+            const renderHeight: number = ((this.gantt.layouter.pageHeightCollection[this.pageIndex].totalHeight - this.timelineHeight) / 2);
             const state: PdfGraphicsState = graphics.save();
             const fontHieght: number = font1.height;
             const fontSize: number = font1.size;
             graphics.translateTransform(this.holidayWidth + width - ((fontSize / 2) * this.holidayNumberOfDays) -
             fontHieght + (fontHieght / 2) + (width * this.holidayNumberOfDays) / 2, 40);
             graphics.rotateTransform(-90);
-            graphics.translateTransform(-(page.getClientSize().height / 2),
+            graphics.translateTransform(-( renderHeight),
                                         -((this.holidayWidth + width + fontSize) / ((this.holidayWidth + width) / width)));
-            graphics.drawString(
-                this.holidayLabel,
-                font1,
-                fontBrush,
-                fontColor,
-                5 - (padding.left + padding.right),
-                5 - (padding.top + padding.bottom),
-                strSize.width + 10, strSize.height + 10,
-                textFormat
-            );
+            if ((strSize.width + 10) < renderHeight) {
+                graphics.drawString(
+                    this.holidayLabel,
+                    font1,
+                    fontBrush,
+                    fontColor,
+                    5 - (padding.left + padding.right),
+                    5 - (padding.top + padding.bottom),
+                    strSize.width + 10, strSize.height + 10,
+                    textFormat
+                );
+            }
             graphics.restore(state);
             this.holidayCompleted = false;
         }
         if (this.fitHolidayCompleted) {
+            const renderHeight: number = ((this.gantt.layouter.pageHeightCollection[this.pageIndex].totalHeight - this.timelineHeight) / 2);
             const holidayBrush: PdfSolidBrush = holidayContainerColor;
             const fontSize: number = font1.size;
             graphics.drawRectangle(gridLineColor, holidayBrush, x + (width / 2) - fontSize, y +
-            pixelToPoint(height), fontSize, page.getClientSize().height);
+            pixelToPoint(height), fontSize, renderHeight * 2);
             const state: PdfGraphicsState = graphics.save();
             graphics.translateTransform(x + width + (width / 2) - fontSize, 40);
             graphics.rotateTransform(-90);
-            graphics.translateTransform(-(page.getClientSize().height / 2),
+            graphics.translateTransform(-(renderHeight),
                                         -((this.holidayWidth + width + fontSize) / ((this.holidayWidth + width) / width)));
-            graphics.drawString(
-                this.holidayLabel,
-                font1,
-                fontBrush,
-                fontColor,
-                5 - (padding.left + padding.right),
-                5 - (padding.top + padding.bottom),
-                strSize.width + 10, strSize.height + 10,
-                textFormat
-            );
+            if ((strSize.width + 10) < renderHeight) {
+                graphics.drawString(
+                    this.holidayLabel,
+                    font1,
+                    fontBrush,
+                    fontColor,
+                    5 - (padding.left + padding.right),
+                    5 - (padding.top + padding.bottom),
+                    strSize.width + 10, strSize.height + 10,
+                    textFormat
+                );
+            }
             graphics.restore(state);
             this.fitHolidayCompleted = false;
         }

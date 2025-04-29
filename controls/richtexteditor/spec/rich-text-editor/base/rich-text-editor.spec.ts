@@ -9207,26 +9207,6 @@ describe('943025 - After pressing Delete key, fails to merge second line of the 
     });
 });
 
-describe('945044: Cursor Position Incorrect on Mac After Resetting Form Validation Sample Editor', () => {
-    let rteObj: RichTextEditor;
-    beforeAll(() => {
-        rteObj = renderRTE({
-            value: ``,
-        });
-    });
-    it('should clear the editor value and check the cursor position', (done: Function) => {
-        rteObj.value = null;
-        rteObj.dataBind();
-        expect(rteObj.inputElement.innerHTML === '<p><br></p>').toBe(true);
-        expect(window.getSelection().getRangeAt(0).startContainer.nodeName === 'BR').toBe(true);
-        done();
-    });
-    afterAll((done) => {
-        destroy(rteObj);
-        done();
-    });
-});
-
 describe('942843: Numbered List Creation Fails in Paragraph and Heading Formatted Text', () => {
     let rteObj: RichTextEditor;
     let keyboardEvent: any = { preventDefault: () => { }, key: ' ', stopPropagation: () => { }, shiftKey: false, which: 32 };

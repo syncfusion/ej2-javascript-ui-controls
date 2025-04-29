@@ -1,4 +1,4 @@
-import { BookmarkDialog, ContentControlInfo, DocumentEditor, DocumentEditorSettings, FormFieldData, XmlHttpRequestEventArgs, XmlHttpRequestHandler } from '../../../../src/index';
+import { BookmarkDialog, ContentControlInfo, DocumentEditor, DocumentEditorSettings, FormFieldData, TextElementBox, XmlHttpRequestEventArgs, XmlHttpRequestHandler } from '../../../../src/index';
 
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import 'node_modules/es6-promise/dist/es6-promise';
@@ -147,38 +147,98 @@ describe("checkModuleInjection", function() {
         });
         it('ContentControl import', () => {
             console.log('ContentControl import');
-            documenteditor.editor.insertContentControl('RichText', 'sfdt');
+            let richContentControl: ContentControlInfo = { title: "" + 'Name', tag: '', value: 'sfdt', canDelete: true, canEdit: true, type: 'RichText' };
+            documenteditor.editor.insertContentControl(richContentControl);
+            documenteditor.selection.moveToNextCharacter();
+            documenteditor.selection.moveToNextCharacter();
             documenteditor.editor.insertContentControl('CheckBox', true);
+            documenteditor.selection.moveToNextCharacter();
+            documenteditor.selection.moveToNextCharacter();
             documenteditor.editor.insertContentControl('ComboBox', 'One', ['One', 'Two', 'Three']);
+            documenteditor.selection.moveToNextCharacter();
+            documenteditor.selection.moveToNextCharacter();
             documenteditor.editor.insertContentControl('Text', 'Hello World');
             let data: ContentControlInfo[] = [];
             let placeHolderPrefix: string = ''; // Declare and initialize the variable 'placeHolderPrefix'
             let contentControlData: ContentControlInfo = { title: placeHolderPrefix + 'Name', tag: '', value: 'John', canDelete: false, canEdit: false, type: 'RichText' };
             data.push(contentControlData);
             documenteditor.importContentControlData(data);
-            expect(documenteditor.documentHelper.contentControlCollection.length).toBe(2);
-    
+            expect(documenteditor.documentHelper.contentControlCollection.length).toBe(4);
+            expect((documenteditor.documentHelper.contentControlCollection[0].nextElement as TextElementBox).text).toBe('John');
+            expect(documenteditor.documentHelper.contentControlCollection[0].contentControlProperties.title).toBe('Name');
         });
         it('ContentControl export', () => {
             console.log('ContentControl export');
-            documenteditor.editor.insertContentControl('RichText', 'sfdt');
+            documenteditor.openBlank();
+            let richContentControl: ContentControlInfo = { title: "" + 'Name', tag: '', value: 'sfdt', canDelete: true, canEdit: true, type: 'RichText' };
+            documenteditor.editor.insertContentControl(richContentControl);
+            documenteditor.selection.moveToNextCharacter();
+            documenteditor.selection.moveToNextCharacter();
             documenteditor.editor.insertContentControl('CheckBox', true);
+            documenteditor.selection.moveToNextCharacter();
+            documenteditor.selection.moveToNextCharacter();
             documenteditor.editor.insertContentControl('ComboBox', 'One', ['One', 'Two', 'Three']);
+            documenteditor.selection.moveToNextCharacter();
+            documenteditor.selection.moveToNextCharacter();
             documenteditor.editor.insertContentControl('Text', 'Hello World');
             let contentControlInfos: ContentControlInfo[] = documenteditor.exportContentControlData();
             expect(contentControlInfos.length).toBe(4);
         });
         it('Reset ContentControl', () => {
             console.log('Reset ContentControl');
-            documenteditor.editor.insertContentControl('RichText', 'sfdt');
+            documenteditor.openBlank();
+            let richContentControl: ContentControlInfo = { title: "" + 'Name', tag: '', value: 'sfdt', canDelete: true, canEdit: true, type: 'RichText' };
+            documenteditor.editor.insertContentControl(richContentControl);
+            documenteditor.selection.moveToNextCharacter();
+            documenteditor.selection.moveToNextCharacter();
             documenteditor.editor.insertContentControl('CheckBox', true);
+            documenteditor.selection.moveToNextCharacter();
+            documenteditor.selection.moveToNextCharacter();
             documenteditor.editor.insertContentControl('ComboBox', 'One', ['One', 'Two', 'Three']);
+            documenteditor.selection.moveToNextCharacter();
+            documenteditor.selection.moveToNextCharacter();
             documenteditor.editor.insertContentControl('Text', 'Hello World');
             let data: ContentControlInfo[] = [];
             let placeHolderPrefix: string = ''; // Declare and initialize the variable 'placeHolderPrefix'
             let contentControlData: ContentControlInfo = { title: placeHolderPrefix + 'Name', tag: '', value: 'John', canDelete: false, canEdit: false, type: 'RichText' };
             data.push(contentControlData);
             documenteditor.resetContentControlData(data);
-            expect(documenteditor.documentHelper.contentControlCollection.length).toBe(6);
+            expect(documenteditor.documentHelper.contentControlCollection.length).toBe(4);
+            expect(documenteditor.documentHelper.contentControlCollection[0].contentControlProperties.title).toBe('Name');
         });
     });
+describe('ContentControl Lock', () => {
+    let documenteditor: DocumentEditor;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        documenteditor = new DocumentEditor({ isReadOnly: false })
+        documenteditor.enableAllModules();
+        documenteditor.appendTo("#container");
+    });
+    afterAll((done) => {
+        documenteditor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        documenteditor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Inserting text in content control', () => {
+        console.log('Inserting text in content control');
+        let richContentControl: ContentControlInfo = { title: "" + 'Name', tag: '', value: 'sfdt', canDelete: false, canEdit: false, type: 'RichText' };
+        documenteditor.editor.insertContentControl(richContentControl);
+        documenteditor.selection.select('0;0;2', '0;0;2');
+        documenteditor.editor.insertText('Hello World');
+        expect(documenteditor.selection.start.currentWidget.children.length).toBe(3);
+    });
+    it('Inserting content control in content control', () => {
+        console.log('Inserting content control in content control');
+        let richContentControl: ContentControlInfo = { title: "" + 'Name', tag: '', value: 'sfdt', canDelete: false, canEdit: false, type: 'RichText' };
+        documenteditor.editor.insertContentControl(richContentControl);
+        documenteditor.selection.select('0;0;2', '0;0;2');
+        documenteditor.editor.insertContentControl('RichText');
+        expect(documenteditor.documentHelper.contentControlCollection.length).toBe(1);
+    });
+});

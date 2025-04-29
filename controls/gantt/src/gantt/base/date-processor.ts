@@ -210,7 +210,7 @@ export class DateProcessor {
             } while (tempCheckDate.getTime() !== cloneEndDate.getTime());
             return new Date(cloneEndDate.getTime());
         } else {
-            if (!isNullOrUndefined(cloneEndDate)) {
+            if (!isNullOrUndefined(cloneEndDate) && this.parent.defaultEndTime !== 86400) {
                 dayEndTime = this.parent['getCurrentDayEndTime'](date);
                 this.setTime(dayEndTime, cloneEndDate);
             }

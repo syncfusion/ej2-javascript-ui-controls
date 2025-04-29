@@ -133,9 +133,11 @@ export class WParagraphFormat {
 
     private isValidTabStop(tabs: WTabStop[], tabStop: WTabStop): boolean {
         for (let i: number = 0; i < tabs.length; i++) {
-            if (tabStop != tabs[i] && (parseFloat(tabs[i].position.toFixed(4)) === parseFloat(tabStop.position.toFixed(4)) ||
-                parseFloat(tabs[i].deletePosition.toFixed(4)) === parseFloat(tabStop.position.toFixed(4)))) {
-                return false;
+            if (!isNullOrUndefined(tabs[i].position) && !isNullOrUndefined(tabs[i].deletePosition) && !isNullOrUndefined(tabStop.position)) {
+                if (tabStop != tabs[i] && (parseFloat(tabs[i].position.toFixed(4)) === parseFloat(tabStop.position.toFixed(4)) ||
+                    parseFloat(tabs[i].deletePosition.toFixed(4)) === parseFloat(tabStop.position.toFixed(4)))) {
+                    return false;
+                }
             }
         }
         return true;
@@ -143,9 +145,11 @@ export class WParagraphFormat {
 
     private hasTabStop(position: number): boolean {
         for (let i: number = 0; i < this.tabs.length; i++) {
-            if (parseFloat(this.tabs[i].position.toFixed(4)) === position ||
-                parseFloat(this.tabs[i].deletePosition.toFixed(4)) === position) {
-                return true;
+            if (!isNullOrUndefined(this.tabs[i].position) && !isNullOrUndefined(this.tabs[i].deletePosition)) {
+                if (parseFloat(this.tabs[i].position.toFixed(4)) === position ||
+                    parseFloat(this.tabs[i].deletePosition.toFixed(4)) === position) {
+                    return true;
+                }
             }
         }
         return false;

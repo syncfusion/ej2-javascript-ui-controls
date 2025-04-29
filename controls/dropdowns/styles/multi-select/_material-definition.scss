@@ -238,4 +238,13 @@ $filled-multiselect-chip-hover-bg-color: color.adjust($grey-300, $lightness: -7%
   .e-multiselect.e-input-group.e-input-focus .e-multi-select-wrapper .e-searcher:not(.e-zero-size) input[type = 'text'] {
     padding: 0;
   }
+
+  .e-outline.e-multiselect.e-input-group.e-checkbox .e-multi-select-wrapper input[type = 'text'] {
+    padding: 0 8px 0 9px;
+  }
+
+  .e-outline.e-multiselect.e-input-group .e-multi-select-wrapper .e-multiselect-box input[type = 'text'],
+  .e-outline.e-multiselect.e-input-group.e-input-focus .e-multi-select-wrapper .e-searcher:not(.e-zero-size) input[type = 'text'] {
+    padding: 0 8px 0 9px;
+  }
 }

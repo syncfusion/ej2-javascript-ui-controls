@@ -2,6 +2,44 @@
 
 ## [Unreleased]
 
+## 29.1.40 (2025-04-29)
+
+### Mention
+
+#### Bug Fixes
+
+- `#I715091` – Fixed an issue in the Mention component within the Rich Text Editor when the `suffixText` property was set to an empty string.
+
+### DropdownList
+
+#### Bug Fixes
+
+- `#I707077` - Fixed an issue where Group Headers in the Dropdown List would remain fixed while scrolling in the scrollable area.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I708109` - Fixed an issue that caused an exception when scrolling within the multiselect dropdown containing a grouped data source.
+
+### ComboBox
+
+#### Bug Fixes
+
+- `#I712292` - Fixed an issue where the ComboBox component would throw a console error when filtering data with complex structures while the `allowFiltering` option is set to true.
+
+## 29.1.38 (2025-04-15)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I696017` - Fixed an issue where the value was not displaying correctly when `allowObjectBinding` was enabled and a custom value was set.
+
+- `#697152` - Fixed the issue where the "Select All" checkbox was not selected in the multi-dropdown when the virtualization property was configured.
+
+- `#I700421` - Fixed the issue where the value was incorrectly converted to text after pressing the Escape key.
+
 ## 29.1.37 (2025-04-08)
 
 ### ListBox

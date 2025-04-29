@@ -329,8 +329,14 @@ export class Timeline {
                 this.parent.zoomingProjectStartDate : this.parent.cloneProjectStartDate);
         }
         this.parent.dataOperation.calculateProjectDates();
+        let totalDays: number;
+        let nonWorkingDays: number = 0;
+        if (!this.parent.timelineSettings.showWeekend) {
+            nonWorkingDays = this.calculateNonWorkingDaysBetweenDates(this.parent.cloneProjectStartDate, this.parent.cloneProjectEndDate);
+        }
         const timeDifference: number = (this.parent.cloneProjectEndDate.getTime() - this.parent.cloneProjectStartDate.getTime());
-        const totalDays: number = (timeDifference / (1000 * 3600 * 24));
+        totalDays = (timeDifference / (1000 * 3600 * 24));
+        totalDays = totalDays - nonWorkingDays;
         const chartWidth: number = this.parent.ganttChartModule.chartElement.offsetWidth;
         const perDayWidth: number = chartWidth / totalDays;
         let zoomingLevel: ZoomTimelineSettings;
@@ -429,11 +435,27 @@ export class Timeline {
         }
     }
 
+    /**
+     * Calculates the number of timeline cells required for a given timeline configuration.
+     *
+     * @param {ZoomTimelineSettings} newTimeline - The configuration settings for the timeline, including tier settings.
+     * @returns {number} - Returns the calculated number of timeline cells based on the unit and count.
+     *
+     * The method determines the number of days between the project start and end dates, adjusts this value
+     * by excluding non-working days if weekends are hidden, and calculates the number of timeline cells
+     * that fit within this adjusted duration according to the specified timeline settings.
+     */
     private calculateNumberOfTimelineCells(newTimeline: ZoomTimelineSettings): number {
         const sDate: Date = new Date(this.parent.cloneProjectStartDate.getTime());
         const eDate: Date = new Date(this.parent.cloneProjectEndDate.getTime());
         this.parent.dateValidationModule['updateDateWithTimeZone'](sDate, eDate);
-        const numberOfDays: number = Math.abs((eDate.getTime() - sDate.getTime()) / (24 * 60 * 60 * 1000));
+        let numberOfDays: number;
+        let nonWorkingDays: number = 0;
+        if (!this.parent.timelineSettings.showWeekend) {
+            nonWorkingDays = this.calculateNonWorkingDaysBetweenDates(this.parent.cloneProjectStartDate, this.parent.cloneProjectEndDate);
+        }
+        numberOfDays = Math.abs((eDate.getTime() - sDate.getTime()) / (24 * 60 * 60 * 1000));
+        numberOfDays -= nonWorkingDays;
         const count: number = newTimeline.bottomTier.count;
         const unit: string = newTimeline.bottomTier.unit;
         if (unit === 'Day') {
@@ -721,10 +743,28 @@ export class Timeline {
         }
     }
 
+    /**
+     * Calculates the corresponding date for a given left pixel value on the timeline.
+     *
+     * @param {number} left - The left position in pixels to be converted to a date.
+     * @param {boolean} isMilestone - (Optional) A boolean indicating whether the date refers to a milestone.
+     * @param {ITaskData} property - (Optional) An object containing task data, used when adjusting for milestones.
+     * @returns {Date} - Returns the calculated date according to the Gantt chart's timeline settings.
+     *
+     * This method converts a pixel-based position on the Gantt timeline to an actual date,
+     * taking into account working days, non-working days, and adjustments for daylight saving
+     * time. If weekends are hidden, it calculates the date based on working weeks.
+     * For milestones, it adjusts the date by determining the accurate end time.
+     */
     private dateByLeftValue(left: number, isMilestone?: boolean, property?: ITaskData): Date {
         let pStartDate: Date = new Date(this.parent.timelineModule.timelineStartDate.toString());
         const milliSecondsPerPixel: number = (24 * 60 * 60 * 1000) / this.parent.perDayWidth;
-        pStartDate.setTime(pStartDate.getTime() + (left * milliSecondsPerPixel));
+        if (!this.parent.timelineSettings.showWeekend) {
+            pStartDate = this.calculateDateExcludingNonWorkingDays(left, pStartDate);
+        }
+        else {
+            pStartDate.setTime(pStartDate.getTime() + (left * milliSecondsPerPixel));
+        }
         /* To render the milestone in proper date while editing */
         if (isMilestone && !isNullOrUndefined(property.predecessorsName) && property.predecessorsName !== '') {
             pStartDate.setDate(pStartDate.getDate() - 1);
@@ -744,6 +784,42 @@ export class Timeline {
             }
         }
         return pStartDate;
+    }
+    /**
+     * Calculates a date by considering a given distance in pixels and excluding non-working days.
+     *
+     * This function takes into account the width of each day in the Gantt chart as well as non-working days to compute the resulting date from a specified pixel position.
+     * It returns the date that corresponds to the pixel distance from `pStartDate`.
+     *
+     * @param {number} left - The distance in pixels from the start date to calculate the date.
+     * @param {Date} pStartDate - The start date from which to calculate the resulting date.
+     * @returns {Date} - Returns the calculated date excluding non-working days.
+     */
+    public calculateDateExcludingNonWorkingDays(left: number, pStartDate: Date): Date {
+        const milliSecondsPerPixel: number = (24 * 60 * 60 * 1000) / this.parent.perDayWidth;
+        const milliSecondsPerDay: number = (24 * 60 * 60 * 1000);
+        const nonWorkingDays: number[] = this.parent.nonWorkingDayIndex;
+        const totalDays: number = Math.floor(left * milliSecondsPerPixel / milliSecondsPerDay);
+        const totalDaysPerWeek: number = 7;
+        const workingDaysPerWeek: number = totalDaysPerWeek - nonWorkingDays.length;
+
+        // Calculate full weeks and extra days
+        const fullWeeks: number = Math.floor(totalDays / workingDaysPerWeek);
+        const extraDays: number = totalDays % workingDaysPerWeek;
+
+        // Set the calculated date by adding full weeks
+        const calculatedDate: Date = new Date(pStartDate);
+        calculatedDate.setDate(calculatedDate.getDate() + fullWeeks * totalDaysPerWeek);
+
+        // Process the remaining days
+        let daysAdded: number = 0;
+        while (daysAdded < extraDays) {
+            calculatedDate.setDate(calculatedDate.getDate() + 1);
+            if (nonWorkingDays.indexOf(calculatedDate.getDay()) === -1) {
+                daysAdded++;
+            }
+        }
+        return calculatedDate;
     }
 
     /**
@@ -1242,6 +1318,13 @@ export class Timeline {
         let loopEnd: boolean = false;
         this.isFirstLoop = true;
         do {
+            //  to restict the creation of weekend element in UI
+            if (!this.parent.timelineSettings.showWeekend && this.isNonWorkingDayHeader(mode, tier, startDate)) {
+                increment = Math.abs(this.getIncrement(startDate, count, mode, isFirstCell, true));
+                newTime = startDate.getTime() + increment;
+                startDate.setTime(newTime);
+                continue;
+            }
             // PDf export collection
             let timelineCell: TimelineFormat = {};
             timelineCell.startDate = new Date(startDate.getTime());
@@ -1348,6 +1431,20 @@ export class Timeline {
                     newTime = startDate.getTime() + increment;
                 }
                 isFirstCell = false;
+                if (!this.parent.timelineSettings.showWeekend && mode === 'Day') {
+                    let tempCount: number = 0;
+                    const currentDay: Date = new Date(startDate);
+                    // Adjust the start date to find the next working day
+                    while (tempCount < count) {
+                        currentDay.setDate(currentDay.getDate() + 1);
+                        // Check if the current day is a working day
+                        if (this.parent.nonWorkingDayIndex.indexOf(currentDay.getDay()) === -1) {
+                            // Increment tempCount if it's a working day
+                            tempCount++;
+                        }
+                    }
+                    newTime = currentDay.getTime();
+                }
                 startDate.setTime(newTime);
                 if (hasDST && (mode === 'Day' || mode === 'Month' || mode === 'Week')) {
                     startDate.setHours(0, 0, 0, 0);
@@ -1379,7 +1476,10 @@ export class Timeline {
             (startDate < endDate) : (startDate < endDate));
         return parentTh;
     }
-
+    private isNonWorkingDayHeader(mode: string, tier: string, day: Date): boolean {
+        return (mode === 'Day' || mode === 'Hour' || mode === 'Minutes') &&
+            this.parent.nonWorkingDayIndex.indexOf(day.getDay()) !== -1;
+    }
     public updateTimelineAfterZooming(endDate: Date, resized: boolean): void {
         let timeDiff: number;
         let perDayWidth: number;
@@ -1412,8 +1512,35 @@ export class Timeline {
             }
             if (contentWidth >= totWidth) {
                 let widthDiff: number = contentWidth - totWidth;
-                widthDiff = Math.round(widthDiff / perDayWidth);
-                endDate.setDate(endDate.getDate() + widthDiff);
+                if (!this.parent.timelineSettings.showWeekend) {
+                    const milliSecondsPerDay: number = (24 * 60 * 60 * 1000);
+                    const milliSecondsPerPixel: number = milliSecondsPerDay / perDayWidth;
+                    const totalDays: number = Math.floor(contentWidth * milliSecondsPerPixel / milliSecondsPerDay);
+
+                    const nonWorkingDaysPerWeek: number = this.parent.nonWorkingDayIndex.length;
+                    const workingDaysPerWeek: number = 7 - nonWorkingDaysPerWeek;
+
+                    const weeksToCover: number = Math.floor(totalDays / workingDaysPerWeek);
+                    let additionalDays: number = totalDays % workingDaysPerWeek;
+
+                    // Consider starting point and fraction of week
+                    let spanDays: number = (weeksToCover * 7) + additionalDays;
+                    let startIndex: number = endDate.getDay();
+                    while (additionalDays > 0) {
+                        startIndex = (startIndex + 1) % 7;
+                        if (this.parent.nonWorkingDayIndex.indexOf(startIndex) === -1) {
+                            additionalDays--;
+                        }
+                        spanDays++;
+                    }
+
+                    endDate.setDate(endDate.getDate() + spanDays);
+
+                }
+                else{
+                    widthDiff = Math.round(widthDiff / perDayWidth);
+                    endDate.setDate(endDate.getDate() + widthDiff);
+                }
                 this.parent.timelineModule.timelineEndDate = endDate;
                 if (resized) {
                     this.parent.updateProjectDates(this.timelineStartDate, this.timelineEndDate, this.parent.isTimelineRoundOff);
@@ -1736,13 +1863,19 @@ export class Timeline {
             this.parent.timelineModule.customTimelineSettings.topTier.formatter :
             this.parent.timelineModule.customTimelineSettings.bottomTier.formatter;
         let thWidth: number;
-        const date: string = isNullOrUndefined(formatter) ?
-            this.parent.globalize.formatDate(scheduleWeeks, { format: this.parent.getDateFormat() }) :
-            this.customFormat(scheduleWeeks, format, tier, mode, formatter);
-        thWidth = Math.abs((this.getIncrement(scheduleWeeks, count, mode, isFirstCell) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
+        let increment: number = this.getIncrement(scheduleWeeks, count, mode, isFirstCell);
+        if (!this.parent.timelineSettings.showWeekend && (mode === 'Week' || mode === 'Month' || mode === 'Year') && tier === 'topTier' &&
+            this.parent.currentZoomingLevel.bottomTier.unit === 'Day') {
+            const copyStartDate: Date = new Date(scheduleWeeks);
+            const orginalDate: Date = new Date(scheduleWeeks);
+            const enddate: Date = new Date(orginalDate.getTime() + increment);
+            const nonWorkingDay: number = this.calculateNonWorkingDaysBetweenDates(copyStartDate, enddate);
+            increment = increment - (nonWorkingDay * 24 * 60 * 60 * 1000);
+        }
+        thWidth = Math.abs((increment / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
         const cellWidth: number = thWidth;
         thWidth = isLast
-            ? this.calculateWidthBetweenTwoDate(mode, scheduleWeeks, this.timelineRoundOffEndDate)
+            ? this.calculateWidthBetweenTwoDate(mode, scheduleWeeks, this.timelineRoundOffEndDate, timelineCell, isLast)
             : (isFirstCell && mode !== 'Hour')
                 ? this.calculateWidthBetweenTwoDate(mode, scheduleWeeks, this.calculateQuarterEndDate(scheduleWeeks, count))
                 : thWidth;
@@ -1757,13 +1890,28 @@ export class Timeline {
         this.parent.timelineModule.customTimelineSettings.bottomTier.unit === 'Hour') {
             scheduleWeeks.setTime(scheduleWeeks.getTime() - (1000 * 60 * 60 * 20));
         }
+        let displayDate: Date = new Date(scheduleWeeks);
+        if (!this.parent.timelineSettings.showWeekend) {
+            const isWeekend: boolean = this.isWeekend(displayDate);
+            if (isWeekend) {
+                while (this.parent.nonWorkingDayIndex.indexOf(displayDate.getDay()) !== -1) {
+                    displayDate.setDate(displayDate.getDate() + 1);
+                }
+            }
+        }
+        else{
+            displayDate = new Date(scheduleWeeks);
+        }
+        const date: string = isNullOrUndefined(formatter) ?
+            this.parent.globalize.formatDate(displayDate, { format: this.parent.getDateFormat() }) :
+            this.customFormat(displayDate, format, tier, mode, formatter);
         let value: string;
         if (this.applyDstHour) {
-            value = (isNullOrUndefined(formatter) ? this.formatDateHeader(format, scheduleWeeks, dummystartDate) :
-                this.customFormat(scheduleWeeks, format, tier, mode, formatter));
+            value = (isNullOrUndefined(formatter) ? this.formatDateHeader(format, displayDate, dummystartDate) :
+                this.customFormat(displayDate, format, tier, mode, formatter));
         } else {
-            value = (isNullOrUndefined(formatter) ? this.formatDateHeader(format, scheduleWeeks) :
-                this.customFormat(scheduleWeeks, format, tier, mode, formatter));
+            value = (isNullOrUndefined(formatter) ? this.formatDateHeader(format, displayDate) :
+                this.customFormat(displayDate, format, tier, mode, formatter));
         }
         if (!isNullOrUndefined(timelineTemplate)) {
             const args: Object = {
@@ -1820,21 +1968,95 @@ export class Timeline {
     }
 
     /**
+     * Calculates the total number of non-working days between two given dates.
+     *
+     * @param {Date} startDate - The start date of the period to check for non-working days.
+     * @param {Date} endDate - The end date of the period to check for non-working days.
+     * @returns {number} - Returns the total count of non-working days between the specified dates.
+     *
+     * This method takes into account complete weeks and any additional days, calculating
+     * non-working days within complete weeks based on the known non-working day indices.
+     * It iterates through any extra days beyond complete weeks to check if they are non-working.
+     */
+    public calculateNonWorkingDaysBetweenDates(startDate: Date, endDate: Date): number {
+        const MS_PER_DAY: number = 1000 * 60 * 60 * 24;
+        // Calculate the total number of days
+        const totalDays: number = Math.ceil((endDate.getTime() - startDate.getTime()) / MS_PER_DAY);
+        // Calculate complete weeks and extra days
+        const completeWeeks: number = Math.floor(totalDays / 7);
+        const extraDays: number = totalDays % 7;
+        // Calculate non-working days in complete weeks
+        const nonWorkingDaysPerWeek: number = this.parent.nonWorkingDayIndex.length;
+        let nonWorkingDaysCount: number = completeWeeks * nonWorkingDaysPerWeek;
+        // Calculate the start day and remaining days after complete weeks
+        const startDay: number = startDate.getDay();
+        for (let i: number = 0; i < extraDays; i++) {
+            const currentDay: number = (startDay + i) % 7;
+            if (this.parent.nonWorkingDayIndex.indexOf(currentDay) !== -1) {
+                nonWorkingDaysCount++;
+            }
+        }
+        return nonWorkingDaysCount;
+    }
+    /**
+     * Determines if a given date is a weekend or a non-working day.
+     *
+     * @param {Date} date - The date to check.
+     * @returns {boolean} - Returns `true` if the specified date is a non-working day, otherwise `false`.
+     *
+     * This method checks if the day of the given date falls within the defined non-working days.
+     * The non-working days are identified using the `nonWorkingDayIndex` from the parent configuration.
+     */
+    private isWeekend(date: Date): boolean {
+        const day: number = date.getDay();
+        return this.parent.nonWorkingDayIndex.indexOf(day) !== -1;
+    }
+    /**
      * To calculate last 'th' width.
      *
      * @param {string} mode .
      * @param {Date} scheduleWeeks .
      * @param {Date} endDate .
+     * @param {TimelineFormat} timelineCell .
+     * @param {boolean} isLast .
      * @returns {number} .
      * @private
      */
-    private calculateWidthBetweenTwoDate(mode: string, scheduleWeeks: Date, endDate: Date): number {
+    /* eslint-disable-next-line */
+    private calculateWidthBetweenTwoDate(mode: string, scheduleWeeks: Date, endDate: Date, timelineCell?: TimelineFormat, isLast?: boolean): number {
         const sDate: Date = new Date(scheduleWeeks.getTime());
         const eDate: Date = new Date(endDate.getTime());
         this.parent.dateValidationModule['updateDateWithTimeZone'](sDate, eDate);
         const timeDifference: number = (eDate.getTime() - sDate.getTime());
-        const balanceDay: number = (timeDifference / (1000 * 60 * 60 * 24));
-        return balanceDay * this.parent.perDayWidth;
+        const totalDays: number = timeDifference / (1000 * 60 * 60 * 24);
+        if (!this.parent.timelineSettings.showWeekend && this.parent.currentZoomingLevel.bottomTier.unit === 'Day') {
+            const totalWeeks: number = Math.floor(totalDays / 7);
+            const completeWeekDays: number = totalWeeks * (7 - this.parent.nonWorkingDayIndex.length);
+            const remainingDays: number = totalDays % 7;
+            if (remainingDays > 1 || completeWeekDays > 1) {
+                let additionalWorkingDays: number = 0;
+                const currentDate: Date = new Date(sDate);
+
+                for (let i: number = 0; i < remainingDays; i++) {
+                    const dayOfWeek: number = currentDate.getDay();
+                    if (this.parent.nonWorkingDayIndex.indexOf(dayOfWeek) === -1) {
+                        additionalWorkingDays++;
+                    }
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+                const workingDays  : number = completeWeekDays + additionalWorkingDays;
+                return workingDays * this.parent.perDayWidth;
+            }
+            else if (this.isZoomToFit && isLast) {
+                return timelineCell.width;
+            }
+            else {
+                return totalDays * this.parent.perDayWidth;
+            }
+        }
+        else {
+            return totalDays * this.parent.perDayWidth;
+        }
     }
 
     /**
@@ -1914,9 +2136,14 @@ export class Timeline {
             } else if (tierMode === 'Week') {
                 const dayIndex: number = !isNullOrUndefined(this.customTimelineSettings.weekStartDay) ?
                     this.parent.timelineModule.customTimelineSettings.weekStartDay : 0;
-                const roundOffStartDate: number = startDate.getDay() < dayIndex ?
+                let roundOffStartDate: number = startDate.getDay() < dayIndex ?
                     (startDate.getDate()) - (7 - dayIndex + startDate.getDay()) :
                     (startDate.getDate()) - startDate.getDay() + dayIndex;
+                if (!this.parent.timelineSettings.showWeekend) {
+                    while (this.isWeekend(new Date(startDate.getFullYear(), startDate.getMonth(), roundOffStartDate))) {
+                        roundOffStartDate++;
+                    }
+                }
                 startDate.setDate(roundOffStartDate);
                 const first: number = endDate.getDate() - endDate.getDay();
                 const last: number = first + 6 + dayIndex;

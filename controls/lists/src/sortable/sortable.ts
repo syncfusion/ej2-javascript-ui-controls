@@ -1,4 +1,4 @@
-import { Base, Event, getUniqueID, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
+import { Base, Event, getUniqueID, NotifyPropertyChanges, INotifyPropertyChanged, Property, detach, Browser } from '@syncfusion/ej2-base';
 import { closest, Draggable, DragPosition, MouseEventArgs, remove, compareElementParent } from '@syncfusion/ej2-base';
 import { addClass, isNullOrUndefined, getComponent, isBlazor, BlazorDragEventArgs, EventHandler } from '@syncfusion/ej2-base';
 import { SortableModel } from './sortable-model';
@@ -279,6 +279,11 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
 
     private onDragStart: Function = (e: { target: HTMLElement, event: MouseEventArgs, helper: Element } & BlazorDragEventArgs) => {
         this.target = this.getSortableElement(e.target);
+        if (isNullOrUndefined(this.target) && closest(this.element, '.e-listbox-container') && Browser.isDevice) {
+            detach(e.dragElement);
+            (getComponent(this.element, 'draggable') as any).intDestroy(e.event);
+            return;
+        }
         let cancelDrag: boolean = false;
         this.target.classList.add('e-grabbed');
         this.curTarget = this.target;
@@ -333,7 +338,9 @@ export class Sortable extends Base<HTMLElement> implements INotifyPropertyChange
                     }
                     dropInst.element.insertBefore(this.target, dropInst.placeHolderElement);
                     const curIdx: number = this.getIndex(this.target, dropInst);
-                    prevIdx = this === dropInst && (prevIdx - curIdx) >= 1 ? prevIdx - 1 : prevIdx;
+                    if (observedArgs.currentIndex > observedArgs.previousIndex) {
+                        prevIdx = this === dropInst && (prevIdx - curIdx) >= 1 ? prevIdx - 1 : prevIdx;
+                    }
                     this.trigger('drop', {
                         event: e.event, element: dropInst.element, previousIndex: prevIdx, currentIndex: curIdx,
                         target: e.target, helper: e.helper, droppedElement: this.target, scopeName: this.scope, handled: handled

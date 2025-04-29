@@ -312,7 +312,16 @@ export class ContextMenu {
             }
         });
     }
-    // eslint-disable-next-line
+    /**
+     * Calculates the date based on the clicked position on the Gantt chart's context menu.
+     *
+     * @param {HTMLElement} element - The HTML element used for determining the click position within the Gantt chart.
+     * @returns {Date} - Returns the calculated date based on the clicked position on the chart.
+     *
+     * The function determines the Gantt element's left position for both RTL and LTR layouts.
+     * It calculates the left position of the task and the click's position difference, adjusts the split task duration,
+     * and computes the final click date.
+     */
     private getClickedDate(element: HTMLElement): Date {
         // context menu click position
         let ganttElementPositionLeft: number ;
@@ -340,6 +349,33 @@ export class ContextMenu {
             currentTaskDifference = this.clickedPosition - pageLeft;
         }
         let splitTaskDuration: number = Math.ceil(currentTaskDifference / this.parent.perDayWidth);
+        if (!this.parent.timelineSettings.showWeekend) {
+            const calculatedDate: Date = new Date(this.rowData.ganttProperties.startDate);
+            const milliSecondsPerPixel: number = (24 * 60 * 60 * 1000) / this.parent.perDayWidth;
+            const milliSecondsPerDay: number = (24 * 60 * 60 * 1000);
+            if (!this.parent.timelineSettings.showWeekend) {
+                const totalDays: number = Math.floor(currentTaskDifference * milliSecondsPerPixel / milliSecondsPerDay);
+                const totalDaysPerWeek: number = 7;
+                const workingDaysPerWeek: number = totalDaysPerWeek - this.parent.nonWorkingDayIndex.length;
+                // Calculate the number of complete weeks between two dates
+                const fullWeeks: number = Math.floor(totalDays / workingDaysPerWeek);
+                const extraDays: number = totalDays % workingDaysPerWeek;
+                // Adjust calculatedDate by adding the full weeks
+                calculatedDate.setDate(calculatedDate.getDate() + fullWeeks * totalDaysPerWeek);
+                // Add remaining days, skipping non-working days
+                let daysAdded: number = 0;
+                while (daysAdded < extraDays) {
+                    calculatedDate.setDate(calculatedDate.getDate() + 1);
+                    if (this.parent.nonWorkingDayIndex.indexOf(calculatedDate.getDay()) === -1) {
+                        daysAdded++;
+                    }
+                }
+                const endDate: Date = calculatedDate;
+                const durationBetweendays: number = this.parent.timelineModule.calculateNonWorkingDaysBetweenDates(
+                    new Date(this.rowData.ganttProperties.startDate), endDate);
+                splitTaskDuration += durationBetweendays;
+            }
+        }
         const startDate: Date = this.rowData.ganttProperties.startDate;
         if (!isNullOrUndefined(this.parent.timelineSettings.bottomTier) && this.parent.timelineSettings.bottomTier.unit === 'Hour') {
             splitTaskDuration = Math.ceil(currentTaskDifference / this.parent.timelineSettings.timelineUnitSize);

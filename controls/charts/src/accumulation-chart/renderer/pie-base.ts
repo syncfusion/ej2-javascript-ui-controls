@@ -39,10 +39,12 @@ export class PieBase extends AccumulationBase {
         this.accumulation = chart;
         this.size = Math.min(chart.initialClipRect.width, chart.initialClipRect.height);
         this.initAngles(series);
+        const pieCoefficient: number = 0.8;
         const r: number = parseInt(series.radius, 10);
         if ((series.radius.indexOf('%') !== -1 || typeof r === 'number') && !isNaN(r)) {
             this.isRadiusMapped = false;
-            this.pieBaseRadius = stringToNumber(series.radius, this.size / 2);
+            this.pieBaseRadius = stringToNumber(series.radius, series.border.width > 20
+                ? (0.5 * pieCoefficient * this.size) : this.size / 2);
             this.innerRadius = stringToNumber(series.innerRadius, this.pieBaseRadius);
             this.pieBaseLabelRadius = series.dataLabel.position === 'Inside' ? (((this.pieBaseRadius - this.innerRadius) / 2) + this.innerRadius) :
                 (this.pieBaseRadius + stringToNumber(series.dataLabel.connectorStyle.length || '4%', this.size / 2));

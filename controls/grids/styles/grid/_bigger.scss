@@ -1674,6 +1674,11 @@
         }
       }
     }
+    & .e-gridcontent tr.e-verticalwrap td::before {
+      @if $grid-skin == 'fluent' {
+        bottom: auto;
+      }
+    }
   }
   .e-grid.sf-grid .e-gridheader .e-headercontent {
     .e-reorderuparrow {

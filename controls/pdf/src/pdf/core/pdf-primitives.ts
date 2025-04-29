@@ -281,9 +281,9 @@ export function _clearPrimitiveCaches(): void {
     cmdCache = Object.create(null);
     refCache = Object.create(null);
 }
-export function _isName(value: _PdfName, name: string): boolean {
+export function _isName(value: any, name: string): boolean {
     return value instanceof _PdfName && (typeof name === 'undefined' || value.name === name);
 }
-export function _isCommand(value: _PdfCommand, command: string): boolean {
+export function _isCommand(value: any, command: string): boolean {
     return value instanceof _PdfCommand && (typeof command === 'undefined' || value.command === command);
 }

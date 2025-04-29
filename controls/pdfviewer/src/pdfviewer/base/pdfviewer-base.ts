@@ -11901,6 +11901,18 @@ export class PdfViewerBase {
                             case 'shape':
                                 if (annotation[parseInt(i.toString(), 10)].shapeAnnotation.length !== 0 || annotationData.length !== 0) {
                                     this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderAnnotationComments(annotationData, i);
+                                    const shapeAnnotations: any = annotation[parseInt(i.toString(), 10)].shapeAnnotation[0];
+                                    if (annotation[parseInt(i.toString(), 10)].shapeAnnotation.length > 0 &&
+                                    shapeAnnotations && shapeAnnotations.AnnotName) {
+                                        const annotName: any = annotation[parseInt(i.toString(), 10)].shapeAnnotation[0].AnnotName;
+                                        const addedAnnot: any = this.pdfViewer.annotationCollection.find(
+                                            (annot: any) => annot.annotationId === annotName
+                                        );
+                                        if (addedAnnot && addedAnnot.enableShapeLabel && addedAnnot.labelContent) {
+                                            this.pdfViewer.annotation.stickyNotesAnnotationModule.
+                                                addTextToComments(addedAnnot.annotationId, addedAnnot.labelContent);
+                                        }
+                                    }
                                     for (let j: number = 0; j < annotationData.length; j++) {
                                         this.pdfViewer.annotationModule.
                                             stickyNotesAnnotationModule.updateCollections(this.pdfViewer.annotationModule.

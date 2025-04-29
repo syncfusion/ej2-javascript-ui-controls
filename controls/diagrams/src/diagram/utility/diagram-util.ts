@@ -2936,34 +2936,36 @@ export let alignElement: Function = (element: Container, offsetX: number, offset
                     }
                 }
             }
-            let childX: number = ((offsetX - child.offsetX) + offsetX);
-            let childY: number = ((offsetY - child.offsetY) + offsetY);
+            //706793 - Rotating and flipping of grouped elements are not working properly.
+            const angle : number = element.rotateAngle * (Math.PI / 180);
+            const dx: number = child.offsetX - offsetX;
+            const dy: number = child.offsetY - offsetY;
+            // Transform to local space by unrotating
+            let localSpaceX : number = dx * Math.cos(angle) + dy * Math.sin(angle);
+            let localSpaceY : number = -dx * Math.sin(angle) + dy * Math.cos(angle);
+            // Apply flip in local space
+            if ((isHorizontal) || flip === FlipDirection.Horizontal || flip === FlipDirection.Both) {
+                localSpaceX = -localSpaceX;
+            }
+            if ((isVertical) || flip === FlipDirection.Vertical || flip === FlipDirection.Both) {
+                localSpaceY = -localSpaceY;
+            }
+            // Transform back to global space by rotating
+            const globalSpaceX : number = localSpaceX * Math.cos(angle) - localSpaceY * Math.sin(angle);
+            const globalSpaceY : number = localSpaceX * Math.sin(angle) + localSpaceY * Math.cos(angle);
+            // Final position in global space
+            const childX: number = offsetX + globalSpaceX;
+            const childY: number = offsetY + globalSpaceY;
             if(!(child instanceof TextElement)) {
                 if(!(child.elementActions & ElementAction.ElementIsPort)) {
-                    if (flip === FlipDirection.Horizontal || isHorizontal) {
-                        child.offsetX = childX;
-                        if (nodeObj) {
-                            nodeObj.offsetX = childX;
-                        }
-                        child.flipOffset.x = childX - child.desiredSize.width / 2;
+                    child.offsetX = childX;
+                    child.offsetY = childY;
+                    if (nodeObj) {
+                        nodeObj.offsetX = childX;
+                        nodeObj.offsetY = childY;
                     }
-                    if (flip === FlipDirection.Vertical || isVertical) {
-                        child.offsetY = childY;
-                        if (nodeObj) {
-                            nodeObj.offsetY = childY;
-                        }
-                        child.flipOffset.y = childY - child.desiredSize.height / 2;
-                    } 
-                    else if (flip === FlipDirection.Both) {
-                        child.offsetX = childX;
-                        child.flipOffset.x = childX - child.desiredSize.width / 2;
-                        child.offsetY = childY;
-                        child.flipOffset.y = childY - child.desiredSize.height / 2;
-                        if (nodeObj) {
-                            nodeObj.offsetX = childX;
-                            nodeObj.offsetY = childY;
-                        }
-                    }
+                    child.flipOffset.x = childX - child.desiredSize.width / 2;
+                    child.flipOffset.y = childY - child.desiredSize.height / 2;
                 }
             }
             if (!isInitialRendering) {

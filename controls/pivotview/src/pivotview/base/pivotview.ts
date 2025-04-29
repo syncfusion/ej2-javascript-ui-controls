@@ -4929,8 +4929,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     this.virtualScrollDiv = createElement('div', { className: cls.VIRTUALSCROLL_DIV }) as HTMLElement;
                     virtualScrollTableDiv.appendChild(this.virtualScrollDiv);
                     setStyleAttribute(virtualScrollTableDiv, {
-                        minHeight: horiScrollHeight + 'px',
-                        maxHeight: horiScrollHeight + 'px',
+                        minHeight: horiScrollHeight !== 0 ? horiScrollHeight : 15 + 'px',
+                        maxHeight: horiScrollHeight !== 0 ? horiScrollHeight : 15 + 'px',
                         overflowX: 'scroll'
                     });
                     setStyleAttribute(this.virtualScrollDiv, {

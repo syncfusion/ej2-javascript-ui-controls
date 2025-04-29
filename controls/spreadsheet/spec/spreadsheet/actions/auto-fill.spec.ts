@@ -1664,7 +1664,7 @@ describe('Auto fill ->', () => {
             });
         });
         it('Apply autofill for formula having "% and ^"', (done: Function) => {
-            helper.edit('N1', '=((10^2)&(10%2))');
+            helper.edit('N1', '=("10^2"&"10%2")');
             helper.invoke('selectRange', ['N1']);
             setTimeout(() => {
                 const autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
@@ -1676,8 +1676,8 @@ describe('Auto fill ->', () => {
                 helper.getInstance().selectionModule.mouseMoveHandler({ target: td, clientX: coords.left + 1, clientY: coords.top + 1 });
                 helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
                 setTimeout(() => {
-                    expect(helper.getInstance().sheets[0].rows[1].cells[13].formula).toEqual('=((10^2)&(10%2))');
-                    expect(helper.invoke('getCell', [1, 13]).textContent).toBe('100,1,2');
+                    expect(helper.getInstance().sheets[0].rows[1].cells[13].formula).toEqual('=("10^2"&"10%2")');
+                    expect(helper.invoke('getCell', [1, 13]).textContent).toBe('10^210%2');
                     done();
                 });
             });

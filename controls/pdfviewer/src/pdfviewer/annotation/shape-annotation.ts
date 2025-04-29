@@ -307,7 +307,7 @@ export class ShapeAnnotation {
                                     width: annot.bounds.width, height: annot.bounds.height
                                 };
                                 this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, annotation.ShapeAnnotationType,
-                                                                 annot.bounds, settings);
+                                                                 annot.bounds, settings, null, null, null, annotationObject.labelSettings);
                             }
                         }
                     }
@@ -1023,6 +1023,24 @@ export class ShapeAnnotation {
     }
 
     /**
+     * This method is used to get the labelSettings values
+     *
+     * @param {any} annotationObject  - It describes type of annotation object
+     * @returns {any} - any
+     */
+    private getLabelSettingsValues(annotationObject: any): any {
+        const setting: any = this.pdfViewer.shapeLabelSettings;
+        const fontColor: any = annotationObject.fontColor ? annotationObject.fontColor : setting.fontColor;
+        const labelContent: any = annotationObject.labelContent ? annotationObject.labelContent : setting.labelContent;
+        const fillColor: any = annotationObject.labelFillColor ? annotationObject.labelFillColor : setting.fillColor;
+        const fontSize: any = annotationObject.fontSize ? annotationObject.fontSize : setting.fontSize;
+        const opacity: any = annotationObject.opacity ? annotationObject.opacity : setting.opacity;
+        const fontFamily: any = annotationObject.fontFamily ? annotationObject.fontFamily : setting.fontFamily;
+        return { fontColor: fontColor, labelContent: labelContent, fillColor: fillColor, fontSize: fontSize,
+            opacity: opacity, fontFamily: fontFamily };
+    }
+
+    /**
      * This method used to add annotations with using program.
      *
      * @param {AnnotationType} annotationType - It describes the annotation type
@@ -1050,6 +1068,7 @@ export class ShapeAnnotation {
         let shapeAnnotationType: string = '';
         let isArrow: boolean = false;
         let vertexPoints: any = null;
+        let labelSettings: any = null;
         //Creating the CurrentDate and Annotation name
         const currentDateString: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
         const annotationName: string = this.pdfViewer.annotation.createGUID();
@@ -1069,6 +1088,7 @@ export class ShapeAnnotation {
             {vertexPoints = [{x: offset.x, y: offset.y}, {x: offset.x + 100, y: offset.y}]; }
             annotationObject.width = annotationObject.width ? annotationObject.width : 1;
             annotationObject.height = annotationObject.height ? annotationObject.height : 1;
+            labelSettings = this.getLabelSettingsValues(annotationObject);
         }
         else if (annotationType === 'Arrow')
         {
@@ -1087,6 +1107,7 @@ export class ShapeAnnotation {
             {vertexPoints = [{x: offset.x, y: offset.y}, {x: offset.x + 100, y: offset.y}]; }
             annotationObject.width = annotationObject.width ? annotationObject.width : 1;
             annotationObject.height = annotationObject.height ? annotationObject.height : 1;
+            labelSettings = this.getLabelSettingsValues(annotationObject);
         }
         else if (annotationType === 'Rectangle')
         {
@@ -1100,6 +1121,7 @@ export class ShapeAnnotation {
             shapeAnnotationType = 'Square';
             annotationObject.width = annotationObject.width ? annotationObject.width : 150;
             annotationObject.height = annotationObject.height ? annotationObject.height : 75;
+            labelSettings = this.getLabelSettingsValues(annotationObject);
         }
         else if (annotationType === 'Circle')
         {
@@ -1113,6 +1135,7 @@ export class ShapeAnnotation {
             shapeAnnotationType = 'Circle';
             annotationObject.width = annotationObject.width ? annotationObject.width : 100;
             annotationObject.height = annotationObject.height ? annotationObject.height : 90;
+            labelSettings = this.getLabelSettingsValues(annotationObject);
         }
         else if (annotationType === 'Polygon')
         {
@@ -1124,6 +1147,7 @@ export class ShapeAnnotation {
             allowedInteractions = this.pdfViewer.polygonSettings.allowedInteractions ?
                 this.pdfViewer.polygonSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;
             shapeAnnotationType = 'Polygon';
+            labelSettings = this.getLabelSettingsValues(annotationObject);
             if (annotationObject.vertexPoints)
             {vertexPoints = annotationObject.vertexPoints; }
             else
@@ -1161,24 +1185,25 @@ export class ShapeAnnotation {
             Comments: null,
             CustomData: annotationObject.customData ? annotationObject.customData : null,
             CreatedDate: currentDateString,
-            EnableShapeLabel: false,
+            EnableShapeLabel: this.pdfViewer.enableShapeLabel,
             ExistingCustomData: null,
             FillColor: annotationObject.fillColor ? annotationObject.fillColor : '#ffffff00',
-            FontColor: null,
-            FontSize: 0,
+            FontColor: labelSettings.fontColor,
+            FontSize: labelSettings.fontSize,
+            FontFamily: labelSettings.fontFamily,
             IsCloudShape: false,
             IsCommentLock: false,
             IsLocked : annotationObject.isLock ? annotationObject.isLock : false,
             IsPrint: !isNullOrUndefined(annotationObject.isPrint) ? annotationObject.isPrint : true,
-            LabelBorderColor: null,
+            LabelBorderColor: labelSettings.borderColor,
             LabelBounds: {X: 0, Y: 0, Width: 0, Height: 0},
-            LabelContent: null,
-            LabelFillColor: null,
-            LabelSettings: null,
+            LabelContent: labelSettings.labelContent,
+            LabelFillColor: labelSettings.fillColor,
+            LabelSettings: labelSettings,
             LineHeadStart: annotationObject.lineHeadStartStyle ? annotationObject.lineHeadStartStyle : isArrow ? 'ClosedArrow' : 'None',
             LineHeadEnd: annotationObject.lineHeadEndStyle ? annotationObject.lineHeadEndStyle : isArrow ? 'ClosedArrow' : 'None',
             ModifiedDate: '',
-            Note: '',
+            Note: (this.pdfViewer.enableShapeLabel && labelSettings.labelContent) ? labelSettings.labelContent : '',
             Opacity: annotationObject.opacity ? annotationObject.opacity : 1,
             RectangleDifference: null,
             RotateAngle: 'RotateAngle0',

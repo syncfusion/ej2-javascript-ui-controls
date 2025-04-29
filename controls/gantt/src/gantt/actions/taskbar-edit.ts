@@ -8,6 +8,7 @@ import { DateProcessor } from '../base/date-processor';
 import * as cls from '../base/css-constants';
 import { EditTooltip } from '../renderer/edit-tooltip';
 import { CriticalPath } from './critical-path';
+import { TaskFieldsModel } from '../models/models';
 
 /**
  * File for handling taskbar editing operation in Gantt.
@@ -1899,6 +1900,7 @@ export class TaskbarEdit extends DateProcessor {
 
     private setSplitTaskDrag(item: ITaskData): void {
         const segment: ITaskSegment = item.segments[this.segmentIndex as number];
+        const taskSettings: TaskFieldsModel = this.parent.taskFields;
         const left: number = this.getRoundOffStartLeft(segment, this.roundOffDuration);
         let projectStartDate: Date = this.getDateByLeft(left);
         projectStartDate = this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null);
@@ -1945,6 +1947,8 @@ export class TaskbarEdit extends DateProcessor {
             nextSegment.offsetDuration = offsetDuration;
         }
         this.parent.setRecordValue('segments', item.segments, item, true);
+        /* eslint-disable-next-line */
+        this.taskBarEditRecord[taskSettings.segments][this.segmentIndex] = this.parent.dataOperation['setSegmentTaskData'](segment, this.taskBarEditRecord[taskSettings.segments][this.segmentIndex]);
         this.parent.dataOperation.updateMappingData(this.taskBarEditRecord, 'segments');
     }
     /**
@@ -2067,12 +2071,24 @@ export class TaskbarEdit extends DateProcessor {
     public getDateByLeft(left: number, isMilestone?: boolean, property?: ITaskData): Date {
         let pStartDate: Date = new Date(this.parent.timelineModule.timelineStartDate.toString());
         const milliSecondsPerPixel: number = (24 * 60 * 60 * 1000) / this.parent.perDayWidth;
-        const calculatedDate: Date = new Date(pStartDate); // Renamed from tempStartDate
-        calculatedDate.setTime(calculatedDate.getTime() + (left * milliSecondsPerPixel));
+        let calculatedDate: Date = new Date(pStartDate); // Renamed from tempStartDate
+        // while dragging to get date without weekends
+        if (!this.parent.timelineSettings.showWeekend) {
+            calculatedDate = this.parent.timelineModule.calculateDateExcludingNonWorkingDays(left, pStartDate);
+            pStartDate = calculatedDate;
+        }
+        else {
+            calculatedDate.setTime(calculatedDate.getTime() + (left * milliSecondsPerPixel));
+        }
         if (this.parent.isInDst(calculatedDate)) {
             pStartDate.setTime(pStartDate.getTime() + ((left - (this.parent.perDayWidth / 24)) * milliSecondsPerPixel));
         } else {
-            pStartDate.setTime(pStartDate.getTime() + (left * milliSecondsPerPixel));
+            if (!this.parent.timelineSettings.showWeekend) {
+                pStartDate = calculatedDate;
+            }
+            else {
+                pStartDate.setTime(pStartDate.getTime() + (left * milliSecondsPerPixel));
+            }
         }
         /* To render the milestone in proper date while editing */
         if (isMilestone && !isNullOrUndefined(property.predecessorsName) && property.predecessorsName !== '') {

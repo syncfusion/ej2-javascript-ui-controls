@@ -146,7 +146,7 @@ export class SelectionCommands {
             let formattedCount: number = 0;
             for (let index: number = 0; index < nodes.length; index++) {
                 const existingFormatNode: Node | null = isFormatted.getFormattedNode(nodes[index as number], format, endNode);
-                if (existingFormatNode) {
+                if (existingFormatNode || nodes[index as number].nodeName === 'BR') {
                     formattedCount++;
                 }
             }

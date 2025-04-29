@@ -2323,7 +2323,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * @returns {void}.
      */
     public removeTab(index: number): void {
-        const trg: HTEle = selectAll('.' + CLS_TB_ITEM, this.element)[index];
+        const trg: HTEle = selectAll('.' + CLS_TB_ITEM, this.hdrEle)[index];
         if (isNOU(trg)) {
             return;
         }
@@ -2331,7 +2331,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         this.trigger('removing', removeArgs, (tabRemovingArgs: RemoveEventArgs) => {
             if (!tabRemovingArgs.cancel) {
                 const header: HTEle =
-                    select('#' + CLS_ITEM + this.tabId + '_' + this.extIndex(trg.id), select('.' + CLS_TB_ITEMS, this.element));
+                    select('#' + CLS_ITEM + this.tabId + '_' + this.extIndex(trg.id), select('.' + CLS_TB_ITEMS, this.hdrEle));
                 if (!isNOU(header)) {
                     this.clearTabTemplate(header, 'headerTemplate', CLS_TB_ITEM);
                 }

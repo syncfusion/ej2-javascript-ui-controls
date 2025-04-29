@@ -2,14 +2,24 @@
 
 ## [Unreleased]
 
-## 29.1.39 (2025-04-22)
+## 29.1.40 (2025-04-29)
 
 ### RichTextEditor
 
 #### Bug Fixes
 
 - `#I698253` - Now, The issue with the page becoming unresponsive when removing inline code in the RichTextEditor has been resolved.
+- `#I709931` - Now, when pasting content into the Rich Text Editor with the Enter key configuration set to `<br>`, only a single `<br>` tag is inserted instead of the expected two.
+- `#I715942` - Now, the issue where setting the value property to null resulted in focus inside the editor has been resolved.
+
+## 29.1.39 (2025-04-22)
+
+### RichTextEditor
+
+#### Bug Fixes
+
 - `#I706947` - Now, The issue with the Two new lines created when using Shift Enter key in the RichTextEditor has been resolved.
+
 - `#I712784` - Now, the issue with the cursor position not being restored when inserting a table using the `showDialog` method in the RichTextEditor component has been resolved.
 
 ## 29.1.37 (2025-04-08)
@@ -27,6 +37,7 @@
 #### Bug Fixes
 
 - `#F196437` - Now, the issue with the script error that throws when pasting an Excel table into the IFrame RichTextEditor has now been resolved.
+
 - `#I694099` - Now, plain formatting works properly, clearing the `div` elements, and works similar to 'Paste as Plain Text'.
 
 - `#I691787` - Now, the link drag and drop functionality works properly in the Rich Text Editor.

@@ -2470,7 +2470,7 @@ describe('Format Painter Module', () => {
         });
         it(' To check correct shortcut key is displayed in tooltip for format painter in safari', (done: Function) => {
             const title = document.querySelector('.e-toolbar-item.e-tbtn-align').getAttribute('title');
-            expect(title === 'Format Painter (Alt+Shift+C,  Alt+Shift+V)' || title === 'Format Painter (⌥⇧C, ⌥⇧V)').toBe(true);
+            expect(title === 'Format Painter (Alt+Shift+C,  Alt+Shift+V)' || title === 'Format Painter (⌥⇧C,  ⌥⇧V)').toBe(true);
             done();
         });
     });

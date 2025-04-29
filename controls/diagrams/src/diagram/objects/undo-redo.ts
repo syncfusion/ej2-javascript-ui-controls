@@ -727,8 +727,10 @@ export class UndoRedo {
     }
     private segmentChanged(connector: ConnectorModel, diagram: Diagram): void {
         const conn: ConnectorModel = diagram.nameTable[connector.id];
-        conn.segments = connector.segments;
-        diagram.commandHandler.updateEndPoint(conn as Connector);
+        if (conn) {
+            conn.segments = connector.segments;
+            diagram.commandHandler.updateEndPoint(conn as Connector);
+        }
     }
 
     private recordPositionChanged(obj: SelectorModel, diagram: Diagram): void {
@@ -954,6 +956,9 @@ export class UndoRedo {
 
     private connectionChanged(obj: ConnectorModel, diagram: Diagram, entry?: HistoryEntry): void {
         const connector: ConnectorModel = diagram.nameTable[obj.id];
+        if (!connector) {
+            return;
+        }
         let node: Node;
         if (obj.sourcePortID !== connector.sourcePortID) {
             diagram.removePortEdges(diagram.nameTable[connector.sourceID], connector.sourcePortID, connector.id, false);

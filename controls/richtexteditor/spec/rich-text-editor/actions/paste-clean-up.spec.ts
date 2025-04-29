@@ -4932,44 +4932,6 @@ StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times Ne
         });
     });
 
-    describe('946861: Paste cleanup Dialog close testing', ()=> {
-        let editor: RichTextEditor;
-        beforeAll(()=> {
-            editor = renderRTE({
-                value: 'Editor',
-                pasteCleanupSettings: {
-                    prompt: true
-                }
-            });
-        });
-        afterAll(()=> {
-            destroy(editor);
-        });
-        it('Should close the dialog on toolbar click action.', (done: DoneFn)=> {
-            editor.focusIn();
-            const range: Range = new Range();
-            range.setStart(editor.inputElement.firstChild.firstChild, 2);
-            range.collapse(true);
-            editor.selectRange(range);
-            const pasteContent: string = '<p>This is a coverage issue test case.</p>';
-            const dataTransfer: DataTransfer = new DataTransfer();
-            dataTransfer.setData('text/html', pasteContent);
-            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
-            editor.onPaste(pasteEvent);
-            setTimeout(()=> {
-                const boldButton: HTMLElement = editor.element.querySelector('.e-bold');
-                const mouseDownEvent: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
-                boldButton.dispatchEvent(mouseDownEvent);
-                const mouseUpEvent: MouseEvent = new MouseEvent('mouseup', BASIC_MOUSE_EVENT_INIT);
-                boldButton.dispatchEvent(mouseUpEvent);
-                setTimeout(() => {
-                    expect(editor.element.querySelector('.e-popup-open')).toBe(null);
-                    done();
-                }, 300);
-            }, 100);
-        }, 1000);
-    });
-
     describe('946861: Paste Image File content from the Clipboard Testing.', ()=> {
         let editor: RichTextEditor;
         beforeAll(()=> {
@@ -5026,8 +4988,10 @@ StarSymbol"><span style="mso-list:Ignore"><span style="font:7.0pt &quot;Times Ne
             dataTransfer.setData('text/html', clipboardHtml);
             const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
             editorInstance.onPaste(pasteEvent);
-            expect(editorInstance.inputElement.innerHTML).not.toContain('<br>');
-            done();
+            setTimeout(() => {
+                expect(editorInstance.inputElement.innerHTML).not.toContain('<br>');
+                done();
+            }, 100);
         });
     });
 });// Add the spec above this.

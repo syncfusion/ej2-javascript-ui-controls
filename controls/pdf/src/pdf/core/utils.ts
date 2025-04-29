@@ -7,7 +7,7 @@ import { _PdfBaseStream, _PdfStream } from './base-stream';
 import { PdfStateItem, PdfComment, PdfWidgetAnnotation, PdfAnnotation, PdfLineAnnotation } from './annotations/annotation';
 import { PdfPopupAnnotationCollection } from './annotations/annotation-collection';
 import { PdfTemplate } from './graphics/pdf-template';
-import { PdfField } from './form/field';
+import { PdfField, PdfTextBoxField } from './form/field';
 import { PdfCjkFontFamily, PdfCjkStandardFont, PdfFont, PdfFontFamily, PdfFontStyle, PdfStandardFont, PdfTrueTypeFont } from './fonts/pdf-standard-font';
 import { _PdfCrossReference } from './pdf-cross-reference';
 import { PdfForm } from './form';
@@ -3791,14 +3791,15 @@ export function _mapFont(name: string, size: number, style: PdfFontStyle, annota
         }
     }
     if (font === null || typeof font === 'undefined') {
-        if (annotation instanceof PdfAnnotation) {
-            if (annotation._type !== _PdfAnnotationType.widgetAnnotation) {
-                font = new PdfStandardFont(PdfFontFamily.helvetica, fontSize, style);
-            } else {
-                font = annotation._circleCaptionFont;
-            }
-        } else if (annotation instanceof PdfField) {
-            font = annotation._circleCaptionFont;
+        const isAnnotation: boolean = annotation instanceof PdfAnnotation;
+        const isField: boolean = annotation instanceof PdfField;
+        if (isAnnotation || isField) {
+            const isWidget: boolean = isAnnotation &&  (annotation as PdfAnnotation)._type !== _PdfAnnotationType.widgetAnnotation;
+            const isLargerTextBox: boolean = annotation instanceof PdfTextBoxField
+                && annotation._circleCaptionFont  && fontSize > annotation._circleCaptionFont.size;
+            font = (isWidget || isLargerTextBox) ?
+                new PdfStandardFont(PdfFontFamily.helvetica, fontSize, style) :
+                annotation._circleCaptionFont;
         }
     }
     return font;
@@ -3823,7 +3824,9 @@ export function _tryParseFontStream(widgetDictionary: _PdfDictionary, crossRefer
             if (baseStream instanceof _PdfStream) {
                 normal = baseStream;
             } else if ((annotation instanceof PdfField || annotation instanceof PdfWidgetAnnotation) && baseStream.stream &&
-                       baseStream.stream instanceof _PdfStream) {
+                baseStream.stream instanceof _PdfStream) {
+                normal = baseStream.stream;
+            } else if (baseStream.stream && baseStream.stream instanceof _PdfStream) {
                 normal = baseStream.stream;
             }
         }
@@ -4350,3 +4353,13 @@ export function _updatePageSettings(dictionary: _PdfDictionary, settings: PdfPag
  * Base64 encoded string representing an empty PDF document.
  */
 export const _emptyPdfData: string = 'JVBERi0xLjQNCiWDkvr+DQoxIDAgb2JqDQo8PA0KL1R5cGUgL0NhdGFsb2cNCi9QYWdlcyAyIDAgUg0KL0Fjcm9Gb3JtIDMgMCBSDQo+Pg0KZW5kb2JqDQoyIDAgb2JqDQo8PA0KL1R5cGUgL1BhZ2VzDQovS2lkcyBbNCAwIFJdDQovQ291bnQgMQ0KL1Jlc291cmNlcyA8PD4+DQoNCi9NZWRpYUJveCBbLjAwIC4wMCA1OTUuMDAgODQyLjAwXQ0KL1JvdGF0ZSAwDQo+Pg0KZW5kb2JqDQozIDAgb2JqDQo8PA0KL0ZpZWxkcyBbXQ0KPj4NCmVuZG9iag0KNCAwIG9iag0KPDwNCi9Db3VudCAxDQovVHlwZSAvUGFnZXMNCi9LaWRzIFs1IDAgUl0NCi9QYXJlbnQgMiAwIFINCj4+DQplbmRvYmoNCjUgMCBvYmoNCjw8DQovVHlwZSAvUGFnZQ0KL1BhcmVudCA0IDAgUg0KPj4NCmVuZG9iag0KeHJlZg0KMCA2DQowMDAwMDAwMDAwIDY1NTM1IGYNCjAwMDAwMDAwMTcgMDAwMDAgbg0KMDAwMDAwMDA4OSAwMDAwMCBuDQowMDAwMDAwMjE4IDAwMDAwIG4NCjAwMDAwMDAyNTUgMDAwMDAgbg0KMDAwMDAwMDMzNCAwMDAwMCBuDQp0cmFpbGVyDQo8PA0KL1Jvb3QgMSAwIFINCi9TaXplIDYNCj4+DQoNCnN0YXJ0eHJlZg0KMzg3DQolJUVPRg0K';
+/**
+ * Checks if the given string contains any Unicode (non-ASCII) characters.
+ *
+ * @param {string} value - The string to check for Unicode characters.
+ * @returns {boolean} `true` if the string contains at least one Unicode character; otherwise, `false`.
+ */
+export function _hasUnicodeCharacters(value: string): boolean {
+    const unicodeRegex = /[^\x00-\x7F]/; // eslint-disable-line
+    return value.split('').some(char => unicodeRegex.exec(char) !== null); // eslint-disable-line
+}

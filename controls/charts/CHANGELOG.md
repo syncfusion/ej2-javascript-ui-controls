@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 29.1.39 (2025-04-22)
+## 29.1.40 (2025-04-29)
+
+### Accumulation Chart
+
+#### Bug Fixes
+
+- `#I711450` - Pie chart now properly renders with higher border width values.
+
+## 29.1.35 (2025-04-01)
 
 ### 3DChart
 

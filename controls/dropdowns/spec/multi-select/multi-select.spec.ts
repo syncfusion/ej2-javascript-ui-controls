@@ -7545,7 +7545,7 @@ describe('MultiSelect', () => {
                 setTimeout(() => {
                     let keyboardEventArgs: any = { preventDefault: (): void => { }, };
                     (<any>listObj).inputElement.value = 'Na';
-                    let listElement: any = (<any>listObj).ulElement.querySelector("li.e-list-item");
+                    //let listElement: any = (<any>listObj).ulElement.querySelector("li.e-list-item");
                     //expect(listElement.classList.contains('e-item-focus')).toBe(false);       
                     keyboardEventArgs.keyCode = 32;
                     keyboardEventArgs.code = 'Space';

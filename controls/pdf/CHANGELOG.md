@@ -2,7 +2,21 @@
 
 ## [Unreleased]
 
-## 29.1.39 (2025-04-22)
+## 29.1.40 (2025-04-29)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an issue where the font size was not being retrieved properly from form fields in a specific PDF document.
+- Resolved an exception that occurs when importing annotations in FDF format in certain PDF documents.
+- Resolved an issue where true type font is not retrieved properly from the free text annotation font property.
+- Resolved the issue with preserving the line ending style of free text annotations while removing and adding the annotation.
+- Fixed an issue with Unicode text in true type fonts not preserving in stamp annotation XFDF import and export.
+- Resolved the content security policy error encountered while parsing the free text annotation.
+- Resolved a corruption issue that occurred when the incremental update property was set to false.
+
+## 29.1.38 (2025-04-15)
 
 ### PDF Parser
 

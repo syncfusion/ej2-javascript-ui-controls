@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.1.40 (2025-04-29)
+
+### DateTimePicker
+
+#### Bug Fixes
+
+- `#I705395` - Fixed an issue where the DateTimePicker value was not updated correctly in the form data when using `ServerTimezoneOffset` during the initial rendering.
+
 ## 29.1.39 (2025-04-22)
 
 ### TimePicker

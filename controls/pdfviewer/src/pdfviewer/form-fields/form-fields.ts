@@ -1369,7 +1369,9 @@ export class FormFields {
                         }
                     } else if (annot.shapeAnnotationType === 'SignatureImage') {
                         formFieldsData[parseInt(i.toString(), 10)].FormField.signatureType = 'Image';
+                        formFieldsData[parseInt(i.toString(), 10)].FormField.fontFamily = 'Helvetica';
                         this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)].FormField.signatureType = 'Image';
+                        this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)].FormField.fontFamily = 'Helvetica';
                         (this.pdfViewer.nameTable as any)[`${key}`].signatureType = 'Image';
                         if (formFieldIndex > -1) {
                             this.pdfViewer.formFieldCollection[parseInt(formFieldIndex.toString(), 10)].signatureType = 'Image';
@@ -2623,7 +2625,10 @@ export class FormFields {
     }
 
     public clearFormFields(formField?: any): void {
-        const data: string = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
+        let data: string = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
+        if (isNullOrUndefined(data)) {
+            data = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
+        }
         if (data) {
             let formFieldsData: any;
             if (formField) {
@@ -2639,7 +2644,7 @@ export class FormFields {
                     currentData.Name = formField.type;
                 }
                 this.currentTarget = document.getElementById(currentData.uniqueID);
-                if (currentData.Name === 'Textbox') {
+                if (currentData.Name === 'Textbox' || currentData.Name === 'PasswordField') {
                     this.currentTarget.value = '';
                 } else if (currentData.Name === 'RadioButton') {
                     if (isFirstRadio) {
@@ -2647,8 +2652,10 @@ export class FormFields {
                         this.updateDataInSession(this.currentTarget);
                         isFirstRadio = false;
                     }
-                } else if (currentData.Name === 'DropDown') {
-                    this.currentTarget.value = currentData.TextList[0];
+                } else if (currentData.Name === 'DropDown' || currentData.Name === 'DropdownList' || currentData.Name === 'ListBox') {
+                    this.currentTarget.options.length = 0;
+                    const selectedItem: PdfAnnotationBaseModel = (this.pdfViewer.nameTable as any)[this.currentTarget.id.split('_')[0]];
+                    (selectedItem as any).options = [];
                 } else if (currentData.Name === 'CheckBox') {
                     this.currentTarget.checked = false;
                 } else if (currentData.Name === 'SignatureField' || currentData.Name === 'InitialField') {

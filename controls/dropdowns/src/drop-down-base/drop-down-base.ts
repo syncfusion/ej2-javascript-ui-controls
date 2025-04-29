@@ -306,6 +306,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected listContainerHeight: string;
     protected isVirtualTrackHeight: boolean = false;
     protected virtualSelectAll: boolean = false;
+    protected isVirtualReorder: boolean = false;
     protected incrementalQueryString: string = '';
     protected incrementalEndIndex: number = 0;
     protected incrementalStartIndex: number = 0;
@@ -1238,7 +1239,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                             const newQuery: Query = this.getQuery(eventArgs.query as Query);
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             if (this.isVirtualizationEnabled && ((listItems as any).count !== 0 &&
-                               (listItems as any).count < (this.itemCount * 2))) {
+                                (listItems as any).count < (this.itemCount * 2)) && !this.appendUncheckList) {
                                 if (newQuery) {
                                     for (let queryElements: number = 0; queryElements < newQuery.queries.length; queryElements++) {
                                         if (newQuery.queries[queryElements as number].fn === 'onTake') {
@@ -1780,7 +1781,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 let oldUlElement: Element = this.list.querySelector('.e-list-parent' + ':not(.e-reorder)');
                 const virtualUlElement: Element = this.list.querySelector('.e-virtual-ddl-content');
                 const isRemovedUlelement: boolean = false;
-                if (!oldUlElement && this.list.querySelector('.e-list-parent' + '.e-reorder')) {
+                if ((!oldUlElement && this.list.querySelector('.e-list-parent' + '.e-reorder')) || (oldUlElement && this.isVirtualReorder && this.list.querySelector('.e-list-parent' + '.e-reorder'))) {
                     oldUlElement = this.list.querySelector('.e-list-parent' + '.e-reorder');
                 }
                 if ((listData.length >= this.virtualizedItemsCount && oldUlElement && virtualUlElement) || (oldUlElement && virtualUlElement && this.isAllowFiltering) || (oldUlElement && virtualUlElement && (this.getModuleName() === 'autocomplete' || this.getModuleName() === 'multiselect')) || isRemovedUlelement) {
@@ -1889,7 +1890,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         }
         setStyleAttribute(this.fixedHeaderElement, { zIndex: 10 });
         const firstLi: HTMLElement = this.ulElement.querySelector('.' + dropDownBaseClasses.group + ':not(.e-hide-listitem)') as HTMLElement;
-        this.fixedHeaderElement.innerHTML = firstLi.innerHTML;
+        if (!isNullOrUndefined(firstLi)) {
+            this.fixedHeaderElement.innerHTML = firstLi.innerHTML;
+        }
     }
     private getSortedDataSource(dataSource: { [key: string]: Object }[]): { [key: string]: Object }[] {
         if (dataSource && this.sortOrder !== 'None') {
@@ -2116,7 +2119,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         const group: HTMLElement = <HTMLElement>this.element.querySelector('select>optgroup');
         if ((this.fields.groupBy || !isNullOrUndefined(group)) && !this.isGroupChecking) {
             EventHandler.add(this.list, 'scroll', this.setFloatingHeader, this);
-            EventHandler.add(document, 'scroll', this.updateGroupFixedHeader, this);
+            const elements: HTMLElement[] = this.getScrollableParent();
+            for (let i: number = 0; i < elements.length; i++) {
+                const ele: HTMLElement = elements[i as number];
+                EventHandler.add(ele, 'scroll', this.updateGroupFixedHeader, this);
+            }
         }
         if (this.getModuleName() === 'dropdownbase') {
             if (this.element.getAttribute('tabindex')) {
@@ -2134,6 +2141,24 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             this.initialize(e);
         }
     }
+
+    private getScrollableParent(): HTMLElement[] {
+        const eleStyle: CSSStyleDeclaration = getComputedStyle(this.element);
+        const scrollParents: HTMLElement[] = [];
+        const overflowRegex: RegExp = /(auto|scroll)/;
+        let parent: HTMLElement = this.element.parentElement;
+        while (parent && parent.tagName !== 'HTML') {
+            const parentStyle: CSSStyleDeclaration = getComputedStyle(parent);
+            if (!(eleStyle.position === 'absolute' && parentStyle.position === 'static')
+                && overflowRegex.test(parentStyle.overflow + parentStyle.overflowY + parentStyle.overflowX)) {
+                scrollParents.push(parent);
+            }
+            parent = parent.parentElement;
+        }
+        scrollParents.push(<HTMLElement & Document>document);
+        return scrollParents;
+    }
+
     protected removeScrollEvent() : void
     {
         if (this.list) {

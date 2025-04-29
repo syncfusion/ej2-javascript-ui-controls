@@ -608,7 +608,7 @@ export class BaseHistoryInfo {
             abstractList.numberFormat = this.listInfo.listNumberFormat;
             this.listInfo.listLevelPattern = currentListLevelPattern;
             this.listInfo.listNumberFormat = currentNUmberFormat;
-            if (!isNullOrUndefined(this.listInfo.listCharacterFormat)) {
+            if (!isNullOrUndefined(this.listInfo.listCharacterFormat) && abstractList.characterFormat.hasValue('fontFamily')) {
                 let currentListCharacterFormat: string = abstractList.characterFormat.fontFamily;
                 abstractList.characterFormat.fontFamily = this.listInfo.listCharacterFormat;
                 abstractList.characterFormat.fontFamilyAscii = this.listInfo.listCharacterFormat;

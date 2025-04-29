@@ -37,18 +37,26 @@
       &:focus,
       &.e-focus {
         & .e-frame {
-          box-shadow: $cbox-focussed-box-shadow;
+          & {
+            box-shadow: $cbox-focussed-box-shadow;
+          }
           @if $skin-name == 'bootstrap5.3' {
-            border-color: $border-focus;
+            & {
+              border-color: $border-focus;
+            }
           }
         }
         @if $skin-name == 'FluentUI' {
-          border: 1px solid $cbox-border-color;
-          padding: 3px;
+          & {
+            border: 1px solid $cbox-border-color;
+            padding: 3px;
+          }
         }
         @if $skin-name == 'fluent2' {
-          border-radius: 4px;
-          box-shadow: $shadow-focus-ring1;
+          & {
+            border-radius: 4px;
+            box-shadow: $shadow-focus-ring1;
+          }
         }
       }
 

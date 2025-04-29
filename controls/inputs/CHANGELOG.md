@@ -4,6 +4,14 @@
 
 ## 29.1.39 (2025-04-22)
 
+### TextBox
+
+#### Bug Fixes
+
+- `#I701764` - Resolved an issue where the error color was removed from the placeholder text when focusing on the TextBox component.
+
+- `#I707682` - Resolved an issue where the prepend icon was not showing in the Tailwind 3 theme on the TextBox component.
+
 ### NumericTextBox
 
 #### Bug Fixes

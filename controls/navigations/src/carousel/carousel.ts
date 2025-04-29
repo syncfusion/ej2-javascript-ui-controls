@@ -1288,6 +1288,14 @@ export class Carousel extends Component<HTMLElement> implements INotifyPropertyC
         if (this.element.classList.contains(CLS_HOVER) || isNullOrUndefined(this.slideItems) || this.slideItems.length <= 1) {
             return;
         }
+        if (this.swipeMode === (~CarouselSwipeMode.Touch & ~CarouselSwipeMode.Mouse)) {
+            return;
+        }
+        const eventType: string = e.startEvents ? e.startEvents.toString() : null;
+        if (eventType && ((this.swipeMode === CarouselSwipeMode.Mouse && eventType.includes('Touch')) ||
+            (this.swipeMode === CarouselSwipeMode.Touch && eventType.includes('Mouse')))) {
+            return;
+        }
         const direction: CarouselSlideDirection = (e.swipeDirection === 'Right') ? 'Previous' : 'Next';
         const slideIndex: number = this.getSlideIndex(direction);
         if (!this.isSuspendSlideTransition(slideIndex, direction)) {

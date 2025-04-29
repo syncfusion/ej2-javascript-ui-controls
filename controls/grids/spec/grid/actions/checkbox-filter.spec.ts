@@ -3858,6 +3858,50 @@ describe('coverage improvemnet.', () => {
             gridObj = actionComplete = null;
         });
     });
+    
+    describe('952011 - Check Box Filter Issue in Grid with Infinite Scrolling =>', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            let options: Object = {
+                dataSource: [
+                    { OrderID: 10250, CustomerID: 'SUPRD', ShipCity: 'Chennai',},
+                    { OrderID: 10251, CustomerID: 'SUPRD2', ShipCity: 'Tuticorin',},
+                    { OrderID: 10252, CustomerID: 'SUPRD', ShipCity: 'Trichy',},
+                    { OrderID: 10253, CustomerID: 'SUPRD', ShipCity: 'Kovai',},
+                    { OrderID: 10254, CustomerID: 'SUPRD', ShipCity: 'Ooty', }],
+                allowFiltering: true,
+                filterSettings: { type: 'CheckBox', enableInfiniteScrolling: true },
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', isPrimaryKey: true },
+                    { field: 'CustomerID', headerText: 'Customer Name', width: 150 },
+                    { field: 'ShipCity', headerText: 'Ship City', width: 130, textAlign: 'Right' },
+                ],
+            };
+            gridObj = createGrid(options, done);
+        });
+
+        it('open filter and search the values', (done: Function) => {
+            (gridObj.element.querySelectorAll(".e-filtermenudiv")[1] as HTMLElement).click();
+            (gridObj.filterModule.filterModule.checkBoxBase as any).sInput.value = 'su';
+            (gridObj.filterModule.filterModule.checkBoxBase as any).refreshCheckboxes();
+            (gridObj.filterModule.filterModule.checkBoxBase as any).sInput.value = '';
+            (gridObj.filterModule.filterModule.checkBoxBase as any).refreshCheckboxes();  
+            done();
+        }); 
+
+        it('Clear the filter', (done: Function) => {
+            (document.querySelectorAll('.e-checkboxfilter .e-footer-content .e-btn') as any)[1].click();
+            done();
+        });
+        it('Check DataSource length', (done: Function) => {
+            expect(gridObj.currentViewData.length).toBe(5);
+            done();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
 
     describe('Code coverage - 1 =>', () => {
         let gridObj: Grid;

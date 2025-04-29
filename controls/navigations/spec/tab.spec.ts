@@ -7,6 +7,7 @@ import { TabActionSettingsModel, TabAnimationSettingsModel, TabItemModel } from 
 import { Toolbar } from '../src/toolbar/toolbar';
 import { profile, inMB, getMemoryProfile } from './common.spec';
 import '../node_modules/es6-promise/dist/es6-promise';
+import { ItemModel } from '../src/toolbar';
 
 /**
  * Method to trigger mouse event
@@ -12692,6 +12693,62 @@ describe('Tab Control', () => {
                 }
             }
             expect(activeItemsCount).toEqual(1);
+        });
+    });
+
+    describe('Tab with Toolbar Tests', () => {
+        let tab: Tab;
+
+        function createToolbar(): HTMLElement {
+            const toolbarContainer = document.createElement('div');
+            const toolbarItems: ItemModel[] = [
+                { prefixIcon: 'e-icons e-cut', tooltipText: 'Cut' },
+                { prefixIcon: 'e-icons e-copy', tooltipText: 'Copy' },
+                { prefixIcon: 'e-icons e-paste', tooltipText: 'Paste' }
+            ];
+            const toolbar = new Toolbar({
+                items: toolbarItems
+            });
+            toolbar.appendTo(toolbarContainer);
+            return toolbarContainer;
+        }
+
+        beforeEach(() => {
+            const ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+            const tabItems: TabItemModel[] = [
+                {
+                    header: { text: 'Tab 1' },
+                    content: createToolbar()
+                }
+            ];
+            tab = new Tab({
+                items: tabItems,
+                headerPlacement:'Bottom',
+                showCloseButton: true
+            });
+            tab.appendTo('#ej2Tab');
+        });
+
+        afterEach(() => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+
+        it('should render tab with toolbar', () => {
+            expect(document.querySelector('#ej2Tab .e-toolbar')).toBeTruthy();
+            expect(document.querySelector('#ej2Tab .e-tab-header')).toBeTruthy();
+        });
+
+        it('should remove tab with toolbar when close icon is clicked', () => {
+            const closeIcon = document.querySelector('.e-toolbar-item .e-close-icon') as HTMLElement;
+            if (closeIcon) {
+                closeIcon.click();
+            }
+            expect(document.querySelector('#ej2Tab .e-toolbar')).toBeFalsy();
+            expect(document.querySelector('#ej2Tab .e-tab-header')).toBeFalsy();
         });
     });
 

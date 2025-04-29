@@ -572,8 +572,9 @@ export class LayoutRender extends MobileLayout {
         }
         [].slice.call(header.children).forEach((node: HTMLElement) => {
             let paddingValue: number = 0;
-            if ((content.offsetWidth - content.clientWidth) > 0) {
-                paddingValue = 17;
+            const scrollBarWidth: number = content.offsetWidth - content.clientWidth;
+            if ((scrollBarWidth) > 0) {
+                paddingValue = scrollBarWidth;
                 if ((content.offsetHeight - content.clientHeight) > 0) {
                     node.style.width = formatUnit(content.clientWidth);
                 }
@@ -912,7 +913,7 @@ export class LayoutRender extends MobileLayout {
         let isColumnTemplateRefreshed: boolean = false;
         this.parent.columns.forEach((column: ColumnsModel) => {
             if (column.showItemCount) {
-                if (column && column.template && !isColumnTemplateRefreshed) {
+                if (column && column.template && !isColumnTemplateRefreshed && !Browser.isDevice) {
                     this.refreshHeaders();
                     isColumnTemplateRefreshed = true;
                 }
@@ -996,7 +997,9 @@ export class LayoutRender extends MobileLayout {
                     this.renderSwimlaneRow(swimRow, this.kanbanRows[index as number], false);
                     this.renderSingleContent(swimRow, this.kanbanRows[index as number], false);
                 }
-                cardRow = this.parent.element.querySelector(rowSelector).nextElementSibling as HTMLElement;
+                if (!isNoU(this.parent.element.querySelector(rowSelector))) {
+                    cardRow = this.parent.element.querySelector(rowSelector).nextElementSibling as HTMLElement;
+                }
                 [].slice.call(cardRow.children).forEach((cell: HTMLElement) => {
                     const cardWrapper: HTMLElement = createElement('div', { className: cls.CARD_WRAPPER_CLASS });
                     cell.appendChild(cardWrapper);
@@ -1026,26 +1029,28 @@ export class LayoutRender extends MobileLayout {
         if (cardRow) {
             const td: HTMLElement = [].slice.call(cardRow.children).filter((e: Element) =>
                 e.getAttribute('data-key').replace(/\s/g, '').split(',').indexOf(key.toString().replace(/\s/g, '')) !== -1)[0];
-            const cardWrapper: Element = td.querySelector('.' + cls.CARD_WRAPPER_CLASS);
-            const emptyCard: Element = cardWrapper.querySelector('.' + cls.EMPTY_CARD_CLASS);
-            if (emptyCard) {
-                remove(emptyCard);
-            }
-            const cardElement: HTMLElement = this.renderCard(data as { [key: string]: string });
-            if (this.parent.allowDragAndDrop && td.classList.contains(cls.DRAG_CLASS)) {
-                this.parent.dragAndDropModule.wireDragEvents(cardElement);
-                addClass([cardElement], cls.DROPPABLE_CLASS);
-            }
-            const args: CardRenderedEventArgs = { data: data, element: cardElement, cancel: false };
-            this.parent.trigger(events.cardRendered, args, (cardArgs: CardRenderedEventArgs) => {
-                if (!cardArgs.cancel) {
-                    if (isNoU(index) || cardWrapper.children.length === 0) {
-                        cardWrapper.appendChild(cardElement);
-                    } else {
-                        cardWrapper.insertBefore(cardElement, cardWrapper.childNodes[index as number]);
-                    }
+            if (!isNoU(td)) {
+                const cardWrapper: Element = td.querySelector('.' + cls.CARD_WRAPPER_CLASS);
+                const emptyCard: Element = cardWrapper.querySelector('.' + cls.EMPTY_CARD_CLASS);
+                if (emptyCard) {
+                    remove(emptyCard);
                 }
-            });
+                const cardElement: HTMLElement = this.renderCard(data as { [key: string]: string });
+                if (this.parent.allowDragAndDrop && td.classList.contains(cls.DRAG_CLASS)) {
+                    this.parent.dragAndDropModule.wireDragEvents(cardElement);
+                    addClass([cardElement], cls.DROPPABLE_CLASS);
+                }
+                const args: CardRenderedEventArgs = { data: data, element: cardElement, cancel: false };
+                this.parent.trigger(events.cardRendered, args, (cardArgs: CardRenderedEventArgs) => {
+                    if (!cardArgs.cancel) {
+                        if (isNoU(index) || cardWrapper.children.length === 0) {
+                            cardWrapper.appendChild(cardElement);
+                        } else {
+                            cardWrapper.insertBefore(cardElement, cardWrapper.childNodes[index as number]);
+                        }
+                    }
+                });
+            }
         }
     }
 

@@ -469,7 +469,9 @@ export class _TrueTypeReader {
             collection = this._macintoshGlyphs;
             break;
         }
-        collection.setValue(glyph._index, glyph);
+        if (glyph && typeof glyph._index !== 'undefined') {
+            collection.setValue(glyph._index, glyph);
+        }
     }
     _initializeMetrics(nameTable: _TrueTypeNameTable, headTable: _TrueTypeHeadTable,
                        horizontalHeadTable: _TrueTypeHorizontalHeaderTable, os2Table: _TrueTypeOS2Table,

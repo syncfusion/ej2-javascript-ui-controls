@@ -3,6 +3,8 @@ export class _ContentParser {
     _lexer: _ContentLexer;
     _recordCollection: _PdfRecord[] = [];
     _operands: string[] = [];
+    _inlineImageBytes: number[] = [];
+    _isByteOpearand: boolean = false;
     constructor(contentStream: number[])
     constructor(contentStream: Uint8Array)
     constructor(contentStream: Uint8Array | number[]) {
@@ -41,8 +43,15 @@ export class _ContentParser {
                 this._operands.push(this._lexer._operatorParams);
                 break;
             case _TokenType.operator:
-                this._createRecord();
-                this._operands = [];
+                if (this._lexer._operatorParams === 'ID') {
+                    this._createRecord();
+                    this._operands = [];
+                    this._consumeValue();
+                    break;
+                } else {
+                    this._createRecord();
+                    this._operands = [];
+                }
                 break;
             case _TokenType.beginArray:
                 break;
@@ -51,9 +60,60 @@ export class _ContentParser {
             }
         }
     }
+    _consumeValue(): void {
+        let currentChar: string;
+        let nextChar: string;
+        let secondNextChar: string;
+        let thirdChar: string;
+        while (true) { // eslint-disable-line
+            let contentCount: number = 0;
+            currentChar = this._lexer._getNextCharforInlineStream();
+            if (currentChar === 'E' || currentChar === String.fromCharCode(65535)) {
+                nextChar = this._lexer._getNextInlineChar();
+                if (nextChar === 'I' || (nextChar === String.fromCharCode(65535) && currentChar === String.fromCharCode(65535))) {
+                    secondNextChar = this._lexer._nextCharacter;
+                    thirdChar = this._lexer._nextCharacter;
+                    while (thirdChar === ' ' || thirdChar === '\r' || thirdChar === '\n') {
+                        thirdChar = this._lexer._getNextChar();
+                        contentCount++;
+                    }
+                    this._lexer._resetContentPointer(contentCount);
+                    if (secondNextChar === ' ' || secondNextChar === '\n' || secondNextChar === String.fromCharCode(65535) || secondNextChar === '\r') {
+                        if (thirdChar === 'Q' || thirdChar === String.fromCharCode(65535) || thirdChar === 'S' || (thirdChar >= '0' && thirdChar <= '9')) {
+                            this._lexer._operatorParams = '';
+                            this._lexer._operatorParams += currentChar;
+                            this._lexer._operatorParams += nextChar;
+                            this._isByteOpearand = true;
+                            this._createRecord();
+                            this._isByteOpearand = false;
+                            this._inlineImageBytes = [];
+                            nextChar = this._lexer._getNextInlineChar();
+                            break;
+                        }
+                    }  else {
+                        this._inlineImageBytes.push(currentChar.charCodeAt(0) & 0xFF);
+                        this._inlineImageBytes.push(nextChar.charCodeAt(0) & 0xFF);
+                        this._inlineImageBytes.push(secondNextChar.charCodeAt(0) & 0xFF);
+                        this._inlineImageBytes.push(thirdChar.charCodeAt(0) & 0xFF);
+                        currentChar = this._lexer._getNextCharforInlineStream();
+                    }
+                } else {
+                    this._inlineImageBytes.push(currentChar.charCodeAt(0) & 0xFF);
+                    this._inlineImageBytes.push(nextChar.charCodeAt(0) & 0xFF);
+                }
+            } else {
+                this._inlineImageBytes.push(currentChar.charCodeAt(0) & 0xFF);
+            }
+        }
+    }
     _createRecord(): void {
         const operand: string = this._lexer._operatorParams;
-        const record: _PdfRecord = new _PdfRecord(operand, this._operands);
+        let record: _PdfRecord;
+        if (this._isByteOpearand) {
+            record = new _PdfRecord(operand, new Uint8Array(this._inlineImageBytes));
+        } else {
+            record = new _PdfRecord(operand, this._operands);
+        }
         record._splitText = this._lexer._text;
         this._recordCollection.push(record);
     }
@@ -334,6 +394,44 @@ export class _ContentLexer {
         }
         return this._currentCharacter;
     }
+    _resetContentPointer(count: number): void {
+        this._offset = this._offset - count;
+    }
+    _getNextInlineChar(): string {
+        if (this._data.length <= this._offset) {
+            this._currentCharacter = String.fromCharCode(65535);
+            this._nextCharacter = String.fromCharCode(65535);
+        } else {
+            this._currentCharacter = this._nextCharacter;
+            this._nextCharacter = String.fromCharCode(this._data[this._offset++]);
+            if (this._currentCharacter === '\x0D') {
+                if (this._nextCharacter === '\x0A') {
+                    this._currentCharacter = '\x0D';
+                } else {
+                    this._currentCharacter = '\x0A';
+                }
+            }
+        }
+        return this._currentCharacter;
+    }
+    _getNextCharforInlineStream(): string {
+        if (this._data.length <= this._offset) {
+            this._currentCharacter = String.fromCharCode(65535);
+            this._nextCharacter = String.fromCharCode(65535);
+        } else {
+            this._currentCharacter = this._nextCharacter;
+            this._nextCharacter = String.fromCharCode(this._data[this._offset++]);
+            if (this._currentCharacter === '\x0D') {
+                if (this._nextCharacter === '\x0A') {
+                    if (this._data.length <= this._offset) {
+                        this._currentCharacter = this._nextCharacter;
+                        this._nextCharacter = String.fromCharCode(65535);
+                    }
+                }
+            }
+        }
+        return this._currentCharacter;
+    }
     _getNextChar(): string {
         if (this._data.length <= this._offset) {
             if (this._nextCharacter === 'Q' || (this._currentCharacter === 'D' && this._nextCharacter === 'o')) {
@@ -366,8 +464,15 @@ export class _PdfRecord {
     _operator: string;
     _operands: string[];
     _splitText: string[];
-    constructor(operator: string, operands: string[]) {
-        this._operator = operator;
-        this._operands = operands;
+    _inlineImageBytes: Uint8Array;
+    constructor(name: string, operands: string[]);
+    constructor(name: string, imageData: Uint8Array);
+    constructor(name: string, data: string[] | Uint8Array) {
+        this._operator = name;
+        if (Array.isArray(data)) {
+            this._operands = data;
+        } else {
+            this._inlineImageBytes = data;
+        }
     }
 }

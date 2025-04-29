@@ -2378,14 +2378,14 @@ export class BasicFormulas {
      * @returns {string | boolean} - Compute the date value.
      */
     public ComputeDATEVALUE(...args: string[]): Date | string  {
-        let dValue: string;
+        let dValue: string; let computedDvalue: string;
         const errCollection: string[] = this.parent.getErrorStrings();
         if (args[0] === '') {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.InvalidArguments];
         } else if (args.length > 1) {
             return this.parent.formulaErrorStrings[FormulasErrorsStrings.WrongNumberArguments];
         }
-        dValue = this.parent.getValueFromArg(args[0]) || '0';
+        dValue = computedDvalue = this.parent.getValueFromArg(args[0]) || '0';
         if (errCollection.indexOf(dValue) > -1) { return dValue; }
         if (this.parent.isCellReference(args[0])) {
             if ((args[0].indexOf(':') > -1) || dValue.startsWith(this.parent.tic)) {
@@ -2395,7 +2395,11 @@ export class BasicFormulas {
             dValue = (args[0]).split(this.parent.tic).join('') || '0';
         }
         if (!(!(this.parent.isNumber(dValue)) && !isNullOrUndefined(this.parent.isDate(dValue)))) {
-            return errCollection[CommonErrors.Value];
+            if (!this.parent.isNumber(computedDvalue) && this.parent.isDate(computedDvalue)) {
+                dValue = computedDvalue;
+            } else {
+                return errCollection[CommonErrors.Value];
+            }
         }
         const date: Date = this.parent.parseDate(dValue);
         if (errCollection.indexOf(dValue) > -1) {
@@ -4252,8 +4256,15 @@ export class BasicFormulas {
             if ((isStringValue && !isStringCollection) || (!isStringValue && isStringCollection)) {
                 return errCollection[CommonErrors.NA];
             }
+        } else if (!isNullOrUndefined(argArr[1]) && argArr[1].includes(this.parent.tic + this.parent.tic)) {
+            const criterias: string[] = argArr[1].split(this.parent.tic + this.parent.tic);
+            criterias.forEach((criteria: string) => {
+                criteria = criteria.trim().split(this.parent.tic).join('');
+                if (criteria) {
+                    valueCollection.push(criteria);
+                }
+            });
         }
-
         let index: number = 0;
         let indexVal: string = '';
         let isIndexFound: boolean = false;

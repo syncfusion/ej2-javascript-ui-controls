@@ -1,6 +1,6 @@
 import { _PdfStream } from './base-stream';
 import { _PdfDictionary, _PdfReferenceSet, _isCommand, _PdfReference, _PdfCommand, _PdfName } from './pdf-primitives';
-import { BaseException, FormatError, _escapePdfName, _bytesToString, ParserEndOfFileException, _numberToString, _stringToPdfString, _stringToBigEndianBytes, _getSize, _compressStream } from './utils';
+import { BaseException, FormatError, _escapePdfName, _bytesToString, ParserEndOfFileException, _numberToString, _stringToPdfString, _stringToBigEndianBytes, _getSize, _compressStream, _hasUnicodeCharacters, _stringToBytes, _byteArrayToHexString } from './utils';
 import { _PdfParser, _PdfLexicalOperator } from './pdf-parser';
 import { _PdfBaseStream } from './base-stream';
 import { PdfCrossReferenceType } from './enumerator';
@@ -941,16 +941,26 @@ export class _PdfCrossReference {
                         if (nestedValue instanceof _PdfReference) {
                             this._writeString(`${nestedValue.objectNumber} ${nestedValue.generationNumber} R`, buffer);
                         } else if (nestedValue instanceof _PdfName) {
-                            this._writeString(`/${nestedValue.name}`, buffer);
+                            this._writeString(`/${_escapePdfName(nestedValue.name)}`, buffer);
                         } else {
                             this._writeString(`${nestedValue} `, buffer);
                         }
                     });
                     this._writeString(']', buffer);
                 } else if (value instanceof _PdfName) {
-                    this._writeString(`/${value.name}`, buffer);
+                    this._writeString(`/${_escapePdfName(value.name)}`, buffer);
                 } else if (value instanceof _PdfDictionary) {
                     this._writeDictionary(value, buffer, this._newLine, transform, isCrossReference);
+                } else if (typeof(value) === 'string') {
+                    if (_hasUnicodeCharacters(value)) {
+                        const bytes: Uint8Array = _stringToBytes(value) as Uint8Array;
+                        const text: string = _byteArrayToHexString(bytes);
+                        this._writeString('<', buffer);
+                        this._writeString(`${text}`, buffer);
+                        this._writeString('>', buffer);
+                    } else {
+                        this._writeString(`${value}\n`, buffer);
+                    }
                 } else {
                     this._writeString(`${value}\n`, buffer);
                 }

@@ -55,6 +55,15 @@
   pointer-events: none;
 }
 
+.e-drag-indicator {
+  background-color: $chip-choice-active-bg-color;
+  height: $chip-height;
+  width: $drag-indicator-width;
+  position: absolute;
+  display: none;
+  z-index: 1000;
+}
+
 @include export-module('chip-theme') {
   .e-chip-list {
     &.e-selection .e-chip {
@@ -81,6 +90,14 @@
             @include chip-color($chip-disabled-bg-color, $chip-disabled-border-color, $chip-disabled-font-color, $chip-disabled-font-color, $chip-avatar-disabled-bg-color, $chip-avatar-disabled-font-color);
           }
         }
+
+        &.e-clone-chip {
+          @include chip-color($chip-choice-active-bg-color, $chip-choice-active-border-color, $chip-choice-active-font-color, $chip-choice-active-font-color, $chip-avatar-choice-active-bg-color, $chip-avatar-choice-active-font-color);
+          .e-drag-and-drop,
+          &.e-error-treeview {
+            color: $chip-active-font-color;
+          }
+        }
   
         &.e-outline {
           @include chip-color($chip-outline-choice-active-bg-color, $chip-outline-choice-active-border-color, $chip-outline-choice-active-font-color, $chip-outline-choice-active-font-color, $chip-outline-avatar-choice-active-bg-color, $chip-outline-avatar-choice-active-font-color);
@@ -101,6 +118,14 @@
   
           &.e-disabled {
             @include chip-color($chip-outline-disabled-bg-color, $chip-outline-disabled-border-color, $chip-disabled-font-color, $chip-disabled-font-color, $chip-outline-avatar-disabled-bg-color, $chip-outline-avatar-disabled-font-color);
+          }
+          
+          &.e-clone-chip {
+            @include chip-color($chip-choice-active-bg-color, $chip-choice-active-border-color, $chip-choice-active-font-color, $chip-choice-active-font-color, $chip-avatar-choice-active-bg-color, $chip-avatar-choice-active-font-color);
+            .e-drag-and-drop,
+            &.e-error-treeview {
+              color: $chip-active-font-color;
+            }
           }
         }
       }
@@ -193,6 +218,14 @@
         pointer-events: none;
       }
 
+      &.e-clone-chip {
+        @include chip-color($chip-active-bg-color, $chip-active-border-color, $chip-active-font-color, $chip-icon-active-font-color, $chip-avatar-active-bg-color, $chip-avatar-active-font-color, $chip-close-icon-font-color);
+        .e-drag-and-drop,
+        &.e-error-treeview {
+          color: $chip-active-font-color;
+        }
+      }
+
       &.e-outline {
         @include chip-color(transparent, $chip-outline-border-color, $chip-outline-font-color, $chip-outline-icon-font-color, $chip-outline-avatar-bg-color, $chip-outline-avatar-font-color, $chip-outline-close-icon-font-color);
         @include chip-dlt-btn-color($chip-outline-close-icon-hover-font-color, $chip-outline-close-icon-pressed-font-color);
@@ -238,6 +271,14 @@
           }
           @else {
             @include chip-color($chip-outline-disabled-bg-color, $chip-outline-disabled-border-color, $chip-disabled-font-color, $chip-disabled-font-color, $chip-outline-avatar-disabled-bg-color, $chip-outline-avatar-disabled-font-color);
+          }
+        }
+
+        &.e-clone-chip {
+          @include chip-color($chip-active-bg-color, $chip-active-border-color, $chip-active-font-color, $chip-icon-active-font-color, $chip-avatar-active-bg-color, $chip-avatar-active-font-color, $chip-close-icon-font-color);
+          .e-drag-and-drop,
+          &.e-error-treeview {
+            color: $chip-active-font-color;
           }
         }
       }
@@ -303,6 +344,14 @@
           }
         }
 
+        &.e-clone-chip {
+          @include chip-color($chip-primary-active-bg-color, $chip-primary-active-border-color, $chip-primary-active-font-color, $chip-primary-active-font-color, $chip-primary-avatar-active-bg-color, $chip-primary-avatar-active-font-color);
+          .e-drag-and-drop,
+          &.e-error-treeview {
+            color: $chip-primary-active-font-color;
+          }
+        }
+
         &.e-outline {
           @include chip-color($chip-outline-primary-bg-color, $chip-outline-primary-border-color, $chip-outline-primary-font-color, $chip-outline-primary-font-color, $chip-outline-primary-avatar-bg-color, $chip-outline-primary-avatar-font-color, $chip-outline-primary-close-icon-font-color);
           @include chip-dlt-btn-color($chip-outline-primary-close-icon-hover-font-color, $chip-outline-primary-close-icon-pressed-font-color);
@@ -344,6 +393,14 @@
             }
             @else {
               @include chip-color($chip-outline-primary-disabled-bg-color, $chip-outline-primary-disabled-border-color, $chip-outline-primary-disabled-font-color, $chip-outline-primary-disabled-font-color, $chip-outline-primary-avatar-disabled-bg-color, $chip-outline-primary-avatar-disabled-font-color);
+            }
+          }
+
+          &.e-clone-chip {
+            @include chip-color($chip-primary-active-bg-color, $chip-primary-active-border-color, $chip-primary-active-font-color, $chip-primary-active-font-color, $chip-primary-avatar-active-bg-color, $chip-primary-avatar-active-font-color);
+            .e-drag-and-drop,
+            &.e-error-treeview {
+              color: $chip-primary-active-font-color;
             }
           }
         }
@@ -410,6 +467,14 @@
           }
         }
 
+        &.e-clone-chip {
+          @include chip-color($chip-success-active-bg-color, $chip-success-active-border-color, $chip-success-active-font-color, $chip-success-active-font-color, $chip-success-avatar-active-bg-color, $chip-success-avatar-active-font-color);
+          .e-drag-and-drop,
+          &.e-error-treeview {
+            color: $chip-success-active-font-color;
+          }
+        }
+
         &.e-outline {
           @include chip-color($chip-outline-success-bg-color, $chip-outline-success-border-color, $chip-outline-success-font-color, $chip-outline-success-font-color, $chip-outline-success-avatar-bg-color, $chip-outline-success-avatar-font-color, $chip-outline-success-close-icon-font-color);
           @include chip-dlt-btn-color($chip-outline-success-close-icon-hover-font-color, $chip-outline-success-close-icon-pressed-font-color);
@@ -451,6 +516,14 @@
             }
             @else {
               @include chip-color($chip-outline-success-disabled-bg-color, $chip-outline-success-disabled-border-color, $chip-outline-success-disabled-font-color, $chip-outline-success-disabled-font-color, $chip-outline-success-avatar-disabled-bg-color, $chip-outline-success-avatar-disabled-font-color);
+            }
+          }
+
+          &.e-clone-chip {
+            @include chip-color($chip-success-active-bg-color, $chip-success-active-border-color, $chip-success-active-font-color, $chip-success-active-font-color, $chip-success-avatar-active-bg-color, $chip-success-avatar-active-font-color);
+            .e-drag-and-drop,
+            &.e-error-treeview {
+              color: $chip-success-active-font-color;
             }
           }
         }
@@ -517,6 +590,14 @@
           }
         }
 
+        &.e-clone-chip {
+          @include chip-color($chip-info-active-bg-color, $chip-info-active-border-color, $chip-info-active-font-color, $chip-info-active-font-color, $chip-info-avatar-active-bg-color, $chip-info-avatar-active-font-color);
+          .e-drag-and-drop,
+          &.e-error-treeview {
+            color: $chip-info-active-font-color;
+          }
+        }
+
         &.e-outline {
           @include chip-color($chip-outline-info-bg-color, $chip-outline-info-border-color, $chip-outline-info-font-color, $chip-outline-info-font-color, $chip-outline-info-avatar-bg-color, $chip-outline-info-avatar-font-color, $chip-outline-info-close-icon-font-color);
           @include chip-dlt-btn-color($chip-outline-info-close-icon-hover-font-color, $chip-outline-info-close-icon-pressed-font-color);
@@ -558,6 +639,14 @@
             }
             @else {
               @include chip-color($chip-outline-info-disabled-bg-color, $chip-outline-info-disabled-border-color, $chip-outline-info-disabled-font-color, $chip-outline-info-disabled-font-color, $chip-outline-info-avatar-disabled-bg-color, $chip-outline-info-avatar-disabled-font-color);
+            }
+          }
+
+          &.e-clone-chip {
+            @include chip-color($chip-info-active-bg-color, $chip-info-active-border-color, $chip-info-active-font-color, $chip-info-active-font-color, $chip-info-avatar-active-bg-color, $chip-info-avatar-active-font-color);
+            .e-drag-and-drop,
+            &.e-error-treeview {
+              color: $chip-info-active-font-color;
             }
           }
         }
@@ -624,6 +713,14 @@
           }
         }
 
+        &.e-clone-chip {
+          @include chip-color($chip-warning-active-bg-color, $chip-warning-active-border-color, $chip-warning-active-font-color, $chip-warning-active-font-color, $chip-warning-avatar-active-bg-color, $chip-warning-avatar-active-font-color);
+          .e-drag-and-drop,
+          &.e-error-treeview {
+            color: $chip-warning-active-font-color;
+          }
+        }
+
         &.e-outline {
           @include chip-color($chip-outline-warning-bg-color, $chip-outline-warning-border-color, $chip-outline-warning-font-color, $chip-outline-warning-font-color, $chip-outline-warning-avatar-bg-color, $chip-outline-warning-avatar-font-color, $chip-outline-warning-close-icon-font-color);
           @include chip-dlt-btn-color($chip-outline-warning-close-icon-hover-font-color, $chip-outline-warning-close-icon-pressed-font-color);
@@ -670,6 +767,14 @@
             }
             @else {
               @include chip-color($chip-outline-warning-disabled-bg-color, $chip-outline-warning-disabled-border-color, $chip-outline-warning-disabled-font-color, $chip-outline-warning-disabled-font-color, $chip-outline-warning-avatar-disabled-bg-color, $chip-outline-warning-avatar-disabled-font-color);
+            }
+          }
+
+          &.e-clone-chip {
+            @include chip-color($chip-warning-active-bg-color, $chip-warning-active-border-color, $chip-warning-active-font-color, $chip-warning-active-font-color, $chip-warning-avatar-active-bg-color, $chip-warning-avatar-active-font-color);
+            .e-drag-and-drop,
+            &.e-error-treeview {
+              color: $chip-warning-active-font-color;
             }
           }
         }
@@ -736,6 +841,14 @@
           }
         }
 
+        &.e-clone-chip {
+          @include chip-color($chip-danger-active-bg-color, $chip-danger-active-border-color, $chip-danger-active-font-color, $chip-danger-active-font-color, $chip-danger-avatar-active-bg-color, $chip-danger-avatar-active-font-color);
+          .e-drag-and-drop,
+          &.e-error-treeview {
+            color: $chip-danger-active-font-color;
+          }
+        }
+
         &.e-outline {
           @include chip-color($chip-outline-danger-bg-color, $chip-outline-danger-border-color, $chip-outline-danger-font-color, $chip-outline-danger-font-color, $chip-outline-danger-avatar-bg-color, $chip-outline-danger-avatar-font-color, $chip-outline-danger-close-icon-font-color);
           @include chip-dlt-btn-color($chip-outline-danger-close-icon-hover-font-color, $chip-outline-danger-close-icon-pressed-font-color);
@@ -777,6 +890,14 @@
             }
             @else {
               @include chip-color($chip-outline-danger-disabled-bg-color, $chip-outline-danger-disabled-border-color, $chip-outline-danger-disabled-font-color, $chip-outline-danger-disabled-font-color, $chip-outline-danger-avatar-disabled-bg-color, $chip-outline-danger-avatar-disabled-font-color);
+            }
+          }
+
+          &.e-clone-chip {
+            @include chip-color($chip-danger-active-bg-color, $chip-danger-active-border-color, $chip-danger-active-font-color, $chip-danger-active-font-color, $chip-danger-avatar-active-bg-color, $chip-danger-avatar-active-font-color);
+            .e-drag-and-drop,
+            &.e-error-treeview {
+              color: $chip-danger-active-font-color;
             }
           }
         }

@@ -35,6 +35,7 @@ export class PdfGantt extends PdfTreeGrid {
     public chartPageIndex: number;
     public eventMarker : EventMarker;
     public changeCloneProjectDates: boolean = false;
+    public currentPage: number = 0;
     public parent: Gantt;
 
     constructor(parent: Gantt) {
@@ -139,27 +140,53 @@ export class PdfGantt extends PdfTreeGrid {
             case 'Hour':
             {
                 detail.startDate = new Date(timelineStartDate.getTime());
-                const sDays1: number = Math.floor(pointToPixel(detail.startPoint) / (this.chartHeader.bottomTierCellWidth));
-                detail.startDate.setHours(detail.startDate.getHours() + sDays1 * count);
-                detail.startDate.setMinutes(detail.startDate.getMinutes() + 1);
-                detail.endDate = new Date(detail.startDate.getTime());
-                const eDays1: number = Math.floor(pointToPixel(detail.endPoint - detail.startPoint)
-                      / (this.chartHeader.bottomTierCellWidth));
-                detail.endDate.setHours(detail.endDate.getHours() + eDays1 * count);
+                const startHours: number = Math.floor(pointToPixel(detail.startPoint) / (this.chartHeader.bottomTierCellWidth));
+                let currentDate: Date = new Date(detail.startDate.getTime());
+
+                if (!this.parent.timelineSettings.showWeekend) {
+                    currentDate = this.calculateHoursWithoutNonworkingDays(currentDate, startHours, count);
+                    detail.startDate = new Date(currentDate.getTime());
+                } else {
+                    detail.startDate.setHours(detail.startDate.getHours() + startHours * count);
+                    detail.startDate.setMinutes(detail.startDate.getMinutes() + 1);
+                }
+
+                const endHours: number = Math.floor((detail.endPoint - detail.startPoint)
+                    / pointToPixel(this.chartHeader.bottomTierCellWidth));
+                currentDate = new Date(detail.startDate.getTime());
+                if (!this.parent.timelineSettings.showWeekend) {
+                    currentDate = this.calculateHoursWithoutNonworkingDays(currentDate, endHours, count);
+                } else {
+                    currentDate.setHours(currentDate.getHours() + endHours * count);
+                }
+                detail.endDate = new Date(currentDate.getTime());
                 break;
             }
             case 'Day':
             {
                 detail.startDate = new Date(timelineStartDate.getTime());
-                const startDays: number = (Math.round(detail.startPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth)));
-                detail.startDate.setDate(detail.startDate.getDate() + startDays * count);
-                const endDays: number = Math.round(((detail.endPoint - detail.startPoint)
-                      / pixelToPoint(this.chartHeader.bottomTierCellWidth))) - 1;
+                const startDays: number = Math.round(detail.startPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth));
+                let currentDate: Date = new Date(detail.startDate.getTime());
+
+                if (!this.parent.timelineSettings.showWeekend) {
+                    currentDate = this.calculateDaysWithoutNonworkingDays(currentDate, startDays, count);
+                } else {
+                    detail.startDate.setDate(detail.startDate.getDate() + startDays * count);
+                }
+
+                const endDays: number = Math.round((detail.endPoint - detail.startPoint)
+                    / pixelToPoint(this.chartHeader.bottomTierCellWidth)) - 1;
+
+                currentDate = new Date(detail.startDate.getTime());
+                if (!this.parent.timelineSettings.showWeekend) {
+                    currentDate = this.calculateDaysWithoutNonworkingDays(currentDate, endDays, count);
+                } else {
+                    currentDate.setDate(currentDate.getDate() + endDays * count);
+                }
                 const startdate: Date = detail.startDate;
                 startdate.setHours(0, 0, 0, 0);
                 const secondsToAdd: number = this.parent.workingTimeRanges[0].to * 1000;
-                detail.endDate = new Date(startdate.getTime());
-                detail.endDate.setDate(detail.startDate.getDate() + endDays * count);
+                detail.endDate = new Date(currentDate.getTime());
                 detail.endDate.setTime(detail.endDate.getTime() + secondsToAdd);
                 break;
             }
@@ -201,7 +228,53 @@ export class PdfGantt extends PdfTreeGrid {
             point += width;
         }
     }
-
+    /**
+     * Calculates the end date by adding the specified number of working hours to the current date,
+     * excluding any non-working days as specified in the nonWorkingDayIndex.
+     *
+     * @param {Date} currentDate - The starting date from which to begin adding working hours.
+     * @param {number} startHours - The number of hours to add to the current date.
+     * @param {number} count - A multiplier to apply to the startHours, typically representing a scaling factor.
+     * @returns {Date} - A new Date object representing the calculated date/time after working hours have been added.
+     *
+     */
+    private calculateHoursWithoutNonworkingDays(currentDate: Date, startHours: number, count: number): Date {
+        let totalHours: number = 0;
+        while (totalHours < startHours * count) {
+            currentDate.setHours(currentDate.getHours() + 1);
+            if (this.parent.nonWorkingDayIndex.indexOf(currentDate.getDay()) === -1) {
+                totalHours++;
+            }
+            if (this.parent.nonWorkingDayIndex.indexOf(currentDate.getDay()) !== -1) {
+                currentDate.setHours(24, 0, 0, 0);
+            }
+        }
+        return currentDate;
+    }
+    /**
+     * Calculates the end date by adding the specified number of working days to the current date,
+     * excluding any non-working days as defined in the nonWorkingDayIndex.
+     *
+     * @param {Date} currentDate - The starting date from which to begin adding working days.
+     * @param {number} daysToAdd - The number of days to add to the current date.
+     * @param {number} count - A multiplier applied to daysToAdd, typically representing the number of units.
+     * @returns {Date} - A new Date object representing the calculated date after working days have been added.
+     *
+     */
+    private calculateDaysWithoutNonworkingDays(currentDate: Date, daysToAdd: number, count: number): Date {
+        let totalDays: number = 0;
+        const fullWeeks: number = Math.floor(daysToAdd * count / (7 - this.parent.nonWorkingDayIndex.length));
+        const remainingDays: number = daysToAdd * count % (7 - this.parent.nonWorkingDayIndex.length);
+        totalDays += fullWeeks * 7;
+        for (let i: number = 0; i < remainingDays; i++) {
+            currentDate.setDate(currentDate.getDate() + 1);
+            if (this.parent.nonWorkingDayIndex.indexOf(currentDate.getDay()) === -1) {
+                totalDays++;
+            }
+        }
+        currentDate.setDate(currentDate.getDate() + totalDays);
+        return currentDate;
+    }
     private drawPageBorder(): void {
         const pages: PdfPage[] = this.result.page.section.getPages() as PdfPage[];
         for (let index: number = 0; index < pages.length; index++) {
@@ -221,20 +294,15 @@ export class PdfGantt extends PdfTreeGrid {
         let cumulativeHeight: number = 0;
         let pageData: PageDetail;
         this.headerDetails.forEach((detail: TimelineDetails, index: number): void => {
+            this.currentPage = 0;
             const page: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
             page['contentWidth'] = (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ? pointToPixel(this.headerDetails[index as number].endPoint - this.headerDetails[index as number].startPoint) : this.headerDetails[index as number].endPoint - this.headerDetails[index as number].startPoint;
-            this.chartHeader.drawTimeline(page, this.startPoint, detail);
+            this.chartHeader.drawTimeline(page, this.startPoint, detail, 0);
             taskbarPoint.y = taskbarPoint.y + pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60); // headerHeight
             pageStartX = taskbarPoint.x;
             cumulativeHeight = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60); // headerHeight
             this.headerDetails[this.headerDetails.indexOf(detail)].startIndex = this.startPageIndex;
             this.headerDetails[this.headerDetails.indexOf(detail)].pageStartPoint = taskbarPoint;
-            this.parent.eventMarkerColloction.map((eventMarker: IEventMarkerInfo) => {
-                const timelimeHeight: number = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60);
-                const pdfPage: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
-                this.eventMarker.drawEventMarker(pdfPage, taskbarPoint, cumulativeWidth, detail, eventMarker, timelimeHeight,
-                                                 this.ganttStyle);
-            });
             for (let i: number = 0; i < this.taskbarCollection.length; i++) {
                 const task: PdfGanttTaskbarCollection = this.taskbarCollection[i as number];
                 const rowHeight: number = this.rows.getRow(i + 1).height;
@@ -248,7 +316,7 @@ export class PdfGantt extends PdfTreeGrid {
                 }
                 const isNextPage: boolean = task.drawTaskbar(
                     pdfPage, taskbarPoint, detail, cumulativeWidth, rowHeight,
-                    this.taskbarCollection[parseInt(i.toString(), 10)], lineWidth);
+                    this.taskbarCollection[parseInt(i.toString(), 10)], lineWidth, index);
                 if (isNextPage) {
                     if (this.enableHeader) {
                         taskbarPoint.y = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60);
@@ -277,8 +345,12 @@ export class PdfGantt extends PdfTreeGrid {
                 }
                 taskbarPoint.y += rowHeight;
                 cumulativeHeight += rowHeight;
+                this.eventMarker.renderHeight = this.layouter.pageHeightCollection[this.currentPage].totalHeight;
                 this.parent.eventMarkerColloction.map((eventMarker: IEventMarkerInfo) => {
                     const timelimeHeight: number = pixelToPoint(this.parent.timelineModule.isSingleTier ? 45 : 60);
+                    if (this.currentPage !== 0) {
+                        this.eventMarker.renderHeight = this.layouter.pageHeightCollection[this.currentPage].totalHeight + timelimeHeight;
+                    }
                     const pdfPage: PdfPage = this.result.page.section.getPages()[this.startPageIndex] as PdfPage;
                     this.eventMarker.drawEventMarker(pdfPage, taskbarPoint, cumulativeWidth, detail, eventMarker, timelimeHeight,
                                                      this.ganttStyle);

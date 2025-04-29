@@ -22,6 +22,7 @@ export class VirtualScroll {
     public direction: string;
     private keyboardEvents: KeyboardEvents;
     private isScrolling: boolean = false;
+    private scrollingDirection: string = 'Up';
 
     /**
      * Constructor for PivotView scrolling.
@@ -65,6 +66,7 @@ export class VirtualScroll {
             if (this.engineModule) {
                 const ele: HTMLElement = this.parent.isAdaptive ? mCont : gridContent.querySelector('.' + cls.VIRTUALTABLE_DIV);
                 EventHandler.add(ele, 'scroll touchmove pointermove', this.onHorizondalScroll(mHdr, mCont), this);
+                EventHandler.add(mCont.parentElement, 'scroll wheel touchmove pointermove', this.onHorizondalScroll(mHdr, mCont), this);
                 EventHandler.add(mCont.parentElement, 'scroll wheel touchmove pointermove keyup keydown', this.onVerticalScroll(
                     mCont.parentElement, mCont), this);
                 if (this.isFireFox) {
@@ -178,16 +180,17 @@ export class VirtualScroll {
             dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings)
         };
         const enableOptimizedRendering: boolean = this.parent.virtualScrollSettings && this.parent.virtualScrollSettings.allowSinglePage && this.parent.dataType === 'pivot';
+        const pageCnt: number = this.parent.engineModule ? this.parent.engineModule.viewportPageCount : 3;
         if (this.parent.pageSettings && engine.pageSettings) {
             if (this.direction === 'vertical') {
                 const vScrollPos: number = mCont.parentElement.scrollHeight - (top + mCont.parentElement.offsetHeight);
                 const rowValues: number = this.parent.dataType === 'pivot' ?
                     (this.parent.dataSourceSettings.valueAxis === 'row' ? this.parent.dataSourceSettings.values.length : 1) : 1;
                 const exactSize: number = (this.parent.pageSettings.rowPageSize * rowValues * this.parent.gridSettings.rowHeight);
-                let section: number = Math.ceil(top / exactSize);
+                let section: number = this.scrollingDirection === 'Up' ? Math.ceil(top / exactSize) : Math.ceil(top / exactSize) - 1;
                 section += enableOptimizedRendering && vScrollPos <= 0 ? 1 : 0;
                 if (((this.parent.scrollPosObject.vertical === section || engine.pageSettings.rowPageSize >= engine.rowCount) ||
-                (virtualTable && (virtualTable.scrollHeight < (virtualTable.parentElement.clientHeight * 3)))) &&
+                (virtualTable && (virtualTable.scrollHeight < (virtualTable.parentElement.clientHeight * pageCnt)))) &&
                 !enableOptimizedRendering) {
                     return;
                 }
@@ -232,7 +235,7 @@ export class VirtualScroll {
                 const enableOptimizedRendering: boolean = this.parent.virtualScrollSettings && this.parent.virtualScrollSettings.allowSinglePage && this.parent.dataType === 'pivot';
                 section += enableOptimizedRendering && hScrollPos <= 0 ? 1 : 0;
                 if ((this.parent.scrollPosObject.horizontal === section || (virtualTable && (virtualTable.scrollWidth <
-                    (virtualTable.parentElement.clientWidth * 3)))) && !enableOptimizedRendering) {
+                    (virtualTable.parentElement.clientWidth * pageCnt)))) && !enableOptimizedRendering) {
                     return;
                 }
                 this.parent.actionObj.actionName = events.horizontalScroll;
@@ -455,20 +458,8 @@ export class VirtualScroll {
         for (let i: number = 0, j: NodeListOf<Element> = this.parent.element.querySelectorAll('.' + cls.FREEZED_CELL);
             i < j.length; i++) {
             if (this.parent.isTabular && this.parent.dataSourceSettings.rows.length > 1) {
-                const rowsHeaderElement: HTMLElement = this.parent.element.querySelector('.' + cls.FREEZED_CELL);
-                if (isParentCells) {
-                    if (this.parent.enableRtl) {
-                        (j[i as number] as HTMLElement).style.right = -horiOffset + 'px';
-                    } else {
-                        this.setFrozenColumnPosition(horiOffset, rowsHeaderElement, i, j);
-                    }
-                } else {
-                    if (this.parent.enableRtl) {
-                        (j[i as number] as HTMLElement).style.right = (Number(horiOffset)) + 'px';
-                    } else {
-                        this.setFrozenColumnPosition(horiOffset, rowsHeaderElement, i, j);
-                    }
-                }
+                const rowsHeaderElement: HTMLElement = j[i as number] as HTMLElement;
+                this.setFrozenColumnPosition(horiOffset, rowsHeaderElement, i, j, isParentCells);
             }
             else {
                 if (isParentCells) {
@@ -496,7 +487,8 @@ export class VirtualScroll {
         const virtualTableElement: HTMLElement = mCont.querySelector('.' + cls.CONTENT_VIRTUALTABLE_DIV) ?
             mCont.querySelector('.' + cls.CONTENT_VIRTUALTABLE_DIV) : mCont;
         return (e: Event | KeyboardEventArgs) => {
-            if (this.parent.isAdaptive || (virtualTableElement.scrollHeight > (virtualTableElement.parentElement.clientHeight * 3))) {
+            const pageCnt: number = this.parent.engineModule ? this.parent.engineModule.viewportPageCount : 3;
+            if (this.parent.isAdaptive || (virtualTableElement.scrollHeight > (virtualTableElement.parentElement.clientHeight * pageCnt))) {
                 const top: number = mCont.scrollTop * this.parent.verticalScrollScale;
                 if (e.type === 'wheel' || e.type === 'touchmove' || e.type === 'scroll'
                     || this.eventType === 'wheel' || this.eventType === 'touchmove' || e.type === 'keyup' || e.type === 'keydown') {
@@ -584,6 +576,7 @@ export class VirtualScroll {
                     });
                     this.parent.scrollPosObject.verticalSection = this.parent.scrollPosObject.verticalSection + excessMove;
                 }
+                this.scrollingDirection = this.previousValues.top < mCont.scrollTop ? 'Up' : 'Down';
                 this.previousValues.top = top;
                 this.frozenPreviousValues.top = top;
                 this.eventType = '';
@@ -612,15 +605,29 @@ export class VirtualScroll {
         this.removeInternalEvents();
     }
 
-    private setFrozenColumnPosition(horiOffset: number, rowsHeaderElement: HTMLElement, i: number, j: NodeListOf<Element>): void {
-        if (rowsHeaderElement) {
-            const colIndex: number = parseInt(rowsHeaderElement.getAttribute('aria-colindex'), 10) - 1;
-            if (colIndex > 0 && colIndex <= (this.parent.engineModule.rowMaxLevel + 1)) {
-                (j[i as number] as HTMLElement).style.left = (colIndex * this.parent.gridSettings.columnWidth) + 'px';
+    private setFrozenColumnPosition(horiOffset: number, rowsHeaderElement: HTMLElement, i: number, j: NodeListOf<Element>,
+                                    isParentCells: boolean): void {
+        if (rowsHeaderElement && rowsHeaderElement instanceof HTMLTableCellElement) {
+            let columnWidth: number = 0;
+            const colIndex: number = rowsHeaderElement.cellIndex + 1;
+            if (colIndex > 1) {
+                for (let y: number = 0; y < colIndex - 1; y++) {
+                    columnWidth = columnWidth + (this.parent.pivotColumns[y as number].width as number);
+                }
             }
-        }
-        else {
-            (j[i as number] as HTMLElement).style.left = horiOffset + 'px';
+            if (isParentCells) {
+                if (this.parent.enableRtl) {
+                    (j[i as number] as HTMLElement).style.right = -(horiOffset - columnWidth) + 'px';
+                } else {
+                    (j[i as number] as HTMLElement).style.left = (horiOffset + columnWidth) + 'px';
+                }
+            } else {
+                if (this.parent.enableRtl) {
+                    (j[i as number] as HTMLElement).style.right = Number((horiOffset + columnWidth)) + 'px';
+                } else {
+                    (j[i as number] as HTMLElement).style.left = Number(-(horiOffset - columnWidth)) + 'px';
+                }
+            }
         }
     }
 }

@@ -836,6 +836,19 @@ export class MoveTool extends ToolBase {
         } else {
             this.undoElement = cloneObject(args.source);
         }
+        //951087-Undo function doesn't retain connector segments after node move actions.
+        if (this.undoElement.nodes && this.undoElement.nodes.length > 0) {
+            for (const node of this.undoElement.nodes as Node[]) {
+                for (const edgeId of [...node.outEdges, ...node.inEdges]) {
+                    const connector: ConnectorModel = this.commandHandler.diagram.getObject(edgeId);
+                    if (connector && connector.segments && connector.segments.length > 1) {
+                        if (this.undoElement.connectors.indexOf(connector) === -1) {
+                            this.undoElement.connectors.push(cloneObject(connector));
+                        }
+                    }
+                }
+            }
+        }
 
         this.undoParentElement = this.commandHandler.getSubProcess(args.source);
         if (this.objectType === 'Port') {
@@ -881,6 +894,19 @@ export class MoveTool extends ToolBase {
                 obj.offsetX = wrapper.offsetX; obj.offsetY = wrapper.offsetY;
             } else {
                 obj = cloneObject(args.source);
+            }
+            //951087-Undo funciton doesn't retain connector segments after node move actions.
+            if (obj.nodes && obj.nodes.length > 0) {
+                for (const node of obj.nodes as Node[]) {
+                    for (const edgeId of [...node.outEdges, ...node.inEdges]) {
+                        const connector: ConnectorModel = this.commandHandler.diagram.getObject(edgeId);
+                        if (this.undoElement.connectors.indexOf(connector) !== -1 && obj.connectors.indexOf(connector) === -1) {
+                            const connectorClone: ConnectorModel = cloneObject(connector);
+                            redoObject.connectors.push(connectorClone);
+                            obj.connectors.push(connectorClone);
+                        }
+                    }
+                }
             }
             object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Selector || (this.commandHandler.renderContainerHelper(args.source as ConnectorModel) as Connector);
             if (((object as Node).id === 'helper')|| ((object as Node).id !== 'helper')) {

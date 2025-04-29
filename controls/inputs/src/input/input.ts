@@ -649,7 +649,10 @@ export namespace Input {
                 if (floatTextContent && floatTextContent.children[0]) {
                     floatTextContent.children[0].textContent = placeholder;
                 } else {
-                    parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0].textContent = placeholder;
+                    const floatText: Element = parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0];
+                    if (!isNullOrUndefined(floatText)) {
+                        floatText.textContent = placeholder;
+                    }
                 }
                 parentElement.classList.remove(CLASSNAMES.NOFLOATLABEL);
                 element.removeAttribute('placeholder');
@@ -659,7 +662,10 @@ export namespace Input {
                 if (floatTextContent) {
                     floatTextContent.children[0].textContent = '';
                 } else {
-                    parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0].textContent = '';
+                    const floatText: Element = parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0];
+                    if (!isNullOrUndefined(floatText)) {
+                        floatText.textContent = '';
+                    }
                 }
             }
         } else {

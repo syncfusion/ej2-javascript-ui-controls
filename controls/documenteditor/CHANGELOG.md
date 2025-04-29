@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 29.1.40 (2025-04-29)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I713147` - Fixed an issue where list formatting was not restored correctly after performing an undo action.
+- `#FB66240` - Fixed an issue where spaces were incorrectly removed when checking or unchecking a checkbox.
+
 ## 29.1.39 (2025-04-22)
 
 ### DocumentEditor

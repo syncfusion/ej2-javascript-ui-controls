@@ -1283,11 +1283,13 @@ export class _XfdfDocument extends _ExportHelper {
                 this._writePrefix(writer, 'STREAM', key);
                 writer._writeAttributeString('DEFINE', '');
                 if ((streamDictionary.has('Subtype') &&
-                    this._getValue(streamDictionary.get('Subtype')) === 'Image') ||
-                    (!streamDictionary.has('Type') && !streamDictionary.has('Subtype'))) {
+                    (this._getValue(streamDictionary.get('Subtype')) === 'Image' ||
+                    this._getValue(streamDictionary.get('Subtype')) === 'Form')) ||
+                    (!streamDictionary.has('Type') && !streamDictionary.has('Subtype')) && key !== 'ToUnicode') {
                     let data: string;
                     if (isNewReference) {
-                        if (streamDictionary.has('Filter') && streamDictionary.get('Filter').name === 'DCTDecode') {
+                        if ((streamDictionary.has('Filter') && streamDictionary.get('Filter').name === 'DCTDecode') ||
+                        (streamDictionary.has('Subtype') && streamDictionary.get('Subtype').name === 'Form')) {
                             data = primitive.getString(true);
                         } else {
                             data = _compressStream(primitive, true);

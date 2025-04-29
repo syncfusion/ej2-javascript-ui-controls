@@ -5021,6 +5021,11 @@ export class Annotation {
                         this.isEdited = true;
                         this.pdfViewer.nodePropertyChange(currentAnnotation, { labelFillColor: annotation.labelSettings.fillColor });
                     }
+                    if (currentAnnotation.labelContent !== annotation.labelSettings.labelContent) {
+                        redoClonedObject.labelContent = annotation.labelSettings.labelContent;
+                        this.isEdited = true;
+                        this.pdfViewer.nodePropertyChange(currentAnnotation, { labelContent: annotation.labelSettings.labelContent });
+                    }
                 }
                 if (annotation.shapeAnnotationType === 'Line' || annotation.shapeAnnotationType === 'Polyline' || annotation.shapeAnnotationType === 'Polygon') {
                     if (JSON.stringify(currentAnnotation.vertexPoints) !== JSON.stringify(annotation.vertexPoints)) {
@@ -6814,6 +6819,7 @@ export class Annotation {
             {annotationObject = options as PolygonSettings; }
             pdfAnnotation[parseInt(pageNumber.toString(), 10)] =
              this.pdfViewer.annotation.shapeAnnotationModule.updateAddAnnotationDetails(annotationType, annotationObject, offset);
+            this.pdfViewerBase.updateFreeTextProperties(pdfAnnotation[parseInt(pageNumber.toString(), 10)]);
             this.pdfViewer.annotation.shapeAnnotationModule.isAddAnnotationProgramatically = true;
         }
         else if (annotationType === 'Distance' || annotationType === 'Perimeter' || annotationType === 'Area' || annotationType === 'Radius' || annotationType === 'Volume') {

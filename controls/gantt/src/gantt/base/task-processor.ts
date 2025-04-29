@@ -718,7 +718,7 @@ export class TaskProcessor extends DateProcessor {
                         }
                     }
                     segment = {};
-                    if (!(startDate && endDate) || !(startDate && duration)) {
+                    if (!(startDate && endDate) || !(startDate && !isNullOrUndefined(duration))) {
                         break;
                     }
                     sumOfDuration += Number(duration);
@@ -784,7 +784,9 @@ export class TaskProcessor extends DateProcessor {
                     } else {
                         segment.offsetDuration = 0;
                     }
-                    taskData.push(this.setSegmentTaskData(segment, segments[i as number]));
+                    /* eslint-disable-next-line */
+                    const segmentData: ITaskSegment[] = data[this.parent.taskFields.segments] ? data[this.parent.taskFields.segments] : segments;
+                    taskData.push(this.setSegmentTaskData(segment, segmentData[i as number]));
                 }
                 this.parent.setRecordValue('duration', sumOfDuration, data.ganttProperties, true);
                 if (!isNullOrUndefined(ganttSegments[ganttSegments.length - 1])) {
@@ -1633,7 +1635,12 @@ export class TaskProcessor extends DateProcessor {
                         if (this.hasDSTTransition(sDate.getFullYear())) {
                             return ((this.getTimeDifference(sDate, eDate, true) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
                         } else {
-                            return ((holidaysCount + weekendCount + ganttData.duration) * this.parent.perDayWidth);
+                            if (!this.parent.timelineSettings.showWeekend) {
+                                return ((holidaysCount + ganttData.duration) * this.parent.perDayWidth);
+                            }
+                            else {
+                                return ((holidaysCount + weekendCount + ganttData.duration) * this.parent.perDayWidth);
+                            }
                         }
                     }
                     else {
@@ -1701,11 +1708,20 @@ export class TaskProcessor extends DateProcessor {
             else {
                 if (this.hasDSTTransition(sDate.getFullYear())) {
                     const width: number = (getUniversalTime(eDate) - getUniversalTime(sDate)) /
-                    60000 * ((this.parent.perDayWidth) / 24) / 60;
+                        60000 * ((this.parent.perDayWidth) / 24) / 60;
                     return width;
                 }
                 else {
-                    return ((this.getTimeDifference(sDate, eDate)  / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
+                    const totalDays: number = this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * 24);
+                    if (!this.parent.timelineSettings.showWeekend) {
+                        const currentDate: Date = new Date(sDate.getTime());
+                        const nonWorkingDays: number = this.parent.timelineModule.calculateNonWorkingDaysBetweenDates(currentDate, eDate);
+                        const workingDays: number = totalDays - nonWorkingDays;
+                        return workingDays * this.parent.perDayWidth;
+                    }
+                    else {
+                        return totalDays * this.parent.perDayWidth;
+                    }
                 }
             }
         }
@@ -1835,8 +1851,13 @@ export class TaskProcessor extends DateProcessor {
             //     }
             // }
             if (this.hasDSTTransition(date.getFullYear())) {
-                leftValue = (getUniversalTime(date) - getUniversalTime(timelineStartDate)) /
-                    60000 * ((this.parent.perDayWidth) / 24) / 60;
+                if (!this.parent.timelineSettings.showWeekend) {
+                    leftValue = this.calculateLeftValue(timelineStartDate, date);
+                }
+                else {
+                    leftValue = (getUniversalTime(date) - getUniversalTime(timelineStartDate)) /
+                        60000 * ((this.parent.perDayWidth) / 24) / 60;
+                }
                 return leftValue;
             } else {
                 let width: number;
@@ -1847,13 +1868,23 @@ export class TaskProcessor extends DateProcessor {
                     const duration: number = this.getDuration(setStartDate, startDate, 'day', true, false);
                     width = duration * this.parent.perDayWidth;
                     date.setHours(0, 0, 0, 0);
-                    leftValue = (date.getTime() - timelineStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
+                    if (!this.parent.timelineSettings.showWeekend) {
+                        leftValue = this.calculateLeftValue(timelineStartDate, date);
+                    }
+                    else {
+                        leftValue = (date.getTime() - timelineStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
+                    }
                     if (this.getSecondsInDecimal(startDate) !== this.parent.defaultStartTime && this.parent.timelineModule.bottomTier === 'Day') {
                         leftValue += width;
                     }
                 }
                 else {
-                    leftValue = (date.getTime() - timelineStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
+                    if (!this.parent.timelineSettings.showWeekend) {
+                        leftValue = this.calculateLeftValue(timelineStartDate, date);
+                    }
+                    else {
+                        leftValue = (date.getTime() - timelineStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
+                    }
                 }
             }
             // const timelineStartTime: number = timelineStartDate.getTime();
@@ -1924,6 +1955,32 @@ export class TaskProcessor extends DateProcessor {
         }
     }
 
+    /**
+     * Calculates the left pixel value for a task on the Gantt chart, considering non-working days.
+     *
+     * This method calculates the horizontal position or "left value" for a task based on its start date, current date,
+     * and the position of non-working days. This is useful for determining the visual placement of tasks in the Gantt chart.
+     *
+     * @param {Date} timelineStartDate - The start date of the timeline from which to calculate the left position.
+     * @param {Date} currentDate - The current date for which the left value is being calculated.
+     * @returns {number} - Returns the calculated left value in pixels.
+     */
+    public calculateLeftValue( timelineStartDate: Date, currentDate: Date): number {
+        const startdate : Date = new Date(this.parent.timelineModule.timelineStartDate.getTime());
+        const nonWorkingDaysCount  : number = this.parent.timelineModule.calculateNonWorkingDaysBetweenDates(
+            startdate, currentDate);
+        let totalMilliseconds: number;
+        if (this.hasDSTTransition(currentDate.getFullYear())){
+            totalMilliseconds = (getUniversalTime(currentDate) - getUniversalTime(timelineStartDate));
+        }
+        else{
+            totalMilliseconds = currentDate.getTime() - timelineStartDate.getTime();
+        }
+        const nonWorkingMilliseconds: number = nonWorkingDaysCount * 24 * 60 * 60 * 1000;
+        const workingMilliseconds: number = totalMilliseconds - nonWorkingMilliseconds;
+        const leftValue: number = (workingMilliseconds / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
+        return leftValue;
+    }
     public getSplitTaskWidth(sDate: Date, duration: number, data: IGanttData): number {
         const startDate: Date = new Date(sDate.getTime());
         const endDate: Date =
@@ -1951,7 +2008,17 @@ export class TaskProcessor extends DateProcessor {
                 endDate.setHours(0, 0, 0, 0);
             }
         }
-        return ((this.getTimeDifference(startDate, endDate) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
+        if (!this.parent.timelineSettings.showWeekend) {
+            const currentDate: Date = new Date(startDate.getTime());
+            const nonWorkingDaysCount: number = this.parent.timelineModule.calculateNonWorkingDaysBetweenDates(currentDate, endDate);
+            const totalMilliseconds: number = endDate.getTime() - startDate.getTime();
+            const nonWorkingMilliseconds: number = nonWorkingDaysCount * 24 * 60 * 60 * 1000;
+            const workingMilliseconds: number = totalMilliseconds - nonWorkingMilliseconds;
+            return (workingMilliseconds / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
+        }
+        else{
+            return ((this.getTimeDifference(startDate, endDate) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
+        }
     }
     public getSplitTaskLeft(sDate: Date, segmentTaskStartDate: Date): number {
         const stDate: Date = new Date(sDate.getTime());
@@ -1975,7 +2042,18 @@ export class TaskProcessor extends DateProcessor {
             }
         }
         if (segmentTaskStartDate) {
-            return (stDate.getTime() - segmentTaskStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
+            let weekEndCount: number = 0;
+            let weekEndInMilliSecond: number = 0;
+            if (!this.parent.timelineSettings.showWeekend) {
+                const startdate: Date = new Date(segmentTaskStartDate.getTime());
+                const segmentStartdate: Date = new Date(stDate.getTime());
+                weekEndCount = this.parent.timelineModule.calculateNonWorkingDaysBetweenDates(startdate, segmentStartdate);
+                if (weekEndCount > 0) {
+                    weekEndInMilliSecond = weekEndCount * (1000 * 60 * 60 * 24);
+                }
+            }
+            return (stDate.getTime() - segmentTaskStartDate.getTime() - weekEndInMilliSecond) /
+                (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
         } else {
             return 0;
         }

@@ -1518,6 +1518,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             }
             const cmenuWidth: number = Math.ceil(this.getMenuWidth(ul, ul.offsetWidth, this.enableRtl));
             const cmenu: HTMLElement = addScrolling(this.createElement, wrapper, ul, 'vscroll', this.enableRtl, wrapper.offsetHeight);
+            const newOffset: OffsetPosition = this.callFit(cmenu, false, true, top, left);
+            top = newOffset.top;
             Object.assign(cmenu.style, {
                 top: `${top}px`,
                 left: `${left}px`,

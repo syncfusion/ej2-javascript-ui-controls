@@ -229,7 +229,7 @@ export class Parser {
         };
     }
 
-    private formulaAutoCorrection(formula: string, args?: FailureEventArgs): string {
+    private formulaAutoCorrection(formula: string, args?: FailureEventArgs, isSubString?: boolean): string {
         const arithemeticArr: string[] = ['*', '+', '-', '/', '^', '&'];
         const logicalSym: string[] = ['>', '=', '<'];
         let i: number = 0;
@@ -289,7 +289,7 @@ export class Parser {
                     }
                 } else if ((this.parent.isDigit(formula[i as number]) || formula[i as number] === this.parent.rightBracket ||
                     this.parent.storedData.has(formula[i as number].toUpperCase())) && (isNullOrUndefined(formula[i + 1]) ||
-                    this.indexOfAny(formula[i + 1], arithemeticArr) > -1)) {
+                        (this.indexOfAny(formula[i + 1], arithemeticArr) > -1 && formula[i + 1] !== '&'))) {
                     op = isNullOrUndefined(formula[i + 1]) ? this.emptyStr : formula[i + 1];
                     op = op === '&' && formula[i + 2] !== '-' ? '' : op; // for the cases 5&3=>53 and 5&-3=>5-3.
                     form = formula[i - 1] === '-' ? form + formula[i - 1] + formula[i as number] + op : form + formula[i as number] + op;
@@ -326,6 +326,10 @@ export class Parser {
                         form = form.split('++').join('+').split('+-').join('-').split('-+').join('-');
                     }
                     if (formula[i as number] === '/' || formula[i as number] === '*' || formula[i as number] === '^') {
+                        form = form + formula[i as number];
+                    }
+                    if (formula[i as number] === '&' && (isSubString || (formula.substring(i + 1).trim()[0] !== 'q' &&
+                        this.isNotFormulaArgument(formula.substring(0, i + 1))))) {
                         form = form + formula[i as number];
                     }
                     i = i + 1;
@@ -418,6 +422,19 @@ export class Parser {
             });
         }
         return text;
+    }
+
+    private isNotFormulaArgument(formula: string): boolean {
+        if (formula.includes('(') || formula.includes(')')) {
+            for (let i: number = formula.length - 1; i >= 0; i--) {
+                if (formula[i as number] === '(') {
+                    return false;
+                } else if (formula[i as number] === ')') {
+                    return true;
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -989,7 +1006,7 @@ export class Parser {
                         this.ignoreBracet = true;
                     } else {
                         this.ignoreBracet = false;
-                        if (libFormula.includes('IFS') && libFormula !== 'COUNTIFS' && substr.includes('{')) {
+                        if (((libFormula.includes('IFS') && libFormula !== 'COUNTIFS') || libFormula === 'MATCH') && substr.includes('{')) {
                             const leftBraceIdx: number = substr.indexOf('{');
                             const criteriaStr: string = this.parent.substring(substr, leftBraceIdx, substr.indexOf('}') - leftBraceIdx + 1);
                             substr = substr.split(criteriaStr).join(criteriaStr.split(argsSep).join(this.parent.tic + this.parent.tic));
@@ -998,7 +1015,7 @@ export class Parser {
                     try {
                         let args: FailureEventArgs;
                         substr = substr.split('(').join('').split(')').join('');
-                        substr = '(' + this.formulaAutoCorrection(substr, args) + ')';
+                        substr = '(' + this.formulaAutoCorrection(substr, args, true) + ')';
                     } catch (ex) {
                         const args: FailureEventArgs = {
                             message: ex.message, exception: ex,

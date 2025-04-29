@@ -358,7 +358,8 @@ export class Render {
 
     private cellSelecting(args: CellSelectingEventArgs): void {
         const target: HTMLElement = this.parent.grid.selectionModule['actualTarget'];
-        if (!isNullOrUndefined(target) && (target.classList.contains('e-expand') || target.classList.contains('e-collapse'))) {
+        if (!isNullOrUndefined(target) && ((target.classList.contains('e-expand') || target.classList.contains('e-collapse'))
+            || (this.parent.allowGrouping && !!target.closest('.e-valuescontent')))) {
             args.cancel = true;
         }
         this.parent.trigger(events.selecting, args);

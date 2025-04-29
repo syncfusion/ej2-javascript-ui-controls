@@ -2,7 +2,7 @@ import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfPage, PdfDestination } from './../pdf-page';
 import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
 import { PdfFormFieldVisibility, _PdfCheckFieldState, PdfAnnotationFlag, PdfBorderStyle, PdfHighlightMode, PdfLineCaptionType, PdfLineEndingStyle, PdfLineIntent, PdfRotationAngle, PdfTextAlignment , PdfBorderEffectStyle, PdfMeasurementUnit, _PdfGraphicsUnit, PdfCircleMeasurementType, PdfRubberStampAnnotationIcon, PdfCheckBoxStyle, PdfTextMarkupAnnotationType, PdfPopupIcon, PdfAnnotationState, PdfAnnotationStateModel, PdfAttachmentIcon, PdfAnnotationIntent, _PdfAnnotationType, PdfDestinationMode, PdfBlendMode, PdfDashStyle, PdfLineCap, PathPointType, _PdfColorSpace } from './../enumerator';
-import { _checkField, _removeDuplicateReference, _updateVisibility, _getPageIndex, _checkComment, _checkReview, _mapAnnotationStateModel, _mapAnnotationState, _decode, _setMatrix, _convertToColor, _findPage, _getItemValue, _areNotEqual, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _getUpdatedBounds, _mapBorderStyle, _mapLineEndingStyle, _reverseMapEndingStyle, _toRectangle, _mapBorderEffectStyle, _getStateTemplate, _mapMeasurementUnit, _mapGraphicsUnit, _stringToStyle, _styleToString, _mapMarkupAnnotationType, _reverseMarkupAnnotationType, _reverseMapAnnotationState, _reverseMapAnnotationStateModel, _mapPopupIcon, _mapRubberStampIcon, _mapAttachmentIcon, _mapAnnotationIntent, _reverseMapPdfFontStyle, _fromRectangle, _getNewGuidString, _getFontStyle, _mapFont, _checkInkPoints, _updateBounds, _stringToBytes, _isNullOrUndefined } from './../utils';
+import { _checkField, _removeDuplicateReference, _updateVisibility, _getPageIndex, _checkComment, _checkReview, _mapAnnotationStateModel, _mapAnnotationState, _decode, _setMatrix, _convertToColor, _findPage, _getItemValue, _areNotEqual, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _getUpdatedBounds, _mapBorderStyle, _mapLineEndingStyle, _reverseMapEndingStyle, _toRectangle, _mapBorderEffectStyle, _getStateTemplate, _mapMeasurementUnit, _mapGraphicsUnit, _stringToStyle, _styleToString, _mapMarkupAnnotationType, _reverseMarkupAnnotationType, _reverseMapAnnotationState, _reverseMapAnnotationStateModel, _mapPopupIcon, _mapRubberStampIcon, _mapAttachmentIcon, _mapAnnotationIntent, _reverseMapPdfFontStyle, _fromRectangle, _getNewGuidString, _getFontStyle, _mapFont, _checkInkPoints, _updateBounds, _stringToBytes, _isNullOrUndefined, Rectangle } from './../utils';
 import { PdfField, PdfRadioButtonListField, _PdfDefaultAppearance, PdfListBoxField, PdfCheckBoxField, PdfComboBoxField } from './../form/field';
 import { PdfTemplate } from './../graphics/pdf-template';
 import { _TextRenderingMode, PdfBrush, PdfGraphics, PdfPen, PdfGraphicsState, _PdfTransformationMatrix, _PdfUnitConvertor } from './../graphics/pdf-graphics';
@@ -11295,6 +11295,7 @@ export class PdfFreeTextAnnotation extends PdfComment {
     private _cropBoxValueY: number = 0;
     private _paddings: _PdfPaddings;
     private _parsedXMLData: any[]; // eslint-disable-line
+    private _innerTextBoxBounds: {x: number, y: number, width: number, height: number};
     /**
      * Initializes a new instance of the `PdfFreeTextAnnotation` class.
      *
@@ -11752,6 +11753,22 @@ export class PdfFreeTextAnnotation extends PdfComment {
             value = this._dictionary.get('MK');
         }
         return value;
+    }
+    get _innerBounds(): Rectangle {
+        const borderWidth: number = this.border.width / 2;
+        const nativeRectangle: number[] = this._obtainAppearanceBounds();
+        const parameter: _PaintParameter = new _PaintParameter();
+        const borderColor: number[] = this._obtainColor();
+        const borderPen: PdfPen = new PdfPen(borderColor, this.border.width);
+        if (this.border.width > 0) {
+            parameter.borderPen = borderPen;
+        }
+        const rectangle: number[] = this._obtainStyle(borderPen, nativeRectangle, borderWidth, parameter);
+        if (this.calloutLines && this._calloutLines.length > 0) {
+            this._innerTextBoxBounds = { x: rectangle[0], y: this._page.size[1] - (rectangle[1] + rectangle[3]),
+                width: rectangle[2], height: rectangle[3] };
+        }
+        return this._innerTextBoxBounds;
     }
     static _load(page: PdfPage, dictionary: _PdfDictionary): PdfFreeTextAnnotation {
         const annot: PdfFreeTextAnnotation = new PdfFreeTextAnnotation();
@@ -12534,51 +12551,51 @@ export class PdfFreeTextAnnotation extends PdfComment {
                 const root: HTMLElement = xdocument.documentElement;
                 const nameSpaceURI: string = (root && root.namespaceURI) || '';
                 if (root) {
-                    const styleMap: Map<string, CSSStyleDeclaration> = this._collectStyles(root);
+                    const styleMap: Map<string, string[]> = this._collectStyles(root);
+                    let input: string[];
                     if (styleMap.size > 0) {
-                        const input: string[] = this._extractStylesToInput(styleMap);
+                        input = this._extractStylesToInput(styleMap);
                         const fontDetails: Map<string, any> = this._getFontDetails(input, this.font.size, this.textAlignment, fontStyle, brush); // eslint-disable-line
                         const { fontName: updatedFontName, fontStyle: updatedFontStyle, brush: updatedBrush } =
                         this._updateFontProperties(fontDetails, fontName, fontStyle, brush);
                         const obtainFont: PdfFont = _mapFont(updatedFontName, this.font._size, updatedFontStyle, this);
                         fontCollection = this._fontCollection(fontCollection, obtainFont, nameSpaceURI, this._textAlignment, updatedBrush);
+                    } else if (styleMap.size === 0 && this._dictionary.has('DS')) {
+                        const stringValue: string = this._dictionary.get('DS');
+                        input = stringValue.split(';') || [];
                     }
+                    const fontDetails: Map<string, any> = this._getFontDetails(input, this.font.size, this.textAlignment, fontStyle, brush); // eslint-disable-line
+                    const { fontName: updatedFontName, fontStyle: updatedFontStyle, brush: updatedBrush } =
+                    this._updateFontProperties(fontDetails, fontName, fontStyle, brush);
+                    const obtainFont: PdfFont = _mapFont(updatedFontName, this.font._size, updatedFontStyle, this);
+                    fontCollection = this._fontCollection(fontCollection, obtainFont, nameSpaceURI, this._textAlignment, updatedBrush);
                 }
             }
         }
         this._parsedXMLData = fontCollection;
         return fontCollection;
     }
-    _collectStyles(root: HTMLElement, styleMap: Map<string, CSSStyleDeclaration> = new Map()): Map<string, CSSStyleDeclaration> {
+    _collectStyles(root: HTMLElement, styleMap: Map<string, string[]> = new Map()): Map<string, string[]> {
         if (!root) {
             return styleMap;
         }
-        let nodeStyle: CSSStyleDeclaration = null;
-        try {
-            nodeStyle = window.getComputedStyle(root);
-        } catch (error) {
-            return styleMap;
+        const tagName: string = root.tagName.toLowerCase();
+        const styleAttribute: string = root.getAttribute('style');
+        if (styleAttribute) {
+            const styleArray: string[] = styleAttribute.split(';').map(s => s.trim()).filter(Boolean); // eslint-disable-line
+            styleMap.set(tagName, styleArray);
         }
-        styleMap.set(root.tagName.toLowerCase(), nodeStyle);
-        let childNode: HTMLElement | null = root.firstElementChild as HTMLElement;
+        let childNode: HTMLElement = root.firstElementChild as HTMLElement;
         while (childNode) {
             this._collectStyles(childNode, styleMap);
             childNode = childNode.nextElementSibling as HTMLElement;
         }
         return styleMap;
     }
-    _extractStylesToInput(styleMap: Map<string, CSSStyleDeclaration>): string[] {
+    _extractStylesToInput(styleMap: Map<string, string[]>): string[] {
         const input: string[] = [];
-        styleMap.forEach((styleValue: CSSStyleDeclaration) => {
-            if (styleValue && styleValue.length > 0) { // Check if styleValue is valid
-                for (let i: number = 0; i < styleValue.length; i++) {
-                    const propertyName: string = styleValue.item(Number.parseInt(i.toString(), 10));
-                    if (propertyName !== null && propertyName !== undefined) {
-                        const propertyValue: string = styleValue.getPropertyValue(propertyName);
-                        input.push(`${propertyName}: ${propertyValue}`);
-                    }
-                }
-            }
+        styleMap.forEach((styleArray: string[]) => {
+            input.push(...styleArray);
         });
         return input;
     }
@@ -12762,16 +12779,23 @@ export class PdfFreeTextAnnotation extends PdfComment {
         }
     }
     _rgbStringToArray(rgbString: string): number[] {
-        const regex: RegExp = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/;
-        const match: RegExpMatchArray = rgbString.match(regex);
-        if (match) {
-            const r: number = parseInt(match[1], 10);
-            const g: number = parseInt(match[2], 10);
-            const b: number = parseInt(match[3], 10);
+        const rgbRegex: RegExp = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/;
+        const rgbMatch: RegExpMatchArray = rgbString.match(rgbRegex);
+        if (rgbMatch) {
+            const r: number = parseInt(rgbMatch[1], 10);
+            const g: number = parseInt(rgbMatch[2], 10);
+            const b: number = parseInt(rgbMatch[3], 10);
             return [r, g, b];
-        } else {
-            throw new Error('Invalid RGB string format');
         }
+        const hexRegex: RegExp = /^#([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})$/;
+        const hexMatch: RegExpMatchArray = rgbString.match(hexRegex);
+        if (hexMatch) {
+            const r: number = parseInt(hexMatch[1], 16);
+            const g: number = parseInt(hexMatch[2], 16);
+            const b: number = parseInt(hexMatch[3], 16);
+            return [r, g, b];
+        }
+        throw new Error('Invalid RGB string format');
     }
     _fontCollection(fontCollection: any[], font: PdfFont, nameSpaceUri: string, alignment: PdfTextAlignment, brush: PdfBrush): any[] { // eslint-disable-line
         return [...fontCollection, font, alignment, nameSpaceUri, brush];

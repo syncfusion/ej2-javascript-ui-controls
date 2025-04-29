@@ -581,9 +581,18 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
      */
     public addTabs(items: RibbonItemModel[], insertBefore?: string): void {
         let idx: number = this.getTabIndex(insertBefore);
+        let tab: TabItemModel;
         items.forEach((item: RibbonItemModel): void => {
-            item = new RibbonItem(<RibbonItem>this.items[0], 'items', item, true); this.items.splice(idx, 0, item);
-            this.tabObj.addTab([{ header: item.header, content: this.toolbarObj.element }], this.getIndex(idx));
+            item = new RibbonItem(<RibbonItem>this.items[0], 'items', item, true);
+            this.items.splice(idx, 0, item);
+            tab = { header: item.header, content: this.toolbarObj.element };
+            if (item.cssClass) {
+                tab.cssClass = item.cssClass;
+            }
+            if (item.disabled) {
+                tab.disabled = item.disabled;
+            }
+            this.tabObj.addTab([tab], this.getIndex(idx));
             idx++;
         });
         this.setProperties({ 'items': this.items }, true);

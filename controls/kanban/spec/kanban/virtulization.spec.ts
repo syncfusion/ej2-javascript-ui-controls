@@ -6,7 +6,7 @@
 import { Browser, createElement, remove } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Kanban, KanbanModel, ColumnsModel, CardClickEventArgs, ActionEventArgs } from '../../src/kanban/index';
-import { generateKanbanDataVirtualScroll, generateKanbanDataVirtualScrollLessData, kanbanData } from './common/kanban-data.spec';
+import { generateKanbanDataVirtualScroll, generateKanbanDataVirtualScrollLessData, kanbanData, generateKanbanData } from './common/kanban-data.spec';
 import * as util from './common/util.spec';
 
 Kanban.Inject();
@@ -2315,6 +2315,48 @@ describe('Kanban Virtual Scroll Feature', () => {
             kanbanObj = util.createKanban(model, kanbanData);
             expect(kanbanObj.width).toBe('auto');
             util.destroy(kanbanObj);
+        });
+    });
+
+    describe('949142 -Kanban Item becomes blank  in small screen size when we scroll the items up and down continuously', () => {
+        let kanbanObj: Kanban;
+        beforeAll(() => {
+            const element: HTMLElement = createElement('div', { id: 'Kanban' });
+            document.body.appendChild(element);
+            // eslint-disable-next-line no-console
+            const defaultOptions: KanbanModel = {
+                enableVirtualization: true,
+                dataSource: generateKanbanData(),
+                keyField: 'Status',
+                columns: [
+                    { headerText: 'Backlog', keyField: 'Open' },
+                    { headerText: 'In Progress', keyField: 'InProgress' },
+                    { headerText: 'Review', keyField: 'Review' }
+                ],
+                cardSettings: {
+                    contentField: 'Summary',
+                    headerField: 'Id'
+                },
+                height: '800px',
+                cardHeight: '120px',
+            };
+            kanbanObj = new Kanban(defaultOptions);
+            kanbanObj.appendTo(element);
+        });
+        it('Kanban minimum card testing', (done: Function) => {
+            setTimeout(() => {
+                const cardWrapper: HTMLElement = kanbanObj.element.querySelector('.e-kanban-content').querySelectorAll('.e-content-cells')[1].querySelector('.e-card-wrapper');
+                util.triggerScrollEvent(cardWrapper, 100);
+                setTimeout(() => {
+                    const virtualWrapperElementList: NodeListOf<Element> = kanbanObj.element.querySelectorAll('.e-card-virtual-wrapper');
+                    expect(virtualWrapperElementList[0].childElementCount).toBeLessThanOrEqual(30);
+                    done();
+                }, 2500);
+            }, 500);
+        });
+        afterAll(() => {
+            kanbanObj.destroy();
+            remove(document.getElementById(kanbanObj.element.id));
         });
     });
 });

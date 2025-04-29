@@ -1937,8 +1937,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         this.scrollActions |= ScrollActions.PropertyChange;
                         this.updateScrollSettings(newProp);
                         this.scrollActions &= ~ScrollActions.PropertyChange;
-                        this.scrollSettings.horizontalOffset = -this.scroller.horizontalOffset || 0;
-                        this.scrollSettings.verticalOffset = -this.scroller.verticalOffset || 0;
                         break;
                     case 'locale':
                         if (newProp.locale !== oldProp.locale) {
@@ -1974,6 +1972,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     case 'tool':
                         // 912436: Mouse cursor flickers when entering the diagram canvas after the tool is changed at runtime
                         this.eventHandler.updateTool();
+                        break;
+                    case 'constraints':
+                        if (((newProp.constraints & DiagramConstraints.LineRouting) !==
+                            (oldProp.constraints & DiagramConstraints.LineRouting)) ||
+                            ((newProp.constraints & DiagramConstraints.AvoidLineOverlapping) !==
+                            (oldProp.constraints & DiagramConstraints.AvoidLineOverlapping))) {
+                            this.resetSegments();
+                        }
                         break;
                     }
                 }
@@ -7840,7 +7846,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private updateScrollSettings(newProp: DiagramModel): void {
         const hPan: number = (-this.scroller.horizontalOffset + newProp.scrollSettings.horizontalOffset || 0);
         const vPan: number = (-this.scroller.verticalOffset + newProp.scrollSettings.verticalOffset || 0);
-
+        //diagram scroll offset value is updated in opposite sign value.
+        //Bug 951366: Incorrect Scroll Offset Values When scroll diagram Using Scrollbar.
+        this.scrollSettings.horizontalOffset = -this.scroller.horizontalOffset || 0;
+        this.scrollSettings.verticalOffset = -this.scroller.verticalOffset || 0;
         const oldValue: ScrollValues = {
             VerticalOffset: this.scrollSettings.verticalOffset, HorizontalOffset: this.scrollSettings.horizontalOffset,
             ViewportHeight: this.scrollSettings.viewPortHeight, ViewportWidth: this.scrollSettings.viewPortWidth,
@@ -7848,6 +7857,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         };
         if (hPan !== 0 || vPan !== 0) {
             this.pan(hPan, vPan);
+            //Setting offset property at runtime provides opposite offset values
+            this.scrollSettings.horizontalOffset = -this.scroller.horizontalOffset || 0;
+            this.scrollSettings.verticalOffset = -this.scroller.verticalOffset || 0;
         }
         const newValue: ScrollValues = {
             VerticalOffset: this.scrollSettings.verticalOffset, HorizontalOffset: this.scrollSettings.horizontalOffset,

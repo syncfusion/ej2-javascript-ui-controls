@@ -868,12 +868,12 @@ export class FreeTextAnnotation {
                     defaultText: annot.dynamicText, fontStyle: annot.font, textAlignment: annot.textAlign
                 };
                 this.pdfViewer.annotation.storeAnnotations(pageIndex, annot, '_annotations_freetext');
+                this.pdfViewerBase.updateDocumentEditedProperty(true);
                 this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, 'FreeText', bounds, settings);
                 this.pdfViewer.fireCommentAdd(annot.annotName, annot.dynamicText, annot);
                 this.pdfViewer.annotation.addAction(pageIndex, null, annotation, 'Addition', '', annotation, annotation);
                 this.pdfViewer.renderSelector((annot as PdfAnnotationBaseModel).pageIndex);
                 this.pdfViewer.clearSelection(annot.pageIndex);
-                this.pdfViewerBase.updateDocumentEditedProperty(true);
                 this.selectedAnnotation = annotation;
             }
             this.isInuptBoxInFocus = false;

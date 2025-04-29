@@ -16,10 +16,10 @@ export const hostURL: string = 'https://ej2services.syncfusion.com/js/hotfix/';
 export function renderRTE(options: RichTextEditorModel): RichTextEditor {
     let element: HTMLElement = createElement('div', { id: getUniqueID('rte-test') });
     document.body.appendChild(element);
+    element.dataset.rteUnitTesting = 'true';
     extend(options, options, { saveInterval: 0 })
     let rteObj: RichTextEditor = new RichTextEditor(options);
     rteObj.appendTo(element);
-    (rteObj as any).userAgentData = new CustomUserAgentData(Browser.userAgent, true);
     (rteObj.formatter.editorManager as any).userAgentData = new CustomUserAgentData(Browser.userAgent, true);
     if (rteObj.quickToolbarModule) {
         rteObj.quickToolbarModule.debounceTimeout = 0;

@@ -49,6 +49,7 @@ export class PieSeries extends PieBase {
             element.setAttribute('role', series.accessibility.accessibilityRole ? series.accessibility.accessibilityRole : 'img');
             element.setAttribute('tabindex', (point.index === 0 && series.accessibility.focusable) ? String(series.accessibility.tabIndex) : '-1');
             (element as HTMLElement).style.outline = 'none';
+            element.setAttribute('stroke-linejoin', 'round');
             element.setAttribute('aria-label', series.accessibility.accessibilityDescription ? series.accessibility.accessibilityDescription : (point.x + ': ' + point.y + '%. ' + series.name));
             seriesGroup.appendChild(element);
             point.degree = degree;
@@ -61,6 +62,7 @@ export class PieSeries extends PieBase {
             element.setAttribute('role', series.accessibility.accessibilityRole ? series.accessibility.accessibilityRole : 'img');
             element.setAttribute('tabindex', (point.index === 0 && series.accessibility.focusable) ? String(series.accessibility.tabIndex) : '-1');
             (element as HTMLElement).style.outline = 'none';
+            element.setAttribute('stroke-linejoin', 'round');
             element.setAttribute('aria-label', series.accessibility.accessibilityDescription ? series.accessibility.accessibilityDescription : (point.x + ': ' + point.y + '%. ' + series.name));
             if (point.degree === undefined) {
                 point.degree = degree;

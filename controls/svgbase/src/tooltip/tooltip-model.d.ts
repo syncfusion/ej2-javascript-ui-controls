@@ -1,0 +1,497 @@
+import { NotifyPropertyChanges, Property, Event, Complex, INotifyPropertyChanged, updateBlazorTemplate } from '@syncfusion/ej2-base';import { extend, compile as templateComplier, Component, resetBlazorTemplate, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';import { SvgRenderer } from '../svg-render/index';import { ChildProperty, createElement, EmitType, remove, Browser, AnimationOptions, Animation, animationMode } from '@syncfusion/ej2-base';import { ITooltipThemeStyle, ITooltipRenderingEventArgs, ITooltipAnimationCompleteArgs, IBlazorTemplate } from './interface';import { ITooltipLoadedEventArgs, getTooltipThemeColor } from './interface';import { Size, Rect, Side, measureText, getElement, findDirection, drawSymbol, textElement } from './helper';import { removeElement, TextOption, TooltipLocation, PathOption, withInAreaBounds } from './helper';import { TooltipShape, TooltipTheme, TooltipPlacement } from './enum';
+import {ComponentModel} from '@syncfusion/ej2-base';
+
+/**
+ * Interface for a class TextStyle
+ * @private
+ */
+export interface TextStyleModel {
+
+    /**
+     * Font size for the text.
+     *
+     * @default null
+     */
+    size?: string;
+
+    /**
+     * Color for the text.
+     *
+     * @default ''
+     */
+    color?: string;
+
+    /**
+     * FontFamily for the text.
+     */
+    fontFamily?: string;
+
+    /**
+     * FontWeight for the text.
+     *
+     * @default 'Normal'
+     */
+    fontWeight?: string;
+
+    /**
+     * FontStyle for the text.
+     *
+     * @default 'Normal'
+     */
+    fontStyle?: string;
+
+    /**
+     * Opacity for the text.
+     *
+     * @default 1
+     */
+    opacity?: number;
+
+    /**
+     * Font size for the header text.
+     *
+     * @default null
+     */
+    headerTextSize?: string;
+
+    /**
+     * Font size for the bold text.
+     *
+     * @default null
+     */
+    boldTextSize?: string;
+
+}
+
+/**
+ * Interface for a class TooltipBorder
+ * @private
+ */
+export interface TooltipBorderModel {
+
+    /**
+     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
+     * @default ''
+     */
+    color?: string;
+
+    /**
+     * The width of the border in pixels.
+     *
+     * @default 1
+     */
+    width?: number;
+
+    /**
+     * The dash-array of the border.
+     *
+     * @default ''
+     */
+    dashArray?: string;
+
+}
+
+/**
+ * Interface for a class AreaBounds
+ * @private
+ */
+export interface AreaBoundsModel {
+
+    /**
+     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
+     * @default ''
+     */
+    x?: number;
+
+    /**
+     * The width of the border in pixels.
+     *
+     * @default 1
+     */
+    y?: number;
+
+    /**
+     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
+     * @default ''
+     */
+    width?: number;
+
+    /**
+     * The width of the border in pixels.
+     *
+     * @default 1
+     */
+    height?: number;
+
+}
+
+/**
+ * Interface for a class ToolLocation
+ * @private
+ */
+export interface ToolLocationModel {
+
+    /**
+     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     *
+     * @default ''
+     */
+    x?: number;
+
+    /**
+     * The width of the border in pixels.
+     *
+     * @default 1
+     */
+    y?: number;
+
+}
+
+/**
+ * Interface for a class Tooltip
+ * @private
+ */
+export interface TooltipModel extends ComponentModel{
+
+    /**
+     * Enables / Disables the visibility of the tooltip.
+     *
+     * @default false.
+     * @private
+     */
+    enable?: boolean;
+
+    /**
+     * If set to true, a single ToolTip will be displayed for every index.
+     *
+     * @default false.
+     * @private
+     */
+    shared?: boolean;
+
+    /**
+     * To enable crosshair tooltip animation.
+     *
+     * @default false.
+     * @private
+     */
+    crosshair?: boolean;
+
+    /**
+     * To enable shadow for the tooltip.
+     *
+     * @default false.
+     * @private
+     */
+
+    enableShadow?: boolean;
+
+    /**
+     * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
+     *
+     * @private
+     */
+
+    fill?: string;
+
+    /**
+     * Header for tooltip.
+     *
+     * @private
+     */
+
+    header?: string;
+
+    /**
+     * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
+     *
+     * @private
+     */
+
+    opacity?: number;
+
+    /**
+     * Options to customize the ToolTip text.
+     *
+     * @private
+     */
+
+    textStyle?: TextStyleModel;
+
+    /**
+     * Custom template to format the ToolTip content. Use ${x} and ${y} as the placeholder text to display the corresponding data point.
+     *
+     * @default null.
+     * @aspType string
+     * @private
+     */
+
+    template?: string | Function;
+
+    /**
+     * If set to true, ToolTip will animate while moving from one point to another.
+     *
+     * @default true.
+     * @private
+     */
+    enableAnimation?: boolean;
+
+    /**
+     * Duration for Tooltip animation.
+     *
+     * @default 300
+     * @private
+     */
+    duration?: number;
+
+    /**
+     * To rotate the tooltip.
+     *
+     * @default false.
+     * @private
+     */
+    inverted?: boolean;
+
+    /**
+     * Negative value of the tooltip.
+     *
+     * @default true.
+     * @private
+     */
+    isNegative?: boolean;
+
+    /**
+     * Options to customize tooltip borders.
+     *
+     * @private
+     */
+    border?: TooltipBorderModel;
+
+    /**
+     * Content for the tooltip.
+     *
+     * @private
+     */
+    content?: string[];
+
+    /**
+     * Content for the tooltip.
+     *
+     * @private
+     */
+    markerSize?: number;
+
+    /**
+     * Clip location.
+     *
+     * @private
+     */
+    clipBounds?: ToolLocationModel;
+
+    /**
+     * Palette for marker.
+     *
+     * @private
+     */
+    palette?: string[];
+
+    /**
+     * Shapes for marker.
+     *
+     * @private
+     */
+    shapes?: TooltipShape[];
+
+    /**
+     * Location for Tooltip.
+     *
+     * @private
+     */
+    location?: ToolLocationModel;
+
+    /**
+     * Location for Tooltip.
+     *
+     * @private
+     */
+    offset?: number;
+
+    /**
+     * Rounded corner for x.
+     *
+     * @private
+     */
+    rx?: number;
+
+    /**
+     * Rounded corner for y.
+     *
+     * @private
+     */
+    ry?: number;
+
+    /**
+     * Margin for left and right.
+     *
+     * @private
+     */
+    marginX?: number;
+
+    /**
+     *  Margin for top and bottom.
+     *
+     * @private
+     */
+    marginY?: number;
+
+    /**
+     * Padding for arrow.
+     *
+     * @private
+     */
+    arrowPadding?: number;
+
+    /**
+     * Data for template.
+     *
+     * @private
+     */
+    data?: Object;
+
+    /**
+     * Specifies the theme for the chart.
+     *
+     * @default 'Material'
+     * @private
+     */
+    theme?: TooltipTheme;
+
+    /**
+     * Bounds for the rect.
+     *
+     * @private
+     */
+    areaBounds?: AreaBoundsModel;
+
+    /**
+     * Bounds for chart.
+     *
+     * @private
+     */
+    availableSize?: Size;
+
+    /**
+     * Blazor templates
+     */
+    blazorTemplate?: IBlazorTemplate;
+
+    /**
+     * To check chart is canvas.
+     *
+     * @default false.
+     * @private
+     */
+
+    isCanvas?: boolean;
+
+    /**
+     * To check tooltip wrap for chart.
+     *
+     * @default false.
+     * @private
+     */
+
+    isTextWrap?: boolean;
+
+    /**
+     * Specifies the location of the tooltip in a fixed position.
+     *
+     * @default false.
+     * @private
+     */
+
+    isFixed?: boolean;
+
+    /**
+     * To place tooltip in a particular position.
+     *
+     * @default null.
+     * @private
+     */
+    tooltipPlacement?: TooltipPlacement;
+
+    /**
+     * Control instance
+     *
+     * @default null.
+     * @private
+     */
+    controlInstance?: object;
+
+    /**
+     * Specifies the control name.
+     *
+     * @default ''
+     * @private
+     */
+    controlName?: string;
+
+    /**
+     * Enables or disables the display of tooltips for the nearest data point to the cursor.
+     *
+     * @default false.
+     */
+
+    showNearestTooltip?: boolean;
+
+    /**
+     * Triggers before each axis range is rendered.
+     *
+     * @event tooltipRender
+     * @private
+     */
+    tooltipRender?: EmitType<ITooltipRenderingEventArgs>;
+
+    /**
+     * Triggers after chart load.
+     *
+     * @event loaded
+     * @private
+     */
+    loaded?: EmitType<ITooltipLoadedEventArgs>;
+
+    /**
+     * Triggers after animation complete.
+     *
+     * @event animationComplete
+     * @private
+     */
+    animationComplete?: EmitType<ITooltipAnimationCompleteArgs>;
+
+    /**
+     * Enables / Disables the rtl rendering of tooltip elements.
+     *
+     * @default false.
+     * @private
+     */
+    enableRTL?: boolean;
+
+    /**
+     * change tooltip location.
+     *
+     * @default false.
+     * @private
+     */
+    allowHighlight?: boolean;
+
+    /**
+     * Specifies whether to display the header line in the tooltip.
+     *
+     * @default true
+     */
+    showHeaderLine?: boolean;
+
+}

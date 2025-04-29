@@ -37,7 +37,7 @@ describe('Server side pivot engine ', () => {
             PivotView.Inject(FieldList);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    url: 'https://services.syncfusion.com/js/production/api/pivot/post',
+                    url: 'https://ej2services.syncfusion.com/js/hotfix/api/pivot/post',
                     mode: 'Server',
                     expandAll: true,
                     enableSorting: true,
@@ -149,7 +149,7 @@ describe('Server side pivot engine ', () => {
             PivotView.Inject(FieldList);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    url: 'https://services.syncfusion.com/js/production/api/pivot/post',
+                    url: 'https://ej2services.syncfusion.com/js/hotfix/api/pivot/post',
                     mode: 'Server',
                     expandAll: true,
                     enableSorting: true,
@@ -265,7 +265,7 @@ describe('Server side pivot engine ', () => {
     //         document.body.appendChild(elem);
     //         fieldListObj = new PivotFieldList({
     //             dataSourceSettings: {
-    //                 url: 'https://services.syncfusion.com/js/production/api/pivot/post',
+    //                 url: 'https://ej2services.syncfusion.com/js/hotfix/api/pivot/post',
     //                 mode: 'Server',
     //                 expandAll: true,
     //                 enableSorting: true,
@@ -381,7 +381,7 @@ describe('Server side pivot engine ', () => {
             PivotView.Inject(FieldList);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
-                    url: 'https://services.syncfusion.com/js/production/api/pivot/post',
+                    url: 'https://ej2services.syncfusion.com/js/hotfix/api/pivot/post',
                     mode: 'Server',
                     expandAll: true,
                     enableSorting: true,

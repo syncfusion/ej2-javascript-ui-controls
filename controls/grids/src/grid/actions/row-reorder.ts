@@ -383,6 +383,7 @@ export class RowDD {
                     if (gObj.enableVirtualization && !gObj.sortSettings.columns.length && !gObj.filterSettings.columns.length &&
                         (!this.parent.allowGrouping || !gObj.groupSettings.columns.length)) {
                         gObj.refresh();
+                        (<{ startIndex?: number }>(<{ vgenerator?: Function }>gObj.contentModule).vgenerator).startIndex = null;
                     } else {
                         this.rowOrder(args);
                     }

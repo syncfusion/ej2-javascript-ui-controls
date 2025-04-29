@@ -125,7 +125,7 @@ export class NonWorkingDay {
      * @private
      */
     public renderWeekends(): void {
-        if (this.parent.highlightWeekends) {
+        if (this.parent.highlightWeekends && this.parent.timelineSettings.showWeekend) {
             this.createNonworkingContainer();
             if (!this.nonworkingContainer.contains(this.weekendContainer)) {
                 this.weekendContainer = createElement('div', {

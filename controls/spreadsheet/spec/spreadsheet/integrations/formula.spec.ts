@@ -16729,7 +16729,7 @@ describe('Spreadsheet formula module ->', () => {
             });
         });
     });
-    describe('EJ2-917774 ->', () => {
+    describe('EJ2-917774, EJ2-948832 ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
         });
@@ -16793,6 +16793,48 @@ describe('Spreadsheet formula module ->', () => {
             expect(spreadsheet.sheets[0].rows[11].cells[6].value).toBe('73.0075');
             expect(spreadsheet.sheets[0].rows[11].cells[6].formattedText).toBe('7301%');
             expect(spreadsheet.sheets[0].rows[11].cells[6].format).toBe('0%');
+            done();
+        });
+
+        it('Handled Match Formula cases', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            helper.edit('I1', '=MATCH("Feb",{"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"},0)');
+            helper.edit('I2', '=MATCH("Jun",{"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"},0)');
+            helper.edit('I3', '=MATCH("Sep",{"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"},0)');
+            helper.edit('I4', '=MATCH("October",{"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"},0)');
+            helper.edit('I5', '=MATCH("Dec",{"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"},0)');
+            expect(spreadsheet.sheets[0].rows[0].cells[8].value).toBe(2);
+            expect(spreadsheet.sheets[0].rows[0].cells[8].formula).toBe('=MATCH("Feb",{"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"},0)');
+            expect(spreadsheet.sheets[0].rows[1].cells[8].value).toBe(6);
+            expect(spreadsheet.sheets[0].rows[1].cells[8].formula).toBe('=MATCH("Jun",{"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"},0)');
+            expect(spreadsheet.sheets[0].rows[2].cells[8].value).toBe(9);
+            expect(spreadsheet.sheets[0].rows[2].cells[8].formula).toBe('=MATCH("Sep",{"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"},0)');
+            expect(spreadsheet.sheets[0].rows[3].cells[8].value).toBe('#N/A');
+            expect(spreadsheet.sheets[0].rows[3].cells[8].formula).toBe('=MATCH("October",{"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"},0)');
+            expect(spreadsheet.sheets[0].rows[4].cells[8].value).toBe(12);
+            expect(spreadsheet.sheets[0].rows[4].cells[8].formula).toBe('=MATCH("Dec",{"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"},0)');
+            done();
+        });
+
+        it('Handled #Value error caused by improper concatenation in nested formula', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            helper.edit('J1', '2017');
+            helper.edit('J2', '2019');
+            helper.edit('J3', '2020');
+            helper.edit('J4', '2025');
+            helper.invoke('numberFormat', ['mm-dd-yyyy', 'J5:J8']);
+            helper.edit('J5', '=EOMONTH(DATEVALUE(IF(AM$2="Q1",3,IF(OR(AM$2="Q2",AM$2="H1"),6,IF(AM$2="Q3",9,12)))&"/1/"&J$1),+IF(AM$2<>"CY",-12+5,0))');
+            helper.edit('J6', '=EOMONTH(DATEVALUE(IF(AM$2="Q1",3,IF(OR(AM$2="Q2",AM$2="H1"),6,IF(AM$2="Q3",9,12)))&"/1/"&J$2),+IF(AM$2<>"CY",-12+5,0))');
+            helper.edit('J7', '=EOMONTH(DATEVALUE(IF(AM$2="Q1",3,IF(OR(AM$2="Q2",AM$2="H1"),6,IF(AM$2="Q3",9,12)))&"/1/"&J$3),+IF(AM$2<>"CY",-12+5,0))');
+            helper.edit('J8', '=EOMONTH(DATEVALUE(IF(AM$2="Q1",3,IF(OR(AM$2="Q2",AM$2="H1"),6,IF(AM$2="Q3",9,12)))&"/1/"&J$4),+IF(AM$2<>"CY",-12+5,0))');
+            expect(spreadsheet.sheets[0].rows[4].cells[9].value).toBe('42886');
+            expect(spreadsheet.sheets[0].rows[5].cells[9].value).toBe('43616');
+            expect(spreadsheet.sheets[0].rows[6].cells[9].value).toBe('43982');
+            expect(spreadsheet.sheets[0].rows[7].cells[9].value).toBe('45808');
+            expect(spreadsheet.sheets[0].rows[4].cells[9].formattedText).toBe('5/31/2017');
+            expect(spreadsheet.sheets[0].rows[5].cells[9].formattedText).toBe('5/31/2019');
+            expect(spreadsheet.sheets[0].rows[6].cells[9].formattedText).toBe('5/31/2020');
+            expect(spreadsheet.sheets[0].rows[7].cells[9].formattedText).toBe('5/31/2025');
             done();
         });
     });

@@ -264,7 +264,7 @@
       .e-list-item {
         &.e-focused {
           .e-list-wrapper.e-list-multi-line {
-            @if ($skin-name == 'bootstrap5') {
+            @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5.3') {
               .e-list-item-header,
               .e-list-content {
                 color: $content-text-color-selected;

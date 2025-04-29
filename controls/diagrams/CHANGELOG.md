@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 29.1.40 (2025-04-29)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I706793` - Rotating and flipping of group nodes will now work properly.
+
+## 29.1.39 (2025-04-22)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I707057` - Resolved incorrect scroll offset values when using scrollbar on diagram.
+- `#I707731` - Connector segments are now retrieved correctly during undo and redo operations after a node position change.
+
 ## 29.1.38 (2025-04-15)
 
 ### Diagram

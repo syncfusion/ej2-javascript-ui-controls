@@ -167,7 +167,8 @@ export class PivotEngine {
     private customProperties: ICustomProperties;
     private emptyRowsLength: number = 0;
     private tabularPivotValues: IAxisSet[][] = [];
-
+    /** @hidden */
+    public viewportPageCount: number = 3;
     /**
      * It is used to clear properties.
      *
@@ -3825,7 +3826,7 @@ export class PivotEngine {
                 (this.enableOptimizedRendering && this.pageSettings.currentRowPage > 1 &&
                     ((this.pageSettings.currentRowPage + 1) * this.rowValuesLength) >= this.rowPageCount) ?
                 this.rowPageCount : this.pageSettings.currentRowPage;
-            const requirePageCount: number = this.enablePaging ? 1 : this.enableOptimizedRendering ? 1.5 : 3;
+            const requirePageCount: number = this.enablePaging ? 1 : this.enableOptimizedRendering ? 1.5 : this.viewportPageCount;
             this.memberCnt = this.enablePaging ? 0 : -this.rowValuesLength;
             this.rowStartPos = ((this.pageSettings.currentRowPage * this.pageSettings.rowPageSize) -
                 (this.pageSettings.rowPageSize)) * (this.enablePaging ? 1 : this.rowValuesLength) + (this.enablePaging ? 1 : 0);

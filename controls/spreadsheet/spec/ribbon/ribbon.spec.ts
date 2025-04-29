@@ -232,7 +232,7 @@ describe('Ribbon ->', () => {
         });
     })
     describe('Add Tab Item ->', () => {
-        beforeEach((done: Function) => {
+        beforeAll((done: Function) => {
             model = {
              sheets: [{ ranges: [{ dataSource: defaultData }] }],
              created: (): void => {
@@ -241,22 +241,35 @@ describe('Ribbon ->', () => {
             }
             helper.initializeSpreadsheet(model, done);
          });
-        afterEach(() => {
+        afterAll(() => {
             helper.invoke('destroy');
         });
         it('addRibbonTab->', (done: Function) => {
             document.getElementsByTagName("span")[0].click();
-                setTimeout(function () {
-                    let toolbarElemCount:number = document.getElementsByClassName("e-toolbar-items")[0].querySelectorAll(".e-template").length;
-                    expect(toolbarElemCount).toBe(6);
-                    let spreadsheet:Spreadsheet = helper.getInstance();
-                    spreadsheet.addRibbonTabs([{ header: { text: 'Custom' }, content: [{ text: 'Custom', tooltipText: 'Custom Btn' }] }], 'Data');
-                    toolbarElemCount = document.getElementsByClassName('e-toolbar-items')[0].querySelectorAll('.e-template').length;
-                    expect(toolbarElemCount).toBe(7);
-                    done();
-            },0);    
+            let toolbarElemCount: number = document.getElementsByClassName("e-toolbar-items")[0].querySelectorAll(".e-template").length;
+            expect(toolbarElemCount).toBe(6);
+            let spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.addRibbonTabs(
+                [{ header: { text: 'Custom' }, content: [{ text: 'Custom', tooltipText: 'Custom Btn', cssClass: 'e-test-btn' }] }], 'Data');
+            toolbarElemCount = document.getElementsByClassName('e-toolbar-items')[0].querySelectorAll('.e-template').length;
+            expect(toolbarElemCount).toBe(7);
+            done();   
         });
-    })
+        it('addRibbonTab using other properties->', (done: Function) => {
+            let spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.addRibbonTabs(
+                [{ header: { text: 'Test', iconCss: 'e-test', iconPosition: 'Right' }, content: [{ text: 'Test' }], cssClass: 'e-test-tab',
+                disabled: true }]);
+            const customTab: HTMLElement = document.querySelector('.e-test-tab');
+            expect(customTab).not.toBeNull();
+            expect(customTab.classList.contains('e-disable')).toBeTruthy();
+            expect(customTab.classList.contains('e-overlay')).toBeTruthy();
+            const tabIcon: HTMLElement = customTab.querySelector('.e-test');
+            expect(tabIcon).not.toBeNull();
+            expect(tabIcon.classList.contains('e-icon-Right')).toBeTruthy();
+            done();   
+        });
+    });
     describe('On Property Changed ->', () => {
         beforeEach((done: Function) => {
             model = {

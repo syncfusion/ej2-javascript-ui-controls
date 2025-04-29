@@ -38,7 +38,6 @@ export class DialogRenderer {
      * @deprecated
      */
     public render(e: DialogModel): Dialog {
-        let dlgObj: Dialog;
         e.beforeOpen = this.beforeOpen.bind(this);
         e.open = this.open.bind(this);
         e.position = {
@@ -50,8 +49,10 @@ export class DialogRenderer {
             e.close = this.close.bind(this);
         }
         e.beforeClose = this.beforeClose.bind(this);
-        // eslint-disable-next-line
-        dlgObj = new Dialog(e);
+        if (this.parent.element.dataset.rteUnitTesting === 'true') {
+            e.animationSettings = { effect: 'None', duration: 0 };
+        }
+        const dlgObj: Dialog = new Dialog(e);
         dlgObj.isStringTemplate = true;
         return dlgObj;
     }

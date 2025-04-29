@@ -236,7 +236,7 @@ export class PasteCleanup {
             const contentWithSpace: string = this.makeSpace(content);
             const contentWithLineBreak: string = contentWithSpace.replace(/\r\n|\n/g, '<br>');
             if (i === 0) {
-                if (this.parent.enterKey === 'BR') {
+                if (this.parent.enterKey === 'BR' && !contentWithLineBreak.endsWith('<br>')) {
                     finalText += (contentWithLineBreak + endNode);
                 } else {
                     finalText += contentWithLineBreak; // In order to merge the content in current line. No P/Div tag is added.

@@ -18016,7 +18016,7 @@ export class Editor {
             this.listFormatInfo = {
                 listNumberFormat: listFormat.listLevel.numberFormat,
                 listLevelPattern: listFormat.listLevel.listLevelPattern,
-                listCharacterFormat: listFormat.listLevel.characterFormat.hasValue('fontFamily') ? listFormat.listLevel.characterFormat.fontFamily : undefined,
+                listCharacterFormat: listFormat.listLevel.characterFormat.hasValue('fontFamily') ? listFormat.listLevel.characterFormat.fontFamily : currentParagraph.characterFormat.fontFamily,
                 listId: listFormat.listId
             };
             if (isNullOrUndefined(currentParagraph.previousWidget) && listFormat.listLevelNumber > 0) {
@@ -19329,6 +19329,10 @@ export class Editor {
             }
             return;
         }
+        let contentControl: ContentControl = this.selection.currentContentControl;
+        if (contentControl && contentControl.contentControlProperties && contentControl.contentControlProperties.lockContents) {
+            return;
+        }
         if (this.selection.isInlineFormFillMode()) {
             if (inline instanceof FieldElementBox && inline.fieldType === 2) {
                 return;
@@ -20349,7 +20353,6 @@ export class Editor {
      */
     /* eslint-disable  */
     public singleDelete(selection: Selection, isRedoing: boolean): void {
-
         let lineWidget: LineWidget = selection.start.currentWidget;
         let paragraph: ParagraphWidget = selection.start.paragraph; 
         let offset: number = selection.start.offset; let indexInInline: number = 0;
@@ -20386,6 +20389,10 @@ export class Editor {
                     this.selection.selectContentControlInternal(inline);
                 }
             }
+            return;
+        }
+        let contentControl: ContentControl = this.selection.currentContentControl;
+        if (contentControl && contentControl.contentControlProperties && contentControl.contentControlProperties.lockContents) {
             return;
         }
         indexInInline = inlineObj.index;
@@ -24473,7 +24480,7 @@ export class Editor {
         currentOffset = endElement.line.getOffset(endElement, 1);
         this.selection.end.setPositionParagraph(endElement.line, currentOffset);
         this.skipFieldDeleteTracking = true;
-        this.deleteSelectedContents(this.selection, false);
+        this.deleteSelectedContents(this.selection, true);
         this.skipFieldDeleteTracking = false;
         this.updateInsertPosition();
         const element: ElementBox[] = [];

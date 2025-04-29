@@ -753,6 +753,7 @@ describe('Schedule event window initial load', () => {
             const startTZDropDown: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_START_TZ_CLASS);
             const keyEventArgs: any = { keyCode: 74, metaKey: false, preventDefault: (): void => { /** NO Code */ } };
             const listObj: any = (startTZDropDown as EJ2Instance).ej2_instances[0] as DropDownList;
+            listObj.debounceDelay = 0;
             listObj.showPopup();
             listObj.filterInput.value = 'Maw';
             listObj.onInput();
@@ -2935,6 +2936,7 @@ describe('Schedule event window initial load', () => {
             const keyEventArgs: any = { keyCode: 74, metaKey: false, preventDefault: (): void => { /** NO Code */ } };
             expect((startTZDropDown as HTMLInputElement).value).toEqual(schObj.tzModule.getLocalTimezoneName());
             const listObj: any = (startTZDropDown as EJ2Instance).ej2_instances[0] as DropDownList;
+            listObj.debounceDelay = 0;
             listObj.showPopup();
             listObj.filterInput.value = 'Ha';
             listObj.onInput();
@@ -2947,7 +2949,7 @@ describe('Schedule event window initial load', () => {
             element = [].slice.call(document.querySelectorAll('.e-dropdownbase .e-list-parent')).slice(-1)[0];
             expect(element.childNodes.length).toEqual(6);
             listObj.onInput();
-            listObj.onFilterUp(keyEventArgs);
+            // listObj.onFilterUp(keyEventArgs);
             (element.children[3] as HTMLLIElement).click();
             const saveButton: HTMLElement = dialogElement.querySelector('.e-event-save') as HTMLElement;
             expect((startTZDropDown as HTMLInputElement).value).toEqual('Rarotonga');

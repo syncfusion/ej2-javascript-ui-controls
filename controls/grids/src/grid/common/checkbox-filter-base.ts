@@ -1016,7 +1016,7 @@ export class CheckBoxFilterBase {
             const query1: Query = new Query();
             this.queryGenerate(query1);
             const result : Object[] = new DataManager(this.options.dataSource.dataSource).executeLocal(query1);
-            this.options.dataSource.dataSource.json = DataUtil.distinct(result, this.options.column.field, true);
+            this.options.dataSource = new DataManager(DataUtil.distinct(result, this.options.column.field, true));
             if (this.isForeignColumn(this.options.column as Column)) {
                 this.options.column.dataSource = this.options.column.dataSource instanceof DataManager ?
                     this.options.column.dataSource : new DataManager(this.options.column.dataSource as JSON[]);

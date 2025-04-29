@@ -263,10 +263,6 @@ export class Edit {
         const actCell: number[] = getCellIndexes(sheet.activeCell);
         const cell: CellModel = getCell(actCell[0], actCell[1], sheet, false, true);
         const isKeyboardShortcut: boolean = this.parent.enableKeyboardShortcut;
-        if (!isKeyboardShortcut && keyCode === this.keyCodes.SPACE && !e.ctrlKey && !e.altKey && !e.metaKey) {
-            e.preventDefault();
-            return;
-        }
         if (!closest(trgtElem, '.e-spreadsheet .e-dialog')) {
             if (!sheet.isProtected || trgtElem.classList.contains('e-sheet-rename') || !isLocked(cell, getColumn(sheet, actCell[1])) || ((trgtElem.classList.contains('e-formula-bar') || trgtElem.classList.contains('e-combobox')) && !(trgtElem as HTMLTextAreaElement).disabled)) {
                 if (this.isEdit) {
@@ -318,7 +314,7 @@ export class Edit {
                             if (!this.hasFormulaSuggSelected()) { this.endEdit(false, e); }
                             break;
                         case this.keyCodes.ESC:
-                            if (isKeyboardShortcut) { this.cancelEdit(true, true, e); }
+                            this.cancelEdit(true, true, e);
                             break;
                         }
                     }

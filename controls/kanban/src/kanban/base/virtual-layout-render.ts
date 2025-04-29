@@ -825,6 +825,12 @@ export class VirtualLayoutRender extends MobileLayout {
     }
 
     private removeCardsOnScroll(cardVirtualElement: HTMLElement, isDown: boolean, removeStartIndex: number, removeEndIndex: number): void {
+        const columnKey: string = cardVirtualElement.parentElement.parentElement.getAttribute('data-key');
+        const columnCardCount: number = this.scrollStatus[columnKey as string].totalColumnData;
+        const columnThreshold: number = 30;
+        if (columnCardCount <= columnThreshold) {
+            return;
+        }
         for (let j: number = removeStartIndex; j < removeEndIndex; j++) {
             let removableElem: HTMLElement = isDown ? cardVirtualElement.firstChild as HTMLElement
                 : cardVirtualElement.lastChild as HTMLElement;

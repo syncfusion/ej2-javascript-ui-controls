@@ -1,6 +1,6 @@
 import { _ExportHelper } from './xfdf-document';
 import { PdfDocument } from './../pdf-document';
-import { _stringToAnnotationFlags, _convertToColor, _encode, _byteArrayToHexString, _stringToBytes, _annotationFlagsToString, _bytesToString, _hexStringToByteArray, _decode, _isNullOrUndefined, _compressStream } from './../utils';
+import { _stringToAnnotationFlags, _convertToColor, _encode, _byteArrayToHexString, _stringToBytes, _annotationFlagsToString, _bytesToString, _hexStringToByteArray, _decode, _isNullOrUndefined, _compressStream, _hasUnicodeCharacters } from './../utils';
 import { PdfPage } from './../pdf-page';
 import { PdfAnnotation, PdfLineAnnotation } from './../annotations/annotation';
 import { PdfAnnotationCollection } from './../annotations/annotation-collection';
@@ -645,7 +645,7 @@ export class _JsonDocument extends _ExportHelper {
             if (key !== 'AllowedInteractions') {
                 value = this._getValidString(value);
             }
-            if (this._isColorSpace || key === 'AllowedInteractions' || this._hasUnicodeCharacters(value) || isTabSpace) {
+            if (this._isColorSpace || key === 'AllowedInteractions' || _hasUnicodeCharacters(value) || isTabSpace) {
                 const bytes: Uint8Array = _stringToBytes(value) as Uint8Array;
                 this._writeTable('unicodeData', _byteArrayToHexString(bytes), table, key, array);
                 isTabSpace = false;
@@ -771,10 +771,6 @@ export class _JsonDocument extends _ExportHelper {
             j++;
         });
         return json + '}';
-    }
-    _hasUnicodeCharacters(value: string): boolean {
-        const unicodeRegex = /[^\x00-\x7F]/; // eslint-disable-line
-        return value.split('').some(char => unicodeRegex.exec(char) !== null); // eslint-disable-line
     }
     _convertToJsonArray(array: Map<string, string>[]): string {
         let json: string = '[';

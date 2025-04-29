@@ -539,7 +539,7 @@ export class _PdfParser {
                     }
                     this.shift();
                     const isEnd: boolean = this._checkEnd();
-                    if (isEnd) {
+                    if (isEnd || (_isCommand(this.first, '>>') && _isCommand(this.second, 'stream'))) {
                         break;
                     }
                     if (typeof arguement1 === 'number' && typeof arguement2 === 'number') {

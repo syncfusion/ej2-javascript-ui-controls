@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 29.1.40 (2025-04-29)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I708159` - Resolved the issue where the `clearFormFields` method was not working for newly added form fields.
+- `#I709563` - Resolved an issue where the shape label could not be set during the `annotationAdd` event.
+- `#I709131` - Resolved the issue where the form field cursor position was incorrect when `enableRtl` was set to true.
+- `#I713403` - Fixed an issue where the `isDocumentEdited` property remains false in the `annotationAdd` event when adding a free text annotation.
+- `#I711690` - Resolved an exception that occurs when saving the document after programmatically updating an existing type signature to an image signature.
+
 ## 29.1.39 (2025-04-22)
 
 ### PDF Viewer

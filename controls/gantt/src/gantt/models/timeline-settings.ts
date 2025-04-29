@@ -109,4 +109,13 @@ export class TimelineSettings extends ChildProperty<TimelineSettings> {
      */
     @Property(true)
     public updateTimescaleView: boolean;
+    /**
+     * Enables or disables the display of weekend cells in the Gantt Chart timeline.
+     * Weekend days are determined based on the `workweek` configuration, which defines the working days (e.g., Monday to Friday).
+     * Any day not included in the `workweek` is treated as a non-working day.
+     * When set to `false`, non-working days will be hidden from the timeline view.
+     * @default true
+     */
+    @Property(true)
+    public showWeekend: boolean;
 }

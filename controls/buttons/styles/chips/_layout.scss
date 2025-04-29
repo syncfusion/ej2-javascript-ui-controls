@@ -30,6 +30,10 @@
   margin: $margin;
 }
 
+.e-clone-chip {
+  z-index: 2000;
+}
+
 @include export-module('chip-layout') {
   .e-chip-list {
     display: flex;
@@ -71,6 +75,13 @@
         @include align-chip($chip-leading-icon-border-radius, $chip-leading-icon-font-size, $chip-leading-icon-margin);
         @if ($skin-name == 'tailwind3') {
           font-weight: normal;
+        }
+      }
+
+      .e-chip-drag {
+        &.e-drag-and-drop,
+        &.e-error-treeview {
+          margin: $chip-leading-icon-margin;
         }
       }
 
@@ -192,6 +203,13 @@
 
         .e-chip-icon {
           margin: $chip-rtl-leading-icon-margin;
+        }
+
+        .e-chip-drag {
+          &.e-drag-and-drop,
+          &.e-error-treeview {
+            margin: $chip-rtl-leading-icon-margin;
+          }
         }
 
         .e-chip-delete {

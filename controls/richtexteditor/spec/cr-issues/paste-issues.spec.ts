@@ -1,4 +1,5 @@
 import { RichTextEditor } from "../../src/rich-text-editor/base/rich-text-editor";
+import { BASIC_MOUSE_EVENT_INIT } from "../constant.spec";
 import { destroy, renderRTE, setCursorPoint, dispatchEvent } from "../rich-text-editor/render.spec";
 
 describe('Paste CR issues ', ()=> {
@@ -788,6 +789,42 @@ describe('Paste CR issues ', ()=> {
         });
         afterEach(() => {
             destroy(rteObj);
+        });
+    });
+
+    describe('946861: Paste cleanup Dialog close testing', ()=> {
+        let editor: RichTextEditor;
+        beforeAll(()=> {
+            editor = renderRTE({
+                value: 'Editor',
+                pasteCleanupSettings: {
+                    prompt: true
+                }
+            });
+        });
+        afterAll(()=> {
+            destroy(editor);
+        });
+        it('Should close the dialog on toolbar click action.', (done: DoneFn)=> {
+            editor.focusIn();
+            const range: Range = new Range();
+            range.setStart(editor.inputElement.firstChild.firstChild, 2);
+            range.collapse(true);
+            editor.selectRange(range);
+            const pasteContent: string = '<p>This is a coverage issue test case.</p>';
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', pasteContent);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            editor.onPaste(pasteEvent);
+            setTimeout(()=> {
+                const boldButton: HTMLElement = editor.element.querySelector('.e-bold');
+                const mouseDownEvent: MouseEvent = new MouseEvent('mousedown', BASIC_MOUSE_EVENT_INIT);
+                boldButton.dispatchEvent(mouseDownEvent);
+                setTimeout(() => {
+                    expect(editor.element.querySelector('.e-popup-open')).toBe(null);
+                    done();
+                }, 100);
+            }, 100);
         });
     });
 }); // Add the tests above.
