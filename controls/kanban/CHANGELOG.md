@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 29.1.41 (2025-05-06)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#F196600` - Fixed an issue where the Kanban card temporarily returned to its old position after being dropped.
+
+- `#I709249` - Fixed an alignment issue between the header and the content in the Kanban.
+
 ## 29.1.37 (2025-04-08)
 
 ### Kanban

@@ -17,6 +17,7 @@ import { TextElement } from '../core/elements/text-element';
 import { ImageElement } from '../core/elements/image-element';
 import { ElementAction, FlipDirection } from '../enum/enum';
 import { DiagramElement } from '../core/elements/diagram-element';
+import { Diagram } from '../diagram';
 
 /**
  * Canvas Renderer
@@ -66,7 +67,30 @@ export class CanvasRenderer implements IRenderer {
             }
             if (options.gradient.type === 'Linear') {
                 const linear: LinearGradientModel = options.gradient;
-                grd = ctx.createLinearGradient(x + linear.x1, y + linear.y1, x + linear.x2, y + linear.y2);
+                //952013 - Gradient is not rendered correctly upon export
+                let x1: number = linear.x1;
+                let x2: number = linear.x2;
+                let y1: number = linear.y1;
+                let y2: number = linear.y2;
+                if ((linear as any).controlParent instanceof Diagram && ((linear as any).controlParent as Diagram).mode === 'SVG') {
+                    x1 = (options as any).width ? x1 * (options as any).width / 100 : x1;
+                    x2 = (options as any).width ? x2 * (options as any).width / 100 : x2;
+                    y1 = (options as any).height ? y1 * (options as any).height / 100 : y1;
+                    y2 = (options as any).height ? y2 * (options as any).height / 100 : y2;
+                    if (x1 !== x2 && y1 !== y2) {
+                        const xdistance: number = x2 - x1;
+                        const ydistance: number = y2 - y1;
+                        const angleRad: number = Math.atan2(ydistance, xdistance);
+                        let angleDeg: number = (angleRad * (180 / Math.PI)) % 360;
+                        angleDeg = angleDeg < 360 ? angleDeg + 360 : angleDeg;
+                        const inverseAngleDeg: number = 90 - angleDeg;
+                        const inverseAngleRad: number = inverseAngleDeg * (Math.PI / 180);
+                        const effectiveDistance: number = (xdistance * Math.sin(angleRad)) + (ydistance * Math.cos(angleRad));
+                        x2 = x1 + effectiveDistance * Math.cos(inverseAngleRad);
+                        y2 = y1 + effectiveDistance * Math.sin(inverseAngleRad);
+                    }
+                }
+                grd = ctx.createLinearGradient(x + x1, y + y1, x + x2, y + y2);
             } else {
                 const radial: RadialGradientModel = options.gradient;
                 grd = ctx.createRadialGradient(x + radial.fx, y + radial.fy, 0, x + radial.cx, y + radial.cy, radial.r);

@@ -215,6 +215,7 @@ export class AccumulationDataLabel extends AccumulationBase {
                 textSize = this.getTextSize(point.labelCollection, dataLabel);
                 textSize.height += 4;  // 4 for calculation with padding for smart label shape
                 textSize.width += 4;
+                point.textSize = textSize;
                 this.getLabelRegion(point, point.labelPosition, textSize, labelRadius, this.marginValue);
                 previousPoint = this.findPreviousPoint(points, point.index, point.labelPosition);
                 if (previousPoint && (isOverlap(point.labelRegion, previousPoint.labelRegion) ||

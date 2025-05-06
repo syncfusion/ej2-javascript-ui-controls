@@ -11,6 +11,7 @@
 - `#I698253` - Now, The issue with the page becoming unresponsive when removing inline code in the RichTextEditor has been resolved.
 - `#I709931` - Now, when pasting content into the Rich Text Editor with the Enter key configuration set to `<br>`, only a single `<br>` tag is inserted instead of the expected two.
 - `#I715942` - Now, the issue where setting the value property to null resulted in focus inside the editor has been resolved.
+- `#I714681` - Now the issue where the drag and drop file upload popup appeared outside the Rich Text Editor container has been resolved.
 
 ## 29.1.39 (2025-04-22)
 

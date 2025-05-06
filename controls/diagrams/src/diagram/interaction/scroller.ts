@@ -322,18 +322,16 @@ export class DiagramScroller {
      */
     public getObjects(coll1: string[], coll2: string[]): string[] {
         const objects: string[] = [];
+        // Convert coll2 array into a Set for fast lookup
+        const coll2Set: Set<string> = new Set(coll2);
+        // Loop through each index in coll1
         for (let i: number = 0; i < coll1.length; i++) {
-            let isExist: boolean = false;
-            for (let j: number = 0; j < coll2.length; j++) {
-                if (coll1[parseInt(i.toString(), 10)] === coll2[parseInt(j.toString(), 10)]) {
-                    isExist = true;
-                    break;
-                }
-            }
-            if (!isExist) {
+            // Use parseInt for index access (as required)
+            if (!coll2Set.has(coll1[parseInt(i.toString(), 10)])) {
                 objects.push(coll1[parseInt(i.toString(), 10)]);
             }
         }
+        // Return items from coll1 that are not present in coll2
         return objects;
     }
 
@@ -381,14 +379,21 @@ export class DiagramScroller {
             }
         }
 
+        // Create a plain object to store zindexOrder indices for quick lookup
+        const zindexLookup: { [key: number]: number } = {};
+        // Populate the lookup object
+        for (let k: number = 0; k < zindexOrder.length; k++) {
+            zindexLookup[zindexOrder[parseInt(k.toString(), 10)]] = k;
+        }
+        this.diagram.protectPropertyChange(true);
+        // Iterate over oObjects and set the zIndex using the lookup object
         for (let j: number = 0; j < oObjects.length; j++) {
-            for (let k: number = 0; k < zindexOrder.length; k++) {
-                if (oObjects[parseInt(j.toString(), 10)].id === zindexOrder[parseInt(k.toString(), 10)]) {
-                    oObjects[parseInt(j.toString(), 10)].zIndex = k;
-                    break;
-                }
+            const objId: string = oObjects[parseInt(j.toString(), 10)].id;
+            if (objId in zindexLookup) {
+                oObjects[parseInt(j.toString(), 10)].zIndex = zindexLookup[`${objId}`];
             }
         }
+        this.diagram.protectPropertyChange(false);
 
         const newObjects: string[] = this.getObjects(oObjectsID, this.oldCollectionObjects);
         if (this.oldCollectionObjects.length === 0) {

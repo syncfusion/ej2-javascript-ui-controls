@@ -1103,6 +1103,7 @@ export class DocumentHelper {
         this.fontSubstitutionTable.clear();
         this.images.clear();
         this.contentControlCollection = [];
+        this.splittedCellWidgets = [];
         this.backgroundColor='#FFFFFF';
         this.endnotes.clear();
         this.footnotes.clear();

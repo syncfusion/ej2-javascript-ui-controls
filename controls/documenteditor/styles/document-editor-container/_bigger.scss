@@ -1082,7 +1082,7 @@
 @if $skin-name =='tailwind3' {
   .e-bigger 
   {
-    .e-colorpicker-wrapper,
+    .e-colorpicker-wrapper.e-de-font-clr-picker,
     .e-split-btn-wrapper.e-de-prop-splitbutton,
     .e-split-btn-wrapper.e-de-btn-hghlclr,
     .e-de-ctnr-segment>div:first-child:not(.e-rtl),

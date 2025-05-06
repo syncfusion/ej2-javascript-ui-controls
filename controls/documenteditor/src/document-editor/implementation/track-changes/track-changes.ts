@@ -559,6 +559,17 @@ export class Revision {
         return revision;
     }
     /**
+     * @private
+     */
+    public cloneRevision() : Revision {
+        let revision: Revision = new Revision(this.owner, this.author, this.date);
+        revision.revisionID = this.revisionID;
+        revision.revisionType = this.revisionType;
+        revision.author = this.author;
+        revision.date = this.date
+        return revision;
+    }
+    /**
      * Method to clone the revisions for the element
      * 
      * @param {Revision[]} revisions - revision array.

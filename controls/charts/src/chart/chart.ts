@@ -3071,6 +3071,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.seriesElements = null;
         this.chartAxisLayoutPanel = null;
         this.dataLabelCollections = null;
+        this.visibleSeriesCount = null;
         this.dataLabelElements = null;
         this.yAxisElements = null;
         const element: HTMLElement = document.getElementById(this.element.id + 'Keyboard_chart_focus');
@@ -4277,7 +4278,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 args: [this]
             });
         }
-        if (dataLabelEnable) {
+        if (dataLabelEnable || this.stackLabels.visible) {
             modules.push({
                 member: 'DataLabel',
                 args: [this, series]

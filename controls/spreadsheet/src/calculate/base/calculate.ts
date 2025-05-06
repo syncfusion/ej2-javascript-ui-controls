@@ -14,6 +14,7 @@ const maxCols: number = 16384;
 
 /**
  * Represents the calculate library.
+ *
  * @hidden
  */
 @NotifyPropertyChanges
@@ -1008,7 +1009,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
         const rangevalue: string = argArr[0];
         const isStringVal: boolean = argArr[1].startsWith(this.tic) && argArr[1].endsWith(this.tic);
-        let criteria: string = argArr[1].split(this.tic).join(this.emptyString);
+        let criteria: string = this.getANDComputedValue(argArr[1]);
         if (criteria.length > 255) {
             return this.getErrorStrings()[CommonErrors.Value];
         }
@@ -2311,7 +2312,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             let cellVal: string = this.getValueFromArg(cellValue[j as number]);
             const arrValue: string = argArr[isCountIfs ? (1 + (i * 2)) : (2 + i)];
             const isStringVal: boolean = arrValue.startsWith(this.tic) && arrValue.endsWith(this.tic);
-            criteria = arrValue.trim().split(this.tic).join(this.emptyString);
+            criteria = this.getANDComputedValue(arrValue.trim());
             const isAsterisk: boolean = criteria.includes('*');
             const isAsteriskOnly: boolean = criteria === '*' || criteria === '<>*';
             let criteriaValue: string = isAsterisk && !isAsteriskOnly ? criteria.replace(/\*/g, '').trim() : criteria;
@@ -2396,7 +2397,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                     newCell = newCell.substring(newCell.lastIndexOf('!') + 1);
                 }
                 cellVal = this.getValueFromArg(newCell);
-                criteria = isCountIfs ? criteria : criterias[i - 1].split(this.tic).join(this.emptyString);
+                criteria = isCountIfs ? criteria : this.getANDComputedValue(criterias[i - 1]);
             }
             let op: string = 'equal';
             if (criteria.startsWith('<=')) {
@@ -2727,6 +2728,18 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     public isDigit(text: string): boolean {
         const charCode: number = text.charCodeAt(0);
         return charCode > 47 && charCode < 58;
+    }
+
+    /**
+     * @hidden
+     * @param {string} condition - Specify the text
+     * @returns {string} -  returns text value.
+     */
+    public getANDComputedValue(condition: string): string {
+        if (condition.startsWith(this.arithMarker) && condition.includes('c')) {
+            condition = this.getValueFromArg(condition);
+        }
+        return condition.split(this.tic).join(this.emptyString);
     }
 
     private findLastIndexOfq(fString: string): number {

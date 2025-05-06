@@ -1139,7 +1139,6 @@ export class Print {
         const textArr: string[] = text.toString().split(' ');
         const spaceWidth: number = getTextWidth(' ', style, parentStyle, true);
         let hypenWidth: number; let lines: number; let lineText: string = '';
-        let lineCnt: number = 0; let maxCnt: number = 0;
         const calculateCount: (txt: string) => void = (txt: string): void => {
             if (prevWidth) {
                 displayText.push(lineText);
@@ -1213,8 +1212,6 @@ export class Print {
             }
         });
         if (prevWidth) {
-            lineCnt = getDPRValue(prevWidth - spaceWidth, true) / colwidth;
-            maxCnt = parseFloat((lineCnt).toString().split('.')[0]);
             displayText.push(lineText);
         }
         return displayText;

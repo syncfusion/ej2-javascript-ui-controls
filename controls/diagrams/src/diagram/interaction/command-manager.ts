@@ -5469,27 +5469,29 @@ Remove terinal segment in initial
             rotateMatrix(matrix, refWrapper.rotateAngle, pivot.x, pivot.y);
             if (obj instanceof Node) {
                 const node: Node = obj; //let left: number; let top: number;
-                const newPosition: PointModel = transformPointByMatrix(matrix, { x: node.wrapper.offsetX, y: node.wrapper.offsetY });
                 const oldleft: number = node.wrapper.offsetX - node.wrapper.actualSize.width * node.pivot.x;
                 const oldtop: number = node.wrapper.offsetY - node.wrapper.actualSize.height * node.pivot.y;
+                //EJ2-934129 : Position of the subprocess changed during undo and redo operations
+                const isTransformRequired = !(this.diagram.undoRedoModule && this.diagram.checkUndoRedo && node.shape.type === 'Bpmn');
+                const transformedPosition: PointModel = transformPointByMatrix(matrix, {
+                    x: node.wrapper.offsetX,
+                    y: node.wrapper.offsetY
+                });
+                const updatedOffsetX = isTransformRequired ? transformedPosition.x : oldValues.offsetX;
+                const updatedOffsetY = isTransformRequired ? transformedPosition.y : oldValues.offsetY;
+                const parentNode: Node | undefined = node.processId ? this.diagram.nameTable[node.processId] : undefined;
                 if (width > 0) {
-                    if (node.processId) {
-                        const parent: Node = this.diagram.nameTable[node.processId];
-                        if (!parent.maxWidth || ((node.margin.left + width) < parent.maxWidth)) {
-                            node.width = width; node.offsetX = newPosition.x;
-                        }
-                    } else {
-                        node.width = width; node.offsetX = newPosition.x;
+                    const isWithinMaxWidth: boolean =
+                        !parentNode || parentNode.maxWidth === undefined || (node.margin.left + width < parentNode.maxWidth);
+                    if (isWithinMaxWidth) {
+                        node.width = width; node.offsetX = updatedOffsetX;
                     }
                 }
                 if (height > 0) {
-                    if (node.processId) {
-                        const parent: Node = this.diagram.nameTable[node.processId];
-                        if (!parent.maxHeight || ((node.margin.top + height) < parent.maxHeight)) {
-                            node.height = height; node.offsetY = newPosition.y;
-                        }
-                    } else {
-                        node.height = height; node.offsetY = newPosition.y;
+                    const isWithinMaxHeight: boolean =
+                        !parentNode || parentNode.maxHeight === undefined || (node.margin.top + height < parentNode.maxHeight);
+                    if (isWithinMaxHeight) {
+                        node.height = height; node.offsetY = updatedOffsetY;
                     }
                 }
                 let left: number = node.wrapper.offsetX - node.wrapper.actualSize.width * node.pivot.x;
@@ -5543,7 +5545,11 @@ Remove terinal segment in initial
     private scaleConnector(connector: Connector, matrix: Matrix, oldValues: Connector, sw?: number, sh?: number, pivot?: PointModel): void {
         connector.sourcePoint = transformPointByMatrix(matrix, connector.sourcePoint);
         connector.targetPoint = transformPointByMatrix(matrix, connector.targetPoint);
-        if (connector.shape.type === 'Bpmn' && (connector.shape as BpmnFlow).sequence === 'Default' && (connector.shape as BpmnFlow).flow === 'Sequence') {
+        if (
+            connector.shape.type === 'Bpmn' &&
+            (connector.shape as BpmnFlow).sequence === 'Default' &&
+            (connector.shape as BpmnFlow).flow === 'Sequence'
+        ) {
             this.updatePathElementOffset(connector);
         }
         const newProp: Connector = { sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint } as Connector;

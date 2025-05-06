@@ -3794,12 +3794,18 @@ export function _mapFont(name: string, size: number, style: PdfFontStyle, annota
         const isAnnotation: boolean = annotation instanceof PdfAnnotation;
         const isField: boolean = annotation instanceof PdfField;
         if (isAnnotation || isField) {
-            const isWidget: boolean = isAnnotation &&  (annotation as PdfAnnotation)._type !== _PdfAnnotationType.widgetAnnotation;
-            const isLargerTextBox: boolean = annotation instanceof PdfTextBoxField
-                && annotation._circleCaptionFont  && fontSize > annotation._circleCaptionFont.size;
-            font = (isWidget || isLargerTextBox) ?
-                new PdfStandardFont(PdfFontFamily.helvetica, fontSize, style) :
-                annotation._circleCaptionFont;
+            const annotationType: _PdfAnnotationType = (annotation as PdfAnnotation)._type;
+            const hasCircleFont: boolean = annotation._circleCaptionFont && fontSize > annotation._circleCaptionFont.size;
+            const isWidget: boolean = isAnnotation && annotationType !== _PdfAnnotationType.widgetAnnotation;
+            const isLargerTextBox: boolean = annotation instanceof PdfTextBoxField && hasCircleFont;
+            if (isWidget || isLargerTextBox) {
+                font = new PdfStandardFont(PdfFontFamily.helvetica, fontSize, style);
+            } else {
+                font = annotation._circleCaptionFont;
+            }
+            if (annotationType === _PdfAnnotationType.widgetAnnotation && hasCircleFont) {
+                font = new PdfStandardFont(PdfFontFamily.helvetica, fontSize, style);
+            }
         }
     }
     return font;

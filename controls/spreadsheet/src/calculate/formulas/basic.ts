@@ -1149,6 +1149,9 @@ export class BasicFormulas {
         }
         if (!skipTick && result.indexOf(this.parent.tic) > -1) {
             return result.split(this.parent.tic).join('');
+        } else if (skipTick && !isNumber(result) && result.indexOf(this.parent.tic) === -1 && result !== this.parent.trueValue &&
+            result !== this.parent.falseValue && !this.parent.isCellReference(result)) {
+            return '"' + result + '"';
         } else {
             return result === '' ? '0' : result;
         }
@@ -3969,7 +3972,7 @@ export class BasicFormulas {
         let op: string = 'equal';
         if (argArr[1] === '') { return 0; }
         const isStringVal: boolean = argArr[1].startsWith(this.parent.tic) && argArr[1].endsWith(this.parent.tic);
-        let condition: string = argArr[1].split(this.parent.tic).join('');
+        let condition: string = this.parent.getANDComputedValue(argArr[1]);
         const isAsterisk: boolean = condition.includes('*');
         const isAsteriskOnly: boolean = condition === '*' || condition === '<>*';
         let criteriaValue: string = isAsterisk && !isAsteriskOnly ? condition.replace(/\*/g, '').trim() : condition;

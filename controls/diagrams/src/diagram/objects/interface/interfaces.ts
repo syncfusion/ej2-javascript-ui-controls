@@ -241,6 +241,7 @@ export interface View {
     updateView: Function;
     updateHtmlLayer: Function;
     renderDocument: Function;
+    initializeOverviewLayers: Function;
     element: HTMLElement;
     contentWidth?: number;
     contentHeight?: number;

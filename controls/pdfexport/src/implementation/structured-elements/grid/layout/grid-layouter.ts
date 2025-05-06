@@ -1264,6 +1264,7 @@ export class PdfGridLayouter extends ElementLayouter {
             let location : PointF = new PointF(0, 0);
             let size : SizeF = new SizeF(0, 0);
             let isHeader : boolean = false;
+            let allowRowBreak : boolean = true;
             if (row.rowSpanExists) {
                 let maxSpan : number = 0;
                 let currRowIndex : number = this.Grid.rows.rowCollection.indexOf(row);
@@ -1294,7 +1295,89 @@ export class PdfGridLayouter extends ElementLayouter {
                 // }
                 // if ((rowMaxHeight > rowHeightWithSpan) && flag) {
                 //     row.height += (rowMaxHeight - rowHeightWithSpan);
-                // }                
+                // }
+                if ((rowHeightWithSpan > this.currentBounds.height ||
+                    rowHeightWithSpan + this.currentBounds.y > this.currentBounds.height)) {
+                    if (
+                        row.rowSpanExists &&
+                        (this.Grid.LayoutFormat.break === PdfLayoutBreakType.FitElement || !this.Grid.allowRowBreakAcrossPages)
+                    ) {
+                        allowRowBreak = false;
+                    }
+                }
+                if ((rowHeightWithSpan > this.currentBounds.height || rowHeightWithSpan + this.currentBounds.y > this.currentBounds.height)
+                    && allowRowBreak) {
+                    rowHeightWithSpan = 0;
+                    row.isPageBreakRowSpanApplied = true;
+                    for (let i: number = 0; i < row.cells.count; i++) {
+                        let cell: PdfGridCell = row.cells.getCell(i);
+                        maxSpan = cell.rowSpan;
+                        for (let i = currRowIndex; i < currRowIndex + maxSpan; i++) {
+                            rowHeightWithSpan += isHeader ? this.Grid.headers.getHeader(i).height : this.Grid.rows.getRow(i).height;
+                            const layoutFormat: PdfLayoutFormat = this.Grid.LayoutFormat;
+                            let currentBoundsHeight: number = this.currentPageBounds.height;
+                            if (layoutFormat.usePaginateBounds && layoutFormat.paginateBounds && layoutFormat.paginateBounds.height > 0) {
+                                let bottom: number = layoutFormat.paginateBounds.y + layoutFormat.paginateBounds.height;
+                                if (!this.Grid.isChildGrid && this.Grid.listOfNavigatePages.length === 1) {
+                                    bottom += this.Grid._gridLocation.y;
+                                }
+                                if (bottom < currentBoundsHeight) {
+                                    currentBoundsHeight = bottom;
+                                    this.currentPageBounds.height = currentBoundsHeight;
+                                    this.currentBounds.height = currentBoundsHeight;
+                                }
+                            }
+                            if ((this.currentBounds.y + rowHeightWithSpan) > currentBoundsHeight) {
+                                rowHeightWithSpan -= isHeader ? this.Grid.headers.getHeader(i).height : this.Grid.rows.getRow(i).height;
+                                for (let j = 0; j < this.Grid.rows.getRow(currRowIndex).cells.count; j++) {
+                                    const newSpan: number = i - currRowIndex;
+                                    if (!isHeader &&
+                                        this.Grid.rows.getRow(currRowIndex).cells.getCell(j).rowSpan === maxSpan &&
+                                        newSpan !== 0) {
+                                        const currCell: PdfGridCell = this.Grid.rows.getRow(currRowIndex).cells.getCell(j);
+                                        const nextCell: PdfGridCell = this.Grid.rows.getRow(i).cells.getCell(j);
+                                        currCell.rowSpan = newSpan === 0 ? 1 : newSpan;
+                                        this.Grid.rows.getRow(currRowIndex).maximumRowSpan = newSpan === 0 ? 1 : newSpan;
+                                        nextCell.rowSpan = maxSpan - newSpan;
+                                        if (this.Grid.rows.getRow(i).maximumRowSpan < (maxSpan - newSpan)) {
+                                            this.Grid.rows.getRow(i).maximumRowSpan = maxSpan - newSpan;
+                                        }
+                                        const pdfGrid: PdfGrid = currCell.value as PdfGrid;
+                                        nextCell.stringFormat = currCell.stringFormat;
+                                        nextCell.style = currCell.style;
+                                        nextCell.style.backgroundImage = null;
+                                        nextCell.columnSpan = currCell.columnSpan;
+                                        if (pdfGrid instanceof PdfGrid &&
+                                            this.currentBounds.y + pdfGrid.size.height + this.Grid.rows.getRow(i).height +
+                                            pdfGrid.style.cellPadding.top + pdfGrid.style.cellPadding.bottom >= this.currentBounds.height) {
+                                            nextCell.value = currCell.value;
+                                        } else if (!(pdfGrid instanceof PdfGrid)) {
+                                            nextCell.value = currCell.value;
+                                        }
+                                        if (i > 0) this.Grid.rows.getRow(i - 1).rowSpanExists = true;
+                                        nextCell.isRowMergeContinue = false;
+                                        nextCell.isRowMergeStart = true;
+                                    } else if (isHeader &&
+                                        this.Grid.headers.getHeader(currRowIndex).cells.getCell(j).rowSpan === maxSpan) {
+                                        const headerCell: PdfGridCell = this.Grid.headers.getHeader(currRowIndex).cells.getCell(j);
+                                        const nextHeaderCell: PdfGridCell = this.Grid.headers.getHeader(i).cells.getCell(j);
+                                        headerCell.rowSpan = newSpan === 0 ? 1 : newSpan;
+                                        nextHeaderCell.rowSpan = maxSpan - newSpan;
+                                        nextHeaderCell.stringFormat = headerCell.stringFormat;
+                                        nextHeaderCell.style = headerCell.style;
+                                        nextHeaderCell.columnSpan = headerCell.columnSpan;
+                                        nextHeaderCell.value = headerCell.value;
+                                        this.Grid.headers.getHeader(i - 1).rowSpanExists = false;
+                                        nextHeaderCell.isRowMergeContinue = false;
+                                        nextHeaderCell.isRowMergeStart = true;
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                        rowHeightWithSpan = 0;
+                    }
+                }
             }
             let calculatedHeight : number = row.rowBreakHeight > 0.0 ? row.rowBreakHeight : row.height;
             if (typeof this.Grid.isChildGrid !== 'undefined' && this.Grid.isChildGrid && typeof this.Grid.ParentCell !== 'undefined' && this.Grid.ParentCell != null) {

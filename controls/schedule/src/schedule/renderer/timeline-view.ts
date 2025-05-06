@@ -115,7 +115,10 @@ export class TimelineViews extends VerticalView {
     }
 
     public changeCurrentTimePosition(): void {
-        if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
+        if (!this.parent || this.parent && this.parent.isDestroyed) {
+            this.parent = null;
+            return;
+        }
         this.removeCurrentTimeIndicatorElements();
         const currentDateIndex: number[] = this.getCurrentTimeIndicatorIndex();
         const left: number = this.getLeftFromDateTime(currentDateIndex, this.parent.getCurrentTime());

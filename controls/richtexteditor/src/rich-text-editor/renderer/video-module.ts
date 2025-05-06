@@ -535,6 +535,7 @@ export class Video {
                 this.updateVidEleWidth(vid, width, height, expectedX, expectedY);
             } else if ((vid.style.width === '' && vid.style.height !== '') || (vidEleStyle.width === '' && vidEleStyle.height !== '')) {
                 vid.style.height = expectedY + 'px';
+                vid.setAttribute('height', parseInt(expectedX.toString(), 10).toString());
             } else if ((vid.style.width !== '' && vid.style.height === '') || (vidEleStyle.width !== '' && vidEleStyle.height === '')) {
                 const currentWidth: number = ((width / height * expectedY) +
                     width / height) <
@@ -543,6 +544,7 @@ export class Video {
                         width / height) :
                     (this.parent.inputElement.getBoundingClientRect().right - 32);
                 vid.style.width = currentWidth.toString() + 'px';
+                vid.setAttribute('width', parseInt(currentWidth.toString(), 10).toString());
             } else if (vid.style.width !== '' || vidEleStyle.width !== '') {
                 const currentWidth: number = (width / height * expectedY) <
                     (this.parent.inputElement.getBoundingClientRect().right - 32) ?
@@ -550,6 +552,8 @@ export class Video {
                     (this.parent.inputElement.getBoundingClientRect().right - 32);
                 vid.style.width = currentWidth + 'px';
                 vid.style.height = expectedY + 'px';
+                vid.setAttribute('width', parseInt(currentWidth.toString(), 10).toString());
+                vid.setAttribute('height', parseInt(expectedY.toString(), 10).toString());
             } else {
                 vid.setAttribute('width', (parseInt(((width / height * expectedY) + width / height).toString(), 10)).toString());
             }
@@ -557,19 +561,26 @@ export class Video {
             if (this.parent.insertVideoSettings.resizeByPercent) {
                 this.updateVidEleWidth(vid, width, height, expectedX, expectedY);
             } else if (vidEleStyle.width !== '' || vid.style.width !== '') {
+                const calcHeight: number = (height / width * expectedX);
                 vid.style.width = expectedX + 'px';
                 vid.style.height = (height / width * expectedX) + 'px';
+                vid.setAttribute('width', parseInt(expectedX.toString(), 10).toString());
+                vid.setAttribute('height', parseInt(calcHeight.toString(), 10).toString());
             } else {
                 vid.setAttribute('width', this.resizeBtnStat.botRight ? (this.getPointX(e.event as PointerEvent) - vid.getBoundingClientRect().left).toString() : expectedX.toString());
             }
         } else {
             if (this.parent.insertVideoSettings.resizeByPercent) {
-                vid.style.width = this.pixToPerc(expectedX, (vid.previousElementSibling || vid.parentElement)) + '%';
+                const currentWidth: number = this.pixToPerc(expectedX, (vid.previousElementSibling || vid.parentElement));
+                vid.style.width = currentWidth + '%';
+                vid.setAttribute('width', parseInt(currentWidth.toString(), 10).toString());
                 vid.style.height = null;
                 vid.removeAttribute('height');
             } else {
                 vid.style.width = expectedX + 'px';
                 vid.style.height = expectedX + 'px';
+                vid.setAttribute('width', parseInt(expectedX.toString(), 10).toString());
+                vid.setAttribute('height', parseInt(expectedX.toString(), 10).toString());
             }
         }
     }
@@ -579,11 +590,14 @@ export class Video {
             const original: number = vid.offsetWidth + this.mouseX;
             const finalWidthByPerc: number = (original / vid.offsetWidth) * (parseFloat(vid.style.width).toString() === 'NaN' ? (vid.offsetWidth / (parseFloat(getComputedStyle(this.parent.element).width)) * 100) : parseFloat(vid.style.width));
             vid.style.width = ((finalWidthByPerc > 3) ? finalWidthByPerc : 3) + '%';
+            vid.setAttribute('width', vid.style.width);
         } else {
             if (width > height) {
                 vid.style.width = this.pixToPerc(width / height * expectedY, (vid.previousElementSibling || vid.parentElement)) + '%';
+                vid.setAttribute('width', vid.style.width);
             } else {
                 vid.style.width = this.pixToPerc((expectedX / height * expectedY), (vid.previousElementSibling || vid.parentElement)) + '%';
+                vid.setAttribute('width', vid.style.width);
             }
         }
         vid.style.height = null;

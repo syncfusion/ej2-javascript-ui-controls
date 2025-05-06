@@ -340,14 +340,13 @@ export class PasteCleanup {
         const contentEle: HTMLInputElement | HTMLElement = this.parent.createElement('input', {
             id: this.parent.getID() + '_upload', attrs: { type: 'File', name: 'UploadFiles' }
         });
-        const offsetY: number = this.parent.iframeSettings.enable ? -50 : -90;
         this.popupObj = new Popup(popupEle, {
             relateTo: imgElem as HTMLElement,
             height: '85px',
             width: '300px',
-            offsetY: offsetY,
+            collision: { X: 'fit', Y: 'fit' },
             content: contentEle,
-            viewPortElement: this.parent.element,
+            viewPortElement: this.parent.contentModule.getPanel() as HTMLElement,
             position: { X: 'center', Y: 'top' },
             enableRtl: this.parent.enableRtl,
             zIndex: 10001,

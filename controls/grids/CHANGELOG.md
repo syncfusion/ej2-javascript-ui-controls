@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 29.1.41 (2025-05-06)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I710348` - The issue where programmatically updating a row on the last page caused incorrect row indexing when scrolling back to the first page in `VirtualScrolling` has been resolved.
+- `#I715728` – Fixed an issue in adaptive view where the toolbar overflow arrow icons were not hidden during search operations.
+
 ## 29.1.40 (2025-04-29)
 
 ### Grid

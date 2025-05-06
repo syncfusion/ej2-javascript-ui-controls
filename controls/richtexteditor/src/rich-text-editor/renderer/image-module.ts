@@ -2332,14 +2332,13 @@ export class Image {
         const uploadEle: HTMLInputElement | HTMLElement = this.parent.createElement('input', {
             id: this.rteID + '_upload', attrs: { type: 'File', name: 'UploadFiles' }
         });
-        const offsetY: number = this.parent.iframeSettings.enable ? -50 : -90;
         this.popupObj = new Popup(popupEle, {
             relateTo: imageElement,
             height: '85px',
             width: '300px',
-            offsetY: offsetY,
+            collision: { X: 'fit', Y: 'fit' },
             content: uploadEle,
-            viewPortElement: this.parent.element,
+            viewPortElement: this.parent.contentModule.getPanel() as HTMLElement,
             position: { X: 'center', Y: 'top' },
             enableRtl: this.parent.enableRtl,
             zIndex: 10001,

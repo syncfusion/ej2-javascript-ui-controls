@@ -720,6 +720,17 @@ export class TextPosition {
         inlineInfo = this.currentWidget.getInline(this.offset, index) as ElementInfo;
         inline = inlineInfo.element;
         index = inlineInfo.index;
+        if (inline instanceof EditRangeEndElementBox) {
+            for (let i = this.currentWidget.children.length - 1; i >= 0; i--) {
+                inline = this.currentWidget.children[i];
+                if (inline instanceof EditRangeEndElementBox) {
+                    this.offset--;
+                }
+                else {
+                    break;
+                }
+            }
+        }
         if (inline instanceof FieldElementBox && inline.fieldType === 0) {
             this.offset++;
         }

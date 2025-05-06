@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 29.1.41 (2025-05-06)
+
+### Spreadsheet
+
+#### Bug fixes
+
+- `#I714036` - Issue with "custom data validation formula is not retained as entered when the formula contains `?`" has been resolved.
+- `#I709078` - Issue with "double quotes not parsed correctly in nested formulas using & for string concatenation" has been resolved.
+
 ## 29.1.39 (2025-04-22)
 
 ### Spreadsheet

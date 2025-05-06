@@ -574,7 +574,7 @@ export function getDiagramElement(elementId: string, contentId?: string): HTMLEl
  * @private
  */
 export function getDomIndex(viewId: string, elementId: string, layer: string): number {
-    let index: number = undefined;
+    let index: number;
     let parentElement: HTMLElement | SVGElement;
     let postId: string = '';
     if (layer === 'native') {
@@ -587,14 +587,13 @@ export function getDomIndex(viewId: string, elementId: string, layer: string): n
         parentElement = getDiagramLayer(viewId);
         postId = '_groupElement';
     }
-    let childElement: HTMLElement | SVGElement;
-    for (let i: number = 0; parentElement.childNodes && i < parentElement.childNodes.length; i++) {
-        childElement = parentElement.childNodes[i] as (HTMLElement | SVGElement);
-        if (childElement && childElement.id === elementId + postId) {
-            index = i;
-            break;
-        }
+    const targetId: string = elementId + postId;
+    const targetElement: HTMLElement | SVGElement = document.getElementById(targetId);
+
+    if (targetElement && parentElement.contains(targetElement)) {
+      return Array.prototype.indexOf.call(parentElement.childNodes, targetElement);
     }
+    
     return index;
 }
 

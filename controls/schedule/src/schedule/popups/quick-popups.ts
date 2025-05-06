@@ -638,8 +638,8 @@ export class QuickPopups {
             switch (type) {
             case 'Cell':
                 cellDetails = this.getFormattedString(data);
-                content = `<table class="${cls.POPUP_TABLE_CLASS}"><tbody><tr><td><form class="${cls.FORM_CLASS}" onsubmit=` +
-                    `"return false;"><input class="${cls.SUBJECT_CLASS} ${EVENT_FIELD}" type="text" name=` +
+                content = `<table class="${cls.POPUP_TABLE_CLASS}"><tbody><tr><td><form class="${cls.FORM_CLASS}">
+                    <input class="${cls.SUBJECT_CLASS} ${EVENT_FIELD}" type="text" name=` +
                     `"${this.parent.eventFields.subject}" /></form></td></tr><tr><td><div class="${cls.DATE_TIME_CLASS}">` +
                     `<div class="${cls.DATE_TIME_ICON_CLASS} ${cls.ICON}"></div><div class="${cls.DATE_TIME_DETAILS_CLASS} ` +
                     `${cls.TEXT_ELLIPSIS}">${cellDetails.details}</div></div>` +
@@ -677,6 +677,10 @@ export class QuickPopups {
                 break;
             }
             const templateWrapper: HTMLElement = createElement('div', { innerHTML: content });
+            const form: HTMLElement = templateWrapper.querySelector('form');
+            if (form) {
+                form.onsubmit = () => { return false; };
+            }
             if (data[this.parent.eventFields.location]) {
                 const locationDetails: HTMLElement = templateWrapper.querySelector('.' + cls.LOCATION_DETAILS_CLASS);
                 if (!isNullOrUndefined(locationDetails)) {

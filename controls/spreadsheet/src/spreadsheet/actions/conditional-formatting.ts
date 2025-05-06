@@ -1,4 +1,4 @@
-import { ConditionalFormatEventArgs, Spreadsheet, DialogBeforeOpenEventArgs, getUpdateUsingRaf } from '../index';
+import { ConditionalFormatEventArgs, Spreadsheet, DialogBeforeOpenEventArgs } from '../index';
 import { renderCFDlg, locale, dialog, focus, removeElements, readonlyAlert } from '../common/index';
 import { CellModel, SheetModel, getCell, isHiddenRow, isHiddenCol, getRowHeight, skipDefaultValue } from '../../workbook/base/index';
 import { getRangeIndexes, checkDateFormat, applyCF, isNumber, getCellIndexes, parseLocaleNumber } from '../../workbook/index';

@@ -2624,6 +2624,22 @@ describe('Data validation ->', () => {
                     done();
                 });
             });
+            it('EJ2-952566 -> Custom data validation formula is not retained as entered', (done: Function) => {
+                helper.edit('A1', '135SOL123')
+                helper.invoke('selectRange', ['A5:A6']);
+                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                helper.click('.e-datavalidation-ddb li:nth-child(1)');
+                setTimeout(() => {
+                    const ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
+                    ddlElem.ej2_instances[0].value = 'Custom';
+                    ddlElem.ej2_instances[0].dataBind();
+                    helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '=COUNTIF(A1:A1,135SOL???)';
+                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                    helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)');
+                    expect(JSON.stringify(helper.getInstance().sheets[0].rows[4].cells[0].validation)).toBe('{"type":"Custom","value1":"=COUNTIF(A1:A1,135SOL???)","ignoreBlank":true,"inCellDropDown":null,"isHighlighted":true}');
+                    done();
+                });
+            });
         });
     });
     describe('EJ2-65124->', () => {

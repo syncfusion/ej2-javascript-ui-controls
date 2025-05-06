@@ -1122,29 +1122,63 @@ export class DialogEdit {
                 column.editType = this.numericOrString;
             }
         }
-        switch (column.editType) {
-        case 'booleanedit':
-        {
-            const checkboxModel: CheckBoxModel = {
-                label: column.headerText,
-                locale: locale,
-                enableRtl: this.parent.enableRtl
-            };
-            fieldsModel[column.field] = checkboxModel;
-            break;
+        if (column['editTemplate']) {
+            const index: number = this.parent.currentViewData.indexOf(this.rowData);
+            const templateCompiler: Function = this.parent.chartRowsModule.templateCompiler(column['editTemplate']);
+            const template: NodeList = templateCompiler(
+                extend({ index: index }, this.editedRecord), this.parent, 'EditTemplate',
+                this.parent.chartRowsModule.getTemplateID('EditTemplate'), false, undefined, null, this.parent.treeGrid['root']);
+            fieldsModel[column.field] = template;
         }
-        case 'defaultedit':
-        case 'stringedit':
-        {
-            const textBox: TextBox = common as TextBox;
-            textBox.enableRtl = this.parent.enableRtl;
-            if (column.field === ganttObj.columnMapping.duration ||
-                column.field === ganttObj.columnMapping.id || column.field === ganttObj.columnMapping.startDate ||
+        else {
+            switch (column.editType) {
+            case 'booleanedit':
+            {
+                const checkboxModel: CheckBoxModel = {
+                    label: column.headerText,
+                    locale: locale,
+                    enableRtl: this.parent.enableRtl
+                };
+                fieldsModel[column.field] = checkboxModel;
+                break;
+            }
+            case 'defaultedit':
+            case 'stringedit':
+            {
+                const textBox: TextBox = common as TextBox;
+                textBox.enableRtl = this.parent.enableRtl;
+                if (column.field === ganttObj.columnMapping.duration ||
+                    column.field === ganttObj.columnMapping.id || column.field === ganttObj.columnMapping.startDate ||
                     column.field === ganttObj.columnMapping.endDate) {
-                textBox.change = (args: CObject): void => {
+                    textBox.change = (args: CObject): void => {
+                        if (!this.isTriggered) {
+                            if ((column.field === this.parent.taskFields.duration ||
+                                column.field === this.parent.taskFields.work) && !this.isTriggered) {
+                                this.isTriggered = true;
+                                this.parent['triggeredColumnName'] = column.field;
+                            }
+                            this.validateScheduleFields(args, column, ganttObj);
+                        }
+                        else {
+                            this.parent['triggeredColumnName'] = '';
+                        }
+                    };
+                }
+                fieldsModel[column.field] = common;
+                break;
+            }
+            case 'numericedit':
+            {
+                const numeric: NumericTextBoxModel = <NumericTextBoxModel>common;
+                numeric.enableRtl = this.parent.enableRtl;
+                if (taskSettings.progress === column.field) {
+                    numeric.min = 0;
+                    numeric.max = 100;
+                }
+                numeric.change = (args: CObject): void => {
                     if (!this.isTriggered) {
                         if ((column.field === this.parent.taskFields.duration ||
-                             column.field === this.parent.taskFields.work) && !this.isTriggered) {
+                            column.field === this.parent.taskFields.work) && !this.isTriggered) {
                             this.isTriggered = true;
                             this.parent['triggeredColumnName'] = column.field;
                         }
@@ -1154,90 +1188,66 @@ export class DialogEdit {
                         this.parent['triggeredColumnName'] = '';
                     }
                 };
+                fieldsModel[column.field] = numeric;
+                break;
             }
-            fieldsModel[column.field] = common;
-            break;
-        }
-        case 'numericedit':
-        {
-            const numeric: NumericTextBoxModel = <NumericTextBoxModel>common;
-            numeric.enableRtl = this.parent.enableRtl;
-            if (taskSettings.progress === column.field) {
-                numeric.min = 0;
-                numeric.max = 100;
-            }
-            numeric.change = (args: CObject): void => {
-                if (!this.isTriggered) {
-                    if ((column.field === this.parent.taskFields.duration ||
-                         column.field === this.parent.taskFields.work) && !this.isTriggered) {
-                        this.isTriggered = true;
-                        this.parent['triggeredColumnName'] = column.field;
-                    }
-                    this.validateScheduleFields(args, column, ganttObj);
-                }
-                else {
-                    this.parent['triggeredColumnName'] = '';
-                }
-            };
-            fieldsModel[column.field] = numeric;
-            break;
-        }
-        case 'datepickeredit':
-        {
-            const datePickerObj: DatePickerModel = common as DatePickerModel;
-            datePickerObj.format = this.parent.getDateFormat();
-            datePickerObj.enableRtl = this.parent.enableRtl;
-            datePickerObj.strictMode = true;
-            datePickerObj.firstDayOfWeek = ganttObj.timelineModule.customTimelineSettings.weekStartDay;
-            if (column.field === ganttObj.columnMapping.startDate ||
+            case 'datepickeredit':
+            {
+                const datePickerObj: DatePickerModel = common as DatePickerModel;
+                datePickerObj.format = this.parent.getDateFormat();
+                datePickerObj.enableRtl = this.parent.enableRtl;
+                datePickerObj.strictMode = true;
+                datePickerObj.firstDayOfWeek = ganttObj.timelineModule.customTimelineSettings.weekStartDay;
+                if (column.field === ganttObj.columnMapping.startDate ||
                     column.field === ganttObj.columnMapping.endDate) {
-                datePickerObj.renderDayCell = this.parent.renderWorkingDayCell.bind(this.parent);
-                datePickerObj.change = (args: CObject): void => {
-                    this.validateScheduleFields(args, column, ganttObj);
-                };
+                    datePickerObj.renderDayCell = this.parent.renderWorkingDayCell.bind(this.parent);
+                    datePickerObj.change = (args: CObject): void => {
+                        this.validateScheduleFields(args, column, ganttObj);
+                    };
+                }
+                fieldsModel[column.field] = datePickerObj;
+                break;
             }
-            fieldsModel[column.field] = datePickerObj;
-            break;
-        }
-        case 'datetimepickeredit':
-        {
-            const dateTimePickerObj: DatePickerModel = common as DatePickerModel;
-            dateTimePickerObj.format = this.parent.getDateFormat();
-            dateTimePickerObj.enableRtl = this.parent.enableRtl;
-            dateTimePickerObj.strictMode = true;
-            dateTimePickerObj.firstDayOfWeek = ganttObj.timelineModule.customTimelineSettings.weekStartDay;
-            if (column.field === ganttObj.columnMapping.startDate ||
+            case 'datetimepickeredit':
+            {
+                const dateTimePickerObj: DatePickerModel = common as DatePickerModel;
+                dateTimePickerObj.format = this.parent.getDateFormat();
+                dateTimePickerObj.enableRtl = this.parent.enableRtl;
+                dateTimePickerObj.strictMode = true;
+                dateTimePickerObj.firstDayOfWeek = ganttObj.timelineModule.customTimelineSettings.weekStartDay;
+                if (column.field === ganttObj.columnMapping.startDate ||
                     column.field === ganttObj.columnMapping.endDate) {
-                dateTimePickerObj.renderDayCell = this.parent.renderWorkingDayCell.bind(this.parent);
-                dateTimePickerObj.change = (args: CObject): void => {
-                    this.validateScheduleFields(args, column, ganttObj);
-                };
+                    dateTimePickerObj.renderDayCell = this.parent.renderWorkingDayCell.bind(this.parent);
+                    dateTimePickerObj.change = (args: CObject): void => {
+                        this.validateScheduleFields(args, column, ganttObj);
+                    };
+                }
+                fieldsModel[column.field] = dateTimePickerObj;
+                break;
             }
-            fieldsModel[column.field] = dateTimePickerObj;
-            break;
-        }
-        case 'dropdownedit':
-            if (column.field === ganttObj.columnMapping.type || column.field === ganttObj.columnMapping.manual) {
-                const dataKey: string = 'dataSource';
-                const fieldsKey: string = 'fields';
-                const types: Record<string, unknown>[] = [
-                    { 'ID': 1, 'Value': 'FixedUnit' }, { 'ID': 2, 'Value': 'FixedWork' }, { 'ID': 3, 'Value': 'FixedDuration' }];
-                common[dataKey as string] = types;
-                common[fieldsKey as string] = { value: 'Value' };
-                const dropDownListObj: DropDownListModel = common as DropDownListModel;
-                dropDownListObj.enableRtl = this.parent.enableRtl;
-                dropDownListObj.change = (args: CObject | ChangeEventArgs): void => {
-                    if (column.field === taskSettings.manual) {
-                        this.editedRecord.ganttProperties.isAutoSchedule = !args.value;
-                    }
-                    this.validateScheduleFields(args as CObject, column, ganttObj);
-                };
+            case 'dropdownedit':
+                if (column.field === ganttObj.columnMapping.type || column.field === ganttObj.columnMapping.manual) {
+                    const dataKey: string = 'dataSource';
+                    const fieldsKey: string = 'fields';
+                    const types: Record<string, unknown>[] = [
+                        { 'ID': 1, 'Value': 'FixedUnit' }, { 'ID': 2, 'Value': 'FixedWork' }, { 'ID': 3, 'Value': 'FixedDuration' }];
+                    common[dataKey as string] = types;
+                    common[fieldsKey as string] = { value: 'Value' };
+                    const dropDownListObj: DropDownListModel = common as DropDownListModel;
+                    dropDownListObj.enableRtl = this.parent.enableRtl;
+                    dropDownListObj.change = (args: CObject | ChangeEventArgs): void => {
+                        if (column.field === taskSettings.manual) {
+                            this.editedRecord.ganttProperties.isAutoSchedule = !args.value;
+                        }
+                        this.validateScheduleFields(args as CObject, column, ganttObj);
+                    };
+                }
+                fieldsModel[column.field] = common;
+                break;
+            case 'maskededit':
+                fieldsModel[column.field] = common;
+                break;
             }
-            fieldsModel[column.field] = common;
-            break;
-        case 'maskededit':
-            fieldsModel[column.field] = common;
-            break;
         }
         if (!isNullOrUndefined(column.edit) && !isNullOrUndefined(column.edit.params)) {
             extend(fieldsModel[column.field], column.edit.params);
@@ -2227,12 +2237,21 @@ export class DialogEdit {
                 continue;
             }
             const column: GanttColumnModel = this.parent.columnByField[key as string];
-            const inputModel: { [key: string]: Record<string, unknown> } = itemModel[key as string];
-            if (this.parent.enableAdaptiveUI) {
-                tbody.appendChild(this.renderInputElements(inputModel, column));
+            const inputModel: any = itemModel[key as string];
+            let inputElements: HTMLElement;
+            if (column['editTemplate']) {
+                const childElement: HTMLElement = this.createDivElement('e-edit-form-column');
+                inputModel.forEach((el : HTMLElement)  => childElement.appendChild(el));
+                inputElements = childElement;
             }
             else {
-                divElement.appendChild(this.renderInputElements(inputModel, column));
+                inputElements = this.renderInputElements(inputModel, column);
+            }
+            if (this.parent.enableAdaptiveUI) {
+                tbody.appendChild(inputElements);
+            }
+            else {
+                divElement.appendChild(inputElements);
             }
             addFields.push(key);
         }

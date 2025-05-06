@@ -16729,7 +16729,7 @@ describe('Spreadsheet formula module ->', () => {
             });
         });
     });
-    describe('EJ2-917774, EJ2-948832 ->', () => {
+    describe('EJ2-917774, EJ2-948832, EJ2-951146 ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
         });
@@ -16835,6 +16835,45 @@ describe('Spreadsheet formula module ->', () => {
             expect(spreadsheet.sheets[0].rows[5].cells[9].formattedText).toBe('5/31/2019');
             expect(spreadsheet.sheets[0].rows[6].cells[9].formattedText).toBe('5/31/2020');
             expect(spreadsheet.sheets[0].rows[7].cells[9].formattedText).toBe('5/31/2025');
+            done();
+        });
+
+        it('Double quotes not handled correctly when using & operator for string concatenation', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            helper.edit('I1', 'AAA');
+            helper.edit('I2', 'BBB');
+            helper.edit('I3', '=I1 & " " & I2');
+            expect(spreadsheet.sheets[0].rows[2].cells[8].value).toBe('AAA BBB');
+            expect(spreadsheet.sheets[0].rows[2].cells[8].value).not.toBe('AAA" "BBB');
+            expect(spreadsheet.sheets[0].rows[2].cells[8].formula).toBe('=I1 & " " & I2');
+            helper.edit('I4', '=I1 & " " & IF(I2="XXX","E",I2)');
+            expect(spreadsheet.sheets[0].rows[3].cells[8].value).toBe('AAA BBB');
+            expect(spreadsheet.sheets[0].rows[3].cells[8].value).not.toBe('#NAME');
+            expect(spreadsheet.sheets[0].rows[3].cells[8].formula).toBe('=I1 & " " & IF(I2="XXX","E",I2)');
+            helper.edit('I5', '=I1 & " " & IF(I2="BBB","E",I2)');
+            expect(spreadsheet.sheets[0].rows[4].cells[8].value).toBe('AAA E');
+            expect(spreadsheet.sheets[0].rows[4].cells[8].value).not.toBe('#NAME');
+            expect(spreadsheet.sheets[0].rows[4].cells[8].formula).toBe('=I1 & " " & IF(I2="BBB","E",I2)');
+            helper.edit('I6', '=IF(I2="", I1, I1 & " " & I2)');
+            expect(spreadsheet.sheets[0].rows[5].cells[8].value).toBe('AAA BBB');
+            expect(spreadsheet.sheets[0].rows[5].cells[8].value).not.toBe('#NAME');
+            expect(spreadsheet.sheets[0].rows[5].cells[8].formula).toBe('=IF(I2="", I1, I1 & " " & I2)');
+            helper.edit('I7', '=I1 & " " & IF(I2="kg", "Kilograms", "Pounds")');
+            expect(spreadsheet.sheets[0].rows[6].cells[8].value).toBe('AAA Pounds');
+            expect(spreadsheet.sheets[0].rows[6].cells[8].value).not.toBe('#NAME');
+            expect(spreadsheet.sheets[0].rows[6].cells[8].formula).toBe('=I1 & " " & IF(I2="kg", "Kilograms", "Pounds")');
+            helper.edit('I8', '="Name: " & I1 & IF(I2="", "", " (" & I2 & ")")');
+            expect(spreadsheet.sheets[0].rows[7].cells[8].value).toBe('Name: AAA (BBB)');
+            expect(spreadsheet.sheets[0].rows[7].cells[8].value).not.toBe('#NAME');
+            expect(spreadsheet.sheets[0].rows[7].cells[8].formula).toBe('="Name: " & I1 & IF(I2="", "", " (" & I2 & ")")');
+            helper.edit('I9', '="Grade: " & IF(I1>=90, "A", IF(I1>=80, "B", IF(I1>=70, "C", "Fail"))) & " - Score: " & I1');
+            expect(spreadsheet.sheets[0].rows[8].cells[8].value).toBe('Grade: A - Score: AAA');
+            expect(spreadsheet.sheets[0].rows[8].cells[8].value).not.toBe('#NAME');
+            expect(spreadsheet.sheets[0].rows[8].cells[8].formula).toBe('="Grade: " & IF(I1>=90, "A", IF(I1>=80, "B", IF(I1>=70, "C", "Fail"))) & " - Score: " & I1');
+            helper.edit('I10', '=IF(I1="", "", I1 & " | " & IF(I2="", "", I2))');
+            expect(spreadsheet.sheets[0].rows[9].cells[8].value).toBe('AAA | BBB');
+            expect(spreadsheet.sheets[0].rows[9].cells[8].value).not.toBe('#NAME');
+            expect(spreadsheet.sheets[0].rows[9].cells[8].formula).toBe('=IF(I1="", "", I1 & " | " & IF(I2="", "", I2))');
             done();
         });
     });

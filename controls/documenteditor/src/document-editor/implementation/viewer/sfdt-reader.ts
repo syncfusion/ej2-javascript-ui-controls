@@ -77,6 +77,7 @@ export class SfdtReader {
      * @private
      */
     public isHtmlPaste: boolean = false;
+    private previousItemForRevision : any = undefined;
     private get isPasting(): boolean {
         return this.viewer && this.viewer.owner.isPastingContent;
     }
@@ -357,10 +358,46 @@ export class SfdtReader {
     private checkAndApplyRevision(keyIndex: number, inline: any, item: any): void {
         if (!isNullOrUndefined(inline[revisionIdsProperty[keyIndex]]) && inline[revisionIdsProperty[keyIndex]].length > 0) {
             for (let i: number = 0; i < inline[revisionIdsProperty[keyIndex]].length; i++) {
-                const id: string = inline[revisionIdsProperty[keyIndex]][i];
+                let id: string = inline[revisionIdsProperty[keyIndex]][i];
                 if (this.revisionCollection.containsKey(id)) {
+                    let revision: Revision = this.revisionCollection.get(id);
+                    var itemRevision = this.documentHelper.owner.editorModule.retrieveRevisionByType(item, revision.revisionType);
+                    // If different revisions are applied in same line we need to split the revision
+                    let canInsertNewRevision: boolean = false;
+                    if (item instanceof ElementBox && !isNullOrUndefined(item.previousElement)) {
+                        if (item.previousElement instanceof TextElementBox && item.previousElement.revisions.length === 0) {
+                            canInsertNewRevision = true;
+                        }
+                        for (let i: number = 0; i < item.previousElement.revisions.length; i++) {
+                            var itemRevision: Revision = item.previousElement.revisions[i];
+                            if (itemRevision.revisionType !== revision.revisionType || itemRevision.author !== revision.author) {
+                                canInsertNewRevision = true;
+                            }
+                            else {
+                                canInsertNewRevision = false;
+                                break;
+                            }
+                        }
+                    }
+                    // If previous item's revision & current item's revision type is matched, it will return the revision.
+                    let previousRevision: Revision = !isNullOrUndefined(this.previousItemForRevision) ? this.documentHelper.owner.editorModule.retrieveRevisionByType(this.previousItemForRevision, revision.revisionType) : undefined;
+                    // If the revision is already inserted & current revision differs from previous revision or if both types are same but the user is different we need to create new revision
+                    if (this.referedRevisions.indexOf(revision.revisionID) > -1 && (isNullOrUndefined(previousRevision) || (!isNullOrUndefined(previousRevision) && previousRevision.author !== revision.author) || canInsertNewRevision)) {
+                        //Create new revision id for next paragraph
+                        const revisionId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+                        //Clone the revision
+                        const clonedRevision = revision.cloneRevision();
+                        clonedRevision.revisionID = revisionId;
+                        const currentRevisionIndex = this.revisionCollection.values.indexOf(revision);
+                        this.revisionCollection.keys.splice(currentRevisionIndex + 1, 0, revisionId);
+                        this.revisionCollection.values.splice(currentRevisionIndex + 1, 0, clonedRevision);
+                        revision = clonedRevision;
+                        id = revisionId;
+                    } //else If the revision already inserted & new revision is created for the previousItem & the current item map's with older revision which is already added, we need to set current revision as previousItem's revision.
+                    else if (this.referedRevisions.indexOf(revision.revisionID) > -1 && !isNullOrUndefined(previousRevision) && previousRevision !== revision && !(item instanceof ShapeElementBox)) {
+                        revision = this.revisionCollection.get(previousRevision.revisionID);
+                    }
                     this.referedRevisions.push(id);
-                    const revision: Revision = this.revisionCollection.get(id);
                     if (!(item instanceof WParagraphFormat)) {
                         revision.range.push(item);
                     }
@@ -370,6 +407,7 @@ export class SfdtReader {
                     }
                 }
             }
+            this.previousItemForRevision = item;
         }
     }
     public parseComments(data: any, comments: CommentElementBox[]): void {
@@ -1305,6 +1343,7 @@ export class SfdtReader {
                         textElement.characterFormat.bidi = true;
                     }
                 }
+                textElement.line = lineWidget;
                 if (this.documentHelper.owner.parser.isPaste && !(this.isCutPerformed)) {
                     if (!isNullOrUndefined(inline[revisionIdsProperty[this.keywordIndex]])) {
                         for (let j: number = 0; j < inline[revisionIdsProperty[this.keywordIndex]].length; j++) {
@@ -1334,10 +1373,9 @@ export class SfdtReader {
                 } else {
                     this.checkAndApplyRevision(this.keywordIndex, inline, textElement);
                 }
-                textElement.line = lineWidget;
-                // handling in case the previous element is bookmark with isAfterParagraph true
                 const lineChildren: ElementBox[] = lineWidget.children;
                 let lastIndex: number = lineChildren.length - 1;
+ 				// handling in case the previous element is bookmark with isAfterParagraph true
                 while (lineChildren.length > 0 
                     && lineChildren[lastIndex] instanceof BookmarkElementBox
                     && !isNullOrUndefined((lineChildren[lastIndex] as BookmarkElementBox).properties)

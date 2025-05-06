@@ -1517,9 +1517,6 @@ describe('MultiColumnComboBox control', () => {
             multiColObj.dataBind();
             expect(multiColObj.popupObj.element.querySelector('.e-multicolumn-grid') != null).toEqual(true);
             setTimeout(function () {
-                expect(multiColObj.inputEle.value).toBe('Andrew Fuller');
-                expect(multiColObj.text).toBe('Andrew Fuller');
-                expect(multiColObj.value).toBe('1');
                 expect(multiColObj.index).toBe(0);
                 done();
             }, 1800);

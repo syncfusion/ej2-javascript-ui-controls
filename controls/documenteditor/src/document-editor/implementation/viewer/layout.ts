@@ -454,7 +454,6 @@ export class Layout {
                 // if (this.documentHelper.owner.isSpellCheck && this.documentHelper.owner.spellChecker.enableOptimizedSpellCheck) {
                 //     this.documentHelper.triggerElementsOnLoading = true;
                 // }
-                this.documentHelper.clearContent();
                 this.viewer.updateScrollBars();
                 this.documentHelper.isScrollHandler = false;
                 this.isInitialLoad = false;

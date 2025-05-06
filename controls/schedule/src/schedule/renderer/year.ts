@@ -446,6 +446,7 @@ export class Year extends ViewBase implements IRenderer {
 
     public destroy(): void {
         if (!this.parent || this.parent && this.parent.isDestroyed) {
+            this.parent = null;
             return;
         }
         if (this.element) {

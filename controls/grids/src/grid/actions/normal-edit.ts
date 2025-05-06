@@ -281,6 +281,9 @@ export class NormalEdit {
         } else {
             if (!gObj.enableInfiniteScrolling) {
                 gObj.refresh();
+                if (gObj.enableVirtualization) {
+                    (<{ startIndex?: number }>(<{ vgenerator?: Function }>gObj.contentModule).vgenerator).startIndex = null;
+                }
             }
         }
     }

@@ -227,8 +227,10 @@ export class FormFieldsBase {
             currentField.font = this.getTrueFont(field.fontSize, pdfFontStyle);
 
         } else {
-            currentField.font = new PdfStandardFont(this.getFontFamily(field.FontFamily),
-                                                    this.convertPixelToPoint(field.fontSize), pdfFontStyle);
+            if (field.FontFamily && field.fontSize) {
+                currentField.font = new PdfStandardFont(this.getFontFamily(field.FontFamily),
+                                                        this.convertPixelToPoint(field.fontSize), pdfFontStyle);
+            }
         }
     }
 

@@ -11,6 +11,7 @@ import { Spreadsheet } from '../spreadsheet/base';
 
 /**
  * Objects used for configuring the Ribbon tab header properties.
+ *
  * @hidden
  */
 export class RibbonHeader extends ChildProperty<RibbonHeader> {
@@ -44,6 +45,7 @@ export class RibbonHeader extends ChildProperty<RibbonHeader> {
 
 /**
  * An array of object that is used to configure the Tab.
+ *
  * @hidden
  */
 export class RibbonItem extends ChildProperty<RibbonItem> {
@@ -79,6 +81,7 @@ export class RibbonItem extends ChildProperty<RibbonItem> {
 
 /**
  * Interface for ribbon content expand/collapse event.
+ *
  * @hidden
  */
 export interface ExpandCollapseEventArgs {
@@ -98,6 +101,7 @@ interface ExtendedItemModel extends ItemModel {
 
 /**
  * Represents Ribbon component.
+ *
  * @hidden
  */
 @NotifyPropertyChanges

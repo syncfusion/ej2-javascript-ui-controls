@@ -328,8 +328,7 @@ export class Parser {
                     if (formula[i as number] === '/' || formula[i as number] === '*' || formula[i as number] === '^') {
                         form = form + formula[i as number];
                     }
-                    if (formula[i as number] === '&' && (isSubString || (formula.substring(i + 1).trim()[0] !== 'q' &&
-                        this.isNotFormulaArgument(formula.substring(0, i + 1))))) {
+                    if (formula[i as number] === '&' && (isSubString || (formula.substring(i + 1).trim()[0] !== 'q'))) {
                         form = form + formula[i as number];
                     }
                     i = i + 1;
@@ -422,19 +421,6 @@ export class Parser {
             });
         }
         return text;
-    }
-
-    private isNotFormulaArgument(formula: string): boolean {
-        if (formula.includes('(') || formula.includes(')')) {
-            for (let i: number = formula.length - 1; i >= 0; i--) {
-                if (formula[i as number] === '(') {
-                    return false;
-                } else if (formula[i as number] === ')') {
-                    return true;
-                }
-            }
-        }
-        return true;
     }
 
     /**

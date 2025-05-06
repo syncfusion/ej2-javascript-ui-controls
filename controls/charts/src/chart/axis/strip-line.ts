@@ -378,7 +378,10 @@ export class StripLine {
             ty = this.getTextStart(ty - textMid, rect.height, stripline.verticalAlignment) +
                 (stripline.verticalAlignment === 'Start' && !isRotationNull ? (textSize.height / 4) : 0);
             anchor = isRotationNull ? this.invertAlignment(stripline.verticalAlignment) : stripline.horizontalAlignment;
-            anchor = tx - textSize.width / 2 < axis.rect.x ? 'Start' : tx + textSize.width / 2 > axis.rect.width ? 'End' : anchor;
+            const isVertical: boolean = Math.abs(stripline.rotation) === 90 || Math.abs(stripline.rotation) === 270;
+            const halfSize: number = isVertical ? textSize.height / 2 : textSize.width / 2;
+            anchor = (tx - halfSize < axis.rect.x) ? 'Start' :
+                (tx + halfSize > axis.rect.x + axis.rect.width) ? 'End' : anchor;
         } else {
             tx = this.getTextStart(tx, rect.width, stripline.horizontalAlignment);
             ty = this.getTextStart(

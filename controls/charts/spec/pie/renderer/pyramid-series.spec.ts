@@ -837,6 +837,60 @@ describe('Accumulation Chart Control', () => {
         });
 
     });
+    describe('Pyramid Series - Checking datalabel with enabled wrap.', () => {
+        let ele: HTMLElement;
+        let pie: AccumulationChart;
+        let id: string = 'ej2container';
+        beforeAll((): void => {
+            ele = createElement('div', { id: id });
+            document.body.appendChild(ele);
+
+            pie = new AccumulationChart({
+                enableSmartLabels: true,
+             
+                series: [{
+                    type: 'Pyramid', dataSource: [{ x: 'Milk, Youghnut, Cheese', y: 435, text:  'Milk, Youghnut, Cheese: 435 cal' },
+                        { x: 'Vegetables', y: 470, text: 'Vegetables: 470 cal' },
+                        { x: 'Meat, Poultry, Fish', y: 475, text:  'Meat, Poultry, Fish: 475 cal' },
+                        { x: 'Rice, Pasta', y: 930, text: 'Rice, Pasta: 930 cal' },
+                        { x: 'Fruits', y: 520, text: 'Fruits: 520 cal' }], xName: 'x', yName: 'y', width: '45%', height: '80%',
+                    neckWidth: '15%', gapRatio: 0.03, name: 'Food',
+                    dataLabel: {
+                        textWrap: 'Wrap',
+                        name: 'text', visible: true, position: 'Inside', connectorStyle: {length: '20px'}, font: {
+                            fontWeight: '600'
+                        }
+                    }, explode: true, emptyPointSettings: { mode: 'Drop', fill: 'red' },
+                    
+                }],
+                legendSettings: {
+                    visible: false
+                },
+        
+                tooltip: { enable: true, format: '${point.x} : <b>${point.y} cal</b>',header:'' },
+
+                title: 'Food Comparison Chart',
+            });
+            pie.appendTo('#' + id);
+        });
+
+        afterAll((): void => {
+            pie.loaded = null;
+            pie.destroy();
+            removeElement(id);
+        });
+        it('checking pyramid series with removePoint', (done: Function) => {
+            pie.loaded = (args: Object): void => {
+                pie.loaded = null;
+                const element: Element = document.getElementById('ej2container_datalabel_Series_0_text_0');
+                expect(element.getAttribute('x')).toBe('440.06344942579506');
+                expect(element.getAttribute('y')).toBe('97.52150530035335');
+                expect(element.textContent).toBe('Milk, Youghnut, Cheese: 435 cal');
+                done();
+            };
+            pie.refresh();
+        });});
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

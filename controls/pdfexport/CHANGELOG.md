@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 29.1.41 (2025-05-06)
+
+### Pdf Export
+
+#### Bug Fixes
+
+- Fixed an issue where grid rows with large row spans break across pages and leads to alignment issues.
+- Fixed an issue where PDF colour ignored alpha settings.
+
 ## 29.1.40 (2025-04-29)
 
 ### Pdf Export

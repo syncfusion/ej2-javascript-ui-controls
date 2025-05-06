@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 29.1.41 (2025-05-06)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I710483` - The `editTemplate` functionality is not working in the columns issue has been fixed.
+- `#I713764` - Text in the cell are misaligned when row height is changed in pdf export issue has been fixed.
+- `#I717385`,`#I716901` - The custom colours applied are not reflected in the PDF export for unscheduled and manually scheduled tasks issue has been fixed.
+
 ## 29.1.40 (2025-04-29)
 
 ### GanttChart

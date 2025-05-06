@@ -411,6 +411,9 @@ export class SpellChecker {
                     replaceText = (!isRemove) ? replaceText + match[0] : replaceText.slice(0, match.index);
                 }
             }
+            // if the text contains zero width characters, remove them.
+            const zeroWidthPattern: RegExp = /[\u200B-\u200D\uFEFF]/g;
+            replaceText = replaceText.replace(zeroWidthPattern, '');
         }
 
         return replaceText;

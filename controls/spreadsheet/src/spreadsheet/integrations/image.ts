@@ -7,7 +7,7 @@ import { insertImage, refreshImgCellObj, getRowIdxFromClientY } from '../common/
 import { Overlay, Dialog } from '../services/index';
 import { overlay, dialog, BeforeImageData, BeforeImageRefreshData, addDPRValue } from '../common/index';
 import { L10n, isUndefined, getUniqueID, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { ImageModel, CellModel, getCell, setCell, getSheetIndex, getRowsHeight, getColumnsWidth, Workbook, beginAction, getCellAddress, getSheet, isReadOnlyCells, getRangeAddress, ExtendedImageModel } from '../../workbook/index';
+import { ImageModel, CellModel, getCell, setCell, getSheetIndex, getRowsHeight, getColumnsWidth, Workbook, beginAction, getCellAddress, getSheet, isReadOnlyCells, getRangeAddress } from '../../workbook/index';
 import { getRangeIndexes, SheetModel, setImage } from '../../workbook/index';
 
 export class SpreadsheetImage {

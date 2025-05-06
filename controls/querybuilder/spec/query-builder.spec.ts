@@ -10,8 +10,8 @@ import { DropDownList, MultiSelect, CheckBoxSelection, DropDownTree } from '@syn
 import { Slider } from '@syncfusion/ej2-inputs';
 import { DatePicker, DateRangePicker, TimePicker } from '@syncfusion/ej2-calendars';
 import { profile , inMB, getMemoryProfile } from './common.spec';
-import { DataManager, WebApiAdaptor, UrlAdaptor } from '@syncfusion/ej2-data';
-
+import { DataManager, WebApiAdaptor, UrlAdaptor, Query, Deferred } from '@syncfusion/ej2-data';
+import { showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 MultiSelect.Inject(CheckBoxSelection);
 
 /**
@@ -4878,6 +4878,87 @@ describe('QueryBuilder', () => {
                 enableSeparateConnector: true
             }, '#querybuilder');
             expect(queryBuilder.enableSeparateConnector).toEqual(true);
+        });
+
+        // Add to Data Manager describe block
+        it('Should parse comma-separated string values for "in" operator', (done: Function) => {
+            const customFieldData: ColumnsModel[] = [
+                { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
+                { field: 'FirstName', label: 'First Name', type: 'string' }
+            ];
+            queryBuilder = new QueryBuilder({
+                columns: customFieldData,
+            }, '#querybuilder');
+            const fieldElem = queryBuilder.element.querySelector('.e-filter-input.e-control').ej2_instances;
+            fieldElem[0].showPopup();
+            let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            itemsCln[1].click();
+            
+            const operatorElem: any = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
+            operatorElem[0].showPopup();
+            itemsCln = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
+            itemsCln[8].click();
+            
+            const valueInput = queryBuilder.element.querySelector('.e-rule-value input');
+            // Simulate comma-separated input
+            valueInput.value = 'val1, val2,  val3';
+            valueInput.dispatchEvent(new Event('input'));
+            
+            const rule = queryBuilder.getValidRules().rules[0];
+            expect(rule.value).toEqual(['val1', ' val2', '  val3']);
+            done();
+        });
+
+        it('Should parse comma-separated numbers for "notin" operator', (done: Function) => {
+            const customFieldData: ColumnsModel[] = [
+                { field: 'EmployeeID', label: 'Employee ID', type: 'number' },
+                { field: 'FirstName', label: 'First Name', type: 'string' }
+            ];
+            queryBuilder = new QueryBuilder({
+                columns: customFieldData,
+            }, '#querybuilder');
+            // Test with number field
+            const fieldElem = queryBuilder.element.querySelector('.e-filter-input.e-control').ej2_instances;
+            fieldElem[0].showPopup();
+            let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            itemsCln[0].click();
+            
+            const operatorElem: any = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
+            operatorElem[0].showPopup();
+            itemsCln = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
+            itemsCln[9].click();
+            
+            const valueInput = queryBuilder.element.querySelector('.e-rule-value input');
+            valueInput.value = '1,2,3';
+            valueInput.dispatchEvent(new Event('input'));
+            
+            const rule = queryBuilder.getValidRules().rules[0];
+            expect(rule.value).toEqual([1, 2, 3]);
+            done();
+        });
+
+    });
+
+    
+    describe('QueryBuilder Spinner', () => {
+        let qb: any;
+        let container: HTMLElement;
+
+        beforeEach(() => {
+            qb = new QueryBuilder({});
+            container = document.createElement('div');
+            document.body.appendChild(container);
+        });
+
+        afterEach(() => {
+            document.body.innerHTML = '';
+        });
+
+        it('should create and append spinner to the element', () => {
+            qb.createSpinner(container);
+            const spinnerElem = container.querySelector('.e-qb-spinner');
+
+            expect(spinnerElem).not.toBeNull();
         });
     });
 

@@ -334,31 +334,89 @@ export class DataLabel {
     public renderStackLabels(): void {
         const stackLabelGroup: Element = this.chart.renderer.createGroup({ id: `${this.chart.element.id}_StackLabelGroup` });
         this.chart.seriesElements.appendChild(stackLabelGroup);
-        const positivePoints: { [xValue: string]: Points } = {};
-        const negativePoints: { [xValue: string]: Points } = {};
+        let positivePoints: { [xValue: string]: Points } = {};
+        let negativePoints: { [xValue: string]: Points } = {};
+        const groupingValues: string[] = [];
+        let keys: string[] = [];
+        let stackLabelIndex: number = 0;
         if (this.chart.visibleSeries && this.chart.visibleSeries.length > 0) {
-            for (let seriesIndex: number = this.chart.visibleSeries.length - 1; seriesIndex >= 0; seriesIndex--) {
-                const series: Series = this.chart.visibleSeries[seriesIndex as number];
-                if (series.animation.enable && this.chart.animateSeries) {
-                    stackLabelGroup.setAttribute('visibility', 'hidden');
+            for (let i: number = 0; i < this.chart.visibleSeries.length; i++) {
+                keys = Object.keys(groupingValues);
+                const series: Series = this.chart.visibleSeries[i as number];
+                if (!groupingValues[series.stackingGroup]) {
+                    groupingValues[series.stackingGroup] = [];
+                    groupingValues[series.stackingGroup].push(series);
                 }
-                if (series.visible && series.points && series.points.length > 0) {
-                    for (let pointIndex: number = 0; pointIndex < series.points.length; pointIndex++) {
-                        const point: Points = series.points[pointIndex as number];
-                        const pointXValueAsKey: string = String(point.x);
-                        if (!positivePoints[pointXValueAsKey as string] && series.stackedValues.endValues[pointIndex as number] > 0
-                            && point.visible) {
-                            positivePoints[pointXValueAsKey as string] = point;
+                else if (groupingValues[series.stackingGroup] !== undefined) {
+                    groupingValues[series.stackingGroup].push(series);
+                }
+            }
+            if (keys[0] !== '') {
+                for (let groupIndex: number = 0; groupIndex < keys.length; groupIndex++) {
+                    positivePoints = {};
+                    negativePoints = {};
+                    const count: number = groupingValues[keys[groupIndex as number]][groupingValues[keys[groupIndex as number]].length - 1]
+                        .index;
+                    for (let seriesIndex: number = count; seriesIndex >= 0; seriesIndex--) {
+                        const series: Series = this.chart.visibleSeries[seriesIndex as number];
+                        if (series.animation.enable && this.chart.animateSeries) {
+                            stackLabelGroup.setAttribute('visibility', 'hidden');
                         }
-                        if (!negativePoints[pointXValueAsKey as string] && series.stackedValues.endValues[pointIndex as number] < 0
-                            && point.visible) {
-                            negativePoints[pointXValueAsKey as string] = point;
+                        if (series.visible && series.points && series.points.length > 0) {
+                            for (let pointIndex: number = 0; pointIndex < series.points.length; pointIndex++) {
+                                const point: Points = series.points[pointIndex as number];
+                                const pointXValueAsKey: string = String(point.x);
+                                if (!positivePoints[pointXValueAsKey as string] && series.stackedValues.endValues[pointIndex as number] > 0
+                                    && point.visible) {
+                                    positivePoints[pointXValueAsKey as string] = point;
+                                }
+                                if (!negativePoints[pointXValueAsKey as string] && series.stackedValues.endValues[pointIndex as number] < 0
+                                    && point.visible) {
+                                    negativePoints[pointXValueAsKey as string] = point;
+                                }
+                            }
+                        }
+                    }
+                    stackLabelIndex = this.calculateStackLabel(positivePoints, negativePoints, stackLabelGroup, stackLabelIndex);
+                }
+            }
+            else {
+                for (let seriesIndex: number = this.chart.visibleSeries.length - 1; seriesIndex >= 0; seriesIndex--) {
+                    const series: Series = this.chart.visibleSeries[seriesIndex as number];
+                    if (series.animation.enable && this.chart.animateSeries) {
+                        stackLabelGroup.setAttribute('visibility', 'hidden');
+                    }
+                    if (series.visible && series.points && series.points.length > 0) {
+                        for (let pointIndex: number = 0; pointIndex < series.points.length; pointIndex++) {
+                            const point: Points = series.points[pointIndex as number];
+                            const pointXValueAsKey: string = String(point.x);
+                            if (!positivePoints[pointXValueAsKey as string] && series.stackedValues.endValues[pointIndex as number] > 0
+                                && point.visible) {
+                                positivePoints[pointXValueAsKey as string] = point;
+                            }
+                            if (!negativePoints[pointXValueAsKey as string] && series.stackedValues.endValues[pointIndex as number] < 0
+                                && point.visible) {
+                                negativePoints[pointXValueAsKey as string] = point;
+                            }
                         }
                     }
                 }
+                this.calculateStackLabel(positivePoints, negativePoints, stackLabelGroup, stackLabelIndex);
             }
         }
-        let stackLabelIndex: number = 0;
+    }
+
+    /**
+     * This method is responsible for positioning the cumulative sum of stacking column series.
+     *
+     * @param {Object} positivePoints - The positive points of the stacking series.
+     * @param {Object} negativePoints - The negative points of the stacking series.
+     * @param {Element} stackLabelGroup - The stack label group element.
+     * @param {number} stackLabelIndex - The index of the stack label.
+     * @returns {number} - The number of stack labels.
+     */
+    public calculateStackLabel(positivePoints: { [xValue: string]: Points }, negativePoints: { [xValue: string]: Points },
+                               stackLabelGroup: Element, stackLabelIndex: number): number {
         [positivePoints, negativePoints].forEach((points: { [xValue: string]: Points }, index: number) => {
             if (points) {
                 let totalValue: number = 0;
@@ -398,6 +456,10 @@ export class DataLabel {
                             , this.chart.themeStyle.datalabelFont);
                         // Define padding to maintain a consistent gap from the symbol location values
                         const padding: number = 10;
+                        if (this.chartBackground === undefined) {
+                            this.chartBackground = this.chart.chartArea.background === 'transparent' ?
+                                this.chart.background || this.chart.themeStyle.background : this.chart.chartArea.background;
+                        }
                         const backgroundColor: string = this.chart.stackLabels.fill === 'transparent' && this.chartBackground === 'transparent' ? ((this.chart.theme.indexOf('Dark') > -1 || this.chart.theme.indexOf('HighContrast') > -1) ? 'black' : 'white') : this.chart.stackLabels.fill !== 'transparent' ? this.chart.stackLabels.fill : this.chartBackground;
                         const rgbValue: ColorValue = convertHexToColor(colorNameToHex(backgroundColor));
                         const contrast: number = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
@@ -414,7 +476,7 @@ export class DataLabel {
                             (this.chart.stackLabels.font.textAlignment === 'Near' ? -alignmentValue : 0);
                         const xPosition: number = Math.max(series.clipRect.x + textSize.width,
                                                            Math.min(xOffset + series.clipRect.x + symbolLocation.x, series.clipRect.x
-                                + series.clipRect.width - textSize.width));
+                                             + series.clipRect.width - textSize.width));
                         const yPosition: number = Math.max(
                             series.clipRect.y + textSize.height,
                             Math.min(
@@ -475,12 +537,12 @@ export class DataLabel {
                                 }
                             }
                         }
-
                     }
                     stackLabelIndex++;
                 });
             }
         });
+        return stackLabelIndex;
     }
 
     /**

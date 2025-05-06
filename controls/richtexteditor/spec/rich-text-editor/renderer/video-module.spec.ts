@@ -4932,4 +4932,45 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 100);
         });
     });
+
+    describe('Ensure video element has specified width and height attributes', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Video', 'Bold']
+                },
+                insertVideoSettings: {
+                    layoutOption: 'Inline',
+                    width: '300',
+                    height: '200',
+                    resize: true
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Check video element width and height attributes', (done: Function) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-video-url-wrap input#webURL') as HTMLElement).click();
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).value = window.origin + '/base/spec/content/video/RTE-Ocean-Waves.mp4';
+            (dialogEle.querySelector('.e-video-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+
+            expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
+            (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
+
+            setTimeout(() => {
+                const videoElement = rteObj.contentModule.getEditPanel().querySelector('.e-rte-video') as HTMLElement;
+                expect(videoElement).not.toBeNull();
+                expect(videoElement.getAttribute('width')).toBe('300px');
+                expect(videoElement.getAttribute('height')).toBe('200px');
+                done();
+            }, 100);
+        });
+    });
 });

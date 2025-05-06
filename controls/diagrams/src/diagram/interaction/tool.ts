@@ -1681,7 +1681,6 @@ export class ResizeTool extends ToolBase {
             this.resizeStart = false;
             if (!isPreventHistory) {
                 this.commandHandler.startGroupAction();
-                this.commandHandler.addHistoryEntry(entry);
                 if ((obj.nodes[0] as Node) && (obj.nodes[0] as Node).processId) {
                     const entry: HistoryEntry = {
                         type: 'SizeChanged', redoObject: this.commandHandler.getSubProcess(args.source),
@@ -1689,6 +1688,8 @@ export class ResizeTool extends ToolBase {
                     };
                     this.commandHandler.addHistoryEntry(entry);
                 }
+                //EJ2-934129 : Position of the subprocess changed during undo and redo operations
+                this.commandHandler.addHistoryEntry(entry);
                 this.commandHandler.endGroupAction();
             }
         }

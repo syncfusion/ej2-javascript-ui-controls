@@ -1971,7 +1971,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                                 isKeyDown: boolean = false): void {
         const e: MouseEvent | KeyboardEventArgs = mouseEvent ? mouseEvent : keyEvent;
         const val: { [key: string]: Object } = isKeyDown ? this.matchedContent : this.exactMatchedContent;
-        if (!val) { this.inputEle.value = this.value = this.index = this.text = null; }
+        if (!val && (e as KeyboardEventArgs).code !== 'Enter') { this.inputEle.value = this.value = this.index = this.text = null; }
         this.hidePopup(e);
         if (this.matchedRowEle && !isClearValues && val) {
             const prevOnChange: boolean = this.isProtectedOnChange;

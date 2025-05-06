@@ -4039,9 +4039,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
     private mergePersistTreeGridData(): void {
         const persist1: string = 'mergePersistGridData';
-        const mergedColumns: string = 'mergedColumns';
         this.grid[`${persist1}`].apply(this);
-        this.grid[`${mergedColumns}`] = true;
     }
     private mergeColumns(storedColumn: Column[], columns: Column[]): void {
         const persist2: string = 'mergeColumns';
@@ -4056,10 +4054,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.grid[`${persist4}`].apply(this.grid, [columns]);
     }
     private isFrozenGrid(): boolean {
-        const hasFreezeProp: boolean = Array.isArray(this.columns) &&
-        (this.columns as ColumnModel[]).some((col: ColumnModel) => !!col.freeze);
-        return (this.frozenColumns > 0 || this.frozenRows > 0 || this.getFrozenColumns() > 0 ||
-            hasFreezeProp);
+        return this.grid.isFrozenGrid();
     }
 
     private updateTreeGridModel() : void {

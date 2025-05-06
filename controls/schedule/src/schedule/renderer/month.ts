@@ -741,7 +741,10 @@ export class Month extends ViewBase implements IRenderer {
     }
 
     public destroy(): void {
-        if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
+        if (!this.parent || this.parent && this.parent.isDestroyed) {
+            this.parent = null;
+            return;
+        }
         if (this.element) {
             if (this.monthEvent) {
                 this.monthEvent.destroy();

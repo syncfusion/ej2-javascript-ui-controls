@@ -743,10 +743,12 @@ export class BordersAndShadingDialog {
         border.color = this.borderColorPicker.value;
         border.lineStyle = <LineStyle>this.borderStyle.value;
         border.lineWidth = this.borderWidth.value;
-        if (type === 'left' || type === 'right') {
-            border.space = 4;
-        } else {
-            border.space = 1;
+        if (this.ulelementShading.value === 'Paragraph') {
+            if (type === 'left' || type === 'right') {
+                border.space = 4;
+            } else {
+                border.space = 1;
+            }
         }
         return border;
     }

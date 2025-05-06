@@ -19,7 +19,7 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { tooltipData21, tooltipData22, datetimeData21, negativeDataPoint, seriesData1, rotateData1, rotateData2 } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
+import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs, IAxisLabelRenderEventArgs, ITooltipRenderEventArgs } from '../../../src/chart/model/chart-interface';
 import { Legend } from '../../../src/chart/legend/legend';
 
 Chart.Inject(LineSeries, StackingColumnSeries, DateTime, Category, DataLabel, ColumnSeries, Legend);
@@ -1972,6 +1972,163 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
     });
+    describe('StackingColumn and StackingColumn100 Series in Cyliderical shape', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let animate: EmitType<IAnimationCompleteEventArgs>;
+        let element: HTMLElement = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                         interval: 1,
+                         valueType: 'Category',
+                       },
+                       //Initializing Primary Y Axis
+                       primaryYAxis: {
+                         maximum: 60,
+                         interval: 10,
+                       },
+                       stackLabels: {
+                         visible: true,
+                         format: '{value}M',
+                         font: {
+                           size:  '12px',
+                         },
+                       },
+                       //Initializing Chart Series
+                       series: [
+                         {
+                           type: 'StackingColumn',
+                           dataSource: [
+                             { x: '2018', y: 24.5 },
+                             { x: '2019', y: 25.6 },
+                             { x: '2020', y: 29 },
+                             { x: '2021', y: 28.5 },
+                             { x: '2022', y: 30.6 },
+                           ],
+                           xName: 'x',
+                           stackingGroup: 'Asia',
+                           yName: 'y',
+                           name: 'Iran',
+                           columnWidth: 0.6,
+                           marker: { dataLabel: { visible: true } },
+                         },
+                         {
+                           type: 'StackingColumn',
+                           dataSource: [
+                             { x: '2018', y: 6.2 },
+                             { x: '2019', y: 15.6 },
+                             { x: '2020', y: 14.3 },
+                             { x: '2021', y: 9.3 },
+                             { x: '2022', y: 7.8 },
+                           ],
+                           xName: 'x',
+                           stackingGroup: 'Asia',
+                           yName: 'y',
+                           name: 'Indonesia',
+                           columnWidth: 0.6,
+                           marker: { dataLabel: { visible: true } },
+                         },
+                         {
+                           type: 'StackingColumn',
+                           dataSource: [
+                             { x: '2018', y: 24.5 },
+                             { x: '2019', y: 23.2 },
+                             { x: '2020', y: 20.4 },
+                             { x: '2021', y: 23.2 },
+                             { x: '2022', y: 24.5 },
+                           ],
+                           xName: 'x',
+                           stackingGroup: 'Europe',
+                           yName: 'y',
+                           name: 'Italy',
+                           columnWidth: 0.6,
+                           marker: { dataLabel: { visible: true } },
+                         },
+                         {
+                           type: 'StackingColumn',
+                           dataSource: [
+                             { x: '2018', y: 15.4 },
+                             { x: '2019', y: 21.1 },
+                             { x: '2020', y: 13.9 },
+                             { x: '2021', y: 11.6 },
+                             { x: '2022', y: 14.4 },
+                           ],
+                           xName: 'x',
+                           stackingGroup: 'Europe',
+                           yName: 'y',
+                           name: 'France',
+                           columnWidth: 0.6,
+                           marker: { dataLabel: { visible: true } },
+                         },
+                       ],
+                     
+                       //Initializing Chart title
+                       title: 'Steel Production by Countries, Grouped by Continent',
+                       //Initializing User Interaction Tooltip
+                       tooltip: {
+                         enable: true,
+                         format: '${point.x} : <b>${point.y} Mmt',
+                       },
+                     
+                       legendSettings: {
+                         visible: true,
+                         enableHighlight: true,
+                         shapeWidth: 9,
+                         shapeHeight: 9,
+                       },
+                       load: (args: ILoadedEventArgs) => {
+                    
+                       },
+                       axisLabelRender: (args: IAxisLabelRenderEventArgs) => {
+                         const value: number = parseInt(args.text.replace(/,/g, ''), 10);
+                         if (value >= 1000) {
+                           args.text = value / 1000 + 'K';
+                         }
+                       },
+                       tooltipRender: (args: ITooltipRenderEventArgs) => {
+                         if (args.text) {
+                           let value: string = args.point.y.toLocaleString('en-US');
+                           args.text = `${args.series.name}: <b>${value}</b>`;
+                         }
+                       },
+                });
+            chartObj.appendTo('#container');
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            element.remove();
+        });
+        it('Stacking column grouped - stacking label position', function (done) {
+            loaded = function (args) {
+                let stackLabel = document.getElementById('container_StackLabel_0').getAttribute('x');
+                let stackLabel1 = document.getElementById('container_StackLabel_2').getAttribute('x');
+                let stackLabel2 = document.getElementById('container_StackLabel_4').getAttribute('x');
+                let stackContent = document.getElementById('container_StackLabel_2').textContent;
+                expect(stackContent).toBe('43.3M');
+                stackContent = document.getElementById('container_StackLabel_0').textContent;
+                expect(stackContent).toBe('30.7M');
+                stackContent = document.getElementById('container_StackLabel_4').textContent;
+                expect(stackContent).toBe('38.4M');
+                expect(stackLabel).toBe('83.355');
+                expect(stackLabel1).toBe('373.95500000000004');
+                expect(stackLabel2).toBe('664.5550000000001');
+                stackLabel = document.getElementById('container_StackLabel_0').getAttribute('y');
+                stackLabel1 = document.getElementById('container_StackLabel_2').getAttribute('y');
+                stackLabel2 = document.getElementById('container_StackLabel_4').getAttribute('y');
+                expect(stackLabel).toBe('198.42875');
+                expect(stackLabel1).toBe('127.39625000000004');
+                expect(stackLabel2).toBe('155.01999999999998');
+                done(); 
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

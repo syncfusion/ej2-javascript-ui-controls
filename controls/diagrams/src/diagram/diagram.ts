@@ -1580,6 +1580,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private diagramLayerDiv: HTMLElement;
     private adornerLayer: SVGElement;
     private eventHandler: DiagramEventHandler;
+    private preventOverviewRefresh: boolean = false;
     /** @private */
     public scroller: DiagramScroller;
     /** @private */
@@ -1669,6 +1670,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public pathDataStorage: Map<string, PointModel[]> = new Map();
     // To check current action is undo or redo
     private isUndo: boolean = false;
+    // Indicates whether the current action is part of an undo or redo operation
+    /** @private */
+    public checkUndoRedo: boolean = false;
     /**
      * Constructor for creating the widget
      */
@@ -3324,6 +3328,41 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     }
     /**
+     * Checks whether the given node and its children meet min/max width and height constraints after scaling.
+     *
+     * @param {NodeModel} node - The node to check.
+     * @param {number} sx - The horizontal scaling factor.
+     * @param {number} sy - The vertical scaling factor.
+     * @returns {boolean} - Returns true if all size constraints are satisfied, false otherwise
+     */
+    public checkSize(node: NodeModel, sx: number, sy: number): boolean {
+        if (!node || !node.wrapper || !node.wrapper.bounds) {
+            return true;
+        }
+        if (node.constraints && (node.constraints & NodeConstraints.AspectRatio)) {
+            return true;
+        }
+        const { width, height }: Rect = node.wrapper.bounds;
+        const scaledWidth: number = width * sx;
+        const scaledHeight: number = height * sy;
+        if ((node.minWidth !== undefined && scaledWidth < node.minWidth) ||
+            (node.minHeight !== undefined && scaledHeight < node.minHeight) ||
+            (node.maxWidth !== undefined && scaledWidth > node.maxWidth) ||
+            (node.maxHeight !== undefined && scaledHeight > node.maxHeight)) {
+            return false;
+        }
+        // Recursively validate children if any
+        if (node.children && node.children.length > 0) {
+            for (const childId of node.children) {
+                const childNode: NodeModel = this.nameTable[`${childId}`];
+                if (childNode && !this.checkSize(childNode, sx, sy)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    /**
      * Use this method to scale one or more objects in the diagram by specifying the horizontal and vertical scaling ratios. You can also provide a pivot point as a reference for scaling.
      *
      * @returns { void } Use this method to scale one or more objects in the diagram by specifying the horizontal and vertical scaling ratios. You can also provide a pivot point as a reference for scaling.\
@@ -3342,6 +3381,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (obj instanceof Selector) {
             if (obj.nodes && obj.nodes.length) {
                 this.callBlazorModel = false;
+                //952338 - The minimum and maximum width and height constraints are not functioning correctly for group nodes.
+                for (const node of obj.nodes) {
+                    if (!this.checkSize(node, sx, sy)) {
+                        return false;
+                    }
+                }
                 for (const node of obj.nodes) {
                     checkBoundaryConstraints = this.commandHandler.scale(node, sx, sy, pivot, obj);
                     if (!this.commandHandler.checkBoundaryConstraints(undefined, undefined, obj.wrapper.bounds)) {
@@ -4853,22 +4898,24 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         }
                     } else if (children[parseInt(i.toString(), 10)] instanceof DiagramHtmlElement) {
                         for (const elementId of this.views) {
-                            removeElement(currentObj.id + '_html_element', elementId);
-                            removeElement(children[parseInt(i.toString(), 10)].id + '_html_element', elementId);
-                            //EJ2-63598 - Added below code to check whether platform is Angular or not.
-                            // If angular then we do not remove the node html element wrapper to retain the HTML element in it.
-                            let canUpdate: boolean = true;
-                            const parent: NodeModel = this.nameTable[(currentObj as Node).parentId];
-                            //893691: HTML Template nodes are not visible after Zooming with Virtualisation
-                            if ((((this as any).isAngular || (this as any).isReact) || (this as any).isVue) &&
-                                ((parent && (parent as Node).isLane) || (this.constraints & DiagramConstraints.Virtualization))) {
-                                canUpdate = false;
-                            }
-                            if (canUpdate) {
-                                this.clearTemplate(['nodeTemplate' + '_' + currentObj.id]);
-                                if ((children[parseInt(i.toString(), 10)] as DiagramEventAnnotation).annotationId) {
-                                    this.clearTemplate(['annotationTemplate' + '_' + currentObj.id +
-                                        ((children[parseInt(i.toString(), 10)] as DiagramEventAnnotation).annotationId)]);
+                            if (this.views[`${elementId}`] instanceof Diagram || !this.preventOverviewRefresh) {
+                                removeElement(currentObj.id + '_html_element', elementId);
+                                removeElement(children[parseInt(i.toString(), 10)].id + '_html_element', elementId);
+                                //EJ2-63598 - Added below code to check whether platform is Angular or not.
+                                // If angular then we do not remove the node html element wrapper to retain the HTML element in it.
+                                let canUpdate: boolean = true;
+                                const parent: NodeModel = this.nameTable[(currentObj as Node).parentId];
+                                //893691: HTML Template nodes are not visible after Zooming with Virtualisation
+                                if ((((this as any).isAngular || (this as any).isReact) || (this as any).isVue) &&
+                                    ((parent && (parent as Node).isLane) || (this.constraints & DiagramConstraints.Virtualization))) {
+                                    canUpdate = false;
+                                }
+                                if (canUpdate) {
+                                    this.clearTemplate(['nodeTemplate' + '_' + currentObj.id]);
+                                    if ((children[parseInt(i.toString(), 10)] as DiagramEventAnnotation).annotationId) {
+                                        this.clearTemplate(['annotationTemplate' + '_' + currentObj.id +
+                                            ((children[parseInt(i.toString(), 10)] as DiagramEventAnnotation).annotationId)]);
+                                    }
                                 }
                             }
                         }
@@ -8227,6 +8274,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             = this.nameTable[children[parseInt(i.toString(), 10)]].wrapper.offsetX;
                             this.nameTable[children[parseInt(i.toString(), 10)]].offsetY
                             = this.nameTable[children[parseInt(i.toString(), 10)]].wrapper.offsetY;
+                            // 953053: Selector not updated properly for BPMN Subprocess after Save and Load
+                            this.updateQuad(this.nameTable[children[parseInt(i.toString(), 10)]]);
                         }
                     }
                 }
@@ -9537,15 +9586,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (this.basicElements.length > 0) {
                 this.renderBasicElement(view);
             }
-            if ((!this.diagramActions || (this.diagramActions & DiagramAction.Render) === 0)
-                || (DiagramAction.ToolAction & this.diagramActions) || canVitualize(this) || (this.scroller.currentZoom !== 1)) {
-                this.refreshElements(view);
-            } else if (!this.renderTimer) {
-                this.renderTimer = setTimeout(
-                    () => {
-                        this.refreshElements(view);
-                    },
-                    40);
+            if (!this.preventOverviewRefresh) {
+                if ((!this.diagramActions || (this.diagramActions & DiagramAction.Render) === 0)
+                    || (DiagramAction.ToolAction & this.diagramActions) || canVitualize(this) || (this.scroller.currentZoom !== 1)) {
+                    this.refreshElements(view);
+                } else if (!this.renderTimer) {
+                    this.renderTimer = setTimeout(
+                        () => {
+                            this.refreshElements(view);
+                        },
+                        40);
+                }
             }
         }
     }
@@ -9621,6 +9672,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public removeVirtualObjects(clearIntervalVal: Object): void {
         if (this.deleteVirtualObject) {
+            this.preventOverviewRefresh = true;
             for (let i: number = 0; i < this.scroller.removeCollection.length; i++) {
                 const obj: (NodeModel | ConnectorModel) = this.nameTable[this.scroller.removeCollection[parseInt(i.toString(), 10)]];
                 //EJ2-840437 - Exception occurs When Removing connector with Virtualization Enabled
@@ -9629,7 +9681,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
             this.deleteVirtualObject = false;
-
+            this.preventOverviewRefresh = false;
         }
         clearInterval(clearIntervalVal as number);
     }
@@ -10132,6 +10184,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.views[overview.id] = overview;
                 overview.renderDocument(overview);
                 overview.diagramRenderer.setLayers();
+                overview.initializeOverviewLayers();
                 overview.updateView(overview);
                 this.renderNodes(overview);
             }

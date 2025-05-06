@@ -579,6 +579,16 @@ export class ExportHelper {
             taskStyle.milestoneColor = taskbar.milestoneColor;
             taskStyle.baselineColor = taskbar.baselineColor;
             taskStyle.baselineBorderColor = taskbar.baselineBorderColor;
+            taskStyle.unscheduledTaskBarColor = taskbar.unscheduledTaskBarColor;
+            taskStyle.manualParentBackground = taskbar.manualParentBackground;
+            taskStyle.manualParentBorder = taskbar.manualParentBorder;
+            taskStyle.manualParentProgress = taskbar.manualParentProgress;
+            taskStyle.manualChildBackground = taskbar.manualChildBackground;
+            taskStyle.manualChildProgress = taskbar.manualChildProgress;
+            taskStyle.manualLineColor = taskbar.manuallineColor;
+            taskStyle.manualChildBorder = taskbar.manualChildBorder;
+            taskStyle.manualChildProgress = taskbar.manualChildProgress;
+            taskStyle.splitLineBackground = taskbar.splitLineBackground;
             const args: PdfQueryTaskbarInfoEventArgs = {
                 taskbar: taskStyle,
                 data: data,
@@ -609,6 +619,16 @@ export class ExportHelper {
                 taskbar.milestoneColor = args.taskbar.milestoneColor;
                 taskbar.baselineColor = args.taskbar.baselineColor;
                 taskbar.baselineBorderColor = args.taskbar.baselineBorderColor;
+                taskbar.unscheduledTaskBarColor = args.taskbar.unscheduledTaskBarColor;
+                taskbar.manualParentBackground = args.taskbar.manualParentBackground;
+                taskbar.manualParentProgress = args.taskbar.manualParentProgress;
+                taskbar.manualParentBorder = args.taskbar.manualParentBorder;
+                taskbar.manualChildBackground = args.taskbar.manualChildBackground;
+                taskbar.manualChildProgress = args.taskbar.manualChildProgress;
+                taskbar.manuallineColor = args.taskbar.manualLineColor;
+                taskbar.manualChildBorder = args.taskbar.manualChildBorder;
+                taskbar.manualChildProgress = args.taskbar.manualChildProgress;
+                taskbar.splitLineBackground = args.taskbar.splitLineBackground;
                 taskbar.indicators = args.indicators;
                 taskbar.labelSettings.leftLabel.value = args.labelSettings.leftLabel.value;
                 const leftImages: Image[] = args.labelSettings.leftLabel.image;
@@ -831,10 +851,11 @@ export class ExportHelper {
         let padding: number = 0;
         if (cell.isHeaderCell) {
             padding = this.parent.timelineModule.isSingleTier ? 45 / 2 : 60 / 2;
+            cell.style.padding.top = (padding - style.fontSize > 0) ? padding - style.fontSize : padding;
         } else {
             padding = this.parent.rowHeight / 2;
+            cell.style.padding.top = padding;
         }
-        cell.style.padding.top = (padding - style.fontSize > 0) ? padding - style.fontSize : padding;
         cell.style.padding.bottom = (padding - style.fontSize > 0) ? padding - style.fontSize : 0;
         cell.style.padding.left = 10;
         cell.style.padding.right = 10;

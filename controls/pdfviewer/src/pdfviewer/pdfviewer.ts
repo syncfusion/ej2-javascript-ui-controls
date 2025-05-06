@@ -9811,6 +9811,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         const eventArgs: FormFieldAddArgs = { name: name, field: field, pageIndex: pageIndex };
         this.viewerBase.isFormFieldSelect = false;
         this.trigger('formFieldAdd', eventArgs);
+        if (!this.annotation) {
+            this.viewerBase.updateDocumentEditedProperty(true);
+        }
     }
 
     /**
@@ -9823,6 +9826,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public fireFormFieldRemoveEvent(name: string, field: IFormField, pageIndex: number): void {
         const eventArgs: FormFieldRemoveArgs = { name: name, field: field, pageIndex: pageIndex };
         this.trigger('formFieldRemove', eventArgs);
+        if (!this.annotation) {
+            this.viewerBase.updateDocumentEditedProperty(true);
+        }
     }
 
     /**
@@ -9881,6 +9887,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             isNameChanged: !isNullOrUndefined(isNamechanged) ? isNamechanged : false, isCustomDataChanged: isCustomDataChanged
         };
         this.trigger('formFieldPropertiesChange', eventArgs);
+        if (!this.annotation) {
+            this.viewerBase.updateDocumentEditedProperty(true);
+        }
     }
 
     /**
@@ -9927,6 +9936,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         const eventArgs: FormFieldMoveArgs = { name: name, field: field, pageIndex: pageIndex,
             previousPosition: previousPosition, currentPosition: currentPosition };
         this.trigger('formFieldMove', eventArgs);
+        if (!this.annotation) {
+            this.viewerBase.updateDocumentEditedProperty(true);
+        }
     }
 
     /**
@@ -9943,6 +9955,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         const eventArgs: FormFieldResizeArgs = { name: name, field: field, pageIndex: pageIndex,
             previousPosition: previousPosition, currentPosition: currentPosition };
         this.trigger('formFieldResize', eventArgs);
+        if (!this.annotation) {
+            this.viewerBase.updateDocumentEditedProperty(true);
+        }
     }
 
     /**

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.1.41 (2025-05-06)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I705752` - Resolved an issue where the rule value was incorrect when switching from the 'in' operator to the 'notin' operator, particularly when the dataSource property was not configured in the Query Builder.
+
 ## 29.1.39 (2025-04-22)
 
 ### QueryBuilder

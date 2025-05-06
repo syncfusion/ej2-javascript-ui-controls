@@ -137,12 +137,17 @@ function terminateConnection(
         source.corners = sourceNode.corners;
         target.corners = targetNode.corners;
     }
+    //946138: Connector Does Not Follow Shortest Path When Drawn from a Port.
+    if (sourcePort && (sourcePort as any).isPathPort && targetPort) {
+        tarPoint = { x: targetPort.offsetX, y: targetPort.offsetY };
+    }
     if (sourcePort !== undefined) {
         const port: PointModel = { x: sourcePort.offsetX, y: sourcePort.offsetY };
         if (sourcePort.connectionDirection === 'Left' || sourcePort.connectionDirection === 'Top' || sourcePort.connectionDirection === 'Bottom' || sourcePort.connectionDirection === 'Right') {
             source.direction = sourcePort.connectionDirection;
         }
         else {
+            //946138: Connector Does Not Follow Shortest Path When Drawn from a Port
             if ((sourcePort as any).isPathPort) {
                 source.direction = determineConnectorDirection((element as any).parentObj, element.sourceID, sourcePort, tarPoint);
             } else {
@@ -156,6 +161,7 @@ function terminateConnection(
             target.direction = targetPort.connectionDirection;
         }
         else {
+            //946138: Connector Does Not Follow Shortest Path When Drawn from a Port
             if ((targetPort as any).isPathPort) {
                 target.direction = determineConnectorDirection((element as any).parentObj, element.targetID, targetPort, srcPoint);
             } else {
@@ -217,7 +223,7 @@ function terminateConnection(
                 }
             }
         }
-        return defaultOrthoConnection(element, source.direction, target.direction, source.point, target.point, lineDistribution);
+        return defaultOrthoConnection(element, source.direction, target.direction, source.point, target.point, lineDistribution, tarPoint);
     }
     //It will be called only when there is only one end node
     checkLastSegmentasTerminal(element);
@@ -230,7 +236,7 @@ function terminateConnection(
         if (element.type === 'Orthogonal' && element.segments && element.segments.length > 0 &&
             (element.segments[0] as OrthogonalSegment).length !== null &&
             (element.segments[0] as OrthogonalSegment).direction !== null) {
-            intermeditatePoints = findPointToPointOrtho(element, source, target, sourceNode, targetNode, sourcePort, targetPort);
+            intermeditatePoints = findPointToPointOrtho(element, source, target, sourceNode, targetNode, sourcePort, targetPort, tarPoint);
         } else {
             let extra: number;
             if (!source.direction) {
@@ -707,12 +713,13 @@ function pointToPort(element: Connector, source: End, target: End): PointModel[]
  * @param {DiagramElement} targetNode - provide the target value.
  * @param {DiagramElement} sourcePort - provide the sourcePort value.
  * @param {DiagramElement} targetPort - provide the targetPort value.
+ * @param {PointModel} tarPoint - provide the target point of the connector.
  *
  * @private
  */
 function findPointToPointOrtho(
     element: Connector, source: End, target: End, sourceNode: DiagramElement, targetNode: DiagramElement,
-    sourcePort: DiagramElement, targetPort: DiagramElement): PointModel[] {
+    sourcePort: DiagramElement, targetPort: DiagramElement, tarPoint?: PointModel): PointModel[] {
     let j: number; let point: PointModel[]; let intermeditatePoints: PointModel[] = [];
     let direction: Direction; let port: PointModel; //let seg: OrthogonalSegment;
     checkLastSegmentasTerminal(element); let removeSegment: number;
@@ -755,7 +762,7 @@ function findPointToPointOrtho(
                 }
             }
             if (sourcePort && i === 0) {
-                const sourcePoint: PointModel = checkPortdirection(element, sourcePort, sourceNode);
+                const sourcePoint: PointModel = checkPortdirection(element, sourcePort, sourceNode, tarPoint);
                 if (sourcePoint) {
                     source.point = sourcePoint;
                 }
@@ -780,13 +787,22 @@ function findPointToPointOrtho(
  * @param {Connector} element - provide the element value.
  * @param {DiagramElement} sourcePort - provide the target value.
  * @param {DiagramElement} sourceNode - provide the target value.
+ * @param {PointModel} targetPoint - provide the target point of the connector.
  *
  * @private
  */
-function checkPortdirection(element: Connector, sourcePort: DiagramElement, sourceNode: DiagramElement): PointModel {
+function checkPortdirection(
+    element: Connector, sourcePort: DiagramElement,
+    sourceNode: DiagramElement, targetPoint?: PointModel): PointModel {
     const port: PointModel = { x: sourcePort.offsetX, y: sourcePort.offsetY };
     let point: PointModel; const bounds: Rect = cornersPointsBeforeRotation(sourceNode);
-    const direction: Direction = getPortDirection(port, bounds, sourceNode.bounds, false);
+    let direction: Direction;
+    //946138: Connector Does Not Follow Shortest Path When Drawn from a Port
+    if ((sourcePort as any).isPathPort && targetPoint) {
+        direction = determineConnectorDirection((element as any).parentObj, element.sourceID, sourcePort, targetPoint);
+    } else {
+        direction = getPortDirection(port, bounds, sourceNode.bounds, false);
+    }
     const seg: OrthogonalSegment = (element.segments[0] as OrthogonalSegment);
     if (seg.direction !== direction) {
         pointsFromNodeToPoint(seg, direction, bounds, seg.points[0], seg.points[seg.points.length - 1], false);
@@ -1050,12 +1066,13 @@ export function swapBounds(object: DiagramElement, bounds: Corners, outerBounds:
  * @param {PointModel} sPt - provide the sPt value.
  * @param {PointModel} tPt - provide the tPt value.
  * @param {Rect} lineDistribution - provide the padding value.
+ * @param {PointModel} tarPoint - provide the target point of the connector.
  *
  * @private
  */
 /* tslint:disable */
 // eslint-disable-next-line
-function defaultOrthoConnection(ele: Connector, srcDir: Direction, tarDir: Direction, sPt: PointModel, tPt: PointModel, lineDistribution?: boolean): PointModel[] {
+function defaultOrthoConnection(ele: Connector, srcDir: Direction, tarDir: Direction, sPt: PointModel, tPt: PointModel, lineDistribution?: boolean, tarPoint?:PointModel): PointModel[] {
     const sourceEle: DiagramElement = ele.sourceWrapper; const targetEle: DiagramElement = ele.targetWrapper;
     const srcPort: DiagramElement = ele.sourcePortWrapper; const tarPort: DiagramElement = ele.targetPortWrapper;
     let intermeditatePoints: PointModel[] = []; let refPoint: PointModel; const srcCor: Corners = sourceEle.corners;
@@ -1184,7 +1201,7 @@ function defaultOrthoConnection(ele: Connector, srcDir: Direction, tarDir: Direc
     } else {
         if (ele.type === 'Orthogonal' && (ele.segments && ele.segments.length > 0) &&
             (ele.segments[0] as OrthogonalSegment).direction !== null) {
-            intermeditatePoints = findIntermeditatePoints(ele, source, target, srcPort, tarPort, sourceEle, targetEle);
+            intermeditatePoints = findIntermeditatePoints(ele, source, target, srcPort, tarPort, sourceEle, targetEle, tarPoint);
         } else {
             if (!(ele.segments[0] as OrthogonalSegment)) {
                 const segment: OrthogonalSegment = new OrthogonalSegment(ele, 'segments', { type: 'Orthogonal' }, true);
@@ -1456,11 +1473,12 @@ function checkSourcePointInTarget(ele: Connector, source: End): void {
  * @param {DiagramElement} tarPort - provide the tarPort value.
  * @param {DiagramElement} sourceEle - provide the sourceEle value.
  * @param {DiagramElement} targetEle - provide the targetEle value.
+ * @param {PointModel} tarPoint - provide the target point of the connector.
  * @private
  */
 function findIntermeditatePoints(
     ele: Connector, source: End, target: End, srcPort: DiagramElement, tarPort: DiagramElement,
-    sourceEle: DiagramElement, targetEle: DiagramElement): PointModel[] {
+    sourceEle: DiagramElement, targetEle: DiagramElement, tarPoint?:PointModel): PointModel[] {
     let point: PointModel[]; const intermeditatePoints: PointModel[] = []; let seg: OrthogonalSegment;
     let j: number; let removeSegment: number;
     checkLastSegmentasTerminal(ele);
@@ -1528,7 +1546,7 @@ function findIntermeditatePoints(
             ele.segments.splice(removeSegment, 1);
         }
         if (srcPort && i === 0) {
-            const sourcePoint: PointModel = checkPortdirection(ele, srcPort, sourceEle);
+            const sourcePoint: PointModel = checkPortdirection(ele, srcPort, sourceEle, tarPoint);
             if (sourcePoint) {
                 source.point = sourcePoint;
             }

@@ -727,26 +727,29 @@ export class _PdfCrossReference {
         this._indexes.push(0, 1);
         this._offsets = [];
         this._cacheMap.forEach((value: any, key: _PdfReference) => { // eslint-disable-line
-            let dictionary: _PdfDictionary;
             if (value instanceof _PdfBaseStream) {
-                dictionary = value.dictionary;
-            }
-            if (dictionary && dictionary._updated && (!dictionary.isCatalog || this._allowCatalog)) {
-                let cipher: _CipherTransform;
-                if (this._encrypt) {
-                    cipher = this._encrypt._createCipherTransform(key.objectNumber, key.generationNumber);
+                const dictionary: _PdfDictionary = value.dictionary;
+                if (dictionary && dictionary._updated && (!dictionary.isCatalog || this._allowCatalog) && !dictionary._isProcessed) {
+                    let cipher: _CipherTransform;
+                    if (this._encrypt) {
+                        cipher = this._encrypt._createCipherTransform(key.objectNumber, key.generationNumber);
+                    }
+                    this._updatedDictionary(currentLength, key, buffer, value, cipher);
+                    dictionary._isProcessed = true;
                 }
-                this._updatedDictionary(currentLength, key, buffer, value, cipher);
             }
         });
         this._cacheMap.forEach((value: _PdfDictionary | _PdfBaseStream, key: _PdfReference) => {
             if (value instanceof _PdfDictionary) {
-                if (value._updated && (!value.isCatalog || this._allowCatalog)) {
+                if (value._updated && !value.isCatalog && !value._isProcessed) {
                     this._writeArchiveStream(objectStreamCollection, key, value);
+                } else if (value._updated && (value.isCatalog || this._allowCatalog)) {
+                    this._updatedDictionary(currentLength, key, buffer, value);
                 }
-            } else if (value instanceof _PdfBaseStream) {
+            }
+            else if (value instanceof _PdfBaseStream) {
                 const dictionary: _PdfDictionary = value.dictionary;
-                if (dictionary && dictionary._updated && (!dictionary.isCatalog || this._allowCatalog)) {
+                if (dictionary && dictionary._updated && (!dictionary.isCatalog || this._allowCatalog) && !dictionary._isProcessed) {
                     this._updatedDictionary(currentLength, key, buffer, value);
                 }
             }

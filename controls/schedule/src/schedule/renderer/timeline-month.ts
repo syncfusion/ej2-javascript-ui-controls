@@ -164,7 +164,10 @@ export class TimelineMonth extends Month {
     }
 
     public destroy(): void {
-        if (!this.parent || this.parent && this.parent.isDestroyed) { return; }
+        if (!this.parent || this.parent && this.parent.isDestroyed) {
+            this.parent = null;
+            return;
+        }
         if (this.element) {
             const contentScrollableEle: Element = this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
             if (contentScrollableEle) {

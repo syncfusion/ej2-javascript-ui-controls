@@ -2,7 +2,7 @@
 /**
  * Schedule keyboard interaction spec
  */
-import { createElement } from '@syncfusion/ej2-base';
+import { createElement, KeyboardEventArgs, EventHandler } from '@syncfusion/ej2-base';
 import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda, SelectEventArgs, CellClickEventArgs, BeforePasteEventArgs } from '../../../src/schedule/index';
 import { defaultData, timelineData, timelineResourceData } from '../base/datasource.spec';
 import * as util from '../util.spec';
@@ -4736,6 +4736,206 @@ describe('Keyboard interaction', () => {
             const clipboardContent: string = clipboardElement.value;
             expect(clipboardContent).toBe('');
             done();
+        });
+    });
+
+    describe('quick info popup', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+
+        beforeAll((done: DoneFn) => {
+            const elem: HTMLElement = createElement('div', { id: 'Schedule', attrs: { tabIndex: '1' } });
+            const schOptions: ScheduleModel = { selectedDate: new Date(2017, 9, 4) };
+            schObj = util.createSchedule(schOptions, [], done, elem);
+            keyModule = schObj.keyboardInteractionModule;
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('home key focus maintained in quick info popup', () => {
+            const workCells: NodeListOf<HTMLElement> = schObj.element.querySelectorAll('.e-work-cells');
+            workCells[25].click();
+            const quickPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            const subjectInput = schObj.element.querySelector('.e-subject') as HTMLInputElement;  
+            expect(quickPopup).not.toBeNull();
+            expect(subjectInput).not.toBeNull();
+             subjectInput.focus();
+            expect(document.activeElement).toBe(subjectInput);
+            subjectInput.value = 'Test Event';
+            expect(subjectInput.value).toBe('Test Event');
+            keyModule.keyActionHandler({ action: 'home', target: document.activeElement });
+            expect(document.activeElement).toBe(subjectInput);
+        });
+
+        it('should not activate inappropriate elements', () => {
+            const nonInteractiveElement = document.createElement('div');
+            document.body.appendChild(nonInteractiveElement);
+            keyModule.keyActionHandler({ action: 'home', target: nonInteractiveElement });
+            expect(document.activeElement).not.toBe(nonInteractiveElement);
+            document.body.removeChild(nonInteractiveElement);
+        });
+    });
+
+    describe('Keyboard Interaction Tests - shiftAltN', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+    
+        beforeAll((done: DoneFn) => {
+            const elem: HTMLElement = createElement('div', { id: 'Schedule' });
+            document.body.appendChild(elem);
+    
+            const schOptions: ScheduleModel = {
+                selectedDate: new Date(2023, 7, 1),
+                views: ['Day', 'Week', 'Month', 'Agenda', 'MonthAgenda', 'Year']
+            };
+            schObj = util.createSchedule(schOptions, [], done, elem);
+            keyModule = schObj.keyboardInteractionModule;
+        });
+    
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+    
+        it('should not create event on shiftAltN when view is Agenda', () => {
+            schObj.currentView = 'Agenda';
+            const preventDefaultCalled = { status: false };
+    
+            const e: KeyboardEventArgs = {
+                action: 'shiftAltN', 
+                preventDefault: function() { preventDefaultCalled.status = true; }
+            } as any;
+    
+            keyModule.keyActionHandler(e);
+            expect(preventDefaultCalled.status).toBe(false);
+        });
+    
+        it('should not create event on shiftAltN when view is MonthAgenda', () => {
+            schObj.currentView = 'MonthAgenda';
+            const preventDefaultCalled = { status: false };
+    
+            const e: KeyboardEventArgs = {
+                action: 'shiftAltN', 
+                preventDefault: function() { preventDefaultCalled.status = true; }
+            } as any;
+    
+            keyModule.keyActionHandler(e);
+            expect(preventDefaultCalled.status).toBe(false);
+        });
+    
+        it('should not create event on shiftAltN when view is Year', () => {
+            schObj.currentView = 'Year';
+            const preventDefaultCalled = { status: false };
+    
+            const e: KeyboardEventArgs = {
+                action: 'shiftAltN', 
+                preventDefault: function() { preventDefaultCalled.status = true; }
+            } as any;
+    
+            keyModule.keyActionHandler(e);
+            expect(preventDefaultCalled.status).toBe(false);
+        });
+    });
+
+    describe('Keyboard Interaction Tests - onCellMouseDown', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+    
+        beforeAll((done: DoneFn) => {
+            const elem: HTMLElement = createElement('div', { id: 'Schedule' });
+            document.body.appendChild(elem);
+            const schOptions: ScheduleModel = {
+                selectedDate: new Date(2023, 7, 1),
+                views: ['Day', 'Week', 'Month', 'Agenda', 'MonthAgenda', 'Year']
+            };
+            schObj = util.createSchedule(schOptions, [], done, elem);
+            keyModule = schObj.keyboardInteractionModule;
+        });
+    
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+    
+        it('should return early on shift key press', () => {
+            const e: any = { event: { shiftKey: true } };
+            keyModule.onCellMouseDown(e);
+        });
+    
+        it('should handle readonly view correctly', () => {
+            schObj.activeViewOptions.readonly = true;
+            const e: any = { event: { target: {} } };
+            keyModule.onCellMouseDown(e);    
+            schObj.activeViewOptions.readonly = false; // Reset state
+        });
+    
+        it('should add mouse event handlers when clicking on work cell', () => {
+            const workCell = createElement('div', { className: 'e-work-cells' });
+            document.body.appendChild(workCell);
+            const e: any = { event: { target: workCell, which: 1 } };
+    
+            const mockRemoveSelectedClass = spyOn(schObj, 'removeSelectedClass');
+            const mouseMoveSpy = spyOn(EventHandler, 'add');
+    
+            keyModule.onCellMouseDown(e);
+    
+            expect(mockRemoveSelectedClass).toHaveBeenCalled();
+            expect(mouseMoveSpy).toHaveBeenCalledWith(schObj.getContentTable(), 'mousemove', keyModule.onMouseSelection, keyModule);
+    
+            document.body.removeChild(workCell);
+        });
+    
+        it('should add all-day event handlers when clicking on all-day cell', () => {
+            const allDayCell = createElement('div', { className: 'e-all-day-cells' });
+            document.body.appendChild(allDayCell);
+            const e: any = { event: { target: allDayCell, which: 1 } };
+            const allDayRow = createElement('tr', {});
+            spyOn(schObj, 'getAllDayRow').and.returnValue(allDayRow);
+    
+            const mockRemoveSelectedClass = spyOn(schObj, 'removeSelectedClass');
+            const mouseMoveSpy = spyOn(EventHandler, 'add');
+    
+            keyModule.onCellMouseDown(e);
+    
+            expect(mockRemoveSelectedClass).toHaveBeenCalled();
+            expect(mouseMoveSpy).toHaveBeenCalledWith(allDayRow, 'mousemove', keyModule.onMouseSelection, keyModule);
+    
+            document.body.removeChild(allDayCell);
+        });
+    });
+
+    describe('Keyboard Interaction Tests - onMouseSelection', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+    
+        beforeAll((done: DoneFn) => {
+            const elem: HTMLElement = createElement('div', { id: 'Schedule' });
+            document.body.appendChild(elem);
+            const schOptions: ScheduleModel = {
+                selectedDate: new Date(2023, 7, 1),
+                views: ['Day', 'Week', 'Month', 'Agenda', 'MonthAgenda', 'Year']
+            };
+            schObj = util.createSchedule(schOptions, [], done, elem);
+            keyModule = schObj.keyboardInteractionModule;
+        });
+    
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+    
+        it('should handle boundary validation and scrolling correctly', () => {
+            const e: any = { pageY: 200, pageX: 200, target: { offsetHeight: 10, offsetWidth: 10 }};
+            schObj.boundaryValidation = jasmine.createSpy().and.returnValue({ top: true, right: true });
+            const contentWrap = createElement('div', { className: 'e-content-wrap', styles: 'height: 100px; width: 100px; overflow: hidden;' });
+            document.body.appendChild(contentWrap);
+            schObj.element.appendChild(contentWrap);
+    
+            keyModule.onMouseSelection(e);
+    
+            expect(contentWrap.scrollTop).toBe(0);
+            expect(contentWrap.scrollLeft).toBe(0);
+    
+            schObj.element.removeChild(contentWrap);
         });
     });
 

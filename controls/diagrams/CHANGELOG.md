@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 29.1.41 (2025-05-06)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I707066` - Enhanced panning performance in diagrams with overview and virtualization enabled.
+- `#I709689` -  The minimum and maximum dimensions for group nodes are now functioning correctly.
+- `#I710745` - The Gradient will now applied correctly upon exporting diagrams.
+
 ## 29.1.40 (2025-04-29)
 
 ### Diagram

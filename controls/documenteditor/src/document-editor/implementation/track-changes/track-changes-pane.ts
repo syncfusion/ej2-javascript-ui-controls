@@ -492,6 +492,17 @@ export class TrackChangesPane {
             else {
                 // Use this property to insert revision order wise in pane(revision order collapsed when using i value because total 10 revision, 2nd revision is table and table contain 5 row and each row preserved as a separate revision, so after table iteration i value is 6, so next revision inserted 6th position instead of 3).
                 let insertIndex: number = 0;
+                // To remove the empty revisions which doesn't have range in it.
+                for (let i: number = this.owner.revisions.changes.length - 1; i >= 0; i--) {
+                    let revision: Revision = this.owner.revisions.changes[i];
+                    let ranges: any = this.owner.revisions.changes[i].range[0];
+                    if (ranges.revisions.indexOf(revision) < 0) {
+                        revision.range.splice(0, 1);
+                        if (revision.range.length === 0) {
+                            this.owner.revisions.remove(revision);
+                        }
+                    }
+                }
                 for (let i: number = 0; i < this.owner.revisions.changes.length; i++) {
                     let revision: Revision = this.owner.revisions.changes[i];
                     let ranges: object = this.owner.revisions.changes[i].range[0];

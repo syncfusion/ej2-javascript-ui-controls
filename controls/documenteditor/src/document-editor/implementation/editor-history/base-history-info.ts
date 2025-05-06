@@ -1162,17 +1162,20 @@ export class BaseHistoryInfo {
                         this.editorHistory.currentHistoryInfo.action === 'PageBreak')) {
                         lastNode = deletedNodes[1];
                     }
-                    let skipinsert: boolean = false;
-                    if (!isNullOrUndefined(this.isAcceptOrReject)) {
-                        skipinsert = true;
-                        if (!isNullOrUndefined(this.owner.selectionModule.start.paragraph.nextRenderedWidget) && this.owner.selectionModule.start.paragraph.nextRenderedWidget instanceof TableWidget) {
-                            skipinsert = false;
-                        } else if (this.action === 'BackSpace' && deletedNodes.length == 2 && lastNode instanceof ParagraphWidget && lastNode.isEmpty() && deletedNodes[1] instanceof ParagraphWidget && (deletedNodes[1] as ParagraphWidget).isEmpty()) {
-                            //When selecting the paramark and give backspace then adding two paragraph. So skipping it.
-                            skipinsert = false;
-                        }
+                    if (!isNullOrUndefined(this.isAcceptOrReject) && this.owner.selectionModule.start.offset > 0 && lastNode instanceof ElementBox && deletedNodes[deletedNodes.length - 1] instanceof ParagraphWidget && deletedNodes[deletedNodes.length - 2] instanceof ParagraphWidget) {
+                        lastNode = deletedNodes[deletedNodes.length - 2];
                     }
-                    if (lastNode instanceof ParagraphWidget && this.owner.selectionModule.start.offset > 0 && !skipinsert) {
+                    // let skipinsert: boolean = false;
+                    // if (!isNullOrUndefined(this.isAcceptOrReject)) {
+                    //     skipinsert = true;
+                    //     if (!isNullOrUndefined(this.owner.selectionModule.start.paragraph.nextRenderedWidget) && this.owner.selectionModule.start.paragraph.nextRenderedWidget instanceof TableWidget) {
+                    //         skipinsert = false;
+                    //     } else if (this.action === 'BackSpace' && deletedNodes.length == 2 && lastNode instanceof ParagraphWidget && lastNode.isEmpty() && deletedNodes[1] instanceof ParagraphWidget && (deletedNodes[1] as ParagraphWidget).isEmpty()) {
+                    //         //When selecting the paramark and give backspace then adding two paragraph. So skipping it.
+                    //         skipinsert = false;
+                    //     }
+                    // }
+                    if (lastNode instanceof ParagraphWidget && this.owner.selectionModule.start.offset > 0) {
                         if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo && this.editorHistory.currentBaseHistoryInfo.action === 'Paste' && deletedNodes.length === 1) {
                             this.owner.editorModule.insertNewParagraphWidget(lastNode, false);
                         } else {
@@ -1429,6 +1432,9 @@ export class BaseHistoryInfo {
                     item.revisions.splice(revisionIndex, 1);
                     let rangeIndex: number = currentRevision.range.indexOf(item);
                     currentRevision.range.splice(rangeIndex, 1);
+                }
+                else if (revisionIndex < 0) {
+                    currentRevision.range.splice(0,1);
                 }
                 if (currentRevision.range.length === 0) {
                     this.owner.revisions.remove(currentRevision);

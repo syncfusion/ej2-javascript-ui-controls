@@ -125,6 +125,13 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
 
     private overviewid: number = 88123;
 
+    private htmlLayer: HTMLElement;
+    private overviewLayer: HTMLElement;
+    private diagramCanvas: HTMLCanvasElement;
+    private nativeLayer: SVGElement;
+    private context2d: CanvasRenderingContext2D;
+    private prevTransform: string = '';
+
     /**   @private  */
     public diagramRenderer: DiagramRenderer;
 
@@ -295,7 +302,18 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
             EventHandler.add(container, 'scroll', this.scrolled, this);
         }
     }
-
+    /**
+     * initializeOverviewLayers method\
+     * @returns {  void }   initializeOverviewLayers method .\
+     * @private
+     */
+    public initializeOverviewLayers(): void {
+        this.htmlLayer = document.getElementById(this.element.id + '_htmlLayer');
+        this.overviewLayer = document.getElementById(this.element.id + '_overviewlayer');
+        this.diagramCanvas = document.getElementById(this.element.id + '_diagramLayer') as HTMLCanvasElement;
+        this.nativeLayer = getNativeLayer(this.element.id);
+        this.context2d = this.diagramCanvas.getContext('2d');
+    }
 
     /**
      * renderDocument method\
@@ -764,28 +782,30 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         this.contentWidth = w = Math.max(w, (offwidth / offheight) * h);
         this.contentHeight = h = Math.max(h, (offheight / offwidth) * w);
         const scale: number = Math.min(offwidth / w, offheight / h);
-        const htmlLayer: HTMLElement = document.getElementById(this.element.id + '_htmlLayer');
-        htmlLayer.style.webkitTransform = 'scale(' + scale + ') translate(' + -bounds.x + 'px,' + (-bounds.y) + 'px)';
-        htmlLayer.style.transform = 'scale(' + scale + ') translate(' + ((-(bounds.x))) + 'px,'
-            + (((-bounds.y))) + 'px)';
-        const ovw: HTMLElement = document.getElementById(this.element.id + '_overviewlayer');
-        ovw.setAttribute('transform', 'translate(' + (-bounds.x * scale) + ',' + (-bounds.y * scale) + ')');
+        const translateX: number = -(bounds.x);
+        const translateY: number = -(bounds.y);
+        const newTransform: string = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
+        // Only set the transform if it has changed
+        if (newTransform !== this.prevTransform || !this.htmlLayer.style.transform) {
+            // Apply the new transform only if transform has changed
+            this.htmlLayer.style.transform = newTransform;
+            this.htmlLayer.style.webkitTransform = newTransform;
+            this.prevTransform = newTransform;
+        }
+        this.overviewLayer.setAttribute('transform', 'translate(' + (-bounds.x * scale) + ',' + (-bounds.y * scale) + ')');
         this.horizontalOffset = bounds.x * scale;
         this.verticalOffset = bounds.y * scale;
-        const canvas: HTMLElement = document.getElementById(this.element.id + '_diagramLayer');
-        const nativeLayer: SVGElement = getNativeLayer(this.element.id);
-        const context: CanvasRenderingContext2D = (canvas as HTMLCanvasElement).getContext('2d');
         let widthratio: number = (Number(this.model.width) / this.contentWidth);
         const heightratio: number = (Number(this.model.height) / this.contentHeight);
         widthratio = Math.min(widthratio, heightratio);
         const transform: TransformFactor = this.parent.scroller.transform;
         const tx: number = transform.tx;
         const ty: number = transform.ty;
-        nativeLayer.setAttribute('transform', 'translate('
+        this.nativeLayer.setAttribute('transform', 'translate('
             + (tx * widthratio) + ',' + (ty * heightratio) + '),scale('
             + widthratio + ')');
-        context.setTransform(widthratio, 0, 0, widthratio, 0, 0);
-        context.fillStyle = 'red';
+        this.context2d.setTransform(widthratio, 0, 0, widthratio, 0, 0);
+        this.context2d.fillStyle = 'red';
         this.scrollOverviewRect(
             this.parent.scroller.horizontalOffset, this.parent.scroller.verticalOffset, this.parent.scroller.currentZoom);
     }

@@ -1509,17 +1509,21 @@ export class TextMarkupAnnotation {
             }
         }
         if (rotation === 1) {
-            context.moveTo(( x * factor), (y * factor));
-            context.lineTo((x * factor), (y + height) * factor);
+            const xAligned: number = Math.round(x * factor);
+            context.moveTo(xAligned, Math.round(y * factor));
+            context.lineTo(xAligned, Math.round((y + height) * factor));
         } else if (rotation === 2) {
-            context.moveTo(( x * factor), (y * factor));
-            context.lineTo((width + x) * factor, (y * factor));
+            const yAligned: number = Math.round(y * factor);
+            context.moveTo(Math.round(x * factor), yAligned);
+            context.lineTo(Math.round((width + x) * factor), yAligned);
         } else if (rotation === 3) {
-            context.moveTo((width + x) * factor, (y * factor));
-            context.lineTo((width + x) * factor, (y + height) * factor);
+            const xAligned: number = Math.round((width + x) * factor);
+            context.moveTo(xAligned, Math.round(y * factor));
+            context.lineTo(xAligned, Math.round((y + height) * factor));
         } else {
-            context.moveTo((x * factor), (y + height) * factor);
-            context.lineTo((width + x) * factor, (y + height) * factor);
+            const yAligned: number = Math.round((y + height) * factor);
+            context.moveTo(Math.round(x * factor), yAligned);
+            context.lineTo(Math.round((width + x) * factor), yAligned);
         }
         context.lineWidth = 1;
         context.strokeStyle = color;

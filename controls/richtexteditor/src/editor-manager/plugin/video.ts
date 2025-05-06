@@ -233,6 +233,14 @@ export class VideoCommand {
                         if (this.parent.userAgentData.isSafari()) {
                             scrollToCursor(this.parent.currentDocument, this.parent.editableElement as HTMLElement);
                         }
+                        const vidWidth: string = videoElm.getAttribute('width');
+                        const vidHeight: string = videoElm.getAttribute('height');
+                        if (isNOU(vidWidth) || vidWidth === 'auto') {
+                            videoElm.setAttribute('width', (videoElm as HTMLElement).offsetWidth.toString());
+                        }
+                        if (isNOU(vidHeight) || vidHeight === 'auto') {
+                            videoElm.setAttribute('height', (videoElm as HTMLElement).offsetHeight.toString());
+                        }
                         e.callBack({
                             requestType: 'Videos',
                             editorMode: 'HTML',

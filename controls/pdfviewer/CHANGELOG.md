@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 29.1.41 (2025-05-06)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I712197` - Fixed an issue where the form field value and font size not preserved when downloading the document without form designer module.
+- `#I713625` - Resolved an issue where form field data was not retained in the downloaded document without annotation module.
+
 ## 29.1.40 (2025-04-29)
 
 ### PDF Viewer

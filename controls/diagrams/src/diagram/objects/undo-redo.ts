@@ -213,6 +213,7 @@ export class UndoRedo {
      * @private
      */
     public undo(diagram: Diagram): void {
+        diagram.checkUndoRedo = true;
         const entry: HistoryEntry = this.getUndoEntry(diagram);
         let endGroupActionCount: number = 0;
         if (entry) {
@@ -239,6 +240,7 @@ export class UndoRedo {
                 diagram.triggerEvent(DiagramEvent.historyStateChange, arg);
             }
         }
+        diagram.checkUndoRedo = false;
     }
 
     // Removed getHistoryChangeEvent method as it is not used anywhere
@@ -824,6 +826,7 @@ export class UndoRedo {
                 this.connectionChanged(connector, diagram);
             }
         }
+        diagram.updateSelector();
     }
 
     private sizeChanged(obj: NodeModel | ConnectorModel, diagram: Diagram, entry?: HistoryEntry): void {
@@ -1157,6 +1160,7 @@ export class UndoRedo {
      * @private
      */
     public redo(diagram: Diagram): void {
+        diagram.checkUndoRedo = true;
         this.checkRedo = true;
         const entry: HistoryEntry = this.getRedoEntry(diagram);
         let startGroupActionCount: number = 0;
@@ -1185,6 +1189,7 @@ export class UndoRedo {
             }
         }
         this.checkRedo = false;
+        diagram.checkUndoRedo = false;
     }
 
     private redoGroupAction(entry: HistoryEntry, diagram: Diagram, startGroupActionCount: number): void {

@@ -270,116 +270,21 @@ export class Filter {
     }
 
     private setPosition(li: Element, ul: HTMLElement): void {
-        /* eslint-disable-next-line */
         const gridPos: any = this.parent.element.getBoundingClientRect();
-        const gridPosTop: number = gridPos.top + window.scrollY;
-        const gridPosLeft: number = gridPos.left;
-        /* eslint-disable-next-line */
-        let parentNode: any;
-        let parentNodeTop: number;
-        let parentNodeLeft: number;
-        let paddingTop: number;
-        let paddingLeft: number;
-        let marginTop: number | string;
-        const isValid: boolean = true;
-        let marginLeft: number | string;
-        let isNonBodyTag: boolean = false;
-        if (!isNullOrUndefined(this.parent.element.parentNode) && this.parent.element.parentNode['tagName'] !== 'BODY') {
-            isNonBodyTag = true;
-            parentNode = this.parent.element.parentNode;
-            const topValue: number = Math.abs(parentNode.getBoundingClientRect().top);
-            parentNodeTop = topValue > window.scrollY ? topValue - window.scrollY : window.scrollY - topValue;
-            marginTop = parentNode.style.marginTop;
-            while (isValid) {
-                if (Math.abs(gridPosTop) > Math.abs(parentNodeTop)) {
-                    paddingTop = gridPosTop - parentNodeTop;
-                    break;
-                }
-                if (!isNullOrUndefined(this.parent.element.parentNode)) {
-                    if (parentNode.parentNode instanceof HTMLDocument) {
-                        break;
-                    }
-                    parentNode = parentNode.parentNode;
-                    if (parentNode.parentNode && parentNode.parentNode.style) {
-                        marginTop = parentNode.parentNode.style.marginTop;
-                    }
-                }
-                parentNodeTop = parentNode.getBoundingClientRect().top;
-            }
-            parentNode = this.parent.element.parentNode;
-            parentNodeLeft = parentNode.getBoundingClientRect().left;
-            marginLeft = parentNode.style.marginLeft;
-            while (isValid) {
-                if (Math.abs(gridPosLeft) > Math.abs(parentNodeLeft)) {
-                    paddingLeft = gridPosLeft - parentNodeLeft;
-                    break;
-                }
-                if (!isNullOrUndefined(this.parent.element.parentNode)) {
-                    if (parentNode.parentNode instanceof HTMLDocument) {
-                        break;
-                    }
-                    parentNode = parentNode.parentNode;
-                    marginLeft = parentNode.style.marginLeft;
-                }
-                parentNodeLeft = parentNode.getBoundingClientRect().left;
-            }
-        }
+        const offsetParentGridPos: any = this.parent.element.offsetParent.getBoundingClientRect();
         /* eslint-disable-next-line */
         const liPos: any = li.getBoundingClientRect();
         const ulPos: any = ul.getBoundingClientRect();
-        let left: number = liPos.right + window.scrollX;
-        let top: number = isNonBodyTag ? liPos.top - gridPosTop : liPos.top + window.scrollY;
-        if (gridPos.right < (left + ul.offsetWidth)) {
-            if ((liPos.left - ul.offsetWidth) > gridPos.left) {
-                left = (liPos.left - ul.offsetWidth);
-            } else {
-                left -= (left + ul.offsetWidth) - gridPos.right;
-            }
-        } else {
-            if ((!isNullOrUndefined(paddingTop) || !isNullOrUndefined(paddingLeft)) && isNonBodyTag) {
-                left = Math.abs(liPos.right - gridPos.left);
-                top = Math.abs(liPos.top - gridPos.top);
-            }
+        const diffOfMargin: number = gridPos.left - liPos.left;
+        const marginLeft: number = (!this.parent.enableRtl ? liPos.width - diffOfMargin : (Math.abs(diffOfMargin) - ulPos.width));
+        let reduceTop: number = offsetParentGridPos.top;
+        if (ul.offsetParent.tagName === 'BODY') {
+            reduceTop = 0;
         }
-        if (!isNullOrUndefined(paddingTop) && !isNullOrUndefined(paddingLeft)) {
-            let updatedTopValue: number = liPos.top;
-            const isValid: boolean = this.hasParentWithLeftSpacing(document.getElementsByClassName('e-gantt')[0]);
-            if (isValid) {
-                updatedTopValue = liPos.top - this.parent.element.getBoundingClientRect().top;
-            }
-            let updatedLeftValue: number = liPos.width + parseInt(li.parentElement.style.left, 10);
-            const updateTop: boolean = liPos.top > ulPos.top;
-            if (!updateTop) {
-                updatedTopValue = top;
-            }
-            const updateLeft: boolean = ulPos.left !== (liPos.left + liPos.width);
-            if (!(updateLeft && !isValid)) {
-                updatedLeftValue = left;
-            }
-            ul.style.top = updatedTopValue + window.scrollY + 'px';
-            ul.style.left = updatedLeftValue + 'px';
-        } else {
-            ul.style.top = top + 'px';
-            ul.style.left = left + 'px';
-        }
-    }
-
-    private hasParentWithLeftSpacing(element: any): boolean {
-        let current: Element = element.parentElement;
-        while (current) {
-            const style: CSSStyleDeclaration = window.getComputedStyle(current);
-            const marginLeft: number = parseFloat(style.marginLeft);
-            const paddingLeft: number = parseFloat(style.paddingLeft);
-            if (paddingLeft > 0 || marginLeft > 0) {
-                let currentSibling: boolean = false;
-                if (current.previousElementSibling && parseInt(current.previousElementSibling['style'].width, 10) > 0) {
-                    currentSibling = true;
-                }
-                return currentSibling;
-            }
-            current = current.parentElement;
-        }
-        return false;
+        const topValue: number = liPos.top - reduceTop + window.scrollY;
+        ul.style.left = '';
+        ul.style.top = topValue + 'px';
+        ul.style.marginLeft = marginLeft + 'px';
     }
 
     private updateFilterMenuPosition(element: HTMLElement, args: GroupEventArgs): void {
@@ -396,7 +301,12 @@ export class Filter {
                     this.setPosition(targetElement, getValue('filterModel.dlgObj.element', args));
                 }
                 else {
-                    this.setPosition(targetElement, getValue('filterModel.dialogObj.element', args));
+                    const filterElement: HTMLElement = getValue('filterModel.dialogObj.element', args);
+                    if (filterElement) {
+                        filterElement.style.visibility = 'hidden';
+                        filterElement.style.display = 'block';
+                    }
+                    this.setPosition(targetElement, filterElement);
                 }
             }
         } else {
@@ -408,7 +318,7 @@ export class Filter {
                 getFilterMenuPostion(targetElement, getValue('filterModel.dialogObj', args));
             }
         }
-        element.style.display = 'block';
+        element.style.visibility = 'visible';
         if (this.parent.treeGrid.filterSettings.type === 'Menu') {
             (element.querySelector('.e-valid-input') as HTMLElement).focus();
         }

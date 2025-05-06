@@ -2,7 +2,27 @@
 
 ## [Unreleased]
 
+## 29.1.41 (2025-05-06)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Fixed an issue where accessing the destination of a document link annotation returned undefined.
+- Fixed an issue where poly line annotation was not preserved properly with rotation.
+- Fixed an issue that caused incorrect retrieval of font size from text box field items.
+- Fixed an issue where the pop up icon displayed incorrectly when flattening was enabled.
+- Fixed an issue where free text annotations were not preserved correctly when flattening was enabled.
+- Fixed an issue where adding form fields increased the file size and corrupted the document structure.
+
 ## 29.1.40 (2025-04-29)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Fixed an issue where the opacity was not preserved in newly added rubber stamp annotation.
+- Fixed an issue preserving ink annotation bounds when flattening was enabled.
 
 ### PDF Parser
 

@@ -3,7 +3,7 @@ import {
     cldrData, Internationalization, addClass, setStyleAttribute, formatUnit, EventHandler, remove
 } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
-import { TdData, ResourceDetails, CallbackFunction } from '../base/interface';
+import { TdData, ResourceDetails, CallbackFunction, RenderCellEventArgs } from '../base/interface';
 import * as cls from '../base/css-constant';
 import * as event from '../base/constant';
 import * as util from '../base/util';
@@ -60,6 +60,8 @@ export class ViewBase {
                 if (this.parent.activeView && !isNullOrUndefined(element) && !isNullOrUndefined(data)
                     && parseInt(element.getAttribute('data-group-index'), 10) === data.groupIndex) {
                     this.parent.activeView.setResourceHeaderContent(element, data, cls.RESOURCE_TEXT_CLASS);
+                    const eventArgs: RenderCellEventArgs = { element: element, elementType: 'resourceHeader', groupIndex: data.groupIndex };
+                    this.parent.trigger(event.renderCell, eventArgs);
                 }
             }
         }

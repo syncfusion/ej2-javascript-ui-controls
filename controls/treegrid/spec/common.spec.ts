@@ -9,6 +9,7 @@ export const inMB = (n: any) => n / 1000000;
 function runningAverage(arr: any, newVal: any, oldAvg: any) {
     return ((oldAvg * (arr.length - 1) + newVal) / arr.length);
 };
+
 export const profile = {
     samples: [] as any,
     diffs: [] as any,

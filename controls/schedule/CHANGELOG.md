@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.1.41 (2025-05-06)
+
+### Schedule
+
+- `I703204` - Memory leak issue with the current time indicator has been resolved.
+- `F716483` - The issue with the `renderCell` event not being triggered in the Timeline views has been resolved.
+- `#I716164` - The issue with CSP occurring in the Schedule component on Firefox has been resolved.
+
 ## 29.1.38 (2025-04-15)
 
 ### Schedule

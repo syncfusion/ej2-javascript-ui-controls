@@ -55,7 +55,7 @@ export class PdfGrid extends PdfLayoutElement {
      * @hidden
      * @private
      */
-    private gridLocation : RectangleF;
+    _gridLocation : RectangleF;
     /**
      * @hidden
      * @private
@@ -449,7 +449,7 @@ export class PdfGrid extends PdfLayoutElement {
         this.setSpan();
         this.checkSpan();
         this.layoutFormat = param.format;
-        this.gridLocation = param.bounds;
+        this._gridLocation = param.bounds;
         let layouter : PdfGridLayouter = new PdfGridLayouter(this);
         let result : PdfGridLayoutResult = (layouter.Layouter(param)) as PdfGridLayoutResult;
 
@@ -722,8 +722,8 @@ export class PdfGrid extends PdfLayoutElement {
             }
             let cellWidth : number = 0;
             let cellWidths : number = 0;
-            if((typeof this.isChildGrid === 'undefined' && typeof this.gridLocation !== 'undefined' ) || (this.isChildGrid === null && typeof this.gridLocation !== 'undefined')){
-                this.initialWidth = this.gridLocation.width;
+            if((typeof this.isChildGrid === 'undefined' && typeof this._gridLocation !== 'undefined' ) || (this.isChildGrid === null && typeof this._gridLocation !== 'undefined')){
+                this.initialWidth = this._gridLocation.width;
             }
             if (this.headers.count > 0) {
                 let colCount : number = this.headers.getHeader(0).cells.count;

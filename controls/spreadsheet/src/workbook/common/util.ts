@@ -210,23 +210,21 @@ export function isLocked(cell: CellModel, column: ColumnModel): boolean {
  */
 export function isValidCellReference(value: string): boolean {
     const text: string = value;
-    const startNum: number = 0;
     let endNum: number = 0;
-    let cellText: string = '';
     const textLength: number = text.length;
     for (let i: number = 0; i < textLength; i++) {
         if (isChar(text[i as number])) {
             endNum++;
         }
     }
-    cellText = text.substring(startNum, endNum);
+    const cellText: string = text.substring(0, endNum);
     const cellTextLength: number = cellText.length;
     if (cellTextLength !== textLength) {
         if (cellTextLength < 4) {
             if (textLength !== 1 && (isNaN(parseInt(text, 10)))) {
                 const cellColIndex: number = columnIndex(cellText);
                 // XFD is the last column, 16384 - Maximum number of columns in excel.
-                if (cellColIndex > 16384) {
+                if (cellColIndex < 1 || cellColIndex > 16384) {
                     return false;
                 }
                 const cellNumber: number = parseFloat(text.substring(endNum, textLength));

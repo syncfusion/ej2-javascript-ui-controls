@@ -3398,4 +3398,27 @@ describe('Editor specs', ()=> {
         });
     });
 
+    describe('954014: To validate the RTE breaking issue in Bold Desk source', ()=> {
+        let editor: RichTextEditor;
+        beforeAll(()=> {
+            editor = renderRTE({
+                value: 'Initial value'
+            })
+        });
+        afterAll(()=> {
+            destroy(editor);
+        });
+        it('Should not focus in when the value property is set to NULL and there should not be any range.', (done: DoneFn)=> {
+            editor.focusIn();
+            expect(editor.element.ownerDocument.activeElement).toBe(editor.inputElement);
+            editor.value = null;
+            editor.focusOut();
+            editor.dataBind();
+            setTimeout(() => {
+                expect(editor.element.ownerDocument.activeElement).not.toBe(editor.inputElement);
+                done();
+            }, 100);
+        });
+    });
+
 });

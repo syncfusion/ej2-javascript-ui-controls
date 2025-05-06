@@ -174,6 +174,57 @@ describe('Data module', () => {
         });
     });
 
+    describe('Resource header template refresh', () => {
+        let schObj: Schedule;
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                selectedDate: new Date(2023, 0, 4),
+                height: '500px',
+                width: '800px',
+                currentView: 'TimelineDay',
+                views: [
+                    { option: 'TimelineDay', allowVirtualScrolling: true },
+                    { option: 'TimelineWeek', allowVirtualScrolling: true },
+                    { option: 'Month', allowVirtualScrolling: true }
+                ],
+                group: {
+                    resources: ['Owners'],
+                },
+                resources: [
+                    {
+                        field: 'OwnerId', title: 'Owner', name: 'Owners', allowMultiple: true,
+                        dataSource: [
+                            { Text: 'Nancy', Id: 1, GroupID: 1, Color: '#ffaa00' },
+                            { Text: 'Steven', Id: 2, GroupID: 2, Color: '#f8a398' },
+                            { Text: 'Michael', Id: 3, GroupID: 1, Color: '#7499e1' },
+                            { Text: 'Nancy', Id: 4, GroupID: 1, Color: '#ffaa00' },
+                            { Text: 'Steven', Id: 5, GroupID: 2, Color: '#f8a398' },
+                            { Text: 'Michael', Id: 6, GroupID: 1, Color: '#7499e1' }
+                        ]
+                    }
+                ]
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+    
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+    
+        it('should call the renderCell method on refresh', (done: DoneFn) => {
+            const renderCellSpy = jasmine.createSpy('renderCell');
+            schObj.appendTo('#Schedule');
+            schObj.addEventListener('renderCell', renderCellSpy);
+            schObj.refreshTemplates('resourceHeaderTemplate');
+        
+            setTimeout(() => {
+                expect(renderCellSpy).toHaveBeenCalled();
+                schObj.removeEventListener('renderCell', renderCellSpy);
+                done();
+            }, 100);
+        });
+    });
+
     describe('refreshTemplate checking', () => {
         let schObj: Schedule;
         const dateHeaderTemplate: string = '<span>~${getDateHeaderText(data.date)}~</span>';

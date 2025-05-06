@@ -308,10 +308,15 @@ export class Toolbar {
             if (this.parent.searchSettings) {
                 this.updateSearchBox();
             }
-            this.searchBoxObj.searchFocus({ target: this.searchElement });
-            this.searchElement.focus();
         } else {
             this.refreshResponsiveToolbarItems(ResponsiveToolbarAction.isInitial);
+        }
+        if (this.toolbar.element && this.toolbar.element.querySelector('.e-hscroll')) {
+            this.toolbar.refreshOverflow();
+        }
+        if (isRender) {
+            this.searchBoxObj.searchFocus({ target: this.searchElement });
+            this.searchElement.focus();
         }
     }
 
@@ -581,6 +586,7 @@ export class Toolbar {
                         break;
                     case gID + '_responsiveback':
                         this.renderResponsiveSearch(false);
+                        this.toolbar.refreshOverflow();
                         break;
                     }
                 }

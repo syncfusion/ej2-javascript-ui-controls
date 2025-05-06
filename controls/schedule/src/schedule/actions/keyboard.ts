@@ -75,6 +75,10 @@ export class KeyboardInteraction {
         this.createClipboardElement();
     }
     private keyActionHandler(e: KeyboardEventArgs): void {
+        const target: HTMLElement = e.target as HTMLElement;
+        if (e.action === 'home' && target && ['INPUT', 'TEXTAREA', 'SELECT'].indexOf(target.tagName) > -1 && target.closest('.e-quick-popup-wrapper')) {
+            return;
+        }
         switch (e.action) {
         case 'downArrow':
         case 'shiftDownArrow':

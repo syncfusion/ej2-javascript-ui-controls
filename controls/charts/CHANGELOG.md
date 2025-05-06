@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 29.1.41 (2025-05-06)
+
+### Accumulation Chart
+
+#### Bug Fixes
+
+- `#I580016` - Wrapped data labels are now correctly positioned in pyramid charts when smart labels are enabled.
+
+### Chart
+
+#### Bug Fixes
+
+- `#I715763` - Stacking labels now render correctly for grouped stacking column series.
+- `#I713317` - Stripline text now positions correctly when rotation is applied.
+
 ## 29.1.40 (2025-04-29)
 
 ### Accumulation Chart

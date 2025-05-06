@@ -881,6 +881,7 @@ export class VerticalView extends ViewBase implements IRenderer {
 
     public destroy(): void {
         if (!this.parent || this.parent && this.parent.isDestroyed) {
+            this.parent = null;
             return;
         }
         this.clearCurrentTimeIndicatorTimer();

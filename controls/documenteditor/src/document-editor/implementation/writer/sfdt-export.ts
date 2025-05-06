@@ -1686,8 +1686,8 @@ export class SfdtExport {
             }
             let lastLine: LineWidget = endPos.paragraph.childWidgets[endPos.paragraph.childWidgets.length - 1] as LineWidget;
             isListPara = !isNullOrUndefined(paragraphWidget.paragraphFormat.listFormat.list);
-            isParaSelected = this.documentHelper.selection.isParagraphLastLine(lastLine) && endPos.currentWidget === lastLine
-            && (endPos.offset === this.documentHelper.selection.getLineLength(lastLine) + 1 || (!(paragraphWidget.indexInOwner == endPos.paragraph.indexInOwner) && isListPara));
+            isParaSelected = this.documentHelper.selection.isParagraphLastLine(lastLine)
+                && (endPos.offset === this.documentHelper.selection.getLineLength(lastLine) + 1 || (!(paragraphWidget.indexInOwner == endPos.paragraph.indexInOwner) && isListPara));
         } else {
             isParaSelected = true;
         }

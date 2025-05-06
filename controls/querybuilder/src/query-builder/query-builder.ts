@@ -3642,8 +3642,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             if (rule.operator.indexOf('between') > -1) {
                 if (typeof rule.value === 'string' ) { rule.value = []; }
                 rule.value[i as number] = textboxValue;
-            } else {
-                rule.value = textboxValue;
+            } else if (['in', 'notin'].some((op: string) => rule.operator.indexOf(op) !== -1)
+                && rule.operator.indexOf('contains') === -1) {
+                rule.value = textboxValue ?
+                    (rule.type === 'string' ? textboxValue.split(',').map((val: string) => val.trim()) :
+                        textboxValue.split(',').map(Number)) : [];
             }
             break;
         case 'dropdownlist':

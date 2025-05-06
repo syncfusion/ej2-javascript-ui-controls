@@ -1257,7 +1257,9 @@ export class FormFields {
                                                             annot.bounds, annot.opacity, null, null, signString);
                         }
                         this.pdfViewer.fireFocusOutFormField(currentField.name, currentValue);
-                        this.pdfViewer.annotation.isUndoActionImageLoad = false;
+                        if (this.pdfViewer.annotation) {
+                            this.pdfViewer.annotation.isUndoActionImageLoad = false;
+                        }
                     }
                 }
             }

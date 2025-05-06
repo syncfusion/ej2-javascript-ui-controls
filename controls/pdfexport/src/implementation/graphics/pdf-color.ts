@@ -163,10 +163,16 @@ export class PdfColor {
             this.redColor = r;
             this.greenColor = g;
             this.blueColor = b;
-            if ( typeof a === 'undefined') {
-               this.alpha = PdfColor.maxColourChannelValue;
+            if (typeof a === 'undefined') {
+                this.a = PdfColor.maxColourChannelValue;
             } else {
-                this.alpha = a;
+                this.a = a;
+                const isFractional: boolean = (a >= 0 && a <= 1);
+                const scaleFactor: number = isFractional ? a : a / 255;
+                const inverseScale: number = 1 - scaleFactor;
+                this.redColor = Math.max(0, Math.min(255, Math.round(r * scaleFactor + PdfColor.maxColourChannelValue * inverseScale)));
+                this.greenColor = Math.max(0, Math.min(255, Math.round(g * scaleFactor + PdfColor.maxColourChannelValue * inverseScale)));
+                this.blueColor = Math.max(0, Math.min(255, Math.round(b * scaleFactor + PdfColor.maxColourChannelValue * inverseScale)));
             }
             this.filled = true;
             this.assignCMYK(r, g, b);

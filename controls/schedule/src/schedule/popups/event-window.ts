@@ -373,9 +373,9 @@ export class EventWindow {
         const container: HTMLElement = createElement('div', { className: cls.FORM_CONTAINER_CLASS });
         const form: HTMLFormElement = createElement('form', {
             id: this.parent.element.id + 'EditForm',
-            className: cls.FORM_CLASS,
-            attrs: { onsubmit: 'return false;' }
+            className: cls.FORM_CLASS
         }) as HTMLFormElement;
+        form.onsubmit = () => { return false; };
         this.renderFormElements(form);
         container.appendChild(form);
         return container;
