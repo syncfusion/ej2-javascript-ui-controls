@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 29.2.4 (2025-05-14)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Fixed line annotation captions not showing correctly when creating appearances.
+- Fixed rotated rectangle annotations not appearing correctly.
+- Fixed rotated polygon annotations not appearing correctly.
+- Fixed line measurement annotations not showing properly when flattening was used.
+- Fixed text markup annotations not keeping their correct position when creating appearances.
+- Fixed an issue where the subject was not retrieved as expected in free text annotations.
+- Fixed an issue where the border style was not preserved correctly in circle annotations.
+
 ## 29.1.41 (2025-05-06)
 
 ### PDF Parser

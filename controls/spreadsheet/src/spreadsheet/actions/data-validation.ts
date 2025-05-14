@@ -281,6 +281,7 @@ export class DataValidation {
                 fields: { text: 'text', value: 'id' },
                 width: '0px',
                 popupHeight: '200px',
+                noRecordsTemplate: '',
                 change: () => this.listValueChange(this.listObj.text),
                 beforeOpen: () => {
                     isDevice = (window as { browserDetails?: { isDevice?: boolean } }).browserDetails.isDevice;

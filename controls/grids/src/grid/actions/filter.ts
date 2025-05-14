@@ -308,8 +308,8 @@ export class Filter implements IAction {
      * @hidden
      */
     public updateModel(): void {
-        const col: Column = this.column.isForeignColumn() ? this.parent.getColumnByUid(this.column.uid) :
-            this.parent.getColumnByField(this.fieldName);
+        const col: Column = this.column.isForeignColumn() || this.parent.enableColumnVirtualization ?
+            this.parent.getColumnByUid(this.column.uid, true) : this.parent.getColumnByField(this.fieldName);
         this.filterObjIndex =  this.getFilteredColsIndexByField(col);
         this.prevFilterObject = this.filterSettings.columns[this.filterObjIndex];
         let arrayVal: (string | number | Date | boolean)[] = Array.isArray(this.value) && this.value.length ? this.value : [this.value];

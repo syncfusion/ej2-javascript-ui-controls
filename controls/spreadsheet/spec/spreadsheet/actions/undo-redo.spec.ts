@@ -614,7 +614,6 @@ describe('Undo redo ->', () => {
                 expect(image.left).toBe(192);
                 expect(image.src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
                 expect(helper.getElement('#' + image.id).style.left).toBe('192px');
-                EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
                 helper.invoke('cut').then(() => {
                     helper.invoke('selectRange', ['M1']);
                     helper.invoke('paste', ['M1']);
@@ -634,7 +633,6 @@ describe('Undo redo ->', () => {
                         expect(image.left).toBe(192);
                         expect(image.src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
                         expect(helper.getElement('#' + image.id).style.left).toBe('192px');
-                        EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
                         done();
                     });
                 });
@@ -650,7 +648,6 @@ describe('Undo redo ->', () => {
                 expect(image.left).toBe(768);
                 expect(image.src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
                 expect(helper.getElement('#' + image.id).style.left).toBe('768px');
-                EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
                 done();
             });
         });
@@ -668,7 +665,6 @@ describe('Undo redo ->', () => {
                 helper.click('#spreadsheet_undo');
                 setTimeout(() => {
                     expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[3].image)).toBe('[]');
-                    EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
                     done();
                 });
             });
@@ -683,7 +679,6 @@ describe('Undo redo ->', () => {
                 expect(image.left).toBe(192);
                 expect(image.src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
                 expect(helper.getElement('#' + image.id).style.left).toBe('192px');
-                EventHandler.remove(document, 'mouseup', helper.getInstance().serviceLocator.services.shape.overlayMouseUpHandler);
                 done();
             });
         });

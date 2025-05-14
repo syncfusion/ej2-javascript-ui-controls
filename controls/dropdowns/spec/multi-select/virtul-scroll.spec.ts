@@ -241,7 +241,7 @@ describe('MultiSelect_Virtualization', () => {
             multiObj.showPopup();
             expect(multiObj.isPopupOpen()).toBe(true);
             expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
-            expect(multiObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
+            expect(multiObj.list.querySelectorAll('.e-virtual-list').length).toBe(30);
             expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 1');
             let li: Element[] = multiObj.list.querySelectorAll('li:not(.e-virtual-list)');
             expect(li[0].classList.contains('e-item-focus')).toBe(true);
@@ -259,7 +259,7 @@ describe('MultiSelect_Virtualization', () => {
                 }
                 setTimeout(function () {
                     expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
-                    expect(multiObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
+                    expect(multiObj.list.querySelectorAll('.e-virtual-list').length).toBe(30);
                     done();
                     }, 850)
             }, 100)
@@ -459,7 +459,7 @@ describe('MultiSelect_Virtualization', () => {
                 ele = createElement('input', { id: 'Multiselect' });
                 document.body.appendChild(ele);
                 multiObj = new MultiSelect({
-                    dataSource: datasource, value: ["id4","id7"], popupHeight:'200px', enableVirtualization: true, allowFiltering:true, fields: { text: 'text', value: 'id', groupBy: 'group' }
+                    dataSource: datasource, value: ["id4", "id7"], popupHeight: '200px', enableVirtualization: true, debounceDelay: 0, allowFiltering: true, fields: { text: 'text', value: 'id', groupBy: 'group' }
                 });
                 multiObj.appendTo(ele);
             });
@@ -471,7 +471,7 @@ describe('MultiSelect_Virtualization', () => {
             it('filter a suggestion list', () => {
                 multiObj.showPopup();
                 //expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
-                expect(multiObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
+                expect(multiObj.list.querySelectorAll('.e-virtual-list').length).toBe(30);
                 expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Group A');
                 (<any>multiObj).inputElement.value  = "Item 2";
                 //open action validation
@@ -513,7 +513,7 @@ describe('MultiSelect_Virtualization', () => {
                 document.body.appendChild(ele);
                 multiObj = new MultiSelect({
                     dataSource: datasource, mode: 'Box', enableVirtualization: true, popupHeight: '200px',
-                    allowFiltering: true, showDropDownIcon:true, hideSelectedItem: true, closePopupOnSelect: true,
+                    allowFiltering: true, debounceDelay: 0, showDropDownIcon: true, hideSelectedItem: true, closePopupOnSelect: true,
                     fields: { text: 'text', value: 'id' }, placeholder: 'e.g. Item 1', 
                     filtering: function(args) {
                         args.preventDefaultAction=true
@@ -535,7 +535,7 @@ describe('MultiSelect_Virtualization', () => {
             it('filtering with li count', () => {
                 multiObj.showPopup();
                 //expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
-                expect(multiObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
+                expect(multiObj.list.querySelectorAll('.e-virtual-list').length).toBe(30);
                 expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 1');
                 (<any>multiObj).inputElement.value  = "150";
                 //open action validation
@@ -557,7 +557,7 @@ describe('MultiSelect_Virtualization', () => {
                 ele = createElement('input', { id: 'Multiselect' });
                 document.body.appendChild(ele);
                 multiObj = new MultiSelect({
-                    dataSource: datasource, popupHeight:'200px', enableVirtualization: true,allowFiltering:true, fields: { text: 'text', value: 'id' }, itemTemplate: '<div class="ename"> ${text} </div></div>', valueTemplate: '<div class="tempName"> ${text} </div>',
+                    dataSource: datasource, popupHeight: '200px', enableVirtualization: true, allowFiltering: true, debounceDelay: 0, fields: { text: 'text', value: 'id' }, itemTemplate: '<div class="ename"> ${text} </div></div>', valueTemplate: '<div class="tempName"> ${text} </div>',
                 });
                 multiObj.appendTo(ele);
             });
@@ -588,7 +588,7 @@ describe('MultiSelect_Virtualization', () => {
                 ele = createElement('input', { id: 'Multiselect' });
                 document.body.appendChild(ele);
                 multiObj = new MultiSelect({
-                    dataSource: datasource, popupHeight:'200px', enableVirtualization: true,allowFiltering:true, fields: { text: 'text', value: 'id' }, itemTemplate: '<div class="ename"> ${text} </div></div>', valueTemplate: '<div class="tempName"> ${text} </div>',
+                    dataSource: datasource, popupHeight: '200px', enableVirtualization: true, allowFiltering: true, debounceDelay: 0, fields: { text: 'text', value: 'id' }, itemTemplate: '<div class="ename"> ${text} </div></div>', valueTemplate: '<div class="tempName"> ${text} </div>',
                 });
                 multiObj.appendTo(ele);
             });
@@ -619,7 +619,7 @@ describe('MultiSelect_Virtualization', () => {
                 ele = createElement('input', { id: 'multiselect' });
                 document.body.appendChild(ele);
                 multiObj = new MultiSelect({
-                    dataSource: datasource, popupHeight:'200px', enableVirtualization: true,allowFiltering:true, showClearButton:true, fields: { text: 'text', value: 'id' }
+                    dataSource: datasource, popupHeight: '200px', enableVirtualization: true, allowFiltering: true, debounceDelay: 0, showClearButton: true, fields: { text: 'text', value: 'id' }
                 });
                 multiObj.appendTo(ele);
             });
@@ -637,7 +637,7 @@ describe('MultiSelect_Virtualization', () => {
                 ele = createElement('input', { id: 'multiselect' });
                 document.body.appendChild(ele); 
                 multiObj = new MultiSelect({
-                    dataSource: datasource, popupHeight:'200px',query: new Query(), value: ["id2", "id5", "id4", "id3", "id6", "id1", "id31", "id61", "id81", "id15","id18"], enableVirtualization: true,allowFiltering: true, showClearButton:true, fields: { text: 'text', value: 'id' }
+                    dataSource: datasource, popupHeight: '200px', query: new Query(), value: ["id2", "id5", "id4", "id3", "id6", "id1", "id31", "id61", "id81", "id15", "id18"], enableVirtualization: true, allowFiltering: true, debounceDelay: 0, showClearButton: true, fields: { text: 'text', value: 'id' }
                 });
                 multiObj.appendTo(ele);
             });
@@ -726,7 +726,7 @@ describe('MultiSelect_Virtualization', () => {
             });
             it('allowCustomValue with filtering.', () => {
                 multiObj = new MultiSelect({
-                    dataSource: datasource, popupHeight:'200px', hideSelectedItem: false, enableVirtualization: true,allowFiltering: true, allowCustomValue: true, showClearButton:true, fields: { text: 'text', value: 'id' }
+                    dataSource: datasource, popupHeight: '200px', hideSelectedItem: false, enableVirtualization: true, allowFiltering: true, debounceDelay: 0, allowCustomValue: true, showClearButton: true, fields: { text: 'text', value: 'id' }
                 });
                 multiObj.appendTo(ele);
                 multiObj.showPopup();
@@ -801,7 +801,7 @@ describe('MultiSelect_Virtualization', () => {
                     showSelectAll: true, 
                     value: ["id5", "id4", "id3", "id6", "id1", "id31", "id61", "id81", "id15", "id131", "id33", "id77"],
                     popupHeight: '200px',
-                    fields: { value: 'id', text: 'text' }, allowFiltering: true,
+                    fields: { value: 'id', text: 'text' }, allowFiltering: true, debounceDelay: 0,
                 });
                 multiObj.appendTo(ele);
             });
@@ -857,7 +857,7 @@ describe('MultiSelect_Virtualization', () => {
                     showSelectAll: true, 
                     value: ["id5", "id4", "id3", "id6", "id1", "id31", "id61"],
                     popupHeight: '200px',
-                    fields: { value: 'id', text: 'text' }, allowFiltering: true,
+                    fields: { value: 'id', text: 'text' }, allowFiltering: true, debounceDelay: 0,
                 });
                 multiObj.appendTo(ele);
             });
@@ -913,7 +913,7 @@ describe('MultiSelect_Virtualization', () => {
                     showSelectAll: true, 
                     value: ["id5", "id4", "id3", "id6", "id1", "id31", "id61", "id81", "id15", "id131", "id33", "id77", "id44", "id43", "id47", "id16", "id17", "id49", "id78", "id79", "id91", "id97"],
                     popupHeight: '200px', 
-                    fields: { value: 'id', text: 'text' }, allowFiltering: true,
+                    fields: { value: 'id', text: 'text' }, allowFiltering: true, debounceDelay: 0,
                 });
                 multiObj.appendTo(ele);
             });
@@ -972,7 +972,7 @@ describe('MultiSelect_Virtualization', () => {
                     showSelectAll: true, 
                     value: ["id5", "id4", "id3", "id6", "id1", "id31", "id61", "id81", "id15", "id131", "id33", "id77", "id44", "id43", "id47", "id16", "id17", "id49", "id78", "id79", "id91", "id97"],
                     popupHeight: '200px', 
-                    fields: { value: 'id', text: 'text' }, allowFiltering: true,
+                    fields: { value: 'id', text: 'text' }, allowFiltering: true, debounceDelay: 0,
                 });
                 multiObj.appendTo(ele);
             });
@@ -1115,7 +1115,7 @@ describe('MultiSelect_Virtualization', () => {
                 multiObj.showPopup();
                 setTimeout(() => {
                     expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
-                    expect(multiObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
+                    expect(multiObj.list.querySelectorAll('.e-virtual-list').length).toBe(30);
                     done();
                 }, 500);
             }, 800);
@@ -1160,6 +1160,7 @@ describe('MultiSelect_Virtualization', () => {
                 placeholder: 'Select an Item ',
                 //set enableVirtualization property to true
                 enableVirtualization: true,
+                debounceDelay: 0,
                 allowFiltering: true,
                 hideSelectedItem: false,
                 closePopupOnSelect: false,
@@ -1191,6 +1192,7 @@ describe('MultiSelect_Virtualization', () => {
                 //set enableVirtualization property to true
                 enableVirtualization: true,
                 allowFiltering: true,
+                debounceDelay: 0,
                 mode: 'CheckBox',
                 //set the height of the popup element
                 popupHeight: '200px',

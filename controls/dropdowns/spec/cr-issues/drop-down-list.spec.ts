@@ -77,6 +77,7 @@ describe('DropDownList', () => {
                 fields: { text: 'Name', value: 'Eimg' },
                 popupHeight: "200px",
                 allowFiltering: true,
+                debounceDelay: 0,
                 headerTemplate: '<div class="header"> <span>Photo</span> <span class="info">Employee Info</span></div>',
                 // set the template content for list items
                 itemTemplate: '<div><img class="empImage"' +
@@ -390,7 +391,8 @@ describe('DropDownList', () => {
             listObj = new DropDownList({
                 dataSource: data,
                 value: 'American Football',
-                allowFiltering: true
+                allowFiltering: true,
+                debounceDelay: 0
             });
             listObj.appendTo('#ddl');
             listObj.showPopup();
@@ -503,6 +505,7 @@ describe('DropDownList', () => {
             <option value="9">Tennis</option>`;
             document.body.appendChild(element);
             listObj = new DropDownList({
+                debounceDelay: 0,
             });
             listObj.appendTo(element);
             listObj.allowFiltering = true
@@ -889,6 +892,7 @@ describe('DropDownList', () => {
                 dataSource: country,
                 fields: { value: 'countryId', text: 'countryName' },
                 allowFiltering: true,
+                debounceDelay: 0,
                 change: function () {
                     listObj1.enabled = true;
                     var tempQuery = new Query().where('countryId', 'equal', listObj.value);
@@ -905,6 +909,7 @@ describe('DropDownList', () => {
                 fields: { value: 'stateId', text: 'stateName' },
                 enabled: false,
                 allowFiltering: true,
+                debounceDelay: 0,
                 change: function () {
                     listObj2.enabled = true;
                     var tempQuery1 = new Query().where('stateId', 'equal', listObj1.value);
@@ -918,6 +923,7 @@ describe('DropDownList', () => {
                 dataSource: cities,
                 fields: { text: 'cityName' },
                 allowFiltering: true,
+                debounceDelay: 0,
                 enabled: false,
             });
             listObj2.appendTo('#list2');
@@ -973,7 +979,8 @@ describe('DropDownList', () => {
             listObj = new DropDownList({
                 dataSource: data, 
                 fields: { text: "text", value: "id" },
-                allowFiltering: true
+                allowFiltering: true,
+                debounceDelay: 0
             });
             listObj.appendTo('#ddl');
         });
@@ -1066,6 +1073,7 @@ describe('DropDownList', () => {
                 dataSource: sportsData,
                 fields: { text: 'Game', value: 'Id' },
                 allowFiltering: true,
+                debounceDelay: 0,
                 filtering: function (e) {
                     isPopupFiltered = true;
                 }
@@ -1227,6 +1235,7 @@ describe('DropDownList', () => {
                 dataSource: country,
                 fields: { value: 'CountryId', text: 'CountryName' },
                 allowFiltering: true,
+                debounceDelay: 0,
                 change: function () {
                     listObj1.enabled = true;
                     var tempQuery = new Query().where('CountryId', 'equal', listObj.value);
@@ -1241,6 +1250,7 @@ describe('DropDownList', () => {
                 fields: { value: 'StateId', text: 'StateName' },
                 enabled: false,
                 allowFiltering: true,
+                debounceDelay: 0,
             });
             listObj1.appendTo('#list1');
         });
@@ -1377,6 +1387,7 @@ describe('DropDownList', () => {
                 fields: { text: 'sports', value: 'sports' },
                 itemTemplate: '<div class="ename"> ${sports}</div>',
                 allowFiltering: true,
+                debounceDelay: 0,
             });
             ddlObj1.appendTo(ddlEle1);
         });

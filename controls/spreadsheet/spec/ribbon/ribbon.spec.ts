@@ -234,10 +234,7 @@ describe('Ribbon ->', () => {
     describe('Add Tab Item ->', () => {
         beforeAll((done: Function) => {
             model = {
-             sheets: [{ ranges: [{ dataSource: defaultData }] }],
-             created: (): void => {
-                 const spreadsheet: Spreadsheet = helper.getInstance();
-             }  
+             sheets: [{ ranges: [{ dataSource: defaultData }] }]
             }
             helper.initializeSpreadsheet(model, done);
          });
@@ -246,13 +243,17 @@ describe('Ribbon ->', () => {
         });
         it('addRibbonTab->', (done: Function) => {
             document.getElementsByTagName("span")[0].click();
-            let toolbarElemCount: number = document.getElementsByClassName("e-toolbar-items")[0].querySelectorAll(".e-template").length;
-            expect(toolbarElemCount).toBe(6);
+            const ribbon: HTMLElement = document.getElementById(helper.id + '_ribbon');
+            expect(ribbon.querySelectorAll('.e-tab-header .e-toolbar-items .e-toolbar-item').length).toBe(6);
             let spreadsheet: Spreadsheet = helper.getInstance();
             spreadsheet.addRibbonTabs(
-                [{ header: { text: 'Custom' }, content: [{ text: 'Custom', tooltipText: 'Custom Btn', cssClass: 'e-test-btn' }] }], 'Data');
-            toolbarElemCount = document.getElementsByClassName('e-toolbar-items')[0].querySelectorAll('.e-template').length;
-            expect(toolbarElemCount).toBe(7);
+                [{ header: { text: 'Custom' }, content: [{ text: 'Custom', tooltipText: 'Custom Btn', cssClass: 'e-custom-btn' }] }], 'Data');
+            helper.switchRibbonTab(4);
+            const tabItems: NodeListOf<Element> = ribbon.querySelectorAll('.e-tab-header .e-toolbar-items .e-toolbar-item');
+            expect(tabItems.length).toBe(7);
+            expect(tabItems[4].classList.contains('e-active')).toBeTruthy();
+            expect(tabItems[4].querySelector('.e-tab-text').textContent).toBe('Custom');
+            expect(ribbon.querySelector('.e-content .e-toolbar-item.e-custom-btn')).not.toBeNull();
             done();   
         });
         it('addRibbonTab using other properties->', (done: Function) => {

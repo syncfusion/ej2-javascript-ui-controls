@@ -1650,7 +1650,10 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private popupEleWidth(el: HTEle): number {
         el.style.position = 'absolute';
-        let elWidth: number = this.isVertical ? el.offsetHeight : el.offsetWidth;
+        const style: CSSStyleDeclaration = window.getComputedStyle(el);
+        let elWidth: number = this.isVertical
+            ? el.offsetHeight
+            : el.offsetWidth + parseFloat(style.marginLeft) + parseFloat(style.marginRight);
         const btnText: HTEle = <HTEle>el.querySelector('.' + CLS_TBARBTNTEXT);
         if (el.classList.contains('e-tbtn-align') || el.classList.contains(CLS_TBARTEXT)) {
             const btn: HTEle = <HTEle>el.children[0];
@@ -2240,6 +2243,10 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         return isNOU(ele.getAttribute('data-tabindex')) ? '-1' : ele.getAttribute('data-tabindex');
     }
     private itemClick(e: Event): void {
+        const itemClosest: boolean = !isNOU(closest(e.currentTarget as Element, '.' + CLS_TEMPLATE));
+        if (itemClosest) {
+            return;
+        }
         this.activeEleSwitch(<HTEle>e.currentTarget);
     }
     private activeEleSwitch(ele: HTEle): void {

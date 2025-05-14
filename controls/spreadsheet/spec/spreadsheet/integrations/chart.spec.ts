@@ -650,6 +650,30 @@ describe('Chart ->', () => {
                 done();
             });
         });
+        it('EJ2-884319 - ### symbol displayed in chart series for time format', (done: Function) => {
+            helper.invoke('selectRange', ['G1:H11']);
+            helper.invoke('numberFormat', ['h:mm:ss AM/PM', 'G1:H11']);
+            helper.edit('G9', '-9');
+            helper.edit('G10', '-10');
+            helper.edit('G11', '-11');
+            helper.edit('H9', '-9');
+            helper.edit('H10', '-10');
+            helper.edit('H11', '-11');
+            helper.invoke('insertChart', [[{ type: 'Scatter', range: 'G1:H11', id: 'e_spreadsheet_chart_11' }]]);
+            setTimeout(function () {
+                expect(document.getElementById('e_spreadsheet_chart_110_AxisLabel_0').textContent).toBe('12:00:00 AM');
+                expect(document.getElementById('e_spreadsheet_chart_111_AxisLabel_0').textContent).toBe('12:00:00 AM');
+                expect(document.getElementById('e_spreadsheet_chart_111_AxisLabel_1').textContent).toBe('12:00:00 AM');
+                expect(document.getElementById('e_spreadsheet_chart_111_AxisLabel_2').textContent).toBe('12:00:00 AM');
+                expect(document.getElementById('e_spreadsheet_chart_111_AxisLabel_3').textContent).toBe('12:00:00 AM');
+                expect(document.getElementById('e_spreadsheet_chart_111_AxisLabel_4').textContent).toBe('12:00:00 AM');
+                expect(document.getElementById('e_spreadsheet_chart_111_AxisLabel_5').textContent).toBe('12:00:00 AM');
+                const chartEle: HTMLElement = document.getElementById('e_spreadsheet_chart_11');
+                const target: HTMLElement = document.getElementById('e_spreadsheet_chart_11_Series_0_Point_7');
+                helper.triggerMouseAction('mousemove', { x: target.getBoundingClientRect().left, y: target.getBoundingClientRect().top }, chartEle, target);
+                done();
+            });
+        });
     });
 
     describe('UI - Interaction for chart resize->', () => {
@@ -869,6 +893,15 @@ describe('Chart ->', () => {
                 expect(helper.getElement('#' + helper.id + '_chart_theme').textContent).toContain('HighContrast');
                 done();
             });
+        });
+        it('Choosing Tailwind3Dark in Chart Theme Dropdown->', (done: Function) => {
+            helper.getElement('#' + helper.id + 'switch_row_column_chart').click();
+            helper.getElement('#' + helper.id + '_chart_theme').click();
+            helper.getElement('.e-item[aria-label="Tailwind 3 Dark"]').click();
+            setTimeout(() => {
+                expect(helper.getElement('#' + helper.id + '_chart_theme').textContent).toContain('Tailwind 3 Dark');
+                done();
+            }, 20);
         });
     });
 
@@ -2697,24 +2730,58 @@ describe('Chart ->', () => {
         });
     });
     describe('EJ2-866111 ->', () => {
+        let spreadsheet: Spreadsheet; let sheet: SheetModel;
         beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            helper.initializeSpreadsheet(
+                { sheets: [{ ranges: [{ dataSource: defaultData }], columns: [{ index: 3, hidden: true }, { hidden: true }] }] }, done);
         });
         afterAll(() => {
             helper.invoke('destroy');
         });
         it('Inserting a chart after hiding some columns, the chart data is not properly updated. ->', (done: Function) => {
-            helper.invoke('hideColumn', [3, 4]);
+            sheet = helper.getInstance().sheets[0];
+            expect(sheet.columns[3].hidden).toBeTruthy();
+            expect(sheet.columns[4].hidden).toBeTruthy();
+            spreadsheet = helper.getInstance();
+            spreadsheet.insertChart([{ type: 'Scatter', range: 'A1:B4' }]);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].columns[3].hidden).toBeTruthy();
-                expect(helper.getInstance().sheets[0].columns[4].hidden).toBeTruthy();
-                const spreadsheet: Spreadsheet = helper.getInstance();
-                helper.getInstance().insertChart([{ type: "Scatter", range: 'A1:B4' }]);
+                let chartId: string = `#${spreadsheet.sheets[0].rows[0].cells[0].chart[0].id}`;
+                let chartEle: HTMLElement = spreadsheet.element.querySelector(chartId) as HTMLElement;
+                let chart: any = getComponent(chartEle, 'chart');
+                expect(chart.primaryXAxis['labels'][0]).toBe('Casual Shoes');
+                done();
+            });
+        });
+        it('Inserting a chart after the hidden row and column ->', (done: Function) => {
+            helper.invoke('hideRow', [1, 1]);
+            setTimeout(() => {
+                expect(sheet.rows[1].hidden).toBeTruthy();
+                spreadsheet.insertChart([{ type: 'Column', range: 'F1:G5' }]);
                 setTimeout(() => {
-                    let chartId: string = `#${spreadsheet.sheets[0].rows[0].cells[0].chart[0].id}`;
-                    let chartEle: HTMLElement = spreadsheet.element.querySelector(chartId) as HTMLElement;
-                    let chart: Chart = getComponent(chartEle, 'chart');
-                    expect(chart.primaryXAxis['labels'][0]).toBe('Casual Shoes');
+                    let cell: HTMLElement = spreadsheet.getCell(0, 2);
+                    expect(cell.classList).toContain('e-rcborderright');
+                    cell = spreadsheet.getCell(0, 5);
+                    expect(cell.classList).toContain('e-rcborderbottom');
+                    expect(cell.classList).toContain('e-bcborderbottom');
+                    cell = spreadsheet.getCell(0, 6);
+                    expect(cell.classList).toContain('e-rcborderright');
+                    expect(cell.classList).toContain('e-rcborderbottom');
+                    expect(cell.classList).toContain('e-bcborderbottom');
+                    cell = spreadsheet.getCell(2, 2);
+                    expect(cell.classList).toContain('e-bcborderright');
+                    cell = spreadsheet.getCell(2, 6);
+                    expect(cell.classList).toContain('e-bcborderright');
+                    cell = spreadsheet.getCell(3, 2);
+                    expect(cell.classList).toContain('e-bcborderright');
+                    cell = spreadsheet.getCell(3, 6);
+                    expect(cell.classList).toContain('e-bcborderright');
+                    cell = spreadsheet.getCell(4, 2);
+                    expect(cell.classList).toContain('e-bcborderright');
+                    cell = spreadsheet.getCell(4, 5);
+                    expect(cell.classList).toContain('e-bcborderbottom');
+                    cell = spreadsheet.getCell(4, 6);
+                    expect(cell.classList).toContain('e-bcborderright');
+                    expect(cell.classList).toContain('e-bcborderbottom');
                     done();
                 });
             });
@@ -2774,11 +2841,11 @@ describe('Chart ->', () => {
             });
         });
     });
-    describe('EJ2-879107 ->', () => {
+    describe('EJ2-879107, EJ2-883259 ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({
-                sheets: [{ ranges: [{ dataSource: defaultData }] , rows: [{ index: 1, cells: [{ index: 6, chart: [{ type: 'Pie', range: 'A1:E8', top: 80, left: 20 }] }] }],
-                columns: [{ width: 80 }, { width: 75 }, { width: 75 }, { width: 75 }, { width: 75 }] }]
+                sheets: [{ ranges: [{ dataSource: defaultData }], rows: [{ index: 1, cells: [{ index: 6, chart: [{ type: 'Pie', range: 'A1:E8', top: 80, left: 20 }] }] }],
+                    columns: [{ width: 80 }, { width: 75 }, { width: 75 }, { width: 75 }, { width: 75 }] }]
             }, done);
         });
         afterAll(() => {
@@ -2794,6 +2861,25 @@ describe('Chart ->', () => {
                 expect(spreadsheet.sheets[0].rows[5].cells[0].chart.length).toBe(1);
                 done();
             });
+        });
+        it('Label position mismatch in spreadsheet when compared to Excel for negative values ->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.edit('I1', 'Negative Values'); helper.edit('I2', '-10');
+            helper.edit('I3', '50'); helper.edit('I4', '-10'); helper.edit('I5', '32');
+            helper.edit('I6', '45'); helper.edit('I7', '-29');
+            helper.invoke('insertChart', [[{ type: 'Column', range: 'I1:I7' }]]);
+            expect(spreadsheet.sheets[0].rows[0].cells[8].chart.length).toBe(1);
+            let chartId: string = `#${spreadsheet.sheets[0].rows[0].cells[8].chart[0].id}`;
+            let chartEle: HTMLElement = spreadsheet.element.querySelector(chartId) as HTMLElement;
+            let chart: Chart = getComponent(chartEle, 'chart');
+            expect(chart.primaryXAxis['crossesAt']).toBe(0);
+            expect(chartEle.querySelector(chartId + '0_AxisLabel_0').textContent).toBe('1');
+            expect(spreadsheet.sheets[0].rows[5].cells[0].chart.length).toBe(1);
+            chartId = `#${spreadsheet.sheets[0].rows[5].cells[0].chart[0].id}`;
+            chartEle = spreadsheet.element.querySelector(chartId) as HTMLElement;
+            chart = getComponent(chartEle, 'chart');
+            expect(chart.primaryXAxis['crossesAt']).toBe(0);
+            done();
         });
     });
     describe('Testing chart with single row and single column cases ->', () => {
@@ -3178,6 +3264,66 @@ describe('Chart ->', () => {
         });
     });
 
+    describe('EJ2-953213 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Chart model not updated after deleting the columns', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.insertChart([{ type: 'Column', theme: 'Material', range: 'F1:H11', }]);
+            expect(spreadsheet.sheets[0].rows[0].cells[5].chart.length).toBe(1);
+            expect(spreadsheet.sheets[0].rows[0].cells[5].chart[0].type).toBe('Column');
+            expect(spreadsheet.sheets[0].rows[0].cells[5].chart[0].theme).toBe('Material');
+            helper.invoke('selectRange', ['C1']);
+            helper.openAndClickCMenuItem(0, 2, [7], null, true);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[0].cells[4].chart.length).toBe(0);
+                expect(spreadsheet.sheets[0].rows[0].cells[5].chart.length).toBe(1);
+                expect(spreadsheet.sheets[0].rows[0].cells[5].chart[0].type).toBe('Column');
+                expect(spreadsheet.sheets[0].rows[0].cells[5].chart[0].theme).toBe('Material');
+                done();
+            });
+        });
+        it('Chart model not updated after inserting the columns', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].rows[0].cells[5].chart.length).toBe(1);
+            expect(spreadsheet.sheets[0].rows[0].cells[5].chart[0].type).toBe('Column');
+            expect(spreadsheet.sheets[0].rows[0].cells[5].chart[0].theme).toBe('Material');
+            helper.invoke('selectRange', ['C1']);
+            helper.openAndClickCMenuItem(0, 2, [6, 2], false, true);
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[0].cells[6].chart.length).toBe(0);
+                expect(spreadsheet.sheets[0].rows[0].cells[5].chart.length).toBe(1);
+                expect(spreadsheet.sheets[0].rows[0].cells[5].chart[0].type).toBe('Column');
+                expect(spreadsheet.sheets[0].rows[0].cells[5].chart[0].theme).toBe('Material');
+                done();
+            });
+        });
+        it('Apply freezepane with chart', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('freezePanes', [3, 2]);
+            setTimeout(() => {
+                spreadsheet.insertChart([{ type: 'Column', theme: 'Material', range: 'G1:H11', }]);
+                const chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                const overlayObj: any = spreadsheet.serviceLocator.getService('shape') as Overlay;
+                expect(overlayObj.originalWidth).toBe(480);
+                expect(overlayObj.originalHeight).toBe(290);
+                const overlay: HTMLElement = helper.getElementFromSpreadsheet('.e-ss-overlay-active');
+                const overlayHgtHanlde: HTMLElement = overlay.querySelector('.e-ss-overlay-b');
+                let offset: DOMRect = overlayHgtHanlde.getBoundingClientRect() as DOMRect;
+                helper.triggerMouseAction('mousedown', { x: offset.left, y: offset.top }, overlay, overlayHgtHanlde);
+                helper.triggerMouseAction('mousemove', { x: offset.left, y: offset.top + 30 }, overlay, overlayHgtHanlde);
+                helper.triggerMouseAction('mouseup', { x: offset.left, y: offset.top + 30 }, document, overlayHgtHanlde);
+                (spreadsheet.serviceLocator.getService('shape') as Overlay).destroy();
+                done();
+            });
+        });
+    });
+
     describe('Clear All for chart ->', () => {
         let spreadsheet: Spreadsheet;
         beforeAll((done: Function) => {
@@ -3299,13 +3445,59 @@ describe('Chart ->', () => {
                 helper.click('.e-delete-sheet-dlg .e-primary');
                 setTimeout(() => {
                     expect(spreadsheet.activeSheetIndex).toBe(0);
-                    expect(spreadsheet.sheets[0].name.toString()).toBe('Sheet1 (2)');
+                    expect(spreadsheet.sheets[0].name).toBe('Sheet1 (2)');
                     chart = helper.getElement().querySelector('.e-accumulationchart');
                     expect(chart).not.toBeNull();
                     expect(chart.id).not.toEqual('Custom_Chart');
                     expect(chart.id).toContain('Custom_Chart');
                     done();
                 });
+            });
+        });
+        it('EJ2-871101 - Chart range selection not properly working when virtualization is used', (done: Function) => {
+            helper.invoke('copy', ['A1:B2']).then(() => {
+                helper.invoke('paste', ['AH3']);
+                expect(helper.getInstance().sheets[0].rows[2].cells[33].value).toEqual('Item Name');
+                expect(helper.getInstance().sheets[0].rows[2].cells[34].value).toEqual('Date');
+                expect(helper.getInstance().sheets[0].rows[3].cells[33].value).toEqual('Casual Shoes');
+                expect(helper.getInstance().sheets[0].rows[3].cells[34].value).toEqual(41684);
+                helper.invoke('insertChart', [[{ type: 'Column', range: 'AH3:AI4', id: 'e_spreadsheet_chart_10' }]]);
+                setTimeout(function () {
+                    expect(helper.getInstance().sheets[0].rows[2].cells[33].chart[0].id).toBe('e_spreadsheet_chart_10');
+                    expect(helper.invoke('getCell', [2, 33]).className).toBe('e-cell e-rcborderright e-vcborderbottom');
+                    expect(helper.invoke('getCell', [3, 34]).className).toBe('e-cell e-right-align e-bcborderright e-bcborderbottom');
+                    expect(helper.invoke('getCell', [2, 33]).className).toBe('e-cell e-rcborderright e-vcborderbottom');
+                    expect(helper.invoke('getCell', [3, 34]).className).toBe('e-cell e-right-align e-bcborderright e-bcborderbottom');
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('EJ2-844826 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Script error occurs when adding chart element after deleting columns', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.insertChart([{ type: "Column", range: 'G1:H11', id: 'Custom_Chart' }]);
+            let chart: HTMLElement = helper.getElement().querySelector('.e-datavisualization-chart');
+            expect(chart).not.toBeNull();
+            expect(chart.id).toBe('Custom_Chart_overlay');
+            helper.invoke('selectRange', ['G1:H11']);
+            let cell: HTMLElement = (helper.getElement('#' + helper.id + ' .e-colhdr-table') as HTMLTableElement).rows[0].cells[6];
+            let coords: DOMRect = <DOMRect>cell.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, cell);
+            helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+            helper.click('#' + helper.id + '_contextmenu li:nth-child(7)');
+            setTimeout(() => {
+                expect(spreadsheet.sheets[0].rows[0].cells[6]).toBeUndefined();
+                chart = helper.getElement().querySelector('.e-datavisualization-chart');
+                expect(chart).not.toBeNull();
+                done();
             });
         });
     });
@@ -3358,6 +3550,52 @@ describe('Chart ->', () => {
                     done();
                 });
             });
+        });
+    });
+
+    describe('Spreadsheet Chart Properties Checks when allowchart is false', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }], rows: [{ cells: [{ chart: [{ type: 'Bar', range: 'A1:B2', title: 'Fake Chart', theme: 'Fabric', height: 150, width: 300, id: 'fakeId1', isSeriesInRows: false }] }] }]
+                }],
+                allowChart: false
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Inserting chart through celldata bind and public method', (done: Function) => {
+            const chartEl = helper.getElement('.e-datavisualization-chart');
+            expect(chartEl).toBeNull();
+            const cell = helper.getInstance().sheets[0].rows[0].cells[0];
+            expect(cell.chart).not.toBeNull();
+            helper.invoke('insertChart', [[{
+                type: 'Line',
+                range: 'A2:A2',
+                title: '',
+                theme: 'Material',
+                height: 290,
+                width: 480,
+                id: '',
+                isSeriesInRows: false,
+                dataLabelSettings: {},
+                legendSettings: {},
+                markerSettings: {},
+                primaryXAxis: {},
+                primaryYAxis: {}
+            }]]);
+            setTimeout(() => {
+                const methodCell=helper.getInstance().sheets[0].rows[1].cells[0];
+                expect(methodCell.chart).toBeUndefined();
+                done();
+            }, 10);
+        });
+        it('should switch to Insert tab and check #spreadsheet_chart button is present', (done: Function) => {
+            helper.switchRibbonTab(2);
+            const chartBtn = helper.getElement('#spreadsheet_chart');
+            expect(chartBtn).toBeNull();
+            done();
         });
     });
 });

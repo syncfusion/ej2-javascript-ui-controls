@@ -2298,6 +2298,7 @@ export class Draw {
             if (!parent.isUndoRedo) {
                 parent.notify('filter', { prop: 'update-finetunes', onPropertyChange: false });
             }
+            proxy.lowerContext.imageSmoothingQuality = parent.imageSmoothingEnabled ? 'high' : 'low';
             proxy.lowerContext.drawImage(parent.baseImg, 0, 0, proxy.parent.lowerCanvas.width, proxy.parent.lowerCanvas.height);
             let isCropped: boolean = false; let isSameDimension: boolean = false;
             if (parent.isImageUpdated) {

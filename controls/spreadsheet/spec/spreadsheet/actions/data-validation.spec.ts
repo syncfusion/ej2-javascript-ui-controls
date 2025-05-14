@@ -230,6 +230,39 @@ describe('Data validation ->', () => {
         });
     });
 
+    describe('931171-No results Found', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Add list validation', (done: Function) => {
+            helper.invoke('selectRange', ['D2']);
+            helper.invoke('addDataValidation', [{
+                type: 'List',
+                value1: '=#REF!',
+                ignoreBlank: true,
+                inCellDropDown: true
+            }, 'D2']);
+            const cell: CellModel = helper.getInstance().sheets[0].rows[1].cells[3];
+            expect(JSON.stringify(cell.validation)).toBe('{"type":"List","value1":"=#REF!","ignoreBlank":true,"inCellDropDown":true}');
+            const cellElement: HTMLElement = helper.invoke('getCell', [1, 3]);
+            const dropdownElement = cellElement.querySelector('.e-dropdownlist');
+            const dropdownInstance = (dropdownElement as any).ej2_instances[0];
+            dropdownInstance.dropDownClick({ preventDefault: function () { }, target: cellElement });
+            setTimeout(() => {
+                const popupElement = helper.getElements('.e-ddl.e-popup')[0];
+                expect(popupElement).not.toBeNull();
+                expect(popupElement.textContent).toBe('');
+                dropdownInstance.hidePopup();
+                setTimeout(() => {
+                    done();
+                });
+            });
+        });
+    });
+    
     describe('UI Interaction ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({

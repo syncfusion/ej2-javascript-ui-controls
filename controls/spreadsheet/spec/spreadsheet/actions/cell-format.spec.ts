@@ -957,6 +957,40 @@ describe('Cell Format ->', () => {
             });
         });
     });
+
+    describe('EJ2-951687 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    rows: [{
+                        cells: [{ colSpan: 4, style: { borderRight: '1px solid rgb(0, 0, 0)' } },
+                        { style: { borderRight: '1px solid rgb(0, 0, 0)' } },
+                        { style: { borderRight: '1px solid rgb(0, 0, 0)' } },
+                        { style: { borderRight: '3px solid rgb(0, 0, 0)' } }]
+                    }]
+                }]
+            },
+                done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Right border of the cells are not rendered properly in the merged cells', (done: Function) => {
+            let spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].rows[0].cells[0].style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(spreadsheet.sheets[0].rows[0].cells[1].style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(spreadsheet.sheets[0].rows[0].cells[2].style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(spreadsheet.sheets[0].rows[0].cells[3].style.borderRight).toBe('3px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [0, 0]).style.borderRight).toBe('3px solid rgb(0, 0, 0)');
+            helper.invoke('unMerge', ['A1:D1']);
+            expect(helper.invoke('getCell', [0, 0]).style.borderRight).toBe('1px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [0, 3]).style.borderRight).toBe('3px solid rgb(0, 0, 0)');
+            helper.invoke('merge', ['A1:D1']);
+            expect(helper.invoke('getCell', [0, 0]).style.borderRight).toBe('3px solid rgb(0, 0, 0)');
+            done();
+        });
+    });
+    
     describe('EJ2-58338, EJ2-840548, EJ2-896102 ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
@@ -1098,6 +1132,57 @@ describe('Cell Format ->', () => {
 
                 done();
             });
+        });
+        it('EJ2-913102 - Selection misalignment issue occurs while setting border for the range', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.setRowHeight(15, 1);
+            spreadsheet.setRowHeight(15, 5);
+            expect(spreadsheet.sheets[0].rows[1].customHeight).toBe(true);
+            expect(spreadsheet.sheets[0].rows[5].customHeight).toBe(true);
+            helper.invoke('cellFormat', [{ border: '2px solid #000' }, 'C2']);
+            helper.invoke('cellFormat', [{ border: '3px solid #000' }, 'C6']);
+            const td1: HTMLTableCellElement = helper.invoke('getCell', [1, 2]);
+            const td2: HTMLTableCellElement = helper.invoke('getCell', [5, 2]);
+            const td3: HTMLTableCellElement = helper.invoke('getCell', [5, 1]);
+            const td4: HTMLTableCellElement = helper.invoke('getCell', [4, 2]);
+            expect(td1.style.borderBottom).toBe('2px solid rgb(0, 0, 0)');
+            expect(td1.style.borderRight).toBe('2px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [1, 1]).style.borderRight).toBe('2px solid rgb(0, 0, 0)');
+            expect(helper.invoke('getCell', [0, 2]).style.borderBottom).toBe('2px solid rgb(0, 0, 0)');
+            expect(!!td1.style.lineHeight).toBeTruthy();
+            expect(td2.style.borderBottom).toBe('3px solid rgb(0, 0, 0)');
+            expect(td2.style.borderRight).toBe('3px solid rgb(0, 0, 0)');
+            expect(td3.style.borderRight).toBe('3px solid rgb(0, 0, 0)');
+            expect(td4.style.borderBottom).toBe('3px solid rgb(0, 0, 0)');
+            expect(!!td2.style.lineHeight).toBeTruthy();
+            helper.invoke('cellFormat', [{ border: '' }, 'C6']);
+            expect(td2.style.borderBottom).toBe('');
+            expect(td2.style.borderRight).toBe('');
+            expect(td3.style.borderRight).toBe('');
+            expect(td4.style.borderBottom).toBe('');
+            expect(!!td2.style.lineHeight).not.toBeTruthy();
+            spreadsheet.setRowHeight(15, 3);
+            expect(spreadsheet.sheets[0].rows[3].customHeight).toBe(true);
+            const td5: HTMLTableCellElement = helper.invoke('getCell', [3, 2]);
+            helper.invoke('cellFormat', [{ border: '3px solid #000' }, 'C4']);
+            expect(td5.style.borderBottom).toBe('3px solid rgb(0, 0, 0)');
+            expect(td5.style.borderRight).toBe('3px solid rgb(0, 0, 0)');
+            expect(!!td5.style.lineHeight).toBeTruthy();
+            spreadsheet.setRowHeight(60, 3);
+            helper.invoke('cellFormat', [{ border: '2px solid #000' }, 'C4']);
+            expect(td5.style.borderBottom).toBe('2px solid rgb(0, 0, 0)');
+            expect(td5.style.borderRight).toBe('2px solid rgb(0, 0, 0)');
+            expect(!!td5.style.lineHeight).not.toBeTruthy();
+            helper.invoke('wrap', ['E2:E2', true]);
+            expect(helper.getInstance().sheets[0].rows[1].cells[4].wrap).toBe(true);
+            helper.invoke('selectRange', ['G2:G2']);
+            helper.getElement('#' + helper.id + '_borders').click();
+            helper.getElement('.e-menu-item[aria-label="No Borders"]').click();
+            expect(helper.getInstance().sheets[0].rows[1].cells[6].style.borderBottom).toBe('');
+            expect(helper.getInstance().sheets[0].rows[1].cells[6].style.borderTop).toBe('');
+            expect(helper.getInstance().sheets[0].rows[1].cells[6].style.borderRight).toBe('');
+            expect(helper.getInstance().sheets[0].rows[1].cells[6].style.borderLeft).toBe('');
+            done();
         });
     });
 

@@ -17,6 +17,7 @@ export class HtmlExport {
     private isOrdered: boolean = undefined;
     private keywordIndex: number = undefined;
     private images: Dictionary<number, string[]>;
+    private isSkipStyle: boolean = false;
 
     /**
      * @private
@@ -24,8 +25,9 @@ export class HtmlExport {
     public fieldCheck: number = 0;
 
 
-    public writeHtml(document: any, isOptimizeSfdt: boolean): string {
+    public writeHtml(document: any, isOptimizeSfdt: boolean, skipStyle?: boolean): string {
         this.keywordIndex = isOptimizeSfdt ? 1 : 0;
+        this.isSkipStyle = skipStyle;
         this.document = document;
         let html: string = '';
         if (document.hasOwnProperty(imagesProperty[this.keywordIndex])) {
@@ -34,6 +36,7 @@ export class HtmlExport {
         for (let i: number = 0; i < document[sectionsProperty[this.keywordIndex]].length; i++) {
             html += this.serializeSection(document[sectionsProperty[this.keywordIndex]][i]);
         }
+        this.isSkipStyle = false;
         return html;
     }
     private serializeImages(data: any): void {
@@ -118,7 +121,9 @@ export class HtmlExport {
         if (isList && !isPreviousList) {
             blockStyle += this.getHtmlList(listLevel, paragraph[paragraphFormatProperty[this.keywordIndex]][listFormatProperty[this.keywordIndex]][listLevelNumberProperty[this.keywordIndex]]);
         }
-        tagAttributes.push('style="' + this.serializeParagraphStyle(paragraph, '', isList) + ';' + 'white-space:pre' + '"' );
+        if (!this.isSkipStyle) {
+            tagAttributes.push('style="' + this.serializeParagraphStyle(paragraph, '', isList) + ';' + 'white-space:pre' + '"' );
+        }
         if (isList) {
             blockStyle += this.createAttributesTag('li', tagAttributes);
         } else {
@@ -251,7 +256,9 @@ export class HtmlExport {
                 continue;
             } else if (tabCount > 0) {
                 let tagAttributes: string[] = [];
-                tagAttributes.push('style="mso-tab-count:' + tabCount.toString() + '"');
+                if (!this.isSkipStyle) {
+                    tagAttributes.push('style="mso-tab-count:' + tabCount.toString() + '"');
+                }
                 blockStyle += this.createAttributesTag('span', tagAttributes) + this.endTag('span');
                 tabCount = 0;
             }
@@ -267,7 +274,9 @@ export class HtmlExport {
                         (fieldCode[textProperty[this.keywordIndex]].indexOf('TOC') >= 0 || fieldCode[textProperty[this.keywordIndex]].indexOf('HYPERLINK') >= 0)) {
                         this.fieldCheck = 1;
                         let tagAttributes: string[] = [];
-                        tagAttributes.push('style="' + this.serializeInlineStyle(inline[characterFormatProperty[this.keywordIndex]]) + '"');
+                        if (!this.isSkipStyle) {
+                            tagAttributes.push('style="' + this.serializeInlineStyle(inline[characterFormatProperty[this.keywordIndex]]) + '"');
+                        }
                         blockStyle += this.createAttributesTag('a', tagAttributes);
                     } else {
                         this.fieldCheck = undefined;
@@ -329,12 +338,16 @@ export class HtmlExport {
             spanClass += '<br>';
             return spanClass.toString();
         } else if (spanText.indexOf('\f') !== -1) {
-            spanClass += '<br style = "page-break-after:always;"/>';
+            if (!this.isSkipStyle) {
+                spanClass += '<br style = "page-break-after:always;"/>';
+            }
             return spanClass.toString();
         }
         const tagAttributes: string[] = [];
         this.serializeInlineStyle(characterFormat);
-        tagAttributes.push('style="' + this.serializeInlineStyle(characterFormat) + '"');
+        if (!this.isSkipStyle) {
+            tagAttributes.push('style="' + this.serializeInlineStyle(characterFormat) + '"');
+        }
         spanClass += this.createAttributesTag('span', tagAttributes);
         // Todo: Need to handle it.
         // If the text starts with white-space, need to check whether it is a continuous space.
@@ -444,7 +457,9 @@ export class HtmlExport {
             }
         }
         if (cellHtml.length !== 0) {
-            tagAttributes.push('style="' + cellHtml + '"');
+            if (!this.isSkipStyle) {
+                tagAttributes.push('style="' + cellHtml + '"');
+            }
         }
         blockStyle += (this.createAttributesTag('td', tagAttributes));
         for (let k: number = 0; k < cell[blocksProperty[this.keywordIndex]].length; k++) {
@@ -1028,7 +1043,9 @@ export class HtmlExport {
             }
         }
         if (tableStyle.length !== 0) {
-            tagAttributes.push('style="', tableStyle.toString() + '"');
+            if (!this.isSkipStyle) {
+                tagAttributes.push('style="', tableStyle.toString() + '"');
+            }
         }
         return blockStyle += (this.createAttributesTag('table', tagAttributes));
     }

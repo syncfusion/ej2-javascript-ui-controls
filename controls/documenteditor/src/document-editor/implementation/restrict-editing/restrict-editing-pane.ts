@@ -466,7 +466,7 @@ export class RestrictEditing {
     public updateUserInformation(): void {
         this.addedUser.uncheckAllItems();
         if (this.documentHelper.selection.checkSelectionIsAtEditRegion) {
-            let editRange: EditRangeStartElementBox = this.documentHelper.selection.getEditRangeStartElement();
+            let editRange: EditRangeStartElementBox = this.documentHelper.selection.getEditRangeStartElement() as EditRangeStartElementBox;
             if (editRange) {
                 let index: number = (this.addedUser.dataSource as string[]).indexOf(editRange.user);
                 if (index > -1) {

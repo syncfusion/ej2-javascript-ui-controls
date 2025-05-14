@@ -109,6 +109,7 @@ describe('ComboBox', () => {
                 query: new Query().from('Customers').select(['ContactName', 'CustomerID']).take(25),
                 fields: { text: 'ContactName', value: 'CustomerID' },              
                 allowFiltering:true,
+                debounceDelay: 0,
                 filtering: (e: FilteringEventArgs) => {
                     let query: Query = new Query();
                     query = (e.text !== '') ? query.from('Customers').where('ContactName', 'startswith', e.text, true) : query;
@@ -176,6 +177,7 @@ describe('ComboBox', () => {
                 placeholder: 'Select a customer',
                 popupHeight: '230px',
                 allowFiltering: true,
+                debounceDelay: 0,
                 filtering: function (e) {
                     let query: Query = new Query();
                     e.updateData(data, query, { text: 'text', value: 'id' });
@@ -221,6 +223,7 @@ describe('ComboBox', () => {
                 placeholder: 'Select a customer',
                 popupHeight: '230px',
                 allowFiltering: true,
+                debounceDelay: 0,
                 filtering: function (e) {
                     let query: Query = new Query();
                     e.updateData(data, query, { text: 'text', value: 'id' });
@@ -427,6 +430,7 @@ describe('ComboBox', () => {
             listObj = new ComboBox({
                 dataSource: empList,
                 allowFiltering: true,
+                debounceDelay: 0,
                 fields: { text: 'Name', value: 'Eimg' },
                 itemTemplate: '<div class="ename"> ${Name}</div><div class="job"> ${Designation} </div>',
                 valueTemplate: '<div class="name" style="display:inline;"> ${Name} </div>'
@@ -468,7 +472,8 @@ describe('ComboBox', () => {
             document.body.appendChild(element);
             comboObj = new ComboBox({
                 dataSource: data, 
-                allowFiltering: true
+                allowFiltering: true,
+                debounceDelay: 0
             });
             comboObj.appendTo(element);
         });
@@ -524,6 +529,7 @@ describe('ComboBox', () => {
                 popupHeight: '230px',
                 readonly: true,
                 allowFiltering: true,
+                debounceDelay: 0,
                 filtering: function (e) {
                     let query: Query = new Query();
                     e.updateData(data, query, { text: 'text', value: 'id' });
@@ -631,6 +637,7 @@ describe('ComboBox', () => {
                 popupHeight: '230px',
                 readonly: true,
                 allowFiltering: true,
+                debounceDelay: 0,
                 filtering: function (e) {
                     let query: Query = new Query();
                     e.updateData(data, query, { text: 'text', value: 'id' });
@@ -672,7 +679,7 @@ describe('ComboBox', () => {
         beforeAll(() => {
             document.body.appendChild(ele);
             listObj = new ComboBox({
-                dataSource: data, fields: { text: 'text', value: 'id' }, allowFiltering: true,
+                dataSource: data, fields: { text: 'text', value: 'id' }, allowFiltering: true, debounceDelay: 0,
                 popupHeight: '100px',
                 filterType: 'StartsWith'
             });
@@ -887,6 +894,7 @@ describe('ComboBox', () => {
                 popupHeight: '200px',
                 popupWidth: '250px',
                 allowFiltering: true,
+                debounceDelay: 0,
                 filtering: (e) => {
                     if (listObj.dataSource == dynamicDataSource) {
                         listObj.dataSource = data;
@@ -913,6 +921,7 @@ describe('ComboBox', () => {
                 popupHeight: '200px',
                 popupWidth: '250px',
                 allowFiltering: true,
+                debounceDelay: 0,
             });
             listObj1.appendTo('#ComboBox');
             buttonEle.onclick = ()=> {

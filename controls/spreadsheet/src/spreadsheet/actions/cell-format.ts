@@ -208,18 +208,20 @@ export class CellFormat {
 
     private updateMergeBorder(args: CellFormatArgs, sheet: SheetModel): void {
         const cellModel: CellModel = getCell(args.rowIdx, args.colIdx, sheet, null, true);
-        const mergeArgs: { range: number[] } = { range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx] };
-        this.parent.notify(activeCellMergedRange, mergeArgs);
-        if (cellModel.rowSpan > 1 && !args.style.borderBottom) {
-            const bottomCell: CellModel = getCell(mergeArgs.range[2], mergeArgs.range[1], sheet, null, true);
-            if (bottomCell.style && bottomCell.style.borderBottom) {
-                args.style.borderBottom = bottomCell.style.borderBottom;
+        if (cellModel.rowSpan > 1 || cellModel.colSpan > 1) {
+            const mergeArgs: { range: number[] } = { range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx] };
+            this.parent.notify(activeCellMergedRange, mergeArgs);
+            if (cellModel.rowSpan > 1) {
+                const bottomCell: CellModel = getCell(mergeArgs.range[2], mergeArgs.range[1], sheet, null, true);
+                if (bottomCell.style && bottomCell.style.borderBottom) {
+                    args.style.borderBottom = bottomCell.style.borderBottom;
+                }
             }
-        }
-        if (cellModel.colSpan > 1 && !args.style.borderRight) {
-            const rightCell: CellModel = getCell(mergeArgs.range[0], mergeArgs.range[3], sheet, null, true);
-            if (rightCell.style && rightCell.style.borderRight) {
-                args.style.borderRight = rightCell.style.borderRight;
+            if (cellModel.colSpan > 1) {
+                const rightCell: CellModel = getCell(mergeArgs.range[0], mergeArgs.range[3], sheet, null, true);
+                if (rightCell.style && rightCell.style.borderRight) {
+                    args.style.borderRight = rightCell.style.borderRight;
+                }
             }
         }
     }
@@ -314,10 +316,25 @@ export class CellFormat {
                 }
             }
         }
-        if (actionUpdate && (lastCell || !this.checkHeight) && size < 3 && (!sheet.rows[rowIdx as number] ||
-                !sheet.rows[rowIdx as number].customHeight)) {
-            if (!this.checkHeight) { this.checkHeight = true; }
-            this.updateRowHeight(rowIdx, colIdx, lastCell, actionUpdate);
+        if (!sheet.rows[rowIdx as number] || !sheet.rows[rowIdx as number].customHeight) {
+            if (actionUpdate && (lastCell || !this.checkHeight) && size < 3) {
+                if (!this.checkHeight) { this.checkHeight = true; }
+                this.updateRowHeight(rowIdx, colIdx, lastCell, actionUpdate);
+            }
+        } else {
+            const cellModel: CellModel = getCell(rowIdx, colIdx, sheet, null, true);
+            if (!cellModel.wrap) {
+                if (size > 1) {
+                    const hgt: number = getRowHeight(sheet, rowIdx, true) - getBorderHeight(rowIdx, colIdx, sheet);
+                    if (hgt < getTextHeight(this.parent, cellModel.style) && size > 1) {
+                        cell.style.lineHeight = `${hgt}px`;
+                    } else if (cell.style.lineHeight) {
+                        cell.style.lineHeight = '';
+                    }
+                } else if (cell.style.lineHeight) {
+                    cell.style.lineHeight = '';
+                }
+            }
         }
     }
     private getBorderSize(border: string): number {
@@ -423,7 +440,7 @@ export class CellFormat {
             this.parent.notify(clear, { range: sheet.name + '!' + range, type: options.type });
             this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(
                 getSwapRange(getRangeIndexes(range)), false, false, false, options.type === 'Clear Hyperlinks' ? true : false, isImported(this.parent), !isClearAll,
-                null, null, null, isSelectAll);
+                null, true, null, isSelectAll);
             if (!args.isFromUpdateAction) {
                 this.parent.notify(selectRange, { address: range });
             }

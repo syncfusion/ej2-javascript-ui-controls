@@ -195,6 +195,17 @@ describe('Merge ->', () => {
                 done();
             }, 20);
         });
+        it('EJ2-931214 - Merging and unmerging cells via public methods works on protected sheet', (done: Function) => {
+            helper.invoke('protectSheet', ['Sheet1']);
+            expect(helper.getInstance().sheets[0].isProtected).toBe(true);
+            helper.invoke('merge', ['Sheet1!H10:H11']);
+            expect(helper.getInstance().sheets[0].rows[9].cells[6].rowSpan).toBe(undefined);
+            expect(helper.getInstance().sheets[0].rows[10].cells[4].rowSpan).toBe(undefined);
+            helper.invoke('unMerge', ['Sheet1!G10:G11']);
+            expect(helper.getInstance().sheets[0].rows[9].cells[6].rowSpan).toBe(undefined);
+            expect(helper.getInstance().sheets[0].rows[10].cells[4].rowSpan).toBe(undefined);
+            done();
+        });
     });
 
     describe('UI Interaction ->', () => {

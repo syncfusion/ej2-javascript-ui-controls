@@ -1,5 +1,5 @@
 import { Workbook, RowModel, CellModel, getCell, setCell, ActionEventArgs } from '../index';
-import { deleteAction, InsertDeleteModelArgs, refreshClipboard, MergeArgs, beforeDelete } from '../../workbook/common/index';
+import { deleteAction, InsertDeleteModelArgs, refreshClipboard, MergeArgs, beforeDelete, refreshChart } from '../../workbook/common/index';
 import { activeCellMergedRange, setMerge, workbookFormulaOperation, InsertDeleteEventArgs, deleteModel } from '../../workbook/common/index';
 import { SheetModel, refreshInsertDelete, updateRowColCount, getSheetIndex, beginAction } from '../../workbook/index';
 import { deleteFormatRange, ConditionalFormatModel, getRangeIndexes, getRangeAddress } from '../../workbook/index';
@@ -273,6 +273,9 @@ export class WorkbookDelete {
         eventArgs.isAction = args.isAction;
         eventArgs.deletedModel = deletedModel;
         delete eventArgs.cancel;
+        if (args.modelType !== 'Sheet' && this.parent.chartColl && this.parent.chartColl.length) {
+            this.parent.notify(refreshChart, { range: getRangeIndexes(args.model.selectedRange) });
+        }
         this.parent.notify(deleteAction, actionArgs);
     }
     private setRowColCount(startIdx: number, endIdx: number, sheet: SheetModel, layout: string): void {

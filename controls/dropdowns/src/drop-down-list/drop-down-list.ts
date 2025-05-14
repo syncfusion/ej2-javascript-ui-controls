@@ -306,6 +306,13 @@ export class DropDownList extends DropDownBase implements IInput {
     @Property(false)
     public allowFiltering: boolean;
     /**
+     * Specifies the delay time in milliseconds for filtering operations.
+     *
+     * @default 300
+     */
+    @Property(300)
+    public debounceDelay: number;
+    /**
      * Defines whether the popup opens in fullscreen mode on mobile devices when filtering is enabled. When set to false, the popup will display similarly on both mobile and desktop devices.
      *
      * @default true
@@ -2500,6 +2507,32 @@ export class DropDownList extends DropDownBase implements IInput {
         return { start: Math.abs(input.selectionStart), end: Math.abs(input.selectionEnd) };
     }
 
+    protected performFiltering(e: KeyboardEventArgs | MouseEvent): void {
+        this.checkAndResetCache();
+        this.isRequesting = false;
+        const eventArgs: FilteringEventArgs = {
+            preventDefaultAction: false,
+            text: this.filterInput.value,
+            updateData: (
+                dataSource: { [key: string]: Object }[] | DataManager | string[] | number[], query?: Query,
+                fields?: FieldSettingsModel) => {
+                if (eventArgs.cancel) {
+                    return;
+                }
+                this.isCustomFilter = true;
+                this.customFilterQuery = query ? query.clone() : query;
+                this.filteringAction(dataSource, query, fields);
+            },
+            baseEventArgs: e,
+            cancel: false
+        };
+        this.trigger('filtering', eventArgs, (eventArgs: FilteringEventArgs) => {
+            if (!eventArgs.cancel && !this.isCustomFilter && !eventArgs.preventDefaultAction) {
+                this.filteringAction(this.dataSource, null, this.fields);
+            }
+        });
+    }
+
     protected searchLists(e: KeyboardEventArgs | MouseEvent): void {
         this.isTyped = true;
         this.activeIndex = null;
@@ -2511,29 +2544,12 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         this.isDataFetched = false;
         if (this.isFiltering()) {
-            this.checkAndResetCache();
-            this.isRequesting = false;
-            const eventArgs: FilteringEventArgs = {
-                preventDefaultAction: false,
-                text: this.filterInput.value,
-                updateData: (
-                    dataSource: { [key: string]: Object }[] | DataManager | string[] | number[], query?: Query,
-                    fields?: FieldSettingsModel) => {
-                    if (eventArgs.cancel) {
-                        return;
-                    }
-                    this.isCustomFilter = true;
-                    this.customFilterQuery = query ? query.clone() : query;
-                    this.filteringAction(dataSource, query, fields);
-                },
-                baseEventArgs: e,
-                cancel: false
-            };
-            this.trigger('filtering', eventArgs, (eventArgs: FilteringEventArgs) => {
-                if (!eventArgs.cancel && !this.isCustomFilter && !eventArgs.preventDefaultAction) {
-                    this.filteringAction(this.dataSource, null, this.fields);
-                }
-            });
+            if (this.typedString !== '' && this.debounceDelay > 0) {
+                this.debouncedFiltering(e, this.debounceDelay);
+            }
+            else {
+                this.performFiltering(e);
+            }
         }
     }
     /**
@@ -2805,7 +2821,19 @@ export class DropDownList extends DropDownBase implements IInput {
                         this.dataSource.executeQuery(this.getQuery(this.query).where(new Predicate(checkField, 'equal', value)))
                             .then((e: Object) => {
                                 if ((e as ResultData).result.length > 0) {
-                                    this.addItem((e as ResultData).result, list.length);
+                                    if (!this.enableVirtualization) {
+                                        this.addItem((e as ResultData).result, list.length);
+                                    }
+                                    else {
+                                        this.itemData = (e as ResultData).result[0];
+                                        const dataItem: { [key: string]: string } = this.getItemData();
+                                        const value: string | number | boolean | Object = this.allowObjectBinding ?
+                                            this.getDataByValue(dataItem.value) : dataItem.value;
+                                        if ((this.value === dataItem.value && this.text !== dataItem.text) ||
+                                            (this.value !== dataItem.value && this.text === dataItem.text)) {
+                                            this.setProperties({ 'text': dataItem.text ? dataItem.text.toString() : dataItem.text, 'value': value });
+                                        }
+                                    }
                                     this.updateValues();
                                 } else {
                                     this.updateValues();
@@ -4748,6 +4776,7 @@ export class DropDownList extends DropDownBase implements IInput {
             this.inputElement.classList.remove('e-input');
             Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
         }
+        this.element.removeAttribute('tabindex');
         this.element.style.display = 'block';
         if (this.inputWrapper.container && this.inputWrapper.container.parentElement) {
             if (this.inputWrapper.container.parentElement.tagName === this.getNgDirective()) {

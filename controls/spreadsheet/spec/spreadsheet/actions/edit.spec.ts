@@ -735,6 +735,24 @@ describe('Editing ->', () => {
             expect(spreadsheet.sheets[0].rows[3].cells[1].value).toBeUndefined();
             done();
         });
+        it('EJ2-891314 - Wrap text option is not maintained correctly after editing a cell', (done: Function) => {
+            helper.edit('I12', 'Sync\nSync\nSync');
+            const cell: CellModel = helper.getInstance().sheets[0].rows[11].cells[8];
+            expect(cell.value).toEqual('Sync\nSync\nSync');
+            expect(cell.wrap).toEqual(true);
+            helper.invoke('wrap', ['I12', false]);
+            expect(cell.wrap).toEqual(false);
+            const td: HTMLElement = helper.invoke('getCell', [11, 8]);
+            const coords: ClientRect = td.getBoundingClientRect();
+            helper.triggerMouseAction('dblclick', { x: coords.right, y: coords.top }, null, td);
+            setTimeout((): void => {
+                helper.getElement('.e-spreadsheet-edit').textContent = cell.value;
+                helper.triggerKeyNativeEvent(13);
+                expect(cell.wrap).toEqual(true);
+                expect(cell.value).toEqual('Sync\nSync\nSync');
+                done();
+            });
+        });
     });
 
     describe('CR-Issues ->', () => {
@@ -2350,6 +2368,27 @@ describe('Editing ->', () => {
                 helper.click('.e-validation-error-dlg .e-footer-content button:nth-child(2)');
                 expect(helper.invoke('getCell', [3, 0]).classList).not.toContain('e-wraptext');
                 expect(spreadsheet.sheets[0].rows[3].cells[0].wrap).toBeUndefined();
+                done();
+            });
+        });
+    });
+    describe('EJ2-878040-Spreadsheet Allow Wrap Test', () => {
+        beforeAll((done) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }] }],
+                allowWrap: false
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('should not apply e-wraptext class when allowWrap is false', (done) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.allowWrap).toBe(false);
+            helper.editInUI('Long text \n no wrap allowed', 'A1');
+            setTimeout(() => {
+                expect(helper.invoke('getCell', [0, 0]).classList).not.toContain('e-wraptext');
+                expect(spreadsheet.sheets[0].rows[0].cells[0].wrap).toBeUndefined();
                 done();
             });
         });

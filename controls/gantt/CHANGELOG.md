@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 29.2.4 (2025-05-14)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I196662` - Fixed an issue where the `rowSelected` event returned an incorrect target argument when the `TaskName` column was focused.
+- `#I705462` -Resolved an issue where milestone addition failed when using `UrlAdaptor` and the server modified the `TaskID`. Previously, new task IDs were generated based on the collection length, which caused conflicts with server-assigned IDs. Now, IDs are generated sequentially (like SQL auto-increment) to ensure consistency and avoid duplication.
+- `#I649480` - Addressed the issue where disabling `updateOffsetOnTaskbarEdit` did not stop automatic successor task movement. Now, successors only update when offsets or dependencies are explicitly adjusted, aligning with Microsoft Project behaviour.
+- `#I709648` - Fixed incorrect `actionComplete` event firing when `args.cancel` was set to true in `actionBegin` for `beforeSave`, and when no actual changes occurred during cell editing.
+- `#I647637` - Resolved an issue where taskbars were not fully exported in PDF format when the `showWeekend` property was set to false.
+
+#### Feature
+
+- `#I489078`, `#I647637` - Introduced the `showWeekend` property to enhance Gantt timeline clarity. When `showWeekend` set to false, weekend cells are excluded from both the timeline and PDF export, allowing users to focus on working days and task-relevant timelines. This feature can be explored in the updated interactive [demo](https://ej2.syncfusion.com/javascript/demos/#/tailwind3/gantt/work-week).
+
 ## 29.1.41 (2025-05-06)
 
 ### GanttChart

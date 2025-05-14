@@ -299,6 +299,13 @@ export interface MultiSelectModel extends DropDownBaseModel{
     allowFiltering?: boolean;
 
     /**
+     * Specifies the delay time in milliseconds for filtering operations.
+     *
+     * @default 300
+     */
+    debounceDelay?: number;
+
+    /**
      * Defines whether the popup opens in fullscreen mode on mobile devices when filtering is enabled. When set to false, the popup will display similarly on both mobile and desktop devices.
      *
      * @default true

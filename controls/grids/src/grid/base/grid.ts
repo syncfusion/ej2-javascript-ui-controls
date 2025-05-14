@@ -5572,9 +5572,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * Gets the data module.
+     * Returns the data module used by the grid.
      *
-     * @returns {Data} Returns the data
+     * Use this to access the current applied queries and data related configuration settings for the grid.
+     *
+     * @returns {Data} The data module currently used by the grid.
      */
     public getDataModule(): Data {
         return this.renderModule.data;
@@ -7240,7 +7242,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }, this.element);
     }
 
-    /** @hidden
+    /**
+     * Initiates a complete refresh of the Grid's column and layout.
+     *
+     * This method forces a full re-render of the Grid, ensuring that any dynamic
+     * changes to columns or layout are immediately reflected.
+     *
      * @returns {void}
      */
     public freezeRefresh(): void {
@@ -7743,7 +7750,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @returns {Column[]} Returns Foreign key column
      */
     public getForeignKeyColumns(): Column[] {
-        return this.getColumns().filter((col: Column) => {
+        const cols: Column[] | string[] | ColumnModel[] = this.enableColumnVirtualization ? this.columns : this.getColumns();
+        return (cols as Column[]).filter((col: Column) => {
             return col.isForeignColumn();
         });
     }

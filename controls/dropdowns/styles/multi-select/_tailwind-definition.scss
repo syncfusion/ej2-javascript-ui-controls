@@ -199,6 +199,7 @@ $ddl-multi-list-hover-bg-color: $content-bg-color-hover !default;
 $ddl-delim-font-color: $content-text-color !default;
 $ddl-close-icon-color: $icon-color !default;
 $ddl-close-icon-hover-color: $icon-color-hover !default;
+$multi-select-delim-font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', arial, 'Noto Sans', 'Liberation Sans', sans-serif, 'apple color emoji', 'Segoe UI emoji', 'Segoe UI Symbol', 'Noto color emoji' !default;
 
 @include export-module('multiselect-tailwind') {
   .e-multi-select-wrapper .e-chips-collection .e-chips .e-chips-close.e-icon::before {

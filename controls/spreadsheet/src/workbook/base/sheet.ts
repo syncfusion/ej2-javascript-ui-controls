@@ -4,7 +4,7 @@ import { RangeModel, SheetModel, UsedRangeModel } from './sheet-model';
 import { RowModel } from './row-model';
 import { ColumnModel } from './column-model';
 import { processIdx } from './data';
-import { SheetState, ProtectSettingsModel, ConditionalFormat, ConditionalFormatModel, ExtendedRange, getCellIndexes, moveOrDuplicateSheet, workbookFormulaOperation, duplicateSheetFilterHandler, ExtendedSheet, moveSheetHandler, updateSortCollection, ChartModel } from '../common/index';
+import { SheetState, ProtectSettingsModel, ConditionalFormat, ConditionalFormatModel, ExtendedRange, getCellIndexes, moveOrDuplicateSheet, workbookFormulaOperation, duplicateSheetFilterHandler, ExtendedSheet, moveSheetHandler, updateSortCollection, ImageModel, ChartModel } from '../common/index';
 import { ProtectSettings, getCellAddress } from '../common/index';
 import { isUndefined, ChildProperty, Property, Complex, Collection, extend, getUniqueID } from '@syncfusion/ej2-base';
 import { WorkbookModel } from './workbook-model';
@@ -698,6 +698,12 @@ export function duplicateSheet(context: Workbook, sheetIndex?: number, action?: 
             row.cells.forEach((cell: CellModel) => {
                 if (!cell) {
                     return;
+                }
+                if (cell.image) {
+                    const images: ImageModel[] = cell.image;
+                    images.forEach((image: ImageModel) => {
+                        image.id = getUniqueID(context.element.id + '_overlay_picture_');
+                    });
                 }
                 const charts: ChartModel[] = cell.chart;
                 if (charts) {

@@ -9,7 +9,8 @@ import {
 } from '../viewer/page';
 import {
     ElementInfo, CaretHeightInfo, IndexInfo, SizeInfo,
-    FirstElementInfo, HelperMethods, HyperlinkTextInfo, LineInfo, Point, ShapeInfo, FieldInfo, AbsolutePositionInfo, FieldResultInfo
+    FirstElementInfo, HelperMethods, HyperlinkTextInfo, LineInfo, Point, ShapeInfo, FieldInfo, AbsolutePositionInfo, FieldResultInfo,
+    FieldStartInfo
 } from '../editor/editor-helper';
 import {
     SelectionCharacterFormat, SelectionCellFormat, SelectionParagraphFormat,
@@ -491,14 +492,12 @@ export class Selection {
     public get contextType(): ContextType {
         return this.contextTypeInternal;
     }
-
     /**
      * Gets bookmark name collection.
      */
     public get bookmarks(): string[] {
-        return this.getSelBookmarks(false);
+        return this.getSelBookmarks(false, false) as string[];
     }
-
     /**
     * Gets the selected content of the document as SFDT(Syncfusion Document Text) file format.
     *
@@ -512,7 +511,14 @@ export class Selection {
             return undefined;
         }
     }
-
+    /**
+     * Gets the list of fields present within the current selection in the document. This property can be used to identify and work with field elements present in the selected text range.
+     *
+     * @returns {FieldStartInfo[]} An array of objects containing information about each field present in the selected text range.
+     */
+     public get fields(): FieldStartInfo[] {
+        return this.getSelBookmarks(false, true) as FieldStartInfo[];
+    }
     /**
      * Gets the bookmark name collection in current selection.
      *
@@ -520,7 +526,7 @@ export class Selection {
      * @returns Returns the bookmark name collection in current selection.
      */
     public getBookmarks(includeHidden?: boolean): string[] {
-        return this.getSelBookmarks(includeHidden);
+        return this.getSelBookmarks(includeHidden, false) as string[];
     }
     /**
      * @private
@@ -608,28 +614,31 @@ export class Selection {
             return false;
         }
     }
-    private getSelBookmarks(includeHidden: boolean): string[] {
+    private getSelBookmarks(includeHidden: boolean, isField?: boolean): string[] | FieldStartInfo[] {
         const bookmarkCln: string[] = [];
-        const bookmarks: Dictionary<string, BookmarkElementBox> = this.documentHelper.bookmarks;
+        const fieldCln: FieldStartInfo[] = [];
+        let bookmarks: Dictionary<string, BookmarkElementBox> = this.documentHelper.bookmarks;
+        let fields: FieldElementBox[] = this.documentHelper.fields;
         let start: TextPosition = this.start;
         let end: TextPosition = this.end;
         if (!this.isForward) {
             start = this.end;
             end = this.start;
         }
-        let bookmrkStart: BookmarkElementBox;
-        let bookmrkEnd: BookmarkElementBox;
+        let elementStart: BookmarkElementBox | FieldElementBox;
+        let elementEnd: BookmarkElementBox | FieldElementBox;
         let isCellSelected: boolean = false;
         const selectedCells: TableCellWidget[] = this.getSelectedCells();
-        for (let i: number = 0; i < bookmarks.length; i++) {
-            if (includeHidden || !includeHidden && bookmarks.keys[i].indexOf('_') !== 0) {
-                bookmrkStart = bookmarks.get(bookmarks.keys[i]);
-                bookmrkEnd = bookmrkStart.reference;
-                if (isNullOrUndefined(bookmrkEnd)) {
+        let count: number = isField? fields.length : bookmarks.length; 
+        for (let i: number = 0; i < count; i++) {
+           if (isField || (includeHidden || !includeHidden && bookmarks.keys[i].indexOf('_') !== 0)){
+                elementStart = isField? fields[i] : bookmarks.get(bookmarks.keys[i])  ;
+                elementEnd = isField? fields[i].fieldEnd :(elementStart as BookmarkElementBox).reference;
+                if (isNullOrUndefined(elementEnd)) {
                     continue;
                 }
-                const bmStartPos: TextPosition = this.getElementPosition(bookmrkStart).startPosition;
-                const bmEndPos: TextPosition = this.getElementPosition(bookmrkEnd, true).startPosition;
+                const bmStartPos: TextPosition = this.getElementPosition(elementStart).startPosition;
+                const bmEndPos: TextPosition = this.getElementPosition(elementEnd, true).startPosition;
                 if (bmStartPos.paragraph.isInsideTable || bmEndPos.paragraph.isInsideTable) {
                     if (selectedCells.length > 0) {
                         if (selectedCells.indexOf(bmStartPos.paragraph.associatedCell) >= 0
@@ -663,11 +672,22 @@ export class Selection {
                         && (end.isExistAfter(bmEndPos) || end.isExistBefore(bmEndPos))) ||
                     (bmEndPos.isExistBefore(end) && bmEndPos.isExistAfter(start)
                         && (start.isExistBefore(bmStartPos) || start.isExistAfter(bmStartPos))) || isCellSelected) {
-                    bookmarkCln.push(bookmrkStart.name);
+                    if (isField) {
+                        let fieldInfo: FieldStartInfo = { field: elementStart as FieldElementBox };
+                        fieldCln.push(fieldInfo);
+                    }
+                    else {
+                        bookmarkCln.push((elementStart as BookmarkElementBox).name);
+                    }
                 }
             }
         }
-        return bookmarkCln;
+        if (isField) {
+            return fieldCln;
+        }
+        else {
+            return bookmarkCln;
+        }   
     }
     /**
      * 
@@ -837,20 +857,34 @@ export class Selection {
         const endPosition: TextPosition = this.getTextPosBasedOnLogicalIndex(end);
         this.selectPosition(startPosition, endPosition);
     }
+    
     /**
      * Selects the current field if selection is in field
      *
-     * @param fieldStart Specify the field start to select.
+     * @param {FieldElementBox} fieldInfo Specify the field start to select.
      * @returns {void}
      */
-    public selectField(fieldStart?: FieldElementBox): void {
-        if (this.isInField || !isNullOrUndefined(fieldStart)) {
-            if (isNullOrUndefined(fieldStart)) {
-                fieldStart = this.getHyperlinkField(true);
+    public selectField(fieldInfo?: FieldElementBox): void;
+
+    /**
+     * Selects the field in the document using the provided fieldStart information. This method highlights the corresponding field and brings it into view within the editor.
+     * 
+     * @param {FieldStartInfo} fieldInfo - The information about the field to be selected..
+     * @returns {void}
+     */
+    public selectField(fieldInfo?: FieldStartInfo): void;
+    public selectField(fieldInfo?: FieldElementBox | FieldStartInfo): void {
+        if (!isNullOrUndefined(fieldInfo) && (fieldInfo as FieldStartInfo).field){
+            fieldInfo = (fieldInfo as FieldStartInfo).field;
+        }
+        if (this.isInField || !isNullOrUndefined(fieldInfo)) {
+            if (isNullOrUndefined(fieldInfo)) {
+                fieldInfo = this.getHyperlinkField(true);
             }
-            this.selectFieldInternal(fieldStart);
+            this.selectFieldInternal(fieldInfo as FieldElementBox);
         }
     }
+    
     /**
      * @private
      * @param fieldStart
@@ -10194,14 +10228,14 @@ export class Selection {
     /**
      * @private
      */
-    public getHtmlContent(): string {
+    public getHtmlContent(skipStyle?: boolean): string {
         let documentContent: any = this.writeSfdt();
         this.sfdtContent = JSON.stringify(documentContent);
         if (this.owner.editorModule) {
             this.owner.editorModule.copiedData = JSON.stringify(documentContent);
         }
         let isOptimizedSfdt: boolean = this.owner.documentEditorSettings.optimizeSfdt;
-        return this.htmlWriter.writeHtml(documentContent, isOptimizedSfdt);
+        return this.htmlWriter.writeHtml(documentContent, isOptimizedSfdt, skipStyle);
     }
 
     private copyToClipboard(htmlContent?: string): boolean {
@@ -11610,8 +11644,8 @@ export class Selection {
             this.highlightEditRegion();
         } else {
             this.unHighlightEditRegion();
+            this.viewer.renderVisiblePages();
         }
-        this.viewer.renderVisiblePages();
     }
     //Restrict editing implementation starts
     /**
@@ -11687,6 +11721,7 @@ export class Selection {
         }
         if (!this.isHighlightEditRegion) {
             this.unHighlightEditRegion();
+            this.viewer.updateScrollBars();
             return;
         }
         this.isHightlightEditRegionInternal = true;
@@ -11810,8 +11845,8 @@ export class Selection {
      * @returns {void}
      */
     public navigateToNextEditingRegion(): void {
-        let editRange: EditRangeStartElementBox = this.getEditRangeStartElement(true);
-        if(this.editRangeCollection.length > 0){
+        let editRange: EditRangeStartElementBox = this.getEditRangeStartElement(true) as EditRangeStartElementBox;
+        if (this.editRangeCollection.length > 0) {
             this.sortEditRangeCollection();
             let length: number = this.editRangeCollection.length;
             let index: number = length;
@@ -11851,7 +11886,8 @@ export class Selection {
     /**
      * @private
      */
-    public getEditRangeStartElement(isNavigateToNextEditRegion?: boolean): EditRangeStartElementBox {
+    public getEditRangeStartElement(isNavigateToNextEditRegion?: boolean, returnAllMatches?: boolean): EditRangeStartElementBox[] | EditRangeStartElementBox {
+        let editRangeStartElementBox: EditRangeStartElementBox[] = [];
         for (let i: number = 0; i < this.editRangeCollection.length; i++) {
             let editStart: EditRangeStartElementBox = this.editRangeCollection[i];
             let position: PositionInfo = this.getPosition(editStart, isNavigateToNextEditRegion);
@@ -11859,8 +11895,16 @@ export class Selection {
             let end: TextPosition = position.endPosition;
             if ((this.start.isExistAfter(start) || this.start.isAtSamePosition(start))
                 && (this.end.isExistBefore(end) || this.end.isAtSamePosition(end))) {
-                return editStart;
+                if (returnAllMatches) {
+                    editRangeStartElementBox.push(editStart);
+                } else {
+                    return editStart;
+                }
+
             }
+        }
+        if (returnAllMatches) {
+            return editRangeStartElementBox;
         }
         return undefined;
     }

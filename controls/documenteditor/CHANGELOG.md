@@ -2,6 +2,37 @@
 
 ## [Unreleased]
 
+## 29.2.4 (2025-05-14)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I709841`,`#I722525` - Improved editing performance when spell check is enabled.
+- `#I716525` - Fixed performance issues related to bookmark manipulation during editing operations.
+- `#I715428` - Resolved a script error that occurred when loading SFDT without injecting the editor module.
+- `#I716353` - Fixed an issue where table cell content was clipped when zooming out.
+- `#I709838` - Resolved a script error that occurred when exporting after performing a delete operation with track changes enabled.
+
+#### Features
+
+- `#I682661` - Added support for removing editing region in the current selection position.
+- `#I706446` - Added support for retrieving fields within the selected range.
+- `#I712473` - Added screen reader support in Document Editor.
+
+## 29.1.41 (2025-05-06)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I712778` - Fixed an issue where a new paragraph was inserted outside the editable region in protected documents.
+- `#I713902` - Corrected the underline rendering for the appropriate word during spell check.
+- `#I710270` - Resolved a table formatting issue when applying shading to specific cells.
+- `#I707681` - Fixed the DocumentEditor refresh issue when the spell checker is enabled.
+- `#I701076` - Addressed an issue where bullet points were not applied correctly when pasting SFDT content.
+- `#I719946` - Resolved a script error that occurred during repeated find-and-replace operations.
+
 ## 29.1.40 (2025-04-29)
 
 ### DocumentEditor

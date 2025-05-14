@@ -423,11 +423,14 @@ export class ContextMenu implements IContextMenu {
         this.contextMenuObj.hideItems([this.defaultHighlightId, this.defaultUnderlineId, this.defaultStrikethroughId,
             this.defaultScaleratioId], true);
         if (isProp) {
-            if (this.pdfViewer.selectedItems.annotations.length !== 0 && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Line' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'LineWidthArrowHead' ||
-                this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Distance')) {
+            if (this.pdfViewer.selectedItems.annotations.length !== 0 && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Distance' || this.pdfViewer.selectedItems.annotations[0].measureType === 'Perimeter' ||
+                this.pdfViewer.selectedItems.annotations[0].subject === 'Perimeter calculation' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Polygon' ||
+                this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Radius')) {
+                this.contextMenuObj.showItems([this.defaultPropertiesId, this.defaultScaleratioId], true);
+            } else if (this.pdfViewer.selectedItems.annotations.length !== 0 && (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Line' || this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'LineWidthArrowHead')) {
                 this.contextMenuObj.showItems([this.defaultPropertiesId], true);
             } else if (this.pdfViewer.selectedItems.formFields.length !== 0 &&
-                 this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType) {
+                this.pdfViewer.selectedItems.formFields[0].formFieldAnnotationType) {
                 this.contextMenuObj.hideItems([this.defaultCommentId], true);
                 this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
                 this.contextMenuObj.showItems([this.defaultPropertiesId], true);

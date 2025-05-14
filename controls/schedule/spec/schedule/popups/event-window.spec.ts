@@ -1200,6 +1200,30 @@ describe('Schedule event window initial load', () => {
             });
         });
 
+        describe('Schedule event window popup check', () => {
+            let schObj: Schedule;
+            beforeAll((done: DoneFn) => {
+                const model: ScheduleModel = { height: '500px', currentView: 'Week', views: ['Week'], selectedDate: new Date(2025, 10, 1) };
+                schObj = util.createSchedule(model, appointments, done);
+            });
+            afterAll(() => {
+                util.destroy(schObj);
+            });
+    
+            it('Invalid Start time or end time validation for null start and end date', () => {
+                util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+                util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+                const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                const startElement: HTMLElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_START_CLASS);
+                ((startElement as EJ2Instance).ej2_instances[0] as DateTimePicker).value = null;
+                ((startElement as EJ2Instance).ej2_instances[0] as DateTimePicker).dataBind();
+                const allDayElement: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_ALL_DAY_CLASS + ' input');
+                const consoleSpy = spyOn(console, 'error');
+                allDayElement.click();
+                expect(consoleSpy).not.toHaveBeenCalled();
+            });
+        });
+
         describe('event taphold', () => {
             let schObj: Schedule;
             beforeAll((done: DoneFn): void => {
@@ -4216,3 +4240,4 @@ describe('Schedule event window initial load', () => {
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
 });
+

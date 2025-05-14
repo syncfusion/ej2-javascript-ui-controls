@@ -1,4 +1,4 @@
-import { IDataOptions, IFieldOptions, IFilter, ISort, IFormatSettings, IFieldListOptions, IMembers, PivotEngine, IDataSet, INumberIndex } from './engine';
+import { IDataOptions, IFieldOptions, IFilter, ISort, IFormatSettings, IFieldListOptions, IMembers, PivotEngine, IDataSet } from './engine';
 import { IDrillOptions, IValueSortSettings, IGroupSettings, IConditionalFormatSettings, ICustomGroups, FieldItemInfo } from './engine';
 import { ICalculatedFieldSettings, IAuthenticationInfo, IGridValues, IAxisSet } from './engine';
 import { isNullOrUndefined, select } from '@syncfusion/ej2-base';
@@ -817,86 +817,6 @@ export class PivotUtil {
         return isButtonRefresh;
     }
 
-    public static formatPivotValues(pivotValues: { [key: string]: Object }[][]): IAxisSet[][] {
-        const values: IAxisSet[][] = [];
-        for (let i: number = 0; i < pivotValues.length; i++) {
-            if (pivotValues[i as number]) {
-                values[i as number] = [];
-                for (let j: number = 0; j < pivotValues[i as number].length; j++) {
-                    if (pivotValues[i as number][j as number]) {
-                        values[i as number][j as number] = {
-                            axis: pivotValues[i as number][j as number].Axis as string,
-                            actualText: pivotValues[i as number][j as number].ActualText as string,
-                            indexObject: pivotValues[i as number][j as number].IndexObject as INumberIndex,
-                            index: pivotValues[i as number][j as number].Index as number[],
-                            rowHeaders: pivotValues[i as number][j as number].RowHeaders as string,
-                            columnHeaders: pivotValues[i as number][j as number].ColumnHeaders as string,
-                            formattedText: pivotValues[i as number][j as number].FormattedText as string,
-                            actualValue: pivotValues[i as number][j as number].ActualValue as number,
-                            rowIndex: pivotValues[i as number][j as number].RowIndex as number,
-                            colIndex: pivotValues[i as number][j as number].ColIndex as number,
-                            colSpan: pivotValues[i as number][j as number].ColSpan as number,
-                            level: pivotValues[i as number][j as number].Level as number,
-                            rowSpan: pivotValues[i as number][j as number].RowSpan as number,
-                            isSum: pivotValues[i as number][j as number].IsSum as boolean,
-                            isGrandSum: pivotValues[i as number][j as number].IsGrandSum as boolean,
-                            valueSort: pivotValues[i as number][j as number].ValueSort as IDataSet,
-                            ordinal: pivotValues[i as number][j as number].Ordinal as number,
-                            hasChild: pivotValues[i as number][j as number].HasChild as boolean,
-                            isDrilled: pivotValues[i as number][j as number].IsDrilled as boolean,
-                            value: pivotValues[i as number][j as number].Value as number,
-                            type: pivotValues[i as number][j as number].Type as SummaryTypes,
-                            members: pivotValues[i as number][j as number].Members as IAxisSet[]
-                        };
-                    }
-                }
-            }
-        }
-        return values;
-    }
-
-    public static formatFieldList(fieldList: { [key: string]: { [key: string]: Object } }): { [key: string]: Object } {
-        const keys: string[] = Object.keys(fieldList);
-        const fList: { [key: string]: Object } = {};
-        for (let i: number = 0; i < keys.length; i++) {
-            if (fieldList[keys[i as number]]) {
-                fList[keys[i as number]] = {
-                    id: fieldList[keys[i as number]].Id,
-                    caption: fieldList[keys[i as number]].Caption,
-                    type: fieldList[keys[i as number]].Type,
-                    formatString: fieldList[keys[i as number]].FormatString,
-                    index: fieldList[keys[i as number]].Index,
-                    members: fieldList[keys[i as number]].Members,
-                    formattedMembers: fieldList[keys[i as number]].FormattedMembers,
-                    dateMember: fieldList[keys[i as number]].DateMember,
-                    filter: fieldList[keys[i as number]].Filter,
-                    sort: fieldList[keys[i as number]].Sort,
-                    aggregateType: fieldList[keys[i as number]].AggregateType,
-                    baseField: fieldList[keys[i as number]].BaseField,
-                    baseItem: fieldList[keys[i as number]].BaseItem,
-                    filterType: fieldList[keys[i as number]].FilterType,
-                    format: fieldList[keys[i as number]].Format,
-                    formula: fieldList[keys[i as number]].Formula,
-                    isSelected: fieldList[keys[i as number]].IsSelected,
-                    isExcelFilter: fieldList[keys[i as number]].IsExcelFilter,
-                    showNoDataItems: fieldList[keys[i as number]].ShowNoDataItems,
-                    isCustomField: fieldList[keys[i as number]].IsCustomField,
-                    showFilterIcon: fieldList[keys[i as number]].ShowFilterIcon,
-                    showSortIcon: fieldList[keys[i as number]].ShowSortIcon,
-                    showRemoveIcon: fieldList[keys[i as number]].ShowRemoveIcon,
-                    showEditIcon: fieldList[keys[i as number]].ShowEditIcon,
-                    showValueTypeIcon: fieldList[keys[i as number]].ShowValueTypeIcon,
-                    allowDragAndDrop: fieldList[keys[i as number]].AllowDragAndDrop,
-                    isCalculatedField: fieldList[keys[i as number]].IsCalculatedField,
-                    showSubTotals: fieldList[keys[i as number]].ShowSubTotals,
-                    expandAll: fieldList[keys[i as number]].expandAll,
-                    groupName: fieldList[keys[i as number]].groupName
-                };
-            }
-        }
-        return fList;
-    }
-
     public static frameContent(
         pivotValues: IAxisSet[][], type: string, rowPosition: number, control: PivotView | PivotFieldList
     ): IGridValues {
@@ -941,73 +861,6 @@ export class PivotUtil {
         locale['GroupOutOfRange'] = control.localeObj.getConstant('groupOutOfRange');
         locale['Group'] = control.localeObj.getConstant('group');
         return locale;
-    }
-
-    public static updateReport(control: PivotView | PivotFieldList, report: {
-        Rows: { [key: string]: Object}[],
-        Columns: { [key: string]: Object}[],
-        FormatSettings: { [key: string]: Object}[]
-    }): void {
-        control.setProperties({ dataSourceSettings: { rows: [] } }, true);
-        control.setProperties({ dataSourceSettings: { columns: [] } }, true);
-        control.setProperties({ dataSourceSettings: { formatSettings: [] } }, true);
-        for (let i: number = 0; i < report.Rows.length; i++) {
-            control.dataSourceSettings.rows.push({
-                name: report.Rows[i as number].Name as string,
-                caption: report.Rows[i as number].Caption as string,
-                showNoDataItems: report.Rows[i as number].ShowNoDataItems as boolean,
-                baseField: report.Rows[i as number].BaseField as string,
-                baseItem: report.Rows[i as number].BaseItem as string,
-                showFilterIcon: report.Rows[i as number].ShowFilterIcon as boolean,
-                showSortIcon: report.Rows[i as number].ShowSortIcon as boolean,
-                showEditIcon: report.Rows[i as number].ShowEditIcon as boolean,
-                showRemoveIcon: report.Rows[i as number].ShowRemoveIcon as boolean,
-                showSubTotals: report.Rows[i as number].ShowValueTypeIcon as boolean,
-                allowDragAndDrop: report.Rows[i as number].AllowDragAndDrop as boolean,
-                axis: report.Rows[i as number].Axis as string,
-                dataType: report.Rows[i as number].DataType as string,
-                isCalculatedField: report.Rows[i as number].IsCalculatedField as boolean,
-                showValueTypeIcon: report.Rows[i as number].ShowValueTypeIcon as boolean,
-                type: report.Rows[i as number].Type as SummaryTypes,
-                expandAll: report.Rows[i as number].expandAll as boolean
-            });
-        }
-        for (let i: number = 0; i < report.Columns.length; i++) {
-            control.dataSourceSettings.columns.push({
-                name: report.Columns[i as number].Name as string,
-                caption: report.Columns[i as number].Caption as string,
-                showNoDataItems: report.Columns[i as number].ShowNoDataItems as boolean,
-                baseField: report.Columns[i as number].BaseField as string,
-                baseItem: report.Columns[i as number].BaseItem as string,
-                showFilterIcon: report.Columns[i as number].ShowFilterIcon as boolean,
-                showSortIcon: report.Columns[i as number].ShowSortIcon as boolean,
-                showEditIcon: report.Columns[i as number].ShowEditIcon as boolean,
-                showRemoveIcon: report.Columns[i as number].ShowRemoveIcon as boolean,
-                showSubTotals: report.Columns[i as number].ShowValueTypeIcon as boolean,
-                allowDragAndDrop: report.Columns[i as number].AllowDragAndDrop as boolean,
-                axis: report.Columns[i as number].Axis as string,
-                dataType: report.Columns[i as number].DataType as string,
-                isCalculatedField: report.Columns[i as number].IsCalculatedField as boolean,
-                showValueTypeIcon: report.Columns[i as number].ShowValueTypeIcon as boolean,
-                type: report.Columns[i as number].Type as SummaryTypes,
-                expandAll: report.Columns[i as number].expandAll as boolean
-            });
-        }
-        for (let i: number = 0; i < report.FormatSettings.length; i++) {
-            control.dataSourceSettings.formatSettings.push({
-                name: report.FormatSettings[i as number].Name as string,
-                format: report.FormatSettings[i as number].Format as string,
-                type: report.FormatSettings[i as number].Type as string,
-                currency: report.FormatSettings[i as number].Currency as string,
-                maximumFractionDigits: report.FormatSettings[i as number].MaximumFractionDigits as number,
-                maximumSignificantDigits: report.FormatSettings[i as number].MaximumSignificantDigits as number,
-                minimumFractionDigits: report.FormatSettings[i as number].MinimumFractionDigits as number,
-                minimumIntegerDigits: report.FormatSettings[i as number].MinimumIntegerDigits as number,
-                minimumSignificantDigits: report.FormatSettings[i as number].MinimumSignificantDigits as number,
-                skeleton: report.FormatSettings[i as number].Skeleton as string,
-                useGrouping: report.FormatSettings[i as number].UseGrouping as boolean
-            });
-        }
     }
 
     public static generateUUID(): string {

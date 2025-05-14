@@ -1,7 +1,8 @@
-import { SpreadsheetModel, Spreadsheet } from '../../../src/spreadsheet/index';
+import { SpreadsheetModel, Spreadsheet, locale } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, virtualData, dataSource } from '../util/datasource.spec';
 import { CellModel, SortEventArgs, SortDescriptor, getCell, DialogBeforeOpenEventArgs, SheetModel, setCell, BeforeSortEventArgs } from '../../../src/index';
+import { L10n } from '@syncfusion/ej2-base';
 
 /**
  *  Sorting test cases
@@ -1543,6 +1544,18 @@ describe('Spreadsheet sorting module ->', () => {
                 });
             });
         });
+        it('EJ2- Issue while sorting the values in whole column', function (done) {
+            helper.edit('F12', '=SUM(G2+10);');
+            helper.edit('F13', '=SUM(G3+10);');
+            helper.edit('F14', '=SUM(G4+10);');
+            helper.invoke('goTo', ['F1']);
+            helper.invoke('sort', [{ sortDescriptors: { order: 'Descending' } }]).then((args: SortEventArgs) => {
+                expect(helper.getInstance().sheets[0].rows[11].cells[5].value).toEqual(22);
+                expect(helper.getInstance().sheets[0].rows[12].cells[5].value).toEqual(23);
+                expect(helper.getInstance().sheets[0].rows[13].cells[5].value).toEqual(15);
+                done();
+            });
+        });
     });
 
     describe('EJ2-874115 - Data misalignment issue when sorting merged cells', () => {
@@ -1608,6 +1621,26 @@ describe('Spreadsheet sorting module ->', () => {
                 expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[0].cells[3].value.toString()).toBe('Quantity');
                 expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[0].cells[4].value.toString()).toBe('Price');
                 done();
+            });
+        });
+        it('EJ2-931246 - Sorting can be performed using public sort method on protected sheet', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            helper.invoke('protectSheet', ['Sheet1', { selectCells: true, selectUnLockedCells: true }]);
+            expect(helper.getInstance().sheets[0].isProtected).toBe(true);
+            const editAlert: string = (spreadsheet.serviceLocator.getService(locale) as L10n).getConstant('EditAlert');
+            helper.invoke('sort', [{ sortDescriptors: { order: 'Ascending' } }, 'H1:H11']).catch((error1: Error) => {
+                expect(error1.message).toBe(editAlert);
+                expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[1].cells[0].value.toString()).toBe('Casual Shoes');
+                expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[2].cells[0].value.toString()).toBe('Cricket Shoes');
+                expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[3].cells[0].value.toString()).toBe('Flip- Flops & Slippers');
+                helper.invoke('selectRange', ['A1:A5']);
+                helper.invoke('sort', [{ sortDescriptors: { order: 'Descending' } }]).catch((error2: Error) => {
+                    expect(error2.message).toBe(editAlert);
+                    expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[1].cells[0].value.toString()).toBe('Casual Shoes');
+                    expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[2].cells[0].value.toString()).toBe('Cricket Shoes');
+                    expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[3].cells[0].value.toString()).toBe('Flip- Flops & Slippers');
+                    done();
+                });
             });
         });
     });

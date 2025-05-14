@@ -435,6 +435,31 @@ export interface ImageEditorModel extends ComponentModel{
     quickAccessToolbarTemplate?: string | Function;
 
     /**
+     * Determines whether high-quality images should be smoothed when rendered.
+     *
+     * @default false
+     *
+     * @remarks
+     *
+     * When enabled (`true`), the image will be smoothed, reducing pixelation at the cost of sharpness.
+     *
+     * When disabled (`false`), the image will be rendered with crisp, unaltered pixels.
+     *
+     * ```html
+     * <div id='imageeditor'></div>
+     * ```
+     * ```typescript
+     * <script>
+     * var imageObj = new ImageEditor({
+     *     imageSmoothingEnabled: true
+     * });
+     * imageObj.appendTo("#imageeditor");
+     * </script>
+     * ```
+     */
+    imageSmoothingEnabled?: boolean;
+
+    /**
      * Specifies whether to prevent user interaction with the image editor control.
      * A boolean that specifies whether to prevent the interaction in image editor control. The default value is false.
      *

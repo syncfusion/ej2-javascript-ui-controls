@@ -1077,6 +1077,7 @@ describe('ComboBox', () => {
                 popupHeight: "200px",
                 query: query.take(3),
                 allowFiltering: true,
+                debounceDelay: 0,
                 filtering: function (e: FilteringEventArgs) {
                     let query = new Query();
                     query = (e.text != "") ? query.where("text", "startswith", e.text, true) : query;
@@ -1195,6 +1196,7 @@ describe('ComboBox', () => {
                 dataSource: data,
                 fields: { value: 'EmployeeID', text: 'FirstName' },
                 allowFiltering: true,
+                debounceDelay: 0,
                 filtering: function (e: FilteringEventArgs) {
                     let query = new Query();
                     query = (e.text != "") ? query.where("text", "startswith", e.text, true) : query;
@@ -1238,6 +1240,7 @@ describe('ComboBox', () => {
             document.body.appendChild(element);
             ddlObj = new ComboBox({
                 dataSource: data,
+                debounceDelay: 0,
                 fields: { value: 'EmployeeID', text: 'FirstName' }
             });
             ddlObj.appendTo('#combobox');
@@ -1529,7 +1532,8 @@ describe('ComboBox', () => {
             comboObj = new ComboBox({
                 dataSource: data,
                 ignoreAccent: true,
-                allowFiltering: true
+                allowFiltering: true,
+                debounceDelay: 0
             });
             comboObj.appendTo(element);
         });
@@ -1661,6 +1665,7 @@ describe('ComboBox', () => {
             dropDowns = new ComboBox({
                 dataSource: languageData,
                 allowFiltering: true,
+                debounceDelay: 0,
                 fields: { value: 'id', text: 'text' },
                 filtering: (e: FilteringEventArgs) => {
                     e.cancel = true;
@@ -1702,6 +1707,7 @@ describe('ComboBox', () => {
                 dataSource: remoteData,
                 fields: { value: 'FirstName', text:'FirstName' },
                 allowFiltering: true,
+                debounceDelay: 0,
                 actionComplete: (e: any) => {
                     e.cancel = true;
                 }
@@ -1736,6 +1742,7 @@ describe('ComboBox', () => {
             dropDowns = new ComboBox({
                 dataSource: languageData,
                 allowFiltering: true,
+                debounceDelay: 0,
                 fields: <Object>{
                     value: 'text', text: 'text', itemCreated: (e: any) => {
                         if (count === 0) {
@@ -2061,6 +2068,7 @@ describe('ComboBox', () => {
                 dataSource: data,
                 fields: { value: 'EmployeeID', text: 'FirstName' },
                 allowFiltering: true,
+                debounceDelay: 0,
                 filtering: function (e: FilteringEventArgs) {
                     let query = new Query();
                     query = (e.text != "") ? query.where("text", "startswith", e.text, true) : query;
@@ -2143,7 +2151,8 @@ describe('ComboBox', () => {
                 sortOrder: 'Ascending',
                 value: 'level4',
                 popupHeight: '230px',
-                allowFiltering: true
+                allowFiltering: true,
+                debounceDelay: 0
             });
             ddl.appendTo('#games');
             ddl.showPopup();
@@ -2190,6 +2199,7 @@ describe('ComboBox', () => {
                 fields: { text: "text", value: "id" },
                 popupHeight: "200px",
                 allowFiltering: true,
+                debounceDelay: 0,
                 filtering: function (e: FilteringEventArgs) {
                     let query = new Query();
                     query = (e.text != "") ? query.where("text", "startswith", e.text, true) : query;
@@ -2245,6 +2255,7 @@ describe('ComboBox', () => {
                 popupHeight: '230px',
                 width: '350px',
                 allowFiltering: true,
+                debounceDelay: 0,
                 filtering: function (e) {
                     let query = new Query().select(['country', 'id']);
                     query = (e.text !== '') ? query.where('country', 'contains', e.text, true) : query;
@@ -2267,6 +2278,7 @@ describe('ComboBox', () => {
                 popupHeight: '230px',
                 width: '350px',
                 allowFiltering: true,
+                debounceDelay: 0,
                 filtering: function (e) {
                     let query = new Query().select(['country', 'id']);
                     query = (e.text !== '') ? query.where('country', 'contains', e.text, true) : query;
@@ -2474,6 +2486,7 @@ describe('EJ2-43971 : After cleared the typed value, popup not shown the entire 
             fields: { text: 'Name', value: 'country' },
             popupHeight: "200px",
             allowFiltering: true,
+            debounceDelay: 0,
             showClearButton : true,
             itemTemplate: '<div class="ename"> ${Name}</div><div class="place"> ${country} </div>',
             filtering: function (e: FilteringEventArgs) {
@@ -2535,6 +2548,7 @@ describe(' EJ2-47195 ', () => {
             fields: { text: 'Name', value: 'country' },
             popupHeight: "200px",
             allowFiltering: true,
+            debounceDelay: 0,
             showClearButton : true,
             itemTemplate: '<div class="ename"> ${Name}</div><div class="place"> ${country} </div>',
         });
@@ -2550,6 +2564,7 @@ describe(' EJ2-47195 ', () => {
             fields: { text: 'Name', value: 'country' },
             popupHeight: "200px",
             allowFiltering: true,
+            debounceDelay: 0,
             showClearButton : true,
             itemTemplate: '<div class="ename"> ${Name}</div><div class="place"> ${country} </div>',
         });
@@ -2568,6 +2583,7 @@ describe(' EJ2-47195 ', () => {
             fields: { text: 'Name', value: 'country' },
             popupHeight: "200px",
             allowFiltering: true,
+            debounceDelay: 0,
             showClearButton : true,
             itemTemplate: '<div class="ename"> ${Name}</div><div class="place"> ${country} </div>',
         });
@@ -2581,6 +2597,7 @@ describe(' EJ2-47195 ', () => {
             fields: { text: 'Name', value: 'country' },
             popupHeight: "200px",
             allowFiltering: true,
+            debounceDelay: 0,
             showClearButton : true,
             itemTemplate: '<div class="ename"> ${Name}</div><div class="place"> ${country} </div>',
         });
@@ -2597,6 +2614,7 @@ describe(' EJ2-47195 ', () => {
             fields: { text: 'Name', value: 'country' },
             popupHeight: "200px",
             allowFiltering: true,
+            debounceDelay: 0,
             showClearButton : true,
             itemTemplate: '<div class="ename"> ${Name}</div><div class="place"> ${country} </div>',
         });
@@ -2618,6 +2636,7 @@ describe(' EJ2-47195 ', () => {
             fields: { text: 'Name', value: 'country' },
             popupHeight: "200px",
             allowFiltering: true,
+            debounceDelay: 0,
             showClearButton : true,
             itemTemplate: '<div class="ename"> ${Name}</div><div class="place"> ${country} </div>',
         });
@@ -2641,6 +2660,7 @@ describe(' EJ2-47195 ', () => {
             fields: { text: 'Name', value: 'country' },
             popupHeight: "200px",
             allowFiltering: true,
+            debounceDelay: 0,
             showClearButton : true,
             itemTemplate: '<div class="ename"> ${Name}</div><div class="place"> ${country} </div>',
         });
@@ -2683,7 +2703,8 @@ describe('EJ2-48321 - Need to trigger filtering event when clear the typed text 
             dataSource: languageData,
             fields: { value: 'text',text : 'text' },
             showClearButton : true,
-            allowFiltering : true,
+            allowFiltering: true,
+            debounceDelay: 0,
             filtering : function(e: any) {
                 isFiltered = true;
                 expect(!isNullOrUndefined(e.text)).toBe(true);
@@ -2722,7 +2743,8 @@ describe('EJ2-48321 - Need to trigger filtering event when clear the typed text 
         comboBoxObj = new ComboBox({
             dataSource: languageData,
             fields: { value: 'text',text : 'text' },
-            showClearButton : true,
+            showClearButton: true,
+            debounceDelay: 0,
             allowFiltering : true,
             filtering : function(e: any) {
                 isFiltered = true;
@@ -2776,7 +2798,8 @@ describe('EJ2-48529 - Filtering is not firing while remove the last letter in po
             dataSource: languageData,
             fields: { value: 'text',text : 'text' },
             showClearButton : true,
-            allowFiltering : true,
+            allowFiltering: true,
+            debounceDelay: 0,
             filtering : function(e: any) {
                 isFiltered = true;
                 expect(!isNullOrUndefined(e.text)).toBe(true);
@@ -2949,6 +2972,7 @@ describe('EJ2MVC-335 - Value updated incorrectly for autofill true case', () => 
                 popupHeight: '250px',
                 itemTemplate: '<div>${Name}</div>',
                 allowFiltering: true,
+                debounceDelay: 0,
                 autofill: true,
                 showClearButton: true,
                 change: function (args: any) {
@@ -2982,6 +3006,7 @@ describe('EJ2MVC-335 - Value updated incorrectly for autofill true case', () => 
                 popupHeight: '250px',
                 allowObjectBinding: true,
                 allowFiltering: true,
+                debounceDelay: 0,
                 showClearButton: true,
             });
             comboBoxObj.appendTo(element);
@@ -3418,7 +3443,8 @@ describe('EJ2MVC-335 - Value updated incorrectly for autofill true case', () => 
             listObj = new ComboBox({
                 dataSource: sportsData,
                 fields: { value: 'Id', text: 'Game', disabled: 'State' },
-                allowFiltering: true
+                allowFiltering: true,
+                debounceDelay: 0
             });
             listObj.appendTo(element);
         });
@@ -3670,6 +3696,7 @@ describe('EJ2MVC-335 - Value updated incorrectly for autofill true case', () => 
             listObj = new ComboBox({ 
                 dataSource: languageData,
                 fields: { value: "id", text: "text" },
+                debounceDelay: 0,
                 allowFiltering: null
             }, '#list');
             expect(listObj.allowFiltering).toBe(null);
@@ -3677,6 +3704,7 @@ describe('EJ2MVC-335 - Value updated incorrectly for autofill true case', () => 
             listObj = new ComboBox({ 
                 dataSource: languageData,
                 fields: { value: "id", text: "text" },
+                debounceDelay: 0,
                 allowFiltering: undefined
             }, '#list');
             expect(listObj.allowFiltering).toBe(false);
@@ -3799,6 +3827,7 @@ describe('EJ2MVC-335 - Value updated incorrectly for autofill true case', () => 
                 dataSource: languageData,
                 fields: { value: "id", text: "text" },
                 allowFiltering: true,
+                debounceDelay: 0,
                 filterBarPlaceholder: null
             }, '#list');
             expect(listObj.filterBarPlaceholder).toBe(null);
@@ -3807,6 +3836,7 @@ describe('EJ2MVC-335 - Value updated incorrectly for autofill true case', () => 
                 dataSource: languageData,
                 fields: { value: "id", text: "text" },
                 allowFiltering: true,
+                debounceDelay: 0,
                 filterBarPlaceholder: undefined
             }, '#list');
             expect(listObj.filterBarPlaceholder).toBe(null);

@@ -1855,7 +1855,7 @@ $lg-desktop: 1399.98;
       color: $pv-icon-color-hover;
     }
     @if $skin-name == 'bootstrap5.3' {
-      color: $pv-icon-color-hover !important;/* stylelint-disable-line declaration-no-important */
+      color: $pv-icon-color-hover;/* stylelint-disable-line declaration-no-important */
     }
     @if $skin-name == 'bootstrap5' {
       color: $white;
@@ -1865,6 +1865,12 @@ $lg-desktop: 1399.98;
     }
     @if $skin-name == 'FluentUI' {
       color: $pv-item-selection-color;
+    }
+  }
+
+  .e-pv-annotation-toolbar.e-toolbar .e-toolbar-pop .e-toolbar-item .e-tbar-btn:hover {
+    @if $skin-name == 'bootstrap5.3' {
+      color: $pv-icon-color;/* stylelint-disable-line declaration-no-important */
     }
   }
 
@@ -6130,9 +6136,6 @@ $lg-desktop: 1399.98;
     }
     @if ($skin-name == 'bootstrap5') {
       color: $white;
-    }
-    @if ($skin-name == 'bootstrap5.3') {
-      color: var(--color-sf-icon-color);
     }
   }
 

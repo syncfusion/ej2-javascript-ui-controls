@@ -827,17 +827,22 @@ export class CheckBoxFilterBase {
         } else {
             this.infiniteUnloadParentExistPred = [];
         }
-        this.addDistinct(query);
+        if (!this.isForeignColumn(column)) {
+            this.addDistinct(query);
+        }
         const args: FilterSearchBeginEventArgs = {
             requestType: events.filterSearchBegin,
             filterModel: this, columnName: field, column: column,
             operator: operator, matchCase: matchCase, ignoreAccent: ignoreAccent, filterChoiceCount: null,
-            query: query, value: parsed
+            query: query, value: parsed, cancel: false
         };
         if (this.infiniteRenderMod && this.parent.filterSettings.itemsCount) {
             args.filterChoiceCount = this.parent.filterSettings.itemsCount;
         }
         this.parent.trigger(events.actionBegin, args, (filterargs: FilterSearchBeginEventArgs) => {
+            if (filterargs.cancel) {
+                return;
+            }
             // eslint-disable-next-line no-self-assign
             filterargs.operator = filterargs.operator;
             predicte = new Predicate(field, filterargs.operator, args.value, filterargs.matchCase, filterargs.ignoreAccent);

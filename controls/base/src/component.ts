@@ -114,6 +114,9 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
         this.moduleLoader.clean();
         this.destroy();
         this.clearChanges();
+        if (this.enablePersistence && this.getModuleName() === 'grid') {
+            this.attachUnloadEvent();
+        }
         this.localObserver = new Observer(this);
         this.preRender();
         this.injectModules();

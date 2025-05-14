@@ -1033,6 +1033,7 @@ export interface ExtendedWorkbook extends Workbook {
     viewport?: { topIndex: number, bottomIndex: number, leftIndex: number, rightIndex: number };
     workbookOpenModule?: { preventFormatCheck: boolean };
     scrollSettings?: { isFinite: boolean, enableVirtualization: boolean };
+    allowWrap?: boolean;
 }
 /** @hidden */
 export interface ApplyCFArgs {

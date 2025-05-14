@@ -179,7 +179,7 @@ describe('MultiSelect', () => {
                 dataSource: datasource2,
                 showSelectAll: true, mode: 'CheckBox',
                 beforeSelectAll: function(e) { e.preventSelectEvent = true; },
-                fields: { value: 'text', text: 'text' }, allowFiltering: true,
+                fields: { value: 'text', text: 'text' }, allowFiltering: true, debounceDelay: 0,
                 selectAllText: 'Check & UnCheck All',
                 filtering: function (e) {
                     checker = true;
@@ -231,7 +231,7 @@ describe('MultiSelect', () => {
                 dataSource: datasource2,
                 showSelectAll: true, mode: 'CheckBox',
                 beforeSelectAll: function(e) { e.preventSelectEvent = true; },
-                fields: { value: 'text', text: 'text' }, allowFiltering: true,
+                fields: { value: 'text', text: 'text' }, allowFiltering: true, debounceDelay: 0,
                 selectAllText: 'Check & UnCheck All',
                 filtering: function (e) {
                     checker = true;
@@ -260,7 +260,7 @@ describe('MultiSelect', () => {
                 dataSource: datasource2,
                 showSelectAll: true, mode: 'CheckBox',
                 beforeSelectAll: function(e) { e.preventSelectEvent = true; },
-                fields: { value: 'text', text: 'text' }, allowFiltering: true,
+                fields: { value: 'text', text: 'text' }, allowFiltering: true, debounceDelay: 0,
                 selectAllText: 'Check & UnCheck All',
 
             });
@@ -501,7 +501,7 @@ describe('MultiSelect', () => {
                 dataSource: ['Java Script', 'AS.NET MVC', 'Java', 'C#'],
                 showSelectAll: true,
                 beforeSelectAll: function(e) { e.preventSelectEvent = true; },
-                allowFiltering: true,
+                allowFiltering: true, debounceDelay: 0,
                 mode: 'CheckBox'
             });
             dropDowns.appendTo(element);

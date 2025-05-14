@@ -1147,9 +1147,10 @@ export class BasicFormulas {
                 return this.parent.formulaErrorStrings[FormulasErrorsStrings.Requires3Args];
             }
         }
-        if (!skipTick && result.indexOf(this.parent.tic) > -1) {
+        const indexOfTic: number = result.indexOf(this.parent.tic);
+        if (!skipTick && indexOfTic > -1) {
             return result.split(this.parent.tic).join('');
-        } else if (skipTick && !isNumber(result) && result.indexOf(this.parent.tic) === -1 && result !== this.parent.trueValue &&
+        } else if (skipTick && !isNumber(result) && indexOfTic === -1 && result !== this.parent.trueValue &&
             result !== this.parent.falseValue && !this.parent.isCellReference(result)) {
             return '"' + result + '"';
         } else {

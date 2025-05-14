@@ -1,7 +1,7 @@
 import { detach, EventHandler, Browser, L10n, isNullOrUndefined, extend, isUndefined } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/index';
-import { SheetModel, getRangeIndexes, getCell, getSheet, CellModel, getSwapRange, inRange, Workbook, isReadOnly, getRow, isReadOnlyCells, setCell, ValidationModel, checkColumnValidation } from '../../workbook/index';
+import { SheetModel, getRangeIndexes, getCell, getSheet, CellModel, getSwapRange, inRange, Workbook, isReadOnly, getRow, isReadOnlyCells, setCell, ValidationModel, checkColumnValidation, getRowHeight, getColumnWidth } from '../../workbook/index';
 import { CellStyleModel, getRangeAddress, getSheetIndexFromId, getSheetName, NumberFormatArgs } from '../../workbook/index';
 import { RowModel, getFormattedCellObject, workbookFormulaOperation, checkIsFormula, Sheet, mergedRange } from '../../workbook/index';
 import { ExtendedSheet, Cell, setMerge, MergeArgs, getCellIndexes, ChartModel } from '../../workbook/index';
@@ -1075,6 +1075,7 @@ export class Clipboard {
         const range: number[] = getSwapRange(this.copiedInfo.range);
         const isRowSelected: boolean = range[1] === 0 && range[3] === sheet.colCount - 1;
         const isColSelected: boolean = range[0] === 0 && range[2] === sheet.rowCount - 1;
+        let rowHeight: number; let colWidth: number;
         let data: string = '<html><body><table class="e-spreadsheet" xmlns="http://www.w3.org/1999/xhtml" style="border-collapse:collapse;"';
         if (isRowSelected || isColSelected) {
             data += ` aria-rowcount="${sheet.usedRange.rowIndex}" aria-colcount="${sheet.usedRange.colIndex}"`;
@@ -1085,7 +1086,8 @@ export class Clipboard {
             if (!isCut && isFilterHidden(sheet, i)) {
                 continue;
             }
-            data += '<tr>';
+            rowHeight = getRowHeight(sheet, i);
+            data += `<tr style="height:${rowHeight}px;">`;
             for (let j: number = range[1]; j <= range[3]; j++) {
                 cell = getCell(i, j, sheet, false, true);
                 if (cell.colSpan < 0 || cell.rowSpan < 0) {
@@ -1098,6 +1100,8 @@ export class Clipboard {
                 if (cell.rowSpan) {
                     data += ' rowspan="' + cell.rowSpan + '"';
                 }
+                colWidth = getColumnWidth(sheet, j);
+                data += ` style="width:${colWidth}px;`;
                 if (cell.style) {
                     cellStyle = '';
                     if (!cell.style['whiteSpace' as string]) {
@@ -1105,6 +1109,12 @@ export class Clipboard {
                     }
                     if (!cell.style.verticalAlign) {
                         cellStyle += 'vertical-align:bottom;';
+                    }
+                    if (!cell.style.fontFamily) {
+                        cellStyle += 'font-family:Calibri;';
+                    }
+                    if (!cell.style.fontSize) {
+                        cellStyle += 'font-size:11pt;';
                     }
                     Object.keys(cell.style).forEach((style: string) => {
                         let cellStyleValue: string = cell.style[`${style}`];
@@ -1116,9 +1126,10 @@ export class Clipboard {
                             + regex[0].toLowerCase()) : style)) + ':' + ((style === 'backgroundColor' || style === 'color')
                             ? cell.style[`${style}`].slice(0, 7) : cellStyleValue) + ';';
                     });
-                    data += cellStyle.includes('"') ? ` style='${cellStyle}'` : ` style="${cellStyle}"`;
+                    data += cellStyle.includes('"') ? `'${cellStyle}'` : `${cellStyle}"`;
                 } else {
-                    data += ' style="white-space:' + (cell.wrap ? 'normal' : 'nowrap') + ';vertical-align:bottom;"';
+                    data += 'white-space:' + (cell.wrap ? 'normal' : 'nowrap') +
+                        ';vertical-align:bottom;font-family:Calibri;font-size:11pt;"';
                 }
                 if (!isNullOrUndefined(cell.value)) {
                     val = cell.value;

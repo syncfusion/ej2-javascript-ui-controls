@@ -120,7 +120,8 @@ xdescribe('AutoComplete', () => {
                 dataSource: dataSource,
                 query: new Query().from('Customers').select('ContactName').take(7),
                 fields: { text: 'ContactName' },
-                placeholder: 'Select a name'
+                placeholder: 'Select a name',
+                debounceDelay: 0,
             });
             autoObj.appendTo(autoEle);
         });
@@ -160,7 +161,8 @@ xdescribe('AutoComplete', () => {
             document.body.appendChild(autoEle);
             autoObj = new AutoComplete({
                 dataSource: countries,
-                fields: { value: 'Name' }
+                fields: { value: 'Name' },
+                debounceDelay: 0
             });
             autoObj.appendTo(autoEle);
         });
@@ -218,6 +220,7 @@ xdescribe('AutoComplete', () => {
                 filterType: 'StartsWith',
                 allowCustom: false,
                 value: 'VINET',
+                debounceDelay: 0,
             });
             atcObj.appendTo(element);
             expect(atcObj.value === 'VINET').toBe(true);
@@ -253,7 +256,8 @@ xdescribe('AutoComplete', () => {
             atcObj = new AutoComplete({
                 dataSource: data,
                 ignoreAccent: true,
-                allowCustom: false
+                allowCustom: false,
+                debounceDelay: 0
             });
             atcObj.appendTo(element);
         });
@@ -307,7 +311,8 @@ xdescribe('AutoComplete', () => {
                 atcObj = new AutoComplete({
                     dataSource: data,
                     ignoreAccent: false,
-                    allowCustom: false
+                    allowCustom: false,
+                    debounceDelay: 0
                 });
                 atcObj.appendTo(element);
             });
@@ -362,7 +367,8 @@ xdescribe('AutoComplete', () => {
                     dataSource: data,
                     ignoreAccent: true,
                     ignoreCase: false,
-                    allowCustom: false
+                    allowCustom: false,
+                    debounceDelay: 0
                 });
                 atcObj.appendTo(element);
             });
@@ -417,7 +423,8 @@ xdescribe('AutoComplete', () => {
                     dataSource: data,
                     ignoreAccent: true,
                     ignoreCase: false,
-                    allowCustom: false
+                    allowCustom: false,
+                    debounceDelay: 0
                 });
                 atcObj.appendTo(element);
             });
@@ -482,6 +489,7 @@ xdescribe('AutoComplete', () => {
                     '<div class="ename"> ${text} </div><div class="temp"> ${country} </div></div>',
                 placeholder: 'Select an employee',
                 highlight: true,
+                debounceDelay: 0,
                 open: function (e: any) {
                     let item: HTMLElement[] = atcObj.popupObj.element.querySelectorAll('li');
                     expect(item.length === 1).toBe(true);
@@ -659,6 +667,7 @@ xdescribe('AutoComplete', () => {
             autoObj = new AutoComplete({
                 fields: { value: 'CustomerID' },
                 placeholder: 'Select a name',
+                debounceDelay: 0,
                 actionComplete: () => {
                     count++;
                 }
@@ -720,7 +729,8 @@ xdescribe('AutoComplete', () => {
         xit('check the autocomplete vzalue without space added in the select element', (done) => {
             autocompleteObj = new AutoComplete({
                 dataSource: countries,
-                fields: { value: 'Name' }
+                fields: { value: 'Name' },
+                debounceDelay: 0
             });
             autocompleteObj.appendTo(autocompleteEle);
             autocompleteObj.showPopup();
@@ -771,6 +781,7 @@ xdescribe('AutoComplete', () => {
                 dataSource: countries,
                 fields: { value: 'Name' },
                 autofill : true,
+                debounceDelay: 0,
                 select: (args) => {
                     autocompleteObj.inputElement.value = '';
                     expect(autocompleteObj.inputElement.value === '').toBe(true);
@@ -831,7 +842,8 @@ xdescribe('AutoComplete', () => {
             autocompleteObj = new AutoComplete({
                 dataSource: countries,
                 fields: { value: 'Name' },
-                autofill : true,
+                autofill: true,
+                debounceDelay: 0
             });
             autocompleteObj.appendTo(autocompleteEle);
             e.key = 'ArrowDown';
@@ -930,6 +942,7 @@ xdescribe('AutoComplete', () => {
             atcObj = new AutoComplete({
                 dataSource: socialMedia,
                 fields: { value: 'country', iconCss: 'class' },
+                debounceDelay: 0,
                 highlight: true
             });
             atcObj.appendTo(element);
@@ -946,7 +959,8 @@ xdescribe('AutoComplete', () => {
             atcObj1 = new AutoComplete({
                 dataSource: socialMedia,
                 fields: { value: 'country', iconCss: 'class' },
-                highlight: true
+                highlight: true,
+                debounceDelay: 0
             });
             atcObj1.appendTo(element);
             atcObj1.filterType = 'EndsWith';
@@ -962,7 +976,8 @@ xdescribe('AutoComplete', () => {
             atcObj2 = new AutoComplete({
                 dataSource: socialMedia,
                 fields: { value: 'country', iconCss: 'class' },
-                highlight: true
+                highlight: true,
+                debounceDelay: 0
             });
             atcObj2.appendTo(element);
             atcObj2.filterType = 'Contains';

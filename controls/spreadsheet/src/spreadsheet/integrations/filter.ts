@@ -460,7 +460,7 @@ export class Filter {
         range[1] = range[3] = cell[1];
         const field: string = getColumnHeaderText(cell[1] + 1);
         const selectedCell: CellModel = getCell(cell[0], cell[1], sheet);
-        const cellVal: string | number | Date = getValueFromFormat(this.parent, selectedCell, cell[0], cell[1]);
+        const cellVal: string | number | Date = getValueFromFormat(this.parent, selectedCell, cell[0], cell[1], sheetIdx);
         const predicates: ExtendedPredicateModel[] = [{ field: field, operator: 'equal', type: this.getColumnType(sheet, cell[1], cell).type,
             matchCase: false, value: cellVal }];
         let prevPredicates: PredicateModel[] = [].slice.call(this.filterCollection.get(sheetIdx));
@@ -1117,32 +1117,50 @@ export class Filter {
                         if (isNumber(val)) {
                             val = parseFloat(val.toString());
                         } else if (typeof val === 'string') {
-                            const localeObj: LocaleNumericSettings = <LocaleNumericSettings>getNumericObject(this.parent.locale);
-                            const intl: Internationalization = new Internationalization(this.parent.locale);
-                            let numArgs: { isNumber?: boolean, value?: string } = {};
-                            if (val.includes(localeObj.percentSign)) {
-                                const valArr: string[] = val.trim().split('%');
-                                if (valArr[0] !== '' && !valArr[1]) {
-                                    numArgs = checkIsNumberAndGetNumber(
-                                        { value: valArr[0] }, this.parent.locale, localeObj.group, localeObj.decimal);
+                            const isInvalidMixedFraction: Function = (value: string): boolean => {
+                                if (!value.includes('/')) {
+                                    return true;
                                 }
-                            }
-                            if (numArgs.isNumber) {
-                                val = Number(numArgs.value) / 100;
-                            } else {
-                                const parsedNumVal: number = intl.parseNumber(val.trim(), { format: 'n' });
-                                if (isNumber(parsedNumVal)) {
-                                    if (/^(\(\d+\)|\d+)$/.test(val.trim())) {
-                                        val = -parsedNumVal;
-                                    } else {
-                                        val = parsedNumVal;
+                                const parts: string[] = value.trim().split(' ');
+                                if (parts.length !== 2 || !isNumber(parts[0])) {
+                                    return true;
+                                }
+                                const fractionParts: string[] = parts[1].split('/');
+                                if (fractionParts.length === 2 && isNumber(fractionParts[0]) &&
+                                    isNumber(fractionParts[1]) && parseFloat(fractionParts[1]) !== 0) {
+                                    val = parseFloat(parts[0]) + (parseFloat(fractionParts[0]) / parseFloat(fractionParts[1]));
+                                    return false;
+                                }
+                                return true;
+                            };
+                            if (isInvalidMixedFraction(val)) {
+                                const localeObj: LocaleNumericSettings = <LocaleNumericSettings>getNumericObject(this.parent.locale);
+                                const intl: Internationalization = new Internationalization(this.parent.locale);
+                                let numArgs: { isNumber?: boolean, value?: string } = {};
+                                if (val.includes(localeObj.percentSign)) {
+                                    const valArr: string[] = val.trim().split('%');
+                                    if (valArr[0] !== '' && !valArr[1]) {
+                                        numArgs = checkIsNumberAndGetNumber(
+                                            { value: valArr[0] }, this.parent.locale, localeObj.group, localeObj.decimal);
                                     }
+                                }
+                                if (numArgs.isNumber) {
+                                    val = Number(numArgs.value) / 100;
                                 } else {
-                                    const checkVal: string = val.trim();
-                                    const dateEventArgs: DateFormatCheckArgs = { value: checkVal, cell: { value: checkVal } };
-                                    this.parent.notify(checkDateFormat, dateEventArgs);
-                                    if (dateEventArgs.isTime || dateEventArgs.isDate) {
-                                        val = parseFloat(dateEventArgs.updatedVal);
+                                    const parsedNumVal: number = intl.parseNumber(val.trim(), { format: 'n' });
+                                    if (isNumber(parsedNumVal)) {
+                                        if (/^(\(\d+\)|\d+)$/.test(val.trim())) {
+                                            val = -parsedNumVal;
+                                        } else {
+                                            val = parsedNumVal;
+                                        }
+                                    } else {
+                                        const checkVal: string = val.trim();
+                                        const dateEventArgs: DateFormatCheckArgs = { value: checkVal, cell: { value: checkVal } };
+                                        this.parent.notify(checkDateFormat, dateEventArgs);
+                                        if (dateEventArgs.isTime || dateEventArgs.isDate) {
+                                            val = parseFloat(dateEventArgs.updatedVal);
+                                        }
                                     }
                                 }
                             }
@@ -2463,7 +2481,7 @@ export class Filter {
                 cell = getCell(rowIdx, colIdx, sheet, false, true);
                 if (cell && cell.value) {
                     row = {};
-                    row[field as string] = <Date>getValueFromFormat(this.parent, cell, rowIdx, colIdx);
+                    row[field as string] = <Date>getValueFromFormat(this.parent, cell, rowIdx, colIdx, sheetIdx);
                     rows.push(row);
                 }
             }

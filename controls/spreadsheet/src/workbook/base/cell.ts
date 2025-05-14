@@ -1,6 +1,6 @@
 import { extend, Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';
 import { SheetModel } from './index';
-import { CellStyleModel, HyperlinkModel, CellStyle, wrapEvent, ValidationModel, Chart, ChartModel } from '../common/index';
+import { CellStyleModel, HyperlinkModel, CellStyle, wrapEvent, ValidationModel, Chart, ChartModel, ExtendedWorkbook } from '../common/index';
 import { ImageModel, Image, updateCell } from '../common/index';
 import { getRow } from './index';
 import { RowModel } from './row-model';
@@ -259,21 +259,23 @@ export function skipDefaultValue(style: CellStyleModel, defaultKey?: boolean): C
  * @param {boolean} isPublic - Specifies if the wrap operation is invoked from a public method.
  * @returns {void} - Specifies the wrap.
  */
-export function wrap(address: string, wrap: boolean = true, context?: Workbook, preventEvt?: boolean, isPublic?: boolean): void {
-    const addressInfo: { sheetIndex: number, indices: number[] } = context.getAddressInfo(address);
-    const rng: number[] = addressInfo.indices;
-    const sheet: SheetModel = getSheet(context, addressInfo.sheetIndex);
-    const uiRefresh: boolean = addressInfo.sheetIndex === context.activeSheetIndex;
-    let cancel: boolean = !preventEvt;
-    for (let i: number = rng[0]; i <= rng[2]; i++) {
-        for (let j: number = rng[1]; j <= rng[3]; j++) {
-            cancel = updateCell(context, sheet, { cell: { wrap: wrap }, rowIdx: i, colIdx: j, preventEvt: preventEvt });
-            if (!cancel && uiRefresh) {
-                context.notify(wrapEvent, { range: [i, j, i , j], wrap: wrap, sheet: sheet, initial: true, isPublic: isPublic });
+export function wrap(address: string, wrap: boolean = true, context?: ExtendedWorkbook, preventEvt?: boolean, isPublic?: boolean): void {
+    if (context.allowWrap) {
+        const addressInfo: { sheetIndex: number, indices: number[] } = context.getAddressInfo(address);
+        const rng: number[] = addressInfo.indices;
+        const sheet: SheetModel = getSheet(context, addressInfo.sheetIndex);
+        const uiRefresh: boolean = addressInfo.sheetIndex === context.activeSheetIndex;
+        let cancel: boolean = !preventEvt;
+        for (let i: number = rng[0]; i <= rng[2]; i++) {
+            for (let j: number = rng[1]; j <= rng[3]; j++) {
+                cancel = updateCell(context, sheet, { cell: { wrap: wrap }, rowIdx: i, colIdx: j, preventEvt: preventEvt });
+                if (!cancel && uiRefresh) {
+                    context.notify(wrapEvent, { range: [i, j, i, j], wrap: wrap, sheet: sheet, initial: true, isPublic: isPublic });
+                }
             }
         }
+        context.setProperties({ sheets: context.sheets }, true);
     }
-    context.setProperties({ sheets: context.sheets }, true);
 }
 
 /**

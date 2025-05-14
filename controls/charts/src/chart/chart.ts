@@ -4801,9 +4801,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                             }
                         }
                     }
-                    if (this.scrollElement && this.zoomSettings.enableScrollbar) {
-                        this.scrollElement = null;
-                    }
+
                     break;
                 case 'height':
                 case 'width':

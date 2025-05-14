@@ -303,7 +303,8 @@ export class TaskbarEdit extends DateProcessor {
             if (!isNullOrUndefined(element) && !target.classList.contains('e-connectorpoint-left') &&
                 !target.classList.contains('e-connectorpoint-right')) {
                 const currentRecord: IGanttData = this.parent.ganttChartModule.getRecordByTaskBar(element);
-                if (!isNullOrUndefined(currentRecord.ganttProperties.segments) && currentRecord.ganttProperties.segments.length > 0) {
+                if (currentRecord && currentRecord.ganttProperties && !isNullOrUndefined(currentRecord.ganttProperties.segments) &&
+                currentRecord.ganttProperties.segments.length > 0) {
                     if (target.classList.contains('e-progressbar-handler-after')) {
                         for (let i: number = 0; i < currentRecord.ganttProperties.segments.length; i++) {
                             if (currentRecord.ganttProperties.segments[i as number].showProgress) {
@@ -1791,6 +1792,72 @@ export class TaskbarEdit extends DateProcessor {
             this.parent.chartRowsModule.updateSegment(this.taskBarEditRecord.ganttProperties.segments,
                                                       this.taskBarEditRecord.ganttProperties.taskId);
         }
+    }
+    /**
+     * Extracts the maximum end date from a list of predecessor relationships.
+     * The end date is selected based on the type of dependency:
+     * - FS (Finish to Start) and FF (Finish to Finish): uses the end date.
+     * - SS (Start to Start) and SF (Start to Finish): uses the start date.
+     *
+     * @param {IPredecessor[]} predecessorList - An array of predecessor links to analyze.
+     * @returns {{ maxEndDate: Date }} - The latest relevant date among all predecessors.
+     */
+    private extractEndDates(
+        predecessorList: IPredecessor[]
+    ): {
+            maxEndDate: Date;
+        } {
+        let maxEndDate: Date = new Date(0);
+        predecessorList.forEach((item: IPredecessor) => {
+            const predecessorRecord: IGanttData = this.parent.getRecordByID(item.from);
+            if (!predecessorRecord || !predecessorRecord.ganttProperties) {
+                return;
+            }
+            let compareDate: Date = null;
+            switch (item.type) {
+            case 'FS':
+            case 'FF':
+                compareDate = predecessorRecord.ganttProperties.endDate || predecessorRecord.ganttProperties.startDate;
+                break;
+            case 'SS':
+            case 'SF':
+                compareDate = predecessorRecord.ganttProperties.startDate || predecessorRecord.ganttProperties.endDate;
+                break;
+            }
+            if (compareDate && compareDate.getTime() > maxEndDate.getTime()) {
+                maxEndDate = compareDate;
+            }
+        });
+        return {
+            maxEndDate
+        };
+    }
+    /**
+     * Validates whether the given task has a valid dependency configuration.
+     * It compares the task's start or end date against the latest required predecessor date
+     * and ensures the task starts after all its dependencies are satisfied.
+     *
+     * @param {IGanttData} record - The Gantt task to validate.
+     * @returns {{ isValid: boolean }} - An object indicating if the task's dependencies are valid.
+     */
+    private isValidDependency(record: IGanttData): { isValid: boolean } {
+        if (isNullOrUndefined(record.ganttProperties) || isNullOrUndefined(record.ganttProperties.predecessor)) {
+            return { isValid: true };
+        }
+        const predecessorArray: IPredecessor[] = record.ganttProperties.predecessor;
+        const maxEndDateandType: {
+            maxEndDate: Date;
+        } = this.extractEndDates(predecessorArray);
+        let maxDate: Date = maxEndDateandType.maxEndDate;
+        maxDate = this.parent.predecessorModule.getPredecessorDate(record, predecessorArray, null);
+        if (!maxDate) {
+            return { isValid: true };
+        }
+        const recordDate: Date = isNullOrUndefined(record.ganttProperties.startDate)
+            ? record.ganttProperties.endDate
+            : record.ganttProperties.startDate;
+        const isValid: boolean = recordDate.getTime() >= maxDate.getTime();
+        return { isValid};
     }
     private updateChildDrag(item: ITaskData): void {
         const left: number = this.getRoundOffStartLeft(item, this.roundOffDuration);

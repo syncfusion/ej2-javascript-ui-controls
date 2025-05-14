@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.2.4 (2025-05-14)
+
+### Common
+
+#### Bug Fixes
+
+- `#I718268` - Resolved Persistence not properly working when using `SetCulture` in Grid.
+
 ## 29.1.35 (2025-04-01)
 
 ### Common

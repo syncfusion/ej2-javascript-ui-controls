@@ -1664,6 +1664,47 @@ export class ToolbarModule {
             ]
         });
         dialog.appendTo('#' + id + '_saveDialog');
+        this.updateSavePreviewImage();
+    }
+
+    private updateSavePreviewImage(): void {
+        const parent: ImageEditor = this.parent;
+        const id: string = parent.element.id;
+        const elem: HTMLElement = parent.element.querySelector('#' + id + '_saveDialog');
+        if (Browser.isDevice || !elem) {
+            return;
+        }
+        const dialogWidth: number = elem.offsetWidth;
+        const dialogMaxHeight: number = parseInt(elem.style.maxHeight, 10);
+        const headerHeight: number = (elem.querySelector('.e-dlg-header-content') as HTMLElement).offsetHeight;
+        const footerHeight: number = (elem.querySelector('.e-footer-content') as HTMLElement).offsetHeight;
+        const padding: number = parseInt(window.getComputedStyle(elem.querySelector('#' + id + '_saveDialog_dialog-content')).padding, 10);
+        const imageSizeContent: number = 20; // Image size text container div height
+        const canvasMaxWidth: number = dialogWidth * (35 / 100); // 35% of dialog's width
+        const canvasMaxHeight: number = dialogMaxHeight - headerHeight - footerHeight - imageSizeContent - (padding * 2);
+        const canvas: HTMLCanvasElement = parent.element.querySelector('#' + id + '_imgPic');
+        const width: number = canvas.width;
+        const height: number = canvas.height;
+        const widthScale: number = canvasMaxWidth / width;
+        const heightScale: number = canvasMaxHeight / height;
+        let cssMaxWidth: number = Math.min(width, canvasMaxWidth);
+        let cssMaxHeight: number = Math.min(height, canvasMaxHeight);
+        if (widthScale < 1 && widthScale < heightScale) {
+            cssMaxWidth = width * widthScale;
+            cssMaxHeight = height * widthScale;
+        }
+        else if (heightScale < 1 && heightScale < widthScale) {
+            cssMaxWidth = width * heightScale;
+            cssMaxHeight = height * heightScale;
+        }
+        const imageObj: Object = { canvas: null };
+        parent.notify('export', { prop: 'exportToCanvas', value: { object: imageObj } });
+        const ctx: CanvasRenderingContext2D = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.width = cssMaxWidth; canvas.height = cssMaxHeight;
+        const tempCanvas: HTMLCanvasElement = imageObj['canvas'];
+        ctx.imageSmoothingQuality = 'medium';
+        ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height, 0, 0, cssMaxWidth, cssMaxHeight);
     }
 
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -1760,6 +1801,7 @@ export class ToolbarModule {
                         this.updateImageSize(isNullOrUndefined(this.currentQuality) ? 1 : this.currentQuality, obj['canvas'], this.fileType);
                         (document.getElementById(id + '_' + this.imageQuality) as HTMLInputElement).checked = true;
                     }
+                    this.updateSavePreviewImage();
                 }
             });
             drpDownBtn.appendTo('#' + id + '_saveDropdownbtn');
@@ -1813,12 +1855,14 @@ export class ToolbarModule {
                 created: () => {
                     this.updateImageSize(this.currentQuality, obj['canvas'], 'jpeg');
                     qualitySliderValueSpan.innerHTML = (Math.round(this.currentQuality * 100)).toString();
+                    this.updateSavePreviewImage();
                 },
                 changed: (args: SliderChangeEventArgs) => {
                     this.currentQuality = args.value as number;
                     qualitySliderValueSpan.innerHTML = (Math.round(this.currentQuality * 100)).toString();
                     parent.notify('export', { prop: 'setImageQuality', value: {value: args.value }});
                     this.updateImageSize(args.value, obj['canvas'], 'jpeg');
+                    this.updateSavePreviewImage();
                 }
             });
             sliderObj.appendTo('#' + id + '_qualitySlider');
@@ -1837,6 +1881,7 @@ export class ToolbarModule {
             this.currentQuality = compressionValues[target.textContent];
             this.imageQuality = target.textContent.toLowerCase();
             this.updateImageSize(compressionValues[target.textContent], obj['canvas'], 'jpeg');
+            this.updateSavePreviewImage();
         }
 
     }
@@ -1853,7 +1898,11 @@ export class ToolbarModule {
         } else {
             imageNameLabel = document.getElementById(id + '_imageNameLabel');
         }
+        const imageSmoothingEnabled: boolean = parent.imageSmoothingEnabled;
+        ctx.canvas.getContext('2d').imageSmoothingQuality = imageSmoothingEnabled ? 'high' : 'low';
         if (fileType.toLowerCase() === 'jpeg') {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(tempCanvas, 0, 0);
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
             tempCanvas.toBlob((function (blob: any): void {
                 fileSize = Math.floor(blob.size / 1024);
@@ -1867,19 +1916,12 @@ export class ToolbarModule {
                 }
                 if (Browser.isDevice) {
                     canvas.style.display = 'none';
-                } else {
-                    const compressedImage: HTMLImageElement = new Image();
-                    compressedImage.src = URL.createObjectURL(blob);
-                    // eslint-disable-next-line @typescript-eslint/tslint/config
-                    compressedImage.onload = function () {
-                        ctx.drawImage(compressedImage, 0, 0);
-                        URL.revokeObjectURL(compressedImage.src);
-                    };
                 }
                 this.fileSize = fileSize;
             }).bind(this), 'image/jpeg', quality);
         } else if (!isNullOrUndefined(fileType) && (fileType.toLowerCase() === 'png' || fileType.toLowerCase() === 'webp')) {
             const type: string = 'image/' + fileType.toLowerCase();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(tempCanvas, 0, 0);
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
             tempCanvas.toBlob((function (blob: any): void {
@@ -1898,6 +1940,7 @@ export class ToolbarModule {
                 this.fileSize = fileSize;
             }).bind(this), type, 1);
         } else if (!isNullOrUndefined(fileType) && fileType.toLowerCase() === 'svg') {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(tempCanvas, 0, 0);
             const svgDataUrl: string = tempCanvas.toDataURL('image/svg+xml');
             const base64Data: string = svgDataUrl.split(',')[1];
@@ -1920,6 +1963,7 @@ export class ToolbarModule {
             if (Browser.isDevice) {
                 canvas.style.display = 'none';
             } else {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(tempCanvas, 0, 0);
                 if (this.initialSize > 1000) {
                     const megabytes: number = this.initialSize / 1048576;
@@ -4438,6 +4482,7 @@ export class ToolbarModule {
         if (filter) {
             let ctx: CanvasRenderingContext2D = filter.getContext('2d');
             ctx = filter.getContext('2d');
+            ctx.imageSmoothingQuality = parent.imageSmoothingEnabled ? 'high' : 'low';
             filter.style.width = '100px'; filter.style.height = '100px';
             parent.notify('filter', {prop: 'updateAdj', value: { type: type, value: null, isPreview: true, ctx: ctx }});
             ctx.drawImage(this.inMemoryCanvas, 0, 0, 300, 150);

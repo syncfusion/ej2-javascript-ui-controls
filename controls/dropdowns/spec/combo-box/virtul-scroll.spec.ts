@@ -210,7 +210,7 @@ describe('Combobox_virtualization', () => {
                 ele = createElement('input', { id: 'Combobox' });
                 document.body.appendChild(ele);
                 dropObj = new ComboBox({
-                    dataSource: datasource, popupHeight:'200px', enableVirtualization: true,allowFiltering:true, fields: { text: 'text', value: 'id' }
+                    dataSource: datasource, popupHeight: '200px', enableVirtualization: true, allowFiltering: true, debounceDelay: 0, fields: { text: 'text', value: 'id' }
                 });
                 dropObj.appendTo(ele);
             });
@@ -301,7 +301,7 @@ describe('Combobox_virtualization', () => {
                 ele = createElement('input', { id: 'DropDownList' });
                 document.body.appendChild(ele);
                 dropObj = new ComboBox({
-                    dataSource: datasource, popupHeight:'200px', enableVirtualization: true,allowFiltering:true, fields: { text: 'text', value: 'id' }, itemTemplate: '<div class="ename"> ${text} </div></div>', valueTemplate: '<div class="tempName"> ${text} </div>',
+                    dataSource: datasource, popupHeight: '200px', enableVirtualization: true, allowFiltering: true, debounceDelay: 0, fields: { text: 'text', value: 'id' }, itemTemplate: '<div class="ename"> ${text} </div></div>', valueTemplate: '<div class="tempName"> ${text} </div>',
                 });
                 dropObj.appendTo(ele);
             });
@@ -333,7 +333,7 @@ describe('Combobox_virtualization', () => {
                 ele = createElement('input', { id: 'DropDownList' });
                 document.body.appendChild(ele);
                 dropObj = new ComboBox({
-                    dataSource: datasource, popupHeight:'200px', enableVirtualization: true,allowFiltering:true, fields: { text: 'text', value: 'id' }, value: 'id10'
+                    dataSource: datasource, popupHeight: '200px', enableVirtualization: true, allowFiltering: true, debounceDelay: 0, fields: { text: 'text', value: 'id' }, value: 'id10'
                 });
                 dropObj.appendTo(ele);
             });
@@ -361,7 +361,7 @@ describe('Combobox_virtualization', () => {
                         url: 'https://ej2services.syncfusion.com/js/development/api/orders',
                         adaptor: new WebApiAdaptor ,
                         crossDomain: true
-                    }), popupHeight:'200px', enableVirtualization: true, allowFiltering: true, value: 10004, fields: { text: 'OrderID', value: 'OrderID' },
+                    }), popupHeight: '200px', enableVirtualization: true, allowFiltering: true, debounceDelay: 0, value: 10004, fields: { text: 'OrderID', value: 'OrderID' },
                 });
                 dropObj.appendTo(ele);
             });
@@ -386,7 +386,7 @@ describe('Combobox_virtualization', () => {
                 ele = createElement('input', { id: 'DropDownList' });
                 document.body.appendChild(ele);
                 dropObj = new ComboBox({
-                    dataSource: datasource, popupHeight:'200px', enableVirtualization: true,allowFiltering:true, showClearButton:true, fields: { text: 'text', value: 'id' }
+                    dataSource: datasource, popupHeight: '200px', enableVirtualization: true, allowFiltering: true, debounceDelay: 0, showClearButton: true, fields: { text: 'text', value: 'id' }
                 });
                 dropObj.appendTo(ele);
             });
@@ -424,7 +424,7 @@ describe('Combobox_virtualization', () => {
             ele = createElement('input', { id: 'DropDownList' });
             document.body.appendChild(ele);
             dropObj = new ComboBox({
-                dataSource: datasource, popupHeight:'200px', enableVirtualization: true,allowFiltering:true, fields: { text: 'text', value: 'id' }, value: 'id160', allowCustom:true
+                dataSource: datasource, popupHeight: '200px', enableVirtualization: true, allowFiltering: true, debounceDelay: 0, fields: { text: 'text', value: 'id' }, value: 'id160', allowCustom: true
             });
             dropObj.appendTo(ele);
         });

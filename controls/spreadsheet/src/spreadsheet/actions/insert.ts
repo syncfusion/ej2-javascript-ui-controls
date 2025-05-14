@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
 import { completeAction, focus, insertSheetTab, refreshImagePosition, updateScrollValue } from '../common/index';
-import { beforeInsert, insert, InsertDeleteEventArgs, triggerDataChange, getRowsHeight, ActionEventArgs } from '../../workbook/index';
+import { beforeInsert, insert, InsertDeleteEventArgs, triggerDataChange, getRowsHeight, ActionEventArgs, RowModel, ChartModel, getChartRowIdxFromClientY, getChartColIdxFromClientX, refreshChartCellOnInit, addDPRValue } from '../../workbook/index';
 import { SheetModel, CellModel, getCell, getSheet, getCellIndexes, getCellAddress, getColumnsWidth } from '../../workbook/index';
 import { skipHiddenIdx } from '../../workbook/index';
 
@@ -115,7 +115,7 @@ export class Insert {
             }
             break;
         }
-        this.refreshImgElement(args.model.length, this.parent.activeSheetIndex, args.modelType, args.index);
+        this.refreshImgChartElement(args.model.length, this.parent.activeSheetIndex, args.modelType, args.index);
         if (args.isAction) {
             delete args.isAction;
             this.parent.notify(completeAction, actionArgs);
@@ -125,23 +125,50 @@ export class Insert {
             this.parent.notify(triggerDataChange, actionArgs);
         }
     }
-    private refreshImgElement(count: number, sheetIdx: number, modelType: string, index: number): void {
+    private refreshImgChartElement(count: number, sheetIdx: number, modelType: string, index: number): void {
+        if (modelType === 'Sheet') { return; }
         const sheet: SheetModel = this.parent.sheets[sheetIdx as number];
-        let cellObj: CellModel;
-        const indexes: number[] = [0, 0, sheet.usedRange.rowIndex, sheet.usedRange.colIndex];
-        for (let i: number = 0; i <= indexes[2]; i++) {
-            for (let j: number = indexes[1]; j <= indexes[3]; j++) {
-                cellObj = getCell(i, j, sheet);
-                if (cellObj && cellObj.image && cellObj.image.length > 0) {
+        const rows: RowModel[] = sheet.rows;
+        for (let i: number = 0, rowLen: number = rows.length; i < rowLen; i++) {
+            const cells: CellModel[] = rows[i as number] && rows[i as number].cells;
+            if (cells && cells.length) {
+                for (let j: number = 0; j < cells.length; j++) {
+                    const cellObj: CellModel = getCell(i, j, sheet);
                     if ((modelType === 'Row' && i >= index) || (modelType === 'Column' && j >= index)) {
-                        this.parent.notify(refreshImagePosition, {
-                            rowIdx: i, colIdx: j, sheetIdx: sheetIdx, type: modelType, count: count, status: 'insert'
-                        });
+                        if (cellObj && cellObj.image && cellObj.image.length > 0) {
+                            this.parent.notify(refreshImagePosition, {
+                                rowIdx: i, colIdx: j, sheetIdx: sheetIdx, type: modelType, count: count, status: 'insert'
+                            });
+                        }
+                        if (cellObj && cellObj.chart && cellObj.chart.length > 0) {
+                            for (let k: number = 0; k < cellObj.chart.length; k++) {
+                                const chartModel: ChartModel = cellObj.chart[k as number];
+                                const chartRowIdx: { clientY: number, isImage?: boolean } = {
+                                    clientY: Number(addDPRValue(chartModel.top).toFixed(2)), isImage: true
+                                };
+                                const chartColIdx: { clientX: number, isImage?: boolean } = {
+                                    clientX: Number(addDPRValue(chartModel.left).toFixed(2)), isImage: true
+                                };
+                                this.parent.notify(getChartRowIdxFromClientY, chartRowIdx);
+                                this.parent.notify(getChartColIdxFromClientX, chartColIdx);
+                                if (i !== chartRowIdx.clientY || j !== chartColIdx.clientX) {
+                                    const eventArgs: Object = {
+                                        prevTop: chartModel.top, prevLeft: chartModel.left, prevRowIdx: i, prevColIdx: j,
+                                        prevHeight: chartModel.height, prevWidth: chartModel.width, currentTop: chartModel.top,
+                                        currentLeft: chartModel.left, currentRowIdx: chartRowIdx.clientY,
+                                        currentColIdx: chartColIdx.clientX, currentHeight: chartModel.height,
+                                        currentWidth: chartModel.width, id: chartModel.id, requestType: 'chartRefreshOnInit'
+                                    };
+                                    this.parent.notify(refreshChartCellOnInit, eventArgs);
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
     }
+
     private addEventListener(): void {
         this.parent.on(insert, this.insert, this);
     }

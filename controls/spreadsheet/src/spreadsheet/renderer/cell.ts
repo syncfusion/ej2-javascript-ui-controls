@@ -704,10 +704,13 @@ export class CellRenderer implements ICellRenderer {
                     if (isHiddenCol(sheet, j)) { continue; }
                     cell = this.parent.getCell(i, j) as HTMLTableCellElement;
                     if (cell) {
-                        args = { rowIdx: i, colIdx: j, td: cell, cell: getCell(i, j, sheet), isRefreshing: refreshing, lastCell: j ===
-                            cRange[3], isRefresh: true, isHeightCheckNeeded: isHeightCheckNeeded, manualUpdate: true, first: '', onActionUpdate:
-                            checkHeight, skipFormatCheck: skipFormatCheck, isFromAutoFillOption: isFromAutoFillOption,
-                        isSelectAll: isSelectAll, rowHeight: cells && cells[cellIdx as number] && cells[cellIdx as number].rowHeight };
+                        args = {
+                            rowIdx: i, colIdx: j, td: cell, cell: getCell(i, j, sheet), isRefreshing: refreshing,
+                            lastCell: j === cRange[3], isRefresh: true, isHeightCheckNeeded: isHeightCheckNeeded,
+                            manualUpdate: true, first: '', onActionUpdate: checkHeight, skipFormatCheck: skipFormatCheck,
+                            isFromAutoFillOption: isFromAutoFillOption, isSelectAll: isSelectAll,
+                            rowHeight: cells && cells[cellIdx as number] && cells[cellIdx as number].rowHeight
+                        };
                         cellIdx++;
                         if (checkFormulaAdded) {
                             args.address = getCellAddress(i, j);

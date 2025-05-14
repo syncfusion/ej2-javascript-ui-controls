@@ -3948,7 +3948,7 @@ export class Annotation {
         }
         if (this.freeTextAnnotationModule && freeTextAnnotation) {
             if (isImportAnnotations) {
-                this.freeTextAnnotationModule.renderFreeTextAnnotations(freeTextAnnotation, pageNumber, true);
+                this.freeTextAnnotationModule.renderFreeTextAnnotations(freeTextAnnotation, pageNumber, true, null, true);
             }
             else {
                 this.freeTextAnnotationModule.renderFreeTextAnnotations(freeTextAnnotation, pageNumber, null, isAnnotOrderAction);
@@ -3956,7 +3956,7 @@ export class Annotation {
         }
         if (this.inkAnnotationModule && inkAnnotation) {
             if (isImportAnnotations) {
-                this.inkAnnotationModule.renderExistingInkSignature(inkAnnotation, pageNumber, true);
+                this.inkAnnotationModule.renderExistingInkSignature(inkAnnotation, pageNumber, true, null, true);
             }
             else {
                 this.inkAnnotationModule.renderExistingInkSignature(inkAnnotation, pageNumber, null, isAnnotOrderAction);
@@ -3966,7 +3966,7 @@ export class Annotation {
             this.pdfViewer.drawing.refreshCanvasDiagramLayer(canvas as HTMLCanvasElement, pageNumber);
         }
         const highlighCanvas: HTMLElement = this.pdfViewerBase.getElement('_blendAnnotationsIntoCanvas_' + pageNumber);
-        if (highlighCanvas) {
+        if (highlighCanvas && (isNullOrUndefined(isLastAnnot) || isLastAnnot)) {
             this.pdfViewer.drawing.refreshCanvasDiagramLayer(canvas as HTMLCanvasElement, pageNumber);
         }
         if (!this.pdfViewerBase.isInkAdded && this.pdfViewer.tool === 'Ink' && this.pdfViewer.currentPageNumber - 1 === pageNumber) {
@@ -4008,7 +4008,8 @@ export class Annotation {
                 this.pdfViewer.toolbar.annotationToolbarModule.inkAnnotationSelected = true;
             }
         }
-        if (this.textMarkupAnnotationModule && (isNullOrUndefined(isLastAnnot) || isLastAnnot)) {
+        if (this.textMarkupAnnotationModule && (isNullOrUndefined(isLastAnnot) || isLastAnnot ||
+        (isImportAnnotations && textMarkupAnnotation))) {
             if (isImportAnnotations) {
                 this.textMarkupAnnotationModule.renderTextMarkupAnnotationsInPage(textMarkupAnnotation, pageNumber, true);
             } else {

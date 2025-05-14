@@ -134,10 +134,13 @@ export class StickyNotesAnnotation {
      * @param {any} stickyAnnotations - It describes about the sticky annotations
      * @param {number} pageNumber - It describes about the page number
      * @param {any} canvas - It describes about the canvas
+     * @param {boolean} isImport - It describes about the isImport
+     * @param {boolean} isLastAnnot - It describes about the isLastAnnot
      * @private
      * @returns {void}
      */
-    public renderStickyNotesAnnotations(stickyAnnotations: any, pageNumber: number, canvas?: any): void {
+    public renderStickyNotesAnnotations(stickyAnnotations: any, pageNumber: number, canvas?: any, isImport?: boolean,
+                                        isLastAnnot?: boolean): void {
         if (stickyAnnotations) {
             if (stickyAnnotations.length > 0) {
                 for (let i: number = 0; i < stickyAnnotations.length; i++) {
@@ -200,7 +203,10 @@ export class StickyNotesAnnotation {
                             this.drawStickyNotes(position.Left, position.Top, position.Width, position.Height, pageNumber, annot, canvas);
                         } else {
                             this.pdfViewer.add(annot as PdfAnnotationBase);
-                            this.drawStickyNotes(position.Left, position.Top, position.Width, position.Height, pageNumber, annot);
+                            const isNeedToRender: boolean = ((isImport && isLastAnnot) || isNullOrUndefined(isImport) ||
+                        !isImport) ? true : false;
+                            this.drawStickyNotes(position.Left, position.Top, position.Width, position.Height, pageNumber, annot,
+                                                 null, isNeedToRender);
                             this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_sticky');
                         }
                         if (this.isAddAnnotationProgramatically)
@@ -243,10 +249,12 @@ export class StickyNotesAnnotation {
      * @param {number} pageIndex - It describes about the page index
      * @param {any} annotation - It describes about the annotation
      * @param {any} canvas - It describes about the canvas
+     * @param {any} isNeedToRender - It describes about the isNeedToRender
      * @private
      * @returns {void}
      */
-    public drawStickyNotes(X: number, Y: number, width: number, height: number, pageIndex: number, annotation: any, canvas?: any): void {
+    public drawStickyNotes(X: number, Y: number, width: number, height: number, pageIndex: number, annotation: any, canvas?: any,
+                           isNeedToRender?: boolean): void {
         let annot: PdfAnnotationBaseModel;
         let annotationObject: IPopupAnnotation = null;
         const image: HTMLImageElement = new Image();
@@ -303,8 +311,10 @@ export class StickyNotesAnnotation {
             if (canvas) {
                 proxy.pdfViewer.renderDrawing(canvas as any, pageIndex);
             } else {
-                const canvass: any = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', pageIndex);
-                proxy.pdfViewer.renderDrawing(canvass as any, pageIndex);
+                if (isNullOrUndefined(isNeedToRender) || isNeedToRender) {
+                    const canvass: any = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', pageIndex);
+                    proxy.pdfViewer.renderDrawing(canvass as any, pageIndex);
+                }
             }
             if (Browser.isDevice) {
                 proxy.pdfViewer.select([annot.id], annot.annotationSelectorSettings);

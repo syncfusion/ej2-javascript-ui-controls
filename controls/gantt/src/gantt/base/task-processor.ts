@@ -25,6 +25,7 @@ export class TaskProcessor extends DateProcessor {
     private isBaseline : boolean = false;
     private isDurationValueUpdated: boolean = false;
     private uid: number = 0;
+    private isTaskIDInteger: boolean = true;
 
     constructor(parent: Gantt) {
         super(parent);
@@ -418,6 +419,9 @@ export class TaskProcessor extends DateProcessor {
         }
         if (!isNullOrUndefined(data[taskSettings.id])) {
             id = data[taskSettings.id];
+            if (typeof id !== 'number' && !(/^-?\d+$/.test(id))) {
+                this.isTaskIDInteger = false;
+            }
             name = data[taskSettings.name];
             const shouldLoadChild: boolean = (this.parent.loadChildOnDemand &&
                 taskSettings.hasChildMapping && data['taskData']) ? true : false;

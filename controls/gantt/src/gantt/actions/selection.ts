@@ -536,8 +536,9 @@ export class Selection {
     }
 
     /**
-     * @param {PointerEvent} e .
-     * @returns {void} .
+     * Handles the mouse up event on taskbar or row elements in the Gantt chart.
+     * @param {PointerEvent} e - The pointer event from the mouseup action.
+     * @returns {void}
      * @private
      */
     private mouseUpHandler(e: PointerEvent): void {
@@ -550,23 +551,30 @@ export class Selection {
             targetElement = (e.target as Element).closest('.e-left-label-container') ||
                 (e.target as Element).closest('.e-taskbar-main-container') || (e.target as Element).closest('.e-right-label-container');
         }
+        // Set focus to the target element if focus module is available
         if (this.parent.focusModule) {
             this.parent.focusModule.setActiveElement(targetElement as HTMLElement);
         }
+        // Check if taskbar editing is allowed and if it has been dragged or tapped
         if (this.parent.editModule && this.parent.editSettings.allowTaskbarEditing && this.parent.editModule.taskbarEditModule) {
             const taskbarEdit: TaskbarEdit = this.parent.editModule.taskbarEditModule;
             if (taskbarEdit.isMouseDragged || taskbarEdit.tapPointOnFocus) {
                 isTaskbarEdited = true;
             }
         }
+        // Proceed with selection or popup logic only if the taskbar is not edited
         if (!isTaskbarEdited && this.parent.element.contains(e.target as Node) && !(elements.length === 1)) {
             const parent: Element = parentsUntil(e.target as Element, 'e-chart-row');
+            const targetEl: HTMLElement = e.target as HTMLElement;
             const isSelected: boolean = (e.target as HTMLElement).classList.contains('e-rowcell') ||
-                (e.target as HTMLElement).classList.contains('e-row') ||
-                ((e.target as HTMLElement).parentElement &&
-                (e.target as HTMLElement).parentElement.classList.contains('e-checkbox-wrapper')) ||  // Checkbox class
-                (e.target as HTMLElement).classList.contains('e-treegridexpand') ||
-                (e.target as HTMLElement).classList.contains('e-treegridcollapse') || !isNullOrUndefined(parent);
+                targetEl.classList.contains('e-rowcell') ||
+                (targetEl.closest('td.e-rowcell') &&
+                targetEl.closest('td.e-rowcell').classList.contains('e-rowcell')) ||
+                targetEl.classList.contains('e-row') ||
+                (targetEl.parentElement &&
+                targetEl.parentElement.classList.contains('e-checkbox-wrapper')) ||  // Checkbox class
+                targetEl.classList.contains('e-treegridexpand') ||
+                targetEl.classList.contains('e-treegridcollapse') || !isNullOrUndefined(parent);
             this.popUpClickHandler(e);
             if (this.parent.selectionSettings.mode !== 'Cell' && isSelected) {
                 if (closest((e.target as Element), 'tr.e-chart-row')) {

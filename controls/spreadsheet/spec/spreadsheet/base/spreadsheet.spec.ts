@@ -1643,7 +1643,7 @@ describe('Spreadsheet base module ->', () => {
             const coords: DOMRect = <DOMRect>td.getBoundingClientRect();
             helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, td);
             setTimeout(() => {
-                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(3)').classList).toContain('e-disabled');
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(3)').classList).not.toContain('e-disabled');
                 done();
             });
         });

@@ -9,7 +9,7 @@ import { ContextMenu, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { MaskedTextBox } from '@syncfusion/ej2-inputs';
 import * as util from '../utils.spec';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
-import { CalculatedFieldCreateEventArgs } from '../../src/common/base/interface';
+import { CalculatedFieldCreateEventArgs, PivotActionCompleteEventArgs } from '../../src/common/base/interface';
 import { Dialog } from '@syncfusion/ej2-popups';
 
 describe('Calculated Field', () => {
@@ -670,5 +670,96 @@ describe(' - Opening the calculated dialog dialog', () => {
             remove(elem);
             element = document.querySelector('#' + pivotGridObj.element.id)
         }
+    });
+});
+
+describe(' - Disabling the calculated dialog error dialog', () => {
+    let originalTimeout: number;
+    let pivotGridObj: PivotView;
+    let cf: any;
+    let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:600px; width:100%' });
+    PivotView.Inject(CalculatedField, GroupingBar, FieldList);
+    beforeAll((done: Function) => {
+        originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+        let dataBound: EmitType<Object> = () => { done(); };
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            pending(); //Skips test (in Chai)
+            return;
+        }
+        if (document.getElementById(elem.id)) {
+            remove(document.getElementById(elem.id));
+        }
+        document.body.appendChild(elem);
+        pivotGridObj = new PivotView(
+            {
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    expandAll: false,
+                    enableSorting: true,
+                    sortSettings: [{ name: 'state', order: 'Descending' }],
+                    formatSettings: [{ name: 'balance', format: 'C' }],
+                    calculatedFieldSettings: [{ name: 'price', formula: '"Sum(balance)"+"Count(quantity)"' }],
+                    filterSettings: [
+                        {
+                            name: 'state', type: 'Include',
+                            items: ['Delhi', 'Tamilnadu', 'New Jercy']
+                        }
+                    ],
+                    rows: [{ name: 'state' }, { name: 'product' }],
+                    columns: [{ name: 'eyeColor' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' },
+                    { name: 'price', type: 'CalculatedField' }]
+                },
+                allowCalculatedField: true,
+                showGroupingBar: true,
+                showFieldList: true,
+                dataBound: dataBound,
+                actionComplete: function (args: PivotActionCompleteEventArgs) {
+                    if (args.actionName === 'Invalid formula') {
+                        args.actionName = 'Abort';
+                    }
+                }
+            });
+        pivotGridObj.appendTo('#PivotGrid');
+    });
+    it('Create Dialog2', (done: Function) => {
+        setTimeout(() => {
+            cf = new CalculatedField(pivotGridObj);
+            done();
+        }, 100);
+    });
+    it('Open Dialog9', () => {
+        cf.createCalculatedFieldDialog(pivotGridObj);
+        expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+    });
+    it('OK Button Click5', () => {
+        let calcField: any = document.querySelector('#' + pivotGridObj.element.id + 'calculateddialog');
+        (getInstance(calcField.querySelector('#' + pivotGridObj.element.id + 'ddlelement'
+        ), MaskedTextBox) as MaskedTextBox).value = 'New';
+        (document.querySelector('.e-pivot-calc-input') as HTMLInputElement).value = 'New';
+        (document.querySelector('.e-pivot-formula') as HTMLInputElement).value = 'A+B';
+        let formatString: MaskedTextBox = getInstance(document.querySelector('#' + pivotGridObj.element.id + 'Custom_Format_Element') as HTMLElement, MaskedTextBox) as MaskedTextBox;
+        expect(formatString).toBeTruthy;
+        formatString.setProperties({ value: 'C0' });
+        formatString.refresh();
+        expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+        calcField = getInstance(calcField as HTMLElement, Dialog) as Dialog
+        calcField.buttons[0].click();
+    });
+    it('memory leak', () => {
+        profile.sample();
+        let average: any = inMB(profile.averageChange);
+        //Check average change in memory samples to not be over 10MB
+        let memory: any = inMB(getMemoryProfile());
+        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+    afterAll(() => {
+        if (pivotGridObj) {
+            pivotGridObj.destroy();
+        }
+        remove(elem);
     });
 });

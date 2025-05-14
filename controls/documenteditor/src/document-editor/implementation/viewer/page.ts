@@ -2734,7 +2734,7 @@ export class TableWidget extends BlockWidget {
     /**
      * @private
      */
-    public clone(): TableWidget {
+    public clone(skip?: boolean): TableWidget {
         let table: TableWidget = new TableWidget();
         table.tableHolder = this.tableHolder.clone();
         table.tableFormat.copyFormat(this.tableFormat);
@@ -2742,11 +2742,13 @@ export class TableWidget extends BlockWidget {
             table.wrapTextAround = this.wrapTextAround;
             table.positioning = this.positioning.clone();
         }
-        for (let i: number = 0; i < this.childWidgets.length; i++) {
-            let row: TableRowWidget = (this.childWidgets[i] as TableRowWidget).clone();
-            table.childWidgets.push(row);
-            row.containerWidget = table;
-            row.index = i;
+        if (!skip) {
+            for (let i: number = 0; i < this.childWidgets.length; i++) {
+                let row: TableRowWidget = (this.childWidgets[i] as TableRowWidget).clone();
+                table.childWidgets.push(row);
+                row.containerWidget = table;
+                row.index = i;
+            }
         }
         table.x = this.x;
         table.y = this.y;

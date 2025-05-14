@@ -559,7 +559,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
 
         };
         const ariaTitleAttrs: Object = {
-            'aria-atomic': 'true', 'aria-live': 'assertive', 'aria-label': 'title'
+            'aria-atomic': 'true', 'aria-live': 'assertive'
         };
         const tabIndexAttr: Object = {'tabindex': '0'};
         this.headerElement = this.createElement('div', { className: HEADER });
@@ -1348,7 +1348,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             value = date.valueOf();
         }
         const attrs: Object = {
-            className: CELL, attrs: { 'id': '' + getUniqueID('' + value), 'aria-selected': 'false'}
+            className: CELL, attrs: { 'id': '' + getUniqueID('' + value)}
         };
         return this.createElement('td', attrs);
     }

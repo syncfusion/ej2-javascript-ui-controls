@@ -362,10 +362,12 @@ export class InkAnnotation {
      * @param {number} pageIndex - page index value
      * @param {boolean} isImport - It ensures whether the isImport is true or not
      * @param {boolean} isAnnotOrderAction - It ensures whether the isAnnotOrderAction is true or not
+     * @param {boolean} isLastAnnot - It ensures whether the isLastAnnot is true or not
      * @private
      * @returns {void}
      */
-    public renderExistingInkSignature(annotationCollection: any, pageIndex: number, isImport: boolean, isAnnotOrderAction?: boolean): void {
+    public renderExistingInkSignature(annotationCollection: any, pageIndex: number, isImport: boolean, isAnnotOrderAction?: boolean,
+                                      isLastAnnot?: boolean): void {
         let annot: PdfAnnotationBaseModel;
         let isinkAnnotationAdded: boolean = false;
         if (!isImport) {
@@ -450,7 +452,11 @@ export class InkAnnotation {
                     this.pdfViewer.add(annot as PdfAnnotationBase);
                     const canvasPageIndex: any = currentAnnotation.pageIndex ? currentAnnotation.pageIndex : currentAnnotation.PageNumber;
                     const canvass: any = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', canvasPageIndex);
-                    this.pdfViewer.renderDrawing(canvass as any, annot.pageIndex);
+                    const isNeedToRender: boolean = ((isImport && isLastAnnot) || isNullOrUndefined(isImport) ||
+                    !isImport) ? true : false;
+                    if (isNeedToRender) {
+                        this.pdfViewer.renderDrawing(canvass as any, annot.pageIndex);
+                    }
                     this.pdfViewer.annotationModule.storeAnnotations(annot.pageIndex, annot, '_annotations_ink');
                     if (this.isAddAnnotationProgramatically) {
                         const settings: any = {

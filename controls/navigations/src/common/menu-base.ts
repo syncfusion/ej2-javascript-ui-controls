@@ -1533,8 +1533,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         }
     }
 
-    public getMenuWidth(cmenu: Element, width: number, isRtl: boolean): number {
-        const caretIcon: HTMLElement = cmenu.getElementsByClassName(CARET)[0] as HTMLElement;
+    public getMenuWidth(menuElement: Element, width: number, isRtl: boolean): number {
+        const caretIcon: HTMLElement = menuElement.getElementsByClassName(CARET)[0] as HTMLElement;
         if (caretIcon) { width += parseInt(getComputedStyle(caretIcon)[isRtl ? 'marginRight' : 'marginLeft'], 10); }
         return width < 120 ? 120 : width;
     }

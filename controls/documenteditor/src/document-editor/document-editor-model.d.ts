@@ -157,6 +157,14 @@ export interface DocumentEditorSettingsModel {
      */
     pasteAsNewParagraph?: boolean;
 
+    /**
+     * Enables or disables screen reader support in the Document Editor. When set to `true`, the editor will expose necessary accessibility information for screen reader tools.
+     *
+     * @default false
+     * @aspType bool
+     */
+    enableScreenReader?: boolean;
+
 }
 
 /**

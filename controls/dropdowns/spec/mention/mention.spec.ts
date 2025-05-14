@@ -70,7 +70,7 @@ describe('Mention', () => {
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'inputMention' });
         beforeAll(() => {
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: datasource2 });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0 });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -115,7 +115,7 @@ describe('Mention', () => {
         let element: HTMLInputElement = <HTMLInputElement>createElement('textarea', { id: 'inputMention' });
         beforeAll(() => {
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: datasource2 });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0 });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -160,7 +160,7 @@ describe('Mention', () => {
         beforeAll(() => {
             element.innerHTML ="<p><br></p>";
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: datasource2 });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0 });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -211,7 +211,7 @@ describe('Mention', () => {
             let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'inputMention' });
             parentElement.appendChild(element)
             document.body.appendChild(parentElement);
-            mentionObj = new Mention({ dataSource: data });
+            mentionObj = new Mention({ dataSource: data, debounceDelay: 0 });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -249,7 +249,7 @@ describe('Mention', () => {
             }
         });
         it('no data text when ajax failure', (done) => {
-            mentionObj = new Mention({ dataSource: remoteData, fields: { value: 'EmployeeID', text: 'FirstName' } });
+            mentionObj = new Mention({ dataSource: remoteData, fields: { value: 'EmployeeID', text: 'FirstName' }, debounceDelay: 0 });
             mentionObj.appendTo(element);
             mentionObj.initValue();
             mentionObj.showPopup()
@@ -274,7 +274,7 @@ describe('Mention', () => {
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'inputMention' });
         beforeEach(() => {
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: [] });
+            mentionObj = new Mention({ dataSource: [], debounceDelay: 0 });
             mentionObj.appendTo(element);
         });
         afterEach(() => {
@@ -322,7 +322,7 @@ describe('Mention', () => {
             let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
                 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
             Browser.userAgent = androidPhoneUa;
-            mentionObj = new Mention({ dataSource: [] });
+            mentionObj = new Mention({ dataSource: [], debounceDelay: 0 });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -364,7 +364,7 @@ describe('Mention', () => {
          * remoteData binding with value
          */
         it('Mention at initialize time ', (done) => {
-            mentionObj = new Mention({ dataSource: remoteData, fields: { value: 'EmployeeID', text: 'FirstName' } });
+            mentionObj = new Mention({ dataSource: remoteData, debounceDelay: 0, fields: { value: 'EmployeeID', text: 'FirstName' } });
             mentionObj.appendTo(element);
             mentionObj.initValue();
             setTimeout(() => {
@@ -390,7 +390,7 @@ describe('Mention', () => {
             }
         });
         it('Dynamically change multiple cssClass', () => {
-            mentionObj = new Mention({ dataSource: datasource2, cssClass: 'sample' });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, cssClass: 'sample' });
             mentionObj.appendTo(element);
             mentionObj.initValue();
             mentionObj.showPopup();
@@ -401,7 +401,7 @@ describe('Mention', () => {
             expect(mentionObj.popupObj.element.classList.contains('highlight')).toEqual(true);
         });
         it('Initially render multiple cssClass', () => {
-            mentionObj = new Mention({ dataSource: datasource2, cssClass: 'sample highlight' });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, cssClass: 'sample highlight' });
             mentionObj.appendTo(element);
             mentionObj.initValue();
             mentionObj.showPopup();
@@ -412,7 +412,7 @@ describe('Mention', () => {
             expect(mentionObj.popupObj.element.classList.contains('test')).toEqual(true);
         });
         it('Dynamically change cssClass as null', () => {
-            mentionObj = new Mention({ dataSource: datasource2, cssClass: 'test highlight' });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, cssClass: 'test highlight' });
             mentionObj.appendTo(element);
             mentionObj.initValue();
             mentionObj.showPopup();
@@ -424,7 +424,7 @@ describe('Mention', () => {
             expect(mentionObj.popupObj.element.classList.contains('highlight')).toEqual(false);
         });
         it('Dynamically change cssClass as empty', () => {
-            mentionObj = new Mention({ dataSource: datasource2, cssClass: 'test highlight' });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, cssClass: 'test highlight' });
             mentionObj.appendTo(element);
             mentionObj.initValue();
             mentionObj.showPopup();
@@ -447,7 +447,7 @@ describe('Mention', () => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 700;
             element = <HTMLInputElement>createElement('input', { id: 'inputMention' });
             document.body.appendChild(element);
-            mentionObj = new Mention({ fields: { text: 'text', value: 'id' } });
+            mentionObj = new Mention({ fields: { text: 'text', value: 'id' }, debounceDelay: 0 });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -523,7 +523,7 @@ describe('Mention', () => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 700;
             element = <HTMLDivElement>createElement('div', { id: 'inputMention' });
             document.body.appendChild(element);
-            mentionObj = new Mention({ fields: { text: 'text', value: 'id' } });
+            mentionObj = new Mention({ fields: { text: 'text', value: 'id' }, debounceDelay: 0 });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -550,7 +550,7 @@ describe('Mention', () => {
         let mouseEventArgs: any = { preventDefault: function () { }, target: null };
         beforeAll(() => {
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: datasource2, mentionChar: '@', showMentionChar: true });
+            mentionObj = new Mention({ dataSource: datasource2, mentionChar: '@', debounceDelay: 0, showMentionChar: true });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -582,7 +582,7 @@ describe('Mention', () => {
         let mouseEventArgs: any = { preventDefault: function () { }, target: null };
         beforeAll(() => {
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: datasource2, mentionChar: '@' });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, mentionChar: '@' });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -616,7 +616,7 @@ describe('Mention', () => {
         let mouseEventArgs: any = { preventDefault: function () { }, target: null };
         beforeAll(() => {
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: datasource2, mentionChar: '@' });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, mentionChar: '@' });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -648,7 +648,7 @@ describe('Mention', () => {
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'inputMention' });
         beforeAll(() => {
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: datasource2, mentionChar: '@' });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, mentionChar: '@' });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -683,7 +683,7 @@ describe('Mention', () => {
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'inputMention' });
         beforeAll(() => {
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: datasource2, mentionChar: '@' });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, mentionChar: '@' });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -718,7 +718,7 @@ describe('Mention', () => {
         let mouseEventArgs: any = { preventDefault: function () { }, target: null };
         beforeAll(() => {
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: datasource2, mentionChar: '@' });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, mentionChar: '@' });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -758,7 +758,7 @@ describe('Mention', () => {
         let mouseEventArgs: any = { preventDefault: function () { }, target: null };
         beforeAll(() => {
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: datasource2, mentionChar: '@' });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, mentionChar: '@' });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -801,7 +801,7 @@ describe('Mention', () => {
         let mouseEventArgs: any = { preventDefault: function () { }, target: null };
         beforeAll(() => {
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: datasource2, mentionChar: '@' });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, mentionChar: '@' });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -835,7 +835,7 @@ describe('Mention', () => {
         let mouseEventArgs: any = { preventDefault: function () { }, target: null };
         beforeAll(() => {
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: empList, mentionChar: '@', displayTemplate: '${text}' });
+            mentionObj = new Mention({ dataSource: empList, mentionChar: '@', debounceDelay: 0, displayTemplate: '${text}' });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -886,6 +886,7 @@ describe('Mention', () => {
             ];
             mentions = new Mention({
                 dataSource: groupData,
+                debounceDelay: 0,
                 mentionChar: '@',
                 fields: { groupBy: 'category', text: 'vegetable' }
             });
@@ -913,6 +914,7 @@ describe('Mention', () => {
             ];
             mentions = new Mention({
                 dataSource: groupData,
+                debounceDelay: 0,
                 fields: { groupBy: 'category', text: 'vegetable' },
                 mentionChar: '@',
                 sortOrder: 'Ascending'
@@ -950,7 +952,8 @@ describe('Mention', () => {
         });
         it('Check the items', () => {
             let mention2: any = new Mention({
-                dataSource: data
+                dataSource: data,
+                debounceDelay: 0
             });
             mention2.appendTo(element);
             mention2.initValue();
@@ -976,6 +979,7 @@ describe('Mention', () => {
                 dataSource: datasource2,
                 fields: { text: "text", value: "id" },
                 popupHeight: "200px",
+                debounceDelay: 0,
                 filterType: 'Contains',
                 highlight: true,
                 showMentionChar: true
@@ -1010,6 +1014,7 @@ describe('Mention', () => {
             document.body.appendChild(element);
             mentionObj = new Mention({
                 dataSource: languageData,
+                debounceDelay: 0,
                 fields: { value: 'text' },
                 highlight: true
             });
@@ -1089,7 +1094,7 @@ describe('Mention', () => {
         beforeAll(() => {
             element.innerHTML ="<p><br></p>";
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: datasource2, mentionChar: '@', showMentionChar: true });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, mentionChar: '@', showMentionChar: true });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -1129,7 +1134,7 @@ describe('Mention', () => {
         beforeAll(() => {
             element.innerHTML ="<p>@</p>";
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: datasource2, change: changeAction, mentionChar: '@' });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, change: changeAction, mentionChar: '@' });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -1166,7 +1171,7 @@ describe('Mention', () => {
         beforeAll(() => {
             element.innerHTML ="<p>@</p>";
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: datasource2 });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0 });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -1197,7 +1202,7 @@ describe('Mention', () => {
         beforeAll(() => {
             element.innerHTML ="<p>@</p>";
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: datasource2, change: changeAction, mentionChar: '@' });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, change: changeAction, mentionChar: '@' });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -1233,7 +1238,7 @@ describe('Mention', () => {
         beforeAll(function () {
             element.innerHTML ="<p>@</p>";
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: datasource2, popupWidth: '50%', mentionChar: '@' });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, popupWidth: '50%', mentionChar: '@' });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -1260,7 +1265,7 @@ describe('Mention', () => {
         beforeAll(function () {
             element.innerHTML ="<p>@</p>";
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: datasource2, popupHeight: 'auto', mentionChar: '@' });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, popupHeight: 'auto', mentionChar: '@' });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -1290,6 +1295,7 @@ describe('Mention', () => {
             mention = new Mention({
                 mentionChar: '@',
                 dataSource: remoteData,
+                debounceDelay: 0,
                 query: new Query().from('Customers').select('ContactName').take(7),
                 fields: { text: 'ContactName' }
             });
@@ -1321,6 +1327,7 @@ describe('Mention', () => {
             mention = new Mention({
                 mentionChar: '@',
                 dataSource: remoteData,
+                debounceDelay: 0,
                 query: new Query().from('Customers').select('ContactName').take(7),
                 fields: { text: 'ContactName' },
                 spinnerTemplate: '<div class="loader"></div>'
@@ -1354,7 +1361,7 @@ describe('Mention', () => {
             element.innerHTML ="<p>@</p>";
             document.body.appendChild(element);
             document.body.appendChild(divElement);
-            mentionObj = new Mention({ dataSource: datasource2, target: '#divMention', mentionChar: '@' });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, target: '#divMention', mentionChar: '@' });
             mentionObj.appendTo(divElement);
             mentionObj.initValue();
         });
@@ -1391,7 +1398,7 @@ describe('Mention', () => {
             
             document.body.appendChild(element);
             document.body.appendChild(divElement);
-            mentionObj = new Mention({ dataSource: datasource2, target: '#inputMention', mentionChar: '@' });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, target: '#inputMention', mentionChar: '@' });
             mentionObj.appendTo(divElement);
             mentionObj.initValue();
         });
@@ -1427,7 +1434,7 @@ describe('Mention', () => {
             
             document.body.appendChild(element);
             document.body.appendChild(divElement);
-            mentionObj = new Mention({ dataSource: datasource2, target: '#textareaMention', mentionChar: '@' });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, target: '#textareaMention', mentionChar: '@' });
             mentionObj.appendTo(divElement);
             mentionObj.initValue();
         });
@@ -1463,7 +1470,7 @@ describe('Mention', () => {
             element.innerHTML ="<p>@</p>";
             document.body.appendChild(element);
             document.body.appendChild(divElement);
-            mentionObj = new Mention({ dataSource: datasource2, target: '#divMention', mentionChar: '@' });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, target: '#divMention', mentionChar: '@' });
             mentionObj.appendTo(divElement);
             mentionObj.initValue();
         });
@@ -1487,7 +1494,7 @@ describe('Mention', () => {
         beforeAll(() => {
             element.innerHTML ="<p>@</p>";
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: datasource2, mentionChar: '@' });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, mentionChar: '@' });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -1516,7 +1523,7 @@ describe('Mention', () => {
         beforeAll(() => {
             element.innerHTML ="<p>@a</p>";
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: empList, fields: { text: 'country', value: 'id' } });
+            mentionObj = new Mention({ dataSource: empList, debounceDelay: 0, fields: { text: 'country', value: 'id' } });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -1546,7 +1553,7 @@ describe('Mention', () => {
         beforeAll(() => {
             element.innerHTML ="<p>@a</p>";
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: empList, fields: { text: 'id', value: 'country' } });
+            mentionObj = new Mention({ dataSource: empList, debounceDelay: 0, fields: { text: 'id', value: 'country' } });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -1568,7 +1575,7 @@ describe('Mention', () => {
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'inputMention' });
         beforeAll(() => {
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: datasource2, mentionChar: '@', allowSpaces: true });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, mentionChar: '@', allowSpaces: true });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -1595,7 +1602,7 @@ describe('Mention', () => {
         let mouseEventArgs: any = { preventDefault: function () { }, target: null };
         beforeAll(() => {
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: [], locale: 'fr-BE', showMentionChar: true });
+            mentionObj = new Mention({ dataSource: [], locale: 'fr-BE', debounceDelay: 0, showMentionChar: true });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -1620,7 +1627,7 @@ describe('Mention', () => {
         let mouseEventArgs: any = { preventDefault: function () { }, target: null };
         beforeAll(() => {
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: [], locale: 'es', showMentionChar: true });
+            mentionObj = new Mention({ dataSource: [], locale: 'es', debounceDelay: 0, showMentionChar: true });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -1646,7 +1653,7 @@ describe('Mention', () => {
         let mouseEventArgs: any = { preventDefault: function () { }, target: null };
         beforeAll(() => {
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: datasource2, showMentionChar: true });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, showMentionChar: true });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -1679,7 +1686,7 @@ describe('Mention', () => {
             element.innerHTML ="<p>@</p>";
             document.body.appendChild(element);
             document.body.appendChild(divElement);
-            mentionObj = new Mention({ dataSource: datasource2, target: '#divMention', cssClass: 'sample', mentionChar: '@' });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, target: '#divMention', cssClass: 'sample', mentionChar: '@' });
             mentionObj.appendTo(divElement);
             mentionObj.initValue();
         });
@@ -1709,7 +1716,7 @@ describe('Mention', () => {
 
             document.body.appendChild(element);
             document.body.appendChild(divElement);
-            mentionObj = new Mention({ dataSource: datasource2, target: '#inputMention', cssClass: 'sample', mentionChar: '@' });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, target: '#inputMention', cssClass: 'sample', mentionChar: '@' });
             mentionObj.appendTo(divElement);
             mentionObj.initValue();
         });
@@ -1759,7 +1766,7 @@ describe('Mention', () => {
 
             document.body.appendChild(element);
             document.body.appendChild(divElement);
-            mentionObj = new Mention({ dataSource: datasource2, target: '#inputMention', cssClass: 'sample', mentionChar: '@' });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, target: '#inputMention', cssClass: 'sample', mentionChar: '@' });
             mentionObj.appendTo(divElement);
             mentionObj.initValue();
         });
@@ -1791,7 +1798,7 @@ describe('Mention', () => {
 
             document.body.appendChild(element);
             document.body.appendChild(divElement);
-            mentionObj = new Mention({ dataSource: datasource2, target: '#textareaMention', cssClass: 'sample', mentionChar: '@' });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, target: '#textareaMention', cssClass: 'sample', mentionChar: '@' });
             mentionObj.appendTo(divElement);
             mentionObj.initValue();
         });
@@ -1832,6 +1839,7 @@ describe('Mention', () => {
             document.body.appendChild(element);
             listObj = new Mention({
                 dataSource: sportsData,
+                debounceDelay: 0,
                 fields: { value: 'Id', text: 'Game', disabled: 'State' },
             });
             listObj.appendTo(element);
@@ -1906,6 +1914,7 @@ describe('Mention', () => {
             document.body.appendChild(element);
             listObj = new Mention({
                 mentionChar: '@',
+                debounceDelay: 0,
                 dataSource: empList,
                 fields: { text: 'country', disabled: 'State' },
             });
@@ -1960,6 +1969,7 @@ describe('Mention', () => {
             document.body.appendChild(element);
             listObj = new Mention({
                 mentionChar: '@',
+                debounceDelay: 0,
                 dataSource: empList,
                 fields: { text: 'country', disabled: 'State' },
             });
@@ -2010,13 +2020,14 @@ describe('Mention', () => {
         it('cssClass', () => {
             listObj = new Mention({ 
                 dataSource: datasource2,
+                debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 cssClass: null
             }, '#list');
             expect(listObj.cssClass).toBe(null);
             listObj.destroy();
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 cssClass: undefined
             }, '#list');
@@ -2024,15 +2035,15 @@ describe('Mention', () => {
             listObj.destroy();
         });
         it('highlight', () => {
-            listObj = new Mention({ 
-                dataSource: datasource2,
+            listObj = new Mention({  
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 highlight: null
             }, '#list');
             expect(listObj.highlight).toBe(null);
             listObj.destroy();
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 highlight: undefined
             }, '#list');
@@ -2041,14 +2052,14 @@ describe('Mention', () => {
         });
         it('ignoreCase', () => {
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 ignoreCase: null
             }, '#list');
             expect(listObj.ignoreCase).toBe(null);
             listObj.destroy();
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 ignoreCase: undefined
             }, '#list');
@@ -2057,14 +2068,14 @@ describe('Mention', () => {
         });
         it('displayTemplate', () => {
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 displayTemplate: null
             }, '#list');
             expect(listObj.displayTemplate).toBe(null);
             listObj.destroy();
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 displayTemplate: undefined
             }, '#list');
@@ -2073,14 +2084,14 @@ describe('Mention', () => {
         });
         it('itemTemplate', () => {
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 itemTemplate: null
             }, '#list');
             expect(listObj.itemTemplate).toBe(null);
             listObj.destroy();
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 itemTemplate: undefined
             }, '#list');
@@ -2089,14 +2100,14 @@ describe('Mention', () => {
         });
         it('noRecordsTemplate', () => {
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 noRecordsTemplate: null
             }, '#list');
             expect(listObj.noRecordsTemplate).toBe(null);
             listObj.destroy();
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 noRecordsTemplate: undefined
             }, '#list');
@@ -2104,15 +2115,15 @@ describe('Mention', () => {
             listObj.destroy();
         });
         it('mentionChar', () => {
-            listObj = new Mention({ 
-                dataSource: datasource2,
+            listObj = new Mention({  
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 mentionChar: null
             }, '#list');
             expect(listObj.mentionChar).toBe(null);
             listObj.destroy();
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 mentionChar: undefined
             }, '#list');
@@ -2121,14 +2132,14 @@ describe('Mention', () => {
         });
         it('minLength', () => {
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 minLength: null
             }, '#list');
             expect(listObj.minLength).toBe(null);
             listObj.destroy();
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 minLength: undefined
             }, '#list');
@@ -2137,14 +2148,14 @@ describe('Mention', () => {
         });
         it('popupHeight', () => {
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 popupHeight: null
             }, '#list');
             expect(listObj.popupHeight).toBe(null);
             listObj.destroy();
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 popupHeight: undefined
             }, '#list');
@@ -2153,7 +2164,7 @@ describe('Mention', () => {
         });
         it('popupWidth', () => {
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 popupWidth: null
             }, '#list');
@@ -2161,7 +2172,7 @@ describe('Mention', () => {
             listObj.destroy();
             listObj = new Mention({ 
                 dataSource: datasource2,
-                fields: { value: "id", text: "text" },
+                fields: { value: "id", text: "text" }, debounceDelay: 0,
                 popupWidth: undefined
             }, '#list');
             expect(listObj.popupWidth).toBe('auto');
@@ -2169,14 +2180,14 @@ describe('Mention', () => {
         });
         it('showMentionChar', () => {
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 showMentionChar: null
             }, '#list');
             expect(listObj.showMentionChar).toBe(null);
             listObj.destroy();
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 showMentionChar: undefined
             }, '#list');
@@ -2185,14 +2196,14 @@ describe('Mention', () => {
         });
         it('spinnerTemplate', () => {
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 spinnerTemplate: null
             }, '#list');
             expect(listObj.spinnerTemplate).toBe(null);
             listObj.destroy();
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 spinnerTemplate: undefined
             }, '#list');
@@ -2201,14 +2212,14 @@ describe('Mention', () => {
         });
         it('suffixText', () => {
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 suffixText: null
             }, '#list');
             expect(listObj.suffixText).toBe(null);
             listObj.destroy();
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 suffixText: undefined
             }, '#list');
@@ -2217,14 +2228,14 @@ describe('Mention', () => {
         });
         it('suggestionCount', () => {
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 suggestionCount: null
             }, '#list');
             expect(listObj.suggestionCount).toBe(null);
             listObj.destroy();
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 suggestionCount: undefined
             }, '#list');
@@ -2233,14 +2244,14 @@ describe('Mention', () => {
         });
         it('target', () => {
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 target: null
             }, '#list');
             expect(listObj.target).toBe(null);
             listObj.destroy();
             listObj = new Mention({ 
-                dataSource: datasource2,
+                dataSource: datasource2, debounceDelay: 0,
                 fields: { value: "id", text: "text" },
                 target: undefined
             }, '#list');
@@ -2287,6 +2298,7 @@ describe('Mention', () => {
             divElement.appendChild(textAreaelement);
             listObj = new Mention({
                 mentionChar: '@',
+                debounceDelay: 0,
                 dataSource: empList,
                 fields: { text: 'country', disabled: 'State' },
             });
@@ -2312,6 +2324,7 @@ describe('Mention', () => {
             listObj = new Mention({
                 mentionChar: '@',
                 dataSource: empList,
+                debounceDelay: 0,
                 fields: { text: 'country', disabled: 'State' },
             });
             listObj.appendTo(element);
@@ -2342,6 +2355,7 @@ describe('Mention', () => {
             listObj = new Mention({
                 mentionChar: '@',
                 dataSource: empList,
+                debounceDelay: 0,
                 fields: { text: 'country', disabled: 'State' },
                 highlight:true
             });
@@ -2361,6 +2375,7 @@ describe('Mention', () => {
             listObj = new Mention({
                 mentionChar: '@',
                 dataSource: empList,
+                debounceDelay: 0,
                 fields: { text: 'country', disabled: 'State' },
                 highlight:true
             });
@@ -2375,6 +2390,7 @@ describe('Mention', () => {
             listObj = new Mention({
                 mentionChar: '@',
                 dataSource: empList,
+                debounceDelay: 0,
                 fields: { text: 'country', disabled: 'State' },
                 highlight:true
             });
@@ -2396,6 +2412,7 @@ describe('Mention', () => {
             listObj = new Mention({
                 mentionChar: '@',
                 dataSource: empList,
+                debounceDelay: 0,
                 fields: { text: 'country', disabled: 'State' },
                 highlight:true
             });
@@ -2408,6 +2425,7 @@ describe('Mention', () => {
             let textAreaelement: HTMLInputElement = <HTMLInputElement>createElement('textarea', { id: 'mentiontextarea' });
             listObj = new Mention({
                 mentionChar: '@',
+                debounceDelay: 0,
                 dataSource: empList,
                 fields: { text: 'country', disabled: 'State' },
                 highlight:true
@@ -2423,6 +2441,7 @@ describe('Mention', () => {
             let textAreaelement: HTMLInputElement = <HTMLInputElement>createElement('textarea', { id: 'mentiontextarea' });
             listObj = new Mention({
                 mentionChar: '@',
+                debounceDelay: 0,
                 dataSource: empList,
                 fields: { text: 'country', disabled: 'State' },
                 highlight:true
@@ -2444,6 +2463,7 @@ describe('Mention', () => {
             let textAreaelement: HTMLInputElement = <HTMLInputElement>createElement('textarea', { id: 'mentiontextarea' });
             listObj = new Mention({
                 mentionChar: '@',
+                debounceDelay: 0,
                 dataSource: empList,
                 fields: { text: 'country', disabled: 'State' },
                 highlight: true
@@ -2472,6 +2492,7 @@ describe('Mention', () => {
             let textAreaelement: HTMLInputElement = <HTMLInputElement>createElement('textarea', { id: 'mentiontextarea'});
             listObj = new Mention({
                 mentionChar: '@',
+                debounceDelay: 0,
                 dataSource: empList,
                 fields: { text: 'country', disabled: 'State' },
                 filtering(event: any) {
@@ -2493,6 +2514,7 @@ describe('Mention', () => {
             listObj = new Mention({
                 mentionChar: '@',
                 dataSource: empList,
+                debounceDelay: 0,
                 fields: { text: 'country', disabled: 'State' },
                 filtering(event: any) {
                     event.preventDefaultAction = true;
@@ -2514,6 +2536,7 @@ describe('Mention', () => {
             listObj = new Mention({
                 mentionChar: '@',
                 dataSource: empList,
+                debounceDelay: 0,
                 fields: { text: 'country', disabled: 'State' },
                 highlight:true
             });
@@ -2530,7 +2553,8 @@ describe('Mention', () => {
             listObj = new Mention({
                 mentionChar: '@',
                 dataSource: empList,
-                fields: { text: 'country'},
+                fields: { text: 'country' },
+                debounceDelay: 0,
                 filtering(event: any) {
                     event.preventDefaultAction = true;
                     event.cancel = true;
@@ -2562,6 +2586,7 @@ describe('Mention', () => {
         it('- Closepopup prevention', (done) => {
             listObj = new Mention({
                 mentionChar: '@',
+                debounceDelay: 0,
                 dataSource: empList,
                 fields: { text: 'country'},
                 closed(event: any) {
@@ -2582,6 +2607,7 @@ describe('Mention', () => {
             listObj = new Mention({
                 mentionChar: '@',
                 dataSource: empList,
+                debounceDelay: 0,
                 fields: { text: 'country'},
                 beforeOpen(event: any) {
                     event.cancel = true;
@@ -2593,6 +2619,7 @@ describe('Mention', () => {
         it('- keyActionHandler with escape key', (done) => {
             listObj = new Mention({
                 mentionChar: '@',
+                debounceDelay: 0,
                 dataSource: empList,
                 fields: { text: 'country'},
             });
@@ -2615,6 +2642,7 @@ describe('Mention', () => {
             listObj = new Mention({
                 mentionChar: '@',
                 dataSource: empList,
+                debounceDelay: 0,
                 fields: { text: 'country'},
                 beforeOpen(event: any) {
                     event.cancel = true;
@@ -2627,6 +2655,7 @@ describe('Mention', () => {
             listObj = new Mention({
                 mentionChar: '@',
                 dataSource: empList,
+                debounceDelay: 0,
                 fields: { text: 'country'},
                 highlight: true
             });
@@ -2648,6 +2677,7 @@ describe('Mention', () => {
             listObj = new Mention({
                 mentionChar: '@',
                 dataSource: empList,
+                debounceDelay: 0,
                 fields: { text: 'country'},
                 highlight: true,
                 displayTemplate: '<div>selected</div>',
@@ -2677,7 +2707,7 @@ describe('Mention', () => {
         beforeAll(() => {
             element.innerHTML ="<p><br></p>";
             document.body.appendChild(element);
-            mentionObj = new Mention({ dataSource: datasource2, mentionChar: 'a', showMentionChar: true, allowSpaces:true });
+            mentionObj = new Mention({ dataSource: datasource2, debounceDelay: 0, mentionChar: 'a', showMentionChar: true, allowSpaces: true });
             mentionObj.appendTo(element);
             mentionObj.initValue();
         });
@@ -2740,6 +2770,7 @@ describe('Mention', () => {
             document.body.appendChild(element);
             listObj = new Mention({
                 mentionChar: '@',
+                debounceDelay: 0,
                 dataSource: empList,
                 fields: { text: 'country', disabled: 'State' },
             });
@@ -2785,6 +2816,7 @@ describe('Mention', () => {
                 dataSource: datasource2,
                 fields: { value: "id", text: "text" },
                 mentionChar: '/',
+                debounceDelay: 0,
                 target: '#defaultRTE_rte-edit-view',
                 cssClass: 'e-slash-menu'
             });

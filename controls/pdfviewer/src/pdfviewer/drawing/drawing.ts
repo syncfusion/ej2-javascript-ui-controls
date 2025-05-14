@@ -147,9 +147,6 @@ export class Drawing {
             //Init default wrapper
         }
         (this.pdfViewer.nameTable as any)[(obj as PdfAnnotationBaseModel | PdfFormFieldBaseModel).id] = obj;
-        if (obj.formFieldAnnotationType) {
-            this.nodePropertyChange(obj as PdfFormFieldBaseModel, { bounds: { width: obj.bounds.width, height: obj.bounds.height } });
-        }
         //Add some methodologies to add the children of group to name table
         return obj;
     }
@@ -2439,10 +2436,11 @@ export class Drawing {
      * @private
      * @param {PdfAnnotationBaseModel} actualObject - Specified the actual annotaion object.
      * @param {PdfAnnotationBaseModel} node - Specified the node annotation object.
+     * @param {boolean} isNeedToRender - Specified to render drawing.
      * @returns {void}
      */
     public nodePropertyChange(
-        actualObject: PdfAnnotationBaseModel, node: PdfAnnotationBaseModel): void {
+        actualObject: PdfAnnotationBaseModel, node: PdfAnnotationBaseModel, isNeedToRender?: boolean): void {
         let updateConnector: boolean = false;
         let i: number; let update: boolean;
         if (node.bounds) {
@@ -2968,7 +2966,9 @@ export class Drawing {
                                                  pageHeight);
             actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
         }
-        this.pdfViewer.renderDrawing(undefined, actualObject.pageIndex);
+        if (isNeedToRender || isNullOrUndefined(isNeedToRender)) {
+            this.pdfViewer.renderDrawing(undefined, actualObject.pageIndex);
+        }
         if (actualObject && actualObject.shapeAnnotationType === 'FreeText') {
             if (actualObject.wrapper && actualObject.wrapper.children && actualObject.wrapper.children.length) {
                 const children: any[] = actualObject.wrapper.children;
@@ -3649,6 +3649,17 @@ export class Drawing {
                                     }
                                     if (!newNode.formFieldAnnotationType && newNode.shapeAnnotationType !== 'SignatureText' && newNode.shapeAnnotationType !== 'HandWrittenSignature' && newNode.shapeAnnotationType !== 'SignatureImage') {
                                         this.pdfViewer.annotation.addAction(this.pdfViewer.viewerBase.getActivePage(false), null, newNode as PdfAnnotationBase, 'Addition', '', newNode as PdfAnnotationBase, newNode);
+                                        if (newNode.measureType === 'Distance' || newNode.measureType === 'Perimeter' || newNode.measureType === 'Area' ||
+                                            newNode.measureType === 'Radius' || newNode.measureType === 'Volume') {
+                                            const matchedRatioObject: any = this.pdfViewer.annotationModule.measureAnnotationModule.
+                                                scaleRatioCollection.find((item: any) => newNode.id.startsWith(item.id));
+                                            if (matchedRatioObject) {
+                                                const clonedItem: any = JSON.parse(JSON.stringify(matchedRatioObject));
+                                                clonedItem.annotName = newNode.id;
+                                                this.pdfViewer.annotationModule.measureAnnotationModule.
+                                                    scaleRatioCollection.push(clonedItem);
+                                            }
+                                        }
                                     }
                                 } else {
                                     if (this.pdfViewer.annotationModule) {

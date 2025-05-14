@@ -239,7 +239,7 @@ export class WorkbookEdit {
         }
         this.parent.setUsedRange(range[0], range[1], sheet);
         if (this.parent.chartColl.length && !this.parent.isEdit && !isRandomFormula) {
-            this.parent.notify(refreshChart, {cell: cell, rIdx: range[0], cIdx: range[1], sheetIdx: sheetIdx, isRefreshChart: true });
+            this.parent.notify(refreshChart, { cell: cell, rIdx: range[0], cIdx: range[1], sheetIdx: sheetIdx, isRefreshChart: true });
         }
         return isFormulaDependent;
     }

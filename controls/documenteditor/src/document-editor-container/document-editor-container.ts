@@ -963,6 +963,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (!isNullOrUndefined(this.documentEditorSettings.pasteAsNewParagraph)) {
             this.documentEditor.documentEditorSettings.pasteAsNewParagraph = this.documentEditorSettings.pasteAsNewParagraph;
         }
+        if (!isNullOrUndefined(this.documentEditorSettings.enableScreenReader)) {
+            this.documentEditor.documentEditorSettings.enableScreenReader = this.documentEditorSettings.enableScreenReader;
+        }
     }
     /**
      * @private

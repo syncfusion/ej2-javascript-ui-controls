@@ -1421,6 +1421,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
 
     /* To wire events for the dropdown tree */
     private wireEvents(): void {
+        if (Browser.isIos) {
+            EventHandler.add(this.inputWrapper, 'touchstart', this.handleIosTouch, this);
+        }
         EventHandler.add(this.inputWrapper, 'mouseup', this.dropDownClick, this);
         EventHandler.add(this.inputWrapper, 'focus', this.focusIn, this);
         EventHandler.add(this.inputWrapper, 'blur', this.focusOut, this);
@@ -1466,6 +1469,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
 
     /* To unwire events for the dropdown tree */
     private unWireEvents(): void {
+        if (Browser.isIos) {
+            EventHandler.remove(this.inputWrapper, 'touchstart', this.handleIosTouch);
+        }
         EventHandler.remove(this.inputWrapper, 'mouseup', this.dropDownClick);
         EventHandler.remove(this.inputWrapper, 'focus', this.focusIn);
         EventHandler.remove(this.inputWrapper, 'blur', this.focusOut);
@@ -1484,8 +1490,14 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         document.removeEventListener('mousedown', this.documentClickContext);
     }
 
+    /* Handles touch events specifically for iOS devices */
+    private handleIosTouch(e: TouchEvent): void {
+        e.preventDefault();
+        this.dropDownClick(e);
+    }
+
     /* Trigger when the dropdown is clicked */
-    private dropDownClick(e: MouseEvent): void {
+    private dropDownClick(e: MouseEvent | TouchEvent): void {
         if (!this.enabled || this.readonly) {
             return;
         }

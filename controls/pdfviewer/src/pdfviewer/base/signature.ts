@@ -2317,10 +2317,11 @@ export class Signature {
      * @param {any} annotationCollection - It describes about the annotation collection
      * @param {number} pageIndex - It describes about the page index
      * @param {boolean} isImport - It describes about the whether the isImport is true or not
+     * @param {boolean} isLastAnnot - It describes about the whether the isLastAnnot is true or not
      * @private
      * @returns {void}
      */
-    public renderExistingSignature(annotationCollection: any, pageIndex: number, isImport: boolean): void {
+    public renderExistingSignature(annotationCollection: any, pageIndex: number, isImport: boolean, isLastAnnot?: boolean): void {
         let annot: PdfAnnotationBaseModel;
         let isAnnotationAdded: boolean = false;
         if (!isImport){
@@ -2401,8 +2402,12 @@ export class Signature {
                                                     annot.strokeColor, annot.thickness, annot.data);
                 }
                 const canvasPageIndex: number = currentAnnotation.pageIndex ? currentAnnotation.pageIndex : currentAnnotation.PageNumber;
-                const canvass: any = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', canvasPageIndex);
-                this.pdfViewer.renderDrawing(canvass as any, annot.pageIndex);
+                const isNeedToRender: boolean = ((isImport && isLastAnnot) || isNullOrUndefined(isImport) ||
+                        !isImport) ? true : false;
+                if (isNeedToRender) {
+                    const canvass: any = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', canvasPageIndex);
+                    this.pdfViewer.renderDrawing(canvass as any, annot.pageIndex);
+                }
                 this.storeSignatureData(annot.pageIndex, annot);
                 this.pdfViewerBase.currentSignatureAnnot = null;
                 this.pdfViewerBase.signatureCount++;

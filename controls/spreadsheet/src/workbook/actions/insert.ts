@@ -1,5 +1,5 @@
 import { RangeModel, Workbook, getCell, SheetModel, RowModel, CellModel, getSheetIndex, getSheetName, Cell } from '../base/index';
-import { insertModel, ExtendedRange, InsertDeleteModelArgs, workbookFormulaOperation, ConditionalFormatModel, updateSheetFromDataSource } from '../../workbook/common/index';
+import { insertModel, ExtendedRange, InsertDeleteModelArgs, workbookFormulaOperation, ConditionalFormatModel, updateSheetFromDataSource, refreshChart } from '../../workbook/common/index';
 import { insert, insertMerge, MergeArgs, InsertDeleteEventArgs, refreshClipboard, refreshInsertDelete } from '../../workbook/common/index';
 import { ModelType, CellStyleModel, updateRowColCount, beginAction, ActionEventArgs, getRangeIndexes, getRangeAddress } from '../../workbook/common/index';
 import { insertFormatRange } from '../../workbook/index';
@@ -282,6 +282,9 @@ export class WorkbookInsert {
                 refreshClipboard,
                 { start: index, end: index + model.length - 1, modelType: args.modelType, model: args.model, isInsert: true });
             eventArgs.activeSheetIndex = getSheetIndex(this.parent, args.model.name);
+            if (this.parent.chartColl && this.parent.chartColl.length) {
+                this.parent.notify(refreshChart, { range: getRangeIndexes(args.model.selectedRange) });
+            }
         }
         this.parent.notify(insert, actionArgs);
     }

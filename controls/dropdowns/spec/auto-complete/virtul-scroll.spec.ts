@@ -45,7 +45,7 @@ describe('Autocomplete_Virtualization', () => {
             ele = createElement('input', { id: 'AutoComplete' });
             document.body.appendChild(ele);
             dropObj = new AutoComplete({
-                dataSource: datasource, popupHeight:'200px', enableVirtualization: true, fields: { text: 'text', value: 'text' }
+                dataSource: datasource, popupHeight: '200px', debounceDelay: 0, enableVirtualization: true, fields: { text: 'text', value: 'text' }
             });
             dropObj.appendTo(ele);
         });
@@ -173,7 +173,7 @@ describe('Autocomplete_Virtualization', () => {
                 ele = createElement('input', { id: 'AutoComplete' });
                 document.body.appendChild(ele);
                 dropObj = new AutoComplete({
-                    dataSource: datasource, popupHeight:'200px', query: new Query().take(10), enableVirtualization: true, fields: { text: 'text', value: 'text' }
+                    dataSource: datasource, debounceDelay: 0, popupHeight: '200px', query: new Query().take(10), enableVirtualization: true, fields: { text: 'text', value: 'text' }
                 });
                 dropObj.appendTo(ele);
             });
@@ -231,7 +231,7 @@ describe('Autocomplete_Virtualization', () => {
                 ele = createElement('input', { id: 'AutoComplete' });
                 document.body.appendChild(ele);
                 dropObj = new AutoComplete({
-                    dataSource: datasource, popupHeight:'200px', enableVirtualization: true,allowFiltering:true, fields: { text: 'text', value: 'text' }
+                    dataSource: datasource, debounceDelay: 0, popupHeight: '200px', enableVirtualization: true, allowFiltering: true, fields: { text: 'text', value: 'text' }
                 });
                 dropObj.appendTo(ele);
             });
@@ -279,7 +279,7 @@ describe('Autocomplete_Virtualization', () => {
                     crossDomain: true
                 });
                 dropObj = new AutoComplete({
-                    dataSource: remoteData, popupHeight:'200px', enableVirtualization: true,allowFiltering:true, fields: { text: 'OrderID', value: 'OrderID' }
+                    dataSource: remoteData, popupHeight: '200px', debounceDelay: 0, enableVirtualization: true, allowFiltering: true, fields: { text: 'OrderID', value: 'OrderID' }
                 });
                 dropObj.appendTo(ele);
             });
@@ -314,7 +314,7 @@ describe('Autocomplete_Virtualization', () => {
                 ele = createElement('input', { id: 'AutoComplete' });
                 document.body.appendChild(ele);
                 dropObj = new AutoComplete({
-                    dataSource: datasource, popupHeight:'200px', enableVirtualization: true, showClearButton: true, fields: { text: 'text', value: 'text' }
+                    dataSource: datasource, popupHeight: '200px', debounceDelay: 0, enableVirtualization: true, showClearButton: true, fields: { text: 'text', value: 'text' }
                 });
                 dropObj.appendTo(ele);
             });
@@ -351,7 +351,7 @@ describe('Autocomplete_Virtualization', () => {
                 ele = createElement('input', { id: 'DropDownList' });
                 document.body.appendChild(ele);
                 dropObj = new AutoComplete({
-                    dataSource: datasource, popupHeight:'200px', enableVirtualization: true,allowFiltering:true, fields: { text: 'text', value: 'id' }, itemTemplate: '<div class="ename"> ${text} </div></div>', valueTemplate: '<div class="tempName"> ${text} </div>',
+                    dataSource: datasource, popupHeight: '200px', debounceDelay: 0, enableVirtualization: true, allowFiltering: true, fields: { text: 'text', value: 'id' }, itemTemplate: '<div class="ename"> ${text} </div></div>', valueTemplate: '<div class="tempName"> ${text} </div>',
                 });
                 dropObj.appendTo(ele);
             });
@@ -382,7 +382,7 @@ describe('Autocomplete_Virtualization', () => {
                 ele = createElement('input', { id: 'DropDownList' });
                 document.body.appendChild(ele);
                 dropObj = new AutoComplete({
-                    dataSource: datasource, popupHeight:'200px', enableVirtualization: true,allowFiltering:true, showClearButton:true, fields: { text: 'text', value: 'id' }
+                    dataSource: datasource, popupHeight: '200px', debounceDelay: 0, enableVirtualization: true, allowFiltering: true, showClearButton: true, fields: { text: 'text', value: 'id' }
                 });
                 dropObj.appendTo(ele);
             });
@@ -427,6 +427,7 @@ describe('Autocomplete_Virtualization', () => {
             dropDowns = new AutoComplete({
                 dataSource: datasource, 
                 popupHeight: '200px', 
+                debounceDelay: 0,
                 enableVirtualization: true, 
                 allowFiltering: true, 
                 showClearButton: true,
@@ -457,6 +458,7 @@ describe('Autocomplete_Virtualization', () => {
             dropDowns = new AutoComplete({
                 dataSource: datasource, 
                 popupHeight: '200px',  
+                debounceDelay: 0,
                 allowFiltering: true, 
                 showClearButton: true,
                 

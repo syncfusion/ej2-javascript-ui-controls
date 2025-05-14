@@ -1150,6 +1150,7 @@ export class EventWindow {
 
     private updateDateTime(allDayStatus: boolean, startObj: DateTimePicker, endObj: DateTimePicker): void {
         let startDate: Date; let endDate: Date;
+        if (isNullOrUndefined(this.eventWindowTime.startTime) && isNullOrUndefined(this.eventWindowTime.endTime)) { return; }
         if (allDayStatus) {
             startDate = util.resetTime(new Date(this.eventWindowTime.startTime.getTime()));
             if (this.parent.activeCellsData.isAllDay) {

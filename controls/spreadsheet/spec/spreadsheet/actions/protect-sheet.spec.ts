@@ -787,8 +787,7 @@ describe('Protect sheet ->', () => {
                     allowFindAndReplace: false, showRibbon: false, showFormulaBar: false, showSheetTabs: false, allowOpen: false, allowSave:
                     false, allowSorting: false, allowFiltering: false, allowNumberFormatting: false, allowHyperlink: false, allowInsert:
                     false, allowDelete: false, allowDataValidation: false, allowChart: false, allowConditionalFormat: false, height: 1500,
-                    sheets: [{ isProtected: true, protectSettings: { selectCells: true, formatCells: false, formatRows: false, insertLink:
-                        false, formatColumns: false }, rowCount: 16, rows: [{ cells: [{ image: [{ src:
+                    sheets: [{ rowCount: 16, rows: [{ cells: [{ image: [{ src:
                         "https://ravennaareachamber.com/wp-content/uploads/2017/03/your-company-lsiting.png", height: 70, width: 100,
                         top: 2, left: 10 }] }, { index: 2, value: 'LOCKED' }, { value: 'LOCKED' }] }, { cells: [{index: 2, value: 'LOCKED'
                         }, { value: 'UNLOCKED' }] }, { cells: [{ value: 'LOCKED' }, { value: 'LOCKED' }, { value: 'LOCKED' }, { value:
@@ -803,6 +802,7 @@ describe('Protect sheet ->', () => {
                     created: (): void => {
                         const spreadsheet: Spreadsheet = helper.getInstance();
                         spreadsheet.merge("D2:E2"); spreadsheet.merge("A1:B3"); spreadsheet.merge("A4:E4");
+                        spreadsheet.protectSheet(spreadsheet.sheets[0].name, { selectCells: true, formatCells: false, formatRows: false, insertLink: false, formatColumns: false });
                         spreadsheet.lockCells("D1", false); spreadsheet.lockCells("D3", false); spreadsheet.lockCells("A6:E15", false);
                         spreadsheet.lockCells("A17", false);
                     }
@@ -955,8 +955,7 @@ describe('Protect sheet ->', () => {
                     allowFindAndReplace: false, showRibbon: false, showFormulaBar: true, showSheetTabs: false, allowOpen: false, allowSave:
                     false, allowSorting: false, allowFiltering: false, allowNumberFormatting: false, allowHyperlink: false, allowInsert:
                     false, allowDelete: false, allowDataValidation: false, allowChart: false, allowConditionalFormat: false, height: 1500,
-                    sheets: [{ isProtected: true, protectSettings: { selectCells: true, formatCells: false, formatRows: false, insertLink:
-                        false, formatColumns: false }, rowCount: 16, rows: [{ cells: [{index: 2, value: 'LOCKED'
+                    sheets: [{ rowCount: 16, rows: [{ cells: [{index: 2, value: 'LOCKED'
                         }, { value: 'UNLOCKED' }] }, { cells: [{ value: 'LOCKED' }, { value: 'LOCKED' }, { value: 'LOCKED' }, { value:
                         'LOCKED' }, { value: 'LOCKED' }] }, { index: 15, cells: [{ value: 'LOCKED' }, { index: 4, value: 'LOCKED' }] }] }],
                         beforeSelect: (args: BeforeSelectEventArgs): void => {
@@ -969,6 +968,7 @@ describe('Protect sheet ->', () => {
                         created: (): void => {
                             const spreadsheet: Spreadsheet = helper.getInstance();
                             spreadsheet.merge("D2:E2"); spreadsheet.merge("A1:B3"); spreadsheet.merge("A4:E4");
+                            spreadsheet.protectSheet(spreadsheet.sheets[0].name, { selectCells: true, formatCells: false, formatRows: false, insertLink: false, formatColumns: false});
                             spreadsheet.lockCells("D1", false); spreadsheet.lockCells("D3", false); spreadsheet.lockCells("A6:E15", false);
                             spreadsheet.lockCells("A17", false);
                         }

@@ -2455,7 +2455,7 @@ describe('check datasource  without passing position', () => {
         ganttObj.deleteRecord(42);
         ganttObj.deleteRecord(43);
         ganttObj.addRecord();
-        expect(parseInt(ganttObj.currentViewData[0].ganttProperties.taskId)).toBe(46);
+        expect(parseInt(ganttObj.currentViewData[0].ganttProperties.taskId)).toBe(57);
     }); 
     afterAll(() => {
         destroyGantt(ganttObj);

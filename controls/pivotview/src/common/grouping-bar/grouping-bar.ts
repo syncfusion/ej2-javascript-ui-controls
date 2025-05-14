@@ -542,7 +542,6 @@ export class GroupingBar implements IAction {
                 }
                 this.parent.posCount = 0;
                 this.parent.setGridColumns(this.parent.grid.columns as ColumnModel[]);
-                this.parent.grid.headerModule.refreshUI();
                 if (!this.parent.firstColWidth) {
                     buttonWidth = gridColumn[0].autoFit ? gridColumn[0].width.toString() : buttonWidth;
                     colGroupElement.style.width = buttonWidth;

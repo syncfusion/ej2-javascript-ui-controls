@@ -1057,6 +1057,125 @@ export class Dependency {
         return connectorObj;
     }
     /**
+     * Determines whether the dependent task should be updated based on its predecessor relationship,
+     * considering the dependency type (FS, SS, SF, FF), predecessor offsets, and previous dates.
+     *
+     * @param {IGanttData} parentGanttRecord - The predecessor task.
+     * @param {IGanttData} record - The dependent task to evaluate.
+     * @param {Date} parentPreviousStart - The previous start date of the predecessor task.
+     * @param {Date} parentPreviousEnd - The previous end date of the predecessor task.
+     * @param {boolean} predecessorConnected - Optional flag indicating if the predecessor link is already established.
+     * @returns {boolean} - Returns true if the dependent task requires an update; otherwise, false.
+     */
+    private shouldUpdatePredecessor(
+        parentGanttRecord: IGanttData,
+        record: IGanttData,
+        parentPreviousStart: Date,
+        parentPreviousEnd: Date,
+        predecessorConnected?: boolean
+    ): boolean {
+        if (
+            isNullOrUndefined(record) ||
+            isNullOrUndefined(record.ganttProperties) ||
+            isNullOrUndefined(record.ganttProperties.taskId) ||
+            isNullOrUndefined(parentGanttRecord) ||
+            isNullOrUndefined(parentGanttRecord.ganttProperties)
+        ) {
+            return false;
+        }
+        if (!predecessorConnected && isNullOrUndefined(parentPreviousStart) && isNullOrUndefined(parentPreviousEnd)) {
+            return true;
+        }
+        const predecessors: IPredecessor[] = parentGanttRecord.ganttProperties.predecessor;
+        if (isNullOrUndefined(predecessors) || !Array.isArray(predecessors)) {
+            return false;
+        }
+        const matchingPredecessor: IPredecessor = predecessors
+            .find((item: IPredecessor) => item.to === record.ganttProperties.taskId.toString());
+        if (isNullOrUndefined(matchingPredecessor)) {
+            return false;
+        }
+        const type: string = matchingPredecessor.type;
+        const parentProps: ITaskData = parentGanttRecord.ganttProperties;
+        const recordProps: ITaskData = record.ganttProperties;
+        if (isNullOrUndefined(parentProps) || isNullOrUndefined(recordProps)) {
+            return false;
+        }
+        let parentStart: Date = parentProps.startDate;
+        let parentEnd: Date = parentProps.endDate;
+        let recordStart: Date = recordProps.startDate;
+        let recordEnd: Date = recordProps.endDate;
+        const offset: number = matchingPredecessor.offset;
+        const offsetUnit: string = matchingPredecessor.offsetUnit;
+        if (offset !== 0) {
+            if (offset > 0) {
+                if (parentStart) {
+                    parentStart = this.parent.dataOperation.getEndDate(parentStart, Math.abs(offset), offsetUnit, parentProps, false);
+                }
+                if (parentEnd) {
+                    parentEnd = this.parent.dataOperation.getEndDate(parentEnd, Math.abs(offset), offsetUnit, parentProps, false);
+                }
+            } else {
+                if (recordStart) {
+                    recordStart = this.parent.dataOperation.getEndDate(recordStart, Math.abs(offset), offsetUnit, parentProps, false);
+                }
+                if (recordEnd) {
+                    recordEnd = this.parent.dataOperation.getEndDate(recordEnd, Math.abs(offset), offsetUnit, parentProps, false);
+                }
+            }
+        }
+        switch (type) {
+        case 'FS':
+            return (recordStart != null ? recordStart : recordEnd) < (parentEnd != null ? parentEnd : parentStart);
+        case 'SS':
+            return (recordStart != null ? recordStart : recordEnd) < (parentStart != null ? parentStart : parentEnd);
+        case 'SF':
+            return (recordEnd != null ? recordEnd : recordStart) < (parentStart != null ? parentStart : parentEnd);
+        case 'FF':
+            return (recordEnd != null ? recordEnd : recordStart) < (parentEnd != null ? parentEnd : parentStart);
+        default:
+            return false;
+        }
+    }
+    /**
+     * Handles the update logic for a task's dependency and validates whether child tasks should be updated.
+     * It retrieves the previous start and end dates from the stored records to determine if dependency validation is required.
+     * If predecessor updates are needed or offset updates are enabled, it triggers child task validation.
+     *
+     * @param {IGanttData} parentGanttRecord - The parent task whose dependencies are being evaluated.
+     * @param {IGanttData} record - The current task being updated.
+     * @returns {void}
+     */
+    private handleTaskUpdate(parentGanttRecord: IGanttData, record: IGanttData): void {
+        let previousStartDate: Date;
+        let previousEndDate: Date;
+        const previousRecord: IGanttData = this.parent.previousRecords[parentGanttRecord.uniqueID];
+        let previousGanttProps: ITaskData;
+        if (previousRecord && previousRecord['ganttProperties']) {
+            previousGanttProps = previousRecord['ganttProperties'];
+            if (this.parent.editModule.isDialogEditing) {
+                previousStartDate = null;
+                previousEndDate = null;
+                this.parent.editModule.isDialogEditing = false;
+            } else {
+                previousStartDate = previousGanttProps['startDate'];
+                previousEndDate = previousGanttProps['endDate'];
+            }
+        }
+        const isPredecessorDrawn: boolean = previousGanttProps && 'predecessor' in previousGanttProps;
+        const isUpdateSucessorTask: boolean = this.shouldUpdatePredecessor(
+            parentGanttRecord,
+            record,
+            previousStartDate,
+            previousEndDate,
+            isPredecessorDrawn
+        );
+        if (this.parent.updateOffsetOnTaskbarEdit || isUpdateSucessorTask) {
+            this.validateChildGanttRecord(parentGanttRecord, record);
+        }
+    }
+
+    /**
      *
      * @param {IGanttData} childGanttRecord .
      * @param {IPredecessor[]} previousValue .
@@ -1118,7 +1237,7 @@ export class Dependency {
                 if ((id.toString() === predecessor.to
                     || id.toString() === predecessor.from)
                     && (!validationOn || validationOn === 'predecessor')) {
-                    this.validateChildGanttRecord(parentGanttRecord, record);
+                    this.handleTaskUpdate(parentGanttRecord, record);
                     if (this.parent.editModule['editedRecord'] && this.parent.editModule['editedRecord'].hasChildRecords && !this.parent.editModule['editedRecord'].parentItem) {
                         this.isValidatedParentTaskID = record.ganttProperties.taskId;
                     }
@@ -1152,7 +1271,7 @@ export class Dependency {
                     this.parent.isValidationEnabled = false;
                 }
                 if (validationOn !== 'predecessor' && this.parent.isValidationEnabled) {
-                    this.validateChildGanttRecord(parentGanttRecord, record);
+                    this.handleTaskUpdate(parentGanttRecord, record);
                     if (this.parent.editModule['editedRecord'] && record) {
                         const rootParent: IGanttData = parentGanttRecord.parentItem ?
                             this.getRootParent(parentGanttRecord) : null;

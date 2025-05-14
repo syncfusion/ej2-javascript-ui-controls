@@ -86,14 +86,14 @@ export class Data implements IDataProcessor {
     }
 
     /**
-     * The function is used to generate updated Query from Grid model.
+     * Generates a query based on the current grid configuration.
      *
-     * @param {boolean} skipPage - specifies the boolean to skip the page
-     * @param {boolean} isAutoCompleteCall - specifies for auto complete call
-     * @returns {Query} returns the Query
-     * @hidden
+     * @param {boolean} skipPage - If `true`, the query will exclude paging information.
+     * @param {boolean} skipGroup - If `true`, the query will exclude grouping information.
+     *
+     * @returns {Query} A query object reflecting the current grid state.
      */
-    public generateQuery(skipPage?: boolean, isAutoCompleteCall?: boolean): Query {
+    public generateQuery(skipPage?: boolean, skipGroup?: boolean): Query {
         const gObj: IGrid = this.parent;
         const query: Query = !isNullOrUndefined(gObj.getQuery()) ? gObj.getQuery().clone() : new Query();
         if (this.parent.columnQueryMode === 'ExcludeHidden') {
@@ -123,7 +123,7 @@ export class Data implements IDataProcessor {
             this.pageQuery(query, skipPage);
         }
 
-        if (isNullOrUndefined(isAutoCompleteCall) || !isAutoCompleteCall) {
+        if (isNullOrUndefined(skipGroup) || !skipGroup) {
             this.groupQuery(query);
         }
 

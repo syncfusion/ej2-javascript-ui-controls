@@ -7634,15 +7634,14 @@ describe('Ribbon', () => {
                 comboxObj.filterInput.value = "a";
                 comboxObj.onInput()
                 comboxObj.onFilterUp(keyEventArgs);
-                expect(document.querySelector('#item1_popup').querySelectorAll('li').length).toBe(2);
-                comboxObj.keyActionHandler(keyEvent);
-                expect((document.querySelector('#item1_popup').querySelector('.e-list-item.e-active') as HTMLElement).innerText).toBe('Badminton');
-                comboxObj.keyActionHandler(keyEvent);
-                expect((document.querySelector('#item1_popup').querySelector('.e-list-item.e-active') as HTMLElement).innerText).toBe('Football');
-                expect(isfiltered).toBe(true);
-                expect((ribbon.element.querySelector('#item1') as HTMLInputElement).value === 'Football').toBe(true);
-                comboxObj.hidePopup();
                 setTimeout(() => {
+                    expect(document.querySelector('#item1_popup').querySelectorAll('li').length).toBe(2);
+                    expect((document.querySelector('#item1_popup').querySelector('.e-list-item.e-active') as HTMLElement).innerText).toBe('Badminton');
+                    comboxObj.keyActionHandler(keyEvent);
+                    expect((document.querySelector('#item1_popup').querySelector('.e-list-item.e-active') as HTMLElement).innerText).toBe('Football');
+                    expect(isfiltered).toBe(true);
+                    expect((ribbon.element.querySelector('#item1') as HTMLInputElement).value === 'Football').toBe(true);
+                    comboxObj.hidePopup();
                     done();
                 }, 450);
             }, 450);
@@ -7686,15 +7685,14 @@ describe('Ribbon', () => {
                 comboxObj.filterInput.value = "a";
                 comboxObj.onInput()
                 comboxObj.onFilterUp(keyEventArgs);
-                expect(document.querySelector('#item1_popup').querySelectorAll('li').length).toBe(2);
-                comboxObj.keyActionHandler(keyEvent);
-                expect((document.querySelector('#item1_popup').querySelector('.e-list-item.e-active') as HTMLElement).innerText).toBe('Badminton');
-                comboxObj.keyActionHandler(keyEvent);
-                expect((document.querySelector('#item1_popup').querySelector('.e-list-item.e-active') as HTMLElement).innerText).toBe('Football');
-                expect(isfiltered).toBe(true);
-                expect((ribbon.element.querySelector('#item1') as HTMLInputElement).value === 'Football').toBe(true);
-                comboxObj.hidePopup();
                 setTimeout(() => {
+                    expect(document.querySelector('#item1_popup').querySelectorAll('li').length).toBe(2);
+                    expect((document.querySelector('#item1_popup').querySelector('.e-list-item.e-active') as HTMLElement).innerText).toBe('Badminton');
+                    comboxObj.keyActionHandler(keyEvent);
+                    expect((document.querySelector('#item1_popup').querySelector('.e-list-item.e-active') as HTMLElement).innerText).toBe('Football');
+                    expect(isfiltered).toBe(true);
+                    expect((ribbon.element.querySelector('#item1') as HTMLInputElement).value === 'Football').toBe(true);
+                    comboxObj.hidePopup();
                     done();
                 }, 450);
             }, 450);

@@ -3,6 +3,7 @@ import { defaultData } from '../util/datasource.spec';
 import { CellModel, DialogBeforeOpenEventArgs, HyperlinkModel, RowModel } from '../../../src';
 import { getFormatFromType, BeforeHyperlinkArgs, setCellFormat } from '../../../src/index';
 import { Spreadsheet } from "../../../src/index"; 
+import { getComponent } from '@syncfusion/ej2-base';
 
 describe('Hyperlink ->', () => {
     const helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
@@ -182,6 +183,17 @@ describe('Hyperlink ->', () => {
             expect(sheet.rows[99].cells[0].hyperlink).toBe('http://www.syncfusion.com');
             helper.invoke('clear', [{ range: 'A100', type: 'Clear All' }]);
             expect(sheet.rows[99].cells[0].hyperlink).toBeUndefined();
+            done();
+        });
+        it('EJ2-931211 - Hyperlink applies to unmerged cells after unmerging merged cells', (done: Function) => {
+            helper.invoke('merge', ['H10:H11']);
+            const cell1: CellModel = helper.getInstance().sheets[0].rows[9].cells[7];
+            const cell2: CellModel = helper.getInstance().sheets[0].rows[10].cells[7];
+            expect(cell1.rowSpan).toBe(2);
+            expect(cell2.rowSpan).toBe(-1);
+            helper.invoke('insertHyperlink', [{ address: 'http://www.syncfusion.com' }, 'H10:H11', false]);
+            expect(JSON.stringify(cell1.hyperlink)).toBe('{"address":"http://www.syncfusion.com"}');
+            expect(JSON.stringify(cell2.hyperlink)).toBe(undefined);
             done();
         });
     });
@@ -1246,6 +1258,24 @@ describe('Hyperlink ->', () => {
                     expect(td.textContent).toBe('55');
                     done();
                 });
+            });
+            it('EJ2-881848 - Issue on Clearing the Conditional Formatting Rules', (done: Function) => {
+                helper.invoke('insertHyperlink', ['www.google.com', 'H11']);
+                expect(helper.getInstance().sheets[0].rows[10].cells[7].hyperlink).toBe('http://www.google.com');
+                helper.invoke('conditionalFormat', [{ type: 'BlueDataBar', range: 'H11' }]);
+                expect(helper.invoke('getCell', [10, 7]).getElementsByClassName('e-databar')[1].style.width).toBe('100%');
+                expect(helper.invoke('getCell', [10, 7]).getElementsByClassName('e-databar')[1].style.height).toBe('17px');
+                helper.invoke('selectRange', ['H11']);
+                helper.getElement('#' + helper.id + '_conditionalformatting').click();
+                const clearrules: HTMLElement = helper.getElement('#' + helper.id + '_conditionalformatting-popup .e-menu-item[aria-label="Clear Rules"]');
+                (getComponent(clearrules.parentElement, 'menu') as any).animationSettings.effect = 'None';
+                helper.triggerMouseAction('mouseover', { x: clearrules.getBoundingClientRect().left + 5, y: clearrules.getBoundingClientRect().top + 5 }, document, clearrules);
+                helper.getElement('#cf_cr_cells').click();
+                const cellEle: HTMLElement = helper.invoke('getCell', [10, 7]);
+                expect(cellEle.querySelector('.e-databar')).toBeNull();
+                expect(cellEle.querySelector('a')).not.toBeNull();
+                expect(cellEle.querySelector('a').href).toBe('http://www.google.com/');
+                done();
             });
         });
 

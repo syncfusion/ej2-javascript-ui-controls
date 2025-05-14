@@ -11,7 +11,7 @@ import {
     DrawNodeEventArgs, ExpandEventArgs, NodeSelectEventArgs, NodeKeyPressEventArgs
 } from '@syncfusion/ej2-navigations';
 import { ContextMenu as Menu, MenuItemModel, ContextMenuModel } from '@syncfusion/ej2-navigations';
-import { IAction, CalculatedFieldCreateEventArgs, AggregateMenuOpenEventArgs, PivotActionInfo } from '../../common/base/interface';
+import { IAction, CalculatedFieldCreateEventArgs, AggregateMenuOpenEventArgs, PivotActionInfo, PivotActionCompleteEventArgs } from '../../common/base/interface';
 import * as events from '../../common/base/constant';
 import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
 import { Tab, Accordion, AccordionItemModel, AccordionClickArgs } from '@syncfusion/ej2-navigations';
@@ -761,8 +761,7 @@ export class CalculatedField implements IAction {
                         addClass([document.getElementById(this.parentID + 'ddlelement')], cls.EMPTY_FIELD);
                         document.getElementById(this.parentID + 'ddlelement').focus();
                     } else {
-                        this.parent.pivotCommon.errorDialog.createErrorDialog(
-                            this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('invalidFormula'));
+                        this.triggerActionCompleteEvent();
                     }
                 }
             } else {
@@ -903,8 +902,6 @@ export class CalculatedField implements IAction {
         if (this.parent.engineModule.fieldList[this.field]) {
             delete this.parent.engineModule.fieldList[this.field];
         }
-        this.parent.pivotCommon.errorDialog.createErrorDialog(
-            this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('invalidFormula'));
         this.parent.setProperties({ dataSourceSettings: this.existingReport }, true);
         if (this.isEdit) {
             const calcFields: CalculatedFieldSettingsModel[] = this.parent.dataSourceSettings.calculatedFieldSettings;
@@ -923,6 +920,7 @@ export class CalculatedField implements IAction {
             }
         }
         this.parent.lastCalcFieldInfo = {};
+        this.triggerActionCompleteEvent();
         this.parent.updateDataSource(false);
         this.isFormula = false;
     }
@@ -1135,7 +1133,9 @@ export class CalculatedField implements IAction {
 
     private closeDialog(): void {
         if (this.parent.getModuleName() === 'pivotfieldlist') {
-            this.parent.axisFieldModule.render();
+            if (this.parent.actionObj.actionName !== 'Abort') {
+                this.parent.axisFieldModule.render();
+            }
             if ((this.parent as PivotFieldList).renderMode !== 'Fixed') {
                 addClass([this.parent.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)], cls.ICON_HIDDEN);
                 (this.parent as PivotFieldList).dialogRenderer.fieldListDialog.show();
@@ -2288,6 +2288,33 @@ export class CalculatedField implements IAction {
         const confirmPopUp: Dialog = getInstance(
             select('#' + this.parentID + '_CalculatedFieldErrorDialog', document) as HTMLElement, Dialog) as Dialog;
         confirmPopUp.close();
+    }
+
+    private triggerActionCompleteEvent(): void {
+        const eventArgs: PivotActionCompleteEventArgs = {
+            dataSourceSettings: PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings),
+            actionName: events.invalidFormula,
+            fieldInfo: this.parent.actionObj.fieldInfo,
+            actionInfo: this.parent.actionObj.actionInfo
+        };
+        const control: PivotView | PivotFieldList = (this.parent as PivotFieldList).isPopupView ?
+            (this.parent as PivotFieldList).pivotGridModule : this.parent;
+        control.trigger(events.actionComplete, eventArgs);
+        if (eventArgs.actionName !== 'Abort' && this.parent.pivotCommon && this.parent.pivotCommon.errorDialog) {
+            this.parent.pivotCommon.errorDialog.createErrorDialog(
+                this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('invalidFormula'));
+        } else {
+            if (this.parent && this.parent.actionObj) {
+                this.parent.actionObj.actionName = eventArgs.actionName;
+            }
+            this.closeDialog();
+        }
+        if (this.parent && this.parent.actionObj) {
+            this.parent.actionObj.actionName = '';
+        }
+        if (control && control.actionObj) {
+            control.actionObj.actionName = '';
+        }
     }
 
     /**

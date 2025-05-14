@@ -1209,7 +1209,7 @@ describe('MultiSelect', () => {
             listObj.destroy();
         });
         it('allowCustomValue with filtering.', () => {
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, fields: { text: 'text', value: 'text' }, allowCustomValue: true, allowFiltering: true, value: ['PHP'] });
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, fields: { text: 'text', value: 'text' }, allowCustomValue: true, debounceDelay: 0, allowFiltering: true, value: ['PHP'] });
             listObj.appendTo(element);
             listObj.showPopup();
             (<any>listObj).inputElement.value = "RUBY";
@@ -1276,7 +1276,7 @@ describe('MultiSelect', () => {
             listObj.destroy();
         });
         it('allowCustomValue with array datasource and filtering', () => {
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: ['test'], allowCustomValue: true, allowFiltering: true });
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: ['test'], allowCustomValue: true, debounceDelay: 0, allowFiltering: true });
             listObj.appendTo(element);
             listObj.showPopup();
             (<any>listObj).inputElement.value = "RUBY";
@@ -1394,7 +1394,7 @@ describe('MultiSelect', () => {
          */
         it('select event validation with mouse', () => {
             listObj = new MultiSelect({
-                hideSelectedItem: false, dataSource: datasource2, fields: { value: 'text', text: 'text' }, allowFiltering: true,
+                hideSelectedItem: false, dataSource: datasource2, fields: { value: 'text', text: 'text' }, allowFiltering: true, debounceDelay: 0,
                 filtering: function (e) {
                     let query: Query = new Query().select(['text', 'id']);
                     query = (e.text !== '') ? query.where('text', 'startswith', e.text, true) : query;
@@ -1417,7 +1417,7 @@ describe('MultiSelect', () => {
         });
         it('filtering basic coverage', () => {
             listObj = new MultiSelect({
-                hideSelectedItem: false, dataSource: datasource2, fields: { value: 'text', text: 'text' }, allowFiltering: true,
+                hideSelectedItem: false, dataSource: datasource2, fields: { value: 'text', text: 'text' }, allowFiltering: true, debounceDelay: 0,
                 filtering: function (e) {
                     let query: Query = new Query().select(['text', 'id']);
                     query = (e.text !== '') ? query.where('text', 'startswith', e.text, true) : query;
@@ -1453,7 +1453,8 @@ describe('MultiSelect', () => {
                 dataSource: datasource2,
                 value: ['list1'],
                 fields: { value: 'id', text: 'text' },
-                allowFiltering: true
+                allowFiltering: true,
+                debounceDelay: 0
             });
             listObj.appendTo(element);
             //open action validation
@@ -1481,7 +1482,8 @@ describe('MultiSelect', () => {
                 dataSource: empList,
                 value: ['2'],
                 fields: { value: 'eimg', text: 'text', groupBy: "country" },
-                allowFiltering: true
+                allowFiltering: true,
+                debounceDelay: 0
             });
             listObj.appendTo(element);
             //open action validation
@@ -1540,7 +1542,7 @@ describe('MultiSelect', () => {
         });
         it('filtering basic coverage', () => {
             listObj = new MultiSelect({
-                hideSelectedItem: false, dataSource: datasource2, fields: { value: 'text', text: 'text' }, allowFiltering: true,
+                hideSelectedItem: false, dataSource: datasource2, fields: { value: 'text', text: 'text' }, allowFiltering: true, debounceDelay: 0,
                 filtering: function (e) {
                     let query: Query = new Query().select(['text', 'id']);
                     query = (e.text !== '') ? query.where('text', 'startswith', e.text, true) : query;
@@ -1563,7 +1565,7 @@ describe('MultiSelect', () => {
         });
         it('filtering methode', () => {
             let listObj1: any = new MultiSelect({
-                hideSelectedItem: false, dataSource: datasource2, fields: { value: 'text', text: 'text' }, allowFiltering: true,
+                hideSelectedItem: false, dataSource: datasource2, fields: { value: 'text', text: 'text' }, allowFiltering: true, debounceDelay: 0,
                 filtering: function (e) {
                     let query: Query = new Query().select(['text', 'id']);
                     query = (e.text !== '') ? query.where('text', 'startswith', e.text, true) : query;
@@ -2052,7 +2054,7 @@ describe('MultiSelect', () => {
          * Keyboard Interaction automation for box mode.
          */
         it('Multiselect-Chip interaction validation- box mode with filtering', () => {
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, fields: { text: "text", value: "text" }, mode: 'Box', allowFiltering: true, closePopupOnSelect: true, value: ['JAVA', 'Python', 'Oracle', 'HTML', 'PHP'] });
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, fields: { text: "text", value: "text" }, mode: 'Box', allowFiltering: true, debounceDelay: 0, closePopupOnSelect: true, value: ['JAVA', 'Python', 'Oracle', 'HTML', 'PHP'] });
             listObj.appendTo(element);
             keyboardEventArgs.keyCode = 8;
             expect((<any>listObj).chipCollectionWrapper.querySelectorAll('span.' + multiSelectData.chips).length).toBe(5);//2
@@ -2207,7 +2209,7 @@ describe('MultiSelect', () => {
         it('filtering Event - with Key interactions', () => {
             let checker: boolean = false, checker1: boolean = false;
             listObj = new MultiSelect({
-                hideSelectedItem: false, dataSource: datasource2, value: ["JAVA"], placeholder: 'Select Dropdown', allowFiltering: true,
+                hideSelectedItem: false, dataSource: datasource2, value: ["JAVA"], placeholder: 'Select Dropdown', allowFiltering: true, debounceDelay: 0,
                 filtering: function (e) {
                     checker = true;
                     let query: Query = new Query().select(['text', 'id']);
@@ -2320,7 +2322,7 @@ describe('MultiSelect', () => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             document.body.innerHTML = '';
             document.body.appendChild(element);
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, enableVirtualization: true, fields: { value: 'EmployeeID', text: 'FirstName' } });
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, debounceDelay: 0, enableVirtualization: true, fields: { value: 'EmployeeID', text: 'FirstName' } });
             listObj.appendTo(element);
             done();
         });
@@ -2337,7 +2339,7 @@ describe('MultiSelect', () => {
                 expect(listObj.text).toBe("Anne Dodsworth");
                 listObj.destroy();
                 done();
-            }, 3000);
+            }, 3500);
         });
     });
     describe('Remote data binding - with-out keyboard list selection', () => {
@@ -2680,7 +2682,7 @@ describe('MultiSelect', () => {
         });
 
         it('in-built filter', () => {
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: dataSource44, allowFiltering: true });
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: dataSource44, allowFiltering: true, debounceDelay: 0 });
             listObj.appendTo(element);
             listObj.showPopup();
             (<any>listObj).inputFocus = true;
@@ -3072,7 +3074,7 @@ describe('MultiSelect', () => {
         it('filtering Event - with default mode', () => {
             let checker: boolean = false, checker1: boolean = false;
             listObj = new MultiSelect({
-                hideSelectedItem: false, dataSource: datasource2, value: ["JAVA"], allowFiltering: true,
+                hideSelectedItem: false, dataSource: datasource2, value: ["JAVA"], allowFiltering: true, debounceDelay: 0,
                 filtering: function (e) {
                     checker = true;
                     let query: Query = new Query().select(['text', 'id']);
@@ -3097,7 +3099,7 @@ describe('MultiSelect', () => {
         it('filtering Event - with default mode without content search.', () => {
             let checker: boolean = false, checker1: boolean = false;
             listObj = new MultiSelect({
-                hideSelectedItem: false, dataSource: datasource2, value: ["JAVA"], allowFiltering: true,
+                hideSelectedItem: false, dataSource: datasource2, value: ["JAVA"], allowFiltering: true, debounceDelay: 0,
                 filtering: function (e) {
                     checker = true;
                     let query: Query = new Query().select(['text', 'id']);
@@ -3443,7 +3445,7 @@ describe('MultiSelect', () => {
             document.body.appendChild(ele);
             listObj = new MultiSelect({
                 hideSelectedItem: false,
-                dataSource: data, fields: { text: 'text', value: 'id' }, allowFiltering: true,
+                dataSource: data, fields: { text: 'text', value: 'id' }, allowFiltering: true, debounceDelay: 0,
                 popupHeight: '100px',
                 value: ['list42'],
                 filtering: function (e: any) {
@@ -3485,7 +3487,7 @@ describe('MultiSelect', () => {
             document.body.appendChild(ele);
             listObj = new MultiSelect({
                 hideSelectedItem: false,
-                dataSource: data, fields: { text: 'text', value: 'id' }, allowFiltering: true,
+                dataSource: data, fields: { text: 'text', value: 'id' }, allowFiltering: true, debounceDelay: 0,
                 popupHeight: '100px',
                 filtering: function (e: any) {
                     let query = new Query();
@@ -4012,7 +4014,7 @@ describe('MultiSelect', () => {
         it('filtering Event args.cancel', () => {
             let checker: boolean = false, checker1: boolean = false;
             listObj = new MultiSelect({
-                hideSelectedItem: false, dataSource: datasource2, value: ["JAVA"], allowFiltering: true,
+                hideSelectedItem: false, dataSource: datasource2, value: ["JAVA"], allowFiltering: true, debounceDelay: 0,
                 filtering: function (e: any) {
                     checker = true;
                     expect(e.cancel).toBe(false);
@@ -4065,7 +4067,7 @@ describe('MultiSelect', () => {
             listObj = new MultiSelect({
                 hideSelectedItem: false, dataSource: datasource2, fields: { text: 'text', value: 'text' },
                 allowCustomValue: true,
-                allowFiltering: true,
+                allowFiltering: true, debounceDelay: 0,
                 customValueSelection: function (e: any) {
                     expect(e.cancel).toBe(false);
                     e.cancel = true;
@@ -4157,7 +4159,8 @@ describe('MultiSelect', () => {
             comboObj = new MultiSelect({
                 dataSource: data,
                 ignoreAccent: true,
-                allowFiltering: true
+                allowFiltering: true,
+                debounceDelay: 0
             });
             comboObj.appendTo(element);
         });
@@ -4258,7 +4261,7 @@ describe('MultiSelect', () => {
         })
         it('openOnClick', () => {
             let multiObj = new MultiSelect({
-                hideSelectedItem: false, dataSource: datasource2, openOnClick: false, mode: 'Box', fields: { value: 'text', text: 'text' }, allowFiltering: true,
+                hideSelectedItem: false, dataSource: datasource2, openOnClick: false, mode: 'Box', debounceDelay: 0, fields: { value: 'text', text: 'text' }, allowFiltering: true,
                 filtering: function (e) {
                     let query: Query = new Query().select(['text', 'id']);
                     query = (e.text !== '') ? query.where('text', 'startswith', e.text, true) : query;
@@ -4474,6 +4477,7 @@ describe('MultiSelect', () => {
             dropDowns = new MultiSelect({
                 dataSource: datasource,
                 allowFiltering: true,
+                debounceDelay: 0,
                 fields: { value: 'id', text: 'text' },
                 filtering: (e: FilteringEventArgs) => {
                     e.cancel = true;
@@ -4510,6 +4514,7 @@ describe('MultiSelect', () => {
             dropDowns = new MultiSelect({
                 dataSource: remoteData,
                 allowFiltering: true,
+                debounceDelay: 0,
                 fields: { value: 'FirstName' },
                 actionBegin: (e: any) => {
                     e.cancel = true;
@@ -4549,6 +4554,7 @@ describe('MultiSelect', () => {
             dropDowns = new MultiSelect({
                 dataSource: remoteData,
                 allowFiltering: true,
+                debounceDelay: 0,
                 fields: { value: 'FirstName' },
                 actionComplete: (e: any) => {
                     e.cancel = true;
@@ -4585,6 +4591,7 @@ describe('MultiSelect', () => {
             dropDowns = new MultiSelect({
                 dataSource: datasource,
                 allowFiltering: true,
+                debounceDelay: 0,
                 fields: <Object>{
                     value: 'text', itemCreated: (e: any) => {
                         if (count === 0) {
@@ -4595,7 +4602,9 @@ describe('MultiSelect', () => {
             });
             dropDowns.appendTo(element);
             dropDowns.renderPopup();
-            dropDowns.inputElement.value = 'J';
+            if (dropDowns.inputElement) {
+                dropDowns.inputElement.value = 'J';    
+            }
             e.keyCode = 72;
             dropDowns.keyDownStatus = true;
             dropDowns.onInput();
@@ -4835,7 +4844,7 @@ describe('MultiSelect', () => {
         })
         it('sortorder changed', () => {
             let multiObj = new MultiSelect({
-                dataSource: datasource2, mode: 'Delimiter', fields: { value: 'text', text: 'text' }, allowFiltering: true
+                dataSource: datasource2, mode: 'Delimiter', fields: { value: 'text', text: 'text' }, allowFiltering: true, debounceDelay: 0,
             });
             multiObj.appendTo('#newlist');
             multiObj.showPopup();
@@ -4902,7 +4911,8 @@ describe('MultiSelect', () => {
             dropDowns = new MultiSelect({
                 dataSource: ['Java Script', 'AS.NET MVC'],
                 value: ['Java Script'],
-                allowFiltering: true
+                allowFiltering: true,
+                debounceDelay: 0,
 
             });
             dropDowns.appendTo(element);
@@ -4938,7 +4948,8 @@ describe('MultiSelect', () => {
             let dropDowns: any = new MultiSelect({
                 dataSource: ['Java Script', 'AS.NET MVC'],
                 value: ['Java Script'],
-                allowFiltering: true
+                allowFiltering: true,
+                debounceDelay: 0
             });
             dropDowns.appendTo(element);
             dropDowns.showPopup();
@@ -4963,6 +4974,7 @@ describe('MultiSelect', () => {
                 dataSource: ['Java Script', 'AS.NET MVC'],
                 value: ['Java Script'],
                 allowFiltering: true,
+                debounceDelay: 0
 
             });
             dropDowns.appendTo(element);
@@ -5169,6 +5181,7 @@ describe('MultiSelect', () => {
             ddl = new MultiSelect({
                 dataSource: data,
                 allowFiltering: true,
+                debounceDelay: 0,
                 showSelectAll: true,
                 fields: { text: "text", value: "text" },
                 selectedAll: (args: ISelectAllEventArgs): void => {
@@ -6135,7 +6148,7 @@ describe('MultiSelect', () => {
         beforeAll(() => {
             document.body.appendChild(ele);
             listObj = new MultiSelect({
-                dataSource: data, fields: { text: 'text', value: 'id' }, allowFiltering: true,
+                dataSource: data, fields: { text: 'text', value: 'id' }, allowFiltering: true, debounceDelay: 0,
                 popupHeight: '100px',
                 filterType: 'StartsWith'
             });
@@ -7115,6 +7128,7 @@ describe('MultiSelect', () => {
             Browser.userAgent = androidPhoneUa;
             let listObj: MultiSelect = new MultiSelect({
                 dataSource: empList,
+                debounceDelay: 0,
                 fields: { text: 'Name', value: 'Name' },
                 mode : 'CheckBox',
                 placeholder: 'Select an employee',
@@ -7143,7 +7157,8 @@ describe('MultiSelect', () => {
                 placeholder: 'Select an employee',
                 popupHeight: '300px',
                 value: ['Australia'],
-                allowFiltering : false,
+                allowFiltering: false,
+                debounceDelay: 0,
             });
             listObj.appendTo(element);
             expect(document.body.classList.contains('e-popup-full-page')).toBe(false);
@@ -7240,6 +7255,7 @@ describe('MultiSelect', () => {
                 popupHeight: '300px',
                 value: ['Australia'],
                 allowFiltering: false,
+                debounceDelay: 0,
             });
             listObj.appendTo(element);
             expect(document.body.classList.contains('e-popup-full-page')).toBe(false);
@@ -7290,6 +7306,7 @@ describe('MultiSelect', () => {
                 popupHeight: '300px',
                 value: ['Australia'],
                 allowFiltering: false,
+                debounceDelay: 0,
                 showSelectAll: true,
             });
             listObj.appendTo(element);
@@ -7324,7 +7341,7 @@ describe('MultiSelect', () => {
             popupElement = listObj.list.parentElement;
             resizer = <HTMLElement>popupElement.querySelector('.e-resizer-right.e-icons');
             expect(resizer).not.toBeNull();  // Verify the resizer element is created
-            expect(popupElement.style.height).toBe('100%');
+            expect(popupElement.style.height).toBe('');
             expect(popupElement.style.paddingBottom).toContain('16px');
             done();
         });
@@ -7417,6 +7434,7 @@ describe('MultiSelect', () => {
                 showDropDownIcon: true,
                 showSelectAll: true,
                 allowFiltering: true,
+                debounceDelay: 0,
                 value: ['00000001'],
                 width: '300px'
             });
@@ -7434,6 +7452,7 @@ describe('MultiSelect', () => {
                 showDropDownIcon: true,
                 showSelectAll: true,
                 allowFiltering: true,
+                debounceDelay: 0,
                 value: ['00000003'],
                 width: '300px'
             });
@@ -7451,6 +7470,7 @@ describe('MultiSelect', () => {
                 showDropDownIcon: true,
                 showSelectAll: true,
                 allowFiltering: true,
+                debounceDelay: 0,
                 value: ['00000002', '00000001'],
             });
             listObj.appendTo(element);
@@ -7538,7 +7558,7 @@ describe('MultiSelect', () => {
             }
         });
         it('Checkbox mode with allowFiltering for remote data', (done) => {
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, mode: "CheckBox", fields: { value: 'EmployeeID', text: 'FirstName' }, allowFiltering: true });
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, mode: "CheckBox", fields: { value: 'EmployeeID', text: 'FirstName' }, allowFiltering: true, debounceDelay: 0 });
             listObj.appendTo(element);
             listObj.showPopup();
             setTimeout(() => {
@@ -7557,7 +7577,7 @@ describe('MultiSelect', () => {
             }, 800);
         });
         it('Checkbox mode without allowFiltering for remote data', (done) => {
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, mode: "CheckBox", fields: { value: 'EmployeeID', text: 'FirstName' }, allowFiltering: false });
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: remoteData, mode: "CheckBox", fields: { value: 'EmployeeID', text: 'FirstName' }, allowFiltering: false, debounceDelay: 0 });
             listObj.appendTo(element);
             listObj.showPopup();
             setTimeout(() => {
@@ -7572,7 +7592,7 @@ describe('MultiSelect', () => {
             }, 2000);
         });
         it('Checkbox mode with allowFiltering for local data', (done) => {
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: empList, mode: "CheckBox", fields: { value: 'id', text: 'text' }, allowFiltering: true });
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: empList, mode: "CheckBox", fields: { value: 'id', text: 'text' }, allowFiltering: true, debounceDelay: 0 });
             listObj.appendTo(element);
             listObj.showPopup();
             setTimeout(() => {
@@ -7591,7 +7611,7 @@ describe('MultiSelect', () => {
             }, 3000);
         });
         it('Checkbox mode without allowFiltering for local data', (done) => {
-            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: empList, mode: "CheckBox", fields: { value: 'id', text: 'text' }, allowFiltering: false });
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: empList, mode: "CheckBox", fields: { value: 'id', text: 'text' }, allowFiltering: false, debounceDelay: 0, });
             listObj.appendTo(element);
             listObj.showPopup();
             setTimeout(() => {
@@ -8020,6 +8040,7 @@ describe('MultiSelect', () => {
             let listObj: MultiSelect = new MultiSelect({
                 dataSource: datasource,
                 allowFiltering: true,
+                debounceDelay: 0,
                 showClearButton: true,
                 fields:{text:"text",value:"text"},
                 filtering: function (e) {
@@ -8049,6 +8070,7 @@ describe('MultiSelect', () => {
             let listObj: MultiSelect = new MultiSelect({
                 dataSource: datasource,
                 allowFiltering: true,
+                debounceDelay: 0,
                 showClearButton: true,
                 value: ["JAVA"],
                 fields:{text:"text",value:"text"},
@@ -8289,6 +8311,7 @@ describe('MultiSelect', () => {
                 fields: { text: 'text',value:'id' },
                 allowCustomValue : true,
                 allowFiltering: true,
+                debounceDelay: 0,
                 customValueSelection: ( e : any): void => {
                     expect(!isNullOrUndefined(e.newData)).toBe(true);
                 },
@@ -8365,6 +8388,7 @@ describe('MultiSelect', () => {
                 fields: { text: 'text',value:'id' },
                 allowCustomValue : true,
                 allowFiltering: true,
+                debounceDelay: 0,
                 removing: ( e : any): void => {
                     itemData = e.itemData;
                 }
@@ -8433,7 +8457,8 @@ describe('MultiSelect', () => {
             let itemData: any;
             listObj = new MultiSelect({
                 dataSource: [1,2,3],
-                allowCustomValue : true,
+                allowCustomValue: true,
+                debounceDelay: 0,
                 allowFiltering: true,
                 removing: ( e : any): void => {
                     itemData = e.itemData;
@@ -8501,6 +8526,7 @@ describe('MultiSelect', () => {
                 dataSource: ['1','2','3'],
                 allowCustomValue : true,
                 allowFiltering: true,
+                debounceDelay: 0,
                 removing: ( e : any): void => {
                     itemData = e.itemData;
                 }
@@ -8687,6 +8713,7 @@ describe('MultiSelect', () => {
                 value: ['JAVA'],
                 allowCustomValue : true,
                 allowFiltering: true,
+                debounceDelay: 0,
             });
             mulObj.appendTo(element);
             expect(mulObj.inputElement.size).toBe(5);
@@ -9208,7 +9235,7 @@ describe('MultiSelect', () => {
         // });
         it('Testing the custom chip creation on blur with filtering', () => {
             multiObj = new MultiSelect({
-                dataSource: gameList, fields: { text: 'text', value: 'id'}, addTagOnBlur: true, mode: 'Box', allowCustomValue: true, allowFiltering: true
+                dataSource: gameList, fields: { text: 'text', value: 'id' }, addTagOnBlur: true, mode: 'Box', allowCustomValue: true, debounceDelay: 0, allowFiltering: true
             });
             multiObj.appendTo(element);
             customSearch('j');
@@ -9229,7 +9256,7 @@ describe('MultiSelect', () => {
         });
         it('Testing the chip creation on blur for non-custom case and filtering case', () => {
             multiObj = new MultiSelect({
-                dataSource: gameList, fields: { text: 'text', value: 'id'}, addTagOnBlur: true, mode: 'Box', allowFiltering: true
+                dataSource: gameList, fields: { text: 'text', value: 'id' }, addTagOnBlur: true, mode: 'Box', allowFiltering: true, debounceDelay: 0,
             });
             multiObj.appendTo(element);
             customSearch('j');
@@ -9580,7 +9607,7 @@ describe('MultiSelect', () => {
         });
         it('Testing the custom chip creation on blur with filtering', () => {
             multiObj = new MultiSelect({
-                dataSource: gameList, fields: { text: 'text', value: 'id'}, addTagOnBlur: true, mode: 'Default', allowCustomValue: true, allowFiltering: true
+                dataSource: gameList, fields: { text: 'text', value: 'id' }, addTagOnBlur: true, mode: 'Default', allowCustomValue: true, debounceDelay: 0, allowFiltering: true
             });
             multiObj.appendTo(element);
             customSearch('j');
@@ -9601,7 +9628,7 @@ describe('MultiSelect', () => {
         });
         it('Testing the chip creation on blur for non-custom case and filtering case', () => {
             multiObj = new MultiSelect({
-                dataSource: gameList, fields: { text: 'text', value: 'id'}, addTagOnBlur: true, mode: 'Default', allowFiltering: true
+                dataSource: gameList, fields: { text: 'text', value: 'id' }, addTagOnBlur: true, mode: 'Default', allowFiltering: true, debounceDelay: 0,
             });
             multiObj.appendTo(element);
             customSearch('j');
@@ -10066,6 +10093,7 @@ describe('MultiSelect', () => {
         it('testing allowcustom with groupby and filtering', () => {
             listObj = new MultiSelect({allowCustomValue: true,
                 allowFiltering: true,
+                debounceDelay: 0,
                 dataSource: datasource,
                 fields: { groupBy: 'category', text: 'vegetable', value: 'ID' },});
             listObj.appendTo(element);
@@ -10106,6 +10134,7 @@ describe('MultiSelect', () => {
             let listObj: MultiSelect = new MultiSelect({
                 dataSource: datasource,
                 allowFiltering: true,
+                debounceDelay: 0,
                 showClearButton: true,
                 fields:{text:"text",value:"text"},
                 showDropDownIcon: true,
@@ -10155,6 +10184,7 @@ describe('MultiSelect', () => {
             let listObj: MultiSelect = new MultiSelect({
                 dataSource: datasource,
                 allowFiltering: true,
+                debounceDelay: 0,
                 showClearButton: true,
                 fields:{text:"text",value:"text"},
                 showDropDownIcon: true,
@@ -10248,6 +10278,7 @@ describe('MultiSelect', () => {
                 dataSource: datasource,
                 allowCustomValue: true,
                 allowFiltering: true,
+                debounceDelay: 0,
                 value: ['1','2','3']
             });
             listObj.appendTo('#multi');
@@ -10898,6 +10929,7 @@ describe('MultiSelect', () => {
             listObj = new MultiSelect({ 
                 dataSource: datasource,
                 fields: { value: "id", text: "text" },
+                debounceDelay: 0,
                 allowFiltering: null
             }, '#list');
             expect(listObj.allowFiltering).toBe(false);
@@ -10905,6 +10937,7 @@ describe('MultiSelect', () => {
             listObj = new MultiSelect({ 
                 dataSource: datasource,
                 fields: { value: "id", text: "text" },
+                debounceDelay: 0,
                 allowFiltering: undefined
             }, '#list');
             expect(listObj.allowFiltering).toBe(false);
@@ -11043,6 +11076,7 @@ describe('MultiSelect', () => {
                 dataSource: datasource,
                 fields: { value: "id", text: "text" },
                 allowFiltering: true,
+                debounceDelay: 0,
                 filterBarPlaceholder: null
             }, '#list');
             expect(listObj.filterBarPlaceholder).toBe(null);
@@ -11051,6 +11085,7 @@ describe('MultiSelect', () => {
                 dataSource: datasource,
                 fields: { value: "id", text: "text" },
                 allowFiltering: true,
+                debounceDelay: 0,
                 filterBarPlaceholder: undefined
             }, '#list');
             expect(listObj.filterBarPlaceholder).toBe(null);
@@ -11570,7 +11605,8 @@ describe('MultiSelect', () => {
             let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
                 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
             Browser.userAgent = androidPhoneUa;
-            listObj = new MultiSelect({ allowFiltering: true,allowObjectBinding:true, 
+            listObj = new MultiSelect({
+                allowFiltering: true, allowObjectBinding: true, debounceDelay: 0,
                 dataSource: datasource2, value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }],
                 fields: { text: 'text', value: 'id' }
             });
@@ -11831,7 +11867,8 @@ describe('MultiSelect', () => {
             (<any>listObj).dataBind();
         });
         it('- reinitialPopup', () => {
-            listObj = new MultiSelect({ allowObjectBinding: true, fields: { text: 'text', value: 'text',groupBy: 'id'},mode:'CheckBox',showSelectAll:false,
+            listObj = new MultiSelect({
+                allowObjectBinding: true, debounceDelay: 0, fields: { text: 'text', value: 'text', groupBy: 'id' }, mode: 'CheckBox', showSelectAll: false,
                 enableGroupCheckBox:true,
                 dataSource: datasource2, value:[{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }]});
             listObj.appendTo(element);

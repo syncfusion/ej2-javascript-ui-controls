@@ -159,6 +159,7 @@ export class Formula {
                 cssClass: 'e-ss-atc',
                 popupWidth: '130px',
                 allowFiltering: true,
+                debounceDelay: 0,
                 filterType: 'StartsWith',
                 sortOrder: 'Ascending',
                 open: this.onSuggestionOpen.bind(this),

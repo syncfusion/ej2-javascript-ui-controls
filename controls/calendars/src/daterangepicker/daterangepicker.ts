@@ -3210,7 +3210,6 @@ export class DateRangePicker extends CalendarBase {
         const labelContainer: HTMLElement = this.createRangeHeader();
         headerContainer.appendChild(labelContainer);
         const daySpan: HTMLElement = this.createElement('div', { className: DAYSPAN });
-        attributes(daySpan, { 'aria-label': 'Selected Days' });
         daySpan.textContent = this.l10n.getConstant('selectedDays');
         headerContainer.appendChild(daySpan);
         const separator: HTMLElement = this.createElement('div', { className: SEPARATOR });
@@ -3976,8 +3975,11 @@ export class DateRangePicker extends CalendarBase {
         attributes(this.inputElement, {
             'tabindex': '0', 'aria-expanded': 'false', 'role': 'combobox',
             'autocomplete': 'off', 'aria-disabled': !this.enabled ? 'true' : 'false',
-            'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false'
+            'autocapitalize': 'off', 'spellcheck': 'false'
         });
+        if (Browser.isIos) {
+            attributes(this.inputElement, { 'autocorrect': 'off' });
+        }
         Input.addAttributes({ 'aria-label': 'select', 'role': 'button' }, this.inputWrapper.buttons[0]);
         // if (!isNullOrUndefined(this.placeholder) && this.placeholder.trim() !== '') {
         //     Input.addAttributes({ 'aria-placeholder': this.placeholder }, this.inputElement);

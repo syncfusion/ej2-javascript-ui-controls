@@ -425,3 +425,34 @@ describe('single delete in content control', () => {
         expect(editor.selection.end.offset).toBe(12);
     });
 });
+describe('Validate the verbalize selection', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true, enableEditorHistory: true, enableSfdtExport: true });
+
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Validate the verbalize selection', () => {
+        console.log('Validate the verbalize selection');
+        editor.editorModule.insertText('Syncfusion');
+        editor.selectionModule.selectAll();
+        expect(() => { editor.verbelizeFromCursorLocation() }).not.toThrowError();
+    });
+});

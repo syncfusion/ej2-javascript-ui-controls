@@ -9248,10 +9248,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                         else if (fieldValue.type === 'SignatureField' || fieldValue.type === 'InitialField') {
                             if (fieldValue.value) {
                                 currentData.Value = fieldValue.value;
+                                const input: any = currentData.Value;
+                                if (typeof input === 'string' && input.trim().startsWith('[') && fieldValue.signatureType === 'Path') {
+                                    currentData.Value = this.viewerBase.signatureValue(input);
+                                }
                                 currentData = this.updateSignatureValue(currentData, fieldValue, fieldValue.signatureBounds);
                             }
                         }
                         this.formFieldsModule.updateFormFieldsCollection(currentData);
+                        this.viewerBase.updateDocumentEditedProperty(true);
                     }
                 }
                 PdfViewerBase.sessionStorageManager.removeItem(this.viewerBase.documentId + '_formfields');
@@ -11425,12 +11430,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * @param {PdfAnnotationBaseModel} actualObject - It describes about the actual object value
      * @param {PdfAnnotationBaseModel} node - It describes about the node value
+     * @param {boolean} isNeedToRender - It describes about the isNeedToRender value
      * @private
      * @returns {void}
      */
     public nodePropertyChange(
-        actualObject: PdfAnnotationBaseModel, node: PdfAnnotationBaseModel): void {
-        this.drawing.nodePropertyChange(actualObject, node);
+        actualObject: PdfAnnotationBaseModel, node: PdfAnnotationBaseModel, isNeedToRender?: boolean): void {
+        this.drawing.nodePropertyChange(actualObject, node, isNeedToRender);
     }
 
     /**

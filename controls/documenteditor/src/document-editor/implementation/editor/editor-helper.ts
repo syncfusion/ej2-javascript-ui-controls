@@ -2103,3 +2103,14 @@ export interface ExternalFontInfo {
      */
     src: string
 }
+
+/**
+ * Represents information associated with a specific field element within the document.
+ */
+export interface FieldStartInfo {
+    /**
+     * Reserved for internal use only.
+     * @private
+     */
+    field: FieldElementBox;
+}

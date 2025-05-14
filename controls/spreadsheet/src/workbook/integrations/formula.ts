@@ -398,6 +398,20 @@ export class WorkbookFormula {
                             if (cell.validation) {
                                 renameValidationSheetRef(cell.validation);
                             }
+                            if (cell.chart && cell.chart.length) {
+                                cell.chart.forEach((chart: { range: string }) => {
+                                    if (chart.range.includes('!')) {
+                                        const tokenIdx: number = chart.range.lastIndexOf('!');
+                                        let chartSheetRef: string = chart.range.substring(0, tokenIdx).toUpperCase();
+                                        if (chartSheetRef.startsWith('\'') && chartSheetRef.endsWith('\'')) {
+                                            chartSheetRef = chartSheetRef.slice(1, -1);
+                                        }
+                                        if (chartSheetRef === uPName) {
+                                            chart.range = name + chart.range.substring(tokenIdx);
+                                        }
+                                    }
+                                });
+                            }
                         }
                     }
                 }

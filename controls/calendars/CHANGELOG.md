@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
-## 29.1.41 (2025-05-06)
+## 29.1.40 (2025-04-29)
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- `#709169` - Fixed HTML accessibility errors and warnings in the popup component of the DateRangePicker.
 
 ### DateTimePicker
 

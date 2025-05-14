@@ -415,3 +415,5 @@ export const rowPageNavigated: string = 'Row page navigated';
 export const columnPageNavigated: string = 'Column page navigated';
 /** @hidden */
 export const actionDropped: string = 'Action dropped';
+/** @hidden */
+export const invalidFormula: string = 'Invalid formula';

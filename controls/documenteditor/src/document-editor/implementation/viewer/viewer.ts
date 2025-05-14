@@ -1358,6 +1358,16 @@ export class DocumentHelper {
         this.pageContainer.style.left = '0px';
         this.pageContainer.style.position = 'relative';
         this.pageContainer.style.pointerEvents = 'none';
+        this.owner.readableDiv = createElement('div', {
+            attrs: {
+                'aria-live': 'assertive',
+                'role': 'region',
+                'tabindex': "1",
+                'style': 'position:absolute;left:0px;top:-1px;height:0px;width:0px;overflow:hidden;z-index:-2;opacity:0;',
+            },
+            id: element.id + 'readableDiv'
+        }) as HTMLDivElement;
+        element.appendChild(this.owner.readableDiv);
         if (Browser.isDevice) {
             this.createEditableDiv(element);
 
@@ -1416,7 +1426,7 @@ export class DocumentHelper {
             <html lang="${this.owner.locale}">
             <head></head>
             <body spellcheck="false">
-                <div contenteditable="true"></div>
+                <div contenteditable="true" role="textbox"></div>
             </body>
             </html>`;
         if (!isNullOrUndefined(this.iframe.contentDocument)) {
@@ -6607,7 +6617,16 @@ export class PageLayoutViewer extends LayoutViewer {
         }
     }
     public renderPage(page: Page, x: number, y: number, width: number, height: number): void {
+        // When redering the page if the spell check is enabled, then get the unique words from local storage and after rendring, again add it to the local storage.
+        // This is done to avoid the performance issue while rendering the page. Becuase for element we serializing and parsing from local storage cause performance issue.
+        // So we are doing this to avoid the performance issue.
+        if (this.documentHelper.owner.isSpellCheck) {
+            this.documentHelper.owner.spellCheckerModule.getUniqueWordsFromLocalStorage();
+        }
         this.documentHelper.render.renderWidgets(page, x - this.owner.viewer.containerLeft, y - this.owner.viewer.containerTop, width, height);
+        if (this.documentHelper.owner.isSpellCheck) {
+            this.documentHelper.owner.spellCheckerModule.addUniqueWordsToLocalStorage();
+        }
     }
  
 }
@@ -6806,7 +6825,16 @@ export class WebLayoutViewer extends LayoutViewer {
      * @private
      */
     public renderPage(page: Page, x: number, y: number, width: number, height: number): void {
+        // When redering the page if the spell check is enabled, then get the unique words from local storage and after rendring, again add it to the local storage.
+        // This is done to avoid the performance issue while rendering the page. Becuase for element we serializing and parsing from local storage cause performance issue.
+        // So we are doing this to avoid the performance issue.
+        if (this.documentHelper.owner.isSpellCheck) {
+            this.documentHelper.owner.spellCheckerModule.getUniqueWordsFromLocalStorage();
+        }
         this.documentHelper.render.renderWidgets(page, x - this.owner.viewer.containerLeft, y - this.owner.viewer.containerTop, width, height);
+        if (this.documentHelper.owner.isSpellCheck) {
+            this.documentHelper.owner.spellCheckerModule.addUniqueWordsToLocalStorage();
+        }
     }
 
 }

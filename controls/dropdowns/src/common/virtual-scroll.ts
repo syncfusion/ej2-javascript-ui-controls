@@ -267,6 +267,7 @@ export class VirtualScroll {
                                 query = query.skip(this.parent.viewPortInfo.startIndex);
                             }
                             this.parent.setCurrentView = false;
+                            this.parent.isPreventScrollAction = true;
                             this.parent.resetList(this.parent.dataSource, this.parent.fields, query);
                             isResetListCalled = true;
                             break;
@@ -314,6 +315,7 @@ export class VirtualScroll {
                 }
             }
             this.parent.renderItems(currentData, this.parent.fields, this.component === 'multiselect' && this.parent.mode === 'CheckBox');
+            this.parent.updateSelectionList();
         }
         if (this.component === 'multiselect') {
             this.parent.updatevirtualizationList();
@@ -325,7 +327,8 @@ export class VirtualScroll {
             (this.parent.totalItemCount <= this.parent.itemCount))) ? 0 : this.parent.skeletonCount;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const virtualTrackElement: any = this.parent.list.getElementsByClassName('e-virtual-ddl')[0] as HTMLElement;
-        if (virtualTrackElement) {
+        const preventAction: boolean = this.component !== 'multiselect' || (this.component === 'multiselect' && ((!(this.parent.dataSource instanceof DataManager))) || (this.parent.dataSource instanceof DataManager && !isResetListCalled));
+        if (virtualTrackElement && preventAction) {
             virtualTrackElement.style = this.parent.GetVirtualTrackHeight();
         }
         else if (!virtualTrackElement && this.parent.skeletonCount > 0 && this.parent.popupWrapper) {
@@ -334,11 +337,13 @@ export class VirtualScroll {
             });
             this.parent.popupWrapper.querySelector('.e-dropdownbase').appendChild(virualElement);
         }
-        this.parent.UpdateSkeleton();
+        if (this.component !== 'multiselect' || (this.component === 'multiselect' && ((!(this.parent.dataSource instanceof DataManager))) || (this.parent.dataSource instanceof DataManager && (!isResetListCalled || this.parent.viewPortInfo.startIndex === 0)))) {
+            this.parent.UpdateSkeleton();
+        }
         this.parent.liCollections = <HTMLElement[] & NodeListOf<Element>>this.parent.list.querySelectorAll('.e-list-item');
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const virtualContentElement: any = this.parent.list.getElementsByClassName('e-virtual-ddl-content')[0] as any;
-        if (virtualContentElement) {
+        if (virtualContentElement && preventAction) {
             (virtualContentElement).style = this.parent.getTransformValues();
         }
         if (this.parent.fields.groupBy){

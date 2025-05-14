@@ -2148,10 +2148,22 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public sort(sortOptions?: SortOptions, range?: string): Promise<SortEventArgs> {
         if (!this.allowSorting) { return Promise.reject(); }
+        let sheetIdx: number; let sheet: SheetModel;
+        if (range) {
+            sheetIdx = getSheetIndexFromAddress(this, range);
+            sheet = getSheet(this, sheetIdx);
+        } else {
+            sheet = this.getActiveSheet();
+            range = sheet.selectedRange;
+            sheetIdx = this.activeSheetIndex;
+        }
+        if (sheet.isProtected) {
+            return Promise.reject(new Error('The cell you\'re trying to change is protected. To make change, unprotect the sheet.'));
+        }
         const prevSort: SortCollectionModel[] = [];
         if (this.sortCollection) {
             for (let i: number = this.sortCollection.length - 1; i >= 0; i--) {
-                if (this.sortCollection[i as number] && this.sortCollection[i as number].sheetIndex === this.activeSheetIndex) {
+                if (this.sortCollection[i as number] && this.sortCollection[i as number].sheetIndex === sheetIdx) {
                     prevSort.push(this.sortCollection[i as number]);
                     this.sortCollection.splice(i, 1);
                 }

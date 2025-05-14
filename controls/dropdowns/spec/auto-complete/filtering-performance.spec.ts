@@ -207,6 +207,7 @@ describe('Filtering performance', () => {
             autoObj = new AutoComplete({
                 dataSource: list,
                 allowFiltering: true,
+                debounceDelay: 0,
                 sortOrder: 'Ascending',
                 width: '250px',
                 suggestionCount: 20000

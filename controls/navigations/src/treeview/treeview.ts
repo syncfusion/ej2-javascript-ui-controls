@@ -3410,6 +3410,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         } else {
             this.isFirstRender = true;
             this.renderChildNodes(currLi, expandChild, callback, null, isFromExpandAll);
+            if (isNullOrUndefined(this.expandChildren) || this.expandChildren.length === 0) {
+                return;
+            }
             const liEles: Element[] = selectAll('.' + LISTITEM, currLi);
             for (let i: number = 0; i < liEles.length; i++) {
                 const id: string = this.getId(liEles[parseInt(i.toString(), 10)]);
@@ -4052,11 +4055,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
-    private getNodeData(currLi: Element, fromDS?: boolean): { [key: string]: Object } {
+    private getNodeData(currLi: Element, fromDS?: boolean, dragData?: { [key: string]: Object; }): { [key: string]: Object } {
         if (!isNOU(currLi) && currLi.classList.contains(LISTITEM) &&
             !isNOU(closest(currLi, '.' + CONTROL)) && closest(currLi, '.' + CONTROL).classList.contains(ROOT)) {
             const id: string = currLi.getAttribute('data-uid');
-            const text: string = this.getText(currLi, fromDS);
+            const text: string = this.getText(currLi, fromDS, dragData);
             const pNode: Element = closest(currLi.parentNode, '.' + LISTITEM);
             const pid: string = pNode ? pNode.getAttribute('data-uid') : null;
             const selected: boolean = currLi.classList.contains(ACTIVE);
@@ -4076,12 +4079,12 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         return { id: '', text: '', parentID: '', selected: false, expanded: false, isChecked: '', hasChildren: false };
     }
 
-    private getText(currLi: Element, fromDS?: boolean): string {
+    private getText(currLi: Element, fromDS?: boolean, dragData?: { [key: string]: Object; }): string {
         if (fromDS) {
-            const nodeData: { [key: string]: Object } = this.getNodeObject(currLi.getAttribute('data-uid'));
+            const nodeData: { [key: string]: Object } = !isNullOrUndefined(dragData) ? dragData : this.getNodeObject(currLi.getAttribute('data-uid'));
             const level: number = parseFloat(currLi.getAttribute('aria-level'));
             const nodeFields: FieldsSettingsModel = this.getFields(this.fields, level, 1);
-            return getValue(nodeFields.text, nodeData);
+            return !isNullOrUndefined(dragData) ? dragData.text as string : getValue(nodeFields.text, nodeData);
         }
         return select('.' + LISTTEXT, currLi).textContent;
     }
@@ -4637,8 +4640,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (this.fields.dataSource instanceof DataManager === false) {
             this.preventExpand = false;
         }
+        const dragData: { [key: string]: Object } = isNullOrUndefined(dragObj) ? null : dragObj.dragData;
         for (let i: number = 0; i < liArray.length; i++) {
-            nodeData.push(this.getNode(liArray[parseInt(i.toString(), 10)]));
+            nodeData.push(this.getNodeData(this.getElement(liArray[parseInt(i.toString(), 10)]), true, dragData));
         }
         this.trigger('nodeDropped', this.getDragEvent(e.event, dragObj, dropTarget, e.target, <HTMLLIElement>e.dragData.draggedElement,
                                                       null, level, drop));
@@ -4759,7 +4763,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         const id: string = this.getId(dragLi);
         const removedData: { [key: string]: Object }[] = dragObj.updateChildField(dragObj.treeData, dragObj.fields, id, null, null, true);
         const refId: string = this.getId(dropLi);
-        const index: number = this.getDataPos(this.treeData, this.fields, refId);
+        const index: number = refId ? this.getDataPos(this.treeData, this.fields, refId) : null;
         const parentId: string = this.getId(dropParentLi);
         if (this.dataType === 1) {
             this.updateField(this.treeData, this.fields, parentId, 'hasChildren', true);

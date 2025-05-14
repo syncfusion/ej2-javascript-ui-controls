@@ -1,5 +1,5 @@
 import { Workbook, Cell, getSheetIndex, getSheet, getRangeIndexes, isFilterHidden, parseDecimalNumber } from '../index';
-import { getCellAddress, getIndexesFromAddress, getColumnHeaderText, updateSheetFromDataSource, intToDate } from '../common/index';
+import { getCellAddress, getIndexesFromAddress, getColumnHeaderText, updateSheetFromDataSource, intToDate, HyperlinkModel } from '../common/index';
 import { queryCellInfo, CellInfoEventArgs, CellStyleModel, getFormattedCellObject, NumberFormatArgs, isNumber } from '../common/index';
 import { SheetModel, RowModel, CellModel, getRow, getCell, isHiddenRow, isHiddenCol, getMaxSheetId, getSheetNameCount } from './index';
 import { isUndefined, isNullOrUndefined, extend, getNumericObject, Internationalization } from '@syncfusion/ej2-base';
@@ -80,7 +80,7 @@ export function getData(
                                 key = getColumnHeaderText(i + 1);
                                 const cell: CellModel = row ? getCell(sRow, i, sheet) : null;
                                 if (valueOnly) {
-                                    if (cell && (cell.value || <unknown>cell.value === 0)) {
+                                    if (cell && (cell.value || <unknown>cell.value === 0 || cell.formula)) {
                                         if (cell.formattedText && cell.format && !cell.format.includes('*')) {
                                             if (isCustomDateTime(cell.format, false)) {
                                                 cells[key as string] = intToDate(cell.value);
@@ -88,7 +88,7 @@ export function getData(
                                                 cells[key as string] = cell.formattedText.toString().trim();
                                             }
                                         } else {
-                                            cells[key as string] = getValueFromFormat(context, cell, sRow, i, false, intl);
+                                            cells[key as string] = getValueFromFormat(context, cell, sRow, i, sheetIdx, false, intl);
                                         }
                                         cellProp = cell.value;
                                         if (typeof cellProp === 'string') {
@@ -101,6 +101,18 @@ export function getData(
                                                 cellProp = parseFloat(cellProp);
                                             }
                                         }
+                                    } else if (cell && cell.hyperlink) {
+                                        const hyperlink: string | HyperlinkModel = cell.hyperlink;
+                                        if (typeof hyperlink === 'string') {
+                                            cells[key as string] = hyperlink;
+                                            cellProp = hyperlink;
+                                        } else if (hyperlink.address) {
+                                            cells[key as string] = hyperlink.address;
+                                            cellProp = hyperlink.address;
+                                        } else {
+                                            cells[key as string] = '';
+                                            cellProp = '';
+                                        }
                                     } else {
                                         cells[key as string] = '';
                                         cellProp = null;
@@ -109,7 +121,7 @@ export function getData(
                                 } else {
                                     if ((cell && (cell.formula || !isNullOrUndefined(cell.value))) || Object.keys(cells).length) {
                                         if (i === dateValueForSpecificColIdx) {
-                                            cellProp = { value: getValueFromFormat(context, cell, sRow, i, true) };
+                                            cellProp = { value: getValueFromFormat(context, cell, sRow, i, sheetIdx, true) };
                                             if (cellProp.value && typeof cellProp.value === 'string') {
                                                 if (isNumber(cellProp.value) && !cell.value.toString().includes('\n')) {
                                                     if (!cell.format || cell.format !== '@') {
@@ -234,15 +246,19 @@ export function getData(
  * @param {CellModel} cell - Specifies the cell model.
  * @param {number} rowIdx - Specifies the row index.
  * @param {number} colIdx - Specifies the column index.
+ * @param {number} sheetIdx - Specifies the sheetIdx.
  * @param {boolean} getIntValueFromDate - Specify the getIntValueFromDate.
  * @param {Internationalization} intl - Specifies the internationalization object.
  * @returns {string | Date | number} - Returns the formatted cell value.
  * @hidden
  */
 export function getValueFromFormat(
-    context: Workbook, cell: CellModel, rowIdx: number, colIdx: number, getIntValueFromDate?: boolean,
+    context: Workbook, cell: CellModel, rowIdx: number, colIdx: number, sheetIdx: number, getIntValueFromDate?: boolean,
     intl?: Internationalization): string | Date | number {
     if (cell) {
+        if (cell.formula && isNullOrUndefined(cell.value)) {
+            context.notify(calculateFormula, { cell: cell, rowIdx: rowIdx, colIdx: colIdx, sheetIndex: sheetIdx });
+        }
         if (isNullOrUndefined(cell.value)) {
             return '';
         }

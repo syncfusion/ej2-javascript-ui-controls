@@ -500,6 +500,56 @@ describe('Recurrence Editor Base Module', () => {
         });
     });
 
+    describe('Schedule - recurrence rendering with DateTime format time value', () => {
+        let schObj: RecurrenceEditor;
+        const elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            schObj = new RecurrenceEditor({ startDate: new Date('2020-01-01T00:00:00Z'), firstDayOfWeek: 1 });
+            schObj.appendTo('#Schedule');
+        });
+        afterAll(() => {
+            if (schObj) {
+                schObj.destroy();
+            }
+            remove(elem);
+        });
+        it('ensuring the Rule set process- Daily - Never', () => {
+            schObj.setRecurrenceRule('FREQ=DAILY;INTERVAL=3');
+            expect((<any>schObj).repeatType.value).toBe(DAILY);
+            expect((<any>schObj).repeatInterval.value).toBe(3);
+            expect((<any>schObj).endType.value).toBe(NEVER);
+            expect(schObj.getRecurrenceRule()).toBe('FREQ=DAILY;INTERVAL=3;');
+            expect('every 3 day(s)').toBe(schObj.getRuleSummary());
+        });
+        it('ensuring the Rule set process- Daily - Count', () => {
+            schObj.setRecurrenceRule('FREQ=DAILY;INTERVAL=5;COUNT=10');
+            expect((<any>schObj).repeatType.value).toBe(DAILY);
+            expect((<any>schObj).repeatInterval.value).toBe(5);
+            expect((<any>schObj).recurrenceCount.value).toBe(10);
+            expect((<any>schObj).endType.value).toBe(COUNT);
+            expect(schObj.getRecurrenceRule()).toBe('FREQ=DAILY;INTERVAL=5;COUNT=10;');
+            expect('every 5 day(s), 10 time(s)').toBe(schObj.getRuleSummary());
+        });
+        it('ensuring the Rule set process- Daily - UNTIL', () => {
+            schObj.setRecurrenceRule('FREQ=DAILY;INTERVAL=2;UNTIL=20280131T090000Z');
+            expect((<any>schObj).repeatType.value).toBe(DAILY);
+            expect((<any>schObj).repeatInterval.value).toBe(2);
+            expect((<any>schObj).endType.value).toBe(UNTIL);
+            expect(schObj.getRecurrenceRule()).toBe('FREQ=DAILY;INTERVAL=2;UNTIL=20280131T090000Z;');
+            expect('every 2 day(s), until 31 Jan 2028').toBe(schObj.getRuleSummary());
+        });
+        it('ensuring the Rule set process- WEEKLY - Never', () => {
+            schObj.setRecurrenceRule('FREQ=WEEKLY;INTERVAL=2;BYDAY=SU,WE,FR');
+            expect((<any>schObj).repeatType.value).toBe(WEEKLY);
+            expect((<any>schObj).repeatInterval.value).toBe(2);
+            expect((<any>schObj).endType.value).toBe(NEVER);
+            expect(JSON.stringify(getSelectedDays(schObj))).toBe(JSON.stringify([2, 4, 6]));
+            expect(schObj.getRecurrenceRule()).toBe('FREQ=WEEKLY;BYDAY=WE,FR,SU;INTERVAL=2;');
+            expect('every 2 week(s) on Wed, Fri, Sun').toBe(schObj.getRuleSummary());
+        });
+    });
+
     describe('Recurrence Editor - minDate and maxDate property changes', () => {
         let recObj: RecurrenceEditor;
         const elem: HTMLElement = createElement('div', { id: 'RecurrenceEditor' });

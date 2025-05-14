@@ -973,75 +973,107 @@ export class Ribbon {
     }
 
     private createAddChartMenu(ul: HTMLElement, l10n: L10n): Menu {
+        let items: MenuItemModel[] = [];
+        const overlayElem: HTMLElement = this.parent.element.querySelector('.e-datavisualization-chart.e-ss-overlay-active');
+        if (overlayElem) {
+            const chartObj: HTMLElement = overlayElem.querySelector('.e-chart');
+            if (chartObj) {
+                items = [{
+                    iconCss: 'e-icons e-axes', text: l10n.getConstant('Axes'),
+                    items: [{
+                        iconCss: 'e-icons e-ph-axes', id: 'PHAxes', text: l10n.getConstant('PrimaryHorizontal')
+                    },
+                    {
+                        iconCss: 'e-icons e-pv-axes', id: 'PVAxes', text: l10n.getConstant('PrimaryVertical')
+                    }]
+                },
+                {
+                    iconCss: 'e-icons e-axis-title', text: l10n.getConstant('AxisTitle'),
+                    items: [{
+                        iconCss: 'e-icons e-ph-axistitle', id: 'PHAxisTitle', text: l10n.getConstant('PrimaryHorizontal')
+                    },
+                    {
+                        iconCss: 'e-icons e-pv-axistitle', id: 'PVAxisTitle', text: l10n.getConstant('PrimaryVertical')
+                    }]
+                },
+                {
+                    iconCss: 'e-icons e-chart-title', text: l10n.getConstant('ChartTitle'),
+                    items: [
+                        { iconCss: 'e-icons e-ct-none', id: 'ChartTitleNone', text: l10n.getConstant('None') },
+                        { iconCss: 'e-icons e-ct-abovechart', id: 'ChartTitleAbove', text: l10n.getConstant('AboveChart') }
+                    ]
+                },
+                {
+                    iconCss: 'e-icons e-data-labels', id: this.parent.element.id + 'data-labels', text: l10n.getConstant('DataLabels'),
+                    items: [
+                        { iconCss: 'e-icons e-dl-none', id: 'DLNone', text: l10n.getConstant('None') },
+                        { iconCss: 'e-icons e-dl-center', id: 'DLCenter', text: l10n.getConstant('Center') },
+                        { iconCss: 'e-icons e-dl-insideend', id: 'DLInsideend', text: l10n.getConstant('InsideEnd') },
+                        { iconCss: 'e-icons e-dl-insidebase', id: 'DLInsidebase', text: l10n.getConstant('InsideBase') },
+                        { iconCss: 'e-icons e-dl-outsideend', id: 'DLOutsideend', text: l10n.getConstant('OutsideEnd') }]
+                },
+                {
+                    iconCss: 'e-icons e-gridlines', text: l10n.getConstant('Gridlines'),
+                    items: [{
+                        iconCss: 'e-icons e-gl-major-horizontal', id: 'GLMajorHorizontal',
+                        text: l10n.getConstant('PrimaryMajorHorizontal')
+                    },
+                    {
+                        iconCss: 'e-icons e-gl-major-vertical', id: 'GLMajorVertical',
+                        text: l10n.getConstant('PrimaryMajorVertical')
+                    },
+                    {
+                        iconCss: 'e-icons e-gl-minor-horizontal', id: 'GLMinorHorizontal',
+                        text: l10n.getConstant('PrimaryMinorHorizontal')
+                    },
+                    {
+                        iconCss: 'e-icons e-gl-minor-vertical', id: 'GLMinorVertical',
+                        text: l10n.getConstant('PrimaryMinorVertical')
+                    }]
+                },
+                {
+                    iconCss: 'e-icons e-legends', text: l10n.getConstant('Legends'),
+                    items: [
+                        { iconCss: 'e-icons e-legends-none', id: 'LegendNone', text: l10n.getConstant('None') },
+                        { iconCss: 'e-icons e-legends-right', id: 'LegendsRight', text: l10n.getConstant('Right') },
+                        { iconCss: 'e-icons e-legends-left', id: 'LegendsLeft', text: l10n.getConstant('Left') },
+                        { iconCss: 'e-icons e-legends-bottom', id: 'LegendsBottom', text: l10n.getConstant('Bottom') },
+                        { iconCss: 'e-icons e-legends-top', id: 'LegendsTop', text: l10n.getConstant('Top') }]
+                }];
+            }
+            else {
+                items = [{
+                    iconCss: 'e-icons e-chart-title', text: l10n.getConstant('ChartTitle'),
+                    items: [
+                        { iconCss: 'e-icons e-ct-none', id: 'ChartTitleNone', text: l10n.getConstant('None') },
+                        { iconCss: 'e-icons e-ct-abovechart', id: 'ChartTitleAbove', text: l10n.getConstant('AboveChart') }
+                    ]
+                },
+                {
+                    iconCss: 'e-icons e-data-labels', id: this.parent.element.id + 'data-labels', text: l10n.getConstant('DataLabels'),
+                    items: [
+                        { iconCss: 'e-icons e-dl-none', id: 'DLNone', text: l10n.getConstant('None') },
+                        { iconCss: 'e-icons e-dl-center', id: 'DLCenter', text: l10n.getConstant('Center') },
+                        { iconCss: 'e-icons e-dl-insideend', id: 'DLInsideend', text: l10n.getConstant('InsideEnd') },
+                        { iconCss: 'e-icons e-dl-insidebase', id: 'DLInsidebase', text: l10n.getConstant('InsideBase') },
+                        { iconCss: 'e-icons e-dl-outsideend', id: 'DLOutsideend', text: l10n.getConstant('OutsideEnd') }]
+                },
+                {
+                    iconCss: 'e-icons e-legends', text: l10n.getConstant('Legends'),
+                    items: [
+                        { iconCss: 'e-icons e-legends-none', id: 'LegendNone', text: l10n.getConstant('None') },
+                        { iconCss: 'e-icons e-legends-right', id: 'LegendsRight', text: l10n.getConstant('Right') },
+                        { iconCss: 'e-icons e-legends-left', id: 'LegendsLeft', text: l10n.getConstant('Left') },
+                        { iconCss: 'e-icons e-legends-bottom', id: 'LegendsBottom', text: l10n.getConstant('Bottom') },
+                        { iconCss: 'e-icons e-legends-top', id: 'LegendsTop', text: l10n.getConstant('Top') }]
+                }];
+            }
+        }
         const addChartMenu: Menu = new Menu({
             cssClass: 'e-addchart-menu', title: l10n.getConstant('AddChartElement'),
-            items: [{
-                iconCss: 'e-icons e-axes', text: l10n.getConstant('Axes'),
-                items: [{
-                    iconCss: 'e-icons e-ph-axes', id: 'PHAxes',
-                    text: l10n.getConstant('PrimaryHorizontal')
-                },
-                {
-                    iconCss: 'e-icons e-pv-axes', id: 'PVAxes',
-                    text: l10n.getConstant('PrimaryVertical')
-                }]
-            },
-            {
-                iconCss: 'e-icons e-axis-title', text: l10n.getConstant('AxisTitle'),
-                items: [{
-                    iconCss: 'e-icons e-ph-axistitle', id: 'PHAxisTitle',
-                    text: l10n.getConstant('PrimaryHorizontal')
-                },
-                {
-                    iconCss: 'e-icons e-pv-axistitle', id: 'PVAxisTitle',
-                    text: l10n.getConstant('PrimaryVertical')
-                }]
-            },
-            {
-                iconCss: 'e-icons e-chart-title', text: l10n.getConstant('ChartTitle'),
-                items: [{ iconCss: 'e-icons e-ct-none', id: 'ChartTitleNone', text: l10n.getConstant('None') },
-                    { iconCss: 'e-icons e-ct-abovechart', id: 'ChartTitleAbove', text: l10n.getConstant('AboveChart') }
-                // { iconCss: 'e-icons e-ct-farchart', id: 'chart_farchart', text: l10n.getConstant('AboveChart') },
-                // { iconCss: 'e-icons e-ct-nearchart', id: 'chart_nearchart', text: l10n.getConstant('AboveChart') }
-                ]
-            },
-            {
-                iconCss: 'e-icons e-data-labels', id: this.parent.element.id + 'data-labels', text: l10n.getConstant('DataLabels'),
-                items: [{ iconCss: 'e-icons e-dl-none', id: 'DLNone', text: l10n.getConstant('None') },
-                    { iconCss: 'e-icons e-dl-center', id: 'DLCenter', text: l10n.getConstant('Center') },
-                    { iconCss: 'e-icons e-dl-insideend', id: 'DLInsideend', text: l10n.getConstant('InsideEnd') },
-                    { iconCss: 'e-icons e-dl-insidebase', id: 'DLInsidebase', text: l10n.getConstant('InsideBase') },
-                    { iconCss: 'e-icons e-dl-outsideend', id: 'DLOutsideend', text: l10n.getConstant('OutsideEnd') }]
-            },
-            {
-                iconCss: 'e-icons e-gridlines', text: l10n.getConstant('Gridlines'),
-                items: [{
-                    iconCss: 'e-icons e-gl-major-horizontal', id: 'GLMajorHorizontal',
-                    text: l10n.getConstant('PrimaryMajorHorizontal')
-                },
-                {
-                    iconCss: 'e-icons e-gl-major-vertical', id: 'GLMajorVertical',
-                    text: l10n.getConstant('PrimaryMajorVertical')
-                },
-                {
-                    iconCss: 'e-icons e-gl-minor-horizontal', id: 'GLMinorHorizontal',
-                    text: l10n.getConstant('PrimaryMinorHorizontal')
-                },
-                {
-                    iconCss: 'e-icons e-gl-minor-vertical', id: 'GLMinorVertical',
-                    text: l10n.getConstant('PrimaryMinorVertical')
-                }]
-            },
-            {
-                iconCss: 'e-icons e-legends', text: l10n.getConstant('Legends'),
-                items: [{ iconCss: 'e-icons e-legends-none', id: 'LegendNone', text: l10n.getConstant('None') },
-                    { iconCss: 'e-icons e-legends-right', id: 'LegendsRight', text: l10n.getConstant('Right') },
-                    { iconCss: 'e-icons e-legends-left', id: 'LegendsLeft', text: l10n.getConstant('Left') },
-                    { iconCss: 'e-icons e-legends-bottom', id: 'LegendsBottom', text: l10n.getConstant('Bottom') },
-                    { iconCss: 'e-icons e-legends-top', id: 'LegendsTop', text: l10n.getConstant('Top') }]
-            }],
             orientation: 'Vertical',
             select: this.addChartEleSelected.bind(this),
+            items: items,
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                 if (args.parentItem.id === this.parent.element.id + 'data-labels') {
                     const overlay: HTMLElement = this.parent.element.querySelector('.e-ss-overlay-active');

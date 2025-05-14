@@ -140,6 +140,26 @@ describe('Spreadsheet context menu module ->', () => {
                 }, 10);
             });
 
+            it('Duplicate and Protect Sheet options are disabled when adding custom items via addContextMenuItems', (done: Function) => {
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.getInstance().contextMenuBeforeOpen = (args: any) => {
+                    helper.invoke('addContextMenuItems', [[{ text: 'Custom Item 1' }], 'Paste Special', false]);
+                }
+                let sheetTab: HTMLElement = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+                let coords: DOMRect = <DOMRect>sheetTab.getBoundingClientRect();
+                helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, sheetTab);
+                setTimeout(() => {
+                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(2)').textContent).toBe('Delete');
+                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(2)').classList).toContain('e-disabled');
+                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(5)').textContent).toBe('Hide');
+                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(5)').classList).toContain('e-disabled');
+                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(3)').textContent).toBe('Duplicate');
+                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(3)').classList).not.toContain('e-disabled');
+                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(6)').textContent).toBe('Protect Sheet');
+                    expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(6)').classList).not.toContain('e-disabled');
+                    done();
+                });
+            });
         });
 
     });
@@ -755,6 +775,26 @@ describe('Spreadsheet context menu module ->', () => {
                 expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(9)').classList).toContain('e-disabled');
                 done();
             });
+        });
+    });
+    describe('EJ2-878041: allowDelete Issue ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                allowDelete: false,
+                sheets: [{ ranges: [{ dataSource: defaultData }] },{index: 1, name: 'Inserted Sheet',ranges: [{ dataSource: defaultData }] },{index: 2, name: 'Inserted Sheet2',ranges: [{ dataSource: defaultData }] }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Delete option should be disabled', (done: Function) => {
+            const sheetTab: HTMLTableCellElement = helper.getElement('.e-sheet-tab .e-active .e-text-wrap');
+            const coords: DOMRect = <DOMRect>sheetTab.getBoundingClientRect();
+            helper.triggerMouseAction('contextmenu', { x: coords.x, y: coords.y }, null, sheetTab);
+            setTimeout(() => {
+                expect(helper.getElement('#' + helper.id + '_contextmenu li:nth-child(2)').classList).toContain('e-disabled');
+                done();
+            }, 100);
         });
     });
 });

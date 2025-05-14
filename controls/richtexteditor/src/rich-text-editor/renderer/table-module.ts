@@ -269,7 +269,7 @@ export class Table {
                 }
             }
         }
-        if ((event as KeyboardEventArgs).shiftKey && ((event as KeyboardEventArgs).keyCode === 39 ||
+        if (this.parent.editorMode === 'HTML' && (event as KeyboardEventArgs).shiftKey && ((event as KeyboardEventArgs).keyCode === 39 ||
             (event as KeyboardEventArgs).keyCode === 37
             || (event as KeyboardEventArgs).keyCode === 38 || (event as KeyboardEventArgs).keyCode === 40))
         {

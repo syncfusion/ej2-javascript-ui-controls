@@ -95,6 +95,7 @@ class HierarchicalLayoutUtil {
 
     private nameTable: Object = {};
 
+    private vertexTable: Object = {};
     /**
      * Holds the collection vertices, that are equivalent to nodes to be arranged
      */
@@ -146,7 +147,8 @@ class HierarchicalLayoutUtil {
         const geometry: Rect = { x: x, y: y, width: width, height: height };
         const vertex: Vertex = {
             value: value, geometry: geometry, name: value, vertex: true,
-            inEdges: node.inEdges.slice(), outEdges: node.outEdges.slice()
+            inEdges: node.inEdges.slice(), outEdges: node.outEdges.slice(),
+            maxRowWidth: undefined, maxRowHeight: undefined
         };
         return vertex;
     }
@@ -181,7 +183,7 @@ class HierarchicalLayoutUtil {
     }
 
     //Finds the root nodes of the layout
-    private findRoots(vertices: {}): Vertex[] {
+    private findRoots(vertices: {}, isMatrixArrangment: Boolean): Vertex[] {
         const roots: Vertex[] = [];
         let best: Vertex = null;
         let maxDiff: number = -100000;
@@ -198,7 +200,8 @@ class HierarchicalLayoutUtil {
                     inEdges++;
                 }
             }
-            if (inEdges === 0 && outEdges > 0) {
+            //951668 - Independent nodes get overlapped in complex hierarchical tree layout
+            if (inEdges === 0 && (isMatrixArrangment || outEdges > 0)) {
                 roots.push(cell);
             }
             const diff: number = outEdges - inEdges;
@@ -366,6 +369,7 @@ class HierarchicalLayoutUtil {
                                                        nodes[parseInt(i.toString(), 10)].actualSize.width,
                                                        nodes[parseInt(i.toString(), 10)].actualSize.height);
                 this.vertices.push(node);
+                this.vertexTable[node1.id] = node;
                 if ((nodes[parseInt(i.toString(), 10)] as INode).inEdges.length > 0
                     || (nodes[parseInt(i.toString(), 10)] as INode).outEdges.length > 0) {
                     nodeWithMultiEdges.push((nodes[parseInt(i.toString(), 10)] as INode));
@@ -382,7 +386,9 @@ class HierarchicalLayoutUtil {
         }
         const hierarchyVertices: {}[] = [];
         //let candidateRoots: Vertex[];
-        const candidateRoots: Vertex[] = this.findRoots(filledVertexSet);
+        let isMatrixArrangement: Boolean = layoutProp.arrangement === 'Linear' || canEnableRouting;
+        isMatrixArrangement = isMatrixArrangement || (matrixModel && layoutProp.connectionPointOrigin === 'DifferentPoint');
+        const candidateRoots: Vertex[] = this.findRoots(filledVertexSet, isMatrixArrangement);
         for (let i: number = 0; i < candidateRoots.length; i++) {
             const vertexSet: {} = {};
             hierarchyVertices.push(vertexSet);
@@ -405,6 +411,28 @@ class HierarchicalLayoutUtil {
             model = new MultiParentModel(this, tmp, candidateRoots, layout);
             this.cycleStage(model);
             this.layeringStage(model);
+            const ranks: IVertex[][] = model.ranks;
+            for (let x = ranks.length - 1; x >= 0; x--) {
+                let maxWidth = 0;
+                let maxHeight = 0;
+
+                for (const rank of ranks[parseInt(x.toString(), 10)]) {
+                    if (this.getType(rank.type) === 'internalVertex') {
+                        const geometry = (rank.cell as Vertex).geometry;
+                        maxWidth = Math.max(maxWidth, geometry.width);
+                        maxHeight = Math.max(maxHeight, geometry.height);
+                    }
+                }
+
+                for (const rank of ranks[parseInt(x.toString(), 10)]) {
+                    if (this.getType(rank.type) === 'internalVertex') {
+                        const cell = rank.cell as Vertex;
+                        cell.maxRowWidth = maxWidth;
+                        cell.maxRowHeight = maxHeight;
+                    }
+                }
+            }
+
             //897503: Child Nodes position in ComplexHierarchicalTree updated wrongly results in connector overlap
             if ((matrixModel && layoutProp.connectionPointOrigin === 'DifferentPoint') || checkLinear) {
                 matrixModelObject = { model: model, matrix: [], rowOffset: [], roots: [] };
@@ -451,7 +479,7 @@ class HierarchicalLayoutUtil {
                 this.isNodeOverLap(this.nameTable[this.vertices[parseInt(i.toString(), 10)].name], layoutProp);
             }
         }
-        matrixModel.updateLayout(viewPort, modelBounds, layoutProp, layout, nodeWithMultiEdges, nameTable);
+        matrixModel.updateLayout(viewPort, modelBounds, layoutProp, layout, nodeWithMultiEdges, nameTable, this.vertexTable);
         if (canEnableRouting) {
             const vertices: object = {};
             let matrixrow1: MatrixCellGroupObject[];
@@ -2673,6 +2701,8 @@ export interface Vertex {
     inEdges: string[];
     outEdges: string[];
     layoutObjectId?: string;
+    maxRowWidth: number;
+    maxRowHeight: number;
 }
 /** @private */
 export interface MatrixModelObject {
@@ -3530,7 +3560,7 @@ class MatrixModel {
     }
 
     public updateLayout(viewPort: PointModel, modelBounds: any, layoutProp: Layout, layout: LayoutProp, nodeWithMultiEdges: INode[],
-                        nameTable: object): void {
+                        nameTable: object, vertexTable: object): void {
         let trnsX: number = ((viewPort.x - modelBounds.width) / 2) - modelBounds.x;
         let trnsY: number = ((viewPort.y - modelBounds.height) / 2) - modelBounds.y;
 
@@ -3553,9 +3583,9 @@ class MatrixModel {
                 for (let j: number = 0; j < count; j++) {
                     const internalConnector: Connector = nameTable[node.outEdges[parseInt(j.toString(), 10)]];
                     internalConnector['pointCollection'] = [];
+                    let segmentsize: number = inversespacing / 2.0;
+                    let intermediatePoint: object = null;
                     if (count > 1) {
-                        const segmentsize: number = inversespacing / 2.0;
-                        let intermediatePoint: object = null;
                         let key: number = -1;
                         const edgeMapper: EdgeMapperObject[] = this.getEdgeMapper();
                         for (let k: number = 0; k < edgeMapper.length; k++) {
@@ -3564,7 +3594,8 @@ class MatrixModel {
                                 break;
                             }
                         }
-                        if (key !== -1 && (edgeMapper[parseInt(key.toString(), 10)] as EdgeMapperObject).value.length > 0) {
+                        //952617 - Diagram mixes straight and orthogonal segments.
+                        if (key !== -1 && (edgeMapper[parseInt(key.toString(), 10)] as EdgeMapperObject).value.length > 0 && internalConnector.type === 'Orthogonal') {
                             const edgePoint: Point = edgeMapper[parseInt(key.toString(), 10)].value[0];
                             const dxValue1: number = edgePoint.x + layout.marginX;
                             const dyValue1: number = edgePoint.y + layout.marginY;
@@ -3583,20 +3614,38 @@ class MatrixModel {
                                 segments: internalConnector.segments
                             } as Connector);
                         }
+                    }
 
-                        let pts: PointModel[] = [];
-                        for (let i: number = 0; i < internalConnector.segments.length; i++) {
-                            const pt: PointModel[] = (internalConnector.segments[parseInt(i.toString(), 10)] as OrthogonalSegment).points;
-                            // eslint-disable-next-line guard-for-in
-                            for (const temp in pt) {
-                                pts.push(pt[parseInt(temp.toString(), 10)]);
+                    let pts: PointModel[] = [];
+                    for (let i: number = 0; i < internalConnector.segments.length; i++) {
+                        const pt: PointModel[] = (internalConnector.segments[parseInt(i.toString(), 10)] as OrthogonalSegment).points;
+                        // eslint-disable-next-line guard-for-in
+                        for (const temp in pt) {
+                            pts.push(pt[parseInt(temp.toString(), 10)]);
+                        }
+                    }
+
+                    let isVariableSizeNode = false;
+                    if (pts.length === 4 && (count > 1 && !intermediatePoint || !intermediatePoint)) {
+                        const distance = isHorizontal ? pts[3].x - pts[0].x : pts[3].y - pts[0].y;
+                        if (distance > inversespacing) {
+                            const sourceVertex = vertexTable[internalConnector.sourceID] as Vertex;
+                            const spaceDiff = isHorizontal
+                                ? sourceVertex.maxRowWidth - sourceVertex.geometry.width
+                                : sourceVertex.maxRowHeight - sourceVertex.geometry.height;
+
+                            if (spaceDiff > 0) {
+                                segmentsize += spaceDiff / 2;
+                                isVariableSizeNode = true;
                             }
                         }
+                    }
 
+                    if (count > 1 || isVariableSizeNode) {
                         // eslint-disable-next-line max-len
                         pts = this.updateConnectorPoints(pts as Point[], segmentsize, intermediatePoint as Point, (transModelBounds as RectModel), layout.orientation);
                         // 933466: Excessive Spacing Between Nodes in Complex Hierarchical Tree Layout
-                        if (intermediatePoint != null && this.diagram.layout.connectionPointOrigin !== 'DifferentPoint') {
+                        if ((intermediatePoint != null && this.diagram.layout.connectionPointOrigin !== 'DifferentPoint') || isVariableSizeNode) {
                             for (let p: number = 0; p < pts.length; p++) {
                                 const pt: PointModel = pts[parseInt(p.toString(), 10)];
                                 internalConnector['pointCollection'].push(this.getPointvalue(pt.x, pt.y));
@@ -3604,6 +3653,7 @@ class MatrixModel {
                         }
                         this.resetConnectorPoints(internalConnector);
                     }
+
                     modifiedConnectors.push(internalConnector);
                 }
             }
@@ -3627,8 +3677,9 @@ class MatrixModel {
                                 break;
                             }
                         }
+                        //952617 - Diagram mixes straight and orthogonal segments.
                         if (key !== -1 && edgeMapper[parseInt(key.toString(), 10)].value.length > 0
-                            && !this.containsValue(modifiedConnectors, internalConnector)) {
+                            && !this.containsValue(modifiedConnectors, internalConnector) && internalConnector.type === 'Orthogonal') {
                             const edgePt: Point = edgeMapper[parseInt(key.toString(), 10)].value[0];
                             const dx1: number = edgePt.x + layout.marginX;
                             const dy1: number = edgePt.y + layout.marginY;

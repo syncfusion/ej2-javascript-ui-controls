@@ -1,8 +1,8 @@
-import { ConditionalFormatEventArgs, Spreadsheet, DialogBeforeOpenEventArgs } from '../index';
-import { renderCFDlg, locale, dialog, focus, removeElements, readonlyAlert } from '../common/index';
-import { CellModel, SheetModel, getCell, isHiddenRow, isHiddenCol, getRowHeight, skipDefaultValue } from '../../workbook/base/index';
+import { ConditionalFormatEventArgs, Spreadsheet, DialogBeforeOpenEventArgs, getUpdateUsingRaf } from '../index';
+import { renderCFDlg, locale, dialog, focus, removeElements, readonlyAlert, createHyperlinkElement } from '../common/index';
+import { CellModel, SheetModel, getCell, isHiddenRow, isHiddenCol, getRowHeight, skipDefaultValue, getColorCode } from '../../workbook/base/index';
 import { getRangeIndexes, checkDateFormat, applyCF, isNumber, getCellIndexes, parseLocaleNumber } from '../../workbook/index';
-import { CellFormatArgs, isDateTime, dateToInt, CellStyleModel, applyCellFormat, clearCF, getSwapRange, isReadOnlyCells } from '../../workbook/common/index';
+import { CellFormatArgs, isDateTime, dateToInt, CellStyleModel, applyCellFormat, clearCF, getSwapRange, isReadOnlyCells, NumberFormatArgs, getFormattedCellObject } from '../../workbook/common/index';
 import { setCFRule, getCellAddress, DateFormatCheckArgs, CFArgs, checkRange, getViewportIndexes } from '../../workbook/common/index';
 import { extend, isNullOrUndefined, L10n, removeClass } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
@@ -83,8 +83,18 @@ export class ConditionalFormatting {
                         td.removeChild(cfEle);
                     }
                     td.textContent = this.parent.getDisplayText(cell);
+                    if (cell && cell.hyperlink) {
+                        this.parent.notify(createHyperlinkElement, { cell: cell, style: cell.style, td: td, rowIdx: rIdx, colIdx: cIdx });
+                    }
                 }
             });
+            if (cell && cell.format && cell.format.includes('[') && getColorCode(cell.format)) {
+                const formatObj: NumberFormatArgs = {
+                    value: cell.value, format: cell.format, formattedText: cell.value, cell: cell,
+                    rowIndex: rIdx, colIndex: cIdx, refresh: true, td: td
+                };
+                this.parent.notify(getFormattedCellObject, formatObj);
+            }
         };
         this.updateRange(
             sheet, args.indexes, this.parent.frozenRowCount(sheet), this.parent.frozenColCount(sheet), getCellIndexes(sheet.topLeftCell),

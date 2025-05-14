@@ -15,6 +15,8 @@ import { checkUniqueRange, applyCF, ActionEventArgs, skipHiddenIdx, isFilterHidd
 import { applyProtect, chartDesignTab, copy, cut, getColIdxFromClientX, getRowIdxFromClientY, goToSheet, hideSheet, paste, performUndoRedo, refreshChartCellObj, removeHyperlink, removeWorkbookProtection, setProtectWorkbook, sheetNameUpdate, showSheet } from './event';
 import { keyCodes } from './constant';
 
+const rafIds: number[] = []; // Array to store multiple rafIds on intial rendering
+
 /**
  * The function used to update Dom using requestAnimationFrame.
  *
@@ -1470,7 +1472,7 @@ export function updateAction(
         moveSheet(spreadsheet, eventArgs.position, eventArgs.sheetIndexes, null, isFromUpdateAction);
         break;
     case 'wrap':
-        wrap(options.eventArgs.address, options.eventArgs.wrap, spreadsheet);
+        wrap(options.eventArgs.address, options.eventArgs.wrap, spreadsheet as Workbook);
         break;
     case 'hideShow':
         if (eventArgs.isCol) {
@@ -1669,7 +1671,10 @@ export function updateAction(
                 refreshImgCellObj, { prevTop: options.eventArgs.currentTop, prevLeft: options.eventArgs.currentLeft, currentTop:
                 options.eventArgs.prevTop, currentLeft: options.eventArgs.prevLeft, id: options.eventArgs.id, currentHeight:
                 options.eventArgs.prevHeight, currentWidth: options.eventArgs.prevWidth, requestType: 'imageRefresh',
-                prevHeight: options.eventArgs.currentHeight, prevWidth: options.eventArgs.currentWidth, isUndoRedo: true });
+                prevHeight: options.eventArgs.currentHeight, prevWidth: options.eventArgs.currentWidth,
+                prevRowIdx: options.eventArgs.prevRowIdx, prevColIdx: options.eventArgs.prevColIdx,
+                currentRowIdx: options.eventArgs.currentRowIdx, currentColIdx: options.eventArgs.currentColIdx,
+                isUndoRedo: true });
         } else {
             options.eventArgs.isUndoRedo = true;
             spreadsheet.notify(refreshImgCellObj, options.eventArgs);
@@ -2317,21 +2322,6 @@ export function getRightIdx(parent: Spreadsheet, left: number): number {
  */
 export function setColMinWidth(spreadsheet: Spreadsheet, minWidth: number): void {
     spreadsheet.renderModule.setSheetPanelSize(minWidth);
-}
-
-/**
- * Calculating resolution based windows value
- *
- * @param {number} size - Specify the end column index.
- * @returns {number} - get excluded column width.
- * @hidden
- */
-export function addDPRValue(size: number): number {
-    if (window.devicePixelRatio % 1 > 0) {
-        const pointValue: number = (size * window.devicePixelRatio) % 1;
-        return size + (pointValue ? ((pointValue > 0.5 ? (1 - pointValue) : -1 * pointValue) / window.devicePixelRatio) : 0);
-    }
-    return size;
 }
 
 /**

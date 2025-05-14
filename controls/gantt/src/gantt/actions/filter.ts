@@ -293,6 +293,7 @@ export class Filter {
             document.querySelector('#' + this.parent.controlId).appendChild(element);
         }
         let targetElement: HTMLElement;
+        element.style.display = 'block';
         if (this.parent.showColumnMenu) {
             targetElement = document.querySelector('#treeGrid' + this.parent.controlId + '_gridcontrol_colmenu_Filter');
             if (targetElement) {
@@ -304,7 +305,6 @@ export class Filter {
                     const filterElement: HTMLElement = getValue('filterModel.dialogObj.element', args);
                     if (filterElement) {
                         filterElement.style.visibility = 'hidden';
-                        filterElement.style.display = 'block';
                     }
                     this.setPosition(targetElement, filterElement);
                 }

@@ -965,6 +965,9 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         } else {
             sheet = this.getActiveSheet(); range = sheet.selectedRange; sheetIdx = this.activeSheetIndex;
         }
+        if (sheet.isProtected) {
+            return;
+        }
         this.notify(setMerge, <MergeArgs>{ merge: true, range: range, type: type || 'All', sheetIndex: sheetIdx, refreshRibbon:
             range.indexOf(sheet.activeCell) > -1 ? true : false, preventRefresh: this.activeSheetIndex !== sheetIdx });
     }
@@ -983,6 +986,9 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             sheetIdx = getSheetIndexFromAddress(this, range); sheet = getSheet(this, sheetIdx);
         } else {
             sheet = this.getActiveSheet(); range = sheet.selectedRange; sheetIdx = this.activeSheetIndex;
+        }
+        if (sheet.isProtected) {
+            return;
         }
         this.notify(setMerge, <MergeArgs>{
             merge: false, range: range, sheetIndex: sheetIdx, type: 'All',

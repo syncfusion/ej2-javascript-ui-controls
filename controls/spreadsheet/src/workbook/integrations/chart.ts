@@ -1,4 +1,4 @@
-import { getRangeIndexes, ChartModel, getSwapRange, getRangeAddress } from '../common/index';
+import { getRangeIndexes, ChartModel, getSwapRange, getRangeAddress, addDPRValue } from '../common/index';
 import { SheetModel, setCell, getSheetIndex, Workbook, CellModel, getCell, getSheetIndexFromId } from '../base/index';
 import { setChart, initiateChart, deleteChartColl, refreshChartSize, focusChartBorder, getChartRowIdxFromClientY, getChartColIdxFromClientX, refreshChartCellOnInit } from '../common/event';
 import { closest, isNullOrUndefined, getComponent, isUndefined, getUniqueID } from '@syncfusion/ej2-base';
@@ -110,12 +110,15 @@ export class WorkbookChart {
                         const range: number[] = getSwapRange(getRangeIndexes(args.range));
                         rowIdx = range[0]; colIdx = range[1];
                     } else {
-                        sheetIdx = args.sheetId === undefined
-                            ? ((chartModel.range && chartModel.range.lastIndexOf('!') > 0)
-                                ? getSheetIndex(this.parent, chartModel.range.substring(0, chartModel.range.lastIndexOf('!')))
-                                : this.parent.activeSheetIndex) : getSheetIndexFromId(this.parent, args.sheetId);
-                        const chartRowIdx: { clientY: number, isImage?: boolean } = { clientY: chartModel.top, isImage: true };
-                        const chartColIdx: { clientX: number, isImage?: boolean } = { clientX: chartModel.left, isImage: true };
+                        sheetIdx = args.sheetId === undefined ? ((chartModel.range && chartModel.range.lastIndexOf('!') > 0) ?
+                            getSheetIndex(this.parent, chartModel.range.substring(0, chartModel.range.lastIndexOf('!'))) :
+                            this.parent.activeSheetIndex) : getSheetIndexFromId(this.parent, args.sheetId);
+                        const chartRowIdx: { clientY: number, isImage?: boolean } = {
+                            clientY: Number(addDPRValue(chartModel.top).toFixed(2)), isImage: true
+                        };
+                        const chartColIdx: { clientX: number, isImage?: boolean } = {
+                            clientX: Number(addDPRValue(chartModel.left).toFixed(2)), isImage: true
+                        };
                         this.parent.notify(getChartRowIdxFromClientY, chartRowIdx);
                         this.parent.notify(getChartColIdxFromClientX, chartColIdx);
                         rowIdx = chartRowIdx.clientY; colIdx = chartColIdx.clientX;
@@ -133,8 +136,12 @@ export class WorkbookChart {
                 }
                 else {
                     const indexes: number[] = getRangeIndexes(args.range);
-                    const chartRowIdx: { clientY: number, isImage?: boolean } = { clientY: chartModel.top, isImage: true };
-                    const chartColIdx: { clientX: number, isImage?: boolean } = { clientX: chartModel.left, isImage: true };
+                    const chartRowIdx: { clientY: number, isImage?: boolean } = {
+                        clientY: Number(addDPRValue(chartModel.top).toFixed(2)), isImage: true
+                    };
+                    const chartColIdx: { clientX: number, isImage?: boolean } = {
+                        clientX: Number(addDPRValue(chartModel.left).toFixed(2)), isImage: true
+                    };
                     this.parent.notify(getChartRowIdxFromClientY, chartRowIdx); this.parent.notify(getChartColIdxFromClientX, chartColIdx);
                     const eventArgs: Object = {
                         prevTop: chartModel.top, prevLeft: chartModel.left, prevRowIdx: indexes[0], prevColIdx: indexes[1],

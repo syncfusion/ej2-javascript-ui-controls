@@ -695,6 +695,32 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public quickAccessToolbarTemplate: string | Function;
 
     /**
+     * Determines whether high-quality images should be smoothed when rendered.
+     *
+     * @default false
+     *
+     * @remarks
+     *
+     * When enabled (`true`), the image will be smoothed, reducing pixelation at the cost of sharpness.
+     *
+     * When disabled (`false`), the image will be rendered with crisp, unaltered pixels.
+     *
+     * ```html
+     * <div id='imageeditor'></div>
+     * ```
+     * ```typescript
+     * <script>
+     * var imageObj = new ImageEditor({
+     *     imageSmoothingEnabled: true
+     * });
+     * imageObj.appendTo("#imageeditor");
+     * </script>
+     * ```
+     */
+    @Property(false)
+    public imageSmoothingEnabled: boolean;
+
+    /**
      * Specifies whether to prevent user interaction with the image editor control.
      * A boolean that specifies whether to prevent the interaction in image editor control. The default value is false.
      *
@@ -1265,6 +1291,16 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                     this.notify('draw', { prop: 'setNullExtension', value: {extension: true }});
                 }
                 this.updateDropInfoContent(this.element.querySelector('.e-ie-drop-info'));
+                break;
+            case 'imageSmoothingEnabled':
+                if (newProperties.imageSmoothingEnabled) {
+                    this.imageSmoothingEnabled = true;
+                    this.lowerContext.imageSmoothingQuality = 'high';
+                } else {
+                    this.imageSmoothingEnabled = false;
+                    this.lowerContext.imageSmoothingQuality = 'low';
+                }
+                this.notify('draw', { prop: 'render-image', value: { isMouseWheel: false } });
                 break;
             }
         }

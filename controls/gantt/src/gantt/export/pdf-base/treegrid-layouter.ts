@@ -341,7 +341,7 @@ export class PdfTreeGridLayouter extends ElementLayouter {
                 const column: PdfTreeGridColumn = this.treegrid.columns.getColumn(i);
                 if (!isNullOrUndefined(cell.value)) {
                     if (column.isTreeColumn) {
-                        leftAdjustment = (row.level) * 10;
+                        leftAdjustment = row.level;
                     }
                     const cancelSpans: boolean = ((cell.columnSpan > 1) && (i > this.cellEndIndex + 1));
                     if (!cancelSpans) {

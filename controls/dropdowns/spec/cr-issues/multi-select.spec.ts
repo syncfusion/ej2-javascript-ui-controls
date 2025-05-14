@@ -274,7 +274,7 @@ describe('MultiSelect', () => {
             listObj = new MultiSelect({
                 dataSource: data,
                 showSelectAll: true, mode: 'CheckBox',
-                fields: { text: 'Name', value: 'Code' }, allowFiltering: true,
+                fields: { text: 'Name', value: 'Code' }, allowFiltering: true, debounceDelay: 0,
                 selectAllText: 'Check All',
                 filtering: function (e) {
                     let query: Query = new Query().select(['Name', 'text']);
@@ -299,7 +299,7 @@ describe('MultiSelect', () => {
             listObj = new MultiSelect({
                 dataSource: data,
                 showSelectAll: true, mode: 'CheckBox',
-                fields: { text: 'Name', value: 'Code' }, allowFiltering: true,
+                fields: { text: 'Name', value: 'Code' }, allowFiltering: true, debounceDelay: 0,
                 selectAllText: 'Check All',
                 filtering: function (e) {
                     let query: Query = new Query().select(['Name', 'text']);
@@ -320,7 +320,7 @@ describe('MultiSelect', () => {
             listObj = new MultiSelect({
                 dataSource: data,
                 showSelectAll: true, mode: 'CheckBox',
-                fields: { text: 'Name', value: 'Code' }, allowFiltering: true,
+                fields: { text: 'Name', value: 'Code' }, allowFiltering: true, debounceDelay: 0,
                 selectAllText: 'Check All',
                 filtering: function (e) {
                     let query: Query = new Query().select(['Name', 'text']);
@@ -374,6 +374,7 @@ describe('MultiSelect', () => {
                 query: new Query().select(['ContactName', 'CustomerID']).take(7),
                 fields: { text: 'ContactName', value: 'CustomerID' },
                 allowFiltering: true,
+                debounceDelay: 0,
                 openOnClick: false,
                 filtering: (e: FilteringEventArgs) => {
                     if (e.text == '') e.updateData(searchData);
@@ -442,7 +443,8 @@ describe('MultiSelect', () => {
                 popupWidth: '250px',
                 popupHeight: '200px',
                 allowCustomValue: true,
-                allowFiltering: true
+                allowFiltering: true,
+                debounceDelay: 0
             });
             atcObj.appendTo(element);
         });
@@ -604,7 +606,8 @@ describe('MultiSelect', () => {
             listObj = new MultiSelect({
                 dataSource: data,
                 fields: { text: 'text', value: 'text' },
-                allowFiltering: true
+                allowFiltering: true,
+                debounceDelay: 0
             });
             listObj.appendTo(element);
             listObj.value = ['JAVA', 'C#', 'C++'];
@@ -647,6 +650,7 @@ describe('MultiSelect', () => {
                 fields: { value: 'CustomerID', text: 'CustomerID' },
                 placeholder: 'Handler',
                 allowFiltering: true,
+                debounceDelay: 0,
                 openOnClick: true,
                 floatLabelType: 'Auto',
                 filtering: (args: any) => {
@@ -749,6 +753,7 @@ describe('MultiSelect', () => {
                 dataSource: ['Java Script', 'AS.NET MVC', 'Java', 'C#'],
                 showSelectAll: true,
                 allowFiltering: true,
+                debounceDelay: 0,
                 mode: 'CheckBox',
                 change: function (e: any) {
                     ischanged = true;
@@ -1005,6 +1010,7 @@ describe('MultiSelect', () => {
         it('when render the component using select element', () => {
             ddl = new MultiSelect({ 
                 allowFiltering: true,
+                debounceDelay: 0,
                 open: function(e) {
                     let len: number = (<any>ddl).ulElement.querySelectorAll('li').length;
                     expect(len !==0 ).toBe(true);
@@ -1076,6 +1082,7 @@ describe('MultiSelect', () => {
                 dataSource: data,
                 showSelectAll: true,
                 allowFiltering: true,
+                debounceDelay: 0,
                 mode: 'CheckBox',
                 change: function (e: any) {
                     ischanged = true;
@@ -1352,6 +1359,7 @@ describe('MultiSelect', () => {
                 dataSource: data,
                 fields: { groupBy: 'groups', text: 'text', value: 'value' },
                 allowFiltering: true,
+                debounceDelay: 0,
                 groupTemplate: "${if(groups==='false')}<span>Foo</span> ${else}<span>Bar</span>${/if}"
             });
             listObj.appendTo(element); 
@@ -1390,6 +1398,7 @@ describe('MultiSelect', () => {
                 value: ['AU'],
                 mode: 'CheckBox',
                 allowFiltering: false,
+                debounceDelay: 0,
             });
             multiSelect.appendTo(element);
         });
@@ -1428,6 +1437,7 @@ describe('MultiSelect', () => {
                 showSelectAll: true,
                 value: ['Java'],
                 allowFiltering: true,
+                debounceDelay: 0,
                 mode: 'CheckBox',
                 change: function (e: any) {
                     ischanged = true;
@@ -1579,7 +1589,8 @@ describe('MultiSelect', () => {
             listObj = new MultiSelect({
                 dataSource: sportsData,
                 fields: { text: 'Game', value: 'Game' },
-                allowFiltering: true
+                allowFiltering: true,
+                debounceDelay: 0,
             });
             listObj.appendTo(element);
             listObj.showPopup();
@@ -1757,6 +1768,7 @@ describe('MultiSelect', () => {
             dropDowns = new MultiSelect({
                 dataSource: ['Java Script', 'AS.NET MVC', 'Java', 'C#'],
                 allowFiltering: true,
+                debounceDelay: 0,
                 mode: 'CheckBox',
                 change: function (e: any) {
                     ischanged = true;
@@ -1821,6 +1833,7 @@ describe('MultiSelect', () => {
                 fields: { text: 'Game', value: 'Id' },
                 mode: 'Box',
                 allowFiltering: true,
+                debounceDelay: 0,
                 change: function(e){
                     expect(this.getDataByValue(e.value[0]) !== null).toBe(true);
                 },
@@ -1884,6 +1897,7 @@ describe('MultiSelect', () => {
                 fields: { text: 'Game', value: 'Id' },
                 mode: 'CheckBox',
                 allowFiltering: true,
+                debounceDelay: 0,
             });
             mulObj.appendTo(element);
             mulObj.showPopup();
@@ -1940,6 +1954,7 @@ describe('MultiSelect', () => {
                 fields: { text: 'Game', value: 'Id' },
                 mode: 'CheckBox',
                 allowFiltering: true,
+                debounceDelay: 0,
                 filtering: function (e) {
                     isPopupFiltered = true;
                 }
@@ -2133,6 +2148,7 @@ describe('MultiSelect', () => {
                 mode: 'Default',
                 allowCustomValue: true,
                 allowFiltering: true,
+                debounceDelay: 0,
                 fields: { value: 'id', text: 'text' }
             });
             listObj.appendTo(mEle);
@@ -2229,13 +2245,13 @@ describe('MultiSelect', () => {
             listObj = new MultiSelect({
                 dataSource: data,
                 mode: 'CheckBox',
-                fields: { text: 'Name', value: 'Code' }, allowFiltering: true,
+                fields: { text: 'Name', value: 'Code' }, allowFiltering: true, debounceDelay: 0,
             });
             listObj.appendTo(element);
             listObj1 = new MultiSelect({
                 dataSource: data,
                 mode: 'CheckBox',
-                fields: { text: 'Name', value: 'Code' }, allowFiltering: true,
+                fields: { text: 'Name', value: 'Code' }, allowFiltering: true, debounceDelay: 0,
             });
             listObj1.appendTo(element1);
             listObj.showPopup();
@@ -2271,7 +2287,7 @@ describe('MultiSelect', () => {
             listObj = new MultiSelect({
                 dataSource: data,
                 mode: 'CheckBox',
-                fields: { text: 'Name', value: 'Code' }, allowFiltering: true,
+                fields: { text: 'Name', value: 'Code' }, allowFiltering: true, debounceDelay: 0,
             });
             listObj.appendTo(element);
             listObj.showPopup();

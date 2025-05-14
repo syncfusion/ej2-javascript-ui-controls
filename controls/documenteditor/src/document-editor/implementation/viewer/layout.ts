@@ -2430,7 +2430,7 @@ export class Layout {
                 && element.line.isFirstLine()
                 && element.paragraph.index === 0
                 && element.indexInOwner === 0
-                && !this.documentHelper.owner.editorModule.handledEnter
+                && (!isNullOrUndefined(this.documentHelper.owner.editorModule) && !this.documentHelper.owner.editorModule.handledEnter)
                 && element instanceof FootnoteEndnoteMarkerElementBox) {
                 element.text = (element.paragraph.containerWidget as BodyWidget).footNoteReference.text;
             }

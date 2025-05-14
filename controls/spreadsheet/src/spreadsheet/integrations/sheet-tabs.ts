@@ -426,6 +426,9 @@ export class SheetTabs {
                 if (chart.range.includes('!')) {
                     lastIndex = chart.range.lastIndexOf('!');
                     range[0] = chart.range.substring(0, lastIndex);
+                    if (range[0].startsWith('\'') && range[0].endsWith('\'')) {
+                        range[0] = range[0].slice(1, -1);
+                    }
                     range[1] = chart.range.substring(lastIndex + 1);
                     if (range[0].toLowerCase() === pName.toLowerCase()) {
                         range[0] = args.value;

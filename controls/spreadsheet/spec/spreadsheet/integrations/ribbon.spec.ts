@@ -546,6 +546,46 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
         });
     });
 
+    describe('EJ2-883286', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Checking add chart elements options for Accumulation Chart', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Pie', range: 'D1:H11' }]]);
+            setTimeout(() => {
+                helper.getElement('#' + helper.id + '_addchart').click();
+                expect(helper.getElement('#' + helper.id + '_add_chart_menu').children.length).toBe(3);
+                expect(helper.getElement('#' + helper.id + '_add_chart_menu').children[0].textContent).toBe('Chart Title');
+                expect(helper.getElement('#' + helper.id + '_add_chart_menu').children[1].textContent).toBe('Data Labels');
+                expect(helper.getElement('#' + helper.id + '_add_chart_menu').children[2].textContent).toBe('Legends');
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                const id: string = spreadsheet.sheets[0].rows[0].cells[3].chart[0].id;
+                helper.invoke('deleteChart', [id]);
+                done();
+            });
+        });
+        it('Checking add chart elements options for other charts', (done: Function) => {
+            helper.invoke('insertChart', [[{ type: 'Column', range: 'D1:H11' }]]);
+            setTimeout(() => {
+                helper.getElement('#' + helper.id + '_addchart').click();
+                expect(helper.getElement('#' + helper.id + '_add_chart_menu').children.length).toBe(6);
+                expect(helper.getElement('#' + helper.id + '_add_chart_menu').children[0].textContent).toBe('Axes');
+                expect(helper.getElement('#' + helper.id + '_add_chart_menu').children[1].textContent).toBe('Axis Title');
+                expect(helper.getElement('#' + helper.id + '_add_chart_menu').children[2].textContent).toBe('Chart Title');
+                expect(helper.getElement('#' + helper.id + '_add_chart_menu').children[3].textContent).toBe('Data Labels');
+                expect(helper.getElement('#' + helper.id + '_add_chart_menu').children[4].textContent).toBe('Gridlines');
+                expect(helper.getElement('#' + helper.id + '_add_chart_menu').children[5].textContent).toBe('Legends');
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                const id: string = spreadsheet.sheets[0].rows[0].cells[3].chart[0].id;
+                helper.invoke('deleteChart', [id]);
+                done();
+            });
+        });
+    });
+
     describe('UI - Interaction for Conditional Formatting, Borders, Merge, Re-apply Filter->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);

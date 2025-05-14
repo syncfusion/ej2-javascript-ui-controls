@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## 29.2.4 (2025-05-14)
+
+### Schedule
+
+- `#F715433` - The issue with assigning a direct date time value to the `StartDate` property of recurrence editor
+- `F67156` - The issue where clearing the start and end dates and then selecting the All Day checkbox caused a console error in the Schedule popup has been resolved. .
+
 ## 29.1.41 (2025-05-06)
 
 ### Schedule

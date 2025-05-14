@@ -178,7 +178,7 @@ describe('MultiSelect', () => {
         it('enable selectall', () => {
             listObj = new MultiSelect({
                 dataSource: datasource,
-                mode: 'CheckBox', fields: { text: "text", value: "text" }, value: ["JAVA"]
+                mode: 'CheckBox', fields: { text: "text", value: "text" }, debounceDelay: 0, value: ["JAVA"]
             });
             listObj.appendTo(element);
             listObj.showSelectAll = true;
@@ -189,7 +189,7 @@ describe('MultiSelect', () => {
         it('disable selectall', () => {
             listObj = new MultiSelect({
                 dataSource: datasource,
-                mode: 'CheckBox', fields: { text: "text", value: "text" }, value: ["JAVA"], showSelectAll: true
+                mode: 'CheckBox', debounceDelay: 0, fields: { text: "text", value: "text" }, value: ["JAVA"], showSelectAll: true
             });
             listObj.appendTo(element);
             listObj.showSelectAll = false;
@@ -199,7 +199,7 @@ describe('MultiSelect', () => {
         it('change selectallText', () => {
             listObj = new MultiSelect({
                 dataSource: datasource,
-                mode: 'CheckBox', fields: { text: "text", value: "text" }, value: ["JAVA"], showSelectAll: true
+                mode: 'CheckBox', debounceDelay: 0, fields: { text: "text", value: "text" }, value: ["JAVA"], showSelectAll: true
             });
             listObj.appendTo(element);
             listObj.selectAllText = 'check All';
@@ -228,7 +228,7 @@ describe('MultiSelect', () => {
         });
         it('wrapper element - Delim Mode', (done) => {
             listObj = new MultiSelect({
-                dataSource: datasource, showSelectAll: true, mode: 'CheckBox',
+                dataSource: datasource, showSelectAll: true, mode: 'CheckBox', debounceDelay: 0,
                 fields: { text: "text", value: "text" }, value: ["JAVA"]
             });
             listObj.appendTo(element);
@@ -261,7 +261,7 @@ describe('MultiSelect', () => {
         });
         it('document click', () => {
             listObj = new MultiSelect({
-                dataSource: datasource, mode: 'CheckBox',
+                dataSource: datasource, mode: 'CheckBox', debounceDelay: 0,
                 fields: { text: "text", value: "text" }, value: ["JAVA"]
             });
             listObj.appendTo(element);
@@ -295,7 +295,7 @@ describe('MultiSelect', () => {
             listObj = new MultiSelect({
                 dataSource: datasource2,
                 showSelectAll: true, mode: 'CheckBox',
-                fields: { value: 'text', text: 'text' }, allowFiltering: true,
+                fields: { value: 'text', text: 'text' }, allowFiltering: true, debounceDelay: 0,
                 selectAllText: 'Check & UnCheck All',
                 filtering: function (e) {
                     checker = true;
@@ -346,7 +346,7 @@ describe('MultiSelect', () => {
             listObj = new MultiSelect({
                 dataSource: datasource2,
                 showSelectAll: true, mode: 'CheckBox',
-                fields: { value: 'text', text: 'text' }, allowFiltering: true,
+                fields: { value: 'text', text: 'text' }, allowFiltering: true, debounceDelay: 0,
                 selectAllText: 'Check & UnCheck All',
                 filtering: function (e) {
                     checker = true;
@@ -374,7 +374,7 @@ describe('MultiSelect', () => {
             listObj = new MultiSelect({
                 dataSource: datasource2,
                 showSelectAll: true, mode: 'CheckBox',
-                fields: { value: 'text', text: 'text' }, allowFiltering: true,
+                fields: { value: 'text', text: 'text' }, allowFiltering: true, debounceDelay: 0,
                 selectAllText: 'Check & UnCheck All',
 
             });
@@ -421,7 +421,7 @@ describe('MultiSelect', () => {
         it('Adding item in the existing group', () => {
             listObj = new MultiSelect({
                 dataSource: data,
-                mode: 'CheckBox',
+                mode: 'CheckBox', debounceDelay: 0,
                 fields: { groupBy: 'Category', text: 'Vegetable', value: 'Id' },
             });
             listObj.appendTo('#multiselect');
@@ -460,7 +460,7 @@ describe('MultiSelect', () => {
         it('filtering basic coverage', () => {
             listObj = new MultiSelect({
                 dataSource: data,
-                mode: 'CheckBox',
+                mode: 'CheckBox', debounceDelay: 0,
                 fields: { groupBy: 'Category', text: 'Vegetable', value: 'Id' },
             });
             listObj.appendTo('#multiselect');
@@ -500,7 +500,7 @@ describe('MultiSelect', () => {
             listObj = new MultiSelect({
                 dataSource: data,
                 mode: 'CheckBox',
-                showSelectAll: true,
+                showSelectAll: true, debounceDelay: 0,
                 fields: { groupBy: 'Category', text: 'Vegetable', value: 'Id' },
             });
             listObj.appendTo('#multiselect');
@@ -550,7 +550,7 @@ describe('MultiSelect', () => {
             listObj = new MultiSelect({
                 dataSource: data,
                 mode: 'CheckBox',
-                enableGroupCheckBox: true,
+                enableGroupCheckBox: true, debounceDelay: 0,
                 showSelectAll: true,
                 fields: { groupBy: 'Category', text: 'Vegetable', value: 'Id' },
             });
@@ -587,7 +587,7 @@ describe('MultiSelect', () => {
             Browser.userAgent = androidPhoneUa;
             document.body.appendChild(ele);
             listObj = new MultiSelect({
-                dataSource: datasource2, showSelectAll: true, mode: 'CheckBox', fields: { value: 'text', text: 'text' }, allowFiltering: true,
+                dataSource: datasource2, showSelectAll: true, mode: 'CheckBox', fields: { value: 'text', text: 'text' }, debounceDelay: 0, allowFiltering: true,
                 filtering: function (e) {
                     let query: Query = new Query().select(['text', 'id']);
                     query = (e.text !== '') ? query.where('text', 'startswith', e.text, true) : query;
@@ -705,6 +705,7 @@ describe('MultiSelect', () => {
                 width: '250px',
 
                 showSelectAll: true,
+                debounceDelay: 0,
                 mode: 'CheckBox',
                 placeholder: 'Select an employee',
                 popupWidth: '250px',
@@ -754,6 +755,7 @@ describe('MultiSelect', () => {
                 mode: 'CheckBox',
                 placeholder: 'Select an employee',
                 popupWidth: '250px',
+                debounceDelay: 0,
                 showSelectAll: true,
                 popupHeight: '300px'
             });
@@ -786,7 +788,7 @@ describe('MultiSelect', () => {
         })
         it('openOnClick property', (done) => {
             let multiObj = new MultiSelect({
-                dataSource: datasource2, openOnClick: false, mode: 'CheckBox', fields: { value: 'text', text: 'text' }
+                dataSource: datasource2, openOnClick: false, mode: 'CheckBox', fields: { value: 'text', text: 'text' }, debounceDelay: 0,
             });
             multiObj.appendTo('#newlist');
             multiObj.showPopup();
@@ -847,6 +849,7 @@ describe('MultiSelect', () => {
                 showSelectAll: true,
                 fields: { value: 'id', text: 'text' },
                 width: "300px",
+                debounceDelay: 0,
                 popupHeight: "100px",
                 popupWidth: "250px",
                 locale: 'fr-BE'
@@ -868,7 +871,7 @@ describe('MultiSelect', () => {
                 dataSource: datasource2,
                 width: "300px",
                 popupHeight: "100px",
-
+                debounceDelay: 0,
                 popupWidth: "250px"
             });
             listObj.appendTo(element);
@@ -910,6 +913,7 @@ describe('MultiSelect', () => {
             listObj = new MultiSelect({
                 mode: 'CheckBox',
                 dataSource: datasource2,
+                debounceDelay: 0,
                 fields: { text: "text", value: "text" },
                 value: ["PHP", "JAVA"],
             });
@@ -925,6 +929,7 @@ describe('MultiSelect', () => {
         it('validate item selection on render API-Value', () => {
             listObj = new MultiSelect({
                 mode: 'CheckBox',
+                debounceDelay: 0,
                 dataSource: datasource2, fields: { text: "text", value: "text" }, value: ["PHP", "JAVA"]
             });
             listObj.appendTo(element);
@@ -938,7 +943,7 @@ describe('MultiSelect', () => {
 
         });
         it('validate item selection on render API-Text', () => {
-            listObj = new MultiSelect({ mode: 'CheckBox', dataSource: datasource2, fields: { text: "text", value: "text" } });
+            listObj = new MultiSelect({ mode: 'CheckBox', debounceDelay: 0, dataSource: datasource2, fields: { text: "text", value: "text" } });
             listObj.appendTo(element);
             listObj.value = ["PHP", "JAVA"];
             listObj.dataBind();
@@ -947,7 +952,7 @@ describe('MultiSelect', () => {
 
         });
         it('validate item selection on render API-Value', () => {
-            listObj = new MultiSelect({ dataSource: ['JAVA', 'PHP', 'PYTHON'] });
+            listObj = new MultiSelect({ dataSource: ['JAVA', 'PHP', 'PYTHON'], debounceDelay: 0, });
             listObj.value = ["PHP", "JAVA"];
             listObj.dataBind();
             listObj.appendTo(element);
@@ -960,7 +965,7 @@ describe('MultiSelect', () => {
 
         });
         it('validate datasource binding without init value selection.', () => {
-            listObj = new MultiSelect({ mode: 'CheckBox', fields: { text: "Text", value: "text" } });
+            listObj = new MultiSelect({ mode: 'CheckBox', debounceDelay: 0, fields: { text: "Text", value: "text" } });
             listObj.appendTo(element);
             listObj.dataSource = datasource2;
             listObj.dataBind();
@@ -972,7 +977,7 @@ describe('MultiSelect', () => {
         it('down && up key press after scroll by manually', (done) => {
             //
             let list: any = new MultiSelect({
-                dataSource: datasource2, mode: 'CheckBox',
+                dataSource: datasource2, mode: 'CheckBox', debounceDelay: 0,
                 fields: { text: "text", value: "text" }
             });
             let keyEventArgs: any = { preventDefault: (): void => { }, action: 'down' };
@@ -1014,7 +1019,7 @@ describe('MultiSelect', () => {
         });
         it('down && up key press after scroll by manually', (done) => {
             //
-            let list: any = new MultiSelect({ mode: 'CheckBox', });
+            let list: any = new MultiSelect({ mode: 'CheckBox', debounceDelay: 0, });
             let keyEventArgs: any = { preventDefault: (): void => { }, action: 'down' };
             list.appendTo(element);
             list.showPopup();
@@ -1051,7 +1056,7 @@ describe('MultiSelect', () => {
         });
         it('validate datasource binding Keyup.', () => {
             keyboardEventArgs.keyCode = 71;
-            listObj = new MultiSelect({ mode: 'CheckBox', fields: { text: "Text", value: "text" } });
+            listObj = new MultiSelect({ mode: 'CheckBox', debounceDelay: 0, fields: { text: "Text", value: "text" } });
             listObj.appendTo(element);
             (<any>listObj).keyDownStatus = true;
             (<any>listObj).onInput(keyboardEventArgs);;
@@ -1064,7 +1069,7 @@ describe('MultiSelect', () => {
             //listObj.query = new Query().take(4);
         });
         it('validate datasource binding with Query property.', () => {
-            listObj = new MultiSelect({ fields: { text: "text", value: "text" } });
+            listObj = new MultiSelect({ fields: { text: "text", value: "text" }, debounceDelay: 0, });
             listObj.appendTo(element);
             listObj.dataSource = datasource2;
             listObj.query = new Query().take(4);
@@ -1076,7 +1081,7 @@ describe('MultiSelect', () => {
         });
         it('validate datasource binding with-out data value set with clear all', () => {
             let listObj: any;
-            listObj = new MultiSelect({ mode: 'CheckBox', fields: { text: "Text", value: "text" } });
+            listObj = new MultiSelect({ mode: 'CheckBox', debounceDelay: 0, fields: { text: "Text", value: "text" } });
             listObj.appendTo(element);
             listObj.value = ['Python'];
             listObj.dataBind();
@@ -1089,7 +1094,7 @@ describe('MultiSelect', () => {
 
         });
         it('validate  on render API-placeholder', () => {
-            listObj = new MultiSelect({ dataSource: datasource2, mode: 'CheckBox', placeholder: "Select your choice" });
+            listObj = new MultiSelect({ dataSource: datasource2, debounceDelay: 0, mode: 'CheckBox', placeholder: "Select your choice" });
             listObj.appendTo(element);
             let wrapper: HTMLElement = (<any>listObj).inputElement.parentElement.parentElement;
             if (wrapper && wrapper.firstElementChild && wrapper.firstChild.nextSibling) {
@@ -1113,7 +1118,7 @@ describe('MultiSelect', () => {
          * cssClass  property.
          */
         it('cssClass ', () => {
-            listObj = new MultiSelect({ dataSource: datasource2, mode: 'CheckBox', cssClass: 'closeState' });
+            listObj = new MultiSelect({ dataSource: datasource2, debounceDelay: 0, mode: 'CheckBox', cssClass: 'closeState' });
             listObj.appendTo(element);
             listObj.dataBind();
             expect((<any>listObj).overAllWrapper.classList.contains('closeState')).toEqual(true);//27
@@ -1136,7 +1141,7 @@ describe('MultiSelect', () => {
          * htmlAttributes
          */
         it('htmlAttributes', () => {
-            listObj = new MultiSelect({ dataSource: datasource2, mode: 'CheckBox', });
+            listObj = new MultiSelect({ dataSource: datasource2, debounceDelay: 0, mode: 'CheckBox', });
             listObj.appendTo(element);
             let wrapper: HTMLElement = (<any>listObj).overAllWrapper;
             listObj.htmlAttributes = { title: 'sample', name: 'dropdown', class: 'e-ddl-list', disabled: 'disabled', readonly: 'readonly', style: 'margin: 0', role: 'listbox', placeholder: 'new text' };
@@ -1156,7 +1161,7 @@ describe('MultiSelect', () => {
          * enableRtl
          */
         it('enableRtl ', () => {
-            listObj = new MultiSelect({ dataSource: datasource2, mode: 'CheckBox', });
+            listObj = new MultiSelect({ dataSource: datasource2, debounceDelay: 0, mode: 'CheckBox', });
             listObj.appendTo(element);
             let wrapper: HTMLElement = (<any>listObj).overAllWrapper;
             listObj.showPopup();
@@ -1184,7 +1189,7 @@ describe('MultiSelect', () => {
          * showClearButton
          */
         it('showClearButton false', () => {
-            listObj = new MultiSelect({ dataSource: datasource2, mode: 'CheckBox', showClearButton: false, value: ['PHP'], fields: { text: "text", value: "text" } });
+            listObj = new MultiSelect({ dataSource: datasource2, debounceDelay: 0, mode: 'CheckBox', showClearButton: false, value: ['PHP'], fields: { text: "text", value: "text" } });
             listObj.appendTo(element);
             listObj.showClearButton = false;
             listObj.dataBind();
@@ -1198,7 +1203,7 @@ describe('MultiSelect', () => {
         it('Lit Click action with hide selected item and select event checkup.', () => {
             let status: boolean = false;
             listObj = new MultiSelect({
-                dataSource: datasource2, mode: 'CheckBox', fields: { text: "text", value: "text" }, select: function () {
+                dataSource: datasource2, debounceDelay: 0, mode: 'CheckBox', fields: { text: "text", value: "text" }, select: function () {
                     status = true;
                 }, hideSelectedItem: true
             });
@@ -1219,7 +1224,7 @@ describe('MultiSelect', () => {
          */
         it('maximumSelectionLength.', () => {
             listObj = new MultiSelect({
-                dataSource: datasource2, mode: 'CheckBox', fields: { text: "text", value: "text" },
+                dataSource: datasource2, mode: 'CheckBox', debounceDelay: 0, fields: { text: "text", value: "text" },
                 showSelectAll: true,
                 maximumSelectionLength: 7
             });
@@ -1256,7 +1261,7 @@ describe('MultiSelect', () => {
         });
         it('maximumSelectionLength disabled items.', () => {
             listObj = new MultiSelect({
-                dataSource: datasource2, mode: 'CheckBox', fields: { text: "text", value: "text" },
+                dataSource: datasource2, debounceDelay: 0, mode: 'CheckBox', fields: { text: "text", value: "text" },
                 showSelectAll: true,
                 maximumSelectionLength: 3
             });
@@ -1282,7 +1287,7 @@ describe('MultiSelect', () => {
          * enabled property
          */
         it('enabled ', () => {
-            listObj = new MultiSelect({ dataSource: datasource2, mode: 'CheckBox', showDropDownIcon: true });
+            listObj = new MultiSelect({ dataSource: datasource2, debounceDelay: 0, mode: 'CheckBox', showDropDownIcon: true });
             listObj.appendTo(element);
             let wrapper: HTMLElement = (<any>listObj).inputElement.parentElement.parentElement;
             listObj.enabled = false;
@@ -1306,7 +1311,7 @@ describe('MultiSelect', () => {
          * Interaction automation.
          */
         it('Hover event validation', () => {
-            listObj = new MultiSelect({ dataSource: datasource2, mode: 'CheckBox', fields: { text: "text", value: "text" } });
+            listObj = new MultiSelect({ dataSource: datasource2, debounceDelay: 0, mode: 'CheckBox', fields: { text: "text", value: "text" } });
             listObj.appendTo(element);
             listObj.showPopup();
             let element1: HTMLElement = (<any>listObj).list.querySelector('li[data-value="JAVA"]');
@@ -1328,7 +1333,7 @@ describe('MultiSelect', () => {
          * Interaction automation.
          */
         it('select event validation', () => {
-            listObj = new MultiSelect({ dataSource: datasource2, mode: 'CheckBox', fields: { text: "text", value: "text" }, width: "10px" });
+            listObj = new MultiSelect({ dataSource: datasource2, debounceDelay: 0, mode: 'CheckBox', fields: { text: "text", value: "text" }, width: "10px" });
             listObj.appendTo(element);
             listObj.showPopup();
             let element1: HTMLElement = (<any>listObj).list.querySelector('li[data-value="JAVA"]');
@@ -1358,7 +1363,7 @@ describe('MultiSelect', () => {
          */
         it('select event validation with mouse', () => {
             listObj = new MultiSelect({
-                dataSource: datasource2, mode: 'CheckBox', fields: { value: 'text', text: 'text' }, allowFiltering: true,
+                dataSource: datasource2, mode: 'CheckBox', fields: { value: 'text', text: 'text' }, allowFiltering: true, debounceDelay: 0,
                 filtering: function (e) {
                     let query: Query = new Query().select(['text', 'id']);
                     query = (e.text !== '') ? query.where('text', 'startswith', e.text, true) : query;
@@ -1382,7 +1387,7 @@ describe('MultiSelect', () => {
         });
         it('filtering basic coverage', () => {
             listObj = new MultiSelect({
-                dataSource: datasource2, mode: 'CheckBox', fields: { value: 'text', text: 'text' }, allowFiltering: true,
+                dataSource: datasource2, mode: 'CheckBox', fields: { value: 'text', text: 'text' }, allowFiltering: true, debounceDelay: 0,
                 filtering: function (e) {
                     let query: Query = new Query().select(['text', 'id']);
                     query = (e.text !== '') ? query.where('text', 'startswith', e.text, true) : query;
@@ -1414,7 +1419,7 @@ describe('MultiSelect', () => {
         });
         it('filtering inbuild support coverage', () => {
             listObj = new MultiSelect({
-                dataSource: datasource2, mode: 'CheckBox', fields: { value: 'text', text: 'text' }, allowFiltering: true,
+                dataSource: datasource2, mode: 'CheckBox', fields: { value: 'text', text: 'text' }, allowFiltering: true, debounceDelay: 0,
             });
             listObj.appendTo(element);
             //open action validation
@@ -1441,7 +1446,7 @@ describe('MultiSelect', () => {
         });
         it('filtering basic coverage', () => {
             listObj = new MultiSelect({
-                dataSource: datasource2, mode: 'CheckBox', fields: { value: 'text', text: 'text' }, allowFiltering: true,
+                dataSource: datasource2, mode: 'CheckBox', fields: { value: 'text', text: 'text' }, allowFiltering: true, debounceDelay: 0,
                 filtering: function (e) {
                     let query: Query = new Query().select(['text', 'id']);
                     query = (e.text !== '') ? query.where('text', 'startswith', e.text, true) : query;
@@ -1500,7 +1505,7 @@ describe('MultiSelect', () => {
          * Interaction automation. 
          */
         it('select event validation with keyboard interaction-Esc key-default', (done) => {
-            listObj = new MultiSelect({ closePopupOnSelect: false, mode: 'CheckBox', dataSource: datasource2, fields: { value: 'text', text: 'text' }, value: ['JAVA', 'Python'] });
+            listObj = new MultiSelect({ closePopupOnSelect: false, debounceDelay: 0, mode: 'CheckBox', dataSource: datasource2, fields: { value: 'text', text: 'text' }, value: ['JAVA', 'Python'] });
             listObj.appendTo(element);
             //open action validation
             listObj.showPopup();
@@ -1522,7 +1527,7 @@ describe('MultiSelect', () => {
             }, 200);
         });
         it('select event validation with keyboard interaction-Esc key-Box', (done) => {
-            listObj = new MultiSelect({ closePopupOnSelect: false, mode: 'CheckBox', dataSource: datasource2, fields: { value: 'text', text: 'text' }, value: ['JAVA', 'Python'], });
+            listObj = new MultiSelect({ closePopupOnSelect: false, mode: 'CheckBox', debounceDelay: 0, dataSource: datasource2, fields: { value: 'text', text: 'text' }, value: ['JAVA', 'Python'], });
             listObj.appendTo(element);
             //open action validation
             listObj.showPopup();
@@ -1545,7 +1550,7 @@ describe('MultiSelect', () => {
 
         });
         it('select event validation with keyboard interaction-Esc key-Box no value interaction.', (done) => {
-            listObj = new MultiSelect({ dataSource: datasource2, mode: 'CheckBox', fields: { value: 'text', text: 'text' }, });
+            listObj = new MultiSelect({ dataSource: datasource2, mode: 'CheckBox', debounceDelay: 0, fields: { value: 'text', text: 'text' }, });
             listObj.appendTo(element);
             //open action validation
             listObj.showPopup();
@@ -1560,7 +1565,7 @@ describe('MultiSelect', () => {
 
         });
         it('select event validation with keyboard interaction-Esc key-Delim', (done) => {
-            listObj = new MultiSelect({ closePopupOnSelect: false, mode: 'CheckBox', dataSource: datasource2, fields: { value: 'text', text: 'text' }, value: ['JAVA', 'Python'], });
+            listObj = new MultiSelect({ closePopupOnSelect: false, debounceDelay: 0, mode: 'CheckBox', dataSource: datasource2, fields: { value: 'text', text: 'text' }, value: ['JAVA', 'Python'], });
             listObj.appendTo(element);
             //open action validation
             listObj.showPopup();
@@ -1588,7 +1593,7 @@ describe('MultiSelect', () => {
          * Interaction automation. 
          */
         it('select event validation with keyboard interaction-Esc key-default', (done) => {
-            listObj = new MultiSelect({ closePopupOnSelect: false, mode: 'CheckBox', dataSource: datasource2, fields: { value: 'text', text: 'text' } });
+            listObj = new MultiSelect({ closePopupOnSelect: false, debounceDelay: 0, mode: 'CheckBox', dataSource: datasource2, fields: { value: 'text', text: 'text' } });
             listObj.appendTo(element);
             //open action validation
             listObj.showPopup();
@@ -1612,7 +1617,7 @@ describe('MultiSelect', () => {
 
         });
         it('select event validation with keyboard interaction-Esc key-Box', (done) => {
-            listObj = new MultiSelect({ closePopupOnSelect: false, mode: 'CheckBox', dataSource: datasource2, fields: { value: 'text', text: 'text' }, });
+            listObj = new MultiSelect({ closePopupOnSelect: false, mode: 'CheckBox', dataSource: datasource2, debounceDelay: 0, fields: { value: 'text', text: 'text' }, });
             listObj.appendTo(element);
             //open action validation
             listObj.showPopup();
@@ -1635,7 +1640,7 @@ describe('MultiSelect', () => {
 
         });
         it('select event validation with keyboard interaction-Esc key-Delim', () => {
-            listObj = new MultiSelect({ closePopupOnSelect: false, mode: 'CheckBox', dataSource: datasource2, fields: { value: 'text', text: 'text' }, });
+            listObj = new MultiSelect({ closePopupOnSelect: false, mode: 'CheckBox', debounceDelay: 0, dataSource: datasource2, fields: { value: 'text', text: 'text' }, });
             listObj.appendTo(element);
             //open action validation
             listObj.showPopup();
@@ -1659,7 +1664,7 @@ describe('MultiSelect', () => {
          * Interaction automation.
          */
         it('List click event validation', () => {
-            listObj = new MultiSelect({ dataSource: datasource2, mode: 'CheckBox', fields: { text: "text", value: "text" }, closePopupOnSelect: true });
+            listObj = new MultiSelect({ dataSource: datasource2, mode: 'CheckBox', fields: { text: "text", value: "text" }, debounceDelay: 0, closePopupOnSelect: true });
             listObj.appendTo(element);
             (<any>listObj).wrapperClick(mouseEventArgs);
             expect((<any>listObj).popupObj.element.parentElement).not.toBe(null);
@@ -1684,7 +1689,7 @@ describe('MultiSelect', () => {
          * Interaction automation.
          */
         it('List hover event validation', () => {
-            listObj = new MultiSelect({ dataSource: datasource2, mode: 'CheckBox', fields: { text: "text", value: "text" }, closePopupOnSelect: true, value: ["JAVA"] });
+            listObj = new MultiSelect({ dataSource: datasource2, mode: 'CheckBox', fields: { text: "text", value: "text" }, closePopupOnSelect: true, debounceDelay: 0, value: ["JAVA"] });
             listObj.appendTo(element);
             expect((<any>listObj).overAllClear.style.display).toBe('none');
             (<any>listObj).mouseIn();
@@ -1717,7 +1722,7 @@ describe('MultiSelect', () => {
          * Keyboard Interaction automation for delim mode.
          */
         it('Multiselect-Chip interaction validation with delim mode', () => {
-            listObj = new MultiSelect({ dataSource: datasource2, mode: 'CheckBox', fields: { text: "text", value: "text" }, closePopupOnSelect: true, value: ['JAVA', 'Python', 'Oracle', 'HTML', 'PHP'] });
+            listObj = new MultiSelect({ dataSource: datasource2, mode: 'CheckBox', debounceDelay: 0, fields: { text: "text", value: "text" }, closePopupOnSelect: true, value: ['JAVA', 'Python', 'Oracle', 'HTML', 'PHP'] });
             listObj.appendTo(element);
             //validate the back-space key with out content.
             expect((<any>listObj).delimiterWrapper.innerHTML).not.toBe('');
@@ -1741,7 +1746,7 @@ describe('MultiSelect', () => {
          * Keyboard Interaction automation.
          */
         it('Multiselect-popup interaction validation', () => {
-            listObj = new MultiSelect({ dataSource: datasource2, mode: 'CheckBox', fields: { text: "text", value: "text" }, closePopupOnSelect: true, value: ['JAVA', 'Python', 'Oracle', 'HTML', 'PHP'] });
+            listObj = new MultiSelect({ dataSource: datasource2, mode: 'CheckBox', debounceDelay: 0, fields: { text: "text", value: "text" }, closePopupOnSelect: true, value: ['JAVA', 'Python', 'Oracle', 'HTML', 'PHP'] });
             listObj.appendTo(element);
             //open action validation
             keyboardEventArgs.altKey = true;
@@ -1775,7 +1780,7 @@ describe('MultiSelect', () => {
         it('Multiselect-popup interaction validation', () => {
             let selectStatus: boolean = false;
             listObj = new MultiSelect({
-                dataSource: datasource2, mode: 'CheckBox',
+                dataSource: datasource2, mode: 'CheckBox', debounceDelay: 0,
                 select: function () {
                     selectStatus = true;
                 },
@@ -1832,6 +1837,7 @@ describe('MultiSelect', () => {
             listObj = new MultiSelect({
                 dataSource: datasource2,
                 mode: 'CheckBox',
+                debounceDelay: 0,
                 fields: { text: "text", value: "text" }, closePopupOnSelect: false,
                 filtering: function (e) {
                     let query: Query = new Query().select(['text', 'id']);
@@ -1861,6 +1867,7 @@ describe('MultiSelect', () => {
             let checker: boolean = false, checker1: boolean = false;
             listObj = new MultiSelect({
                 dataSource: datasource2,
+                debounceDelay: 0,
                 mode: 'CheckBox', value: ["JAVA"], placeholder: 'Select Dropdown', allowFiltering: true,
                 showDropDownIcon: true,
                 filtering: function (e) {
@@ -1990,7 +1997,7 @@ describe('MultiSelect', () => {
         it('IE blur event', () => {
             Browser.userAgent = 'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; Touch; .NET4.0C; .NET4.0E; .NET CLR 2.0.50727; .NET CLR 3.0.30729; .NET CLR 3.5.30729; Tablet PC 2.0; rv:11.0) like Gecko';
             let multiObj = new MultiSelect({
-                hideSelectedItem: false, dataSource: datasource2, fields: { value: 'text', text: 'text' },
+                hideSelectedItem: false, dataSource: datasource2, fields: { value: 'text', text: 'text' }, debounceDelay: 0,
                 mode: 'CheckBox',
             });
             multiObj.appendTo('#newlist');
@@ -2020,7 +2027,7 @@ describe('MultiSelect', () => {
             let count: number = 0;
             dropDowns = new MultiSelect({
                 dataSource: datasource,
-                mode: 'CheckBox',
+                mode: 'CheckBox', debounceDelay: 0,
                 fields: <Object>{
                     value: 'text', itemCreated: (e: any) => {
                         if (count === 0) {
@@ -2058,6 +2065,7 @@ describe('MultiSelect', () => {
             let multiObj = new MultiSelect({
                 hideSelectedItem: false, dataSource: datasource2, fields: { value: 'text', text: 'text' },
                 mode: 'CheckBox',
+                debounceDelay: 0,
                 value: ['JAVA'],
                 showSelectAll: true,
             });
@@ -2071,7 +2079,7 @@ describe('MultiSelect', () => {
             let checker: boolean = false;
             let listObj: any;
             listObj = new MultiSelect({
-                mode: 'CheckBox', dataSource: datasource2, focus: function () {
+                mode: 'CheckBox', dataSource: datasource2, debounceDelay: 0, focus: function () {
                     checker = true;
                 }, blur: function () {
                     checker = true;
@@ -2119,6 +2127,7 @@ describe('MultiSelect', () => {
                 fields: { value: 'text', text: 'text' },
                 mode: 'CheckBox',
                 value: ['JAVA'],
+                debounceDelay: 0,
                 change: () => {
                     isNotLocalChange = false;
                     changeCount = changeCount + 1;
@@ -2144,6 +2153,7 @@ describe('MultiSelect', () => {
             let multiObj = new MultiSelect({
                 dataSource: remoteData,
                 fields: { value: 'EmployeeID', text: 'FirstName' },
+                debounceDelay: 0,
                 mode: 'CheckBox',
                 value: [5],
                 change: () => {
@@ -2181,6 +2191,7 @@ describe('MultiSelect', () => {
             let changeCount: number = 0;
             let multiObj: any = new MultiSelect({
                 dataSource: datasource2,
+                debounceDelay: 0,
                 fields: { value: 'text', text: 'text' },
                 mode: 'CheckBox',
                 filterBarPlaceholder: "Select a value"
@@ -2212,7 +2223,7 @@ describe('MultiSelect', () => {
         })
         it('get selected text', (done) => {
             let multiObj = new MultiSelect({
-                dataSource: datasource2, mode: 'CheckBox', fields: { value: 'text', text: 'text' }, value: ['PHP', 'HTML']
+                dataSource: datasource2, debounceDelay: 0, mode: 'CheckBox', fields: { value: 'text', text: 'text' }, value: ['PHP', 'HTML']
             });
             multiObj.appendTo('#newlist');
             setTimeout(() => {
@@ -2223,7 +2234,7 @@ describe('MultiSelect', () => {
         });
         it('focus the wrapper click', () => {
             let multiObj = new MultiSelect({
-                dataSource: datasource2, mode: 'CheckBox', fields: { value: 'text', text: 'text' }, value: ['PHP', 'HTML']
+                dataSource: datasource2, debounceDelay: 0, mode: 'CheckBox', fields: { value: 'text', text: 'text' }, value: ['PHP', 'HTML']
             });
             multiObj.appendTo('#newlist');
             let mouseEvenArg: any = { preventDefault: function () { }, target: (<any>multiObj).overAllWrapper };
@@ -2238,7 +2249,7 @@ describe('MultiSelect', () => {
         });
         it('focus the input and click the document', () => {
             let multiObj = new MultiSelect({
-                dataSource: datasource2, mode: 'CheckBox', fields: { value: 'text', text: 'text' }, value: ['PHP', 'HTML']
+                dataSource: datasource2, debounceDelay: 0, mode: 'CheckBox', fields: { value: 'text', text: 'text' }, value: ['PHP', 'HTML']
             });
             multiObj.appendTo('#newlist');
             let mouseEvenArg: any = { preventDefault: function () { }, target: (<any>multiObj).overAllWrapper };
@@ -2254,7 +2265,7 @@ describe('MultiSelect', () => {
         });
         it('reordering the selected value', () => {
             let multiObj = new MultiSelect({
-                dataSource: datasource2, mode: 'CheckBox', fields: { value: 'text', text: 'text' }, value: ['PHP', 'HTML']
+                dataSource: datasource2, debounceDelay: 0, mode: 'CheckBox', fields: { value: 'text', text: 'text' }, value: ['PHP', 'HTML']
             });
             multiObj.appendTo('#newlist');
             multiObj.showPopup();
@@ -2285,7 +2296,7 @@ describe('MultiSelect', () => {
         })
         it('enable selectall popup hight changed', () => {
             let multiObj = new MultiSelect({
-                dataSource: [], mode: 'CheckBox', fields: { value: 'text', text: 'text' }, showSelectAll: true,
+                dataSource: [], mode: 'CheckBox', debounceDelay: 0, fields: { value: 'text', text: 'text' }, showSelectAll: true,
             });
             multiObj.appendTo('#newlist');
             multiObj.dataSource = datasource2;
@@ -2323,7 +2334,7 @@ describe('MultiSelect', () => {
         })
         it('openOnClick', (done) => {
             let multiObj = new MultiSelect({
-                dataSource: datasource2, openOnClick: false, mode: 'CheckBox', fields: { value: 'text', text: 'text' }
+                dataSource: datasource2, debounceDelay: 0, openOnClick: false, mode: 'CheckBox', fields: { value: 'text', text: 'text' }
             });
             multiObj.appendTo('#newlist');
             multiObj.showPopup();
@@ -2361,7 +2372,7 @@ describe('MultiSelect', () => {
         })
         it('click outside of filterbar', () => {
             let multiObj = new MultiSelect({
-                dataSource: datasource2, mode: 'CheckBox', fields: { value: 'text', text: 'text' }
+                dataSource: datasource2, debounceDelay: 0, mode: 'CheckBox', fields: { value: 'text', text: 'text' }
             });
             multiObj.appendTo('#newlist');
             multiObj.showPopup();
@@ -2386,7 +2397,7 @@ describe('MultiSelect', () => {
             let dropDowns: any = new MultiSelect({
                 dataSource: ['Java Script', 'AS.NET MVC'],
                 value: ['Java Script'],
-                allowFiltering: true,
+                allowFiltering: true, debounceDelay: 0,
                 mode: 'CheckBox'
             });
             dropDowns.appendTo(element);
@@ -2409,7 +2420,7 @@ describe('MultiSelect', () => {
             let dropDowns: any = new MultiSelect({
                 dataSource: ['Java Script', 'AS.NET MVC'],
                 value: ['Java Script'],
-                allowFiltering: true,
+                allowFiltering: true, debounceDelay: 0,
                 mode: 'CheckBox',
             });
             dropDowns.appendTo(element);
@@ -2437,7 +2448,7 @@ describe('MultiSelect', () => {
             dropDowns = new MultiSelect({
                 dataSource: ['Java Script', 'AS.NET MVC', 'Java', 'C#'],
                 showSelectAll: true,
-                allowFiltering: true,
+                allowFiltering: true, debounceDelay: 0,
                 mode: 'CheckBox'
             });
             dropDowns.appendTo(element);
@@ -2527,7 +2538,7 @@ describe('MultiSelect', () => {
             mulObj = new MultiSelect({
                 dataSource: datasource2,
                 fields: { value: 'text', text: 'text' },
-                allowFiltering: true,
+                allowFiltering: true, debounceDelay: 0,
                 mode: 'CheckBox'
             });
             mulObj.appendTo(element);
@@ -2555,7 +2566,7 @@ describe('MultiSelect', () => {
             mulObj = new MultiSelect({
                 dataSource: datasource2,
                 fields: { value: 'text', text: 'text' },
-                allowFiltering: true,
+                allowFiltering: true, debounceDelay: 0,
                 value: ['JAVA'],
                 mode: 'CheckBox'
             });
@@ -2582,7 +2593,7 @@ describe('MultiSelect', () => {
             dropDowns = new MultiSelect({
                 dataSource: ['Java Script', 'AS.NET MVC', 'Java', 'C#'],
                 showSelectAll: true,
-                allowFiltering: true,
+                allowFiltering: true, debounceDelay: 0,
                 mode: 'CheckBox'
             });
             dropDowns.appendTo(element);
@@ -2623,7 +2634,7 @@ describe('MultiSelect', () => {
             listObj = new MultiSelect({
                 dataSource: datasource2,
                 showSelectAll: true, mode: 'CheckBox',
-                fields: { value: 'text', text: 'text' }, allowFiltering: true,
+                fields: { value: 'text', text: 'text' }, allowFiltering: true, debounceDelay: 0,
                 selectAllText: 'Check & UnCheck All'
             });
             listObj.appendTo(element);
@@ -2671,7 +2682,7 @@ describe('MultiSelect', () => {
                 mode: 'CheckBox', fields: { text: "text", value: "text" }, value: ["JAVA"],
                 showSelectAll: true,
                 showDropDownIcon: true,
-                allowFiltering: true,
+                allowFiltering: true, debounceDelay: 0,
                 open: () => {
                     var mouseEventArgs = {preventDefault: function(){}, currentTarget: (<any>listObj).checkBoxSelectionModule.checkAllParent };
                     (<any>listObj).checkBoxSelectionModule.clickHandler(mouseEventArgs);
@@ -2712,6 +2723,7 @@ describe('MultiSelect', () => {
                 mode: 'CheckBox',
                 fields: { text: "sports", value: "id" },
                 text: 'Tennis',
+                debounceDelay: 0,
                 showSelectAll: true,
                 showDropDownIcon: true,
                 enableSelectionOrder: false,
@@ -2782,6 +2794,7 @@ describe('MultiSelect', () => {
                 dataSource: datasource,
                 fields: { text: "text", value: "id" },
                 popupHeight: 50,
+                debounceDelay: 0,
                 mode: 'CheckBox',
                 showSelectAll: true,
                 change: (): void => {
@@ -2808,6 +2821,7 @@ describe('MultiSelect', () => {
                 fields: { text: "text", value: "id" },
                 popupHeight: 50,
                 mode: 'CheckBox',
+                debounceDelay: 0,
                 showSelectAll: true,
                 open: (): void => {
                     expect((<any>listObj).list.querySelectorAll('.e-check').length).toBe(0);
@@ -2854,6 +2868,7 @@ describe('MultiSelect', () => {
                 placeholder: 'ACTIVITY_FEED__ACTIVITY_FEED_PAGE_INCOMING_TAB__SHOW_ACTIVITY_FROM_PLACEHOLDER',
                 fields: { text: 'label', value: 'value', iconCss: 'iconClass' },
                 popupHeight: 50,
+                debounceDelay: 0,
                 mode: 'CheckBox',
                 showClearButton: true,
                 open: (): void => {
@@ -2890,6 +2905,7 @@ describe('MultiSelect', () => {
                 fields: { text: 'Name' },
                 popupHeight: 50,
                 mode: 'CheckBox',
+                debounceDelay: 0,
                 showSelectAll: true
             });
             listObj.appendTo(element);
@@ -2934,7 +2950,7 @@ describe('MultiSelect', () => {
                 popupHeight: 50,
                 mode: 'CheckBox',
                 showSelectAll: true,
-                allowFiltering: false
+                allowFiltering: false, debounceDelay: 0
             });
             listObj.appendTo(element);
         });
@@ -2978,7 +2994,8 @@ describe('MultiSelect', () => {
                 popupHeight: 50,
                 mode: 'CheckBox',
                 showSelectAll: true,
-                allowFiltering: true
+                allowFiltering: true,
+                debounceDelay: 0,
             });
             listObj.appendTo(element);
         });
@@ -3020,6 +3037,7 @@ describe('MultiSelect', () => {
                 dataSource: datasource,
                 fields: { text: 'Name' },
                 popupHeight: 50,
+                debounceDelay: 0,
                 mode: 'CheckBox',
                 showSelectAll: true
             });
@@ -3063,6 +3081,7 @@ describe('MultiSelect', () => {
                 fields: { text: 'Name' },
                 popupHeight: 50,
                 mode: 'CheckBox',
+                debounceDelay: 0,
                 showSelectAll: true
             });
             listObj.appendTo(element);
@@ -3107,6 +3126,7 @@ describe('MultiSelect', () => {
                 popupHeight: 50,
                 mode: 'CheckBox',
                 showSelectAll: true,
+                debounceDelay: 0,
                 allowFiltering: false
             });
             listObj.appendTo(element);
@@ -3152,6 +3172,7 @@ describe('MultiSelect', () => {
                 mode: 'CheckBox',
                 showSelectAll: true,
                 showDropDownIcon: true,
+                debounceDelay: 0,
                 filterBarPlaceholder: 'Search countries',
                 popupHeight: '350px',
                 selectedAll: (args: ISelectAllEventArgs): void => {
@@ -3183,6 +3204,7 @@ describe('MultiSelect', () => {
                 dataSource: datasource,
                 fields: { text: 'Name', value: 'Code' },
                 popupHeight: 50,
+                debounceDelay: 0,
                 width: 50,
                 showDropDownIcon: true,
                 mode: 'CheckBox',
@@ -3242,6 +3264,7 @@ describe('EJ2-39990 MultiSelect component in mobile mode with initial value page
             dataSource: datasource,
             fields: { text: 'Name', value: 'Code' },
             popupHeight: 50,
+            debounceDelay: 0,
             mode: 'CheckBox',
             value: ['AU']
         });
@@ -3286,6 +3309,7 @@ describe('EJ2-39868 Some items in the dropdown hides when using the header templ
             dataSource: datasource,
             fields: { text: 'Name', value: 'Code' },
             popupHeight: 50,
+            debounceDelay: 0,
             mode: 'CheckBox',
             value: ['AU'],
         });
@@ -3303,6 +3327,7 @@ describe('EJ2-39868 Some items in the dropdown hides when using the header templ
             dataSource: datasource,
             fields: { text: 'Name', value: 'Code' },
             popupHeight: 50,
+            debounceDelay: 0,
             mode: 'CheckBox',
             value: ['AU'],
             showSelectAll: true,
@@ -3338,6 +3363,7 @@ describe('EJ2-44277', () => {
             fields: { text: 'Name', value: 'Code' },
             showDropDownIcon: true,
             allowFiltering: true,
+            debounceDelay: 0,
             mode: 'CheckBox',
             filtering: function(e) {
                 count++;
@@ -3387,6 +3413,7 @@ describe('EJ2-44211- The focus class maintained after move the focus to another 
         document.body.appendChild(element2);
         listObj1 = new MultiSelect({
             dataSource: datasource,
+            debounceDelay: 0,
             fields: { text: 'Name' },
             mode: 'CheckBox',
         });
@@ -3395,6 +3422,7 @@ describe('EJ2-44211- The focus class maintained after move the focus to another 
             dataSource: datasource,
             fields: { text: 'Name' },
             popupHeight: 50,
+            debounceDelay: 0,
             mode: 'CheckBox',
         });
         listObj2.appendTo(element2);
@@ -3478,6 +3506,7 @@ describe('875197', () => {
             showDropDownIcon: true,
             showSelectAll: true,
             allowFiltering: true,
+            debounceDelay: 0,
             mode: 'CheckBox',
         });
         listObj.appendTo(element);
@@ -3530,7 +3559,7 @@ describe('EJ2-54401- Select all checkbox is not displayed properly while selecti
     });
     it('Initially load datasoure with number of items', (done) => {
         listObj = new MultiSelect({
-            dataSource: datasource, showSelectAll: true, mode: 'CheckBox',
+            dataSource: datasource, showSelectAll: true, mode: 'CheckBox', debounceDelay: 0,
             fields: { text: "text", value: "id" }
         });
         listObj.appendTo(element);
@@ -3550,7 +3579,7 @@ describe('EJ2-54401- Select all checkbox is not displayed properly while selecti
     });
     it('Initially load datasoure with only one item', (done) => {
         listObj = new MultiSelect({
-            dataSource: datasource3, showSelectAll: true, mode: 'CheckBox',
+            dataSource: datasource3, showSelectAll: true, mode: 'CheckBox', debounceDelay: 0,
             fields: { text: "text", value: "id" }
         });
         listObj.appendTo(element);
@@ -3568,7 +3597,7 @@ describe('EJ2-54401- Select all checkbox is not displayed properly while selecti
     });
     it('Dynamically load datasoure with number of items', (done) => {
         listObj = new MultiSelect({
-            dataSource: [], showSelectAll: true, mode: 'CheckBox',
+            dataSource: [], showSelectAll: true, mode: 'CheckBox', debounceDelay: 0,
             fields: { text: "text", value: "id" }
         });
         listObj.appendTo(element);
@@ -3590,7 +3619,7 @@ describe('EJ2-54401- Select all checkbox is not displayed properly while selecti
     });
     it('Dynamically load datasoure with only one item', (done) => {
         listObj = new MultiSelect({
-            dataSource: [], showSelectAll: true, mode: 'CheckBox',
+            dataSource: [], showSelectAll: true, mode: 'CheckBox', debounceDelay: 0,
             fields: { text: "text", value: "id" }
         });
         listObj.appendTo(element);

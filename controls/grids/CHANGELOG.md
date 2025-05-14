@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 29.2.4 (2025-05-14)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I715931` - The issue with filtering a hidden column while using `column virtualization` through the `filterByColumn` method has been fixed.
+- `#I713440` – The issue where an incorrect group query was added while filtering a `ForeignKey` column in the Grid using the `ODataV4Adaptor` has been resolved.
+- `#I707868` - Resolved an issue where persistence was not retained correctly when using `setCulture`.
+- `#I710510` - Provided support for row expand and collapse functionality, and resolved the alignment issue of group caption aggregates in server side Excel export.
+
 ## 29.1.41 (2025-05-06)
 
 ### Grid

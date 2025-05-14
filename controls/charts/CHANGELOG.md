@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.2.4 (2025-05-14)
+
+### Chart
+
+#### Bug Fixes
+
+- `#F67379` - Now the opacity updates properly on the data point after the tooltip fades out.
+
 ## 29.1.41 (2025-05-06)
 
 ### Accumulation Chart

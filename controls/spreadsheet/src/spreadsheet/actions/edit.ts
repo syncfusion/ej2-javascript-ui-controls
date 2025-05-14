@@ -1,4 +1,4 @@
-import { Spreadsheet, DialogBeforeOpenEventArgs } from '../index';
+import { Spreadsheet, DialogBeforeOpenEventArgs, getUpdateUsingRaf } from '../index';
 import { EventHandler, KeyboardEventArgs, Browser, closest, isUndefined, isNullOrUndefined, select, detach, getComponent } from '@syncfusion/ej2-base';
 import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAddress, isSingleCell } from '../../workbook/common/address';
 import { keyDown, editOperation, clearCopy, enableToolbarItems, completeAction } from '../common/index';
@@ -1129,6 +1129,13 @@ export class Edit {
                     if (!skip) { this.reApplyFormula(); }
                 } else {
                     this.updateUniqueRange(newVal);
+                }
+            }
+        } else {
+            if (this.editCellData.value && this.editCellData.value.toString().includes('\n')) {
+                const cell: CellModel = getCell(this.editCellData.rowIndex, this.editCellData.colIndex, sheet, false, true);
+                if (cell && !cell.wrap) {
+                    wrapText(sheet.activeCell, true, this.parent as Workbook, true);
                 }
             }
         }

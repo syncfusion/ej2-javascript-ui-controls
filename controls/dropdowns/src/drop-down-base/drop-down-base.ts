@@ -325,6 +325,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected isDynamicData: boolean = false;
     protected isPrimitiveData: boolean = false;
     protected isCustomFiltering: boolean = false;
+    protected debounceTimer: ReturnType<typeof setTimeout> | null = null;
     protected virtualListInfo: VirtualInfo = {
         currentPageNumber: null,
         direction: null,
@@ -902,6 +903,29 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     isContainSkeleton.firstChild.insertBefore(liElement, (isContainSkeleton.firstChild as any).children[0]);
                 }
             }
+            if (this.getModuleName() === 'multiselect') {
+                for (let i: number = 0; i < totalSkeletonCount && this.totalItemCount !== this.viewPortInfo.endIndex; i++) {
+                    const liElement: HTMLElement = this.createElement('li', { className: `${dropDownBaseClasses.virtualList} e-virtual-list-end` , styles: 'overflow: inherit' });
+                    if (this.isVirtualizationEnabled && this.itemTemplate) {
+                        liElement.style.height = (this.listItemHeight - parseInt(window.getComputedStyle(this.getItems()[1] as HTMLElement).marginBottom, 10)) + 'px';
+                    }
+                    const skeleton: Skeleton = new Skeleton({
+                        shape: 'Text',
+                        height: '10px',
+                        width: '95%',
+                        cssClass: 'e-skeleton-text-end'
+                    });
+                    skeleton.appendTo(this.createElement('div'));
+                    liElement.appendChild(skeleton.element);
+                    if (isContainSkeleton.firstChild) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        isContainSkeleton.firstChild.appendChild(liElement);
+                    }
+                }
+                if (this.totalItemCount === this.viewPortInfo.endIndex) {
+                    isContainSkeleton.querySelectorAll('.e-virtual-list-end').forEach((el: Element) => el.remove());
+                }
+            }
         }
     }
 
@@ -1195,7 +1219,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                         this.preventPopupOpen = false;
                                         return;
                                     }
+                                    let isSetCurrentcall: boolean = false;
                                     if (this.isVirtualizationEnabled && this.setCurrentView) {
+                                        isSetCurrentcall = true;
                                         this.notify('setCurrentViewDataAsync', {
                                             module: 'VirtualScroll'
                                         });
@@ -1203,7 +1229,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                                     if (this.keyboardEvent != null){
                                         this.handleVirtualKeyboardActions(this.keyboardEvent, this.pageCount);
                                     }
-                                    if (this.isVirtualizationEnabled) {
+                                    const preventSkeleton: boolean = this.getModuleName() !== 'multiselect' || (this.getModuleName() === 'multiselect' && (!(this.dataSource instanceof DataManager) || (this.dataSource instanceof DataManager && !isSetCurrentcall)));
+                                    if (this.isVirtualizationEnabled && preventSkeleton) {
                                         this.getFilteringSkeletonCount();
                                         this.updatePopupPosition();
                                     }
@@ -1470,12 +1497,14 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         bindEvent: boolean): void {
         if (this.fields.disabled) {
             const liCollections: NodeListOf<Element> = <NodeListOf<Element>>listElement.querySelectorAll('.' + dropDownBaseClasses.li);
+            const data: string[] | number[] | boolean[] | { [key: string]: Object }[] = this.sortOrder !== 'None' ? !isNullOrUndefined(this.fields.groupBy) ?
+                (this.sortedData as { [key: string]: any }[]).filter((item: { [key: string]: any }) => !('isHeader' in item) || item.isHeader !== true) : this.sortedData : this.listData;
             for (let index: number = 0; index < liCollections.length; index++) {
-                if (JSON.parse(JSON.stringify(this.listData[index as number]))[this.fields.disabled]) {
+                if (JSON.parse(JSON.stringify(data[index as number]))[this.fields.disabled]) {
                     if (!isNullOrUndefined(this.fields.groupBy)) {
                         const item: boolean | string | number | {
                             [key: string]: Object;
-                        } = this.listData[index as number];
+                        } = data[index as number];
                         const value: any = getValue((this.fields.value ? this.fields.value : 'value'), item);
                         const li: HTMLLIElement  = listElement.querySelector('li[data-value="' + value + '"]') as HTMLLIElement;
                         if (!isNullOrUndefined(li)) {
@@ -1516,6 +1545,20 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      */
     protected getQuery(query: Query): Query {
         return query ? query : this.query ? this.query : new Query();
+    }
+
+    protected performFiltering(e: KeyboardEventArgs | MouseEvent): void {
+        // this is for component wise
+    }
+
+    protected debouncedFiltering(e: KeyboardEventArgs | MouseEvent, debounceDelay: number): void {
+        if (this.debounceTimer !== null) {
+            clearTimeout(this.debounceTimer);
+        }
+
+        this.debounceTimer = setTimeout(() => {
+            this.performFiltering(e);
+        }, debounceDelay);
     }
 
     protected updateVirtualizationProperties(itemCount: number, filtering: boolean, isCheckbox?: boolean): void {
@@ -1712,9 +1755,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * @param {object[]} listData - Specifies the list of array of data.
      * @param {FieldSettingsModel} fields - Maps the columns of the data table and binds the data to the component.
      * @param {boolean} isCheckBoxUpdate - Specifies whether the list item is updated with checkbox.
+     * @param {boolean} isClearAll - Specifies whether the current action is clearAll.
      * @returns {HTMLElement} Return the list items.
      */
-    protected renderItems(listData: { [key: string]: Object }[], fields: FieldSettingsModel, isCheckBoxUpdate?: boolean): HTMLElement {
+    protected renderItems(listData: { [key: string]: Object }[], fields: FieldSettingsModel, isCheckBoxUpdate?: boolean,
+                          isClearAll?: boolean): HTMLElement {
         let ulElement: HTMLElement;
         if (this.itemTemplate && listData) {
             if (this.getModuleName() === 'multiselect' && this.virtualSelectAll){
@@ -1766,7 +1811,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 }
             }
         } else {
-            if (this.getModuleName() === 'multiselect' && this.virtualSelectAll){
+            if (this.getModuleName() === 'multiselect' && (this.virtualSelectAll && !isClearAll)) {
                 this.virtualSelectAllData = listData;
                 listData = listData.slice(this.virtualItemStartIndex, this.virtualItemEndIndex);
             }
@@ -1785,11 +1830,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     oldUlElement = this.list.querySelector('.e-list-parent' + '.e-reorder');
                 }
                 if ((listData.length >= this.virtualizedItemsCount && oldUlElement && virtualUlElement) || (oldUlElement && virtualUlElement && this.isAllowFiltering) || (oldUlElement && virtualUlElement && (this.getModuleName() === 'autocomplete' || this.getModuleName() === 'multiselect')) || isRemovedUlelement) {
-                    if (!this.appendUncheckList){
-                        virtualUlElement.replaceChild(ulElement, oldUlElement);
-                    }
-                    else{
-                        virtualUlElement.appendChild(ulElement);
+                    if (this.getModuleName() !== 'multiselect' || (this.getModuleName() === 'multiselect' && (!(this.dataSource instanceof DataManager) || (this.dataSource instanceof DataManager && !this.setCurrentView)))) {
+                        if (!this.appendUncheckList) {
+                            virtualUlElement.replaceChild(ulElement, oldUlElement);
+                        }
+                        else {
+                            virtualUlElement.appendChild(ulElement);
+                        }
                     }
                     this.updateListElements(listData);
                 }

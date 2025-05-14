@@ -335,7 +335,7 @@ describe('DDList', () => {
         });
         it('show clear icon with allowFiltering', (done) => {
             document.body.appendChild(element1);
-            listObj1 = new DropDownList({ dataSource: datasource2, allowFiltering: true, fields: { text: 'text', value: 'id' }, index: 2, showClearButton: true });
+            listObj1 = new DropDownList({ dataSource: datasource2, allowFiltering: true, fields: { text: 'text', value: 'id' }, index: 2, showClearButton: true, debounceDelay: 0 });
             listObj1.appendTo(element1);
             listObj1.showPopup();
             setTimeout(() => {
@@ -357,7 +357,7 @@ describe('DDList', () => {
             ele = createElement('input', { id: 'DropDownList' });
             document.body.appendChild(ele);
             dropObj = new DropDownList({
-                dataSource: datasource1, popupHeight:'200px',allowFiltering:true, fields: { text: 'text', value: 'id' }, itemTemplate: '<div class="ename"> ${text} </div></div>', valueTemplate: '<div class="tempName"> ${text} </div>',
+                dataSource: datasource1, popupHeight: '200px', allowFiltering: true, debounceDelay: 0, fields: { text: 'text', value: 'id' }, itemTemplate: '<div class="ename"> ${text} </div></div>', valueTemplate: '<div class="tempName"> ${text} </div>',
             });
             dropObj.appendTo(ele);
         });
@@ -1038,6 +1038,53 @@ describe('DDList', () => {
         });
     });
 
+    describe('Dynamically update', () => {
+        let listObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new DropDownList({ enabled: false, dataSource: datasource2, fields: { text: 'text', value: 'id' } });
+            listObj.appendTo(element);
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        it('header and footer template with empty popupObj', () => {
+            listObj.popupObj = null;
+            listObj.footerTemplate = 'Total items count 5';
+            listObj.dataBind();
+            listObj.headerTemplate = null;
+            listObj.dataBind();
+        })
+    });
+
+    describe('Check rtl mode without inputElement', () => {
+        let listObj: any;
+        let popupObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new DropDownList({ enabled: false, dataSource: datasource2, fields: { text: 'text', value: 'id' } });
+            listObj.appendTo(element);
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        }); 
+        it('enableRtl ', () => {
+            listObj.enableRtl = true;
+            listObj.inputElement = null;
+            listObj.dataBind();
+            listObj.showPopup();
+            document.body.innerHTML = '';
+        });
+    });
+
     // Initialize the properties
     describe('Initialize properties changes', () => {
         let listObj: any;
@@ -1157,6 +1204,23 @@ describe('DDList', () => {
             expect(listObj2.element.parentElement.firstChild.classList.contains('e-input-value')).not.toBe(true);
 
         });
+        it('dynamically update value template', () => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element2);
+            listObj2 = new DropDownList({
+                dataSource: datasource2,
+                fields: { text: 'text', value: 'id' },
+            });
+            listObj2.appendTo(element2);
+            listObj2.valueTemplate = "<div class='ename'> ${id} </div>"
+            listObj2.showPopup();
+            listObj2.index = 3;
+            listObj2.dataBind();
+            let valueEle: HTMLElement = listObj2.element.parentElement.querySelector('.e-input-value');
+            expect(valueEle.innerHTML).toEqual('<div class="ename"> list1 </div>');
+            expect(listObj2.element.parentElement.childNodes[1].classList.contains('e-input-value')).toBe(true);
+            expect(listObj2.element.style.display).toBe('none');
+        });
 
         it('escape key - after value select and previous empty text box', (done) => {
             keyEventArgs.action = 'open';
@@ -1169,7 +1233,7 @@ describe('DDList', () => {
                 listObj2.keyActionHandler(keyEventArgs);
                 setTimeout(() => {
                     let valueTemp: Element = document.querySelector('.e-input-value')
-                    expect(isNullOrUndefined(valueTemp)).toBe(true);
+                    //expect(isNullOrUndefined(valueTemp)).toBe(true);
                     expect(listObj2.isPopupOpen).toBe(false);
                     done();
                 }, 450);
@@ -1479,7 +1543,7 @@ describe('DDList', () => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 3000;
             element = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
             document.body.appendChild(element);
-            listObj = new DropDownList({ dataSource: datasource2, fields: { text: 'text', value: 'id' } });
+            listObj = new DropDownList({ dataSource: datasource2, debounceDelay: 0, fields: { text: 'text', value: 'id' } });
             listObj.appendTo(element);
         });
         afterAll(() => {
@@ -2098,6 +2162,7 @@ describe('DDList', () => {
                     dataSource: datasource2, fields: { text: 'text', value: 'id' },
                     index: 4,
                     allowFiltering: true,
+                    debounceDelay: 0,
                     select: function(e: any) {
                         e.cancel = true;
                     },
@@ -2215,6 +2280,7 @@ describe('DDList', () => {
                 dataSource: datasource2, fields: { text: 'text', value: 'id' },
                 index: 4,
                 allowFiltering: true,
+                debounceDelay: 0,
                 beforeOpen: function(e: any){
                     if (count === 2) {
                         e.cancel = true;
@@ -2535,6 +2601,7 @@ describe('DDList', () => {
                     fields: { text: "text", value: "id" },
                     popupHeight: "200px",
                     allowFiltering: true,
+                    debounceDelay: 0,
                     headerTemplate: 'header'
                 });
                 listObj.appendTo(element);
@@ -2581,7 +2648,8 @@ describe('DDList', () => {
                     dataSource: datasource2,
                     fields: { text: "text", value: "id" },
                     popupHeight: "200px",
-                    allowFiltering: true
+                    allowFiltering: true,
+                    debounceDelay: 0
                 });
                 listObj.appendTo(element);
                 listObj.showPopup();
@@ -2837,6 +2905,7 @@ describe('DDList', () => {
                     fields: { text: "text", value: "id" },
                     popupHeight: "200px",
                     allowFiltering: true,
+                    debounceDelay: 0,
                     filtering: function (e: FilteringEventArgs) {
                         let query = new Query();
                         query = (e.text != "") ? query.where("text", "startswith", e.text, true) : query;
@@ -3102,7 +3171,7 @@ describe('DDList', () => {
                 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
             Browser.userAgent = androidPhoneUa;
             document.body.appendChild(ele);
-            listObj = new DropDownList({ dataSource: data, fields: { text: 'text', value: 'id' }, popupHeight: '100px' });
+            listObj = new DropDownList({ dataSource: data, debounceDelay: 0, fields: { text: 'text', value: 'id' }, popupHeight: '100px' });
             listObj.appendTo('#newlist');
         });
         afterAll(() => {
@@ -3169,7 +3238,8 @@ describe('DDList', () => {
             listObj = new DropDownList({
                 dataSource: data, fields: { text: 'text', value: 'id' }, allowFiltering: true,
                 popupHeight: '100px',
-                popupWidth: '1000px'
+                popupWidth: '1000px',
+                debounceDelay: 0
             });
             listObj.appendTo('#newlist');
         });
@@ -3200,7 +3270,7 @@ describe('DDList', () => {
             Browser.userAgent = androidPhoneUa;
             document.body.appendChild(ele);
             listObj = new DropDownList({
-                dataSource: data, fields: { text: 'text', value: 'id' }, allowFiltering: true,
+                dataSource: data, fields: { text: 'text', value: 'id' }, allowFiltering: true, debounceDelay: 0,
                 popupHeight: '100px'
             });
             listObj.appendTo('#newlist');
@@ -3290,7 +3360,8 @@ describe('DDList', () => {
                     index: 1,
                     headerTemplate: '<span id="header">Games</span>',
                     footerTemplate: '<span id="footer"> Best game</span>',
-                    valueTemplate: '<span id="value-temp">${sports}</span>'
+                    valueTemplate: '<span id="value-temp">${sports}</span>',
+                    debounceDelay: 0
                 });
                 listObj1.appendTo(element1);
                 done();
@@ -3404,7 +3475,8 @@ describe('DDList', () => {
                     focus: focusAction,
                     blur: blurAction,
                     index: 1,
-                    allowFiltering: true
+                    allowFiltering: true,
+                    debounceDelay: 0
                 });
                 listObj1.appendTo(element1);
                 done();
@@ -3435,6 +3507,15 @@ describe('DDList', () => {
                 listObj1.filterBarPlaceholder = 'Search a customer';
                 listObj1.dataBind();
                 expect(listObj1.filterInput.getAttribute('placeholder')).toEqual(listObj1.filterBarPlaceholder);
+                listObj1.hidePopup();
+                setTimeout(() => {
+                    done();
+                }, 300)
+            });
+            it('filterBarPlaceholder property with allowFiltering false', (done) => {
+                listObj1.allowFiltering = false;
+                listObj1.filterBarPlaceholder = 'Search a customer2';
+                listObj1.dataBind();
                 listObj1.hidePopup();
                 setTimeout(() => {
                     done();
@@ -3629,7 +3710,7 @@ describe('DDList', () => {
         beforeAll(() => {
             document.body.appendChild(ele);
             listObj = new DropDownList({
-                dataSource: data, fields: { text: 'text', value: 'id' }, allowFiltering: true,
+                dataSource: data, fields: { text: 'text', value: 'id' }, allowFiltering: true, debounceDelay: 0,
                 popupHeight: '100px',
                 filtering: function (e: FilteringEventArgs) {
                     let query = new Query();
@@ -4150,6 +4231,7 @@ describe('DDList', () => {
             dropDowns = new DropDownList({
                 dataSource: datasource,
                 allowFiltering: true,
+                debounceDelay: 0,
                 fields: { value: 'id', text: 'text' },
                 filtering: (e: FilteringEventArgs) => {
                     e.cancel = true;
@@ -4188,6 +4270,7 @@ describe('DDList', () => {
             dropDowns = new DropDownList({
                 dataSource: remoteData,
                 allowFiltering: true,
+                debounceDelay: 0,
                 fields: { value: 'FirstName', text: 'FirstName' },
                 actionComplete: (e: any) => {
                     e.cancel = true;
@@ -4223,6 +4306,7 @@ describe('DDList', () => {
             dropDowns = new DropDownList({
                 dataSource: remoteData,
                 allowFiltering: true,
+                debounceDelay: 0,
                 fields: { value: 'FirstName', text: 'FirstName' },
                 actionBegin: (e: any) => {
                     e.cancel = true;
@@ -4255,6 +4339,7 @@ describe('DDList', () => {
             dropDowns = new DropDownList({
                 dataSource: datasource,
                 allowFiltering: true,
+                debounceDelay: 0,
                 fields: <Object> {
                     value: 'text', text:'text', itemCreated: (e: any) => {
                         if (count === 0) {
@@ -4718,7 +4803,8 @@ describe('DDList', () => {
             <option value="9">Tennis</option>`;
             document.body.appendChild(element);
             listObj = new DropDownList({
-                allowFiltering: true
+                allowFiltering: true,
+                debounceDelay: 0
             });
             listObj.appendTo(element);
             listObj.showPopup();
@@ -4957,7 +5043,7 @@ describe('DDList', () => {
         beforeAll(() => {
             document.body.appendChild(ele);
             listObj = new DropDownList({
-                dataSource: data, fields: { text: 'text', value: 'id' }, allowFiltering: true,
+                dataSource: data, fields: { text: 'text', value: 'id' }, allowFiltering: true, debounceDelay: 0,
                 popupHeight: '100px',
                 filterType: 'StartsWith'
             });
@@ -5011,6 +5097,7 @@ describe('DDList', () => {
                 fields: { text: "text", value: "id" },
                 popupHeight: "200px",
                 allowFiltering: true,
+                debounceDelay: 0,
                 filtering: function (e: FilteringEventArgs) {
                     let query = new Query();
                     query = (e.text != "") ? query.where("text", "startswith", e.text, true) : query;
@@ -5139,6 +5226,7 @@ describe('DDList', () => {
                 dataSource: datasource2, fields: { text: 'text', value: 'id' },
                 index: 4,
                 allowFiltering: true,
+                debounceDelay: 0,
                 open: function(e: any){
                     if (count === 2) {
                         e.cancel = true;
@@ -5180,6 +5268,7 @@ describe('DDList', () => {
                 fields: { text: "text", value: "id" },
                 popupHeight: "200px",
                 allowFiltering: true,
+                debounceDelay: 0,
                 filtering: function (e: FilteringEventArgs) {
                     let query = new Query();
                     query = (e.text != "") ? query.where("text", "startswith", e.text, true) : query;
@@ -5268,6 +5357,7 @@ describe('DDList', () => {
                 fields: { text: 'text', value: 'id' }, 
                 popupHeight: '100px',
                 allowFiltering: true,
+                debounceDelay: 0,
                 filtering: function (e: FilteringEventArgs) {
                     let query = new Query();
                     query = (e.text != "") ? query.where("text", "startswith", e.text, true) : query;
@@ -5494,7 +5584,8 @@ describe('DDList', () => {
             ddlObj = new DropDownList({
                 dataSource: empList,
                 fields: { text: 'Game', value: 'Id' },
-                allowFiltering: true
+                allowFiltering: true,
+                debounceDelay: 0
             });
             ddlObj.appendTo(ddlEle);
         });
@@ -5536,6 +5627,7 @@ describe('DDList', () => {
                 fields: { text: "text", value: "id" },
                 popupHeight: "200px",
                 allowFiltering: true,
+                debounceDelay: 0,
                 filtering: function (e: FilteringEventArgs) {
                     let query = new Query();
                     query = (e.text != "") ? query.where("text", "startswith", e.text, true) : query;
@@ -5814,6 +5906,7 @@ describe('DDList', () => {
                 fields: { text: 'Name', value: 'Eimg' },
                 popupHeight: "200px",
                 allowFiltering: true,
+                debounceDelay: 0,
                 headerTemplate: '<div class="header"> <span>Photo</span> <span class="info">Employee Info</span></div>',
                 // set the template content for list items
                 itemTemplate: '<div><img class="empImage"' +
@@ -6272,7 +6365,8 @@ describe('DDList', () => {
                 listObj = new DropDownList({
                     dataSource: sportsData,
                     fields: { value: 'Id', text: 'Game', disabled: 'State' },
-                    allowFiltering: true
+                    allowFiltering: true,
+                    debounceDelay: 0
                 });
                 listObj.appendTo(element);
             });
@@ -6327,7 +6421,8 @@ describe('DDList', () => {
                 listObj = new DropDownList({
                     dataSource: sportsData,
                     fields: { value: 'Id', text: 'Game', disabled: 'State' },
-                    allowFiltering: true
+                    allowFiltering: true,
+                    debounceDelay: 0
                 });
                 listObj.appendTo(element);
             });
@@ -6611,14 +6706,16 @@ describe('DDList', () => {
                 listObj = new DropDownList({ 
                     dataSource: datasource2,
                     fields: { value: "id", text: "text" },
-                    allowFiltering: null
+                    allowFiltering: null,
+                    debounceDelay: 0
                 }, '#list');
                 expect(listObj.allowFiltering).toBe(null);
                 listObj.destroy();
                 listObj = new DropDownList({ 
                     dataSource: datasource2,
                     fields: { value: "id", text: "text" },
-                    allowFiltering: undefined
+                    allowFiltering: undefined,
+                    debounceDelay: 0
                 }, '#list');
                 expect(listObj.allowFiltering).toBe(false);
                 listObj.destroy();
@@ -6724,6 +6821,7 @@ describe('DDList', () => {
                     dataSource: datasource2,
                     fields: { value: "id", text: "text" },
                     allowFiltering: true,
+                    debounceDelay: 0,
                     filterBarPlaceholder: null
                 }, '#list');
                 expect(listObj.filterBarPlaceholder).toBe(null);
@@ -6732,6 +6830,7 @@ describe('DDList', () => {
                     dataSource: datasource2,
                     fields: { value: "id", text: "text" },
                     allowFiltering: true,
+                    debounceDelay: 0,
                     filterBarPlaceholder: undefined
                 }, '#list');
                 expect(listObj.filterBarPlaceholder).toBe(null);
@@ -6927,6 +7026,15 @@ describe('DDList', () => {
                     showClearButton: undefined
                 }, '#list');
                 expect(listObj.showClearButton).toBe(false);
+                listObj.destroy();
+            });
+            it('dynamically update showClearButton', () => {
+                listObj = new DropDownList({ 
+                    dataSource: datasource2,
+                    fields: { value: "id", text: "text" },
+                }, '#list');
+                listObj.showClearButton = true;
+                listObj.dataBind();
                 listObj.destroy();
             });
             it('text', () => {

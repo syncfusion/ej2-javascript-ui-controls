@@ -973,7 +973,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     this.engineModule.fieldList[engine.memberName].dateMember = dateMembers;
                     this.pivotButtonModule.updateFilterEvents();
                 } else {
-                    const fList: IFieldListOptions = PivotUtil.formatFieldList(JSON.parse(engine.fieldList));
+                    const fList: IFieldListOptions = JSON.parse(engine.fieldList);
                     if (this.engineModule.fieldList) {
                         const keys: string[] = Object.keys(this.engineModule.fieldList);
                         for (let i: number = 0; i < keys.length; i++) {
@@ -997,7 +997,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                         this.engineModule.columnPageCount = JSON.parse(engine.pivotCount).ColumnPageCount;
                     }
                     let rowPos: number;
-                    const pivotValues: IAxisSet[][] = PivotUtil.formatPivotValues(JSON.parse(engine.pivotValue));
+                    const pivotValues: IAxisSet[][] = JSON.parse(engine.pivotValue);
                     for (let rCnt: number = 0; rCnt < pivotValues.length; rCnt++) {
                         if (pivotValues[rCnt as number] && pivotValues[rCnt as number][0] && pivotValues[rCnt as number][0].axis === 'row') {
                             rowPos = rCnt;
@@ -1006,12 +1006,12 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     }
                     this.engineModule.headerContent = PivotUtil.frameContent(pivotValues, 'header', rowPos, this);
                     this.engineModule.pageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined;
-                    const valueSort: { [key: string]: Object } = JSON.parse(engine.dataSourceSettings).ValueSortSettings;
+                    const valueSort: { [key: string]: Object } = JSON.parse(engine.dataSourceSettings).valueSortSettings;
                     this.engineModule.valueSortSettings = {
-                        headerText: valueSort.HeaderText as string,
-                        headerDelimiter: valueSort.HeaderDelimiter as string,
-                        sortOrder: valueSort.SortOrder as Sorting,
-                        columnIndex: valueSort.ColumnIndex as number
+                        headerText: valueSort.headerText as string,
+                        headerDelimiter: valueSort.headerDelimiter as string,
+                        sortOrder: valueSort.sortOrder as Sorting,
+                        columnIndex: valueSort.columnIndex as number
                     };
                     this.engineModule.pivotValues = pivotValues;
                     this.engineModule.isEmptyData = this.dataSourceSettings.values.length === 0 ? true : false;

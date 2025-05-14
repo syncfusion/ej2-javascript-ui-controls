@@ -626,7 +626,10 @@ export class BordersAndShadingDialog {
         }
         const shading: WShading = new WShading();
         const editorModule: Editor = this.documentHelper.owner.editorModule;
-        shading.backgroundColor = this.shadingColorPicker.value;
+        if (this.isShadingChanged) {
+            this.isShadingChanged = false;
+            shading.backgroundColor = this.shadingColorPicker.value;
+        }
         if (this.ulelementShading.value === 'Cell') {
             if (tablePropertiesDialog) {
                 tablePropertiesDialog.isCellBordersAndShadingUpdated = true;
@@ -691,7 +694,6 @@ export class BordersAndShadingDialog {
                 shading.textureStyle = currentTableFormat.shading.textureStyle;
             }
             this.tableFormat.shading = new WShading();
-            this.isShadingChanged = currentTableFormat.shading.backgroundColor !== shading.backgroundColor;
             editorModule.applyShading(this.tableFormat.shading, shading);
         } else if (this.ulelementShading.value === 'Paragraph') {
             const isNoneBorder: boolean = this.noneDiv.classList.contains('e-de-table-border-inside-setting-click');
@@ -1084,6 +1086,7 @@ export class BordersAndShadingDialog {
      */
     private applyPreviewTableBackgroundColor = (args: ColorPickerEventArgs): void => {
         if (!isNullOrUndefined(args.currentValue)) {
+            this.isShadingChanged = true;
             const color: string = args.currentValue.hex;
             this.previewDiv.style.backgroundColor = color;
         }

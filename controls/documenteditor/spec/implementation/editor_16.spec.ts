@@ -371,3 +371,35 @@ describe('External font referring validation', () => {
         container.editor.insertText('Hello World');
     });
 });
+
+describe('Validate the edit region removing cases', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Validate the edit region removing cases', () => {
+        console.log('Validate the edit region removing cases');
+        let base64: string = '{"sfdt":"UEsDBAoAAAAIAHYGqVqnIs3eOgMAABAXAAAEAAAAc2ZkdM1YXW/aMBT9K8h7ZRUkkJA8beqE9jBNlfZY8eAkduLN+ZjjlraI/77rjxTSAgsthfBynPjjHt9zrom8QmUlWc6eyC+aSBRKcUeGqCYxCm9XCLASKFyhaolCb+wMUZWh0A+gwXNoAAqL0mJkMUtQ6HpDRC0mtELhCLAkphExAxAJ/STLG5wSNESkoCiE6VQhdAvWINHIaIHCMSAxWKVFDQt8FThiMcwv4pLXuof8XWrkkYz1VNNzu1hDUL27iqqtRYmoFUqgtYI+Lg2K1GBknzMD9woAa1ko4qXIMYe4XPHUHTE1A5mOEZsY8EAxrwm8lxwCwWrr4ep57B28+V1mxZc0x4xfxWUOS0J8hNR6QOAzbCTmtkEEg6SisbtZY0cEwnm5bEUhZqPHBFt3jVYKnqD1Yr2ARJlMLIbNYDtWp8S2aP0E4kAcCkPQNeYsEgzpRIxUbo01sIbMyAdTVFgzSbW2puF4szLFrS4KTiJbb4Dxu3TnrLCGNEgtSkM2qjVgA9aK3G6o5M/Ot2z/qKhNe1k8t5dxU4obY9HaMpKUm0Yil6a4rMN18UC87N6oWVukuYlfSd2dZDI3TCg1BMEDlc38o4wsS5UHpKrz01z/kHb9o7Z1y/t28fdl9WX5FA+bEMp4KuJ3ghNWpIPxqYL+V0p15G1reTXyg7HnedOR7zujYOK3xR2/2ol1utd2+uAHSzOplNH5debTSeChF+bdDGpb2L43x9jWCbSdoMF1hgX6TxabQcYV56H7jVB8x+XgBgucClxlg3lZyGdue7pbHNcvN+KczQ7HucHZ5wb3vG5wurjB2e8G91JuaLi5PRXY3SewczBj47nre+4JBXa7COzuF/jj6HYUeNJTgSevBWbNH/M5K3jSReDJLoE/mm5Hgac9FXi6o4LPqOu0i67TnYV7UTm9nsrpHSXnyc9hr4uc3pFynuH49Xsqp/+24/fkuvpddPXfevyeQeBZTwWe7fuAGl1ND+bM1b8TSjzrIvFs/yfURxLuKHLQU5GDQ1V8GbWDLmoHhwu6D7ITcRrNd19Xvb6UaSVU586yaEjNy1JenpRloa4gubqGBYROjXFuUNjHB4MsT2u97D9QSwECFAAKAAAACAB2BqlapyLN3joDAAAQFwAABAAAAAAAAAAAAAAAAAAAAAAAc2ZkdFBLBQYAAAAAAQABADIAAABcAwAAAAA="}';
+        container.open(base64);
+        container.selection.select('0;0;3', '0;0;3');
+        expect(() => {container.editor.removeEditingRegion('john@gmail.com') }).not.toThrowError();
+    });
+});

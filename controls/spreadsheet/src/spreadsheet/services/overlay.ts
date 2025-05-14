@@ -1,10 +1,11 @@
 import { Spreadsheet, removeDesignChart, clearChartBorder } from '../index';
 import { getCellPosition, refreshImgCellObj, BeforeImageRefreshData, refreshChartCellObj, insertDesignChart, refreshOverlayElem } from '../common/index';
 import { getRowIdxFromClientY, getColIdxFromClientX, overlayEleSize, getStartEvent, getMoveEvent, selectionStatus } from '../common/index';
-import { getEndEvent, getClientX, getClientY, addDPRValue, spreadsheetDestroyed, getPageX, getPageY, isTouchMove } from '../common/index';
-import { getRangeIndexes, SheetModel, refreshChartSize, focusChartBorder, getRowsHeight, getCellIndexes } from '../../workbook/index';
+import { getEndEvent, getClientX, getClientY, spreadsheetDestroyed, getPageX, getPageY, isTouchMove } from '../common/index';
+import { getRangeIndexes, SheetModel, refreshChartSize, focusChartBorder, getRowsHeight, getCellIndexes, addDPRValue } from '../../workbook/index';
 import { getColumnsWidth, ChartModel } from '../../workbook/index';
 import { EventHandler, removeClass, closest, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
+import { focus } from '../common/index';
 
 /**
  * Specifes to create or modify overlay.
@@ -34,6 +35,7 @@ export class Overlay {
     private diffY: number;
     private prevX: number;
     private prevY: number;
+    private mouseUpHandler: Function;
 
     /**
      * Constructor for initializing Overlay service.
@@ -173,7 +175,10 @@ export class Overlay {
         EventHandler.add(overlayElem, getMoveEvent(), this.overlayMouseMoveHandler, this);
         EventHandler.add(
             this.parent.element.querySelector('#' + this.parent.element.id + '_sheet'), getMoveEvent(), this.overlayMouseMoveHandler, this);
-        EventHandler.add(document, getEndEvent(), this.overlayMouseUpHandler, this);
+        if (!this.mouseUpHandler) {
+            this.mouseUpHandler = this.overlayMouseUpHandler;
+            EventHandler.add(document, getEndEvent(), this.mouseUpHandler, this);
+        }
         this.parent.on(overlayEleSize, this.setOriginalSize, this);
     }
 
@@ -285,9 +290,9 @@ export class Overlay {
             requestType: 'imageRefresh', prevHeight: this.originalHeight, prevWidth: this.originalWidth
         };
         if (this.isOverlayClicked || isMouseUp) {
-            let currRowIdx: { clientY: number, isImage?: boolean, target?: Element, size?: number };
+            let currRowIdx: { clientY: number, isImage?: boolean, target?: Element, size?: number, isOverlay?: boolean };
             let currColIdx: { clientX: number, isImage?: boolean, target?: Element, size?: number };
-            const prevRowIdx: { clientY: number, isImage?: boolean, target?: Element, size?: number } =
+            const prevRowIdx: { clientY: number, isImage?: boolean, target?: Element, size?: number, isOverlay?: boolean } =
              { clientY: eventArgs.prevTop, isImage: true };
             const prevColIdx: { clientX: number, isImage?: boolean, target?: Element, size?: number } =
              { clientX: eventArgs.prevLeft, isImage: true };
@@ -298,6 +303,7 @@ export class Overlay {
                 prevRowIdx.target = overlayEle; prevColIdx.target = overlayEle;
                 if (eventArgs.prevTop < this.parent.getColumnHeaderContent().getBoundingClientRect().bottom) {
                     prevRowIdx.target = this.parent.getColumnHeaderContent();
+                    prevRowIdx.isOverlay = true;
                 }
                 if (eventArgs.prevLeft < this.parent.getRowHeaderContent().getBoundingClientRect().right) {
                     prevColIdx.target = this.parent.getRowHeaderTable();
@@ -306,6 +312,7 @@ export class Overlay {
                 currRowIdx = { clientY: clientRect.top }; currColIdx = { clientX: clientRect.left };
                 if (clientRect.top < this.parent.getColumnHeaderContent().getBoundingClientRect().bottom) {
                     currRowIdx.target = this.parent.getColumnHeaderContent();
+                    currRowIdx.isOverlay = true;
                 }
                 if (clientRect.left < this.parent.getRowHeaderContent().getBoundingClientRect().right) {
                     currColIdx.target = this.parent.getRowHeaderTable();
@@ -323,13 +330,19 @@ export class Overlay {
             if ((sheet.frozenColumns || sheet.frozenRows) && !closest(overlayEle, '.e-sheet-content')) {
                 const frozenCol: number = this.parent.frozenColCount(sheet); const frozenRow: number = this.parent.frozenRowCount(sheet);
                 if (eventArgs.currentRowIdx >= frozenRow && eventArgs.currentColIdx >= frozenCol) {
-                    let top: number = parseInt(overlayEle.style.top, 10); let left: number = parseInt(overlayEle.style.left, 10);
+                    let top: number = parseFloat(overlayEle.style.top); let left: number = parseFloat(overlayEle.style.left);
                     const mainPanel: HTMLElement = this.parent.sheetModule.contentPanel;
                     top += mainPanel.scrollTop; top -= this.parent.getColumnHeaderContent().parentElement.getBoundingClientRect().height;
                     const scrollPanel: HTMLElement = this.parent.getScrollElement();
                     left += scrollPanel.scrollLeft; left -= this.parent.sheetModule.getRowHeaderWidth(sheet);
                     overlayEle.style.top = top + 'px'; overlayEle.style.left = left + 'px';
                     this.parent.getMainContent().appendChild(overlayEle);
+                    if (overlayEle.classList.contains('e-datavisualization-chart')) {
+                        const chartEle: HTMLElement = overlayEle.querySelector('.e-chart');
+                        if (chartEle) {
+                            focus(chartEle);
+                        }
+                    }
                 }
             }
             if (overlayElems && overlayElems[0]) {
@@ -470,8 +483,9 @@ export class Overlay {
         if (ele) {
             EventHandler.remove(ele, getMoveEvent(), this.overlayMouseMoveHandler);
         }
-        if (document) {
-            EventHandler.remove(document, getEndEvent(), this.overlayMouseUpHandler);
+        if (document && this.mouseUpHandler) {
+            EventHandler.remove(document, getEndEvent(), this.mouseUpHandler);
+            this.mouseUpHandler = null;
         }
         if (!this.parent.isDestroyed) {
             this.parent.off(overlayEleSize, this.setOriginalSize);

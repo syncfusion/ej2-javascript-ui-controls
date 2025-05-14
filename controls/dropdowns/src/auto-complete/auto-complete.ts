@@ -357,6 +357,15 @@ export class AutoComplete extends ComboBox {
         this.isSelected = false;
         this.activeIndex = null;
         this.isRequesting = false;
+        if (this.queryString !== '' && this.debounceDelay > 0) {
+            this.debouncedFiltering(e, this.debounceDelay);
+        }
+        else {
+            this.performFiltering(e);
+        }
+    }
+
+    protected performFiltering(e: KeyboardEventArgs | MouseEvent): void {
         const eventArgs: { [key: string]: Object } = {
             preventDefaultAction: false,
             text: this.filterInput.value,

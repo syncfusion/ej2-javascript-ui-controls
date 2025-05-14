@@ -2128,6 +2128,78 @@ describe('Auto fill ->', () => {
                 done();
             });
         });
+
+        describe('EJ2-954423', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }], rowCount: 6, colCount: 7 }],
+                    scrollSettings: { isFinite: true }
+                },
+                    done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Auto-fill not happening in finite mode with limited columns', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                helper.invoke('selectRange', ['E1']);
+                expect(spreadsheet.sheets[0].rows[0].cells[4].value).toBe('Price');
+                expect(spreadsheet.sheets[0].rows[1].cells[4].value).toBe(20);
+                expect(spreadsheet.sheets[0].rows[2].cells[4].value).toBe(30);
+                expect(spreadsheet.sheets[0].rows[3].cells[4].value).toBe(15);
+                expect(spreadsheet.sheets[0].rows[4].cells[4].value).toBe(20);
+                const autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
+                let td: HTMLElement = helper.invoke('getCell', [5, 4]);
+                let coords1 = td.getBoundingClientRect();
+                let autoFillCoords = autoFill.getBoundingClientRect();
+                expect(spreadsheet.sheets[0].selectedRange).toBe('E1:E1');
+                helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
+                spreadsheet.selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.right, clientY: autoFillCoords.bottom });
+                spreadsheet.selectionModule.mouseMoveHandler({ target: td, clientX: coords1.left, clientY: coords1.top });
+                expect(spreadsheet.selectionModule.isColSelected).toBeTruthy();
+                helper.triggerMouseAction('mouseup', { x: coords1.left, y: coords1.top }, document, td);
+                expect(spreadsheet.sheets[0].selectedRange).toBe('E1:E6');
+                expect(spreadsheet.sheets[0].rows[0].cells[4].value).toBe('Price');
+                expect(spreadsheet.sheets[0].rows[1].cells[4].value).toBe('Price');
+                expect(spreadsheet.sheets[0].rows[2].cells[4].value).toBe('Price');
+                expect(spreadsheet.sheets[0].rows[3].cells[4].value).toBe('Price');
+                expect(spreadsheet.sheets[0].rows[4].cells[4].value).toBe('Price');
+                done();
+            });
+
+            it('Auto-fill not happening in finite mode with limited rows', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                helper.invoke('selectRange', ['A3']);
+                expect(spreadsheet.sheets[0].selectedRange).toBe('A3:A3');
+                expect(spreadsheet.sheets[0].rows[2].cells[0].value).toBe('Sports Shoes');
+                expect(spreadsheet.sheets[0].rows[2].cells[1].value).toBe('41801');
+                expect(spreadsheet.sheets[0].rows[2].cells[2].value).toBe('0.2475925925925926');
+                expect(spreadsheet.sheets[0].rows[2].cells[3].value).toBe(20);
+                expect(spreadsheet.sheets[0].rows[2].cells[4].value).toBe('Price');
+                expect(spreadsheet.sheets[0].rows[2].cells[5].value).toBe(600);
+                expect(spreadsheet.sheets[0].rows[2].cells[6].value).toBe(5);
+                expect(spreadsheet.sheets[0].rows[2].cells[7].value).toBe(50);
+                const autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
+                let td: HTMLElement = helper.invoke('getCell', [2, 6]);
+                let coords1 = td.getBoundingClientRect();
+                let autoFillCoords = autoFill.getBoundingClientRect();
+                expect(spreadsheet.sheets[0].selectedRange).toBe('A3:A3');
+                helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
+                spreadsheet.selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.right, clientY: autoFillCoords.bottom });
+                spreadsheet.selectionModule.mouseMoveHandler({ target: td, clientX: coords1.left, clientY: coords1.top });
+                expect(spreadsheet.selectionModule.isRowSelected).toBeTruthy();
+                helper.triggerMouseAction('mouseup', { x: coords1.left, y: coords1.top }, document, td);
+                expect(spreadsheet.sheets[0].selectedRange).toBe('A3:G3');
+                expect(spreadsheet.sheets[0].rows[2].cells[0].value).toBe('Sports Shoes');
+                expect(spreadsheet.sheets[0].rows[2].cells[1].value).toBe('Sports Shoes');
+                expect(spreadsheet.sheets[0].rows[2].cells[2].value).toBe('Sports Shoes');
+                expect(spreadsheet.sheets[0].rows[2].cells[3].value).toBe('Sports Shoes');
+                expect(spreadsheet.sheets[0].rows[2].cells[4].value).toBe('Sports Shoes');
+                expect(spreadsheet.sheets[0].rows[2].cells[5].value).toBe('Sports Shoes');
+                expect(spreadsheet.sheets[0].rows[2].cells[6].value).toBe('Sports Shoes');
+                done();
+            });
+        });
     });
     describe('EJ2-66414', () => {
         beforeAll((done: Function) => {

@@ -248,14 +248,35 @@ describe('Keyboard shortcuts module ->', () => {
 
     describe('UI interaction checking with Keyboard shortcut when set keyboard shortcut value as false ->', () => {
         beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }], enableKeyboardShortcut: false }, done);
         });
         afterAll(() => {
             helper.invoke('destroy');
         });
-        it('F2 Edit', (done: Function) => {
+        it('Editing with Space key', (done: Function) => {
             let spreadsheet: any = helper.getInstance();
-            spreadsheet.enableKeyboardShortcut = false;
+            expect(spreadsheet.sheets[0].rows[0].cells[0].value).toBe('Item Name');
+            helper.invoke('startEdit');
+            const editElem: HTMLElement = helper.getElement('.e-spreadsheet-edit');
+            expect(editElem.textContent).toBe('Item Name');
+            helper.triggerKeyEvent('keydown', 32, helper.invoke('getCell', [0, 0]), false, false, editElem);
+            helper.invoke('endEdit');
+            expect(spreadsheet.sheets[0].rows[0].cells[0].value).toBe('');
+            done();
+        });
+        it('Escape key to cancel edit', (done: Function) => {
+            let spreadsheet: any = helper.getInstance();
+            helper.invoke('startEdit');
+            const editElem: HTMLElement = helper.getElement('.e-spreadsheet-edit');
+            expect(editElem.textContent).toBe('');
+            expect(helper.invoke('getCell', [0, 0]).classList).toContain('e-ss-edited');
+            editElem.textContent = 'Syncfusion123';
+            helper.triggerKeyEvent('keydown', 27, null, null, null, editElem);
+            expect(spreadsheet.sheets[0].rows[0].cells[0].value).toBe('');
+            expect(helper.invoke('getCell', [0, 0]).classList).not.toContain('e-ss-edited');
+            done();
+        });
+        it('F2 Edit', (done: Function) => {
             helper.invoke('selectRange', ['C5']);
             helper.triggerKeyNativeEvent(113);
             expect(helper.invoke('getCell', [14, 10]).classList).not.toContain('e-ss-edited');

@@ -116,14 +116,6 @@ export class ComboBox extends DropDownList {
     @Property(true)
     public showClearButton: boolean;
     /**
-     * Enable or disable rendering component in right to left direction.
-     *
-     * @default false
-     * @deprecated
-     */
-    @Property(false)
-    public enableRtl: boolean;
-    /**
      * Triggers on set a
      * [`custom value`](../../combo-box/getting-started#custom-values) to this component.
      *

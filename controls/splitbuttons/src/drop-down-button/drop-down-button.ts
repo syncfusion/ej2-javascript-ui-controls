@@ -978,7 +978,9 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                 this.element.removeAttribute('aria-owns');
                 if (focusEle) {
                     if (!this.isSafari()) {
-                        focusEle.focus();
+                        if (!(this.isColorPicker() && (e as KeyboardEvent).keyCode === 27)) {
+                            focusEle.focus();
+                        }
                     } else {
                         focusEle.focus({ preventScroll: true });
                     }

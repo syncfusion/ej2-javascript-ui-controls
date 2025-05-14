@@ -287,11 +287,12 @@ export class FreeTextAnnotation {
      * @param {number} pageNumber - It describes about the page number value
      * @param {boolean} isImportAction - It ensures whether the isImportAction is true or not
      * @param {boolean} isAnnotOrderAction - It ensures whether the isAnnotOrderAction is true or not
+     * @param {boolean} isLastAnnot - It ensures whether the isLastAnnot is true or not
      * @private
      * @returns {void}
      */
     public renderFreeTextAnnotations(shapeAnnotations: any, pageNumber: number,
-                                     isImportAction?: boolean, isAnnotOrderAction?: boolean): void {
+                                     isImportAction?: boolean, isAnnotOrderAction?: boolean, isLastAnnot?: boolean): void {
         let isFreeTextAdded: boolean = false;
         if (!isImportAction) {
             for (let p: number = 0; p < this.freeTextPageNumbers.length; p++) {
@@ -484,7 +485,9 @@ export class FreeTextAnnotation {
                         }
                         this.inputBoxCount += 1;
                         this.pdfViewer.annotation.freeTextAnnotationModule.isFreeTextValueChange = true;
-                        this.pdfViewer.nodePropertyChange(addedAnnot, {});
+                        const isNeedToRender: boolean = ((isImportAction && isLastAnnot) || isNullOrUndefined(isImportAction) ||
+                        !isImportAction) ? true : false;
+                        this.pdfViewer.nodePropertyChange(addedAnnot, {}, isNeedToRender);
                         this.pdfViewer.annotation.freeTextAnnotationModule.isFreeTextValueChange = false;
                     }
                 }

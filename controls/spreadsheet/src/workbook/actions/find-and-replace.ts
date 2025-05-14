@@ -545,9 +545,9 @@ export class WorkbookFindAndReplace {
         let displayText: string;
         sheet.rows.filter((row: ExtendedRowModel, rowIdx: number) => row && row.cells && (!row.isFiltered && !row.hidden) &&
             row.cells.filter((cell: CellModel, colIdx: number) => {
-                if (cell && (cell.value || <unknown>cell.value === 0) && !isHiddenCol(sheet, colIdx) && (!sheet.isProtected ||
-                    sheet.protectSettings.selectCells || !isLocked(cell, getColumn(sheet, colIdx)))) {
-                    displayText = this.getDisplayText(cell, rowIdx, colIdx, localeObj).toLowerCase();
+                if (cell && (cell.value || <unknown>cell.value === 0 || cell.hyperlink) && !isHiddenCol(sheet, colIdx) &&
+                    (!sheet.isProtected || sheet.protectSettings.selectCells || !isLocked(cell, getColumn(sheet, colIdx)))) {
+                    displayText = (cell.format || cell.hyperlink) ? this.parent.getDisplayText(cell) : cell.value.toString().toLowerCase();
                     if (displayText.includes(findValue) || (cell.format && !isCustomDateTime(cell.format, true) &&
                         !displayText.includes('%') && this.getCellVal(cell, localeObj).includes(findValue))) {
                         count++;

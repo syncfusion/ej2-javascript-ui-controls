@@ -29,8 +29,9 @@ import { createGrid, destroy, getKeyUpObj, getClickObj, getKeyActionObj } from '
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import * as events from '../../../src/grid/base/constant';
 import { NumberFilterUI } from '../../../src/grid/renderer/number-filter-ui';
+import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 
-Grid.Inject(Filter, Page, Selection, Group, Sort, Reorder, ColumnMenu);
+Grid.Inject(Filter, Page, Selection, Group, Sort, Reorder, ColumnMenu, VirtualScroll);
 
 describe('filter menu module =>', () => {
     let gridObj: Grid;
@@ -1547,6 +1548,54 @@ describe('filter menu module =>', () => {
         afterAll(() => {
             destroy(gridObj);
             gridObj = null;
+        });
+    });
+    
+    describe('EJ2: 954669 => Error thrown when filtering a hidden column using filterByColumn() with column virtualization enabled => ', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData.splice(0,2),
+                    allowFiltering: true,
+                    enableColumnVirtualization: true,
+                    columns: [
+                        {
+                            field: 'OrderID',
+                            headerText: 'Order ID',
+                            textAlign: 'Right',
+                            width: 100
+                        },
+                        {
+                            field: 'CustomerID',
+                            headerText: 'CustomerID',
+                            visible: false,
+                            textAlign: 'Right',
+                            width: 80
+                        },
+                        {
+                            field: 'ShipCity',
+                            headerText: 'Ship City',
+                            width: 130
+                        },
+                    ],
+                    height: 315
+                }, done);
+        });
+    
+        it('In enableColumnVirtualization, filterByColumn method in testing', (done: Function) => {
+            actionComplete = (): void => {
+                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(1);
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.filterByColumn('CustomerID', 'startsWith', 'VINET');
+        });
+    
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
         });
     });
 });

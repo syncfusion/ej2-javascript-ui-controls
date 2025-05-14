@@ -328,7 +328,7 @@ export class Parser {
                     if (formula[i as number] === '/' || formula[i as number] === '*' || formula[i as number] === '^') {
                         form = form + formula[i as number];
                     }
-                    if (formula[i as number] === '&' && (isSubString || (formula.substring(i + 1).trim()[0] !== 'q'))) {
+                    if (formula[i as number] === '&' && (isSubString || formula.substring(i + 1).trim()[0] !== 'q')) {
                         form = form + formula[i as number];
                     }
                     i = i + 1;

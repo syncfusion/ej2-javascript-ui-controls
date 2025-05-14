@@ -200,7 +200,7 @@ describe('MultiSelect - changeonblur', () => {
                 mode: 'CheckBox', fields: { text: "text", value: "text" }, value: ["JAVA"],
                 showSelectAll: true,
                 showDropDownIcon: true,
-                changeOnBlur: false,
+                changeOnBlur: false, debounceDelay: 0,
                 allowFiltering: true,
                 open: () => {
                     var mouseEventArgs = {preventDefault: function(){}, currentTarget: (<any>listObj).checkBoxSelectionModule.checkAllParent };
@@ -450,7 +450,7 @@ describe('MultiSelect - changeonblur', () => {
                 showSelectAll: true,
                 value: ['Java'],
                 changeOnBlur: false,
-                allowFiltering: true,
+                allowFiltering: true, debounceDelay: 0,
                 mode: 'CheckBox',
                 change: function (e: any) {
                     ischanged = true;
@@ -492,7 +492,7 @@ describe('MultiSelect - changeonblur', () => {
                 dataSource: ['Java Script', 'AS.NET MVC', 'Java', 'C#'],
                 showSelectAll: true,
                 changeOnBlur: false,
-                allowFiltering: true,
+                allowFiltering: true, debounceDelay: 0,
                 mode: 'CheckBox',
                 change: function (e: any) {
                     ischanged = true;

@@ -921,7 +921,7 @@ private calculatePathBounds(data: string): Rect {
         if (widget.childWidgets.indexOf(header) !== -1) {
             return;
         }
-        let table: TableWidget = parentTable.clone();
+        let table: TableWidget = parentTable.clone(true);
         table.childWidgets = [];
         page.viewer.updateClientAreaLocation(table, new Rect(page.viewer.clientArea.x, top, table.width, table.height));
         this.updateTableHeaderRows(header, table, page, top);
@@ -1241,7 +1241,7 @@ private calculatePathBounds(data: string): Rect {
                         this.renderSolidLine(ctx, this.getScaledValue(xPos, 1), this.getScaledValue(footnote.y + (footnote.margin.top / 2) + 1, 2), 210 * this.documentHelper.zoomFactor, '#000000');
                     }
                 }
-                if (!isNullOrUndefined(footNoteReference) && !this.documentHelper.owner.editorModule.isFootNoteInsert) {
+                if (!isNullOrUndefined(footNoteReference) && !isNullOrUndefined(this.documentHelper.owner.editorModule) && !this.documentHelper.owner.editorModule.isFootNoteInsert) {
                     //if (j < 1 || (j > 0 && widget.footNoteReference !== (bodyWidget.childWidgets[j - 1] as BlockWidget).footNoteReference)) {
                     const paragraph: ParagraphWidget = this.documentHelper.getFirstParagraphBlock(widget);
                     if ((paragraph.firstChild as LineWidget).children[0] instanceof TextElementBox) {
@@ -1312,7 +1312,7 @@ private calculatePathBounds(data: string): Rect {
             let width: number = (cellWidget.width + cellWidget.margin.left + cellWidget.margin.right) - cellWidget.leftBorderWidth;
             if (!this.isPrinting && !(widget instanceof TableWidget && width === widget.width && this.documentHelper.compatibilityMode === 'Word2007')) {
 
-                this.clipRect(cellWidget.x - cellWidget.margin.left, cellWidget.y, this.getScaledValue(width), this.getScaledValue(this.height));
+                this.clipRect(cellWidget.x - cellWidget.margin.left, cellWidget.y, this.getScaledValue(width), this.height);
             }
             this.renderWidget(page, widget);
             this.pageContext.restore();
@@ -1741,7 +1741,7 @@ private calculatePathBounds(data: string): Rect {
                     this.renderBookmark(this.getScaledValue(xLeft, 1),this.getScaledValue(yTop, 2),this.getScaledValue(lineWidget.height - lineWidget.margin.bottom),1,color);
                 }
             }
-            if (elementBox instanceof BookmarkElementBox && this.documentHelper.owner.documentEditorSettings.showBookmarks && this.documentHelper.getBookmarks().indexOf(elementBox.name) !== -1) {
+            if (elementBox instanceof BookmarkElementBox && this.documentHelper.owner.documentEditorSettings.showBookmarks && !HelperMethods.startsWith(elementBox.name, '_')) {
                 var height = elementBox.line.height - elementBox.line.margin.bottom;
                 let xLeft = left;
                 if (!isNullOrUndefined(elementBox.margin) && elementBox.margin.left > 0) {

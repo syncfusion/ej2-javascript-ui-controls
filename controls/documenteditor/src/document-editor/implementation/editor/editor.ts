@@ -6013,13 +6013,10 @@ export class Editor {
     /* eslint-disable @typescript-eslint/no-explicit-any */
     public unlinkWholeRangeInRevision(item: any, revision: Revision): void {
         let currentRevision: Revision = revision;
-        let rangeIndex: number = 0;
-        while (rangeIndex < currentRevision.range.length) {
-            item = currentRevision.range[rangeIndex];
-            if (item && item.revisions.indexOf(currentRevision) !== -1) {
-                item.revisions.splice(item.revisions.indexOf(currentRevision), 1);
-            }
-            currentRevision.range.splice(rangeIndex, 1);
+        item.revisions.splice(item.revisions.indexOf(item), 1);
+        let rangeLength: number = currentRevision.range.length;
+        for (let rangeIndex: number = 0; rangeIndex < rangeLength; rangeIndex++) {
+            currentRevision.range.splice(0, 1);
             this.owner.trackChangesPane.updateCurrentTrackChanges(currentRevision);
         }
         if (currentRevision.range.length === 0) {
@@ -8768,6 +8765,7 @@ export class Editor {
                 }
                 (element as TextElementBox).text = (element as TextElementBox).text.substr(0, index);
                 element.isWidthUpdated = false;
+                textElement.ischangeDetected = true;
                 line.children.splice(insertIndex, 0, textElement);
                 textElement.line = element.line;
                 isRevisionCombined = true;
@@ -8801,6 +8799,9 @@ export class Editor {
 
             (element as TextElementBox).text = (element as TextElementBox).text.substring(0, index) + (newElement as TextElementBox).text + (element as TextElementBox).text.substring(index);
             element.isWidthUpdated = false;
+        }
+        if (newElement instanceof TextElementBox) {
+            newElement.ischangeDetected = true;
         }
         newElement.line = element.line;
         if (newElement instanceof BookmarkElementBox) {
@@ -10511,7 +10512,7 @@ export class Editor {
                   let foot: FootNoteWidget = selection.start.paragraph.bodyWidget.page.endnoteWidget;
                   //this.documentHelper.layout.layoutfootNote(foot);
               }*/
-            if (!this.documentHelper.owner.enableHeaderAndFooter) {
+            if (!this.documentHelper.owner.enableHeaderAndFooter && !selection.isHighlightEditRegion) {
                 this.owner.viewer.updateScrollBars();
             }
             if (!selection.owner.isShiftingEnabled || this.documentHelper.isRowOrCellResizing) {
@@ -19893,16 +19894,9 @@ export class Editor {
                         }
                         else {
                             let isTrue = false;
-                            let parentComment: CommentElementBox = elementBox.comment;
-                            if (parentComment && parentComment.ownerComment) {
-                                parentComment = parentComment.ownerComment;
-                            }
-                            if (parentComment) {
-                                for (let i = 0; i < this.owner.documentHelper.comments.length; i++) {
-                                    if (parentComment.commentId === this.owner.documentHelper.comments[i].commentId) {
-                                        isTrue = true;
-                                        break;
-                                    }
+                            for (let i = 0; i < this.owner.documentHelper.comments.length; i++) {
+                                if (elementBox.commentId === this.owner.documentHelper.comments[i].commentId) {
+                                    isTrue = true;
                                 }
                             }
                             if (!isTrue) {
@@ -24167,12 +24161,13 @@ export class Editor {
      * @private
      * @returns {void}
      */
-    public removeUserRestrictions(user: string): void {
+    public removeUserRestrictions(user: string, editRegionStart?: EditRangeStartElementBox): void {
         if (!this.selection.checkSelectionIsAtEditRegion() && !this.selection.isEditRangeCellSelected()) {
             return;
         }
         this.selection.skipEditRangeRetrieval = true;
-        const editStart: EditRangeStartElementBox = this.selection.getEditRangeStartElement();
+        let editStart: EditRangeStartElementBox = this.selection.getEditRangeStartElement() as EditRangeStartElementBox;
+        editStart = editRegionStart ? editRegionStart : editStart;
         this.selection.skipEditRangeRetrieval = true;
         var start = this.selection.start;
         var end = this.selection.end;
@@ -24194,7 +24189,27 @@ export class Editor {
         this.fireContentChange();
         this.selection.skipEditRangeRetrieval = false;
     }
-
+    /**
+    * Removes the editing permission range at the current selection position that matches the specified username.
+    *
+    * If `user` is provided, removes the editing region specific to that user.
+    * If `user` is not provided (null or undefined), it defaults to 'Everyone'.
+    *
+    * @param {string} [user] - The name of the user whose editing region should be removed.
+    * @returns {void}
+    */
+    public removeEditingRegion(user?: string): void {
+        if (!this.documentHelper.isDocumentProtected) {
+            user = user && user !== '' ? user : 'Everyone';
+            let editStart: EditRangeStartElementBox[] = this.selection.getEditRangeStartElement(false, true) as EditRangeStartElementBox[];
+            for (let i: number = 0; i < editStart.length; i++) {
+                const currentUser: string = editStart[i].user === '' ? editStart[i].group : editStart[i].user;
+                if (user === currentUser) {
+                    this.removeUserRestrictions(currentUser, editStart[i]);
+                }
+            }
+        }
+    }
     private removeEditRangeElements(editStart: EditRangeStartElementBox, user: string): void {
         this.initHistory('RemoveEditRange');
         if (this.editorHistory) {

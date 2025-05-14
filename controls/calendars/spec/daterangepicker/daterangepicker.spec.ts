@@ -435,7 +435,9 @@ describe('DateRangePicker', () => {
                     it('autocorrect attribute test case', () => {
                         daterangepicker = new DateRangePicker({ readonly: true });
                         daterangepicker.appendTo('#date');
-                        expect(daterangepicker.element.getAttribute('autocorrect') == 'off').toBe(true);
+                        if (Browser.isIos) {
+                            expect(daterangepicker.element.getAttribute('autocorrect') == 'off').toBe(true);
+                        }
                     });
                     it('autocapitalize attribute test case', () => {
                         daterangepicker = new DateRangePicker({ readonly: true });

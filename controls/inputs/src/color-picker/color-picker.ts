@@ -500,6 +500,9 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
                     }
                     if (!observedCloseArgs.cancel) {
                         this.onPopupClose();
+                        if (args.event.type === 'keydown' && (args.event as KeyboardEvent).keyCode === 27) {
+                            this.splitBtn.element.focus();
+                        }
                     }
                     args.cancel = observedCloseArgs.cancel;
                     callBackPromise.resolve(observedCloseArgs);

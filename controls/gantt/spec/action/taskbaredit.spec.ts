@@ -9626,3 +9626,502 @@ describe('Content menu split task  -', () => {
         }
     });
 });
+describe('Dragging task after connecting predecessor', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Product Concept',
+                        StartDate: new Date('04/02/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            { TaskID: 2, TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                            {
+                                TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/22/2019'), Duration: 3,
+                                Indicators: [
+                                    {
+                                        'date': '04/10/2019',
+                                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                                        'name': 'Indicator title',
+                                        'tooltip': 'tooltip'
+                                    }
+                                ]
+                            },
+                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                        ]
+                }],
+                updateOffsetOnTaskbarEdit: false,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    notes: 'info',
+                    resourceInfo: 'resources'
+                },
+                columns: [
+                    { field: 'TaskID', width: 80 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                    { field: 'Predecessor' }
+                ],
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'MMM dd, y',
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    },
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    rightLabel: 'resources'
+                },
+                treeColumnIndex: 1,
+                height: "450px",
+                allowSelection: true,
+                dateFormat: "MMM dd, y",
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('07/28/2019'),
+                highlightWeekends: true,
+                gridLines: 'Both',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                    newRowPosition: 'Bottom'
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Indent', 'Outdent'],
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName'
+                },
+                resources: [
+                    { resourceId: 1, resourceName: 'Martin Tamer' },
+                    { resourceId: 2, resourceName: 'Rose Fuller' },
+                    { resourceId: 3, resourceName: 'Margaret Buchanan' },
+                    { resourceId: 4, resourceName: 'Fuller King' },
+                    { resourceId: 5, resourceName: 'Davolio Fuller' },
+                    { resourceId: 6, resourceName: 'Van Jack' },
+                    { resourceId: 7, resourceName: 'Fuller Buchanan' },
+                    { resourceId: 8, resourceName: 'Jack Davolio' },
+                    { resourceId: 9, resourceName: 'Tamer Vinet' },
+                    { resourceId: 10, resourceName: 'Vinet Fuller' },
+                    { resourceId: 11, resourceName: 'Bergs Anton' },
+                    { resourceId: 12, resourceName: 'Construction Supervisor' },
+                ],
+                splitterSettings: {
+                    position: "35%"
+                }
+            }, done);
+    });
+    beforeEach(function (done) {
+        setTimeout(done, 100);
+    });
+    it('check if task stay in same position ', () => {
+        let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(6)') as HTMLElement;
+        triggerMouseEvent(dependency, 'dblclick');
+        let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as HTMLElement;
+        input.value = "2";
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 200, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
+        expect(ganttObj.getFormatedDate(ganttObj.flatData[2].ganttProperties.startDate, 'M/dd/yyyy')).toBe('4/22/2019');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Dragging task after connecting predecessor', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Product Concept',
+                        StartDate: new Date('04/02/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            { TaskID: 2, TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                            {
+                                TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/22/2019'), Duration: 3,
+                                Indicators: [
+                                    {
+                                        'date': '04/10/2019',
+                                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                                        'name': 'Indicator title',
+                                        'tooltip': 'tooltip'
+                                    }
+                                ]
+                            },
+                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                        ]
+                }],
+                updateOffsetOnTaskbarEdit: false,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    notes: 'info',
+                    resourceInfo: 'resources'
+                },
+                columns: [
+                    { field: 'TaskID', width: 80 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                    { field: 'Predecessor' }
+                ],
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'MMM dd, y',
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    },
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    rightLabel: 'resources'
+                },
+                treeColumnIndex: 1,
+                height: "450px",
+                allowSelection: true,
+                dateFormat: "MMM dd, y",
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('07/28/2019'),
+                highlightWeekends: true,
+                gridLines: 'Both',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                    newRowPosition: 'Bottom'
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Indent', 'Outdent'],
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName'
+                },
+                resources: [
+                    { resourceId: 1, resourceName: 'Martin Tamer' },
+                    { resourceId: 2, resourceName: 'Rose Fuller' },
+                    { resourceId: 3, resourceName: 'Margaret Buchanan' },
+                    { resourceId: 4, resourceName: 'Fuller King' },
+                    { resourceId: 5, resourceName: 'Davolio Fuller' },
+                    { resourceId: 6, resourceName: 'Van Jack' },
+                    { resourceId: 7, resourceName: 'Fuller Buchanan' },
+                    { resourceId: 8, resourceName: 'Jack Davolio' },
+                    { resourceId: 9, resourceName: 'Tamer Vinet' },
+                    { resourceId: 10, resourceName: 'Vinet Fuller' },
+                    { resourceId: 11, resourceName: 'Bergs Anton' },
+                    { resourceId: 12, resourceName: 'Construction Supervisor' },
+                ],
+                splitterSettings: {
+                    position: "35%"
+                }
+            }, done);
+    });
+    beforeEach(function (done) {
+        setTimeout(done, 100);
+    });
+    it('check if task stay in same position with offset', () => {
+        let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(6)') as HTMLElement;
+        triggerMouseEvent(dependency, 'dblclick');
+        let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as HTMLElement;
+        input.value = "2FS+1";
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 200, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
+        expect(ganttObj.getFormatedDate(ganttObj.flatData[2].ganttProperties.startDate, 'M/dd/yyyy')).toBe('4/22/2019');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Dragging task after connecting predecessor SS', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Product Concept',
+                        StartDate: new Date('04/02/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            { TaskID: 2, TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                            {
+                                TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/22/2019'), Duration: 3,
+                                Indicators: [
+                                    {
+                                        'date': '04/10/2019',
+                                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                                        'name': 'Indicator title',
+                                        'tooltip': 'tooltip'
+                                    }
+                                ]
+                            },
+                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                        ]
+                }],
+                updateOffsetOnTaskbarEdit: false,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    notes: 'info',
+                    resourceInfo: 'resources'
+                },
+                columns: [
+                    { field: 'TaskID', width: 80 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                    { field: 'Predecessor' }
+                ],
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'MMM dd, y',
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    },
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    rightLabel: 'resources'
+                },
+                treeColumnIndex: 1,
+                height: "450px",
+                allowSelection: true,
+                dateFormat: "MMM dd, y",
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('07/28/2019'),
+                highlightWeekends: true,
+                gridLines: 'Both',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                    newRowPosition: 'Bottom'
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Indent', 'Outdent'],
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName'
+                },
+                resources: [
+                    { resourceId: 1, resourceName: 'Martin Tamer' },
+                    { resourceId: 2, resourceName: 'Rose Fuller' },
+                    { resourceId: 3, resourceName: 'Margaret Buchanan' },
+                    { resourceId: 4, resourceName: 'Fuller King' },
+                    { resourceId: 5, resourceName: 'Davolio Fuller' },
+                    { resourceId: 6, resourceName: 'Van Jack' },
+                    { resourceId: 7, resourceName: 'Fuller Buchanan' },
+                    { resourceId: 8, resourceName: 'Jack Davolio' },
+                    { resourceId: 9, resourceName: 'Tamer Vinet' },
+                    { resourceId: 10, resourceName: 'Vinet Fuller' },
+                    { resourceId: 11, resourceName: 'Bergs Anton' },
+                    { resourceId: 12, resourceName: 'Construction Supervisor' },
+                ],
+                splitterSettings: {
+                    position: "35%"
+                }
+            }, done);
+    });
+    beforeEach(function (done) {
+        setTimeout(done, 100);
+    });
+    it('check if task stay in same position ', () => {
+        let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(6)') as HTMLElement;
+        triggerMouseEvent(dependency, 'dblclick');
+        let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as HTMLElement;
+        input.value = "2SS";
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 200, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
+        expect(ganttObj.getFormatedDate(ganttObj.flatData[2].ganttProperties.startDate, 'M/dd/yyyy')).toBe('4/22/2019');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+
+describe('Dragging task after connecting predecessor SS', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: 1,
+                        TaskName: 'Product Concept',
+                        StartDate: new Date('04/02/2019'),
+                        EndDate: new Date('04/21/2019'),
+                        subtasks: [
+                            { TaskID: 2, TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                            {
+                                TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/22/2019'), Duration: 3,
+                                Indicators: [
+                                    {
+                                        'date': '04/10/2019',
+                                        'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                                        'name': 'Indicator title',
+                                        'tooltip': 'tooltip'
+                                    }
+                                ]
+                            },
+                            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Progress: 30 },
+                        ]
+                }],
+                updateOffsetOnTaskbarEdit: false,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    notes: 'info',
+                    resourceInfo: 'resources'
+                },
+                columns: [
+                    { field: 'TaskID', width: 80 },
+                    { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                    { field: 'Predecessor' }
+                ],
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'MMM dd, y',
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    },
+                },
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    rightLabel: 'resources'
+                },
+                treeColumnIndex: 1,
+                height: "450px",
+                allowSelection: true,
+                dateFormat: "MMM dd, y",
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('07/28/2019'),
+                highlightWeekends: true,
+                gridLines: 'Both',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                    newRowPosition: 'Bottom'
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Indent', 'Outdent'],
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName'
+                },
+                resources: [
+                    { resourceId: 1, resourceName: 'Martin Tamer' },
+                    { resourceId: 2, resourceName: 'Rose Fuller' },
+                    { resourceId: 3, resourceName: 'Margaret Buchanan' },
+                    { resourceId: 4, resourceName: 'Fuller King' },
+                    { resourceId: 5, resourceName: 'Davolio Fuller' },
+                    { resourceId: 6, resourceName: 'Van Jack' },
+                    { resourceId: 7, resourceName: 'Fuller Buchanan' },
+                    { resourceId: 8, resourceName: 'Jack Davolio' },
+                    { resourceId: 9, resourceName: 'Tamer Vinet' },
+                    { resourceId: 10, resourceName: 'Vinet Fuller' },
+                    { resourceId: 11, resourceName: 'Bergs Anton' },
+                    { resourceId: 12, resourceName: 'Construction Supervisor' },
+                ],
+                splitterSettings: {
+                    position: "35%"
+                }
+            }, done);
+    });
+    beforeEach(function (done) {
+        setTimeout(done, 100);
+    });
+    it('check if task stay in same position offset', () => {
+        let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(6)') as HTMLElement;
+        triggerMouseEvent(dependency, 'dblclick');
+        let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as HTMLElement;
+        input.value = "2SS+1";
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 200, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
+        expect(ganttObj.getFormatedDate(ganttObj.flatData[2].ganttProperties.startDate, 'M/dd/yyyy')).toBe('4/22/2019');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

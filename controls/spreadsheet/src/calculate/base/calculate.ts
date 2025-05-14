@@ -14,7 +14,6 @@ const maxCols: number = 16384;
 
 /**
  * Represents the calculate library.
- *
  * @hidden
  */
 @NotifyPropertyChanges
@@ -2973,11 +2972,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             }
         }
         if (args.indexOf(':') > -1 && args.indexOf(this.tic) === -1) {
-            if (containsBoth && isAlpha && isNum) {
+            if (((containsBoth && isAlpha && isNum) || (((isAlpha && !isNum) || (!isAlpha && isNum)) && !containsBoth))) {
                 return true;
-            } else if (((isAlpha && !isNum) || (!isAlpha && isNum)) && !containsBoth) {
-                return true;
-            } else {
+            }
+            else {
                 return false;
             }
         }

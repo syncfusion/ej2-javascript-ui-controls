@@ -4676,6 +4676,10 @@ export class FormDesigner {
                                     Y: PdfViewerUtils.convertPixelToPoint(currentData.lineBound.Y),
                                     Width: PdfViewerUtils.convertPixelToPoint(currentData.lineBound.Width),
                                     Height: PdfViewerUtils.convertPixelToPoint(currentData.lineBound.Height)};
+
+                                if (typeof filteredField[0].value === 'string' && filteredField[0].value.trim().startsWith('[')) {
+                                    filteredField[0].value = this.pdfViewerBase.signatureValue(filteredField[0].value);
+                                }
                                 const signatureBounds: any = this.pdfViewerBase.signatureModule.
                                     updateSignatureAspectRatio(filteredField[0].value, false, null, currentData);
                                 if (this.pdfViewer.formFieldsModule) {
@@ -4692,7 +4696,7 @@ export class FormDesigner {
                             const csData: Object[] = splitArrayCollection(collectionData);
                             currentData.value = JSON.stringify(csData);
                         }
-                        else if (currentData.signatureType === 'Type') {
+                        else if (currentData.signatureType === 'Type' || currentData.signatureType === 'Text') {
                             const zoomvalue: number = this.pdfViewerBase.getZoomFactor();
                             if (this.pdfViewer.formFieldsModule) {
                                 let bounds: any = this.pdfViewer.formFieldsModule.

@@ -815,6 +815,39 @@ describe('Filter ->', () => {
                 });
             });
         });
+        it('EJ2-895426 - Filter does not work correctly when fractional values are entered', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            helper.edit('F3', '12.89');
+            helper.edit('F5', '7.056');
+            helper.edit('F7', '9.988');
+            helper.edit('F9', '4.78');
+            expect(helper.getInstance().sheets[0].rows[2].cells[5].value).toEqual(12.89);
+            expect(helper.getInstance().sheets[0].rows[4].cells[5].value).toEqual(7.056);
+            expect(helper.getInstance().sheets[0].rows[6].cells[5].value).toEqual(9.988);
+            expect(helper.getInstance().sheets[0].rows[8].cells[5].value).toEqual(4.78);
+            helper.getInstance().filterModule.getFilterOperator('between');
+            spreadsheet.applyFilter([{ field: 'F', predicate: 'and', operator: 'greaterthanorequal', value: '4 39/50' }, { field: 'F', predicate: 'and', operator: 'lessthanorequal', value: '12 89/100' }]);
+            setTimeout(function () {
+                const filterCol = spreadsheet.filterModule.filterCollection.get(0);
+                expect(filterCol[0].field).toBe('F');
+                expect(filterCol[0].operator).toBe('greaterthanorequal');
+                expect(filterCol[0].predicate).toBe('and');
+                expect(filterCol[0].value).toBe(4.78);
+                expect(filterCol[1].field).toBe('F');
+                expect(filterCol[1].operator).toBe('lessthanorequal');
+                expect(filterCol[1].predicate).toBe('and');
+                expect(filterCol[1].value).toBe(12.89);
+                expect(spreadsheet.sheets[0].rows[3].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[3].isFiltered).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[5].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[5].isFiltered).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[7].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[7].isFiltered).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[9].hidden).toBeTruthy();
+                expect(spreadsheet.sheets[0].rows[9].isFiltered).toBeTruthy();
+                done();
+            });
+        });
     });
 
     describe('Filter dialog opening and filter with different operators->', () => {
@@ -2175,6 +2208,31 @@ describe('Filter ->', () => {
                             expect(spreadsheet.filterModule.filterCollection.get(1).length).toBe(0);
                             done();
                         });
+                    });
+                });
+            });
+            it('EJ2-882824 - Hyperlink text not displayed in filter popup', (done: Function) => {
+                const sheet = helper.getInstance().sheets[0];
+                expect(sheet.usedRange.rowIndex).toBe(10);
+                helper.invoke('insertHyperlink', ['www.google.com', 'F13']);
+                helper.invoke('insertHyperlink', [{ address: 'www.syncfusion.com' }, 'F14']);
+                helper.invoke('addHyperlink', [{ address: '' }, 'F15']);
+                expect(sheet.rows[12].cells[5].hyperlink).toBe('http://www.google.com');
+                expect(sheet.rows[13].cells[5].hyperlink.address).toBe('http://www.syncfusion.com');
+                expect(sheet.rows[14].cells[5].hyperlink.address).toBe('');
+                expect(sheet.usedRange.rowIndex).toBe(14);
+                helper.getElement('#' + helper.id + '_sorting').click();
+                helper.getElement('#' + helper.id + '_applyfilter').click();
+                const td: HTMLTableCellElement = helper.invoke('getCell', [0, 5]);
+                helper.invoke('selectRange', ['F1']);
+                helper.invoke('getCell', [0, 5]).focus();
+                helper.getInstance().keyboardNavigationModule.keyDownHandler({ preventDefault: function () { }, target: td, altKey: true, keyCode: 40 });
+                setTimeout(() => {
+                    setTimeout(() => {
+                        const items = document.querySelectorAll('.e-checkboxlist .e-ftrchk');
+                        expect(items[9].textContent).toBe('http://www.google.com');
+                        expect(items[10].textContent).toBe('http://www.syncfusion.com');
+                        done();
                     });
                 });
             });

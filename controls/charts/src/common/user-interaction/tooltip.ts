@@ -181,7 +181,7 @@ export class BaseTooltip extends ChartData {
     }
 
     public highlightPoint(series: Series | AccumulationSeries | Chart3DSeries, pointIndex: number, highlight: boolean): void {
-        const element: HTMLElement = this.getElement(this.element.id + '_Series_' + series.index + '_Point_' + pointIndex);
+        const element: HTMLElement = series.type === 'BoxAndWhisker' ?  this.getElement(this.element.id + '_Series_' + series.index + '_Point_' + pointIndex + '_BoxPath') : this.getElement(this.element.id + '_Series_' + series.index + '_Point_' + pointIndex);
         const selectionModule: AccumulationSelection = (this.control as AccumulationChart).accumulationSelectionModule;
         const isAccumulation: boolean = this.chart.getModuleName() === 'accumulationchart';
         const isSelectedElement: boolean = selectionModule && selectionModule.selectedDataIndexes.length > 0 ? true : false;

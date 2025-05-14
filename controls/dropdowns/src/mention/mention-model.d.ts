@@ -117,6 +117,13 @@ export interface MentionModel {
     popupHeight?: string | number;
 
     /**
+     * Specifies the delay time in milliseconds for filtering operations.
+     *
+     * @default 300
+     */
+    debounceDelay?: number;
+
+    /**
      * Specifies the template for the selected value from the suggestion list.
      *
      * @default null

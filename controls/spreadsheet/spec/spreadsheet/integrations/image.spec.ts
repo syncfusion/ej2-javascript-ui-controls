@@ -402,6 +402,122 @@ describe('Image ->', () => {
         });
     });
 
+    describe('EJ2-882967 Undo redo for multiple images is not working correctly->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{}] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Inserting images and pasting it in multiple cells', (done: Function) => {
+            helper.getInstance().spreadsheetImageModule.createImageElement({ options: { src: 'https://www.w3schools.com/images/w3schools_green.jpg', width: 75, height: 50 }, range: 'C3', isPublic: true, isAction: true });
+            setTimeout(function () {
+                expect(helper.getInstance().sheets[0].rows[2].cells[2].image.length).toBe(1);
+                helper.invoke('copy', ['C3:C3']).then(() => {
+                    helper.invoke('paste', ['F3']);
+                    expect(helper.getInstance().sheets[0].rows[2].cells[2].image[0].src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
+                    expect(helper.getInstance().sheets[0].rows[2].cells[5].image[0].src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
+                    done();
+                });
+            });
+        });
+        it('Duplicating the sheet and performing undo actions', (done: Function) => {
+            helper.invoke('duplicateSheet', [0]);
+            setTimeout(() => {
+                helper.click('#spreadsheet_undo');
+                helper.click('#spreadsheet_undo');
+                expect(helper.getInstance().activeSheetIndex).toBe(1);
+                expect(helper.getInstance().sheets[1].name).toBe('Sheet1 (2)');
+                expect(helper.getInstance().sheets[0].rows[2].cells[2].image.length).toBe(0);
+                expect(helper.getInstance().sheets[0].rows[2].cells[5].image.length).toBe(0);
+                expect(helper.getInstance().sheets[1].rows[2].cells[2].image[0].src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
+                expect(helper.getInstance().sheets[1].rows[2].cells[5].image[0].src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
+                done();
+            });
+        });
+        it('Checking the redo action', (done: Function) => {
+            helper.click('#spreadsheet_redo');
+            helper.click('#spreadsheet_redo');
+            expect(helper.getInstance().activeSheetIndex).toBe(1);
+            expect(helper.getInstance().sheets[1].name).toBe('Sheet1 (2)');
+            expect(helper.getInstance().sheets[0].rows[2].cells[2].image[0].src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
+            expect(helper.getInstance().sheets[0].rows[2].cells[5].image[0].src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
+            expect(helper.getInstance().sheets[1].rows[2].cells[2].image[0].src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
+            expect(helper.getInstance().sheets[1].rows[2].cells[5].image[0].src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
+            done();
+        });
+    });
+
+    describe('EJ2-882964 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{}] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Image not maintained properly in duplicate sheet', (done: Function) => {
+            helper.getInstance().spreadsheetImageModule.createImageElement({ options: { src: 'https://www.w3schools.com/images/w3schools_green.jpg', width: 110, height: 70 }, range: 'D3', isPublic: true, isAction: true });
+            expect(helper.getInstance().sheets[0].rows[2].cells[3].image.length).toBe(1);
+            helper.invoke('duplicateSheet', [0]);
+            setTimeout(() => {
+                expect(helper.getInstance().activeSheetIndex).toBe(1);
+                expect(helper.getInstance().sheets[1].name).toBe('Sheet1 (2)');
+                expect(helper.getInstance().sheets[1].rows[2].cells[3].image[0].src).toBe('https://www.w3schools.com/images/w3schools_green.jpg');
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                const overlayObj: any = spreadsheet.serviceLocator.getService('shape') as Overlay;
+                expect(overlayObj.currentWidth).toBe(400);
+                expect(overlayObj.currenHeight).toBe(300);
+                expect(overlayObj.isOverlayClicked).toBeFalsy();
+                expect(overlayObj.isResizerClicked).toBeFalsy();
+                helper.invoke('selectImage');
+                const overlay: HTMLElement = helper.getElementFromSpreadsheet('.e-ss-overlay-active');
+                const overlayHgtHanlde: HTMLElement = overlay.querySelector('.e-ss-overlay-b');
+                let offset: DOMRect = overlayHgtHanlde.getBoundingClientRect() as DOMRect;
+                helper.triggerMouseAction('mousedown', { x: offset.left, y: offset.top }, overlay, overlayHgtHanlde);
+                expect(overlayObj.originalWidth).toBe(110);
+                expect(overlayObj.currentWidth).toBe(110);
+                expect(overlayObj.originalHeight).toBe(70);
+                expect(overlayObj.currenHeight).toBe(70);
+                expect(overlayObj.isOverlayClicked).toBeTruthy();
+                expect(overlayObj.isResizerClicked).toBeTruthy();
+                helper.triggerMouseAction('mousemove', { x: offset.left, y: offset.top + 30 }, overlay, overlayHgtHanlde);
+                helper.triggerMouseAction('mouseup', { x: offset.left, y: offset.top + 30 }, document, overlayHgtHanlde);
+                expect(overlayObj.originalWidth).toBe(110);
+                expect(overlayObj.currentWidth).toBe(110);
+                expect(overlayObj.originalHeight).toBe(100);
+                expect(overlayObj.currenHeight).toBe(100);
+                const image: ImageModel = spreadsheet.sheets[1].rows[2].cells[3].image[0];
+                expect(image.height).toBe(100);
+                expect(image.width).toBe(110);
+                expect(image.top).toBe(40);
+                expect(image.left).toBe(192);
+                expect(overlay.style.height).toBe('100px');
+                expect(overlay.style.width).toBe('110px');
+                done();
+            });
+        });
+        it('Performing undo and redo action after reszing the image in duplicate sheet', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const overlay: HTMLElement = helper.getElementFromSpreadsheet('.e-ss-overlay-active');
+            helper.click('#spreadsheet_undo');
+            setTimeout(() => {
+                const image: ImageModel = spreadsheet.sheets[1].rows[2].cells[3].image[0];
+                expect(image.height).toBe(70);
+                expect(image.width).toBe(110);
+                expect(overlay.style.height).toBe('70px');
+                expect(overlay.style.width).toBe('110px');
+                helper.click('#spreadsheet_redo');
+                setTimeout(() => {
+                    expect(image.height).toBe(100);
+                    expect(image.width).toBe(110);
+                    expect(overlay.style.height).toBe('100px');
+                    expect(overlay.style.width).toBe('110px');
+                    done();
+                });
+            });
+        });
+    });
+
     describe('CR-Issues ->', () => {
         describe('EJ2-70875 ->', () => {
             beforeAll((done: Function) => {
@@ -517,6 +633,36 @@ describe('Image ->', () => {
                 expect(helper.getInstance().sheets[0].rows[50].cells[2].image.length).toBe(1);
                 done();
             });
+        });
+    });
+
+    describe('Spreadsheet Image properties check when allowimage is false', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet(
+                { sheets: [{ ranges: [{ dataSource: defaultData }], rows: [{ cells: [{ image: [{ src: 'https://www.w3schools.com/images/w3schools_green.jpg', width: 110, height: 70 }] }] }] }], allowImage: false },
+                done
+            );
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('inserting image through cell binding and public method', (done: Function) => {
+            const cell = helper.getInstance().sheets[0].rows[0].cells[0];
+            expect(cell.image).not.toBeNull();
+            const imageOverlay: HTMLElement = helper.getElementFromSpreadsheet('#' + cell.image[0].id);
+            expect(imageOverlay).toBeNull();
+            helper.invoke('insertImage', [[{ src: "https://www.w3schools.com/images/w3schools_green.jpg", width: 110, height: 70 }], 'A2']);
+            const methodCell = helper.getInstance().sheets[0].rows[1].cells[0];
+            expect(methodCell.image).toBeUndefined();
+            done();
+        });
+        it('should check if parent of image button contains overlay class', () => {
+            helper.switchRibbonTab(2);
+            const imagebtn = helper.getElement('#spreadsheet_image');
+            expect(imagebtn).not.toBeNull();
+            const parent = imagebtn.parentElement;
+            expect(parent).not.toBeNull();
+            expect(parent.classList.contains('e-overlay')).toBe(true);
         });
     });
 });

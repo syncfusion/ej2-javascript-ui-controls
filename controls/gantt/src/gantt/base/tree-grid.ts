@@ -27,6 +27,7 @@ export class GanttTreeGrid {
     public currentEditRow: {};
     private registeredTemplate: Object;
     public addedRecord: boolean;
+    public setCancelArgs: boolean = false;
     private previousScroll: { top: number, left: number } = { top: 0, left: 0 };
     /** @hidden */
     public prevCurrentView: Object;
@@ -445,6 +446,8 @@ export class GanttTreeGrid {
         }
     }
     private treeActionComplete(args: object): void {
+        let fieldName: string = null ;
+        let preventEventTrigger: boolean = false;
         const updatedArgs: object = extend({}, args);
         if (getValue('requestType', args) === 'reorder') {
             if (this.parent.undoRedoModule && !this.parent.undoRedoModule['isFromUndoRedo'] && this.parent['isUndoRedoItemPresent']('ColumnReorder')) {
@@ -503,6 +506,10 @@ export class GanttTreeGrid {
             }
             this.parent.notify('updateModel', {});
         } else if (getValue('type', args) === 'save') {
+            fieldName = !isNullOrUndefined(args['column']) ? args['column'].field : null;
+            if (fieldName && args['previousData'] === args['data'][fieldName as string]) {
+                preventEventTrigger = true;
+            }
             if (this.parent.editModule && this.parent.editModule.cellEditModule) {
                 const data: IGanttData = getValue('data', args);
                 if (!isNullOrUndefined(data) && !isNullOrUndefined(this.parent.getTaskByUniqueID(data.uniqueID))) {
@@ -613,7 +620,9 @@ export class GanttTreeGrid {
         if (getValue('requestType', args) === 'refresh') {
             this.parent.initiateEditAction(false);
         }
-        this.parent.trigger('actionComplete', updatedArgs);
+        if (!preventEventTrigger && !this.setCancelArgs) {
+            this.parent.trigger('actionComplete', updatedArgs);
+        }
         if ( this.parent.showOverAllocation && !this.parent.allowTaskbarOverlap) {
             for (let i: number = 0; i < this.parent.currentViewData.length; i++) {
                 if (this.parent.currentViewData[i as number].hasChildRecords && !this.parent.currentViewData[i as number].expanded) {

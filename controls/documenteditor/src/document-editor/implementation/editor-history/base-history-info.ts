@@ -237,7 +237,8 @@ export class BaseHistoryInfo {
         if (this.owner.enableCollaborativeEditing && !this.owner.editorModule.isRemoteAction) {
             //TODO: Need to consider formard and backward selection
             if (this.action === 'RemoveEditRange') {
-                const startEdit: EditRangeStartElementBox = this.owner.selectionModule.getEditRangeStartElement();
+                const startEdit: EditRangeStartElementBox =
+                    this.owner.selectionModule.getEditRangeStartElement() as EditRangeStartElementBox;
                 const position: PositionInfo = this.owner.selectionModule.getPosition(startEdit);
                 start = position.startPosition;
                 end = position.endPosition;

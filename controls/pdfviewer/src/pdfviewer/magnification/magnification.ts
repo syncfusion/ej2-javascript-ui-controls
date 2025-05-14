@@ -36,6 +36,7 @@ export class Magnification {
     private imageObjects: HTMLImageElement[] = [];
     private topValue: number = 0;
     private isTapToFitZoom: boolean = false;
+    private isCanvasCreated: boolean = false;
     /**
      * @private
      */
@@ -575,6 +576,7 @@ export class Magnification {
             this.pdfViewerBase.renderedPagesList = [];
             this.pdfViewerBase.pinchZoomStorage = [];
             if (!this.pdfViewerBase.documentLoaded) {
+                this.designNewCanvas(this.pdfViewerBase.currentPageNumber);
                 this.magnifyPageRerenderTimer = setTimeout(
                     () => {
                         proxy.rerenderMagnifiedPages();
@@ -694,11 +696,11 @@ export class Magnification {
             this.isMagnified = false;
             this.pdfViewerBase.pageViewScrollChanged(this.reRenderPageNumber);
             this.pdfViewerBase.isInitialPageMode = false;
+            this.isRerenderCanvasCreated = false;
         }
     }
 
     private renderInSeparateThread(pageNumber: number): void {
-        this.designNewCanvas(pageNumber);
         this.pageRerenderCount = 0;
         this.pdfViewerBase.renderedPagesList = [];
         this.pdfViewerBase.pinchZoomStorage = [];
@@ -1012,6 +1014,7 @@ export class Magnification {
             }
         }
         this.isRerenderCanvasCreated = true;
+        this.isCanvasCreated = true;
     }
 
     /**
@@ -1021,7 +1024,10 @@ export class Magnification {
     public pageRerenderOnMouseWheel(): void {
         if (this.isRerenderCanvasCreated) {
             this.clearIntervalTimer();
-            clearTimeout(this.magnifyPageRerenderTimer);
+            if (!this.isCanvasCreated) {
+                clearTimeout(this.magnifyPageRerenderTimer);
+                this.isCanvasCreated = false;
+            }
             if (!this.isPinchScrolled) {
                 this.isPinchScrolled = true;
                 this.rerenderOnScrollTimer = setTimeout(() => {

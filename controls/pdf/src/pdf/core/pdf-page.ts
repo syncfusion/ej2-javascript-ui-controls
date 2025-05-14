@@ -44,6 +44,7 @@ export class PdfPage {
     _pageSettings: PdfPageSettings;
     _isNew: boolean = false;
     _isDuplicate: boolean = false;
+    _isLineAnnotation: boolean = false;
     /**
      * Represents a loaded page of the PDF document.
      *
@@ -538,7 +539,7 @@ export class PdfPage {
                 }
             }
         }
-        if (this._isNew && this._pageSettings) {
+        if (this._isNew && this._pageSettings && !this._isLineAnnotation) {
             const clipBounds: number[] = this._getActualBounds(this._pageSettings);
             this._g._clipTranslateMargins(clipBounds);
         }

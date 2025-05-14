@@ -64,6 +64,7 @@ export class Mention extends DropDownBase {
     private isUpDownKey: boolean;
     private isRTE: boolean;
     private keyEventName: string;
+    protected debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
     // Mention Options
 
@@ -190,6 +191,14 @@ export class Mention extends DropDownBase {
      */
     @Property('300px')
     public popupHeight: string | number;
+
+    /**
+     * Specifies the delay time in milliseconds for filtering operations.
+     *
+     * @default 300
+     */
+    @Property(300)
+    public debounceDelay: number;
 
     /**
      * Specifies the template for the selected value from the suggestion list.
@@ -817,21 +826,7 @@ export class Mention extends DropDownBase {
         return this.range;
     }
 
-    private searchLists(e: KeyboardEventArgs | MouseEvent): void {
-        this.isDataFetched = false;
-        if (isNullOrUndefined(this.list)) {
-            super.render();
-            this.unWireListEvents();
-            this.wireListEvents();
-        }
-        if (e.type !== 'mousedown' && ((<KeyboardEventArgs>e).keyCode === 40 || (<KeyboardEventArgs>e).keyCode === 38)) {
-            this.queryString = this.queryString === '' ? null : this.queryString;
-            this.beforePopupOpen = true;
-            this.resetList(this.dataSource, this.fields);
-            return;
-        }
-        this.isSelected = false;
-        this.activeIndex = null;
+    protected performFiltering(e: KeyboardEventArgs | MouseEvent): void {
         const eventArgs: { [key: string]: Object } = {
             preventDefaultAction: false,
             text: this.queryString,
@@ -851,6 +846,29 @@ export class Mention extends DropDownBase {
                 this.filterAction(this.dataSource, null, this.fields);
             }
         });
+    }
+
+    private searchLists(e: KeyboardEventArgs | MouseEvent): void {
+        this.isDataFetched = false;
+        if (isNullOrUndefined(this.list)) {
+            super.render();
+            this.unWireListEvents();
+            this.wireListEvents();
+        }
+        if (e.type !== 'mousedown' && ((<KeyboardEventArgs>e).keyCode === 40 || (<KeyboardEventArgs>e).keyCode === 38)) {
+            this.queryString = this.queryString === '' ? null : this.queryString;
+            this.beforePopupOpen = true;
+            this.resetList(this.dataSource, this.fields);
+            return;
+        }
+        this.isSelected = false;
+        this.activeIndex = null;
+        if (this.queryString !== '' && this.debounceDelay > 0) {
+            this.debouncedFiltering(e, this.debounceDelay);
+        }
+        else {
+            this.performFiltering(e);
+        }
     }
 
     private filterAction(

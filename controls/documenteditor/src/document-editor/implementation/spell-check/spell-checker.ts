@@ -21,6 +21,10 @@ export class SpellChecker {
      */
     /* eslint-disable @typescript-eslint/no-explicit-any */
     public uniqueSpelledWords: any = {};
+    /**
+     * Every time rendering text elementbox we are checking the key length of the uniqueSpelledWords object. This causes performance issue So optimizing it.
+     */
+    private uniqueSpelledWordsCount: number = 0;
     private spellSuggestionInternal: boolean = true;
     /**
      * @private
@@ -932,7 +936,7 @@ export class SpellChecker {
                 elementBox.isSpellChecked = true;
             }
         }
-        this.updateUniqueWords([{ Text: currentText, HasSpellError: jsonObject.HasSpellingError }]);
+        this.updateUniqueWord([{ Text: currentText, HasSpellError: jsonObject.HasSpellingError }]);
     }
 
 
@@ -1048,18 +1052,28 @@ export class SpellChecker {
                     const errorElements: ElementBox[] = errorWords.get(errorWords.keys[i]);
                     for (let j: number = 0; j < errorElements.length; j++) {
                         if (errorElements[j] instanceof ErrorTextElementBox && !errorElements[j].ischangeDetected) {
-                            this.updateErrorElementTextBox(errorWords.keys[i], errorElements[j] as ErrorTextElementBox);
+                            if ((isNullOrUndefined((errorElements[j] as ErrorTextElementBox).start.paragraph) || (errorElements[j] as ErrorTextElementBox).start.paragraph.indexInOwner === -1)) {
+                                this.errorWordCollection.remove(errorWords.keys[i]);
+                            }
+                            else {
+                                this.updateErrorElementTextBox(errorWords.keys[i], errorElements[j] as ErrorTextElementBox);
+                            }
                         } else if (errorElements[j] instanceof TextElementBox) {
-                            const matchResults: MatchResults = this.getMatchedResultsFromElement(errorElements[j]);
-                            const results: TextSearchResults = matchResults.textResults;
-
-                            const markIndex: number = (errorElements[j].ischangeDetected) ? (errorElements[j] as ErrorTextElementBox).start.offset : errorElements[j].line.getOffset(errorElements[j], 0);
-
-                            this.documentHelper.owner.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, results, matchResults.elementInfo, 0, errorElements[j], false, null, markIndex);
-                            for (let i: number = 0; i < results.length; i++) {
-                                const element: ErrorTextElementBox = this.createErrorElementWithInfo(results.innerList[i], errorElements[j]);
-                                this.updateErrorElementTextBox(element.text, element);
-                                break;
+                            if (isNullOrUndefined((errorElements[j] as TextElementBox).paragraph) || (errorElements[j] as TextElementBox).paragraph.indexInOwner === -1) {
+                                this.errorWordCollection.remove(errorWords.keys[i]);
+                            }
+                            else {
+                                const matchResults: MatchResults = this.getMatchedResultsFromElement(errorElements[j]);
+                                const results: TextSearchResults = matchResults.textResults;
+    
+                                const markIndex: number = (errorElements[j].ischangeDetected) ? (errorElements[j] as ErrorTextElementBox).start.offset : errorElements[j].line.getOffset(errorElements[j], 0);
+    
+                                this.documentHelper.owner.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, results, matchResults.elementInfo, 0, errorElements[j], false, null, markIndex);
+                                for (let i: number = 0; i < results.length; i++) {
+                                    const element: ErrorTextElementBox = this.createErrorElementWithInfo(results.innerList[i], errorElements[j]);
+                                    this.updateErrorElementTextBox(element.text, element);
+                                    break;
+                                }
                             }
                         }
                         break;
@@ -1306,33 +1320,58 @@ export class SpellChecker {
      * @returns {void}
      */
     public updateUniqueWords(spelledWords: any[]): void {
-        if (!isNullOrUndefined(localStorage.getItem(this.uniqueKey))) {
-            this.uniqueSpelledWords = JSON.parse(localStorage.getItem(this.uniqueKey));
-        }
-        this.uniqueSpelledWords = this.uniqueSpelledWords || {};
-        const totalCount: number = spelledWords.length + Object.keys(this.uniqueSpelledWords).length;
+        this.getUniqueWordsFromLocalStorage();
+        const totalCount: number = spelledWords.length + this.uniqueSpelledWordsCount;
         if (totalCount <= this.uniqueWordsCount) {
             for (let i: number = 0; i < spelledWords.length; i++) {
                 this.checkForUniqueWords(spelledWords[i]);
             }
         }
-        this.addUniqueWordsToLocalStorage(this.uniqueKey, JSON.stringify(this.uniqueSpelledWords));
-        this.uniqueSpelledWords = {};
+        this.addUniqueWordsToLocalStorage();
     }
-    public addUniqueWordsToLocalStorage(uniqueKey: string, value: string): void {
+    public updateUniqueWord(spelledWords: any[]): void {
+        this.uniqueSpelledWords = this.uniqueSpelledWords || {};
+        const totalCount: number = spelledWords.length + this.uniqueSpelledWordsCount;
+        if (totalCount <= this.uniqueWordsCount) {
+            for (let i: number = 0; i < spelledWords.length; i++) {
+                this.checkForUniqueWords(spelledWords[i]);
+            }
+        }
+    }
+    /**
+     * @private
+     * Get the item from local storage and assign it to uniqueSpelledWords.
+     * @returns {void}
+     */
+    public getUniqueWordsFromLocalStorage(): void {
+        if (!isNullOrUndefined(localStorage.getItem(this.uniqueKey))) {
+            this.uniqueSpelledWords = JSON.parse(localStorage.getItem(this.uniqueKey));
+        }
+        this.uniqueSpelledWords = this.uniqueSpelledWords || {};
+        this.uniqueSpelledWordsCount = Object.keys(this.uniqueSpelledWords).length;
+    }
+    /**
+     * @private
+     * set the uniqueSpelledWords to local storage.
+     * @returns {void}
+     */
+    public addUniqueWordsToLocalStorage(): void {
         try {
-            localStorage.setItem(uniqueKey, value);
+            localStorage.setItem(this.uniqueKey, JSON.stringify(this.uniqueSpelledWords));
         } catch (e) {
             if (e.name === 'QuotaExceededError') {
                 this.clearCache();
-                localStorage.setItem(uniqueKey, value);
+                localStorage.setItem(this.uniqueKey, JSON.stringify(this.uniqueSpelledWords));
             }
         }
+        this.uniqueSpelledWords = {};
+        this.uniqueSpelledWordsCount = 0;
     }
     private checkForUniqueWords(spellData: any): void {
         const identityMatched: boolean = this.uniqueSpelledWords[spellData.Text];
         if (!identityMatched) {
             this.uniqueSpelledWords[spellData.Text] = spellData.HasSpellError;
+            this.uniqueSpelledWordsCount++;
         }
     }
     /**
@@ -1366,7 +1405,7 @@ export class SpellChecker {
         const hasError: boolean = false;
         const elementPresent: boolean = false;
         /* eslint-disable @typescript-eslint/no-explicit-any */
-        const uniqueWords: any = JSON.parse(localStorage.getItem(this.uniqueKey));
+        const uniqueWords: any = this.uniqueSpelledWords || {};
         if (!isNullOrUndefined(uniqueWords)) {
             if (!isNullOrUndefined(uniqueWords[wordToCheck])) {
                 return { hasSpellError: uniqueWords[wordToCheck], isElementPresent: true };

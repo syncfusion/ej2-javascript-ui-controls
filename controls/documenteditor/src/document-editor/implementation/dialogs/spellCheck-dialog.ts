@@ -95,6 +95,7 @@ export class SpellCheckDialog {
     public onIgnoreClicked = (): void => {
         if (!isNullOrUndefined(this.elementBox)) {
             showSpinner(this.documentHelper.dialog.element);
+            this.isSpellChecking = true;
             this.parent.spellCheckerModule.manageReplace('Ignore Once', this.elementBox);
             this.removeErrors();
             this.parent.spellCheckerModule.checkForNextError();

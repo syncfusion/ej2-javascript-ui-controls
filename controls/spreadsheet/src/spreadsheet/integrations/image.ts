@@ -5,9 +5,9 @@ import { Spreadsheet } from '../base/index';
 import { getColIdxFromClientX, createImageElement, deleteImage, refreshImagePosition, completeAction, readonlyAlert } from '../common/event';
 import { insertImage, refreshImgCellObj, getRowIdxFromClientY } from '../common/event';
 import { Overlay, Dialog } from '../services/index';
-import { overlay, dialog, BeforeImageData, BeforeImageRefreshData, addDPRValue } from '../common/index';
+import { overlay, dialog, BeforeImageData, BeforeImageRefreshData } from '../common/index';
 import { L10n, isUndefined, getUniqueID, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { ImageModel, CellModel, getCell, setCell, getSheetIndex, getRowsHeight, getColumnsWidth, Workbook, beginAction, getCellAddress, getSheet, isReadOnlyCells, getRangeAddress } from '../../workbook/index';
+import { ImageModel, CellModel, getCell, setCell, getSheetIndex, getRowsHeight, getColumnsWidth, Workbook, beginAction, getCellAddress, getSheet, isReadOnlyCells, getRangeAddress, addDPRValue } from '../../workbook/index';
 import { getRangeIndexes, SheetModel, setImage } from '../../workbook/index';
 
 export class SpreadsheetImage {

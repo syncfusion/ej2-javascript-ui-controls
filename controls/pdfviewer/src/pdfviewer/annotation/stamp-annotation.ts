@@ -127,11 +127,12 @@ export class StampAnnotation {
      * @param {any} canvass - It describes about the canvas
      * @param {boolean} isImport - It describes about the isImport
      * @param {boolean} isAnnotOrderAction - It describes about the isAnnotOrderAction
+     * @param {boolean} isLastAnnot - It describes about the isLastAnnot
      * @private
      * @returns {Promise<void>} - any
      */
     public renderStampAnnotations(stampAnnotations: any, pageNumber: number, canvass?: any,
-                                  isImport?: boolean,  isAnnotOrderAction?: boolean): Promise<void> {
+                                  isImport?: boolean,  isAnnotOrderAction?: boolean, isLastAnnot?: boolean): Promise<void> {
         return new Promise((resolve: any) => {
             let isStampAdded: boolean = false;
             if (!isImport) {
@@ -226,8 +227,11 @@ export class StampAnnotation {
                                         const currentLocation: IRectCollection = proxy.calculateImagePosition(position, true);
                                         annotation.AnnotationSettings = annotation.AnnotationSettings ?
                                             annotation.AnnotationSettings : proxy.pdfViewer.customStampSettings.annotationSettings;
+                                        const isNeedToRender: boolean = ((isImport && isLastAnnot) || isNullOrUndefined(isImport) ||
+                                                                !isImport) ? true : false;
                                         proxy.renderCustomImage(currentLocation, pageIndex, image, currentDate, modifiedDate,
-                                                                rotationAngle, opacity, canvass, true, annotation);
+                                                                rotationAngle, opacity, canvass, true, annotation, null, null,
+                                                                null, isNeedToRender);
                                         if (proxy.pdfViewer.annotationModule.annotationType === 'image') {
                                             proxy.pdfViewer.annotation.selectAnnotationFromCodeBehind();
                                             proxy.pdfViewer.annotationModule.annotationType = null;
@@ -719,13 +723,14 @@ export class StampAnnotation {
      * @param {string} annotName - It describes about the annotation name
      * @param {boolean} isNeedToReorderCollection - It ensures whether the need to reorder the collection or not
      * @param {number} orderNumber - It gets the order number
+     * @param {number} isNeedToRender - It gets isNeedToRender value
      * @private
      * @returns {void}
      */
     public renderCustomImage(position: any, pageIndex: any, image: any, currentDate: any,
                              modifiedDate: any, RotationAngle: any, opacity: any, canvas?: any,
                              isExistingStamp?: boolean, annotation?: any, annotName?: string,
-                             isNeedToReorderCollection?: boolean, orderNumber?: number): void {
+                             isNeedToReorderCollection?: boolean, orderNumber?: number, isNeedToRender?: boolean): void {
         let annotationObject: IStampAnnotation = null;
         let annotationName: string;
         let author: string;
@@ -844,7 +849,9 @@ export class StampAnnotation {
             if (isNullOrUndefined(canvas)) {
                 canvas = this.pdfViewerBase.getAnnotationCanvas('_annotationCanvas_', pageIndex);
             }
-            this.pdfViewer.renderDrawing(canvas as any, pageIndex);
+            if (isNeedToRender || isNullOrUndefined(isNeedToRender)) {
+                this.pdfViewer.renderDrawing(canvas as any, pageIndex);
+            }
             if (this.pdfViewerBase.stampAdded) {
                 this.pdfViewer.annotation.addAction(pageIndex, null, annot as PdfAnnotationBase, 'Addition', '', annot as PdfAnnotationBase, annot);
             }

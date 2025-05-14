@@ -1670,9 +1670,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public pathDataStorage: Map<string, PointModel[]> = new Map();
     // To check current action is undo or redo
     private isUndo: boolean = false;
-    // Indicates whether the current action is part of an undo or redo operation
-    /** @private */
-    public checkUndoRedo: boolean = false;
     /**
      * Constructor for creating the widget
      */
@@ -4597,9 +4594,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
                 if (!(this.diagramActions & DiagramAction.UndoRedo) && !(this.diagramActions & DiagramAction.Group) &&
                     !(this.diagramActions & DiagramAction.PreventHistory)) {
+                    //952756 - Undo redo of adding elements dynamically is not working properly
+                    let undoElement: NodeModel | ConnectorModel;
+                    if (obj && obj.shape && obj.shape.type === 'SwimLane') {
+                        undoElement = obj;
+                    }
+                    else {
+                        undoElement = newObj;
+                    }
                     const entry: HistoryEntry = {
-                        type: 'CollectionChanged', changeType: 'Insert', undoObject: cloneObject(obj),
-                        redoObject: cloneObject(obj), category: 'Internal'
+                        type: 'CollectionChanged', changeType: 'Insert', undoObject: cloneObject(undoElement),
+                        redoObject: cloneObject(undoElement), category: 'Internal'
                     };
                     this.addHistoryEntry(entry);
                 }

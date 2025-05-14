@@ -1116,7 +1116,7 @@ export class FormFields {
                     }
                     let currentValue: string = value ? value : this.pdfViewerBase.signatureModule.outputString;
                     if (signatureType === 'Path' && !this.pdfViewer.drawing.isPasted && !this.pdfViewer.annotation.isUndoAction) {
-                        if (value && this.pdfViewerBase.signatureModule.outputString === '') {
+                        if (value && this.pdfViewerBase.signatureModule.outputString === '' && (typeof value === 'string' && value.trim().startsWith('['))) {
                             const parsenew: Object[] = JSON.parse(currentValue);
                             const newArray: Object[] = splitArrayCollection(parsenew);
                             currentValue = getPathString(newArray);

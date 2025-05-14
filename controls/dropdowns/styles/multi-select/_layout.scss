@@ -411,7 +411,12 @@
 }
 
 .e-multi-select-wrapper .e-delim-values {
-  font-family: $ddl-chip-font-family;
+  @if $ddl-multiselect-skin-name == 'tailwind' {
+    font-family: $multi-select-delim-font-family;
+  }
+  @else {
+    font-family: $ddl-chip-font-family;
+  }
   font-size: $ddl-delim-font-size;
   line-height: $ddl-delimviewheight;
   max-width: 100%;

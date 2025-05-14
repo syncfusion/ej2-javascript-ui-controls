@@ -57,6 +57,7 @@ export class DayMarkers {
     private updateHeight(): void {
         this.nonworkingDayRender.updateContainerHeight();
         this.eventMarkerRender.updateContainerHeight();
+        this.parent.ganttChartModule.scrollObject.updateTopPosition();
     }
     /**
      * To get module name

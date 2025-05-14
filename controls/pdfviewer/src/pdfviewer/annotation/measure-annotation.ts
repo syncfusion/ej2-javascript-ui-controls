@@ -12,7 +12,7 @@ import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { PointModel, Point } from '@syncfusion/ej2-drawings';
 import { ICommentsCollection, IReviewCollection } from './sticky-notes-annotation';
 import { LineHeadStyle, CalibrationUnit, AllowedInteraction } from '../base';
-import { AnnotationSelectorSettingsModel } from '../pdfviewer-model';
+import { AnnotationSelectorSettingsModel, MeasurementSettingsModel } from '../pdfviewer-model';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 
 /**
@@ -79,6 +79,22 @@ export interface IMeasure {
     volume?: INumberFormat[]
     targetUnitConversion?: number
     depth?: number
+}
+
+/**
+ * @hidden
+ */
+export class MeasurementScaleRatio {
+    id?: string
+    annotName?: string
+    displayUnit: CalibrationUnit
+    unit: CalibrationUnit
+    ratio: number
+    destValue: number
+    srcValue: number
+    volumeDepth: number
+    depthValue: number
+    ratioString?: string
 }
 
 /**
@@ -223,6 +239,7 @@ export class MeasureAnnotation {
      * @private
      */
     public volumeDepth: number;
+    private measureRatioObject: MeasurementScaleRatio;
     /**
      * @private
      */
@@ -230,6 +247,8 @@ export class MeasureAnnotation {
     private ratio: number;
     private srcValue: number;
     private destValue: number;
+    private depthValue: number;
+    private currentScaleRatio: any;
     private scaleRatioString: string;
     private scaleRatioDialog: Dialog;
     private sourceTextBox: NumericTextBox;
@@ -238,6 +257,11 @@ export class MeasureAnnotation {
     private dispUnit: DropDownButton;
     private depthTextBox: NumericTextBox;
     private depthUnit: DropDownButton;
+    /**
+     * @private
+     */
+    public scaleRatioCollection: any = [];
+    private scaleRatioAddCollection: any = [];
     constructor(pdfviewer: PdfViewer, pdfViewerBase: PdfViewerBase) {
         this.pdfViewer = pdfviewer;
         this.pdfViewerBase = pdfViewerBase;
@@ -400,6 +424,14 @@ export class MeasureAnnotation {
                                 annotationSettings: annotationObject.annotationSettings, annotationAddMode: annotation.annotationAddMode,
                                 isPrint: isPrint, isCommentLock: annotationObject.isCommentLock, customData: annotationObject.customData
                             };
+                            if (this.scaleRatioCollection) {
+                                const matchedScaleRatio: any = this.scaleRatioCollection.find(
+                                    (item: any) => item.annotName === annot.annotName
+                                );
+                                if (matchedScaleRatio && matchedScaleRatio.id === undefined) {
+                                    matchedScaleRatio.id = annot.id;
+                                }
+                            }
                             this.pdfViewer.annotation.storeAnnotations(pageNumber, annotationObject, '_annotations_shape_measure');
                             this.pdfViewer.add(annot as PdfAnnotationBase);
                             if (this.isAddAnnotationProgramatically) {
@@ -416,6 +448,47 @@ export class MeasureAnnotation {
                 }
             } else if (shapeAnnotations.shapeAnnotationType) {
                 const annotationObject: IMeasureShapeAnnotation = this.createAnnotationObject(shapeAnnotations);
+                this.updateScaleRatioCollection();
+                const measureSettings: MeasurementSettingsModel = this.pdfViewer.measurementSettings;
+                if (measureSettings.conversionUnit !== 'in' || measureSettings.displayUnit !== 'in' || measureSettings.scaleRatio !== 1) {
+                    const ratioString: any = annotationObject.calibrate.ratio.split('=').map((ratioString: any) => ratioString.trim());
+                    const [srcValueStr, unit] = ratioString[0].split(' ');
+                    const [destValueStr, displayUnit] = ratioString[1].split(' ');
+                    const destValue: number = parseFloat(destValueStr);
+                    const depthValue: number = measureSettings.depth ? measureSettings.depth : 96;
+                    const srcValue: number = parseFloat(srcValueStr);
+                    const scaleRatio: MeasurementScaleRatio = {
+                        annotName: annotationObject.annotName,
+                        displayUnit: displayUnit,
+                        unit: unit,
+                        ratio: destValue / srcValue,
+                        destValue: destValue,
+                        srcValue: srcValue,
+                        volumeDepth: depthValue,
+                        depthValue: depthValue,
+                        ratioString: ratioString
+                    };
+                    this.scaleRatioCollection.push(scaleRatio);
+                } else if (!isNullOrUndefined(this.measureRatioObject)) {
+                    this.measureRatioObject['id'] = annotationObject.id;
+                    this.measureRatioObject['annotName'] = annotationObject.annotName;
+                    this.scaleRatioCollection.push({ ...this.measureRatioObject });
+                } else {
+                    const srcValue: number = (this.sourceTextBox && this.sourceTextBox.value) ? this.sourceTextBox.value : 1;
+                    const destValue: number = (this.destTextBox && this.destTextBox.value) ? this.destTextBox.value : 1;
+                    this.measureRatioObject = {
+                        id: annotationObject.id,
+                        annotName: annotationObject.annotName,
+                        displayUnit: this.displayUnit,
+                        unit: this.unit,
+                        depthValue: this.volumeDepth,
+                        volumeDepth: this.volumeDepth,
+                        ratioString: srcValue + ' ' + this.unit + ' = ' + destValue + ' ' + this.displayUnit,
+                        ratio: destValue / srcValue
+                    } as MeasurementScaleRatio;
+                    this.scaleRatioCollection.push({ ...this.measureRatioObject });
+                    this.scaleRatioAddCollection.push({ ...this.measureRatioObject });
+                }
                 this.pdfViewer.annotationModule.isFormFieldShape = false;
                 this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape_measure');
                 if (shapeAnnotations)
@@ -562,13 +635,46 @@ export class MeasureAnnotation {
         this.volumeStrokeColor = this.pdfViewer.volumeSettings.strokeColor ? this.pdfViewer.volumeSettings.strokeColor : '#ff0000';
         this.volumeOpacity = this.pdfViewer.volumeSettings.opacity ? this.pdfViewer.volumeSettings.opacity : 1;
         this.volumeThickness = this.pdfViewer.volumeSettings.thickness ? this.pdfViewer.volumeSettings.thickness : 1;
-        this.unit = this.pdfViewer.measurementSettings.conversionUnit.toLowerCase() as CalibrationUnit;
-        this.displayUnit = this.pdfViewer.measurementSettings.displayUnit.toLowerCase() as CalibrationUnit;
-        if (isNullOrUndefined(this.ratio) || this.ratio !== this.pdfViewer.measurementSettings.scaleRatio) {
+        const scaleRatioObject: any = this.scaleRatioAddCollection[this.scaleRatioAddCollection.length - 1];
+        if (this.currentScaleRatio && this.currentScaleRatio.unit !== this.pdfViewer.measurementSettings.conversionUnit.toLowerCase()) {
+            this.unit = this.currentScaleRatio.unit;
+        } else if (this.pdfViewer.measurementSettings.conversionUnit.toLowerCase() !== 'in') {
+            this.unit = this.pdfViewer.measurementSettings.conversionUnit.toLowerCase() as CalibrationUnit;
+        } else if (scaleRatioObject){
+            this.unit = scaleRatioObject.unit;
+        } else {
+            this.unit = this.pdfViewer.measurementSettings.conversionUnit.toLowerCase() as CalibrationUnit;
+        }
+        if (this.currentScaleRatio && this.currentScaleRatio.displayUnit !==
+            this.pdfViewer.measurementSettings.conversionUnit.toLowerCase()) {
+            this.displayUnit = this.currentScaleRatio.displayUnit;
+        } else if (this.pdfViewer.measurementSettings.displayUnit.toLowerCase() !== 'in') {
+            this.displayUnit = this.pdfViewer.measurementSettings.displayUnit.toLowerCase() as CalibrationUnit;
+        } else if (scaleRatioObject){
+            this.displayUnit = scaleRatioObject.displayUnit;
+        } else {
+            this.displayUnit = this.pdfViewer.measurementSettings.displayUnit.toLowerCase() as CalibrationUnit;
+        }
+        if (this.currentScaleRatio && this.currentScaleRatio.ratio !==  this.pdfViewer.measurementSettings.scaleRatio) {
+            this.ratio = this.currentScaleRatio.ratio;
+        } else if ( this.pdfViewer.measurementSettings.scaleRatio !== 1) {
+            this.ratio = this.pdfViewer.measurementSettings.scaleRatio;
+        } else if (scaleRatioObject) {
+            this.ratio = scaleRatioObject.ratio;
+        } else if (isNullOrUndefined(this.ratio) || this.ratio === this.pdfViewer.measurementSettings.scaleRatio) {
             this.ratio = this.pdfViewer.measurementSettings.scaleRatio;
         }
-        this.volumeDepth = this.pdfViewer.measurementSettings.depth;
+        if (this.currentScaleRatio && this.currentScaleRatio.volumeDepth !== this.pdfViewer.measurementSettings.depth) {
+            this.volumeDepth = this.currentScaleRatio.volumeDepth;
+        } else if (this.pdfViewer.measurementSettings.scaleRatio !== 1) {
+            this.volumeDepth = this.pdfViewer.measurementSettings.depth;
+        } else if (scaleRatioObject) {
+            this.volumeDepth = scaleRatioObject.volumeDepth;
+        } else {
+            this.volumeDepth = this.pdfViewer.measurementSettings.depth ? this.pdfViewer.measurementSettings.depth : 96;
+        }
         this.scaleRatioString = '1 ' + this.unit + ' = ' + this.ratio.toString() + ' ' + this.displayUnit;
+        this.currentScaleRatio = null;
     }
 
     private createAnnotationObject(annotationModel: PdfAnnotationBaseModel): IMeasureShapeAnnotation {
@@ -839,6 +945,15 @@ export class MeasureAnnotation {
      * @private
      * @returns {void}
      */
+    public destroy(): void {
+        this.scaleRatioCollection = null;
+        this.scaleRatioAddCollection = null;
+    }
+
+    /**
+     * @private
+     * @returns {void}
+     */
     public createScaleRatioWindow(): void {
         if (!isBlazor()) {
             const elementID: string = this.pdfViewer.element.id;
@@ -872,11 +987,111 @@ export class MeasureAnnotation {
                 this.scaleRatioDialog.enableRtl = true;
             }
             this.scaleRatioDialog.appendTo(dialogDiv);
-            this.convertUnit.content = this.createContent(this.pdfViewer.localeObj.getConstant(this.unit)).outerHTML;
-            this.dispUnit.content = this.createContent(this.pdfViewer.localeObj.getConstant(this.displayUnit)).outerHTML;
-            this.depthUnit.content = this.createContent(this.pdfViewer.localeObj.getConstant(this.displayUnit)).outerHTML;
+            this.updateScaleRatioCollection();
+            if (this.scaleRatioCollection.length === 1) {
+                const existing: any = this.scaleRatioCollection[0];
+                if (
+                    Object.keys(existing).length === 2 &&
+                    Object.prototype.hasOwnProperty.call(existing, 'id') &&
+                    Object.prototype.hasOwnProperty.call(existing, 'annotName')
+                ) {
+                    Object.assign(existing, {
+                        ratio: this.destTextBox.value / this.sourceTextBox.value,
+                        unit: this.getContent(this.convertUnit.content),
+                        displayUnit: this.getContent(this.dispUnit.content),
+                        destValue: this.destTextBox.value,
+                        srcValue: this.sourceTextBox.value,
+                        volumeDepth: this.depthTextBox.value,
+                        depthValue: this.depthTextBox.value,
+                        ratioString: this.sourceTextBox.value + ' ' + this.unit + ' = ' + this.destTextBox.value + ' ' + this.displayUnit
+                    });
+                }
+            }
+            if (this.pdfViewer.selectedItems.annotations[0] && this.scaleRatioAddCollection.length === 1 &&
+                this.scaleRatioAddCollection[0].displayUnit === 'in' && this.scaleRatioAddCollection[0].unit === 'in'
+                && this.scaleRatioAddCollection[0].destValue === 1 && this.scaleRatioAddCollection[0].srcValue === 1
+                && this.scaleRatioAddCollection[0].depthValue === 96) {
+                this.convertUnit.content = 'in';
+                this.dispUnit.content = 'in';
+                this.depthUnit.content = 'in';
+                this.destTextBox.value = 1;
+                this.depthTextBox.value = 96;
+                this.sourceTextBox.value = 1;
+            } else if (this.pdfViewer.selectedItems.annotations[0]) {
+                let unit: any;
+                let displayUnit: any;
+                if (this.scaleRatioCollection.length > 0) {
+                    for (let i: number = 0; i < this.scaleRatioCollection.length; i++) {
+                        if (this.scaleRatioCollection[parseInt(i.toString(), 10)].annotName ===
+                            this.pdfViewer.selectedItems.annotations[0].annotName) {
+                            const measureRatioObject: any = this.scaleRatioCollection[parseInt(i.toString(), 10)];
+                            unit = measureRatioObject.unit;
+                            displayUnit = measureRatioObject.displayUnit;
+                            this.convertUnit.content = this.createContent(this.pdfViewer.localeObj.getConstant(unit)).outerHTML;
+                            this.dispUnit.content = this.createContent(this.pdfViewer.localeObj.getConstant(displayUnit)).outerHTML;
+                            this.depthUnit.content = this.createContent(this.pdfViewer.localeObj.getConstant(displayUnit)).outerHTML;
+                            this.destTextBox.value = measureRatioObject.destValue ? measureRatioObject.destValue : 1;
+                            this.depthTextBox.value = measureRatioObject.depthValue;
+                            this.sourceTextBox.value = measureRatioObject.srcValue ? measureRatioObject.srcValue : 1;
+                            break;
+                        }
+                    }
+                }
+            } else {
+                if (!isNullOrUndefined(this.measureRatioObject)) {
+                    this.convertUnit.content = this.createContent(this.pdfViewer.localeObj.getConstant(this.measureRatioObject.unit ?
+                        this.measureRatioObject.unit : this.unit)).outerHTML;
+                    this.dispUnit.content = this.createContent(this.pdfViewer.localeObj.getConstant(this.measureRatioObject.displayUnit ?
+                        this.measureRatioObject.displayUnit : this.displayUnit)).outerHTML;
+                    this.depthUnit.content = this.createContent(this.pdfViewer.localeObj.getConstant(this.measureRatioObject.displayUnit ?
+                        this.measureRatioObject.displayUnit : this.displayUnit)).outerHTML;
+                    this.destTextBox.value = this.measureRatioObject.destValue ? this.measureRatioObject.destValue : 1;
+                    this.depthTextBox.value = this.measureRatioObject.depthValue;
+                    this.sourceTextBox.value = this.measureRatioObject.srcValue ? this.measureRatioObject.srcValue : 1;
+                } else {
+                    this.convertUnit.content = this.createContent(this.pdfViewer.localeObj.getConstant(this.unit)).outerHTML;
+                    this.dispUnit.content = this.createContent(this.pdfViewer.localeObj.getConstant(this.displayUnit)).outerHTML;
+                    this.depthUnit.content = this.createContent(this.pdfViewer.localeObj.getConstant(this.displayUnit)).outerHTML;
+                }
+            }
         } else {
             this.pdfViewer._dotnetInstance.invokeMethodAsync('OpenScaleRatioDialog');
+        }
+    }
+
+    private updateScaleRatioCollection(): void {
+        if (this.scaleRatioCollection.length === 0) {
+            for (let i: number = 0; i < this.pdfViewer.annotationCollection.length; i++) {
+                const annotation: any = this.pdfViewer.annotationCollection[parseInt(i.toString(), 10)];
+                if (annotation.subject === 'Distance calculation' || annotation.subject  === 'Perimeter calculation' || annotation.subject === 'Area calculation' || annotation.subject === 'Radius calculation' || annotation.subject === 'Volume calculation') {
+                    const ratioString: any = annotation.calibrate.ratio.split('=').map((ratioString: any) => ratioString.trim());
+                    const [srcValueStr, unit] = ratioString[0].split(' ');
+                    const [destValueStr, displayUnit] = ratioString[1].split(' ');
+                    const destValue: number = parseFloat(destValueStr);
+                    let depthValue: number;
+                    const srcValue: number = parseFloat(srcValueStr);
+                    if (this.pdfViewer.annotationCollection[parseInt(i.toString(), 10)].subject === 'Volume calculation') {
+                        depthValue =
+                            this.pdfViewer.annotationCollection[parseInt(i.toString(), 10)].calibrate.depth;
+                    } else {
+                        depthValue = 96;
+                    }
+                    this.sourceTextBox.value = parseFloat(srcValueStr);
+                    const scaleRatio: MeasurementScaleRatio = {
+                        id: annotation.uniqueKey,
+                        annotName: annotation.annotationId,
+                        displayUnit: displayUnit,
+                        unit: unit,
+                        ratio: destValue / srcValue,
+                        destValue: destValue,
+                        srcValue: srcValue,
+                        volumeDepth: depthValue,
+                        depthValue: depthValue,
+                        ratioString: ratioString
+                    };
+                    this.scaleRatioCollection.push(scaleRatio);
+                }
+            }
         }
     }
 
@@ -890,13 +1105,13 @@ export class MeasureAnnotation {
         const sourceContainer: HTMLElement = createElement('div', { id: elementID + '_scale_src_container' });
         element.appendChild(sourceContainer);
         const srcInputElement: HTMLElement = this.createInputElement('input', 'e-pv-scale-ratio-src-input', elementID + '_src_input', sourceContainer);
-        this.sourceTextBox = new NumericTextBox({ value: this.srcValue ? this.srcValue : 1, format: '##', cssClass: 'e-pv-scale-ratio-src-input', min: 1, max: 100 }, (srcInputElement as HTMLInputElement));
+        this.sourceTextBox = new NumericTextBox({ value: 1, format: '##', cssClass: 'e-pv-scale-ratio-src-input', min: 1, max: 100 }, (srcInputElement as HTMLInputElement));
         const srcUnitElement: HTMLElement = this.createInputElement('button', 'e-pv-scale-ratio-src-unit', elementID + '_src_unit', sourceContainer);
         this.convertUnit = new DropDownButton({ items: items, cssClass: 'e-pv-scale-ratio-src-unit' }, (srcUnitElement as HTMLButtonElement));
         this.convertUnit.select = this.convertUnitSelect.bind(this);
         const destinationContainer: HTMLElement = createElement('div', { id: elementID + '_scale_dest_container' });
         const destInputElement: HTMLElement = this.createInputElement('input', 'e-pv-scale-ratio-dest-input', elementID + '_dest_input', destinationContainer);
-        this.destTextBox = new NumericTextBox({ value: this.destValue ? this.destValue : 1, format: '##', cssClass: 'e-pv-scale-ratio-dest-input', min: 1, max: 100 }, (destInputElement as HTMLInputElement));
+        this.destTextBox = new NumericTextBox({ value: 1, format: '##', cssClass: 'e-pv-scale-ratio-dest-input', min: 1, max: 100 }, (destInputElement as HTMLInputElement));
         const destUnitElement: HTMLElement = this.createInputElement('button', 'e-pv-scale-ratio-dest-unit', elementID + '_dest_unit', destinationContainer);
         this.dispUnit = new DropDownButton({ items: items, cssClass: 'e-pv-scale-ratio-dest-unit' }, (destUnitElement as HTMLButtonElement));
         this.dispUnit.select = this.dispUnitSelect.bind(this);
@@ -949,6 +1164,8 @@ export class MeasureAnnotation {
      * @returns {void}
      */
     public onOkClicked(): void {
+        const unit: CalibrationUnit =  this.getContent(this.convertUnit.content) as CalibrationUnit;
+        const displayUnit: CalibrationUnit = this.getContent(this.dispUnit.content) as CalibrationUnit;
         if (isBlazor()) {
             const unitElement: any = document.querySelector('#' + this.pdfViewer.element.id + '_src_unit');
             const displayElement: any = document.querySelector('#' + this.pdfViewer.element.id + '_dest_unit');
@@ -963,24 +1180,77 @@ export class MeasureAnnotation {
             }
             this.scaleRatioString = parseInt(sourceTextBox.value, 10) + ' ' + this.unit + ' = ' + parseInt(destTextBox.value, 10) + ' ' + this.displayUnit;
             this.updateMeasureValues(this.scaleRatioString, this.displayUnit, this.unit, this.volumeDepth);
+        } else if (this.pdfViewer.selectedItems.annotations[0]) {
+            for (let i: number = 0; i < this.scaleRatioCollection.length; i++) {
+                if (this.scaleRatioCollection[parseInt(i.toString(), 10)].annotName ===
+                this.pdfViewer.selectedItems.annotations[0].annotName
+                    && this.scaleRatioCollection[parseInt(i.toString(), 10)].displayUnit === this.getContent(this.dispUnit.content) &&
+                    this.scaleRatioCollection[parseInt(i.toString(), 10)].unit === this.getContent(this.convertUnit.content) &&
+                    this.scaleRatioCollection[parseInt(i.toString(), 10)].destValue === this.destTextBox.value &&
+                    this.scaleRatioCollection[parseInt(i.toString(), 10)].srcValue === this.sourceTextBox.value &&
+                    this.scaleRatioCollection[parseInt(i.toString(), 10)].volumeDepth === this.depthTextBox.value) {
+                    const measureRatioObject: any = this.scaleRatioCollection[parseInt(i.toString(), 10)];
+                    this.updateRatioValues(measureRatioObject.unit, measureRatioObject.displayUnit, measureRatioObject.ratio,
+                                           measureRatioObject.volumeDepth, measureRatioObject.srcValue, measureRatioObject.destValue);
+                } else if (this.scaleRatioCollection[parseInt(i.toString(), 10)].annotName ===
+                this.pdfViewer.selectedItems.annotations[0].annotName) {
+                    const measureRatioObject: any = this.scaleRatioCollection[parseInt(i.toString(), 10)];
+                    measureRatioObject.ratio = this.destTextBox.value / this.sourceTextBox.value;
+                    measureRatioObject.unit = this.getContent(this.convertUnit.content);
+                    measureRatioObject.displayUnit = this.getContent(this.dispUnit.content);
+                    measureRatioObject.destValue = this.destTextBox.value;
+                    measureRatioObject.srcValue = this.sourceTextBox.value;
+                    measureRatioObject.volumeDepth = this.depthTextBox.value;
+                    measureRatioObject.depthValue = this.depthTextBox.value;
+                    measureRatioObject.ratioString = this.sourceTextBox.value + ' ' + measureRatioObject.unit + ' = ' + this.destTextBox.value + ' ' + measureRatioObject.displayUnit;
+                    const volumeDepth: number = this.depthTextBox.value;
+                    const scaleRatioString: string = this.sourceTextBox.value + ' ' + unit + ' = ' + this.destTextBox.value + ' ' + displayUnit;
+                    this.scaleRatioDialog.hide();
+                    const originalUnit: CalibrationUnit = this.restoreUnit(this.convertUnit, unit);
+                    const originalDisplayUnit: CalibrationUnit = this.restoreUnit(this.dispUnit, displayUnit);
+                    this.updateMeasureValues(scaleRatioString, originalDisplayUnit, originalUnit, volumeDepth);
+                }
+            }
         } else {
-            this.unit = this.getContent(this.convertUnit.content) as CalibrationUnit;
-            this.displayUnit = this.getContent(this.dispUnit.content) as CalibrationUnit;
-            this.ratio = this.destTextBox.value / this.sourceTextBox.value;
-            this.volumeDepth = this.depthTextBox.value;
-            this.scaleRatioString = this.sourceTextBox.value + ' ' + this.unit + ' = ' + this.destTextBox.value + ' ' + this.displayUnit;
-            this.scaleRatioDialog.hide();
-            const originalUnit: CalibrationUnit = this.restoreUnit(this.convertUnit);
-            const originalDisplayUnit: CalibrationUnit = this.restoreUnit(this.dispUnit);
-            this.updateMeasureValues(this.scaleRatioString, originalDisplayUnit, originalUnit, this.volumeDepth);
+            this.measureRatioObject = {
+                ratio: this.destTextBox.value / this.sourceTextBox.value,
+                unit: unit,
+                displayUnit: displayUnit,
+                destValue: this.destTextBox.value,
+                srcValue: this.sourceTextBox.value,
+                volumeDepth: this.depthTextBox.value,
+                depthValue: this.depthTextBox.value,
+                ratioString: this.sourceTextBox.value + ' ' + unit + ' = ' + this.destTextBox.value + ' ' + displayUnit
+            };
+            this.scaleRatioAddCollection.push(this.measureRatioObject);
+            this.currentScaleRatio = this.measureRatioObject;
+            this.updateRatioValues(this.measureRatioObject.unit, this.measureRatioObject.displayUnit, this.measureRatioObject.ratio,
+                                   this.measureRatioObject.volumeDepth, this.measureRatioObject.srcValue,
+                                   this.measureRatioObject.destValue);
         }
     }
 
-    private restoreUnit(dropdownObject: DropDownButton): CalibrationUnit {
+    private updateRatioValues(unit: CalibrationUnit, displayUnit: CalibrationUnit, ratio: number, volumeDepth: number,
+                              srcValue: number, destValue: number): void {
+        this.unit = unit;
+        this.displayUnit = displayUnit;
+        this.ratio = destValue / srcValue;
+        this.destValue = destValue;
+        this.srcValue = srcValue;
+        this.volumeDepth = volumeDepth;
+        this.depthValue = volumeDepth;
+        this.scaleRatioString = srcValue + ' ' + unit + ' = ' + destValue + ' ' + displayUnit;
+        this.scaleRatioDialog.hide();
+        const originalUnit: CalibrationUnit = this.restoreUnit(this.convertUnit, this.unit);
+        const originalDisplayUnit: CalibrationUnit = this.restoreUnit(this.dispUnit, this.displayUnit);
+        this.updateMeasureValues(this.scaleRatioString, originalDisplayUnit, originalUnit, this.volumeDepth);
+    }
+
+    private restoreUnit(dropdownObject: DropDownButton, currentUnit: CalibrationUnit): CalibrationUnit {
         let calibUnit: CalibrationUnit;
         for (let i: number = 0; i < dropdownObject.items.length; i++) {
             const convertUnitItem: ItemModel = dropdownObject.items[parseInt(i.toString(), 10)];
-            if (this.unit === convertUnitItem.text) {
+            if (currentUnit === convertUnitItem.text) {
                 calibUnit = (convertUnitItem as any).label;
             }
         }
@@ -1005,19 +1275,26 @@ export class MeasureAnnotation {
             if (pageAnnotations) {
                 for (let j: number = 0; j < pageAnnotations.length; j++) {
                     pageAnnotations = this.getAnnotations(i, null);
-                    const measureObject: IMeasureShapeAnnotation = pageAnnotations[parseInt(j.toString(), 10)];
-                    if (!measureObject.annotationSettings.isLock) {
-                        measureObject.calibrate.ratio = ratio;
-                        measureObject.calibrate.x[0].unit = displayUnit;
-                        measureObject.calibrate.distance[0].unit = displayUnit;
-                        measureObject.calibrate.area[0].unit = displayUnit;
-                        measureObject.calibrate.x[0].conversionFactor = this.getFactor(conversionUnit);
-                        if (measureObject.indent === 'PolygonVolume') {
-                            measureObject.calibrate.depth = depth;
+                    if (this.pdfViewer.selectedItems.annotations[0] && this.pdfViewer.selectedItems.annotations[0].id) {
+                        const measureObject: IMeasureShapeAnnotation = pageAnnotations[parseInt(j.toString(), 10)];
+                        const matchedRatio: any = this.scaleRatioCollection.find((item: any) => item.annotName === measureObject.annotName);
+                        if (pageAnnotations[parseInt(j.toString(), 10)].annotName ===
+                        this.pdfViewer.selectedItems.annotations[0].annotName) {
+                            if (!measureObject.annotationSettings.isLock && matchedRatio) {
+                                measureObject.calibrate.ratio = matchedRatio.ratioString;
+                                measureObject.calibrate.x[0].unit = matchedRatio.displayUnit;
+                                measureObject.calibrate.distance[0].unit = matchedRatio.displayUnit;
+                                measureObject.calibrate.area[0].unit = matchedRatio.displayUnit;
+                                measureObject.calibrate.x[0].conversionFactor = this.getFactor(conversionUnit);
+                                if (measureObject.indent === 'PolygonVolume') {
+                                    measureObject.calibrate.depth = matchedRatio.volumeDepth;
+                                }
+                                pageAnnotations[parseInt(j.toString(), 10)] = measureObject;
+                                this.manageAnnotations(pageAnnotations, i);
+
+                                this.pdfViewer.annotation.updateCalibrateValues(this.getAnnotationBaseModel(measureObject.id));
+                            }
                         }
-                        pageAnnotations[parseInt(j.toString(), 10)] = measureObject;
-                        this.manageAnnotations(pageAnnotations, i);
-                        this.pdfViewer.annotation.updateCalibrateValues(this.getAnnotationBaseModel(measureObject.id));
                     }
                 }
             }
@@ -1928,6 +2205,24 @@ export class MeasureAnnotation {
         };
         //Adding the annotation object to an array and return it
         measureShapeAnnotation[0] = shape;
+        const ratioString: any = shape.Calibrate.Ratio.split('=').map((ratioString: any) => ratioString.trim());
+        const [srcValueStr, unit] = ratioString[0].split(' ');
+        const [destValueStr, displayUnit] = ratioString[1].split(' ');
+        const destValue: number = parseFloat(destValueStr);
+        const depthValue: number = 96;
+        const srcValue: number = parseFloat(srcValueStr);
+        const scaleRatio: MeasurementScaleRatio = {
+            annotName: shape.AnnotName,
+            displayUnit: displayUnit,
+            unit: unit,
+            ratio: destValue / srcValue,
+            destValue: destValue,
+            srcValue: srcValue,
+            volumeDepth: depthValue,
+            depthValue: depthValue,
+            ratioString: ratioString
+        };
+        this.scaleRatioCollection.push(scaleRatio);
         return {measureShapeAnnotation};
     }
 }

@@ -1846,6 +1846,8 @@ export interface FilterSearchBeginEventArgs {
     dataSource?: Object[];
     /** Defines the value of the current search */
     value?: Date | string | number | boolean;
+    /** Indicates the action should be executed or not. */
+    cancel?: boolean;
 }
 
 export interface FilterUI {

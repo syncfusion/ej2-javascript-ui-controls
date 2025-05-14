@@ -39,6 +39,7 @@ describe('AutoComplete', () => {
             document.body.appendChild(element);
             atcObj = new AutoComplete({
                 dataSource: languageData,
+                debounceDelay: 0,
                 fields: { value: 'text' }
             });
             atcObj.appendTo(element);
@@ -117,6 +118,7 @@ describe('AutoComplete', () => {
         });
 
         it('showPopup method', (done) => {
+            atcObj.debounceDelay = 0;
             atcObj.showPopup();
             setTimeout(() => {
                 expect(atcObj.isPopupOpen).toBe(true);
@@ -182,6 +184,7 @@ describe('AutoComplete', () => {
                 document.body.appendChild(element);
                 atcObj = new AutoComplete({
                     dataSource: sportsData,
+                    debounceDelay: 0,
                     allowCustom: true
                 });
                 atcObj.appendTo(element);
@@ -216,6 +219,7 @@ describe('AutoComplete', () => {
                     dataSource: languageData,
                     allowObjectBinding: true,
                     allowCustom: true,
+                    debounceDelay: 0,
                     fields: { value: 'text' },
                 });
                 atcObj.appendTo(element);
@@ -240,6 +244,7 @@ describe('AutoComplete', () => {
                     dataSource: languageData,
                     allowObjectBinding: true,
                     allowCustom: true,
+                    debounceDelay: 0,
                     fields: { value: 'text' },
                 });
                 atcObj.appendTo(element);
@@ -264,6 +269,7 @@ describe('AutoComplete', () => {
                 atcObj = new AutoComplete({
                     dataSource: languageData,
                     fields: { value: 'text' },
+                    debounceDelay: 0,
                     allowCustom: true
                 });
                 atcObj.appendTo(element);
@@ -438,6 +444,7 @@ describe('AutoComplete', () => {
                 document.body.appendChild(element);
                 atcObj = new AutoComplete({
                     dataSource: secondData,
+                    debounceDelay: 0,
                     fields: { text: 'text', value: 'autocompleteValue', groupBy: 'category' },
                     filtering: (e: FilteringEventArgs) => {
                         let query = new Query();
@@ -472,6 +479,7 @@ describe('AutoComplete', () => {
                 document.body.appendChild(element);
                 atcObj = new AutoComplete({
                     dataSource: languageData,
+                    debounceDelay: 0,
                     fields: { text: 'text', value: 'id' },
                     filtering: (e: FilteringEventArgs) => {
                         let query = new Query();
@@ -525,6 +533,7 @@ describe('AutoComplete', () => {
                 document.body.appendChild(element);
                 atcObj = new AutoComplete({
                     dataSource: languageData,
+                    debounceDelay: 0,
                     fields: { text: 'text', value: 'id' },
                     filtering: (e: FilteringEventArgs) => {
                         let query = new Query();
@@ -560,6 +569,7 @@ describe('AutoComplete', () => {
             document.body.appendChild(element);
             atcObj = new AutoComplete({
                 dataSource: languageData,
+                debounceDelay: 0,
                 fields: { value: 'text' },
                 autofill: true,
                 highlight: true
@@ -666,6 +676,7 @@ describe('AutoComplete', () => {
             document.body.appendChild(element);
             atcObj = new AutoComplete({
                 dataSource: languageData,
+                debounceDelay: 0,
                 fields: { value: 'text' },
                 filterType: 'StartsWith',
                 autofill: true
@@ -774,6 +785,7 @@ describe('AutoComplete', () => {
             document.body.appendChild(element);
             atcObj = new AutoComplete({
                 dataSource: filterData,
+                debounceDelay: 0,
                 fields: { value: 'CustomerID' }
             });
             atcObj.appendTo(element);
@@ -901,6 +913,7 @@ describe('AutoComplete', () => {
             document.body.appendChild(ele);
             list = new AutoComplete({
                 dataSource: languageData,
+                debounceDelay: 0,
                 fields: { value: 'text' },
                 showPopupButton: true
             });
@@ -1099,6 +1112,7 @@ describe('AutoComplete', () => {
                 listObj = new AutoComplete({
                     dataSource: data, fields: { value: 'text' },
                     popupHeight: '100px',
+                    debounceDelay: 0,
                     showPopupButton: true
                 });
                 listObj.appendTo('#newlist');
@@ -1129,6 +1143,7 @@ describe('AutoComplete', () => {
                 listObj = new AutoComplete({
                     dataSource: data, fields: { value: 'text' },
                     popupHeight: '100px',
+                    debounceDelay: 0,
                     showPopupButton: false,
                     showClearButton: false
                 });
@@ -1177,6 +1192,7 @@ describe('AutoComplete', () => {
             document.body.appendChild(ele);
             list = new AutoComplete({
                 dataSource: complexStringData,
+                debounceDelay: 0,
                 fields: { value: 'list.text' },
                 value: "text1"
             });
@@ -1217,6 +1233,7 @@ describe('AutoComplete', () => {
             list = new AutoComplete({
                 dataSource: languageData,
                 fields: { value: 'text' },
+                debounceDelay: 0,
                 popupHeight: '250px',
                 allowObjectBinding: true,
                 showClearButton: true,
@@ -1266,6 +1283,7 @@ describe('AutoComplete', () => {
             atcObj = new AutoComplete({
                 dataSource: languageData,
                 fields: { value: 'text' },
+                debounceDelay: 0,
                 change: function (args: any) {
                     if (args.isInteracted) {
                         expect(args.isInteracted).toBe(true);
@@ -1294,6 +1312,7 @@ describe('AutoComplete', () => {
             document.body.appendChild(element);
             atcObj = new AutoComplete({
                 dataSource: languageData,
+                debounceDelay: 0,
                 fields: { text: 'text', value: 'id' },
                 filtering: (e: FilteringEventArgs) => {
                     expect(e.cancel).toBe(false);
@@ -1332,6 +1351,7 @@ describe('AutoComplete', () => {
             document.body.appendChild(element);
             atcObj = new AutoComplete({
                 dataSource: data,
+                debounceDelay: 0,
                 ignoreAccent: true
             });
             atcObj.appendTo(element);
@@ -1370,6 +1390,7 @@ describe('AutoComplete', () => {
             document.body.appendChild(element);
             dropDowns = new AutoComplete({
                 dataSource: languageData,
+                debounceDelay: 0,
                 fields: { value: 'id', text: 'text' },
                 showPopupButton: true
             });
@@ -1406,6 +1427,7 @@ describe('AutoComplete', () => {
             let isDataBound: boolean = false;
             dropDowns = new AutoComplete({
                 dataSource: languageData,
+                debounceDelay: 0,
                 fields: { value: 'id', text: 'text' },
                 showPopupButton: true,
                 dataBound: () => {
@@ -1429,6 +1451,7 @@ describe('AutoComplete', () => {
             let isDataBound: boolean = false;
             dropDowns = new AutoComplete({
                 dataSource: remoteData,
+                debounceDelay: 0,
                 fields: { value: 'FirstName' },
                 showPopupButton: true,
                 dataBound: () => {
@@ -1460,6 +1483,7 @@ describe('AutoComplete', () => {
         it(' filtering event', (done) => {
             dropDowns = new AutoComplete({
                 dataSource: languageData,
+                debounceDelay: 0,
                 fields: { value: 'id', text: 'text' },
                 showPopupButton: true,
                 filtering: (e: FilteringEventArgs) => {
@@ -1498,6 +1522,7 @@ describe('AutoComplete', () => {
             });
             dropDowns = new AutoComplete({
                 dataSource: remoteData,
+                debounceDelay: 0,
                 fields: { value: 'FirstName' },
                 showPopupButton: true,
                 actionBegin: (e: any) => {
@@ -1537,6 +1562,7 @@ describe('AutoComplete', () => {
             dropDowns = new AutoComplete({
                 dataSource: remoteData,
                 fields: { value: 'FirstName' },
+                debounceDelay: 0,
                 showPopupButton: true,
                 actionComplete: (e: any) => {
                     e.cancel = true;
@@ -1571,6 +1597,7 @@ describe('AutoComplete', () => {
             let count: number = 0;
             dropDowns = new AutoComplete({
                 dataSource: languageData,
+                debounceDelay: 0,
                 fields: <Object>{
                     value: 'text', itemCreated: (e: any) => {
                         if (count === 0) {
@@ -1610,6 +1637,7 @@ describe('AutoComplete', () => {
             let isCreated: boolean = false;
             dropDowns = new AutoComplete({
                 dataSource: languageData,
+                debounceDelay: 0,
                 fields: {
                     value: 'text'
                 },
@@ -1626,6 +1654,7 @@ describe('AutoComplete', () => {
             let destroyedEvent: EmitType<Object> = jasmine.createSpy('destroyed');
             dropDowns = new AutoComplete({
                 dataSource: languageData,
+                debounceDelay: 0,
                 fields: {
                     value: 'text'
                 },
@@ -1646,6 +1675,7 @@ describe('AutoComplete', () => {
             let isCreated: boolean = false;
             dropDowns = new AutoComplete({
                 dataSource: languageData,
+                debounceDelay: 0,
                 fields: {
                     value: 'text'
                 }
@@ -1665,6 +1695,7 @@ describe('AutoComplete', () => {
             document.body.appendChild(element);
             atcObj = new AutoComplete({
                 dataSource: languageData,
+                debounceDelay: 0,
                 fields: <any>{
                     value: 'text', itemCreated: (e: any) => {
                         e.item.classList.add('e-disabled');
@@ -1703,6 +1734,7 @@ describe('AutoComplete', () => {
             document.body.appendChild(element);
             atcObj = new AutoComplete({
                 dataSource: htmlData,
+                debounceDelay: 0,
                 fields: {text: 'text', value: 'id'},
                 highlight: true,
             });['']
@@ -1745,6 +1777,7 @@ describe('AutoComplete', () => {
         it('Check the items', () => {
             ddl = new AutoComplete({
                 dataSource: jsonData,
+                debounceDelay: 0,
                 fields: {text: 'text', value: 'id'},
             });
             ddl.appendTo(element);
@@ -1775,7 +1808,8 @@ describe('AutoComplete', () => {
         // });
         it('set boolean value in dynamic way', () => {
             ddl = new AutoComplete({
-                dataSource: data
+                dataSource: data,
+                debounceDelay: 0
             });
             ddl.appendTo(element);
             ddl.setProperties({value:true});
@@ -1785,6 +1819,7 @@ describe('AutoComplete', () => {
         it('select boolean value', () => {
             ddl = new AutoComplete({
                 dataSource: jsonData,
+                debounceDelay: 0,
                 fields: {text: 'text', value: 'id'},
                 value: false
             });
@@ -1797,6 +1832,7 @@ describe('AutoComplete', () => {
         it('set boolean value in dynamic way', () => {
             ddl= new AutoComplete({
                 dataSource: jsonData,
+                debounceDelay: 0,
                 fields: {text: 'text', value: 'id'}
             });
             ddl.appendTo(element);
@@ -1822,6 +1858,7 @@ describe('AutoComplete', () => {
             ddl = new AutoComplete({
                 dataSource: data,
                 readonly: true,
+                debounceDelay: 0,
                 focus: (): void => {
                     expect(true).toBe(true);
                 }
@@ -1844,6 +1881,7 @@ describe('AutoComplete', () => {
         it('Check the items', () => {
             ddl = new AutoComplete({
                 dataSource: data,
+                debounceDelay: 0,
                 beforeOpen: (): void => {
                     expect(true).toBe(true);
                 }
@@ -1869,6 +1907,7 @@ describe('AutoComplete', () => {
         it('check popup open', () => {
             ddl = new AutoComplete({
                 dataSource: data,
+                debounceDelay: 0,
                 value: false,
                 enabled: false,
                 open: (): void => {
@@ -1882,6 +1921,7 @@ describe('AutoComplete', () => {
         it('check focus event trigger', () => {
             ddl = new AutoComplete({
                 dataSource: data,
+                debounceDelay: 0,
                 value: false,
                 enabled: false,
                 focus: (): void => {
@@ -1896,6 +1936,7 @@ describe('AutoComplete', () => {
             ddl = new AutoComplete({
                 dataSource: data,
                 value: false,
+                debounceDelay: 0,
                 enabled: false,
                 blur: (): void => {
                     isBlur = true;
@@ -1939,6 +1980,7 @@ describe('AutoComplete', () => {
             document.body.appendChild(element);
             atcObj = new AutoComplete({
                 minLength: 5,
+                debounceDelay: 0,
                 fields: { value: 'Name' },
                 placeholder: 'e.g. Australia',
                 filtering: function(e: FilteringEventArgs){ 
@@ -1990,6 +2032,7 @@ describe('AutoComplete', () => {
             document.body.appendChild(btnEle);
             atcObj = new AutoComplete({
                 placeholder: 'e.g. Australia',
+                debounceDelay: 0,
                 dataSource: sportsData
             });
             atcObj.appendTo(element);
@@ -2028,6 +2071,7 @@ describe('AutoComplete', () => {
             document.body.appendChild(element);
             listObj = new AutoComplete({
                 dataSource: data,
+                debounceDelay: 0,
                 fields: { value: "id" },
                 value: 'list2'
             });
@@ -2068,21 +2112,24 @@ describe('EJ2-36604 - While giving the class name with empty space for HtmlAttri
     });
     it('Entering the class name without any empty space', function () {
         listObj = new AutoComplete({
-            htmlAttributes: { class: 'custom-class' }
+            htmlAttributes: { class: 'custom-class' },
+            debounceDelay: 0,
         });
         listObj.appendTo('#autocomplete');
         expect(listObj.inputWrapper.container.classList.contains('custom-class')).toBe(true);
     });
     it('Giving empty space before and after the class name', function () {
         listObj = new AutoComplete({
-            htmlAttributes: { class: ' custom-class ' }
+            htmlAttributes: { class: ' custom-class ' },
+            debounceDelay: 0
         });
         listObj.appendTo('#autocomplete');
         expect(listObj.inputWrapper.container.classList.contains('custom-class')).toBe(true);
     });
     it('Giving more than one empty space between two class names', function () {
         listObj = new AutoComplete({
-            htmlAttributes: { class: 'custom-class-one      custom-class-two'}
+            htmlAttributes: { class: 'custom-class-one      custom-class-two' },
+            debounceDelay: 0
         });
         listObj.appendTo('#autocomplete');
         expect(listObj.inputWrapper.container.classList.contains('custom-class-one')).toBe(true);
@@ -2090,7 +2137,8 @@ describe('EJ2-36604 - While giving the class name with empty space for HtmlAttri
     });
     it('Giving more than one empty space between two class names as well before and after the class name', function () {
         listObj = new AutoComplete({
-            htmlAttributes: {  class: ' custom-class-one       custom-class-two ' }
+            htmlAttributes: { class: ' custom-class-one       custom-class-two ' },
+            debounceDelay: 0
         });
         listObj.appendTo('#autocomplete');
         expect(listObj.inputWrapper.container.classList.contains('custom-class-one')).toBe(true);
@@ -2098,6 +2146,7 @@ describe('EJ2-36604 - While giving the class name with empty space for HtmlAttri
     });
     it('Giving only empty space  without entering any class Name', function () {
         listObj = new AutoComplete({
+            debounceDelay: 0,
         });
         listObj.appendTo('#autocomplete');
         let beforeAddClass = listObj.inputWrapper.container.classList.length;
@@ -2108,6 +2157,7 @@ describe('EJ2-36604 - While giving the class name with empty space for HtmlAttri
     });
     it('Keep input as empty without entering any class Name', function () {
         listObj = new AutoComplete({
+            debounceDelay: 0
         });
         listObj.appendTo('#autocomplete');
         let beforeAddClass = listObj.inputWrapper.container.classList.length;
@@ -2119,21 +2169,24 @@ describe('EJ2-36604 - While giving the class name with empty space for HtmlAttri
 
     it('Entering the class name without any empty space', function () {
         listObj = new AutoComplete({
-            cssClass: 'custom-class' 
+            cssClass: 'custom-class',
+            debounceDelay: 0
         });
         listObj.appendTo('#autocomplete');
         expect(listObj.inputWrapper.container.classList.contains('custom-class')).toBe(true);
     });
     it('Giving empty space before and after the class name', function () {
         listObj = new AutoComplete({
-             cssClass: ' custom-class ' 
+            cssClass: ' custom-class ',
+            debounceDelay: 0
         });
         listObj.appendTo('#autocomplete');
         expect(listObj.inputWrapper.container.classList.contains('custom-class')).toBe(true);
     });
     it('Giving more than one empty space between two class names', function () {
         listObj = new AutoComplete({
-             cssClass: 'custom-class-one      custom-class-two'
+            cssClass: 'custom-class-one      custom-class-two',
+            debounceDelay: 0
         });
         listObj.appendTo('#autocomplete');
         expect(listObj.inputWrapper.container.classList.contains('custom-class-one')).toBe(true);
@@ -2141,7 +2194,8 @@ describe('EJ2-36604 - While giving the class name with empty space for HtmlAttri
     });
     it('Giving more than one empty space between two class names as well before and after the class name', function () {
         listObj = new AutoComplete({
-             cssClass: ' custom-class-one       custom-class-two ' 
+            cssClass: ' custom-class-one       custom-class-two ',
+            debounceDelay: 0,
         });
         listObj.appendTo('#autocomplete');
         expect(listObj.inputWrapper.container.classList.contains('custom-class-one')).toBe(true);
@@ -2149,6 +2203,7 @@ describe('EJ2-36604 - While giving the class name with empty space for HtmlAttri
     });
     it('Giving only empty space  without entering any class Name', function () {
         listObj = new AutoComplete({
+            debounceDelay: 0,
         });
         listObj.appendTo('#autocomplete');
         let beforeAddClass = listObj.inputWrapper.container.classList.length;
@@ -2159,6 +2214,7 @@ describe('EJ2-36604 - While giving the class name with empty space for HtmlAttri
     });
     it('Keep input as empty without entering any class Name', function () {
         listObj = new AutoComplete({
+            debounceDelay: 0
         });
         listObj.appendTo('#autocomplete');
         let beforeAddClass = listObj.inputWrapper.container.classList.length;
@@ -2170,7 +2226,8 @@ describe('EJ2-36604 - While giving the class name with empty space for HtmlAttri
     it('Giving class name with underscore in the beginning', function () {
         listObj = new AutoComplete({
             htmlAttributes : { class : '  _custom-class-one  '},
-            cssClass : '   _custom-class-two  '
+            cssClass: '   _custom-class-two  ',
+            debounceDelay: 0
         });
         listObj.appendTo('#autocomplete');
         expect(listObj.inputWrapper.container.classList.contains('_custom-class-one')).toBe(true);
@@ -2178,7 +2235,8 @@ describe('EJ2-36604 - While giving the class name with empty space for HtmlAttri
     });
     it('Giving class name with empty space in both cases seperatly', function () {
         listObj = new AutoComplete({
-            htmlAttributes : { class : '  custom-class-one  '},
+            htmlAttributes: { class: '  custom-class-one  ' },
+            debounceDelay: 0,
             cssClass : '   custom-class-two  '
         });
         listObj.appendTo('#autocomplete');
@@ -2211,6 +2269,7 @@ describe('bug(EJ2-44058): When template is used, highlight is not working in the
     it('highlight by StartsWith', (done) => {
         atcObj = new AutoComplete({
             dataSource: empList,
+            debounceDelay: 0,
             fields: { value: 'Name' },
             highlight: true,
             itemTemplate: '<div class="ename"> ${Name}</div><div class="job"> ${Designation} </div>',
@@ -2233,6 +2292,7 @@ describe('bug(EJ2-44058): When template is used, highlight is not working in the
         atcObj = new AutoComplete({
             dataSource: empList,
             fields: { value: 'Name' },
+            debounceDelay: 0,
             highlight: true,
             itemTemplate: '<div class="ename"> ${Name}</div><div class="job"> ${Designation} </div>',
         });
@@ -2305,6 +2365,7 @@ describe('EJ2-44363- When setting value dynamically in remote data, text is auto
     it('custom value is set to the control with local datasource', (done) => {
         dropDowns = new AutoComplete({
             dataSource: countries,
+            debounceDelay: 0,
             fields: { value: "Name" },
             placeholder: "e.g. Australia",
             sortOrder: "Ascending",
@@ -2341,6 +2402,7 @@ describe('EJ2-48321 - Need to trigger filtering event when clear the typed text 
         atcObj = new AutoComplete({
             dataSource: languageData,
             fields: { value: 'text' },
+            debounceDelay: 0,
             showClearButton : true,
             allowFiltering : true,
             filtering : function(e: any) {
@@ -2379,6 +2441,7 @@ describe('EJ2-48321 - Need to trigger filtering event when clear the typed text 
     it('Testing filter event triggering while click the clear icon for popup close case', (done) => {
         atcObj = new AutoComplete({
             dataSource: languageData,
+            debounceDelay: 0,
             fields: { value: 'text' },
             showClearButton : true,
             allowFiltering : true,
@@ -2437,6 +2500,7 @@ describe('EJ2-48529 - Filtering is not firing while remove the last letter while
         atcObj = new AutoComplete({
             dataSource: languageData,
             fields: { value: 'text' },
+            debounceDelay: 0,
             showClearButton : true,
             allowFiltering : true,
             filtering : function(e: any) {
@@ -2486,6 +2550,7 @@ describe('EJ2-48529 - Filtering is not firing while remove the last letter while
         it('actionBegin', () => {
             dropDowns = new AutoComplete({
                 dataSource: sportsData,
+                debounceDelay: 0,
                 actionBegin: (e: any) => {
                     e.cancel = true;
                 }
@@ -2525,7 +2590,8 @@ describe('EJ2-48529 - Filtering is not firing while remove the last letter while
         });
         it('Auto complete throws error when * is used in the search string', () => {
            dropDowns = new AutoComplete({
-                dataSource: countries,
+               dataSource: countries,
+               debounceDelay: 0,
                 fields: { value: 'Name' },
             });
             dropDowns.appendTo(element);
@@ -2571,7 +2637,8 @@ describe('EJ2-48529 - Filtering is not firing while remove the last letter while
         });
         it('filter type as contains', () => {
            dropDowns = new AutoComplete({
-                dataSource: countries,
+               dataSource: countries,
+               debounceDelay: 0,
                 fields: { value: 'Name' },
                 filterType: 'Contains'
             });
@@ -2615,7 +2682,8 @@ describe('EJ2-48529 - Filtering is not firing while remove the last letter while
         });
         it('filter type as startsWith', () => {
             dropDowns = new AutoComplete({
-                 dataSource: countries,
+                dataSource: countries,
+                debounceDelay: 0,
                  fields: { value: 'Name' },
                  filterType: 'StartsWith'
              });
@@ -2659,7 +2727,8 @@ describe('EJ2-48529 - Filtering is not firing while remove the last letter while
          });
          it('filter type as endsWith', () => {
             dropDowns = new AutoComplete({
-                 dataSource: countries,
+                dataSource: countries,
+                debounceDelay: 0,
                  fields: { value: 'Name' },
                  filterType: 'EndsWith'
              });
@@ -2713,6 +2782,7 @@ describe('EJ2-48529 - Filtering is not firing while remove the last letter while
             list = new AutoComplete({
                 dataSource: languageData,
                 fields: { value: 'text' },
+                debounceDelay: 0,
                 showPopupButton: true,
                 open: (e: PopupEventArgs) => {
                     eventDetails = e.event;
@@ -2775,6 +2845,7 @@ describe("Select values using the up key", () => {
         document.body.appendChild(keyEle);
         keyObj = new AutoComplete({
             dataSource: dataSource,
+            debounceDelay: 0,
             placeholder: "Select a Course",
             autofill: true
         });
@@ -2807,6 +2878,7 @@ describe("Select values using the page up", () => {
         document.body.appendChild(keyEle1);
         keyObj1 = new AutoComplete({
             dataSource: dataSource,
+            debounceDelay: 0,
             placeholder: "Select a Course",
             autofill: true
         });
@@ -2839,6 +2911,7 @@ describe("Select values using the page down", () => {
         document.body.appendChild(keyEle2);
         keyObj2 = new AutoComplete({
             dataSource: dataSource,
+            debounceDelay: 0,
             placeholder: "Select a Course",
             autofill: true
         });
@@ -2869,7 +2942,8 @@ describe("EJ2-842578 - Check that the aria-owns attribute does indeed contain th
     beforeAll(() => {
         document.body.appendChild(ariaEle);
         ariaObj = new AutoComplete({
-        dataSource: dataSource,
+            dataSource: dataSource,
+            debounceDelay: 0,
         placeholder: "Select a Course",
         });
         ariaObj.appendTo(ariaEle);
@@ -2907,6 +2981,7 @@ describe('Disable items', () => {
         document.body.appendChild(element);
         listObj = new AutoComplete({
             dataSource: sportsData,
+            debounceDelay: 0,
             fields: { value: 'Id', text: 'Game', disabled: 'State' },
         });
         listObj.appendTo(element);
@@ -2984,6 +3059,7 @@ describe('Disable items', function () {
         document.body.appendChild(element);
         listObj = new AutoComplete({
             dataSource: sportsData,
+            debounceDelay: 0,
             fields: { value: 'Id', text: 'Game', disabled: 'State' },
             value: 'Game7',
         });
@@ -3031,6 +3107,7 @@ describe('Disable Items', function () {
         document.body.appendChild(element);
         listObj = new AutoComplete({
             dataSource: sportsData,
+            debounceDelay: 0,
             fields: { value: 'Id', text: 'Game', disabled: 'State' },
             value: { "State": true, "Game": "Hockey", "Id" : 'Game7' },
             allowObjectBinding: true,
@@ -3079,6 +3156,7 @@ describe('Disable items', function () {
         document.body.appendChild(element);
         listObj = new AutoComplete({
             dataSource: sportsData,
+            debounceDelay: 0,
             fields: { value: 'Id', text: 'Game', disabled: 'State' },
             text: "Hockey",
         });
@@ -3126,6 +3204,7 @@ describe('Disable items', function () {
         document.body.appendChild(element);
         listObj = new AutoComplete({
             dataSource: sportsData,
+            debounceDelay: 0,
             fields: { value: 'Id', text: 'Game', disabled: 'State' },
             index: 6,
         });
@@ -3170,6 +3249,7 @@ describe('keyboard interaction with disabled items', () => {
         document.body.appendChild(element);
         listObj = new AutoComplete({
             dataSource: sportsData,
+            debounceDelay: 0,
             fields: { value: 'Id', text: 'Game', disabled: 'State' },
         });
         listObj.appendTo(element);
@@ -3233,6 +3313,7 @@ describe('keyboard interaction with disabled items', () => {
             document.body.appendChild(element);
             atcObj = new AutoComplete({
                 dataSource: languageData,
+                debounceDelay: 0,
                 fields: { value: 'text' },
                 autofill: true,
                 itemTemplate: 'Item template'

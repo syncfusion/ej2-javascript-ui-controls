@@ -68,6 +68,7 @@ export class Edit {
     public cellEditModule: CellEdit;
     public taskbarEditModule: TaskbarEdit;
     public dialogModule: DialogEdit;
+    public isDialogEditing: boolean = false;
     private editedRecord: IGanttData;
     constructor(parent?: Gantt) {
         this.parent = parent;
@@ -1002,6 +1003,27 @@ export class Edit {
             this.parent.isConnectorLineUpdate = true;
             if (!isNullOrUndefined(getValue('violationType', validateObject))) {
                 const newArgs: IValidateArgs = this.validateTaskEvent(args);
+                let dependencyValidationResult: {
+                    isValid: boolean;
+                } | null = null;
+                if (
+                    this.parent &&
+                    this.parent.editModule &&
+                    this.parent.editModule.taskbarEditModule &&
+                    typeof this.parent.editModule.taskbarEditModule['isValidDependency'] === 'function'
+                ) {
+                    dependencyValidationResult = this.parent.editModule.taskbarEditModule['isValidDependency'](args.data);
+                }
+                if (dependencyValidationResult) {
+                    const isValid: boolean = dependencyValidationResult.isValid;
+                    if (
+                        this.parent.updateOffsetOnTaskbarEdit === false &&
+                        isValid === false &&
+                        newArgs.validateMode.respectLink === false
+                    ) {
+                        newArgs.validateMode.respectLink = true;
+                    }
+                }
                 if (newArgs.validateMode.preserveLinkWithEditing === false &&
                     newArgs.validateMode.removeLink === false &&
                     newArgs.validateMode.respectLink === false) {
@@ -1090,6 +1112,9 @@ export class Edit {
                 }
                 if (!this.isValidatedEditedRecord) {
                     this.isFirstCall = true;
+                    if (args.action === 'DialogEditing') {
+                        this.isDialogEditing = true;
+                    }
                     this.parent.predecessorModule.validatePredecessor(ganttRecord, [], '');
                     this.parent.predecessorModule.isChildRecordValidated = [];
                 }
@@ -1377,6 +1402,7 @@ export class Edit {
         /* eslint-disable-next-line */
         const unModifiedData: any = JSON.parse(JSON.stringify(eventArgs.data.ganttProperties));
         this.parent.trigger('actionBegin', eventArgs, (eventArg: IActionBeginEventArgs) => {
+            this.parent.treeGridModule.setCancelArgs = eventArg.cancel;
             if (currentBaselineStart !== eventArg.data['ganttProperties'].baselineStartDate
             || currentBaselineEnd !== eventArg.data['ganttProperties'].baselineEndDate) {
                 ganttObj.setRecordValue(
@@ -2810,14 +2836,20 @@ export class Edit {
     }
 
     /**
-     *
-     * @returns {number | string} .
+     * Generates a new task ID for a Gantt chart component, ensuring it's unique within the current context.
+     * @returns {number | string} - The new unique task ID.
      * @private
      */
     public getNewTaskId(): number | string {
+        let newTaskId: number | string ;
         const ids: string[] = this.parent.viewType === 'ResourceView' ? this.parent.getTaskIds() : this.parent.ids;
         const maxId: number = ids.length;
-        let newTaskId: number | string = maxId + 1;
+        if (this.parent.dataOperation['isTaskIDInteger'] && this.parent.ids.length > 0) {
+            newTaskId = Math.max(...this.parent.ids.map((id: string) => Number(id)));
+        }
+        else {
+            newTaskId = maxId + 1;
+        }
         if (this.parent.viewType === 'ResourceView') {
             if (ids.indexOf('T' + newTaskId) !== -1 || ids.indexOf('R' + newTaskId) !== -1) {
                 newTaskId = newTaskId + 1;
@@ -3668,15 +3700,30 @@ export class Edit {
                         const adaptor: AdaptorOptions = data.adaptor;
                         if (!(adaptor instanceof WebApiAdaptor || adaptor instanceof ODataAdaptor ||
                             adaptor instanceof ODataV4Adaptor) || data.dataSource.batchUrl) {
+                            const processedID: string  = args.data['ganttProperties']['taskId'];
                             /* tslint:disable-next-line */
                             const crud: Promise<Object> =
                                 data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
                             crud.then((e: { addedRecords: Object[], changedRecords: Object[] }) => {
                                 if (e.addedRecords[0][this.parent.taskFields.id].toString() !== args.data['ganttProperties']['taskId']) {
+                                    const previousIDIndex: number = this.parent.ids.indexOf(processedID);
                                     args.data['ganttProperties']['taskId'] = e.addedRecords[0][this.parent.taskFields.id].toString();
                                     args.newTaskData[tempTaskID as string] = e.addedRecords[0][this.parent.taskFields.id].toString();
                                     args.data['ganttProperties']['rowUniqueID'] = e.addedRecords[0][this.parent.taskFields.id].toString();
-                                    this.parent.ids.push(e.addedRecords[0][this.parent.taskFields.id].toString());
+                                    if (this.parent.ids.some((id: string) => id ===
+                                    e.addedRecords[0][this.parent.taskFields.id].toString())) {
+                                        const err: string = `The provided ID value ${e.addedRecords[0][this.parent.taskFields.id]} already exists. Please provide a unique ID value.`;
+                                        this.parent.trigger('actionFailure', { error: err });
+                                    }
+                                    else {
+                                        if (previousIDIndex !== -1) {
+                                            this.parent.ids.splice(previousIDIndex, 1,
+                                                                   e.addedRecords[0][this.parent.taskFields.id].toString());
+                                        }
+                                        else {
+                                            this.parent.ids.push(e.addedRecords[0][this.parent.taskFields.id].toString());
+                                        }
+                                    }
                                 }
                                 const prevID: string = (args.data as IGanttData).ganttProperties.taskId.toString();
                                 if (this.parent.taskFields.id && !isNullOrUndefined(e.addedRecords[0][this.parent.taskFields.id]) &&

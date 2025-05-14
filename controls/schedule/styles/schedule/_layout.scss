@@ -720,6 +720,11 @@
     }
 
     .e-vertical-view {
+      .e-month-event-table {
+        position: absolute;
+        top: 0;
+      }
+      
       &.e-timescale-disable {
         .e-content-table,
         .e-content-wrap {

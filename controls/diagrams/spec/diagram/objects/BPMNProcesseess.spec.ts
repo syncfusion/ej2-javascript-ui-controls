@@ -706,7 +706,7 @@ describe('Diagram Control', () => {
             mouseEvents.dragAndDropEvent(diagramCanvas, resize.center.x, resize.center.y, resize.center.x + 400, resize.center.y + 400);
             diagram.removeProcess('end');
             console.log("connectors.length 7", diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds));
-            expect(diagram.connectors.length === 1).toBe(true);
+            expect(diagram.connectors.length === 2).toBe(true);
             done();
         });
         it('Checking drop child from parent', (done: Function) => {

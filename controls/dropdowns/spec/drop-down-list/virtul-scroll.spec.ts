@@ -140,11 +140,11 @@ describe('DDList_Virtualization', () => {
                 expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
                 expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 23');
                 let li: Element[] = dropObj.list.querySelectorAll('li:not(.e-virtual-list)');
-                expect(li[8].classList.contains('e-active')).toBe(true);
+                expect(li[2].classList.contains('e-active')).toBe(true);
                 keyEventArgs.action = 'down';
                 dropObj.keyActionHandler(keyEventArgs);
-                expect(li[6].classList.contains('e-active')).toBe(false);
-                expect(li[9].classList.contains('e-active')).toBe(true);
+                expect(li[2].classList.contains('e-active')).toBe(false);
+                expect(li[3].classList.contains('e-active')).toBe(true);
                 setTimeout(function () {
                     for (let i: number = 0; i < 30; i++) {
                         keyEventArgs.action = 'down';
@@ -385,7 +385,7 @@ describe('DDList_Virtualization', () => {
                 ele = createElement('input', { id: 'DropDownList' });
                 document.body.appendChild(ele);
                 dropObj = new DropDownList({
-                    dataSource: datasource, popupHeight:'200px', enableVirtualization: true,allowFiltering:true, fields: { text: 'text', value: 'id' }
+                    dataSource: datasource, popupHeight: '200px', enableVirtualization: true, allowFiltering: true, debounceDelay: 0, fields: { text: 'text', value: 'id' }
                 });
                 dropObj.appendTo(ele);
             });
@@ -427,7 +427,7 @@ describe('DDList_Virtualization', () => {
                 ele = createElement('input', { id: 'DropDownList' });
                 document.body.appendChild(ele);
                 dropObj = new DropDownList({
-                    dataSource: datasource, popupHeight:'200px', enableVirtualization: true,allowFiltering:true, fields: { text: 'text', value: 'id' }, itemTemplate: '<div class="ename"> ${text} </div></div>', valueTemplate: '<div class="tempName"> ${text} </div>',
+                    dataSource: datasource, popupHeight: '200px', enableVirtualization: true, allowFiltering: true, debounceDelay: 0, fields: { text: 'text', value: 'id' }, itemTemplate: '<div class="ename"> ${text} </div></div>', valueTemplate: '<div class="tempName"> ${text} </div>',
                 });
                 dropObj.appendTo(ele);
             });
@@ -458,7 +458,7 @@ describe('DDList_Virtualization', () => {
                 ele = createElement('input', { id: 'DropDownList' });
                 document.body.appendChild(ele);
                 dropObj = new DropDownList({
-                    dataSource: datasource, popupHeight:'200px', enableVirtualization: true,allowFiltering:true, showClearButton:true, fields: { text: 'text', value: 'id' }
+                    dataSource: datasource, popupHeight: '200px', enableVirtualization: true, allowFiltering: true, debounceDelay: 0, showClearButton: true, fields: { text: 'text', value: 'id' }
                 });
                 dropObj.appendTo(ele);
             });
@@ -496,7 +496,7 @@ describe('DDList_Virtualization', () => {
         beforeAll(function () {
             document.body.appendChild(element);
             listObj = new DropDownList({
-                dataSource: datasource, popupHeight: '200px', enableVirtualization: true, allowFiltering: true, fields: { text: 'text', value: 'id' }
+                dataSource: datasource, popupHeight: '200px', enableVirtualization: true, allowFiltering: true, debounceDelay: 0, fields: { text: 'text', value: 'id' }
             });
             listObj.appendTo(element);
         });

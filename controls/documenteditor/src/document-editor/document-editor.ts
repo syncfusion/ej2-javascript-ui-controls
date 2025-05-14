@@ -228,6 +228,15 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
     @Property(false)
     public pasteAsNewParagraph: boolean;
 
+    /**
+     * Enables or disables screen reader support in the Document Editor. When set to `true`, the editor will expose necessary accessibility information for screen reader tools.
+     *
+     * @default false
+     * @aspType bool
+     */
+    @Property(false)
+    public enableScreenReader: boolean;
+
 }
 
 /**
@@ -275,6 +284,7 @@ export class AutoResizeSettings extends ChildProperty<AutoResizeSettings> {
 @NotifyPropertyChanges
 export class DocumentEditor extends Component<HTMLElement> implements INotifyPropertyChanged {
     private enableHeaderFooterIn: boolean = false;
+    private accesiblityTimer: number;
     /**
      * @private
      * @returns {boolean} Returns true if header and footer is enabled.
@@ -293,6 +303,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
         this.viewer.updateScrollBars();
     }
+
+    /**
+     * @private
+     */
+    public readableDiv: HTMLElement;
+
     /**
      * @private
      */
@@ -1818,6 +1834,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     if(!isNullOrUndefined(model.documentEditorSettings.pasteAsNewParagraph)){
                         this.documentEditorSettings.pasteAsNewParagraph=model.documentEditorSettings.pasteAsNewParagraph;
                     }
+                    if(!isNullOrUndefined(model.documentEditorSettings.enableScreenReader)){
+                        this.documentEditorSettings.enableScreenReader=model.documentEditorSettings.enableScreenReader;
+                    }
                     break;
                 case 'height':
                     this.element.style.height = formatUnit(this.height);
@@ -2107,8 +2126,44 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         this.trigger(selectionChangeEvent, eventArgs);
         this.documentHelper.isSelectionCompleted = this.documentHelper.isCompleted;
         this.documentHelper.isCompleted = true;
+        if (this.documentEditorSettings.enableScreenReader) {
+            this.setAccessibilityContent();
+        }
         // }
     }
+
+    private setAccessibilityContent(): void {
+        if (!isNullOrUndefined(this.readableDiv)) {
+            if (this.accesiblityTimer) {
+                clearTimeout(this.accesiblityTimer);
+                this.readableDiv.innerHTML = '';
+            }
+            this.accesiblityTimer = Number(setTimeout(() => {
+                if (!this.selection.isEmpty) {
+                    let selectedHTML: string = this.selection.getHtmlContent(true);
+                    this.readableDiv.innerHTML = selectedHTML;
+                }
+                setTimeout(() => {
+                    this.focusIn();
+                }, 100);
+            }, 200));
+        }
+    }
+    /**
+     * Triggers the screen reader to verbalize content starting from the current cursor position.
+     *
+     * @returns {void}
+     */
+    public verbelizeFromCursorLocation(): void {
+        let actualEnd: TextPosition = this.selection.end;
+        this.documentHelper.updateFocus();
+        this.selection.end = this.documentEnd;
+        this.setAccessibilityContent();
+        setTimeout(()=> {
+            this.selection.end = actualEnd;
+        }, 300);
+    }
+
     /**
      * @private
      * @returns {void}
@@ -4454,6 +4509,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
         this.viewer = undefined;
         if (!isNullOrUndefined(this.element)) {
+            if (!isNullOrUndefined(this.readableDiv)) {
+                this.readableDiv.remove();
+                this.readableDiv = undefined;
+            }
             this.element.classList.remove('e-documenteditor');
             this.element.innerHTML = '';
         }

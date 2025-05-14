@@ -2,7 +2,36 @@
 
 ## [Unreleased]
 
+## 29.2.4 (2025-05-14)
+
+### ComboBox
+
+#### Bug Fixes
+
+- `#I717289` - Resolved an issue where RTL support was not applied to the ComboBox component when enabled globally.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I713063` - Fixed an issue where binding a value with `allowObjectBinding` caused the data fetch request to fail.
+
+- `#I718283` - Fixed an issue where the pre-selected value was overflowing
+
+- `#I713454` - Fixed an issue where extra space appeared in the popup when using the allowResize property.
+- `#I713828` - Fixed an issue where the resize icon overlaps with the scroll bar in multi-select when using the allowResize feature with the header template.
+- `#I708109` - Fixed an issue related to disabled fields and sort order, which was causing incorrect item disabling.
+- `#I699580` - Fixed an issue where the text was overlapping the clear icon in the Multi Select dropdown.
+
 ## 29.1.41 (2025-05-06)
+
+### ComboBox
+
+#### Bug Fixes
+
+- `#I707526` - Fixed an issue where the selected value was displayed twice within the popup when using virtualization.
+
+## 29.1.40 (2025-04-29)
 
 ### Mention
 
@@ -27,6 +56,12 @@
 #### Bug Fixes
 
 - `#I712292` - Fixed an issue where the ComboBox component would throw a console error when filtering data with complex structures while the `allowFiltering` option is set to true.
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I711933` - Resolved the issue where the dropdown popup did not open on the first touch interaction on iPad devices.
 
 ## 29.1.38 (2025-04-15)
 

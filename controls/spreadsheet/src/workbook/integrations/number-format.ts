@@ -56,8 +56,9 @@ export class WorkbookNumberFormat {
                     !updateCell(this.parent, sheet, { cell: { format: args.format }, rowIdx: rowIdx, colIdx: colIdx })) {
                     cell = getCell(rowIdx, colIdx, sheet);
                     if (!(cell.rowSpan < 0 || cell.colSpan < 0)) {
-                        fArgs = { value: cell.value, format: cell.format, rowIndex: rowIdx, colIndex: colIdx, sheetIndex: sheetIdx,
-                            cell: cell, refresh: activeSheet, curSymbol: args.curSym };
+                        fArgs = { value: (cell.value || <unknown>cell.value === 0) ? cell.value : (cell.hyperlink ? (typeof cell.hyperlink
+                            === 'string' ? cell.hyperlink : cell.hyperlink.address) : ''), format: cell.format, rowIndex: rowIdx,
+                        colIndex: colIdx, sheetIndex: sheetIdx, cell: cell, refresh: activeSheet, curSymbol: args.curSym };
                         this.getFormattedCell(fArgs);
                         if (isVisibleRow) {
                             this.setCell(fArgs);
@@ -1093,7 +1094,7 @@ export class WorkbookNumberFormat {
                 options.fResult = this.percentageFormat(options.args, options.intl);
                 options.isRightAlign = true;
             }
-        } else {
+        } else if (!res.includes('\n')) {
             const fractionArr: string[] = res ? res.toString().split('/') : [];
             const isFraction: boolean = (this.parent.isEdit && getTypeFromFormat(cell.format) === 'Scientific' && fractionArr.length === 2 && isNumber(fractionArr[0]) && isNumber(fractionArr[1]));
             if (res.includes(' ') || isFraction) {

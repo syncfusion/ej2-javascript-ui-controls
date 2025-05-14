@@ -343,6 +343,9 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     }
     private initialize(): void {
         addClass([this.element], 'e-' + this.getModuleName());
+        if (typeof this.startDate === 'string') {
+            this.setProperties({ startDate: new Date(this.startDate) }, false);
+        }
         this.renderComponent();
         if (!isNullOrUndefined(this.value) && this.value !== '') {
             this.setRecurrenceRule(this.value as string);

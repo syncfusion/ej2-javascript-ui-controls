@@ -1,5 +1,5 @@
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
-import { SpreadsheetModel, SheetModel, getCell, CellModel, showAggregate, Spreadsheet, setCell, ICellRenderer } from '../../../src/index';
+import { SpreadsheetModel, SheetModel, getCell, CellModel, showAggregate, Spreadsheet, setCell, ICellRenderer, HyperlinkModel } from '../../../src/index';
 import { convertToDefaultFormat, focus, configureLocalizedFormat, getFormatFromType, refreshRibbonIcons } from '../../../src/index';
 import { FormatOption, ValidationModel, DialogBeforeOpenEventArgs, getTypeFromFormat, clearRange, refreshCheckbox } from '../../../src/index';
 import { InventoryList, defaultData, defaultGermanData } from '../util/datasource.spec';
@@ -2375,6 +2375,29 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             expect(spreadsheet.sheets[0].rows[3].cells[3].format).toBe('[Black]');
             done();
         });
+        it('Hyperlink remains after number format when created via insert link', (done: Function) => {
+            helper.invoke('addHyperlink', ['www.syncfusion.com', 'D13']);
+            helper.invoke('insertHyperlink', [{ address: 'http://www.google.com' }, 'D14']);
+            helper.edit('D15', '0');
+            helper.invoke('insertHyperlink', [{ address: 'www.example.com' }, 'D15']);
+            helper.invoke('numberFormat', ['#,##0.00', 'D13:D15']);
+            setTimeout(() => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows[12].cells[3].format).toBe('#,##0.00');
+                expect(helper.invoke('getCell', [12, 3]).querySelector('.e-hyperlink').textContent).toBe('http://www.syncfusion.com');
+                expect(spreadsheet.sheets[0].rows[12].cells[3].hyperlink).toBe('http://www.syncfusion.com');
+                expect(spreadsheet.sheets[0].rows[12].cells[3].value).toBeUndefined();
+                expect(spreadsheet.sheets[0].rows[13].cells[3].format).toBe('#,##0.00');
+                expect(helper.invoke('getCell', [13, 3]).querySelector('.e-hyperlink').textContent).toBe('http://www.google.com');
+                expect((spreadsheet.sheets[0].rows[13].cells[3].hyperlink as HyperlinkModel).address).toBe('http://www.google.com');
+                expect(spreadsheet.sheets[0].rows[13].cells[3].value).toBeUndefined();
+                expect(spreadsheet.sheets[0].rows[14].cells[3].format).toBe('#,##0.00');
+                expect(helper.invoke('getCell', [14, 3]).querySelector('.e-hyperlink')).not.toBeNull();
+                expect(helper.invoke('getCell', [14, 3]).querySelector('.e-hyperlink').textContent).toBe('0.00');
+                expect((spreadsheet.sheets[0].rows[14].cells[3].hyperlink as HyperlinkModel).address).toBe('http://www.example.com');
+                done();
+            });
+        });
     });
     describe('EJ2-878093, EJ2-907491 ->', () => {
         beforeAll((done: Function) => {
@@ -2532,6 +2555,13 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             cellEle = helper.invoke('getCell', [7, 8]);
             expect(cellEle.textContent).toBe('23:17');
             expect(sheet.rows[7].cells[8].value).toBe('0.9701388888888889');
+            done();
+        });
+        it('EJ2- 931188 Currency and other formatted values incorrectly changed when editing with newline character ->', (done: Function) => {
+            helper.invoke('updateCell', [{ value: '$10\n' }, 'J1']);
+            expect(helper.getInstance().sheets[0].rows[0].cells[9].value.toString()).toBe('$10\n');
+            expect(helper.getInstance().sheets[0].rows[0].cells[9].wrap).toBeTruthy();
+            expect(helper.getInstance().sheets[0].rows[0].cells[9].format).toBeUndefined();
             done();
         });
         it('Date format is not auto-detected properly with Currency and Percentage formatted values. ->', (done: Function) => {
@@ -2767,6 +2797,53 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                     done();
                 });
             }, 100);
+        });
+    });
+
+    describe('EJ2-894973 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Undo option is not working correctly', (done: Function) => {
+            helper.invoke('numberFormat', ['#,##0.00_);[Red](#,##0.00)', 'I1:I5']);
+            helper.edit('I1','-1');
+            helper.edit('I2','-10');
+            helper.edit('I3','-12');
+            helper.edit('I4','-16');
+            helper.edit('I5','-17');
+            expect(helper.invoke('getCell', [0, 8]).style.color).toBe('red');
+            expect(helper.invoke('getCell', [1, 8]).style.color).toBe('red');
+            expect(helper.invoke('getCell', [2, 8]).style.color).toBe('red');
+            expect(helper.invoke('getCell', [3, 8]).style.color).toBe('red');
+            expect(helper.invoke('getCell', [4, 8]).style.color).toBe('red');
+            helper.invoke('conditionalFormat', [{ type: 'GreaterThan', cFColor: 'RedFT', value: '-15', range: 'I1:I5' }]);
+            expect(helper.invoke('getCell', [0, 8]).style.color).toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [1, 8]).style.color).toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [2, 8]).style.color).toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [0, 8]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [1, 8]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [2, 8]).style.backgroundColor).toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [3, 8]).style.color).toBe('red');
+            expect(helper.invoke('getCell', [4, 8]).style.color).toBe('red');
+            helper.invoke('clearConditionalFormat', ['I1:I5']);
+            expect(helper.invoke('getCell', [0, 8]).style.color).toBe('red');
+            expect(helper.invoke('getCell', [1, 8]).style.color).toBe('red');
+            expect(helper.invoke('getCell', [2, 8]).style.color).toBe('red');
+            expect(helper.invoke('getCell', [0, 8]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [1, 8]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [2, 8]).style.backgroundColor).toBe('');
+            expect(helper.invoke('getCell', [0, 8]).style.color).not.toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [1, 8]).style.color).not.toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [2, 8]).style.color).not.toBe('rgb(156, 0, 85)');
+            expect(helper.invoke('getCell', [0, 8]).style.backgroundColor).not.toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [1, 8]).style.backgroundColor).not.toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [2, 8]).style.backgroundColor).not.toBe('rgb(255, 199, 206)');
+            expect(helper.invoke('getCell', [3, 8]).style.color).toBe('red');
+            expect(helper.invoke('getCell', [4, 8]).style.color).toBe('red');
+            done();
         });
     });
 });

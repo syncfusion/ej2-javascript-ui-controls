@@ -123,6 +123,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private isBlurDispatching: boolean = false;
     private isFilterPrevented: boolean = false;
     private isFilteringAction: boolean = false;
+    private headerTemplateHeight: number;
 
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
@@ -417,6 +418,13 @@ export class MultiSelect extends DropDownBase implements IInput {
      */
     @Property(null)
     public allowFiltering: boolean;
+    /**
+     * Specifies the delay time in milliseconds for filtering operations.
+     *
+     * @default 300
+     */
+    @Property(300)
+    public debounceDelay: number;
     /**
      * Defines whether the popup opens in fullscreen mode on mobile devices when filtering is enabled. When set to false, the popup will display similarly on both mobile and desktop devices.
      *
@@ -779,6 +787,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private preventSetCurrentData: boolean = false;
     private virtualCustomData: { [key: string]: string | Object };
     private isSelectAllLoop: boolean = false;
+    private initialPopupHeight: number;
     private enableRTL(state: boolean): void {
         if (state) {
             this.overAllWrapper.classList.add(RTL_CLASS);
@@ -1294,7 +1303,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             valuecheck = this.presentItemValue(this.ulElement);
         }
         if (valuecheck.length > 0 && this.dataSource instanceof DataManager && !isNullOrUndefined(this.value)
-        && this.listData != null) {
+        && this.listData != null && !(valuecheck.length === 1 && valuecheck[0] == null)) {
             this.isaddNonPresentItems = true;
             this.addNonPresentItems(valuecheck, this.ulElement, this.listData);
             this.isaddNonPresentItems = false;
@@ -2200,7 +2209,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private pageDownSelection(steps: number, isVirtualKeyAction?: boolean): void {
         const list: Element[] = this.getItems();
         const collection: NodeListOf<Element> = <NodeListOf<HTMLElement>>this.list.querySelectorAll('li.'
-            + dropDownBaseClasses.li + ':not(.' + HIDE_LIST + ')' + ':not(.e-reorder-hide)');
+            + dropDownBaseClasses.li + ':not(.' + HIDE_LIST + ')' + ':not(.e-reorder-hide)' + ':not(.e-virtual-list-end)');
         let previousItem: Element = steps <= collection.length ? collection[steps - 1] : collection[collection.length - 1];
         if (this.fields.disabled && previousItem && !this.enableVirtualization) {
             while (previousItem && (previousItem.classList.contains('e-disabled') || previousItem.classList.contains(HIDE_LIST) ||
@@ -2217,6 +2226,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         if (this.enableVirtualization && isVirtualKeyAction) {
             previousItem = steps <= list.length ? this.liCollections[steps as number] : this.liCollections[list.length - 1];
+        }
+        if (this.enableVirtualization && previousItem && previousItem.classList.contains('e-virtual-list-end')) {
+            previousItem = collection[collection.length - 1];
         }
         this.isKeyBoardAction = true;
         this.addListFocus(<HTMLElement>previousItem);
@@ -2708,9 +2720,10 @@ export class MultiSelect extends DropDownBase implements IInput {
         const selectedListMargin: number = selectedLI && !isNaN(parseInt(window.getComputedStyle(selectedLI).marginBottom, 10)) ?
             parseInt(window.getComputedStyle(selectedLI).marginBottom, 10) : 0;
         this.isUpwardScrolling = false;
-        const virtualListCount: number = this.list.querySelectorAll('.e-virtual-list').length;
-        const lastElementValue: string = this.list.querySelector('li:last-of-type') ?
-            this.list.querySelector('li:last-of-type').getAttribute('data-value') : null;
+        const virtualListCount: number = this.list.querySelectorAll('.e-virtual-list:not(.e-virtual-list-end)').length;
+        const liItems: NodeListOf<Element> = this.list.querySelectorAll('li:not(.e-virtual-list-end)');
+        const lastElementValue: string = liItems && liItems.length > 0 && liItems[liItems.length - 1] ?
+            liItems[liItems.length - 1].getAttribute('data-value') : null;
         const selectedLiOffsetTop: number = this.virtualListInfo  && this.virtualListInfo.startIndex ?
             selectedLI.offsetTop + (this.virtualListInfo.startIndex * (selectedLI.offsetHeight + selectedListMargin))
             : selectedLI.offsetTop;
@@ -2764,7 +2777,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.isKeyBoardAction = isScrollerCHanged;
     }
     private scrollTop(selectedLI: HTMLElement, activeIndex: number, keyCode: number = null): void {
-        const virtualListCount: number = this.list.querySelectorAll('.e-virtual-list').length;
+        const virtualListCount: number = this.list.querySelectorAll('.e-virtual-list:not(.e-virtual-list-end)').length;
         const selectedListMargin: number = selectedLI && !isNaN(parseInt(window.getComputedStyle(selectedLI).marginBottom, 10)) ?
             parseInt(window.getComputedStyle(selectedLI).marginBottom, 10) : 0;
         const selectedLiOffsetTop: number = (this.virtualListInfo && this.virtualListInfo.startIndex) ?
@@ -2989,11 +3002,11 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.list) {
             let elements: NodeListOf<Element> = <NodeListOf<HTMLElement>>this.list.querySelectorAll('li.'
                 + dropDownBaseClasses.li
-                + ':not(.' + HIDE_LIST + ')' + ':not(.e-reorder-hide)');
+                + ':not(.' + HIDE_LIST + ')' + ':not(.e-reorder-hide)' + ':not(.e-virtual-list-end)');
             if (this.mode === 'CheckBox' && this.enableGroupCheckBox && !isNullOrUndefined(this.fields.groupBy)) {
                 elements = this.list.querySelectorAll('li.'
                 + dropDownBaseClasses.li + ',li.' + dropDownBaseClasses.group
-                + ':not(.' + HIDE_LIST + ')' + ':not(.e-reorder-hide)');
+                + ':not(.' + HIDE_LIST + ')' + ':not(.e-reorder-hide)' + ':not(.e-virtual-list-end)');
             }
             let selectedElem: Element = <HTMLElement>this.list.querySelector('li.' + dropDownBaseClasses.focus);
             if (this.enableVirtualization && isVirtualKeyAction && !isNullOrUndefined(this.currentFocuedListElement)){
@@ -3694,7 +3707,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             const inputWidth: number = (this.componentWrapper.offsetWidth) * parseFloat(width) / 100;
             width = inputWidth.toString() + 'px';
         }
-        return width;
+        return (this.allowResize && this.resizeWidth) ? this.resizeWidth + 'px' : width;
     }
     private mouseIn(): void {
         if (this.enabled && !this.readonly) {
@@ -3968,7 +3981,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private updateInitialData(): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const currentData: any[] = this.selectData;
-        const ulElement: HTMLElement = this.renderItems(currentData, this.fields);
+        const ulElement: HTMLElement = this.renderItems(currentData, this.fields, false, this.isClearAllAction);
         this.list.scrollTop = 0;
         this.virtualListInfo = {
             currentPageNumber: null,
@@ -4184,6 +4197,43 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.search(event);
         });
     }
+
+    protected performFiltering(e: KeyboardEventArgs | MouseEvent): void {
+        const eventArgs: { [key: string]: Object } = {
+            preventDefaultAction: false,
+            text: this.targetElement(),
+            updateData: (
+                dataSource: {
+                    [key: string]: Object
+                }[] | DataManager | string[] | number[], query?: Query, fields?: FieldSettingsModel) => {
+                if (eventArgs.cancel) {
+                    return;
+                }
+                this.isFiltered = true;
+                this.customFilterQuery = query;
+                this.remoteFilterAction = true;
+                this.isCustomFiltering = true;
+                this.dataUpdater(dataSource, query, fields);
+            },
+            event: e,
+            cancel: false
+        };
+        this.trigger('filtering', eventArgs, (eventArgs: FilteringEventArgs) => {
+            this.isFilterPrevented = eventArgs.cancel;
+            if (!eventArgs.cancel) {
+                if (!this.isFiltered && !eventArgs.preventDefaultAction) {
+                    this.filterAction = true;
+                    this.isFilteringAction = true;
+                    if (this.dataSource instanceof DataManager && this.allowCustomValue) {
+                        this.isCustomRendered = false;
+                    }
+                    this.dataUpdater(this.dataSource, null, this.fields);
+                    this.isFilteringAction = false;
+                }
+            }
+        });
+    }
+
     protected search(e: KeyboardEventArgs): void {
         this.preventSetCurrentData = false;
         this.firstItem = this.dataSource && (this.dataSource as any).length > 0 ? (this.dataSource as any)[0] : null;
@@ -4204,39 +4254,12 @@ export class MultiSelect extends DropDownBase implements IInput {
                 }
                 this.checkAndResetCache();
                 this.isRequesting = false;
-                const eventArgs: { [key: string]: Object } = {
-                    preventDefaultAction: false,
-                    text: this.targetElement(),
-                    updateData: (
-                        dataSource: {
-                            [key: string]: Object
-                        }[] | DataManager | string[] | number[], query?: Query, fields?: FieldSettingsModel) => {
-                        if (eventArgs.cancel) {
-                            return;
-                        }
-                        this.isFiltered = true;
-                        this.customFilterQuery = query;
-                        this.remoteFilterAction = true;
-                        this.isCustomFiltering = true;
-                        this.dataUpdater(dataSource, query, fields);
-                    },
-                    event: e,
-                    cancel: false
-                };
-                this.trigger('filtering', eventArgs, (eventArgs: FilteringEventArgs) => {
-                    this.isFilterPrevented = eventArgs.cancel;
-                    if (!eventArgs.cancel) {
-                        if (!this.isFiltered && !eventArgs.preventDefaultAction) {
-                            this.filterAction = true;
-                            this.isFilteringAction = true;
-                            if (this.dataSource instanceof DataManager && this.allowCustomValue ) {
-                                this.isCustomRendered = false;
-                            }
-                            this.dataUpdater(this.dataSource, null, this.fields);
-                            this.isFilteringAction = false;
-                        }
-                    }
-                });
+                if (this.targetElement() !== '' && this.debounceDelay > 0) {
+                    this.debouncedFiltering(e, this.debounceDelay);
+                }
+                else {
+                    this.performFiltering(e);
+                }
             } else if (this.allowCustomValue) {
                 let query: Query = new Query();
                 query = this.allowFiltering && (text !== '') ? query.where(
@@ -5359,7 +5382,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private checkClearIconWidth(): void {
         if (this.showClearButton) {
-            this.clearIconWidth = parseInt(window.getComputedStyle(this.overAllClear).width, 10);
+            this.clearIconWidth = parseInt(window.getComputedStyle(this.overAllClear).width, 10) || this.overAllClear.offsetWidth;
         }
     }
     private updateRemainWidth(viewWrapper: HTMLElement, totalWidth: number): void {
@@ -6295,7 +6318,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                         this.list.parentElement.style.paddingBottom = '';
                         const overAllHeight : number = parseInt(<string>this.popupHeight, 10);
                         this.list.style.maxHeight = formatUnit(overAllHeight);
-                        this.list.parentElement.style.height =  formatUnit(this.popupHeight);
+                        if (this.popupHeight.toString().toLowerCase() !== 'auto' && this.initialPopupHeight >= (parseInt(this.popupHeight.toString(), 10) - 2)) {
+                            this.list.parentElement.style.height =  formatUnit(this.popupHeight);
+                        }
                         this.list.parentElement.style.maxHeight = formatUnit(this.popupHeight);
                     }
                     if (this.resizer) {
@@ -6624,7 +6649,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         if (this.list && this.list.parentElement) {
             this.list.parentElement.classList.add('e-resize');
-            if (this.popupHeight.toString().toLowerCase() !== 'auto') {
+            this.initialPopupHeight = this.list.parentElement.clientHeight;
+            if (this.popupHeight.toString().toLowerCase() !== 'auto' && this.initialPopupHeight >= (parseInt(this.popupHeight.toString(), 10) - 2)) {
                 this.list.parentElement.style.height = '100%';
             }
             this.list.parentElement.style.boxSizing = 'border-box'; // Ensures padding doesn't affect element size
@@ -6635,6 +6661,17 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.list.parentElement.style.height = this.resizeHeight + 'px';
             this.list.parentElement.style.maxHeight = this.resizeHeight + 'px';
             this.list.style.maxHeight = `${this.resizeHeight}px`;
+            if (this.headerTemplate) {
+                const headerElem: HTMLElement = (this.list.parentElement.querySelector('.e-ddl-header') as HTMLElement);
+                if (headerElem && headerElem.offsetHeight) {
+                    this.headerTemplateHeight = headerElem.offsetHeight;
+                }
+                if (this.resizeHeight) {
+                    this.list.style.maxHeight = `${this.resizeHeight - this.headerTemplateHeight - 16}px`;
+                } else {
+                    this.list.style.maxHeight = `${parseInt(this.list.style.maxHeight, 10) - 16}px`;
+                }
+            }
         }
         if (this.resizer) {
             EventHandler.add(this.resizer, 'mousedown', this.startResizing, this);
@@ -6689,6 +6726,9 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.list.parentElement.style.height = `${this.resizeHeight}px`;
             this.list.parentElement.style.maxHeight = `${this.resizeHeight}px`;
             this.list.style.maxHeight = `${this.resizeHeight}px`;
+            if (this.headerTemplate) {
+                this.list.style.maxHeight = `${this.resizeHeight - this.headerTemplateHeight - 16}px`;
+            }
             if (this.fixedHeaderElement && this.ulElement ) {
                 this.fixedHeaderElement.style.width = `${this.ulElement.offsetWidth}px`;
             }

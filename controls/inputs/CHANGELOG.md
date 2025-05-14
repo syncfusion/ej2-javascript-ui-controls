@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.2.4 (2025-05-14)
+
+### ColorPicker
+
+#### Bug Fixes
+
+- `#I715125` - Resolved an issue where the `dropdown` could not be reopened using the `Enter` key after it was closed with the `Escape` key.
+
 ## 29.1.39 (2025-04-22)
 
 ### TextBox

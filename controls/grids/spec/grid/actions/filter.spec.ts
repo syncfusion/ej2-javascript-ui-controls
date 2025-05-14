@@ -3637,6 +3637,6 @@ describe('Code Coverage.', () => {
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = null;
+        gridObj = actionComplete = null;
     });
 });

@@ -893,7 +893,6 @@ export class BpmnDiagrams {
             const parent: NodeModel = diagram.nameTable[node.processId];
             if (parent && parent.shape.type === 'Bpmn') {
                 const processes: string[] = (parent.shape as BpmnShape).activity.subProcess.processes;
-                diagram.removeDependentConnector(node as Node);
                 this.removeChildFromBPMN(parent.wrapper, id, diagram, true);
                 const processIndex: number = processes.indexOf(id);
                 processes.splice(processIndex, 1);
@@ -973,10 +972,13 @@ export class BpmnDiagrams {
         const node: NodeModel = diagram.nameTable[(obj as Node).processId];
         let right: boolean; let bottom: boolean;
         const pivot: PointModel = { x: 0.5, y: 0.5 };
-        if ((node.wrapper.bounds.left + obj.margin.left + obj.width) > (node.wrapper.bounds.right)) {
+        //953625-subprocess not updated properly
+        const width: number = obj.width || obj.minWidth;
+        const height: number = obj.height || obj.minHeight;
+        if ((node.wrapper.bounds.left + obj.margin.left + width) > (node.wrapper.bounds.right)) {
             right = true;
         }
-        if ((node.wrapper.bounds.top + obj.margin.top + obj.height) > (node.wrapper.bounds.bottom)) {
+        if ((node.wrapper.bounds.top + obj.margin.top + height) > (node.wrapper.bounds.bottom)) {
             bottom = true;
         }
         if (right) {

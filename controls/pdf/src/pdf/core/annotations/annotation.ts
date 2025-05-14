@@ -1211,7 +1211,8 @@ export abstract class PdfAnnotation {
     }
     _getRotationAngle(): number {
         let angle: number = 0;
-        if (this._dictionary) {
+        if (this._dictionary && !(this instanceof PdfRectangleAnnotation) &&
+            !(this instanceof PdfPolygonAnnotation)) {
             if (this._dictionary.has('Rotate')) {
                 angle = this._dictionary.get('Rotate');
             } else if (this._dictionary.has('Rotation')) {
@@ -1345,7 +1346,8 @@ export abstract class PdfAnnotation {
             return isValidMatrix;
         }
     }
-    _flattenAnnotationTemplate(template: PdfTemplate, isNormalMatrix: boolean): void {
+    _flattenAnnotationTemplate(template: PdfTemplate, isNormalMatrix: boolean, isLineAnnotation: boolean = false): void {
+        this._page._isLineAnnotation = isLineAnnotation;
         const graphics: PdfGraphics = this._page.graphics;
         let currentBounds: {x: number, y: number, width: number, height: number} = this.bounds;
         if (this instanceof PdfLineAnnotation && this._dictionary && !this._dictionary.has('AP')) {
@@ -3577,7 +3579,7 @@ export class PdfLineAnnotation extends PdfComment {
         }
         if (isFlatten && this._appearanceTemplate) {
             const isNormalMatrix: boolean = this._validateTemplateMatrix(this._appearanceTemplate._content.dictionary);
-            this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
+            this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix, true);
         } else if (isFlatten) {
             this._page.annotations.remove(this);
         }
@@ -10053,9 +10055,14 @@ export class PdfTextMarkupAnnotation extends PdfComment {
     _obtainNativeRectangle(): number[] {
         const nativeRectangle: number[] = [this._bounds.x, this._bounds.y + this._bounds.height, this._bounds.width, this._bounds.height];
         let cropOrMediaBox: number[];
-        if (this._page) {
+        if (this._page && !this._page._isNew) {
             const size: number[] = this._page.size;
             nativeRectangle[1] = size[1] - nativeRectangle[1];
+            cropOrMediaBox = this._getCropOrMediaBox();
+        } else if (this._page && this._page._isNew) {
+            const size: number[] = this._page._getActualBounds(this._page._pageSettings);
+            nativeRectangle[0] += size[0];
+            nativeRectangle[1] = this._page._pageSettings.size[1] - (size[1] + nativeRectangle[1]);
             cropOrMediaBox = this._getCropOrMediaBox();
         }
         if (cropOrMediaBox) {
@@ -11734,10 +11741,12 @@ export class PdfFreeTextAnnotation extends PdfComment {
      * ```
      */
     get annotationIntent(): PdfAnnotationIntent {
-        if (this._dictionary.has('IT')) {
-            this._annotationIntent = _mapAnnotationIntent(this._dictionary.get('IT').name);
-        } else {
-            this._annotationIntent = PdfAnnotationIntent.none;
+        if (typeof this._annotationIntent === 'undefined' || this._annotationIntent === null) {
+            if (this._dictionary.has('IT')) {
+                this._annotationIntent = _mapAnnotationIntent(this._dictionary.get('IT').name);
+            } else {
+                this._annotationIntent = PdfAnnotationIntent.none;
+            }
         }
         return this._annotationIntent;
     }
@@ -11763,7 +11772,9 @@ export class PdfFreeTextAnnotation extends PdfComment {
     set annotationIntent(value: PdfAnnotationIntent) {
         if (typeof value !== 'undefined') {
             this._annotationIntent = value;
-            if (value === PdfAnnotationIntent.none) {
+            if ((typeof this.subject === 'undefined' || this.subject === 'null')
+                && value === PdfAnnotationIntent.none &&
+                (!this._calloutLines || (this._calloutLines && this._calloutLines.length === 0))) {
                 this._dictionary.update('Subj', 'Text Box');
             } else {
                 this._dictionary.update('IT', _PdfName.get(this._obtainAnnotationIntent(this._annotationIntent)));
@@ -12541,7 +12552,9 @@ export class PdfFreeTextAnnotation extends PdfComment {
             this._textAlignment = this.textAlignment;
         }
         this._dictionary.update('Q', this._textAlignment);
-        if (this.annotationIntent === PdfAnnotationIntent.none) {
+        if ((typeof this.subject === 'undefined' || this.subject === 'null')
+            && this.annotationIntent === PdfAnnotationIntent.none &&
+            (!this._calloutLines || (this._calloutLines && this._calloutLines.length === 0))) {
             this._dictionary.update('Subj', 'Text Box');
         } else {
             this._dictionary.update('IT', _PdfName.get(this._obtainAnnotationIntent(this._annotationIntent)));
@@ -15654,6 +15667,13 @@ export class PdfInteractiveBorder {
     set style(value: PdfBorderStyle) {
         if (value !== this._style) {
             this._style = value;
+            if (!this._dash) {
+                if (value === PdfBorderStyle.dot) {
+                    this._dash = [1, 1];
+                } else if (value === PdfBorderStyle.dashed) {
+                    this._dash = [3, 2];
+                }
+            }
             if (this._dictionary) {
                 const bs: _PdfDictionary = this._dictionary.has('BS') ? this._dictionary.get('BS') : new _PdfDictionary(this._crossReference);
                 bs.update('Type', _PdfName.get('Border'));

@@ -82,7 +82,7 @@ export class CanvasRenderer implements IRenderer {
                         const ydistance: number = y2 - y1;
                         const angleRad: number = Math.atan2(ydistance, xdistance);
                         let angleDeg: number = (angleRad * (180 / Math.PI)) % 360;
-                        angleDeg = angleDeg < 360 ? angleDeg + 360 : angleDeg;
+                        angleDeg = angleDeg < 0 ? angleDeg + 360 : angleDeg;
                         const inverseAngleDeg: number = 90 - angleDeg;
                         const inverseAngleRad: number = inverseAngleDeg * (Math.PI / 180);
                         const effectiveDistance: number = (xdistance * Math.sin(angleRad)) + (ydistance * Math.cos(angleRad));

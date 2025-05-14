@@ -77,6 +77,10 @@ export class WorkbookHyperlink {
                 if (isProtected && isLocked(getCell(rIdx, cIdx, sheet), getColumn(sheet, cIdx))) {
                     continue;
                 }
+                const cell: CellModel = getCell(rIdx, cIdx, sheet, null, true);
+                if (cell.rowSpan < 1 || cell.colSpan < 1) {
+                    continue;
+                }
                 cellModel = { hyperlink: hyperlink };
                 if (!isNullOrUndefined(args.displayText)) {
                     if (args.triggerEvt || args.isUndoRedo) {
@@ -91,6 +95,9 @@ export class WorkbookHyperlink {
                 }
                 cellModel.style = { textDecoration: 'underline', color: '#00e' };
                 updateCell(this.parent, sheet, { cell: cellModel, rowIdx: rIdx, colIdx: cIdx, preventEvt: !args.triggerEvt });
+                if (!isNullOrUndefined(args.triggerEvt)) {
+                    this.parent.setUsedRange(rIdx, cIdx, sheet);
+                }
             }
         }
     }

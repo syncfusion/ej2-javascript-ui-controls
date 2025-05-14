@@ -87,14 +87,6 @@ export interface ComboBoxModel extends DropDownListModel{
     showClearButton?: boolean;
 
     /**
-     * Enable or disable rendering component in right to left direction.
-     *
-     * @default false
-     * @deprecated
-     */
-    enableRtl?: boolean;
-
-    /**
      * Triggers on set a
      * [`custom value`](../../combo-box/getting-started#custom-values) to this component.
      *

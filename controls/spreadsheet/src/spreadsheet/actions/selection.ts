@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf, IOffset, focusBorder, positionAutoFillElement, hideAutoFillOptions, performAutoFill, selectAutoFillRange, addDPRValue, rangeSelectionByKeydown } from '../common/index';
+import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf, IOffset, focusBorder, positionAutoFillElement, hideAutoFillOptions, performAutoFill, selectAutoFillRange, rangeSelectionByKeydown } from '../common/index';
 import { showAggregate, refreshOverlayElem, getRowIdxFromClientY, getColIdxFromClientX, hideAutoFillElement, NoteSaveEventArgs, showNote } from '../common/index';
 import { SheetModel, updateSelectedRange, getColumnWidth, mergedRange, activeCellMergedRange, Workbook, getSelectedRange, checkColumnValidation } from '../../workbook/index';
 import { getRowHeight, isSingleCell, activeCellChanged, MergeArgs, checkIsFormula, getSheetIndex } from '../../workbook/index';
@@ -10,7 +10,8 @@ import { colWidthChanged, protectSelection, editOperation, initiateFormulaRefere
 import { getRangeIndexes, getCellAddress, getRangeAddress, getCellIndexes, getSwapRange } from '../../workbook/common/address';
 import { addressHandle, isMouseDown, isMouseMove, selectionStatus, setPosition, removeRangeEle, removeNoteContainer, setActionData } from '../common/index';
 import { isCellReference, getSheetNameFromAddress, CellModel, isLocked, getColumn, getCell, updateCell, getSheetName } from '../../workbook/index';
-import { getIndexesFromAddress, selectionComplete, skipHiddenIdx, parseFormulaArgument, getChartRowIdxFromClientY, getChartColIdxFromClientX } from '../../workbook/common/index';
+import { selectionComplete, parseFormulaArgument, getChartRowIdxFromClientY, getChartColIdxFromClientX, isRowSelected, isColumnSelected, addDPRValue } from '../../workbook/common/index';
+import { getIndexesFromAddress, skipHiddenIdx, isHiddenRow, isHiddenCol } from '../../workbook/index';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 
 
@@ -621,7 +622,9 @@ export class Selection {
         if (this.isautoFillClicked) {
             const sheet: SheetModel = this.parent.getActiveSheet();
             const indexes: number[] = getRangeIndexes(sheet.selectedRange);
-            if (!(this.isColSelected && indexes[1] === colIdx) && !(this.isRowSelected && indexes[0] === rowIdx)) {
+            const isRowSelect: boolean = isRowSelected(sheet, indexes);
+            const isColumnSelect: boolean = isColumnSelected(sheet, indexes);
+            if (!(isColumnSelect && indexes[1] === colIdx) && !(isRowSelect && indexes[0] === rowIdx)) {
                 const autoFillDdb: Element = (e.target as HTMLElement).parentElement.querySelector('.e-dragfill-ddb');
                 if (!autoFillDdb || autoFillDdb.classList.contains('e-hide')) {
                     this.dAutoFillCell = sheet.selectedRange;
@@ -722,9 +725,9 @@ export class Selection {
         } else {
             const cliRect: ClientRect = document.getElementById(this.parent.element.id + '_sheet').getBoundingClientRect();
             if (this.parent.enableRtl) {
-                left = (cliRect.right - this.parent.sheetModule.getRowHeaderWidth(sheet, true, true) - 1) - e.clientX;
+                left = (cliRect.right - this.parent.sheetModule.getRowHeaderWidth(sheet, true, true)) - e.clientX;
             } else {
-                left = e.clientX - (cliRect.left + this.parent.sheetModule.getRowHeaderWidth(sheet, true, true) + 1);
+                left = e.clientX - (cliRect.left + this.parent.sheetModule.getRowHeaderWidth(sheet, true, true));
             }
             left += this.parent.viewport.beforeFreezeWidth;
             const frozenColPosition: Function = (): number => {
@@ -761,7 +764,8 @@ export class Selection {
         }
     }
 
-    private getRowIdxFromClientY(args: { clientY: number, isImage?: boolean, target?: Element, size?: number }): number {
+    private getRowIdxFromClientY(
+        args: { clientY: number, isImage?: boolean, target?: Element, size?: number, isOverlay?: boolean }): number {
         let height: number = 0;
         const sheet: SheetModel = this.parent.getActiveSheet();
         let top: number = 0;
@@ -769,8 +773,8 @@ export class Selection {
             top = args.clientY;
         } else {
             const sheetEle: HTMLElement = document.getElementById(this.parent.element.id + '_sheet');
-            top = args.clientY + this.parent.viewport.beforeFreezeHeight -
-                (sheetEle.getBoundingClientRect().top + (sheet.showHeaders ? 31 / this.parent.viewport.scaleY : 0));
+            top = args.clientY + this.parent.viewport.beforeFreezeHeight - (sheetEle.getBoundingClientRect().top +
+                (sheet.showHeaders ? (args.isOverlay ? 30 : 31) / this.parent.viewport.scaleY : 0));
             if (!args.target || !closest(args.target, '.e-header-panel') || this.isScrollableArea(args.clientY, args.target)) {
                 top += (this.parent.getMainContent().parentElement.scrollTop / this.parent.viewport.scaleY);
             }
@@ -1316,12 +1320,6 @@ export class Selection {
         isChart = isNullOrUndefined(isChart) ? false : isChart;
         const sheet: SheetModel = this.parent.getActiveSheet();
         const range: number[] = getSwapRange([startcell.rowIndex, startcell.colIndex, endcell.rowIndex, endcell.colIndex]);
-        const topLeftIdx: number[] = getRangeIndexes(sheet.topLeftCell);
-        const hiddenCol: number = this.parent.hiddenCount(topLeftIdx[1], range[3] - 1, 'columns', sheet);
-        if (isChart && hiddenCol > 0) {
-            range[1] -= hiddenCol;
-            range[3] -= hiddenCol;
-        }
         if (sheet.frozenRows || sheet.frozenColumns) {
             const rangeReference: HTMLElement = this.parent.createElement('div', {
                 className: isChart ? 'e-range-indicator e-chart-range' : 'e-range-indicator e-formuala-range' });
@@ -1332,97 +1330,59 @@ export class Selection {
             setPosition(this.parent, rangeReference, range, 'e-range-indicator');
             return;
         }
+        const updateRefIndicator: (range: number[], cls: string) => void = this.getRefIndicatorFn(isChart);
         const minr: number = range[0]; const minc: number = range[1]; const maxr: number = range[2]; const maxc: number = range[3];
         if (minr) {
-            (this.getEleFromRange([minr - 1, minc, minr - 1, maxc])).forEach((td: HTMLElement): void => {
-                if (td) {
-                    td.classList.add(classes[1]);
-                    if (!isChart) {
-                        td.classList.add('e-formularef-selection');
-                    }
-                }
-            }); // top
+            const rowIdx: number = skipHiddenIdx(sheet, minr - 1, false);
+            updateRefIndicator([rowIdx, minc, rowIdx, maxc], classes[1]); // top
         }
-        (this.getEleFromRange([minr, maxc, maxr, maxc])).forEach((td: HTMLElement): void => {
-            if (td) {
-                td.classList.add(classes[0]);
-                if (!isChart) {
-                    td.classList.add('e-formularef-selection');
-                }
-            }
-        }); // right
-        this.getEleFromRange([maxr, minc, maxr, maxc]).forEach((td: HTMLElement): void => {
-            if (td) {
-                td.classList.add(classes[1]);
-                if (!isChart) {
-                    td.classList.add('e-formularef-selection');
-                }
-            }
-        }); // bottom
+        const maxColIdx: number = skipHiddenIdx(sheet, maxc, false, 'columns');
+        updateRefIndicator([minr, maxColIdx, maxr, maxColIdx], classes[0]); // right
+        const maxRowIdx: number = skipHiddenIdx(sheet, maxr, false);
+        updateRefIndicator([maxRowIdx, minc, maxRowIdx, maxc], classes[1]); // bottom
         if (minc) {
-            (this.getEleFromRange([minr, minc - 1, maxr, minc - 1])).forEach((td: HTMLElement): void => {
-                if (td) {
-                    td.classList.add(classes[0]);
-                    if (!isChart) {
-                        td.classList.add('e-formularef-selection');
-                    }
-                }
-            }); // left
+            const colIdx: number = skipHiddenIdx(sheet, minc - 1, false, 'columns');
+            updateRefIndicator([minr, colIdx, maxr, colIdx], classes[0]); // left
         }
     }
 
-    private getEleFromRange(range: number[]): HTMLElement[] {
-        let startRIndex: number = range[0]; let startCIndex: number = range[1];
-        let endRIndex: number = range[2]; let endCIndex: number = range[3];
-        let i: number; let rowIdx: number;
-        let temp: number;
-        let tempCells: Element[] = [];
-        let rowCells: HTMLCollectionOf<Element>;
-        const cells: HTMLElement[] = [];
-        if (startRIndex > endRIndex) {
-            temp = startRIndex;
-            startRIndex = endRIndex;
-            endRIndex = temp;
-        }
-        if (startCIndex > endCIndex) {
-            temp = startCIndex;
-            startCIndex = endCIndex;
-            endCIndex = temp;
-        }
-        if (this.parent.scrollSettings.enableVirtualization) {
-            for (i = startRIndex; i <= endRIndex; i++) {
-                rowIdx = i;
-                if (rowIdx > -1) {
-                    const row: Element = this.parent.getRow(rowIdx, null );
+    private getRefIndicatorFn(isChart: boolean): (range: number[], cls: string) => void {
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const viewport: number[] = this.parent.scrollSettings.enableVirtualization ? [this.parent.viewport.topIndex,
+            this.parent.viewport.leftIndex, this.parent.viewport.bottomIndex, this.parent.viewport.rightIndex] :
+            [0, 0, sheet.rowCount - 1, sheet.colCount - 1];
+        return (range: number[], cls: string): void => {
+            let temp: number; let row: HTMLTableRowElement;
+            if (range[0] > range[2]) {
+                temp = range[0];
+                range[0] = range[2];
+                range[2] = temp;
+            }
+            if (range[1] > range[3]) {
+                temp = range[1];
+                range[1] = range[3];
+                range[3] = temp;
+            }
+            for (let rowIdx: number = range[0]; rowIdx <= range[2]; rowIdx++) {
+                if (rowIdx >= viewport[0] && rowIdx <= viewport[2] && !isHiddenRow(sheet, rowIdx)) {
+                    row = this.parent.getRow(rowIdx, null);
                     if (row) {
-                        rowCells = row.getElementsByClassName('e-cell') as HTMLCollectionOf<Element>;
-                        tempCells = (endCIndex === startCIndex) ?
-                            [rowCells[endCIndex as number]] : this.getRowCells(rowCells, startCIndex, endCIndex + 1);
-                        this.merge(cells, tempCells);
+                        for (let colIdx: number = range[1]; colIdx <= range[3]; colIdx++) {
+                            if (colIdx >= viewport[1] && colIdx <= viewport[3] && !isHiddenCol(sheet, colIdx)) {
+                                const cell: HTMLElement = this.parent.getCell(rowIdx, colIdx, row);
+                                if (cell) {
+                                    cell.classList.add(cls);
+                                    if (!isChart) {
+                                        cell.classList.add('e-formularef-selection');
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
-        }
-        return cells;
+        };
     }
-
-    private getRowCells(rowCells: HTMLCollectionOf<Element>, startCIndex: number, endCIndex: number): HTMLElement[] {
-        const tdCol: HTMLElement[] = [];
-        for (startCIndex; startCIndex < endCIndex; startCIndex++) {
-            if (rowCells[startCIndex as number]) {
-                tdCol.push(rowCells[startCIndex as number] as HTMLElement);
-            }
-        }
-        return tdCol;
-    }
-
-    private merge(first: HTMLElement[], second: Element[]): void {
-        if (!first || !second) {
-            return;
-        }
-        Array.prototype.push.apply(first, second);
-    }
-
 
     private clearBorder(): void {
         const sheet: SheetModel = this.parent.getActiveSheet();

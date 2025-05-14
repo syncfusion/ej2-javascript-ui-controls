@@ -278,27 +278,29 @@ export function columnIndex(cell: string): number {
  */
 export function skipHiddenIdx(sheet: SheetModel, index: number, increase: boolean, layout: string = 'rows', count?: number): number {
     let rowColObj: object;
-    if (increase) {
-        for (let i: number = index; i < Infinity; i++) {
-            rowColObj = sheet[`${layout}`];
-            if (rowColObj[index as number] && rowColObj[index as number].hidden) {
-                index++;
-            } else {
-                if (count) {
-                    count--;
+    if (sheet) {
+        if (increase) {
+            for (let i: number = index; i < Infinity; i++) {
+                rowColObj = sheet[`${layout}`];
+                if (rowColObj[index as number] && rowColObj[index as number].hidden) {
                     index++;
+                } else {
+                    if (count) {
+                        count--;
+                        index++;
+                    } else {
+                        break;
+                    }
+                }
+            }
+        } else {
+            for (let i: number = index; i > -1; i--) {
+                rowColObj = sheet[`${layout}`];
+                if (rowColObj[index as number] && rowColObj[index as number].hidden) {
+                    index--;
                 } else {
                     break;
                 }
-            }
-        }
-    } else {
-        for (let i: number = index; i > -1; i--) {
-            rowColObj = sheet[`${layout}`];
-            if (rowColObj[index as number] && rowColObj[index as number].hidden) {
-                index--;
-            } else {
-                break;
             }
         }
     }
@@ -1051,6 +1053,21 @@ export function getUpdatedRange(sheet: SheetModel, range?: string): string {
         updateRange = updateRange.replace(/\D/g, '');
     }
     return updateRange;
+}
+
+/**
+ * Calculating resolution based windows value
+ *
+ * @param {number} size - Specify the end column index.
+ * @returns {number} - get excluded column width.
+ * @hidden
+ */
+export function addDPRValue(size: number): number {
+    if (window.devicePixelRatio % 1 > 0) {
+        const pointValue: number = (size * window.devicePixelRatio) % 1;
+        return size + (pointValue ? ((pointValue > 0.5 ? (1 - pointValue) : -1 * pointValue) / window.devicePixelRatio) : 0);
+    }
+    return size;
 }
 
 /**

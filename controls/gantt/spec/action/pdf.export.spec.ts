@@ -15105,3 +15105,163 @@ describe('Gantt PDF Export with tasklabel template for font color', () => {
         }
     });
 });
+describe('Gantt PDF Export with taskbar template fontbrush', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: coulmntemplate,
+                resources: resourceCollectiontemplate1,
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    resourceInfo: 'resources',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                pdfQueryTaskbarInfo: (args: any) => {
+                    if (!args.data.hasChildRecords) {
+                        args.taskbar.taskColor = new PdfColor(109, 97, 155);
+                        if (args.data.ganttProperties.resourceNames) {
+                            args.taskbarTemplate.image = [{
+                                width: 20, base64: (args as any).data.taskData.resourcesImage, height: 20
+                            }]
+                        }
+                        args.taskbarTemplate.value = args.data.TaskName;
+                        args.taskbarTemplate.fontStyle = {
+                            fontBrush: new PdfColor(255, 255, 255),
+                            fontFamily: 'TimesRoman',
+
+                        }
+                    }
+                    if (args.data.hasChildRecords) {
+                        args.taskbar.milestoneColor = new PdfColor(0, 2, 0);
+                        if (args.data.ganttProperties.resourceNames) {
+                            args.taskbarTemplate.image = [{
+                                width: 20, base64: (args as any).data.taskData.resourcesImage, height: 20
+                            }]
+                        }
+                        args.taskbarTemplate.value = args.data.TaskName;
+                        args.taskbarTemplate.fontStyle = {
+                            fontBrush: new PdfColor(255, 255, 255),
+                            fontFamily: 'TimesRoman',
+                            fontSize : 12
+                        }
+                    }
+                    if (args.data.ganttProperties.duration === 0) {
+                        args.taskbar.taskColor = new PdfColor(0, 2, 92);
+                        if (args.data.ganttProperties.resourceNames) {
+                            args.taskbarTemplate.image = [{
+                                width: 20, base64: (args as any).data.taskData.resourcesImage, height: 20,
+                            }]
+                        }
+                        args.taskbarTemplate.value = args.data.TaskName,
+                            args.taskbarTemplate.fontStyle = {
+                                fontBrush: new PdfColor(255, 255, 255),
+                                fontFamily: 'TimesRoman'
+                            }
+                    }
+                },
+                columns: [
+                    { field: 'TaskID' },
+                    { field: 'TaskName', headerTemplate: '#projectName', width: 250 },
+                    { field: 'StartDate', headerTemplate: '#dateTemplate' }
+                ],
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                height: '450px',
+            }, done);
+    });
+    it('Export data with tasklabel template', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt PDF Export with tasklabel template for font color', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: coulmntemplate,
+                resources: resourceCollectiontemplate1,
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    resourceInfo: 'resources',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                pdfQueryTaskbarInfo: (args: any) => {
+                    args.labelSettings.leftLabel.value = args.data.ganttProperties.taskName + '[' + args.data.ganttProperties.progress + ']';
+                    args.labelSettings.leftLabel.fontStyle.fontSize = 6;
+                    args.labelSettings.leftLabel.fontStyle.fontColor = new PdfColor(255, 255, 255);
+                    if (args.data.ganttProperties.resourceNames) {
+                        args.labelSettings.rightLabel.value = args.data.ganttProperties.resourceNames;
+                        args.labelSettings.rightLabel.fontStyle.fontSize = 6;
+                        args.labelSettings.rightLabel.fontStyle.fontColor = new PdfColor(255, 255, 255);
+                        args.labelSettings.rightLabel.image = [{
+                            base64: (args as any).data.taskData.resourcesImage, width: 20, height: 20
+                        }]
+
+                    }
+                    args.labelSettings.taskLabel.value = args.data.ganttProperties.progress + '%';
+                    args.labelSettings.taskLabel.fontStyle.fontColor = new PdfColor(255, 255, 255);
+                    args.labelSettings.taskLabel.fontStyle.fontFamily = PdfFontFamily.TimesRoman,
+                    args.labelSettings.taskLabel.fontStyle.fontSize = 12,
+                    args.labelSettings.taskLabel.fontStyle.fontStyle = PdfFontStyle.Italic
+                },
+                columns: [
+                    { field: 'TaskID' },
+                    { field: 'TaskName', headerTemplate: '#projectName', width: 250 },
+                    { field: 'StartDate', headerTemplate: '#dateTemplate' }
+                ],
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                height: '450px',
+            }, done);
+    });
+    it('Export data with tasklabel template', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+})

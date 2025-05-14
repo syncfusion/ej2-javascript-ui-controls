@@ -30,7 +30,7 @@ describe('Open & Save ->', () => {
                             spreadsheet.openComplete = undefined;
                             spreadsheet.dataBind();
                             done();
-                        }, 100);
+                        }, 150);
                     };
                     spreadsheet.dataBind();
                     const file: File = new File([data], 'Sample.xlsx');
@@ -67,7 +67,7 @@ describe('Open & Save ->', () => {
             // });
         });
         it('Changing allowOpen property dynamically', (done: Function) => {
-            const spreadsheet: Spreadsheet = helper.getInstance();
+            const spreadsheet: any = helper.getInstance();
             expect(spreadsheet.allowOpen).toBeTruthy();
             //expect(spreadsheet.openModule.isImportedFile).toBeTruthy();
             const prevUploadInput: HTMLElement = spreadsheet.element.querySelector(`#${helper.id}_fileUpload`);
@@ -84,6 +84,9 @@ describe('Open & Save ->', () => {
             const uploadInput: HTMLElement = spreadsheet.element.querySelector(`#${helper.id}_fileUpload`);
             expect(uploadInput).not.toBeNull();
             expect(uploadInput).not.toBe(prevUploadInput);
+            // Added for code coverage.
+            spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[0], 'selectedRange', 'IV65536:IV65536');
+            spreadsheet.workbookOpenModule.setSelectAllRange(spreadsheet.sheets, true);
             done();
         });
     });

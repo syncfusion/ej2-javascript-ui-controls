@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 29.1.41 (2025-05-06)
+## 29.2.4 (2025-05-14)
+
+### Toolbar
+
+#### Bug Fixes
+
+- `#I719724` - The issue with toolbar items being incorrectly ordered when `overflowMode` is set to `Extended` mode has been resolved.
+
+## 29.1.40 (2025-04-29)
 
 ### Tab
 

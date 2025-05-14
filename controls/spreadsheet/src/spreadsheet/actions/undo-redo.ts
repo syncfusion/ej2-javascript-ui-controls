@@ -551,7 +551,8 @@ export class UndoRedo {
                     });
                 } else {
                     this.parent.notify(deleteImage, {
-                        id: eventArgs.pastedPictureElement.id, sheetIdx: eventArgs.pasteSheetIndex + 1, isUndoRedo: true
+                        id: eventArgs.pastedPictureElement.id, sheetIdx: eventArgs.pasteSheetIndex + 1, range: eventArgs.pastedRange,
+                        isUndoRedo: true
                     });
                 }
             } else {
@@ -572,9 +573,9 @@ export class UndoRedo {
                     this.parent.notify(createImageElement, {
                         options: {
                             src: pictureElem.style.backgroundImage.replace(/url\((['"])?(.*?)\1\)/gi, '$2'),
-                            height: pictureElem.offsetHeight, width: pictureElem.offsetWidth, id: pictureElem.id
+                            height: copiedShapeInfo.height, width: copiedShapeInfo.width, id: pictureElem.id
                         },
-                        range: copiedShapeInfo.pastedRange, isPublic: false, isUndoRedo: true
+                        range: eventArgs.pastedRange, isPublic: false, isUndoRedo: true
                     });
                 }
             }

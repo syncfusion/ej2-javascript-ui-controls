@@ -167,24 +167,23 @@ export class PdfGantt extends PdfTreeGrid {
                 detail.startDate = new Date(timelineStartDate.getTime());
                 const startDays: number = Math.round(detail.startPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth));
                 let currentDate: Date = new Date(detail.startDate.getTime());
-
                 if (!this.parent.timelineSettings.showWeekend) {
-                    currentDate = this.calculateDaysWithoutNonworkingDays(currentDate, startDays, count);
-                } else {
+                    detail.startDate = this.calculateDaysWithoutNonworkingDays(detail.startDate, startDays * count);
+                }
+                else {
                     detail.startDate.setDate(detail.startDate.getDate() + startDays * count);
                 }
-
                 const endDays: number = Math.round((detail.endPoint - detail.startPoint)
                     / pixelToPoint(this.chartHeader.bottomTierCellWidth)) - 1;
-
-                currentDate = new Date(detail.startDate.getTime());
-                if (!this.parent.timelineSettings.showWeekend) {
-                    currentDate = this.calculateDaysWithoutNonworkingDays(currentDate, endDays, count);
-                } else {
-                    currentDate.setDate(currentDate.getDate() + endDays * count);
-                }
                 const startdate: Date = detail.startDate;
                 startdate.setHours(0, 0, 0, 0);
+                currentDate = new Date(detail.startDate.getTime());
+                if (!this.parent.timelineSettings.showWeekend) {
+                    currentDate = this.calculateDaysWithoutNonworkingDays(currentDate, endDays * count);
+                }
+                else {
+                    currentDate.setDate(currentDate.getDate() + endDays * count);
+                }
                 const secondsToAdd: number = this.parent.workingTimeRanges[0].to * 1000;
                 detail.endDate = new Date(currentDate.getTime());
                 detail.endDate.setTime(detail.endDate.getTime() + secondsToAdd);
@@ -255,25 +254,27 @@ export class PdfGantt extends PdfTreeGrid {
      * Calculates the end date by adding the specified number of working days to the current date,
      * excluding any non-working days as defined in the nonWorkingDayIndex.
      *
-     * @param {Date} currentDate - The starting date from which to begin adding working days.
+     * @param {Date} startDate - The starting date from which to begin adding working days.
      * @param {number} daysToAdd - The number of days to add to the current date.
      * @param {number} count - A multiplier applied to daysToAdd, typically representing the number of units.
      * @returns {Date} - A new Date object representing the calculated date after working days have been added.
      *
      */
-    private calculateDaysWithoutNonworkingDays(currentDate: Date, daysToAdd: number, count: number): Date {
-        let totalDays: number = 0;
-        const fullWeeks: number = Math.floor(daysToAdd * count / (7 - this.parent.nonWorkingDayIndex.length));
-        const remainingDays: number = daysToAdd * count % (7 - this.parent.nonWorkingDayIndex.length);
-        totalDays += fullWeeks * 7;
-        for (let i: number = 0; i < remainingDays; i++) {
-            currentDate.setDate(currentDate.getDate() + 1);
-            if (this.parent.nonWorkingDayIndex.indexOf(currentDate.getDay()) === -1) {
-                totalDays++;
+    private calculateDaysWithoutNonworkingDays(startDate: Date, daysToAdd: number): Date {
+        const result: Date = new Date(startDate.getTime());
+        const nonWorkingDays: number = this.parent.nonWorkingDayIndex.length;
+        const workingDaysInWeek: number = 7 - nonWorkingDays;
+        const fullWeeks: number = Math.floor(daysToAdd / workingDaysInWeek);
+        let remainingDays: number = daysToAdd % workingDaysInWeek;
+        result.setDate(result.getDate() + fullWeeks * 7);
+        // Process remaining days
+        while (remainingDays > 0) {
+            result.setDate(result.getDate() + 1);
+            if (this.parent.nonWorkingDayIndex.indexOf(result.getDay()) === -1) {
+                remainingDays--;
             }
         }
-        currentDate.setDate(currentDate.getDate() + totalDays);
-        return currentDate;
+        return result;
     }
     private drawPageBorder(): void {
         const pages: PdfPage[] = this.result.page.section.getPages() as PdfPage[];

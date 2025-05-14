@@ -1,7 +1,7 @@
 import { Spreadsheet } from '../base/index';
 import { completeAction, refreshSheetTabs, refreshImagePosition, focus } from '../common/index';
-import { skipHiddenIdx, deleteAction, InsertDeleteEventArgs, triggerDataChange, ActionEventArgs } from '../../workbook/common/index';
-import { SheetModel, CellModel, getCell, getCellIndexes } from '../../workbook/index';
+import { skipHiddenIdx, deleteAction, InsertDeleteEventArgs, triggerDataChange, ActionEventArgs, ChartModel, getChartRowIdxFromClientY, getChartColIdxFromClientX, refreshChartCellOnInit, addDPRValue } from '../../workbook/common/index';
+import { SheetModel, CellModel, getCell, getCellIndexes, RowModel } from '../../workbook/index';
 
 /**
  * The `Delete` module is used to delete cells, rows, columns and sheets from the spreadsheet.
@@ -113,7 +113,7 @@ export class Delete {
                 delete args.refreshSheet;
             }
         }
-        this.refreshImgElement(args.deletedModel.length, this.parent.activeSheetIndex, args.modelType, args.startIndex);
+        this.refreshImgChartElement(args.deletedModel.length, this.parent.activeSheetIndex, args.modelType, args.startIndex);
         if (args.isAction) {
             delete args.isAction;
             this.parent.notify(completeAction, actionArgs);
@@ -121,6 +121,50 @@ export class Delete {
         } else if (!args.isUndoRedo) {
             args.isMethod = true;
             this.parent.notify(triggerDataChange, actionArgs);
+        }
+    }
+
+    private refreshImgChartElement(count: number, sheetIdx: number, modelType: string, index: number): void {
+        if (modelType === 'Sheet') { return; }
+        const sheet: SheetModel = this.parent.sheets[sheetIdx as number];
+        const rows: RowModel[] = sheet.rows;
+        for (let i: number = 0, rowLen: number = rows.length; i < rowLen; i++) {
+            const cells: CellModel[] = rows[i as number] && rows[i as number].cells;
+            if (cells && cells.length) {
+                for (let j: number = 0; j < cells.length; j++) {
+                    const cell: CellModel = getCell(i, j, sheet);
+                    if ((modelType === 'Row' && i >= index) || (modelType === 'Column' && j >= index)) {
+                        if (cell && cell.image && cell.image.length > 0) {
+                            this.parent.notify(refreshImagePosition, {
+                                rowIdx: i, colIdx: j, sheetIdx: sheetIdx, type: modelType, count: count, status: 'delete'
+                            });
+                        }
+                        if (cell && cell.chart && cell.chart.length > 0) {
+                            for (let k: number = 0; k < cell.chart.length; k++) {
+                                const chartModel: ChartModel = cell.chart[k as number];
+                                const chartRowIdx: { clientY: number, isImage?: boolean } = {
+                                    clientY: Number(addDPRValue(chartModel.top).toFixed(2)), isImage: true
+                                };
+                                const chartColIdx: { clientX: number, isImage?: boolean } = {
+                                    clientX: Number(addDPRValue(chartModel.left).toFixed(2)), isImage: true
+                                };
+                                this.parent.notify(getChartRowIdxFromClientY, chartRowIdx);
+                                this.parent.notify(getChartColIdxFromClientX, chartColIdx);
+                                if (i !== chartRowIdx.clientY || j !== chartColIdx.clientX) {
+                                    const eventArgs: Object = {
+                                        prevTop: chartModel.top, prevLeft: chartModel.left, prevRowIdx: i, prevColIdx: j,
+                                        prevHeight: chartModel.height, prevWidth: chartModel.width, currentTop: chartModel.top,
+                                        currentLeft: chartModel.left, currentRowIdx: chartRowIdx.clientY,
+                                        currentColIdx: chartColIdx.clientX, currentHeight: chartModel.height,
+                                        currentWidth: chartModel.width, id: chartModel.id, requestType: 'chartRefreshOnInit'
+                                    };
+                                    this.parent.notify(refreshChartCellOnInit, eventArgs);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -148,22 +192,5 @@ export class Delete {
      */
     public getModuleName(): string {
         return 'delete';
-    }
-    private refreshImgElement(count: number, sheetIdx: number, modelType: string, index: number): void {
-        const sheet: SheetModel = this.parent.sheets[sheetIdx as number];
-        let cell: CellModel;
-        const address: number[] = [0, 0, sheet.usedRange.rowIndex, sheet.usedRange.colIndex];
-        for (let i: number = 0; i <= address[2]; i++) {
-            for (let j: number = address[1]; j <= address[3]; j++) {
-                cell = getCell(i, j, sheet);
-                if (cell && cell.image && cell.image.length > 0) {
-                    if ((modelType === 'Row' && i >= index) || (modelType === 'Column' && j >= index)) {
-                        this.parent.notify(refreshImagePosition, {
-                            rowIdx: i, colIdx: j, sheetIdx: sheetIdx, type: modelType, count: count, status: 'delete'
-                        });
-                    }
-                }
-            }
-        }
     }
 }

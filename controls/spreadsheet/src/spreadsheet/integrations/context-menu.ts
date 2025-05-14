@@ -367,9 +367,12 @@ export class ContextMenu {
             if (this.parent.selectionSettings.mode === 'None') {
                 this.parent.enableContextMenuItems(['Insert'], false, false);
             }
+            if (!this.parent.allowDelete) {
+                this.parent.enableContextMenuItems(['Delete'], false, false);
+            }
         }
-        this.parent.trigger('contextMenuBeforeOpen', args);
         this.parent.notify(cMenuBeforeOpen, extend(args, { target: target, items: items }));
+        this.parent.trigger('contextMenuBeforeOpen', args);
     }
 
     /**

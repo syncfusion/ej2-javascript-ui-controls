@@ -1417,4 +1417,32 @@ describe('Find & Replace ->', () => {
             });
         });
     });
+    describe('EJ2-831835->', () => {
+        beforeEach((done:Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] },done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Unable to search the hyperlink text using Find option', (done:Function) => {
+            helper.invoke('addHyperlink', ['www.google.com', 'I1']);
+            helper.invoke('selectRange', ['I1']);
+            helper.click('#' + helper.id + '_findbtn');
+            setTimeout(() => {
+                const findTxtBox: HTMLInputElement = helper.getElementFromSpreadsheet('.e-findtool-dlg .e-text-findNext-short') as HTMLInputElement;
+                findTxtBox.value = 'g';
+                helper.triggerKeyNativeEvent(88, false, false, findTxtBox, 'keyup');
+                setTimeout(() => {
+                    const findTxtBoxCount: any = document.querySelectorAll('.e-input-group-icon')[1];
+                    expect(findTxtBoxCount.innerText).toBe('1 of 2');
+                    findTxtBox.value = 'google';
+                    helper.triggerKeyNativeEvent(88, false, false, findTxtBox, 'keyup');
+                    setTimeout(() => {
+                        expect(findTxtBoxCount.innerText).toBe('1 of 1');
+                        done();
+                    });
+                });
+            });
+        });
+    });
 });
