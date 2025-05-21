@@ -1,9 +1,9 @@
 import { PdfDestinationMode, PdfRotationAngle, PdfTextStyle } from './enumerator';
 import { _PdfCrossReference } from './pdf-cross-reference';
 import { PdfDocument } from './pdf-document';
-import { PdfDestination, PdfPage } from './pdf-page';
+import { PdfDestination, _PdfDestinationHelper, PdfPage } from './pdf-page';
 import { _PdfDictionary, _PdfName, _PdfReference } from './pdf-primitives';
-import { _checkRotation, _getPageIndex, _isNullOrUndefined, _obtainDestination, _parseColor } from './utils';
+import { _checkRotation, _getPageIndex, _isNullOrUndefined, _parseColor } from './utils';
 /**
  * Represents a base class for all bookmark objects.
  * ```typescript
@@ -523,7 +523,8 @@ export class PdfBookmark extends PdfBookmarkBase {
         if (!this._destination) {
             const namedDestination: PdfNamedDestination = this._obtainNamedDestination();
             if (namedDestination === null || typeof namedDestination === 'undefined') {
-                this._destination = _obtainDestination(this._dictionary, 'Dest');
+                const destinationHelper: _PdfDestinationHelper = new _PdfDestinationHelper(this._dictionary, 'Dest');
+                this._destination = destinationHelper._obtainDestination();
             }
         }
         return this._destination;

@@ -3324,15 +3324,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
 
     }
-    /**
-     * Checks whether the given node and its children meet min/max width and height constraints after scaling.
-     *
-     * @param {NodeModel} node - The node to check.
-     * @param {number} sx - The horizontal scaling factor.
-     * @param {number} sy - The vertical scaling factor.
-     * @returns {boolean} - Returns true if all size constraints are satisfied, false otherwise
-     */
-    public checkSize(node: NodeModel, sx: number, sy: number): boolean {
+    private checkSize(node: NodeModel, sx: number, sy: number): boolean {
         if (!node || !node.wrapper || !node.wrapper.bounds) {
             return true;
         }
@@ -6386,18 +6378,29 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private convertMermaidToFlowChart(data: string): void {
         let dataCollection: FlowChartData[] = [];
         this.clear();
+        //95490: Error while loading Mermaid diagram
+        //Ensure every statement ends with a semicolon and newline, unless it’s already followed by a newline.
+        data = data.replace(/;(?!\s*[\n\r])/g, ';\n');
         const lines: string[] = data.trim().split('\n');
         for (let i: number = 1; i < lines.length; i++) {
             let line: string = lines[parseInt(i.toString(), 10)];
             line = line.trim();
-            if (line !== '') {
+            //Remove trailing semicolon if the line does not start with "style" to avoid showing it as a node annotation.
+            if (line.endsWith(';') && !line.startsWith('style')) {
+                line = line.slice(0, -1).trim();
+            }
+            // Skip lines that start with specific prefixes
+            // "%" - comment line, "end/End" - end of a subgraph/graph
+            // "subgraph", "graph", "flowchart" - Not supported by diagram
+            const skipPrefixes: string[] = ['%', 'subgraph', 'graph', 'flowchart', 'end', 'End'];
+            if (line !== '' && !skipPrefixes.some((prefix: string) => line.startsWith(prefix))) {
                 if (line.startsWith('style')) {
                     this.parseStyle(line, dataCollection);
                 } else {
                     const lineSplit: string[] = this.getLineSplitting(line);
                     const parts: string[] = [lineSplit[0], lineSplit[1]];
                     const data: FlowChartData[] = this.getNodeData(parts, dataCollection, lineSplit[2]);
-                    if (data.length > 0) {
+                    if (data && data.length > 0) {
                         const lastItem: FlowChartData = data[data.length - 1];
                         lastItem.arrowType = lineSplit[2];
                         if (lineSplit[3] !== '') {
@@ -6408,12 +6411,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                 lastItem.label[lastItem.parentId.length - 1] = lineSplit[3];
                             }
                         }
+                        data.filter((flowData: FlowChartData) =>
+                            flowData.parentId && flowData.parentId.length === 0).forEach(function (node: FlowChartData): void {
+                            node.parentId = null;
+                        });
+                        dataCollection = dataCollection.concat(data);
                     }
-                    data.filter((flowData: FlowChartData) =>
-                        flowData.parentId && flowData.parentId.length === 0).forEach(function (node: FlowChartData): void {
-                        node.parentId = null;
-                    });
-                    dataCollection = dataCollection.concat(data);
                 }
             }
         }
@@ -6488,7 +6491,6 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         // RegEx to split the line based on arrow
         const regex: RegExp = /^(.*?)\s*(-->|---|--\s*.*?\s*-->|~~~|==>|===|==\s*.*?\s*==>|\s*-\.\s*->|\s*-\.\s*-|\s*-\.\s*.*?\s*\.\s*->|\s*-\..*?\.\s*->)(.*)$/;
         const match: RegExpMatchArray = line.match(regex);
-
         if (match) {
             leftPart = match[1].trim();
             const arrow: string = match[2].trim();
@@ -6535,8 +6537,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             else {
                 arrowName = 'single-line-arrow';
             }
+        } else {
+            //consider single node Data
+            leftPart = line.trim();
+            rightPart = null;
         }
-
         return [leftPart, rightPart, arrowName, arrowText];
     }
     /**
@@ -6583,40 +6588,42 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         let connectorLabel: string = '';
         for (let i: number = 0; i < lines.length; i++) {
             const line1: string = lines[parseInt(i.toString(), 10)];
-            const text: string[] = this.splitNested(line1);
-            if (text[0].includes('|')) {
-                // Extract content outside the '|'
-                const match: RegExpMatchArray = text[0].match(/\|([^|]*)\|/);
-                if (match) {
-                    connectorLabel = match[1];
+            if (line1) {
+                const text: string[] = this.splitNested(line1);
+                if (text && text[0].includes('|')) {
+                    // Extract content outside the '|'
+                    const match: RegExpMatchArray = text[0].match(/\|([^|]*)\|/);
+                    if (match) {
+                        connectorLabel = match[1];
+                    }
+                    const parts: string[] = text[0].split('|');
+                    if (parts.length >= 3) {
+                        text[0] = parts[2].trim();
+                    }
                 }
-                const parts: string[] = text[0].split('|');
-                if (parts.length >= 3) {
-                    text[0] = parts[2].trim();
+                //Extract and clean up the first text item by trimming and removing any semicolon at the end
+                const id: string = text[0].trim().replace(/;$/, '');
+                if (i === 0) {
+                    firstId = id;
+                } else {
+                    secondId = id;
                 }
-            }
-
-            const id: string = text[0].trim();
-            if (i === 0) {
-                firstId = id;
-            } else {
-                secondId = id;
-            }
-            const exsist: FlowChartData = dataCollection.find((data: FlowChartData) => data.id === id);
-            if (!exsist) {
-                const labelShape: string = text.length > 1 ? text[1] : text[0];
-                const shape: BasicShapeModel | FlowShapeModel | PathModel = this.getShape(labelShape);
-                const label: string = labelShape.replace(/[\\[\]\\(\\)\\{\\}\\{\\}\\/>]/g, '');
-                const data: FlowChartData = {
-                    id: id,
-                    name: label,
-                    shape: shape,
-                    color: 'white',
-                    parentId: [] as string[]
-                } as FlowChartData;
-                dataArray.push(data);
-            } else {
-                isExistCount++;
+                const exsist: FlowChartData = dataCollection.find((data: FlowChartData) => data.id === id);
+                if (!exsist) {
+                    const labelShape: string = text.length > 1 ? text[1] : text[0];
+                    const shape: BasicShapeModel | FlowShapeModel | PathModel = this.getShape(labelShape);
+                    const label: string = labelShape.replace(/[\\[\]\\(\\)\\{\\}\\{\\}\\/>]/g, '');
+                    const data: FlowChartData = {
+                        id: id,
+                        name: label,
+                        shape: shape,
+                        color: 'white',
+                        parentId: [] as string[]
+                    } as FlowChartData;
+                    dataArray.push(data);
+                } else {
+                    isExistCount++;
+                }
             }
         }
         if (dataArray.length) {
@@ -8501,7 +8508,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         const child: Node = this.nameTable[obj.children[i]];
                         this.updateStackProperty(obj, child, i); canvas.children.push(child.wrapper);
                         canvas.elementActions = canvas.elementActions | ElementAction.ElementIsGroup;
-                        child.wrapper.flip = child.wrapper.flip ^= 
+                        child.wrapper.flip = child.wrapper.flip ^=
                             obj.wrapper.flip;
                     }
                 }

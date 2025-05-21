@@ -216,7 +216,7 @@ export class _Inflater {
                         if (symbol < 0 || symbol >= this._extraLengthBits.length) {
                             throw new Error('Invalid data.');
                         }
-                        this._extraBits = this._extraLengthBits[Number.parseInt(symbol.toString(), 10)];
+                        this._extraBits = this._extraLengthBits[<number>symbol];
                     }
                     this._length = symbol;
                     inLengthResult = this._inLength(fb);
@@ -393,7 +393,7 @@ export class _Inflater {
             ++this._loopCounter;
         }
         for (let i: number = this._clCodeCount; i < this._codeOrder.length; i++) {
-            this._cltcl[this._codeOrder[Number.parseInt(i.toString(), 10)]] = 0;
+            this._cltcl[this._codeOrder[<number>i]] = 0;
         }
         this._clTree = new _HuffmanTree();
         this._clTree._load(this._cltcl);

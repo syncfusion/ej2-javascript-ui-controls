@@ -1711,7 +1711,15 @@ export class TaskProcessor extends DateProcessor {
             }
             else {
                 if (this.hasDSTTransition(sDate.getFullYear())) {
-                    const width: number = (getUniversalTime(eDate) - getUniversalTime(sDate)) /
+                    let weekEndCount: number = 0;
+                    let weekEndInMilliSecond: number = 0;
+                    if (!this.parent.timelineSettings.showWeekend) {
+                        weekEndCount = this.parent.timelineModule.calculateNonWorkingDaysBetweenDates(sDate, eDate);
+                        if (weekEndCount > 0) {
+                            weekEndInMilliSecond = weekEndCount * (1000 * 60 * 60 * 24);
+                        }
+                    }
+                    const width: number = ((getUniversalTime(eDate) - getUniversalTime(sDate)) - weekEndInMilliSecond) /
                         60000 * ((this.parent.perDayWidth) / 24) / 60;
                     return width;
                 }

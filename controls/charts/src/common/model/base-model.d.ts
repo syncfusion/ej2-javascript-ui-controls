@@ -612,7 +612,7 @@ export interface EmptyPointSettingsModel {
      * @default Gap
      */
 
-    mode?: EmptyPointMode | AccEmptyPointMode;
+    mode?: EmptyPointMode;
 
 }
 

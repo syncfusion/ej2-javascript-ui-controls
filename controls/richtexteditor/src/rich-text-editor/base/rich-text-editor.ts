@@ -3004,7 +3004,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public setPlaceHolder(): void {
         if (this.inputElement && this.placeholder && this.iframeSettings.enable !== true) {
             if (this.editorMode !== 'Markdown') {
-                if (!this.placeHolderWrapper) {
+                if (!this.placeHolderWrapper || !this.inputElement.parentElement.contains(this.placeHolderWrapper)) {
                     this.placeHolderWrapper = this.createElement('span', { className: 'rte-placeholder e-rte-placeholder' + ' ' + this.getCssClass()});
                     if (this.fontSize.default) {
                         this.placeHolderWrapper.style.fontSize = this.fontSize.default;

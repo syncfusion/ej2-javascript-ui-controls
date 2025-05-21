@@ -343,8 +343,8 @@ export class PdfPath {
             if (i >= pathPoints.length || i < 0) {
                 throw new Error('Index' + i + 'is out of bounds.');
             }
-            this._points.push([...pathPoints[Number.parseInt(i.toString(), 10)]]);
-            this._pathTypes.push(pathTypes[Number.parseInt(i.toString(), 10)]);
+            this._points.push([...pathPoints[<number>i]]);
+            this._pathTypes.push(pathTypes[<number>i]);
         }
     }
     /**
@@ -386,7 +386,7 @@ export class PdfPath {
             this._addPoint(linePoints[0], PathPointType.line);
         } else {
             for (let i: number = 1; i < linePoints.length; i++) {
-                const last: number[] = linePoints[Number.parseInt(i.toString(), 10)];
+                const last: number[] = linePoints[<number>i];
                 this.addLine(start[0], start[1], last[0], last[1]);
                 start = last;
             }
@@ -396,7 +396,7 @@ export class PdfPath {
         const startIndex: number = (typeof start !== 'undefined') ? start : 0;
         const endIndex: number = (typeof end !== 'undefined') ? end : points.length;
         for (let i: number = startIndex; i < endIndex; i += 2) {
-            const point: number[] = [points[Number.parseInt(i.toString(), 10)], points[i + 1]];
+            const point: number[] = [points[<number>i], points[i + 1]];
             if (i === startIndex) {
                 if (this._points.length === 0 || this._isStart) {
                     this._addPoint(point, PathPointType.start);
@@ -450,7 +450,7 @@ export class PdfPath {
     addArc(x: number, y: number, width: number, height: number, startAngle: number, sweepAngle: number): void {
         const points: number[] = _getBezierArc(x, y, x + width, y + height, startAngle, sweepAngle);
         for (let i: number = 0; i < points.length; ++i) {
-            const list: number[] = [points[Number.parseInt(i.toString(), 10)],
+            const list: number[] = [points[<number>i],
                 points[++i],
                 points[++i],
                 points[++i],
@@ -529,9 +529,10 @@ export class PdfPath {
      */
     addPolygon(points: Array<number[]>): void {
         const newPoints: number[] = [];
-        points.forEach((element: number[]) => {
+        for (let i: number = 0; i < points.length; i++) {
+            const element: number[] = points[<number>i];
             newPoints.push(element[0], element[1]);
-        });
+        }
         this.startFigure();
         this._addPoints(newPoints, PathPointType.line);
         this.closeFigure();
@@ -626,14 +627,14 @@ export class PdfPath {
         }
         const bound: number = 3;
         let index: number = 0;
-        let start: number[] = pointsCollection[Number.parseInt(index.toString(), 10)];
+        let start: number[] = pointsCollection[<number>index];
         index++;
         while ((index + bound) <= pointsCollection.length) {
-            const inner1: number[] = pointsCollection[Number.parseInt(index.toString(), 10)];
+            const inner1: number[] = pointsCollection[<number>index];
             index++;
-            const inner2: number[] = pointsCollection[Number.parseInt(index.toString(), 10)];
+            const inner2: number[] = pointsCollection[<number>index];
             index++;
-            const end: number[] = pointsCollection[Number.parseInt(index.toString(), 10)];
+            const end: number[] = pointsCollection[<number>index];
             index++;
             this.addBezier(start[0], start[1], inner1[0], inner1[1], inner2[0], inner2[1], end[0], end[1]);
             start = end;
@@ -773,9 +774,9 @@ export class PdfPath {
     closeFigure(index: number): void;
     closeFigure(index?: number): void {
         if (typeof index !== 'undefined') {
-            let type: PathPointType = this._pathTypes[Number.parseInt(index.toString(), 10)];
+            let type: PathPointType = this._pathTypes[<number>index];
             type |= PathPointType.closePath;
-            this._pathTypes[Number.parseInt(index.toString(), 10)] = type;
+            this._pathTypes[<number>index] = type;
         } else {
             if (this._points.length > 0) {
                 this.closeFigure(this._points.length - 1);
@@ -813,14 +814,14 @@ export class PdfPath {
      */
     closeAllFigures(): void {
         for (let i: number = 0; i < this._points.length; ++i) {
-            const pointType: PathPointType = this._pathTypes[Number.parseInt(i.toString(), 10)];
+            const pointType: PathPointType = this._pathTypes[<number>i];
             let flag: boolean = false;
             if (i !== 0 && pointType === PathPointType.start) {
                 this.closeFigure(i - 1);
                 flag = true;
             } else if (i === this._pathTypes.length - 1 && !flag && this._isXps) {
-                if (this._points[0][0] === this._points[Number.parseInt(i.toString(), 10)][0] &&
-                    this._points[0][1] === this._points[Number.parseInt(i.toString(), 10)][1]) {
+                if (this._points[0][0] === this._points[<number>i][0] &&
+                    this._points[0][1] === this._points[<number>i][1]) {
                     this.closeFigure(i);
                 }
             }
@@ -834,7 +835,7 @@ export class PdfPath {
             let ymin: number = this._points[0][1];
             let ymax: number = this._points[0][1];
             for (let i: number = 1; i < this._points.length; ++i) {
-                const point: number[] = this._points[Number.parseInt(i.toString(), 10)];
+                const point: number[] = this._points[<number>i];
                 xmin = Math.min(point[0], xmin);
                 xmax = Math.max(point[0], xmax);
                 ymin = Math.min(point[1], ymin);

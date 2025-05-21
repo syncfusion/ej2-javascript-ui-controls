@@ -524,8 +524,10 @@ export class PdfGanttPredecessor {
             point3 = new PointF(point2.x, point2.y + pixelToPoint(2 * width));
             predecessorPen = new PdfPen(brush, pixelToPoint(this.lineWidth));
         }
-        graphics.drawLine(predecessorPen, point1, point2);
-        graphics.drawLine(predecessorPen, point2, point3);
-        graphics.drawLine(predecessorPen, point3, point1);
+        if (this.childLeft > 0) {
+            graphics.drawLine(predecessorPen, point1, point2);
+            graphics.drawLine(predecessorPen, point2, point3);
+            graphics.drawLine(predecessorPen, point3, point1);
+        }
     }
 }

@@ -87,7 +87,7 @@ export class TextSearch {
      */
     public searchMatches: Array<any[]> = [];
     private multiSearchCounts: { [Key: string]: number } = {};
-    private getSearchTextDetails: {[key: number]: { Bounds: {[boundsKey: number] : {Bounds: any[]}}, pageOccurrence: number }} = {};
+    private getSearchTextDetails: {[key: number]: { Bounds: {[boundsKey: number] : {Bounds: any[]}}, PageOccurrence: number }} = {};
     private searchedPages: number[] = [];
     private isPrevSearch: boolean = false;
     private isExactMatch: boolean = false;
@@ -237,7 +237,7 @@ export class TextSearch {
                         this.isSingleSearch = true;
                         this.isExactMatch = this.isSelectedFromPopup;
                         this.isMultiSearch = false;
-                        if (!this.isDocumentTextCollectionReady && this.pdfViewerBase.clientSideRendering) {
+                        if (!this.isDocumentTextCollectionReady) {
                             if ((this.searchInput as HTMLInputElement).value !== '' && (this.searchInput as HTMLInputElement).value !== this.searchString) {
                                 this.isTextSearchHandled = false;
                                 this.searchCount = 0;
@@ -399,9 +399,9 @@ export class TextSearch {
         if (!this.pdfViewerBase.clientSideRendering) {
             // eslint-disable-next-line
             const proxy: TextSearch = this;
-            const jsonObject: object = { text: searchWord, matchCase: isMatchCase, documentId: this.pdfViewerBase.getDocumentId(), hashId: this.pdfViewerBase.hashId, action: 'SearchTextPdf', elementId: this.pdfViewer.element.id, uniqueId: this.pdfViewerBase.documentId, startIndex: startIndex ? startIndex : 0, endIndex: endPage, isCompleted: isPagesCompleted, isRequestsend: !isNullOrUndefined(isFirstResult) ? isFirstResult : true };
+            const jsonObject: object = { text: searchWord, matchCase: isMatchCase, documentId: this.pdfViewerBase.getDocumentId(), hashId: this.pdfViewerBase.hashId, action: 'SearchTextPdf', elementId: this.pdfViewer.element.id, uniqueId: this.pdfViewerBase.documentId, startIndex: startIndex ? startIndex : 0, endIndex: endPage, isCompleted: isPagesCompleted, isRequestsend: !isNullOrUndefined(isFirstResult) ? isFirstResult : false };
             this.textSearchHandleRequest = new AjaxHandler(this.pdfViewer);
-            this.textSearchHandleRequest.url = this.pdfViewer.serviceUrl + '/' + 'SearchTextPdf';
+            this.textSearchHandleRequest.url = this.pdfViewer.serviceUrl + '/' + 'RenderPdfTexts';
             this.textSearchHandleRequest.responseType = 'json';
             this.textSearchHandleRequest.send(jsonObject);
             this.textSearchHandleRequest.onSuccess = function (result: any): void {
@@ -518,15 +518,15 @@ export class TextSearch {
             if (!this.getSearchTextDetails[parseInt(pageNumber.toString(), 10)]) {
                 pageNumber = next;
             }
-            if ((this.searchIndex + 1) > this.getSearchTextDetails[parseInt(pageNumber.toString(), 10)].pageOccurrence ||
+            if ((this.searchIndex + 1) > this.getSearchTextDetails[parseInt(pageNumber.toString(), 10)].PageOccurrence ||
                 this.searchIndex < 0) {
-                if ((this.searchIndex + 1) > this.getSearchTextDetails[parseInt(pageNumber.toString(), 10)].pageOccurrence) {
+                if ((this.searchIndex + 1) > this.getSearchTextDetails[parseInt(pageNumber.toString(), 10)].PageOccurrence) {
                     pageNumber = ((pageNumber + 1) === keys[keys.length - 1]) ? 0 : next;
                     this.searchIndex = 0;
                 }
                 if (this.searchIndex < 0) {
                     pageNumber = ((pageNumber - 1) === -1) ? keys[keys.length - 1] : previous;
-                    this.searchIndex = (this.getSearchTextDetails[parseInt(pageNumber.toString(), 10)].pageOccurrence - 1);
+                    this.searchIndex = (this.getSearchTextDetails[parseInt(pageNumber.toString(), 10)].PageOccurrence - 1);
                 }
             }
         }
@@ -539,18 +539,10 @@ export class TextSearch {
                     if (Object.prototype.hasOwnProperty.call(value.Bounds, boundsKey)) {
                         const bounds: any = value.Bounds[parseInt(boundsKey.toString(), 10)];
                         for (let i: number = 0; i < bounds.length; i++) {
-                            const leftValue: number = (this.pdfViewerBase.clientSideRendering === true) ?
-                                bounds[parseInt(i.toString(), 10)].Left :
-                                this.pdfViewerBase.ConvertPointToPixel(bounds[parseInt(i.toString(), 10)].Left);
-                            const topValue: number = (this.pdfViewerBase.clientSideRendering === true) ?
-                                bounds[parseInt(i.toString(), 10)].Top :
-                                this.pdfViewerBase.ConvertPointToPixel(bounds[parseInt(i.toString(), 10)].Top);
-                            const heightValue: number = (this.pdfViewerBase.clientSideRendering === true) ?
-                                bounds[parseInt(i.toString(), 10)].Height :
-                                this.pdfViewerBase.ConvertPointToPixel(bounds[parseInt(i.toString(), 10)].Height);
-                            const widthValue: number = (this.pdfViewerBase.clientSideRendering === true) ?
-                                bounds[parseInt(i.toString(), 10)].Width :
-                                this.pdfViewerBase.ConvertPointToPixel(bounds[parseInt(i.toString(), 10)].Width);
+                            const leftValue: number = bounds[parseInt(i.toString(), 10)].Left;
+                            const topValue: number = bounds[parseInt(i.toString(), 10)].Top;
+                            const heightValue: number = bounds[parseInt(i.toString(), 10)].Height;
+                            const widthValue: number = bounds[parseInt(i.toString(), 10)].Width;
                             let pageIndex: number = null;
                             if (isNullOrUndefined(isSearchCompleted)) {
                                 pageIndex = pageNumber ? pageNumber : keys[0];
@@ -1965,7 +1957,7 @@ export class TextSearch {
     }
 
     private calculateBounds(textDiv: HTMLElement, height: number, width: number, top: number, left: number, pageDetails: any): void {
-        if (pageDetails.rotation === 0 || pageDetails.rotation === 2) {
+        if (pageDetails.rotation === 0 || pageDetails.rotation === 4 || pageDetails.rotation === 2) {
             textDiv.style.height = Math.ceil(height) * this.pdfViewerBase.getZoomFactor() + 'px';
             textDiv.style.width = width * this.pdfViewerBase.getZoomFactor() + 'px';
             if (pageDetails.rotation === 2) {
@@ -2863,7 +2855,7 @@ export class TextSearch {
                 }
             }, 1000);
         }
-        if (this.isDocumentTextCollectionReady || !this.pdfViewerBase.clientSideRendering) {
+        if (this.isDocumentTextCollectionReady) {
             if (searchText && searchText.length > 0 && searchText[searchText.length - 1] === ' ') {
                 searchText = searchText.slice(0, searchText.length - 1);
             }

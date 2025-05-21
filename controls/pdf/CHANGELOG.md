@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 29.2.5 (2025-05-21)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Fixed an issue where line annotation border style is not preserved properly.
+- Fixed an issue where undefined exception thrown while accessing destination page of child bookmarks.
+- Fixed an issue where image is not preserved in appearance of the rubber stamp annotation while export and import annotation as FDF format.
+- Fixed an issue where documents get corrupted while export and import annotations in FDF format.
+- Fixed an issue where annotation leader lines were not preserved in free text annotations.
+- Resolved the performance issue while rendering the string using true type font.
+- Fixed an issue where the caret annotation was not preserved while importing in XFDF format.
+- Fixed an issue where the bounds were not preserved correctly in the line annotation.
+- Fixed an issue where the rotation was not preserved correctly in the rubber stamp annotation template.
+- Fixed annotation visibility issue during JSON export and import with appearance.
+- Fixed incorrect line ending style for free text call out annotations.
+
 ## 29.2.4 (2025-05-14)
 
 ### PDF Parser
@@ -15,6 +33,7 @@
 - Fixed text markup annotations not keeping their correct position when creating appearances.
 - Fixed an issue where the subject was not retrieved as expected in free text annotations.
 - Fixed an issue where the border style was not preserved correctly in circle annotations.
+- Fixed an issue where the border style was not preserved correctly in ellipse annotations.
 
 ## 29.1.41 (2025-05-06)
 

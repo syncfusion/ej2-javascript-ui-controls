@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.2.5 (2025-05-21)
+
+### Image Editor
+
+#### Bug Fixes
+
+- The issue with "Image smoothing not working properly after window resize" has been resolved.
+
 ## 29.2.4 (2025-05-14)
 
 ### Image Editor

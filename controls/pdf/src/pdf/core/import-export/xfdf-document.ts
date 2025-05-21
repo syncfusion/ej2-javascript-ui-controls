@@ -88,7 +88,7 @@ export abstract class _ExportHelper {
                         } else if (selectedValue instanceof Array && selectedValue.length > 0) {
                             const values: string[] = [];
                             for (let i: number = 0; i < selectedValue.length; i++) {
-                                values.push(this._getEncodedValue(selectedValue[Number.parseInt(i.toString(), 10)], font));
+                                values.push(this._getEncodedValue(selectedValue[<number>i], font));
                             }
                             this._table.set(fieldName, values);
                             return values;
@@ -117,7 +117,7 @@ export abstract class _ExportHelper {
                             } else {
                                 if (field._dictionary.has('Opt')) {
                                     const options: string[] = field._dictionary.getArray('Opt');
-                                    let index: number = Number.parseInt(text, 10);
+                                    let index: number = Number (text);
                                     if (index === null || typeof index === 'undefined' || Number.isNaN(index)) {
                                         index = 0;
                                     }
@@ -126,7 +126,7 @@ export abstract class _ExportHelper {
                                         if (radioButton) {
                                             current = options[radioButton.selectedIndex];
                                         } else {
-                                            current = options[Number.parseInt(index.toString(), 10)];
+                                            current = options[<number>index];
                                         }
                                         if (current !== null && typeof current !== 'undefined') {
                                             text = current;
@@ -240,7 +240,7 @@ export abstract class _ExportHelper {
                                     } else if (selectedValue instanceof Array && selectedValue.length > 0) {
                                         const values: string[] = [];
                                         for (let i: number = 0; i < selectedValue.length; i++) {
-                                            values.push(this._getEncodedValue(selectedValue[Number.parseInt(i.toString(), 10)], font));
+                                            values.push(this._getEncodedValue(selectedValue[<number>i], font));
                                         }
                                         this._table.set(fieldName, values);
                                     }
@@ -263,7 +263,7 @@ export abstract class _ExportHelper {
                         } else if (selectedValue instanceof Array && selectedValue.length > 0) {
                             const values: string[] = [];
                             for (let i: number = 0; i < selectedValue.length; i++) {
-                                values.push(this._getEncodedValue(selectedValue[Number.parseInt(i.toString(), 10)], font));
+                                values.push(this._getEncodedValue(selectedValue[<number>i], font));
                             }
                             this._table.set(fieldName, values);
                         } else if (this._exportEmptyFields) {
@@ -295,7 +295,7 @@ export abstract class _ExportHelper {
                         } else {
                             if (field._dictionary.has('Opt')) {
                                 const options: string[] = field._dictionary.getArray('Opt');
-                                let index: number = Number.parseInt(text, 10);
+                                let index: number = Number(text);
                                 if (index === null || typeof index === 'undefined' || Number.isNaN(index)) {
                                     index = 0;
                                 }
@@ -304,7 +304,7 @@ export abstract class _ExportHelper {
                                     if (radioButton) {
                                         current = options[radioButton.selectedIndex];
                                     } else {
-                                        current = options[Number.parseInt(index.toString(), 10)];
+                                        current = options[<number>index];
                                     }
                                     if (current !== null && typeof current !== 'undefined') {
                                         text = current;
@@ -378,7 +378,7 @@ export abstract class _ExportHelper {
                     value = this._getValue(colorArray[0], isJson);
                 }
                 for (let i: number = 1; i < colorArray.length; i++) {
-                    value += ',' + this._getValue(colorArray[Number.parseInt(i.toString(), 10)], isJson);
+                    value += ',' + this._getValue(colorArray[<number>i], isJson);
                 }
             } else if (typeof primitive === 'number') {
                 value = primitive.toString();
@@ -506,7 +506,7 @@ export abstract class _ExportHelper {
         let updatedString: string = '';
         const differencesDictionary: Map<string, string> = structure.differencesDictionary;
         for (let i: number = 0; i < input.length; i++) {
-            const text: string = input[Number.parseInt(i.toString(), 10)];
+            const text: string = input[<number>i];
             const code: number = input.charCodeAt(i);
             if (differencesDictionary.has(text)) {
                 const difference: string = differencesDictionary.get(text);
@@ -550,14 +550,13 @@ export abstract class _ExportHelper {
                     value = primitive;
                 } else if (Array.isArray(primitive)) {
                     const values: string[] = [];
-                    for (let i: number = 0; i < primitive.length; i++) {
-                        const element: any = primitive[Number.parseInt(i.toString(), 10)]; // eslint-disable-line
+                    primitive.forEach((element: any) => { // eslint-disable-line
                         if (element instanceof _PdfName) {
                             values.push(element.name);
                         } else if (typeof element === 'string') {
                             values.push(element);
                         }
-                    }
+                    });
                     return values;
                 }
             }
@@ -944,8 +943,7 @@ export class _XfdfDocument extends _ExportHelper {
             let parentElements: any = elements; // eslint-disable-line
             if (key.toString().indexOf('.') !== -1) {
                 const values: string[] = key.toString().split('.');
-                for (let i: number = 0; i < values.length; i++) {
-                    const element: string = values[Number.parseInt(i.toString(), 10)];
+                values.forEach((element: string, i: number) => {
                     if (parentElements.has(element)) {
                         this._getElements(parentElements[element]); // eslint-disable-line
                         parentElements = parentElements[element]; // eslint-disable-line
@@ -958,7 +956,7 @@ export class _XfdfDocument extends _ExportHelper {
                             parentElements = newTable;
                         }
                     }
-                }
+                });
             } else {
                 parentElements.set(key, value);
             }
@@ -1166,7 +1164,7 @@ export class _XfdfDocument extends _ExportHelper {
                 if (elementCount % 2 === 0) {
                     let value: string = '';
                     for (let i: number = 0; i < elementCount - 1; i++) {
-                        value += this._getValue(vertices[Number.parseInt(i.toString(), 10)]) + (i % 2 !== 0 ? ';' : ',');
+                        value += this._getValue(vertices[<number>i]) + (i % 2 !== 0 ? ';' : ',');
                     }
                     value += this._getValue(vertices[elementCount - 1]);
                     if (value && value !== '') {
@@ -1199,7 +1197,7 @@ export class _XfdfDocument extends _ExportHelper {
             if (inkList && inkList.length > 0) {
                 writer._writeStartElement('inklist');
                 for (let j: number = 0; j < inkList.length; j++) {
-                    writer._writeElementString('gesture', this._getValue(inkList[Number.parseInt(j.toString(), 10)]));
+                    writer._writeElementString('gesture', this._getValue(inkList[<number>j]));
                 }
                 writer._writeEndElement();
             }
@@ -1612,8 +1610,7 @@ export class _XfdfDocument extends _ExportHelper {
                     }
                 }
                 if (this._groupHolders.length > 0) {
-                    for (let i: number = 0; i < this._groupHolders.length; i++) {
-                        const dictionary: _PdfDictionary = this._groupHolders[Number.parseInt(i.toString(), 10)];
+                    this._groupHolders.forEach((dictionary: _PdfDictionary) => {
                         const inReplyTo: string = dictionary.get('IRT');
                         if (inReplyTo && inReplyTo !== '') {
                             if (this._groupReferences.has(inReplyTo)) {
@@ -1622,7 +1619,7 @@ export class _XfdfDocument extends _ExportHelper {
                                 delete dictionary._map.IRT;
                             }
                         }
-                    }
+                    });
                 }
                 this._groupHolders = [];
                 this._groupReferences = new Map<string, _PdfReference>();
@@ -1678,8 +1675,7 @@ export class _XfdfDocument extends _ExportHelper {
         this._importField();
     }
     _importFormNodes(list: Element[]): void {
-        for (let i: number = 0; i < list.length; i++) {
-            const child: Element = list[Number.parseInt(i.toString(), 10)];
+        list.forEach((child: Element) => {
             let fieldName: string = '';
             if (child) {
                 if (child.hasAttribute('name')) {
@@ -1777,13 +1773,13 @@ export class _XfdfDocument extends _ExportHelper {
                     }
                 }
             }
-        }
+        });
     }
     _parseAnnotationData(element: Element): void {
         if (element) {
             let pageIndex: number = -1;
             if (element.hasAttributes && element.hasAttribute('page')) {
-                pageIndex = Number.parseInt(element.getAttribute('page'), 10);
+                pageIndex = Number(element.getAttribute('page'));
                 if (pageIndex >= 0 && pageIndex < this._document.pageCount) {
                     const page: PdfPage = this._document.getPage(pageIndex);
                     const annotationDictionary: _PdfDictionary = this._getAnnotationDictionary(page, element);
@@ -1827,13 +1823,10 @@ export class _XfdfDocument extends _ExportHelper {
         case 'line':
             dictionary.update('Subtype', _PdfName.get('Line'));
             if (element.hasAttribute('start') && element.hasAttribute('end')) {
-                const points: number[] = [];
-                element.getAttribute('start').split(',').forEach((value: string) => {
-                    points.push(Number.parseFloat(value));
-                });
-                element.getAttribute('end').split(',').forEach((value: string) => {
-                    points.push(Number.parseFloat(value));
-                });
+                const points: number[] = [
+                    ...element.getAttribute('start').split(',').map((value: string) => Number.parseFloat(value)),
+                    ...element.getAttribute('end').split(',').map((value: string) => Number.parseFloat(value))
+                ];
                 if (points.length === 4) {
                     dictionary.update('L', points);
                 }
@@ -1944,10 +1937,7 @@ export class _XfdfDocument extends _ExportHelper {
                 if (!isBasicStyle && element.hasAttribute('intensity')) {
                     borderEffectDictionary.update('I', Number.parseFloat(element.getAttribute('intensity')));
                 } else if (element.hasAttribute('dashes')) {
-                    const dashes: number[] = [];
-                    element.getAttribute('dashes').split(',').forEach((value: string) => {
-                        dashes.push(Number.parseFloat(value));
-                    });
+                    const dashes: number[] = element.getAttribute('dashes').split(',').map((value: string) => Number.parseFloat(value));
                     borderStyleDictionary.update('D', dashes);
                 }
             }
@@ -1961,8 +1951,7 @@ export class _XfdfDocument extends _ExportHelper {
         }
     }
     _applyAttributeValues(dictionary: _PdfDictionary, attributes: NamedNodeMap): void {
-        for (let i: number = 0; i < attributes.length; i++) {
-            const attribute: Attr = attributes[Number.parseInt(i.toString(), 10)];
+        Array.from(attributes).forEach((attribute: Attr) => {
             const value: string = attribute.value;
             let values: number[];
             let leaderExtend : number;
@@ -2078,14 +2067,14 @@ export class _XfdfDocument extends _ExportHelper {
                 if (value && value !== '') {
                     let annotFlag: PdfAnnotationFlag = PdfAnnotationFlag.default;
                     const flags: string[] = value.split(',');
-                    for (let i: number = 0; i < flags.length; i++) {
-                        const flagType: PdfAnnotationFlag = _stringToAnnotationFlags(flags[Number.parseInt(i.toString(), 10)]);
-                        if (i === 0) {
+                    flags.forEach((flag: string, index: number) => {
+                        const flagType: PdfAnnotationFlag = _stringToAnnotationFlags(flag);
+                        if (index === 0) {
                             annotFlag = flagType;
                         } else {
                             annotFlag |= flagType;
                         }
-                    }
+                    });
                     dictionary.update('F', annotFlag);
                 }
                 break;
@@ -2112,20 +2101,15 @@ export class _XfdfDocument extends _ExportHelper {
                 }
                 break;
             }
-        }
+        });
     }
     _obtainPoints(value: string): number[] {
-        const points: number[] = [];
-        value.split(',').forEach((value: string) => {
-            points.push(Number.parseFloat(value));
-        });
-        return points;
+        return value.split(',').map((value: string) => Number.parseFloat(value));
     }
     _parseInnerElements(dictionary: _PdfDictionary, element: Element, page: PdfPage): void {
         if (element.hasChildNodes) {
             const children: NodeList = element.childNodes;
-            for (let index: number = 0; index < children.length; index++) {
-                const child: Node = children[Number.parseInt(index.toString(), 10)];
+            Array.from(children).forEach((child: Node) => {
                 if (child.nodeType === 1) {
                     const childElement: Element = child as Element;
                     const textContent: string = child.textContent;
@@ -2173,10 +2157,7 @@ export class _XfdfDocument extends _ExportHelper {
                                 }
                             });
                             if (vertices.length > 0) {
-                                const verticesArray: number[] = [];
-                                vertices.forEach((value: string) => {
-                                    verticesArray.push(Number.parseFloat(value));
-                                });
+                                const verticesArray: number[] = vertices.map((value: string) => Number.parseFloat(value));
                                 dictionary.update('Vertices', verticesArray);
                             }
                         }
@@ -2188,8 +2169,7 @@ export class _XfdfDocument extends _ExportHelper {
                         if (child.hasChildNodes) {
                             const inkListCollection: Array<number[]> = [];
                             const childNodes: NodeList = child.childNodes;
-                            for (let i: number = 0; i < childNodes.length; i++) {
-                                const inkChild: Node = childNodes[Number.parseInt(i.toString(), 10)];
+                            Array.from(childNodes).forEach((inkChild: Node) => {
                                 if (inkChild && inkChild.nodeType === 1) {
                                     const inkChildElement: Element = inkChild as Element;
                                     if (inkChildElement.nodeName.toLowerCase() === 'gesture') {
@@ -2205,16 +2185,13 @@ export class _XfdfDocument extends _ExportHelper {
                                                 }
                                             });
                                             if (points.length > 0) {
-                                                const pointsArray: number[] = [];
-                                                points.forEach((value: string) => {
-                                                    pointsArray.push(Number.parseFloat(value));
-                                                });
+                                                const pointsArray: number[] = points.map((value: string) => Number.parseFloat(value));
                                                 inkListCollection.push(pointsArray);
                                             }
                                         }
                                     }
                                 }
-                            }
+                            });
                             dictionary.update('InkList', inkListCollection);
                         }
                         break;
@@ -2223,7 +2200,7 @@ export class _XfdfDocument extends _ExportHelper {
                         break;
                     }
                 }
-            }
+            });
         }
     }
     _addStreamData(child: Node, dictionary: _PdfDictionary, parent: Element): void {
@@ -2279,7 +2256,7 @@ export class _XfdfDocument extends _ExportHelper {
         fileStream.dictionary._crossReference = this._crossReference;
         const param: _PdfDictionary = new _PdfDictionary(this._crossReference);
         if (element.hasAttribute('size')) {
-            const size: number = Number.parseInt(element.getAttribute('size'), 10);
+            const size: number = Number(element.getAttribute('size'));
             if (typeof size !== 'undefined') {
                 param.update('Size', size);
                 fileStream.dictionary.update('DL', size);
@@ -2320,9 +2297,9 @@ export class _XfdfDocument extends _ExportHelper {
                             if (key && key === 'AP' && rootElement.hasChildNodes) {
                                 const appearance: _PdfDictionary = new _PdfDictionary(this._crossReference);
                                 childNodes = rootElement.childNodes;
-                                for (let i: number = 0; i < childNodes.length; i++) {
-                                    this._getAppearance(appearance, childNodes[Number.parseInt(i.toString(), 10)]);
-                                }
+                                Array.from(childNodes).forEach((childNode: Node) => {
+                                    this._getAppearance(appearance, childNode);
+                                });
                                 if (appearance.size > 0) {
                                     dictionary.update('AP', appearance);
                                 }
@@ -2406,12 +2383,11 @@ export class _XfdfDocument extends _ExportHelper {
         stream.dictionary._crossReference = this._crossReference;
         if (element.hasChildNodes) {
             const childNodes: NodeList = element.childNodes;
-            for (let i: number = 0; i < childNodes.length; i++) {
-                const child: Node = childNodes[Number.parseInt(i.toString(), 10)];
-                if (child && child.nodeType === 1) {
+            Array.from(childNodes).forEach((child: Node) => {
+                if (child.nodeType === 1) {
                     this._getAppearance(stream, child);
                 }
-            }
+            });
         }
         return stream;
     }
@@ -2419,12 +2395,11 @@ export class _XfdfDocument extends _ExportHelper {
         const dictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
         if (element.hasChildNodes) {
             const childNodes: NodeList = element.childNodes;
-            for (let i: number = 0; i < childNodes.length; i++) {
-                const child: Node = childNodes[Number.parseInt(i.toString(), 10)];
-                if (child && child.nodeType === 1) {
+            Array.from(childNodes).forEach((child: Node) => {
+                if (child.nodeType === 1) {
                     this._getAppearance(dictionary, child);
                 }
-            }
+            });
         }
         return dictionary;
     }
@@ -2432,12 +2407,11 @@ export class _XfdfDocument extends _ExportHelper {
         const array: any = []; // eslint-disable-line
         if (element.hasChildNodes) {
             const childNodes: NodeList = element.childNodes;
-            for (let i: number = 0; i < childNodes.length; i++) {
-                const child: Node = childNodes[Number.parseInt(i.toString(), 10)];
-                if (child && child.nodeType === 1) {
+            Array.from(childNodes).forEach((child: Node) => {
+                if (child.nodeType === 1) {
                     this._addArrayElements(array, child);
                 }
-            }
+            });
         }
         return array;
     }
@@ -2530,7 +2504,7 @@ export class _XfdfDocument extends _ExportHelper {
     _getInt(element: Element): number {
         let value: number;
         if (element && element.hasAttribute('VAL')) {
-            value = Number.parseInt(element.getAttribute('VAL'), 10);
+            value = Number(element.getAttribute('VAL'));
         }
         return value;
     }
@@ -2563,7 +2537,7 @@ export class _XfdfDocument extends _ExportHelper {
         if (element.hasChildNodes) {
             const childNodes: NodeList = element.childNodes;
             for (let i: number = 0; i < childNodes.length; i++) {
-                const childElement: Element = childNodes[Number.parseInt(i.toString(), 10)] as Element;
+                const childElement: Element = childNodes[<number>i] as Element;
                 if (childElement && childElement.localName === 'measure') {
                     measurement = childElement;
                     break;
@@ -2587,8 +2561,7 @@ export class _XfdfDocument extends _ExportHelper {
             }
             if (measurement.hasChildNodes) {
                 const childNodes: NodeList = measurement.childNodes;
-                for (let i: number = 0; i < childNodes.length; i++) {
-                    const child: Node = childNodes[Number.parseInt(i.toString(), 10)];
+                Array.from(childNodes).forEach((child: Node) => {
                     if (child && child.nodeType === 1) {
                         const childElement: Element = child as Element;
                         switch (childElement.nodeName.toLowerCase()) {
@@ -2603,7 +2576,7 @@ export class _XfdfDocument extends _ExportHelper {
                             break;
                         }
                     }
-                }
+                });
             }
         }
         if (xformat) {
@@ -2659,7 +2632,7 @@ export class _XfdfDocument extends _ExportHelper {
         }
     }
     _addInt(dictionary: _PdfDictionary, key: string, value: string): void {
-        const intValue: number = Number.parseInt(value, 10);
+        const intValue: number = Number (value);
         if (typeof intValue !== 'undefined') {
             dictionary.update(key, intValue);
         }
@@ -2774,12 +2747,11 @@ export class _FontStructure {
                 const differences: any[] = encoding.getArray('Differences'); // eslint-disable-line
                 let count: number = 0;
                 if (differences !== null && typeof differences !== 'undefined') {
-                    for (let i: number = 0; i < differences.length; i++) {
+                    differences.forEach((item: any) => { // eslint-disable-line
                         let text: string = '';
-                        const item: any = differences[Number.parseInt(i.toString(), 10)]; // eslint-disable-line
                         if (typeof item === 'number') {
                             text = item.toString();
-                            count = Number.parseInt(text, 10);
+                            count = Number(text);
                         } else if (item instanceof _PdfName) {
                             text = item.name;
                             if (this._fontType === 'Type1' && text === '.notdef') {
@@ -2794,7 +2766,7 @@ export class _FontStructure {
                                 count++;
                             }
                         }
-                    }
+                    });
                 }
             }
         }
@@ -2835,7 +2807,7 @@ export class _FontStructure {
     _decodeHexFontName(fontName: string): string {
         let result: string = fontName;
         for (let i: number = 0; i < fontName.length; i++) {
-            if (fontName[Number.parseInt(i.toString(), 10)] === '#') {
+            if (fontName[<number>i] === '#') {
                 const hexValue: string = fontName[i + 1] + fontName[i + 2];
                 const value: number = Number.parseInt(hexValue, 16);
                 if (value !== 0) {

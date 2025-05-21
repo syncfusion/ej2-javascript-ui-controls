@@ -2147,13 +2147,13 @@ export class TaskbarEdit extends DateProcessor {
         else {
             calculatedDate.setTime(calculatedDate.getTime() + (left * milliSecondsPerPixel));
         }
-        if (this.parent.isInDst(calculatedDate)) {
-            pStartDate.setTime(pStartDate.getTime() + ((left - (this.parent.perDayWidth / 24)) * milliSecondsPerPixel));
-        } else {
-            if (!this.parent.timelineSettings.showWeekend) {
-                pStartDate = calculatedDate;
-            }
-            else {
+        if (!this.parent.timelineSettings.showWeekend) {
+            pStartDate = calculatedDate;
+        }
+        else {
+            if (this.parent.isInDst(calculatedDate)) {
+                pStartDate.setTime(pStartDate.getTime() + ((left - (this.parent.perDayWidth / 24)) * milliSecondsPerPixel));
+            } else {
                 pStartDate.setTime(pStartDate.getTime() + (left * milliSecondsPerPixel));
             }
         }

@@ -86,7 +86,7 @@ export class ToolbarRenderer implements IRenderer {
     private toolbarCreated(): void {
         this.parent.notify(events.toolbarCreated, this);
         if (this.mode === 'Extended') {
-            const extendedToolbarElement: HTMLElement = this.toolbarPanel.querySelector(`#${CSS.escape(this.parent.element.id)}_toolbar_nav`);
+            const extendedToolbarElement: HTMLElement = this.toolbarPanel.querySelector('.e-expended-nav');
             if (extendedToolbarElement) {
                 EventHandler.add(extendedToolbarElement, 'mousedown', this.extendedToolbarMouseDownHandler, this);
             }

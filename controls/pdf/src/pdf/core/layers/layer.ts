@@ -517,11 +517,11 @@ export class PdfLayer {
         if (this._graphics && this._name && this._name !== '') {
             this._graphics._isEmptyLayer = true;
             if (this._parentLayer.length !== 0) {
-                for (let i: number = 0; i < this._parentLayer.length; i++) {
-                    if (this._parentLayer[Number.parseInt(i.toString(), 10)]._id && this._parentLayer[Number.parseInt(i.toString(), 10)]._layerId !== '') {
-                        this._graphics._sw._write(`/OC /${this._parentLayer[Number.parseInt(i.toString(), 10)]._id} BDC`);
+                this._parentLayer.forEach((layer: PdfLayer) => {
+                    if (layer._id && layer._layerId !== '') {
+                        this._graphics._sw._write(`/OC /${layer._id} BDC`);
                     }
-                }
+                });
             }
             const data: string = `/OC /${this._id} BDC`;
             if (this.name && this.name !== '') {
@@ -696,13 +696,13 @@ export class PdfLayer {
                     isPresent = this._setLayerPage(reference, pageBase, layerID);
                 }
             } else {
-                for (let a: number = 0; a < refArray.length; a++) {
-                    if (refArray[Number.parseInt(a.toString(), 10)] instanceof _PdfReference) {
-                        reference = refArray[Number.parseInt(a.toString(), 10)] as _PdfReference;
+                refArray.forEach((item: any) => { // eslint-disable-line
+                    if (item instanceof _PdfReference) {
+                        reference = item as _PdfReference;
                         dictionary = this._crossReference._fetch(reference) as _PdfDictionary;
                         isPresent = this._setLayerPage(reference, pageBase, layerID);
                     }
-                }
+                });
             }
         } else if (dictionary.has('Name')) {
             isPresent = this._setLayerPage(reference, pageBase, layerID);

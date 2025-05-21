@@ -406,8 +406,8 @@ export class _PdfCrossReference {
             } else {
                 m = objRegExp.exec(token);
                 if (m) {
-                    const objectNumber: number = Number.parseInt(m[1]) | 0; // eslint-disable-line
-                    const gen: number = Number.parseInt(m[2]) | 0; // eslint-disable-line
+                    const objectNumber: number = <number>(m[1]) | 0;
+                    const gen: number = <number>(m[2]) | 0;
                     let contentLength: number;
                     let startPos: number = position + token.length;
                     let updateEntries: boolean = false;
@@ -746,8 +746,7 @@ export class _PdfCrossReference {
                 } else if (value._updated && (value.isCatalog || this._allowCatalog)) {
                     this._updatedDictionary(currentLength, key, buffer, value);
                 }
-            }
-            else if (value instanceof _PdfBaseStream) {
+            } else if (value instanceof _PdfBaseStream) {
                 const dictionary: _PdfDictionary = value.dictionary;
                 if (dictionary && dictionary._updated && (!dictionary.isCatalog || this._allowCatalog) && !dictionary._isProcessed) {
                     this._updatedDictionary(currentLength, key, buffer, value);
@@ -769,9 +768,7 @@ export class _PdfCrossReference {
         this._objectStreamCollection.forEach((value: _PdfArchievedStream, key: _PdfReference) => {
             value._save(buffer, this._currentLength);
             if (Array.isArray(value._collection)) {
-                value._collection.forEach((item: any) => { // eslint-disable-line
-                    this._indexes.push(item);
-                });
+                this._indexes.push(...value._collection);
             }
             this._indexes.push(key.objectNumber, 1);
         });

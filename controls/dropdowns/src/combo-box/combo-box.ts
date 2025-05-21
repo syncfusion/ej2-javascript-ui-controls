@@ -3,7 +3,7 @@
 import { EventHandler, Property, Event, EmitType, addClass, Browser, KeyboardEventArgs, removeClass, detach } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, NotifyPropertyChanges, getValue, setValue } from '@syncfusion/ej2-base';
 import { DropDownList, dropDownListClasses } from '../drop-down-list/drop-down-list';
-import { FilteringEventArgs } from '../drop-down-base/drop-down-base';
+import { FilteringEventArgs, ResultData } from '../drop-down-base/drop-down-base';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { ComboBoxModel } from '../combo-box/combo-box-model';
 import { Search } from '../common/incremental-search';
@@ -426,20 +426,22 @@ export class ComboBox extends DropDownList {
                 const fields: string = (this.fields.value) ? this.fields.value : '';
                 const currentValue: string | number | boolean = this.allowObjectBinding && !isNullOrUndefined(this.value) ? getValue((this.fields.value) ? this.fields.value : '', this.value) : this.value;
                 if (this.dataSource instanceof DataManager) {
-                    const getItem: any = <{ [key: string]: Object }[] | string[] | number[] | boolean[]>new DataManager(
-                        this.virtualGroupDataSource as DataOptions | JSON[]).executeLocal(new Query().where(new Predicate(fields, 'equal', currentValue)));
-                    if (getItem && getItem.length > 0) {
-                        this.itemData = getItem[0];
-                        doesItemExist = true;
-                        const dataItem: { [key: string]: string } = this.getItemData();
-                        const value: string | number | boolean | Object = this.allowObjectBinding
-                            ? this.getDataByValue(dataItem.value)
-                            : dataItem.value;
-                        if ((this.value === dataItem.value && this.text !== dataItem.text)
-                            || (this.value !== dataItem.value && this.text === dataItem.text)) {
-                            this.setProperties({ 'text': dataItem.text ? dataItem.text.toString() : dataItem.text, 'value': value });
-                        }
-                    }
+                    this.dataSource.executeQuery(new Query().where(new Predicate(fields, 'equal', currentValue)))
+                        .then((e: Object) => {
+                            if ((e as ResultData).result.length > 0) {
+                                this.itemData = (e as ResultData).result[0];
+                                const dataItem: { [key: string]: string } = this.getItemData();
+                                const value: string | number | boolean | Object = this.allowObjectBinding ?
+                                    this.getDataByValue(dataItem.value) : dataItem.value;
+                                if ((this.value === dataItem.value && this.text !== dataItem.text) ||
+                                    (this.value !== dataItem.value && this.text === dataItem.text)) {
+                                    this.setProperties({ 'text': dataItem.text ? dataItem.text.toString() : dataItem.text, 'value': value });
+                                }
+                            }
+                            else{
+                                this.valueMuteChange(null);
+                            }
+                        });
                 }
                 else{
                     const getItem: any = <{ [key: string]: Object }[] | string[] | number[] | boolean[]>new DataManager(
@@ -468,7 +470,8 @@ export class ComboBox extends DropDownList {
                 (this.allowCustom && this.enableVirtualization && !doesItemExist)
             ) {
                 this.valueMuteChange(this.value);
-            } else if (!this.enableVirtualization || (this.enableVirtualization && !doesItemExist)) {
+            } else if (!this.enableVirtualization || (this.enableVirtualization && !(this.dataSource instanceof DataManager)
+                && !doesItemExist )) {
                 this.valueMuteChange(null);
             }
         } else if (this.text && isNullOrUndefined(this.value)) {
@@ -637,7 +640,10 @@ export class ComboBox extends DropDownList {
                 }
             }
             const activeElement: Element = activeItem.item as Element;
-            if (!isNullOrUndefined(activeElement)) {
+            const dataItem: { [key: string]: string } = this.getItemData();
+            if ((!isNullOrUndefined(activeElement) && !this.enableVirtualization) || (this.enableVirtualization &&
+                this.isTyped && isNullOrUndefined(dataItem) && isNullOrUndefined(dataItem.value) &&
+                dataItem.value.toString() === activeElement.getAttribute('data-value').toString())) {
                 const count: number = this.getIndexByValue(activeElement.getAttribute('data-value')) - 1;
                 const height: number = parseInt(getComputedStyle(this.liCollections[0], null).getPropertyValue('height'), 10);
                 if (!isNaN(height) && this.getModuleName() !== 'autocomplete') {

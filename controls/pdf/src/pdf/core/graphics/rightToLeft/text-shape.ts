@@ -64,10 +64,9 @@ export class _ArabicShapeRenderer {
      * @private
      */
     constructor() {
-        for (let i: number = 0; i < this._arabicCharTable.length; i++) {
-            this._arabicMapTable.set(this._arabicCharTable[Number.parseInt(i.toString(), 10)][0],
-                                     this._arabicCharTable[Number.parseInt(i.toString(), 10)]);
-        }
+        this._arabicCharTable.forEach((charTableEntry: any) => { // eslint-disable-line
+            this._arabicMapTable.set(charTableEntry[0], charTableEntry);
+        });
     }
     _getCharacterShape(input: string, index: number): string {
         if ((input >= this._hamza) && (input <= this._bwhb)) {
@@ -85,7 +84,7 @@ export class _ArabicShapeRenderer {
         let builder: string = '';
         let value: string = '';
         for (let i: number = 0; i < text.length; i++) {
-            const c: string = text[Number.parseInt(i.toString(), 10)];
+            const c: string = text[<number>i];
             if (c >= '؀'  && c <= 'ۿ') {
                 value = value + c;
             } else {

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.2.5 (2025-05-21)
+
+### NumericTextBox
+
+#### Bug Fixes
+
+- `#FD66791` - Fixed an issue where the `validatehidden` attribute not allowed on input element.
+
 ## 29.2.4 (2025-05-14)
 
 ### ColorPicker

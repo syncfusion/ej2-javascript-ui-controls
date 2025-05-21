@@ -114,7 +114,11 @@ export class PdfTemplate {
      * ```
      */
     constructor(bounds: Rectangle)
-    constructor(value?: number[] | _PdfBaseStream | Size | Rectangle, crossReference?: _PdfCrossReference) {
+    constructor(bounds: Rectangle, crossReference: _PdfCrossReference)
+    constructor(
+        value?: number[] | _PdfBaseStream | Size | Rectangle,
+        crossReference?: _PdfCrossReference
+    ) {
         if (crossReference) {
             this._crossReference = crossReference;
         }

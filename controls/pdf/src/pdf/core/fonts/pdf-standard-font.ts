@@ -238,7 +238,7 @@ export abstract class PdfFont {
         } else {
             let count: number = 0;
             for (let i: number = 0; i < text.length; i++) {
-                if (symbols.indexOf(text[Number.parseInt(i.toString(), 10)]) !== -1) {
+                if (symbols.indexOf(text[<number>i]) !== -1) {
                     count++;
                 }
             }
@@ -651,9 +651,9 @@ export class PdfStandardFont extends PdfFont {
      */
     getLineWidth(line: string, format: PdfStringFormat): number {
         let width: number = 0;
-        for (let i: number = 0, len: number = line.length; i < len; i++) {
-            width += this._getCharacterWidthInternal(line[Number.parseInt(i.toString(), 10)]);
-        }
+        line.split('').forEach((char: string) => {
+            width += this._getCharacterWidthInternal(char);
+        });
         width *= (0.001 * this._metrics._size);
         width = this._applyFormatSettings(line, format, width);
         return width;
@@ -1106,7 +1106,7 @@ export class PdfTrueTypeFont extends PdfFont {
             width = this._getUnicodeLineWidth(line, width);
         } else {
             for (let i: number = 0, len: number = line.length; i < len; i++) {
-                width += this._getCharacterWidthInternal(line[Number.parseInt(i.toString(), 10)]);
+                width += this._getCharacterWidthInternal(line[<number>i]);
             }
         }
         width *= (0.001 * this._metrics._size);
@@ -1123,13 +1123,12 @@ export class PdfTrueTypeFont extends PdfFont {
         glyphIndex = value._glyphIndex;
         if (result && glyphIndex !== null) {
             const ttfReader: _TrueTypeReader = (this._fontInternal as _UnicodeTrueTypeFont)._ttfReader;
-            for (let i: number = 0, len: number = glyphIndex.length; i < len; i++) {
-                const index: number = glyphIndex[Number.parseInt(i.toString(), 10)];
+            glyphIndex.forEach((index: number) => {
                 const glyph: _TrueTypeGlyph = ttfReader._getGlyph(index);
                 if (glyph !== null && typeof glyph !== 'undefined') {
                     width += glyph._width;
                 }
-            }
+            });
         }
         return width;
     }

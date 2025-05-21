@@ -2454,11 +2454,14 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         if (!(closest(target, '[id="' + this.popupObj.element.id + '"]')) && target !== this.inputElement
             && target !== (this.inputWrapper && this.inputWrapper.buttons[0]) &&
             target !== (this.inputWrapper && this.inputWrapper.clearButton) &&
-            target !== (this.inputWrapper && this.inputWrapper.container)
-            && (!target.classList.contains('e-dlg-overlay'))) {
+            target !== (this.inputWrapper && this.inputWrapper.container)) {
             if (this.isPopupOpen()) {
                 this.hide();
-                this.focusOut();
+                if (target.classList.contains('e-dlg-overlay')) {
+                    event.preventDefault();
+                } else {
+                    this.focusOut();
+                }
             }
         } else if (target !== this.inputElement) {
             if (!Browser.isDevice) {

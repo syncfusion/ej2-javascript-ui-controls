@@ -430,6 +430,17 @@ describe('MultiSelect', () => {
             listObj.addItem(item);
             expect(listObj.ulElement.querySelectorAll('li').length === 11).toBe(true);
         });
+        it('Adding item in the group', () => {
+            listObj = new MultiSelect({
+                dataSource: data,
+                mode: 'CheckBox', debounceDelay: 0,
+                fields: { groupBy: 'Category', text: 'Vegetable', value: 'Id' },
+            });
+            listObj.appendTo('#multiselect');
+            (<any>listObj).isAngular = true;
+            (<any>listObj).ngEle = item;
+            listObj.showPopup();
+        });
     });
     describe('Add item using addItem method in new group item', () => {
         let listObj: any;

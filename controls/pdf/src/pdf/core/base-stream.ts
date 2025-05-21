@@ -213,9 +213,7 @@ export class _PdfContentStream extends _PdfBaseStream {
                 this._bytes.push(data.charCodeAt(i));
             }
         } else {
-            data.forEach((element: number) => {
-                this._bytes.push(element);
-            });
+            this._bytes.push(...data);
         }
         this.dictionary._updated = true;
     }

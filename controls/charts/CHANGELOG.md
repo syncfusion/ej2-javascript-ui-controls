@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 29.2.5 (2025-05-21)
+
+### Chart
+
+#### Features
+
+- `#I668455` - Provided support for setting offset values for labels in category axes.
+
+#### Bug Fixes
+
+- `#I722486` - Chart empty point mode now works properly in ASP.NET MVC Chart.
+- `#I725935` - Console error no longer occurs when toggling combination line and stacked area series.
+
 ## 29.2.4 (2025-05-14)
 
 ### Chart

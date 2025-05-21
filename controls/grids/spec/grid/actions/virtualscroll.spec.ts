@@ -1861,6 +1861,9 @@ describe('Grouping VirtualScroll code coverage', () => {
         captions = gObj.element.querySelectorAll('.e-groupcaption');
     });
 
+    it('coverage for virtualcell focus due to preventFocusOnGroup', function () {
+        (gObj.focusModule as any).focus();
+    });
 
     it('coverage for grouping with hide/show column in virtualscroll', () => {
         let captions: NodeListOf<Element> = gObj.element.querySelectorAll('.e-groupcaption');
@@ -2152,6 +2155,12 @@ describe('EJ2-948433: grid.getSelectedRecords() Returns Empty Array for Selected
             done();
         }
         gObj.selectRow(1);
+        done();
+    })
+
+    it('Coverage for first cell focus on appenChild method', (done: Function) => {
+        (gObj.contentModule as any).firstCellFocus = true;
+        gObj.refreshColumns();
         done();
     })
 

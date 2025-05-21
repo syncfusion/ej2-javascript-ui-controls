@@ -756,25 +756,21 @@ export class Selection implements IAction {
         this.updatePersistCollection(selectedRow, true);
         this.updateCheckBoxes(selectedRow, true);
         this.addRemoveClassesForRow(selectedRow, true, null, 'e-selectionbackground', 'e-active');
-        if (!this.preventFocus && !(this.parent.isFocusFirstCell || this.isFocusLastCell)) {
+        if (!this.preventFocus || this.parent.isFocusFirstCell || this.isFocusLastCell) {
             let target: Element = this.focus.getPrevIndexes().cellIndex ?
                 (<HTMLTableRowElement>selectedRow).cells[this.focus.getPrevIndexes().cellIndex] :
-                selectedRow.querySelector('.e-selectionbackground:not(.e-hide):not(.e-detailrowcollapse):not(.e-detailrowexpand)');
+                selectedRow.querySelector('.e-selectionbackground:not(.e-hide, .e-detailrowcollapse, .e-detailrowexpand, .e-rowdragdrop)');
             if (this.parent.contextMenuModule && this.mouseButton === 2) {
                 target = this.parent.contextMenuModule.cell;
             }
-            if (!target || preventFocus) { return; }
-            this.focus.onClick({ target }, true);
-        } else {
             if (this.parent.isFocusFirstCell || this.isFocusLastCell) {
                 this.parent.isFocusFirstCell = false;
                 const selector: string = this.isFocusLastCell ? 'last-child' : 'first-child';
-                const target: Element = selectedRow.querySelector('.e-selectionbackground.e-rowcell:not(.e-hide, .e-detailrowcollapse, .e-detailrowexpand, .e-rowdragdrop, .e-gridchkbox):' + selector);
+                target = selectedRow.querySelector('.e-selectionbackground.e-rowcell:not(.e-hide, .e-detailrowcollapse, .e-detailrowexpand, .e-rowdragdrop, .e-gridchkbox):' + selector);
                 this.isFocusLastCell = false;
-                if (target) {
-                    this.focus.onClick({ target: target }, true, true);
-                }
             }
+            if (!target || preventFocus) { return; }
+            this.focus.onClick({ target }, true, true);
         }
     }
 
@@ -1359,7 +1355,7 @@ export class Selection implements IAction {
         if (!isNullOrUndefined(cell)) {
             cell.setAttribute('aria-selected', 'true');
             if (!this.preventFocus) {
-                this.focus.onClick({ target: cell }, true);
+                this.focus.onClick({ target: cell }, true, true);
             }
         }
     }
@@ -3666,8 +3662,10 @@ export class Selection implements IAction {
             }
             this.drawBorders();
         } else if (this.isMultiShiftRequest) {
-            if (this.parent.isCheckBoxSelection || (!this.parent.isCheckBoxSelection &&
-                !closest(this.target, '.' + literals.rowCell).classList.contains(literals.gridChkBox))) {
+            const isChkBox: boolean = closest(this.target, '.' + literals.rowCell).classList.contains(literals.gridChkBox);
+            if (this.parent.isCheckBoxSelection || (!this.parent.isCheckBoxSelection && !isChkBox)
+                || (this.parent.getColumns().some((col: Column) => col.type === 'checkbox')
+                && this.selectionSettings.checkboxMode === 'ResetOnRowClick' && isChkBox)) {
                 this.selectRowsByRange(isUndefined(this.prevRowIndex) ? rowIndex : this.prevRowIndex, rowIndex);
             } else {
                 this.addRowsToSelection([rowIndex]);

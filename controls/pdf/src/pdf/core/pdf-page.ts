@@ -1,13 +1,14 @@
 import { _PdfCrossReference } from './pdf-cross-reference';
 import { _PdfDictionary, _PdfReference, _PdfName } from './pdf-primitives';
-import { _getInheritableProperty, _isNullOrUndefined } from './utils';
+import { _checkRotation, _getInheritableProperty, _getPageIndex, _isNullOrUndefined, _stringToBytes } from './utils';
 import { PdfAnnotationCollection } from './annotations/annotation-collection';
 import { PdfGraphics, PdfGraphicsState } from './graphics/pdf-graphics';
 import { _PdfBaseStream, _PdfContentStream } from './base-stream';
 import { PdfRotationAngle, PdfDestinationMode, PdfFormFieldsTabOrder, PdfPageOrientation } from './enumerator';
 import { PdfNamedDestination } from './pdf-outline';
-import { PdfPageSettings } from './pdf-document';
+import { PdfDocument, PdfPageSettings } from './pdf-document';
 import { PdfTemplate } from './graphics/pdf-template';
+import { _PdfCatalog } from './pdf-catalog';
 /**
  * Represents a page loaded from the PDF document.
  * ```typescript
@@ -713,7 +714,7 @@ export class PdfDestination {
     _destinationMode: PdfDestinationMode = PdfDestinationMode.location;
     _zoom: number = 0;
     _isValid: boolean = true;
-    _index: number = 0;
+    _index: number;
     _destinationBounds: number[] = [0, 0, 0, 0];
     _array: Array<any> = Array<any>(); // eslint-disable-line
     _parent: any; // eslint-disable-line
@@ -1133,7 +1134,7 @@ export class PdfDestination {
                 break;
             case PdfDestinationMode.fitH:
                 this._array.push(_PdfName.get('FitH'));
-                this._array.push((typeof page !== 'undefined' && page !== null) ? page._size[1] - this._location[1] : 0);
+                this._array.push((typeof page !== 'undefined' && page !== null) ? page.size[1] - this._location[1] : 0);
                 break;
             }
             if (this._parent) {
@@ -1143,4 +1144,286 @@ export class PdfDestination {
         }
     }
 }
-
+export class _PdfDestinationHelper {
+    _dictionary: _PdfDictionary;
+    _key: string;
+    constructor(dictionary: _PdfDictionary, value: string) {
+        if (dictionary && typeof value === 'string') {
+            this._dictionary = dictionary;
+            this._key = value;
+        }
+    }
+    _obtainDestination(): PdfDestination {
+        let destination: PdfDestination;
+        let page: PdfPage;
+        let loadedDocument: PdfDocument;
+        if (!this._dictionary || !this._dictionary.has(this._key)) {
+            return undefined;
+        } else if (this._dictionary && this._dictionary._crossReference && this._dictionary._crossReference._document) {
+            loadedDocument = this._dictionary._crossReference._document;
+        }
+        let destinationArray: any[] = this._dictionary.getArray(this._key); // eslint-disable-line
+        if ((typeof destinationArray === 'string' || (destinationArray instanceof _PdfName && typeof destinationArray.name === 'string')) && loadedDocument) {
+            destinationArray = this._getDestination(destinationArray, loadedDocument);
+        }
+        let value: any; // eslint-disable-line
+        if (Array.isArray(destinationArray) && destinationArray.length > 0) {
+            value = destinationArray[0];
+        }
+        let mode: _PdfName;
+        let left: number;
+        let top: number;
+        let bottom: number;
+        let right: number;
+        let zoom: number;
+        let index: number;
+        let topValue: number;
+        let leftValue: number;
+        if (typeof value === 'number') {
+            index = value;
+        } else if (value instanceof _PdfDictionary) {
+            index = _getPageIndex(loadedDocument, value);
+        } else if (value) {
+            const pageDictionary: _PdfDictionary = loadedDocument._crossReference._fetch(value);
+            if (pageDictionary && pageDictionary instanceof _PdfDictionary) {
+                index = _getPageIndex(loadedDocument, pageDictionary);
+            }
+        }
+        if (!page && typeof index === 'number' && (index >= 0 && index < loadedDocument.pageCount)) {
+            page = loadedDocument.getPage(index);
+        }
+        if (Array.isArray(destinationArray) && destinationArray.length > 0) {
+            mode = destinationArray[1];
+        }
+        if (mode && page && destinationArray) {
+            switch (mode.name) {
+            case 'XYZ':
+                left = destinationArray[2];
+                top = destinationArray[3];
+                zoom = destinationArray[4];
+                topValue = typeof top === 'number' ? (page.size[1] - top) : 0;
+                leftValue = typeof left === 'number' ? left : 0;
+                if (page.rotation !== PdfRotationAngle.angle0) {
+                    topValue = _checkRotation(page, top, left);
+                }
+                destination = new PdfDestination(page, [leftValue, topValue]);
+                destination._index = page._pageIndex;
+                destination.zoom = (typeof zoom !== 'undefined' && zoom !== null) ? zoom : 0;
+                if (left === null || top === null || zoom === null || typeof left === 'undefined' ||
+                        typeof top === 'undefined' || typeof zoom === 'undefined') {
+                    destination._setValidation(false);
+                }
+                break;
+            case 'FitR':
+                if (destinationArray.length > 2) {
+                    left = destinationArray[2];
+                }
+                if (destinationArray.length > 3) {
+                    bottom = destinationArray[3];
+                }
+                if (destinationArray.length > 4) {
+                    right = destinationArray[4];
+                }
+                if (destinationArray.length > 5) {
+                    top = destinationArray[5];
+                }
+                left = (typeof left !== 'undefined' && left !== null) ? left : 0;
+                bottom = (typeof bottom !== 'undefined' && bottom !== null) ? bottom : 0;
+                right = (typeof right !== 'undefined' && right !== null) ? right : 0;
+                top = (typeof top !== 'undefined' && top !== null) ? top : 0;
+                destination = new PdfDestination(page, [left, bottom, right, top]);
+                destination._index = page._pageIndex;
+                destination.mode = PdfDestinationMode.fitR;
+                break;
+            case 'FitH':
+            case 'FitBH':
+                if (destinationArray.length > 2) {
+                    top = destinationArray[2];
+                }
+                topValue = typeof top === 'number' ? (page.size[1] - top) : 0;
+                destination = new PdfDestination(page, [0, topValue]);
+                destination._index = page._pageIndex;
+                destination.mode = PdfDestinationMode.fitH;
+                if (top === null || typeof top === 'undefined') {
+                    destination._setValidation(false);
+                }
+                break;
+            case 'Fit':
+                destination = new PdfDestination(page);
+                destination._index = page._pageIndex;
+                destination.mode = PdfDestinationMode.fitToPage;
+                break;
+            }
+        } else if (Array.isArray(destinationArray)) {
+            destination = new PdfDestination();
+            if (destinationArray.length > 4) {
+                zoom = destinationArray[4];
+            }
+            if (destinationArray.length > 1) {
+                mode = destinationArray[1];
+            }
+            if (typeof zoom === 'number') {
+                destination.zoom = zoom;
+            }
+            if (mode) {
+                if (mode.name === 'Fit') {
+                    destination.mode = PdfDestinationMode.fitToPage;
+                } else if (mode.name === 'XYZ') {
+                    if (destinationArray.length > 2) {
+                        left = destinationArray[2];
+                    }
+                    if (destinationArray.length > 3) {
+                        topValue = destinationArray[3];
+                    }
+                    if ((typeof left === 'undefined' && left === null) || (typeof topValue === 'undefined' && topValue === null)
+                        || (typeof zoom === 'undefined' && zoom === null)) {
+                        destination._setValidation(false);
+                    }
+                }
+            }
+            if (typeof index === 'number' && (index >= 0 && index < loadedDocument.pageCount)) {
+                destination._index = index;
+            }
+        }
+        return destination;
+    }
+    _getDestination(name: _PdfName | string, document: PdfDocument): any[] { // eslint-disable-line
+        let destinationArray: any[]; // eslint-disable-line
+        if (document) {
+            destinationArray = this._getNamedDestination(document, name);
+        }
+        return destinationArray;
+    }
+    _getNamedDestination(document: PdfDocument, result: _PdfName | string): any[] { // eslint-disable-line
+        let destination: any[]; // eslint-disable-line
+        const catalog: _PdfCatalog = document._catalog;
+        if (catalog && catalog._catalogDictionary) {
+            if (result && typeof result === 'string') {
+                if (catalog._catalogDictionary.has('Names')) {
+                    const names: _PdfDictionary = catalog._catalogDictionary.get('Names');
+                    if (names && names.has('Dests')) {
+                        const kids: _PdfDictionary = names.get('Dests');
+                        if (kids) {
+                            const ref: _PdfReference = this._getNamedObjectFromTree(kids, result);
+                            destination = this._extractDestination(ref, document);
+                        }
+                    }
+                }
+            } else if (result && result instanceof _PdfName) {
+                const destinations: _PdfDictionary = catalog._catalogDictionary.get('Dests');
+                if (destinations) {
+                    destination = destinations.get(result.name);
+                }
+            }
+        }
+        return destination;
+    }
+    _extractDestination(ref: any, document: PdfDocument): any[] { // eslint-disable-line
+        let dict: any; // eslint-disable-line
+        let destinationArray: any[]; // eslint-disable-line
+        if (ref && ref instanceof _PdfReference) {
+            dict = document._crossReference._fetch(ref);
+        }
+        if (dict) {
+            if (dict instanceof _PdfDictionary && dict.has('D')) {
+                destinationArray = dict.getRaw('D');
+            } else if (Array.isArray(dict)) {
+                destinationArray = dict;
+            }
+        }
+        return destinationArray ? destinationArray : ref;
+    }
+    _getNamedObjectFromTree(kids: _PdfDictionary, name: string): _PdfReference {
+        let found: boolean = false;
+        let currentDictionary: _PdfDictionary = kids;
+        let reference: _PdfReference;
+        while (!found && currentDictionary) {
+            if (currentDictionary && currentDictionary.has('Kids')) {
+                currentDictionary = this._getProperKid(currentDictionary, name);
+            } else if (currentDictionary && currentDictionary.has('Names')) {
+                reference = this._findName(currentDictionary, name);
+                found = true;
+            }
+        }
+        return reference;
+    }
+    _findName(current: _PdfDictionary, name: string): _PdfReference {
+        const names: any[] = current.get('Names'); // eslint-disable-line
+        const halfLength: number = names.length / 2;
+        let lowerIndex: number = 0;
+        let topIndex: number = halfLength - 1;
+        let half: number = 0;
+        let found: boolean = false;
+        let destinationReference: _PdfReference;
+        while (!found) {
+            half = Math.floor((lowerIndex + topIndex) / 2);
+            if (lowerIndex > topIndex) {
+                break;
+            }
+            let result: any = names[Number.parseInt(half.toString(), 10) * 2]; // eslint-disable-line
+            if (result && result instanceof _PdfReference) {
+                result = current._crossReference._fetch(result);
+            }
+            const cmp: number = this._stringCompare(name, result);
+            if (cmp > 0) {
+                lowerIndex = half + 1;
+            } else if (cmp < 0) {
+                topIndex = half - 1;
+            } else {
+                found = true;
+                break;
+            }
+        }
+        if (found) {
+            destinationReference = names[half * 2 + 1];
+        }
+        return destinationReference;
+    }
+    _getProperKid(kids: _PdfDictionary, name: string): _PdfDictionary {
+        let kidsArray: any; // eslint-disable-line
+        let kid: _PdfDictionary;
+        if (kids && kids.has('Kids')) {
+            kidsArray = kids.getRaw('Kids');
+        }
+        if (kidsArray && Array.isArray(kidsArray) && kidsArray.length !== 0) {
+            kidsArray = kids.getArray('Kids');
+            for (let i: number = 0; i < kidsArray.length; i++) {
+                kid = kidsArray[Number.parseInt(i.toString(), 10)];
+                if (this._checkLimits(kid, name)) {
+                    break;
+                }
+            }
+        }
+        return kid;
+    }
+    _checkLimits(kid: _PdfDictionary, result: string): boolean {
+        let found: boolean = false;
+        if (kid && kid.has('Limits')) {
+            const limits: any[] = kid.get('Limits'); // eslint-disable-line
+            const lowerLimit: string = limits[0];
+            const higherLimit: string = limits[1];
+            const lowCompare: number = this._stringCompare(lowerLimit, result);
+            const highCompare: number = this._stringCompare(higherLimit, result);
+            found = (lowCompare === 0 || highCompare === 0 || (lowCompare < 0 && highCompare > 0));
+        }
+        return found;
+    }
+    _stringCompare(limits: string, result: string): number {
+        const byteArray: Uint8Array = _stringToBytes(limits) as Uint8Array;
+        const byteArray1: Uint8Array = _stringToBytes(result) as Uint8Array;
+        const commonSize: number = Math.min(byteArray.length, byteArray1.length);
+        let resultValue: number = 0;
+        for (let i: number = 0; i < commonSize; i++) {
+            const byte: number = byteArray[Number.parseInt(i.toString(), 10)];
+            const byte1: number = byteArray1[Number.parseInt(i.toString(), 10)];
+            resultValue = byte - byte1;
+            if (resultValue !== 0) {
+                break;
+            }
+        }
+        if (resultValue === 0) {
+            resultValue = byteArray.length - byteArray1.length;
+        }
+        return resultValue;
+    }
+}

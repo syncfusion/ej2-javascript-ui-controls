@@ -91,9 +91,9 @@ export class _XmlWriter {
         }
         this._currentState = 'EndElement';
         const top: number = this._elementStack.length - 1;
-        this._writeEndElementInternal(this._elementStack[Number.parseInt(top.toString(), 10)]._prefix,
-                                      this._elementStack[Number.parseInt(top.toString(), 10)]._localName);
-        this._namespaceStack.splice(this._elementStack[Number.parseInt(top.toString(), 10)]._previousTop + 1);
+        this._writeEndElementInternal(this._elementStack[<number>top]._prefix,
+                                      this._elementStack[<number>top]._localName);
+        this._namespaceStack.splice(this._elementStack[<number>top]._previousTop + 1);
         this._elementStack.splice(top);
         // if (this._bufferText.length > 10240) {
         //     this._flush();
@@ -145,11 +145,11 @@ export class _XmlWriter {
     _destroy(): void {
         this._buffer = undefined;
         for (let i: number = 0; i < this._namespaceStack.length; i++) {
-            this._namespaceStack[Number.parseInt(i.toString(), 10)]._destroy();
+            this._namespaceStack[<number>i]._destroy();
         }
         this._namespaceStack = [];
         for (let i: number = 0; i < this._elementStack.length; i++) {
-            this._elementStack[Number.parseInt(i.toString(), 10)]._destroy();
+            this._elementStack[<number>i]._destroy();
         }
         this._elementStack = [];
         this._bufferText = '';
@@ -160,7 +160,7 @@ export class _XmlWriter {
             if (this._buffer.length > 0) {
                 const buffer: Array<number> = new Array<number>(this._bufferText.length);
                 for (let i: number = 0; i < this._bufferText.length; i++) {
-                    buffer[Number.parseInt(i.toString(), 10)] = this._bufferText.charCodeAt(i) & 0xff;
+                    buffer[<number>i] = this._bufferText.charCodeAt(i) & 0xff;
                 }
                 const array: Uint8Array = new Uint8Array(this._buffer.length + buffer.length);
                 array.set(this._buffer);
@@ -252,10 +252,10 @@ export class _XmlWriter {
         this._rawText(localName);
         const top: number = this._elementStack.length;
         this._elementStack.push(new _XmlElement());
-        this._elementStack[Number.parseInt(top.toString(), 10)]._set(prefix, localName, namespace, this._namespaceStack.length - 1);
+        this._elementStack[<number>top]._set(prefix, localName, namespace, this._namespaceStack.length - 1);
         this._pushNamespaceImplicit(prefix, namespace);
         for (let i: number = 0; i < this._attributeStack.length; i++) {
-            this._attributeStack[Number.parseInt(i.toString(), 10)]._destroy();
+            this._attributeStack[<number>i]._destroy();
         }
         this._attributeStack = [];
     }
@@ -318,9 +318,9 @@ export class _XmlWriter {
     _startElementContent(): void {
         const start: number = this._elementStack[this._elementStack.length - 1]._previousTop;
         for (let i: number = this._namespaceStack.length - 1; i > start; i--) {
-            if (this._namespaceStack[Number.parseInt(i.toString(), 10)]._kind === 'NeedToWrite') {
-                this._writeNamespaceDeclaration(this._namespaceStack[Number.parseInt(i.toString(), 10)]._prefix,
-                                                this._namespaceStack[Number.parseInt(i.toString(), 10)]._namespaceUri);
+            if (this._namespaceStack[<number>i]._kind === 'NeedToWrite') {
+                this._writeNamespaceDeclaration(this._namespaceStack[<number>i]._prefix,
+                                                this._namespaceStack[<number>i]._namespaceUri);
             }
         }
         this._bufferText += '>';
@@ -332,27 +332,27 @@ export class _XmlWriter {
     _addNamespace(prefix: string, ns: string, kind: _NamespaceKind): void {
         const top: number = this._namespaceStack.length;
         this._namespaceStack.push(new _Namespace());
-        this._namespaceStack[Number.parseInt(top.toString(), 10)]._set(prefix, ns, kind);
+        this._namespaceStack[<number>top]._set(prefix, ns, kind);
     }
     _lookupPrefix(namespace: string): string {
         for (let i: number = this._namespaceStack.length - 1; i >= 0; i--) {
-            if (this._namespaceStack[Number.parseInt(i.toString(), 10)]._namespaceUri === namespace) {
-                return this._namespaceStack[Number.parseInt(i.toString(), 10)]._prefix;
+            if (this._namespaceStack[<number>i]._namespaceUri === namespace) {
+                return this._namespaceStack[<number>i]._prefix;
             }
         }
         return undefined;
     }
     _lookupNamespace(prefix: string): string {
         for (let i: number = this._namespaceStack.length - 1; i >= 0; i--) {
-            if (this._namespaceStack[Number.parseInt(i.toString(), 10)]._prefix === prefix) {
-                return this._namespaceStack[Number.parseInt(i.toString(), 10)]._namespaceUri;
+            if (this._namespaceStack[<number>i]._prefix === prefix) {
+                return this._namespaceStack[<number>i]._namespaceUri;
             }
         }
         return undefined;
     }
     _lookupNamespaceIndex(prefix: string): number {
         for (let i: number = this._namespaceStack.length - 1; i >= 0; i--) {
-            if (this._namespaceStack[Number.parseInt(i.toString(), 10)]._prefix === prefix) {
+            if (this._namespaceStack[<number>i]._prefix === prefix) {
                 return i;
             }
         }
@@ -364,14 +364,14 @@ export class _XmlWriter {
         let isValid: boolean = true;
         if (existingNsIndex !== -1) {
             if (existingNsIndex > this._elementStack[this._elementStack.length - 1]._previousTop) {
-                if (this._namespaceStack[Number.parseInt(existingNsIndex.toString(), 10)]._namespaceUri !== ns) {
+                if (this._namespaceStack[<number>existingNsIndex]._namespaceUri !== ns) {
                     throw new Error('XmlException namespace Uri needs to be the same as the one that is already declared');
                 }
                 isValid = false;
             } else {
-                if (this._namespaceStack[Number.parseInt(existingNsIndex.toString(), 10)]._kind === 'Special') {
+                if (this._namespaceStack[<number>existingNsIndex]._kind === 'Special') {
                     if (prefix === 'xml') {
-                        if (ns !== this._namespaceStack[Number.parseInt(existingNsIndex.toString(), 10)]._namespaceUri) {
+                        if (ns !== this._namespaceStack[<number>existingNsIndex]._namespaceUri) {
                             throw new Error('InvalidArgumentException: Xml String');
                         } else {
                             kind = 'Implied';
@@ -380,7 +380,7 @@ export class _XmlWriter {
                         throw new Error('InvalidArgumentException: Prefix "xmlns" is reserved for use by XML.');
                     }
                 } else {
-                    kind = (this._namespaceStack[Number.parseInt(existingNsIndex.toString(), 10)]._namespaceUri === ns) ?
+                    kind = (this._namespaceStack[<number>existingNsIndex]._namespaceUri === ns) ?
                         'Implied' :
                         'NeedToWrite';
                 }
@@ -400,7 +400,7 @@ export class _XmlWriter {
         const existingNsIndex: number = this._lookupNamespaceIndex(prefix);
         if (existingNsIndex !== -1) {
             if (existingNsIndex > this._elementStack[this._elementStack.length - 1]._previousTop) {
-                this._namespaceStack[Number.parseInt(existingNsIndex.toString(), 10)]._kind = 'Written';
+                this._namespaceStack[<number>existingNsIndex]._kind = 'Written';
                 return;
             }
         }
@@ -410,9 +410,9 @@ export class _XmlWriter {
     _addAttribute(prefix: string, localName: string, namespaceName: string): void {
         const top: number = this._attributeStack.length;
         this._attributeStack.push(new _XmlAttribute());
-        this._attributeStack[Number.parseInt(top.toString(), 10)]._set(prefix, localName, namespaceName);
+        this._attributeStack[<number>top]._set(prefix, localName, namespaceName);
         for (let i: number = 0; i < top; i++) {
-            if (this._attributeStack[Number.parseInt(i.toString(), 10)]._isDuplicate(prefix, localName, namespaceName)) {
+            if (this._attributeStack[<number>i]._isDuplicate(prefix, localName, namespaceName)) {
                 throw new Error('XmlException: duplicate attribute name');
             }
         }

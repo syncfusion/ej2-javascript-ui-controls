@@ -343,7 +343,7 @@ describe('Pivot Olap Engine', () => {
         });
         it('Initial rendering', (done: Function) => {
             setTimeout(() => {
-                expect(pivotGridObj.pivotValues[3][0].formattedText).toBe('1110');
+                expect(pivotGridObj.pivotValues[2][0].formattedText).toBe('1110');
                 done();
             }, 3000);
         });
@@ -355,7 +355,7 @@ describe('Pivot Olap Engine', () => {
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
             document.querySelectorAll('.e-content')[0].dispatchEvent(args);
             setTimeout(() => {
-                expect(pivotGridObj.pivotValues[3][0].formattedText).toBe('4130');
+                expect(pivotGridObj.pivotValues[3][0].formattedText).toBe('4140');
                 done();
             }, 1000);
         });
@@ -366,7 +366,7 @@ describe('Pivot Olap Engine', () => {
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
             document.querySelectorAll('.e-content')[0].dispatchEvent(args);
             setTimeout(() => {
-                expect(pivotGridObj.pivotValues[3][0].formattedText).toBe('4130');
+                expect(pivotGridObj.pivotValues[3][0].formattedText).toBe('4140');
                 document.querySelectorAll('.e-content')[0].scrollTop = 2000;
                 pivotGridObj.virtualscrollModule.direction = 'vertical';
                 let args: MouseEvent = new MouseEvent("touchstart", { clientY: 2000, view: window, bubbles: true, cancelable: true });
@@ -383,7 +383,7 @@ describe('Pivot Olap Engine', () => {
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
             document.querySelectorAll('.e-content')[0].dispatchEvent(args);
             setTimeout(() => {
-                expect(pivotGridObj.pivotValues[3][0].formattedText).toBe('6040');
+                expect(pivotGridObj.pivotValues[3][0].formattedText).toBe('6100');
                 document.querySelectorAll('.e-content')[0].scrollTop = 0;
                 pivotGridObj.virtualscrollModule.direction = 'vertical';
                 let args: MouseEvent = new MouseEvent("touchstart", { clientY: 0, view: window, bubbles: true, cancelable: true });
@@ -400,7 +400,7 @@ describe('Pivot Olap Engine', () => {
             args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
             document.querySelectorAll('.e-content')[0].dispatchEvent(args);
             setTimeout(() => {
-                expect(pivotGridObj.pivotValues[3][0].formattedText).toBe('1110');
+                expect(pivotGridObj.pivotValues[3][0].formattedText).toBe('1130');
                 done();
             }, 1000);
         });

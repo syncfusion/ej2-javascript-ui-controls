@@ -1893,7 +1893,8 @@ export class DropDownList extends DropDownBase implements IInput {
             // eslint-disable-next-line @typescript-eslint/no-this-alias
             const proxy: this = this;
             // eslint-disable-next-line max-len
-            const duration: number = (this.element.tagName === this.getNgDirective() && this.itemTemplate) ? 500 : 100;
+            const duration: number = ((this.dataSource instanceof DataManager) && this.groupTemplate) ? 700 :
+                (this.element.tagName === this.getNgDirective() && this.itemTemplate) ? 500 : 100;
             if (!this.isSecondClick) {
                 setTimeout(() => {
                     proxy.cloneElements(); proxy.isSecondClick = true;
@@ -2823,16 +2824,6 @@ export class DropDownList extends DropDownBase implements IInput {
                                 if ((e as ResultData).result.length > 0) {
                                     if (!this.enableVirtualization) {
                                         this.addItem((e as ResultData).result, list.length);
-                                    }
-                                    else {
-                                        this.itemData = (e as ResultData).result[0];
-                                        const dataItem: { [key: string]: string } = this.getItemData();
-                                        const value: string | number | boolean | Object = this.allowObjectBinding ?
-                                            this.getDataByValue(dataItem.value) : dataItem.value;
-                                        if ((this.value === dataItem.value && this.text !== dataItem.text) ||
-                                            (this.value !== dataItem.value && this.text === dataItem.text)) {
-                                            this.setProperties({ 'text': dataItem.text ? dataItem.text.toString() : dataItem.text, 'value': value });
-                                        }
                                     }
                                     this.updateValues();
                                 } else {
@@ -4502,6 +4493,9 @@ export class DropDownList extends DropDownBase implements IInput {
         /* eslint-enable valid-jsdoc, jsdoc/require-param */
         if (!this.enabled) {
             return;
+        }
+        if (this.getModuleName() === 'dropdownlist' && this.beforePopupOpen && !this.isPopupOpen) {
+            this.beforePopupOpen = false;
         }
         this.firstItem = this.dataSource && (this.dataSource as any).length > 0 ? (this.dataSource as any)[0] : null;
         if ((this as any).isReact && this.getModuleName() === 'combobox' && this.itemTemplate && this.isCustomFilter && this.isAddNewItemTemplate){

@@ -1500,6 +1500,7 @@ export class Transform {
             parent.lowerCanvas.height = parent.upperCanvas.height = parent.maskCanvas.height =
                 parseFloat(canvasWrapper.style.height);
             this.lowerContext.filter = tempFilter;
+            this.lowerContext.imageSmoothingQuality = parent.imageSmoothingEnabled ? 'high' : 'low';
             const obj: Object = {width: 0, height: 0 };
             this.calcMaxDimension(parent.img.srcWidth, parent.img.srcHeight, obj);
             const maxDimension: Dimension = obj as Dimension;

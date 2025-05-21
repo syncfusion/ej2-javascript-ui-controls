@@ -304,7 +304,9 @@ export class Group implements IAction {
         if (this.parent.getColumns().length && this.groupSettings.columns.length) {
             this.contentRefresh = false;
             for (const col of gObj.groupSettings.columns) {
+                this.preventFocusOnGroup = true;
                 this.groupColumn(col);
+                this.preventFocusOnGroup = false;
             }
             this.contentRefresh = true;
         }

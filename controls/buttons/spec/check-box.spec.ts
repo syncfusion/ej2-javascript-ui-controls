@@ -804,6 +804,13 @@ describe('CheckBox', () => {
             checkbox.getLabel();
             checkbox.appendTo('#checkbox');
         });
-        
+        it('Vue CheckBox with updateVueArrayModel function', function () {
+            checkbox = new CheckBox({ indeterminate: null });
+            checkbox.isVue = true;
+            checkbox.value = ['games', 'volleyball'];
+            checkbox.appendTo('#checkbox');
+            checkbox.element.value = 'volleyball';
+            checkbox.updateVueArrayModel();
+        });
     });
 });

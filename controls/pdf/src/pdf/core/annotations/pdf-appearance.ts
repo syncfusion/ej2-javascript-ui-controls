@@ -2,8 +2,7 @@ import { _PdfCrossReference } from './../pdf-cross-reference';
 import { _PdfDictionary } from './../pdf-primitives';
 import { PdfTemplate } from './../graphics/pdf-template';
 import { PdfAnnotation } from './annotation';
-import { _isNullOrUndefined } from '../utils';
-import { PdfPage } from '../pdf-page';
+import { _isNullOrUndefined, Rectangle } from '../utils';
 /**
  * `PdfAppearance` class represents the appearance of the annotation.
  * ```typescript
@@ -29,7 +28,7 @@ import { PdfPage } from '../pdf-page';
  */
 export class PdfAppearance {
     _annotations: PdfAnnotation;
-    _bounds: number[];
+    _bounds: Rectangle;
     _isNormalKey: boolean = true;
     private _crossReference: _PdfCrossReference;
     private _templateNormal: PdfTemplate;
@@ -37,22 +36,22 @@ export class PdfAppearance {
     /**
      * Initializes a new instance of the `PdfAppearance` class.
      *
+     * @param {Rectangle} bounds - The bounds.
      * @param {PdfAnnotation} annot - The annotation.
-     * @param {number[]} bounds - The bounds.
      * @private
      */
-    constructor(annot: PdfAnnotation | PdfPage, bounds: number[]) {
+    constructor(bounds: Rectangle, annot?: PdfAnnotation) {
         if (_isNullOrUndefined(bounds)) {
             this._bounds = bounds;
         } else {
-            this._bounds = [];
+            this._bounds = {x: 0, y: 0, width: 0, height: 0};
         }
         if (annot instanceof PdfAnnotation) {
             this._annotations = annot;
+            this._crossReference = annot._crossReference;
         } else {
             this._isNormalKey = false;
         }
-        this._crossReference = annot._crossReference;
         this._initialize();
     }
     /**

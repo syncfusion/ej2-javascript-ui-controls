@@ -1931,13 +1931,18 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.checkAndScrollParent();
     }
     private checkAndScrollParent(): void {
-        const parentElement: HTMLElement = this.overAllWrapper ? (this.overAllWrapper.parentElement as HTMLElement | null) : null;
-        if (parentElement) {
-            const wrapperHeight: number = parseFloat(getComputedStyle(this.overAllWrapper as HTMLElement).height);
-            const parentMaxHeight: number = parseFloat(getComputedStyle(parentElement).maxHeight);
-            if (!isNaN(parentMaxHeight) && wrapperHeight > parentMaxHeight) {
-                parentElement.scrollTop = parentElement.scrollHeight;
+        let scrollElement: HTMLElement = this.overAllWrapper ? (this.overAllWrapper.parentElement as HTMLElement | null) : null;
+        while (scrollElement) {
+            const scrollElementStyle: CSSStyleDeclaration = getComputedStyle(scrollElement);
+            const scrollElmentHeight: number = parseFloat(scrollElementStyle.maxHeight) || parseFloat(scrollElementStyle.height);
+            if (!isNaN(scrollElmentHeight)) {
+                const overflowY: string = scrollElementStyle.overflowY;
+                if (overflowY === 'auto' || overflowY === 'scroll') {
+                    scrollElement.scrollTop = scrollElement.scrollHeight;
+                    return;
+                }
             }
+            scrollElement = scrollElement.parentElement;
         }
     }
     private enable(state: boolean): void {

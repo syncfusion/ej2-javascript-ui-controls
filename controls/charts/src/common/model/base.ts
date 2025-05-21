@@ -671,7 +671,7 @@ export class EmptyPointSettings extends ChildProperty<EmptyPointSettings> {
      */
 
     @Property('Gap')
-    public mode: EmptyPointMode | AccEmptyPointMode;
+    public mode: EmptyPointMode;
 }
 
 /**

@@ -191,7 +191,7 @@ export class LinkAnnotation {
             aTag = this.setHyperlinkProperties(aTag, rect, pageIndex);
             aTag.setAttribute('href', 'javascript:void(0)');
             const linkPageNum : number = linkPage[parseInt(i.toString(), 10)];
-            if (linkPageNum !== undefined &&  linkPageNum >= 0) {
+            if (!isNullOrUndefined(linkPageNum) &&  linkPageNum >= 0) {
                 const destPageHeight: number = (this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].height);
                 let destLocation: number;
                 let scrollValue: number;

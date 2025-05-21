@@ -1592,7 +1592,7 @@ describe('Editor specs', ()=> {
             ( dropButton[1] as HTMLElement ).click(); // Font Size
             const fontDropItems : NodeList= document.body.querySelectorAll('.e-item');
             ( fontDropItems[7] as HTMLElement ).click(); // Apply Font size
-            expect((range.startContainer.childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
+            expect((range.startContainer.childNodes[0].childNodes[0] as HTMLElement).style.fontSize).toEqual('36pt');
             done();
         });
     } );

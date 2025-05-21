@@ -300,7 +300,7 @@ export class Gantt extends Component<HTMLElement>
     /** @hidden */
     public isLoad?: boolean;
     /** @hidden */
-    public editedTaskBarItem?: IGanttData;
+    public editedPredecessorRecords?: IGanttData[];
     /** @hidden */
     public validationDialogElement?: Dialog;
     /** @hidden */
@@ -2001,7 +2001,7 @@ export class Gantt extends Component<HTMLElement>
         this.isInPredecessorValidation = this.enablePredecessorValidation;
         this.isValidationEnabled = true;
         this.isLoad = true;
-        this.editedTaskBarItem = null;
+        this.editedPredecessorRecords = [];
         this.validationDialogElement = null;
         this.currentEditedArgs = {};
         this.dialogValidateMode = {

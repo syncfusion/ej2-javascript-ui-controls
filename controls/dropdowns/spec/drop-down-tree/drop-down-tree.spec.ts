@@ -889,6 +889,73 @@ describe('Footer Template', () => {
     });
 });
 
+describe('using noRecords and valueTemplate templates', () => {
+    let ddtreeObj: any;
+    let originalTimeout: any;
+    let mouseEventArgs: any;
+    let keyboardEventArgs: any
+    let tapEvent: any;
+    beforeEach((): void => {
+        originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        mouseEventArgs = {
+            preventDefault: (): void => { },
+            stopImmediatePropagation: (): void => { },
+            target: null,
+            type: null,
+            shiftKey: false,
+            ctrlKey: false,
+            originalEvent: { target: null }
+        };
+        keyboardEventArgs = {
+            preventDefault: (): void => { },
+            action: null,
+            target: null,
+            currentTarget: null,
+            stopImmediatePropagation: (): void => { },
+        };
+
+        tapEvent = {
+            originalEvent: mouseEventArgs,
+            tapCount: 1
+        };
+
+        let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddtree' });
+        document.body.appendChild(ele);
+        ddtreeObj = undefined;
+    });
+    afterEach((): void => {
+        if (ddtreeObj)
+            ddtreeObj.destroy();
+        document.body.innerHTML = '';
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+    });
+    it('no records template', () => {
+        let data: { [key: string]: Object }[] = [];
+        ddtreeObj = new DropDownTree({
+            fields: { dataSource: data, value: "id", text: "name", expanded: 'expanded', child: "child" },
+            noRecordsTemplate: "<span class='norecord'> NO DATA AVAILABLE</span>",
+        });
+        ddtreeObj.appendTo('#ddtree');
+        ddtreeObj.showPopup();
+        expect((document.querySelector('.norecord') as any).innerText).toBe("NO DATA AVAILABLE");
+    });
+    it('value template', () => {
+        let data: { [key: string]: Object }[] = [
+            { "id": 1, "name": "Steven Buchanan", "job": "General Manager", "hasChild": true, "expanded": true },
+            { "id": 2, "pid": 1, "name": "Laura Callahan", "job": "Product Manager", "hasChild": false },
+            { "id": 3, "pid": 1, "name": "Andrew Fuller", "job": "Team Lead", "hasChild": false },
+        ];
+        ddtreeObj = new DropDownTree({
+            fields: { dataSource: data, value: "id", text: "name", expanded: 'expanded', child: "child" },
+            valueTemplate: '<div>value template text</div>',
+        });
+        ddtreeObj.appendTo('#ddtree');
+        ddtreeObj.showPopup();
+        expect(ddtreeObj.treeObj.element.querySelectorAll('li')[1].innerText).toBe("Laura Callahan");
+    });
+});
+
 describe('DropdownTree Null or undefined value testing ', () => {
     let ddtreeObj: DropDownTree;
 

@@ -1330,7 +1330,7 @@ describe('Editing ->', () => {
                 });
             });
         });
-        describe('EJ2-899811 ', () => {
+        describe('EJ2-899811, EJ2-957137 ', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{  ranges: [{ dataSource: defaultData }]}] }, done);
             });
@@ -1392,6 +1392,25 @@ describe('Editing ->', () => {
                         });
                     });
                 });
+            });
+
+            it('Formula result not displayed when selecting more than 100 cells after entering a formula.', (done: Function) => {
+                let spreadsheet: any = helper.getInstance();
+                helper.invoke('selectRange', ['F12']);
+                expect(spreadsheet.sheets[0].selectedRange).toEqual('F12:F12');
+                spreadsheet.editModule.startEdit();
+                spreadsheet.notify('editOperation', { action: 'refreshEditor', value: '=SUM(', refreshCurPos: true, refreshEditorElem: true });
+                helper.invoke('goTo', ['F120']);
+                setTimeout((): void => {
+                    helper.invoke('goTo', ['F12']);
+                    setTimeout(() => {
+                        spreadsheet.notify('editOperation', { action: 'refreshEditor', value: '=SUM(F2:F11)', refreshCurPos: true, refreshEditorElem: true });
+                        spreadsheet.editModule.endEdit();
+                        expect(spreadsheet.sheets[0].rows[11].cells[5].value).toBe(4720);
+                        expect(helper.invoke('getCell', [11, 5]).textContent).toBe('4720');
+                        done();
+                    }, 20);
+                }, 20);
             });
         });
     });

@@ -179,7 +179,8 @@ export class ExcelExport {
                                         lastCell.style = styles;
                                     } else {
                                         lastCell.style = headerStyle;
-                                        if (pivotCell.axis === 'row' && cCnt === 0) {
+                                        if (pivotCell.axis === 'row' &&
+                                            (this.parent.isTabular ? cCnt < this.parent.engineModule.rowMaxLevel + 1 : cCnt === 0)) {
                                             lastCell.style = styles;
                                             if (this.parent.dataType === 'olap') {
                                                 const indent: number = this.parent.renderModule.indentCollection[rCnt as number];

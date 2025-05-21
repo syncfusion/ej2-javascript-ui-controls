@@ -1811,7 +1811,7 @@ describe('Link Module', () => {
             range.setStart(rteObj.element.querySelector('a'), 1);
             selectioncursor.setRange(document, range);
             (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-            expect((rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value).toBe("");
+            expect((rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value).toBe("https://www.syncfusion.com");
             expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value).toBe("");
             expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkTitle').value).toBe("");
             (rteObj as any).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';

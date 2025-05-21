@@ -1480,6 +1480,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 }
             }
         }
+        if ( this.getModuleName() === 'multiselect' && this.isAngular && (this as any).ngEle ) {
+            const popupHolder: HTMLElement = this.list;
+            if (popupHolder) {
+                const prevHeight: string = popupHolder.offsetHeight + 'px';
+                popupHolder.style.height = prevHeight;
+            }
+        }
         if (!isNullOrUndefined(this.list)) {
             if (!this.isVirtualizationEnabled) {
                 this.list.innerHTML = '';
@@ -1487,6 +1494,15 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
                 this.ulElement = this.list.querySelector('ul');
                 this.postRender(this.list, list, this.bindEvent);
+            }
+        }
+        if ( this.getModuleName() === 'multiselect' && this.isAngular && (this as any).ngEle ) {
+            const popupHolder: HTMLElement = this.list;
+            if (popupHolder) {
+                setTimeout(() => {
+                    popupHolder.style.height = '';
+                    (this as any).refreshPopup();
+                }, 0);
             }
         }
     }

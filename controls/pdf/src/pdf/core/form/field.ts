@@ -974,8 +974,7 @@ export abstract class PdfField {
                 annots = this.page._pageDictionary.get('Annots');
             }
             if (this._kids && this._kids.length > 0) {
-                for (let i: number = 0; i < this._kids.length; i++) {
-                    const reference: _PdfReference = this._kids[Number.parseInt(i.toString(), 10)];
+                for (const reference of this._kids) {
                     if (reference) {
                         if (this.page._pageDictionary.has('Annots')) {
                             if (annots) {
@@ -1086,7 +1085,7 @@ export abstract class PdfField {
                 }
                 if (!page && this._kids && this._kids.length > 0) {
                     for (let i: number = 0; i < this._kids.length; i++) {
-                        page = _findPage(document, this._kids[Number.parseInt(i.toString(), 10)]);
+                        page = _findPage(document, this._kids[<number>i]);
                         if (page) {
                             break;
                         }
@@ -1340,7 +1339,7 @@ export abstract class PdfField {
                 item = this._parsedItems.get(index);
             } else {
                 let dictionary: _PdfDictionary;
-                const reference: _PdfReference = this._kids[Number.parseInt(index.toString(), 10)];
+                const reference: _PdfReference = this._kids[<number>index];
                 if (reference && reference instanceof _PdfReference) {
                     dictionary = this._crossReference._fetch(reference);
                 }
@@ -1632,14 +1631,13 @@ export abstract class PdfField {
         defaultAppearance.color = this.color ? this.color : [0, 0, 0];
         if (this._dictionary.has('Kids')) {
             const widgetDictionary: _PdfDictionary[] = this._dictionary.getArray('Kids');
-            for (let i: number = 0; i < widgetDictionary.length; i++) {
-                const widget: PdfWidgetAnnotation = this.itemAt(i);
-                const dictionary: _PdfDictionary = widgetDictionary[Number.parseInt(i.toString(), 10)];
+            widgetDictionary.forEach((dictionary: _PdfDictionary, index: number) => {
+                const widget: PdfWidgetAnnotation = this.itemAt(index);
                 dictionary.update('DA', defaultAppearance.toString());
                 if (widget) {
                     widget._da = defaultAppearance;
                 }
-            }
+            });
         } else if (this._dictionary.has('Subtype') && this._dictionary.get('Subtype').name === 'Widget') {
             this._dictionary.update('DA', defaultAppearance.toString());
         }
@@ -3053,7 +3051,7 @@ export class PdfTextBoxField extends PdfField {
                                 }
                             } else {
                                 if (current.length > i) {
-                                    text = current[Number.parseInt(i.toString(), 10)];
+                                    text = current[<number>i];
                                 } else {
                                     text = '';
                                 }
@@ -4037,7 +4035,7 @@ export class PdfCheckBoxField extends PdfField {
         } else {
             let dictionary: _PdfDictionary;
             if (index >= 0 && this._kids && this._kids.length > 0 && index < this._kids.length) {
-                const ref: _PdfReference = this._kids[Number.parseInt(index.toString(), 10)];
+                const ref: _PdfReference = this._kids[<number>index];
                 if (ref && ref instanceof _PdfReference) {
                     dictionary = this._crossReference._fetch(ref);
                 }
@@ -4739,7 +4737,7 @@ export class PdfRadioButtonListField extends PdfField {
         } else {
             let dictionary: _PdfDictionary;
             if (index >= 0 && this._kids && this._kids.length > 0 && index < this._kids.length) {
-                const ref: _PdfReference = this._kids[Number.parseInt(index.toString(), 10)];
+                const ref: _PdfReference = this._kids[<number>index];
                 if (ref && ref instanceof _PdfReference) {
                     dictionary = this._crossReference._fetch(ref);
                 }
@@ -4925,8 +4923,8 @@ export class PdfRadioButtonListField extends PdfField {
                 const itemsCount: number = this._kidsCount;
                 const count: number = options.length <= itemsCount ? options.length : itemsCount;
                 for (let i: number = 0; i < count; i++) {
-                    if (options[Number.parseInt(i.toString(), 10)]) {
-                        this.itemAt(i)._optionValue = options[Number.parseInt(i.toString(), 10)];
+                    if (options[<number>i]) {
+                        this.itemAt(i)._optionValue = options[<number>i];
                     }
                 }
             }
@@ -5324,12 +5322,12 @@ export abstract class PdfListField extends PdfField {
         if (typeof value === 'number') {
             this._checkIndex(value, length);
             this._dictionary.update('I', [value]);
-            this._dictionary.update('V', [this._options[Number.parseInt(value.toString(), 10)][0]]);
+            this._dictionary.update('V', [this._options[<number>value][0]]);
         } else {
             const values: string[] = [];
             value.forEach((entry: number) => {
                 this._checkIndex(entry, length);
-                values.push(this._options[Number.parseInt(entry.toString(), 10)][0]);
+                values.push(this._options[<number>entry][0]);
             });
             this._dictionary.update('I', value);
             this._dictionary.update('V', values);
@@ -5366,9 +5364,7 @@ export abstract class PdfListField extends PdfField {
             const value: any = this._dictionary.getArray('V'); // eslint-disable-line
             if (typeof value !== 'undefined') {
                 if (Array.isArray(value)) {
-                    value.forEach((element: string) => {
-                        values.push(element);
-                    });
+                    values.push(...value);
                 } else if (typeof value === 'string') {
                     values.push(value);
                 }
@@ -5377,9 +5373,7 @@ export abstract class PdfListField extends PdfField {
         if (values.length === 0 && this._dictionary && this._dictionary.has('I')) {
             const value: number[] = this._dictionary.get('I');
             if (value && value.length > 0) {
-                value.forEach((index: number) => {
-                    values.push(this._options[Number.parseInt(index.toString(), 10)][0]);
-                });
+                values.push(...value.map((index: number) => this._options[<number>index][0]));
             }
         }
         if (values.length === 1) {
@@ -5799,7 +5793,7 @@ export abstract class PdfListField extends PdfField {
                 item = this._parsedItems.get(index);
             } else {
                 let dictionary: _PdfDictionary;
-                const reference: _PdfReference = this._kids[Number.parseInt(index.toString(), 10)];
+                const reference: _PdfReference = this._kids[<number>index];
                 if (reference && reference instanceof _PdfReference) {
                     dictionary = this._crossReference._fetch(reference);
                 }
@@ -5808,7 +5802,7 @@ export abstract class PdfListField extends PdfField {
                     item._index = index;
                     item._ref = reference;
                     if (this._options && this._options.length > 0 && index < this._options.length) {
-                        item._text = this._options[Number.parseInt(index.toString(), 10)][1];
+                        item._text = this._options[<number>index][1];
                     } else {
                         item._text = '';
                     }
@@ -5824,7 +5818,7 @@ export abstract class PdfListField extends PdfField {
                 if (this._kidsCount === 1) {
                     reference = this._kids[0];
                 } else {
-                    reference = this._kids[Number.parseInt(index.toString(), 10)];
+                    reference = this._kids[<number>index];
                 }
                 if (reference && reference instanceof _PdfReference) {
                     dictionary = this._crossReference._fetch(reference);
@@ -5834,7 +5828,7 @@ export abstract class PdfListField extends PdfField {
                     item._index = index;
                     item._ref = reference;
                     if (this._options && this._options.length > 0 && index < this._options.length) {
-                        item._text = this._options[Number.parseInt(index.toString(), 10)][1];
+                        item._text = this._options[<number>index][1];
                     } else {
                         item._text = '';
                     }
@@ -6008,25 +6002,25 @@ export abstract class PdfListField extends PdfField {
         if (item && (item._dictionary.has('DS') || item._dictionary.has('DA'))) {
             if (item._dictionary.has('DS')) {
                 const collection: string[] = item._dictionary.get('DS').split(';');
-                for (let i: number = 0; i < collection.length; i++) {
-                    const entry: string[] = collection[Number.parseInt(i.toString(), 10)].split(':');
-                    if (collection[Number.parseInt(i.toString(), 10)].indexOf('font-family') !== -1) {
+                collection.forEach((entryString: string) => {
+                    const entry: string[] = entryString.split(':');
+                    if (entryString.indexOf('font-family') !== -1) {
                         fontFamily = entry[1];
-                    } else if (collection[Number.parseInt(i.toString(), 10)].indexOf('font-size') !== -1) {
+                    } else if (entryString.indexOf('font-size') !== -1) {
                         if (entry[1].endsWith('pt')) {
                             fontSize = Number.parseFloat(entry[1].replace('pt', ''));
                         }
-                    } else if (collection[Number.parseInt(i.toString(), 10)].indexOf('font-style') === -1 && collection[Number.parseInt(i.toString(), 10)].indexOf('font') !== -1) {
+                    } else if (entryString.indexOf('font-style') === -1 && entryString.indexOf('font') !== -1) {
                         const name: string = entry[1];
                         const split: string[] = name.split(' ');
-                        for (let j: number = 0; j < split.length; j++) {
-                            if (split[Number.parseInt(j.toString(), 10)] !== '' && !split[Number.parseInt(j.toString(), 10)].endsWith('pt')) {
-                                fontFamily += split[Number.parseInt(j.toString(), 10)] + ' ';
+                        split.forEach((splitEntry: string) => {
+                            if (splitEntry !== '' && !splitEntry.endsWith('pt')) {
+                                fontFamily += splitEntry + ' ';
                             }
-                            if (split[Number.parseInt(j.toString(), 10)].endsWith('pt')) {
-                                fontSize = Number.parseFloat(split[Number.parseInt(j.toString(), 10)].replace('pt', ''));
+                            if (splitEntry.endsWith('pt')) {
+                                fontSize = Number.parseFloat(splitEntry.replace('pt', ''));
                             }
-                        }
+                        });
                         while (fontFamily !== ' ' && fontFamily.endsWith(' ')) {
                             fontFamily = fontFamily.substring(0, fontFamily.length - 2);
                         }
@@ -6034,20 +6028,20 @@ export abstract class PdfListField extends PdfField {
                             fontFamily = fontFamily.split(',')[0];
                         }
                     }
-                }
+                });
             } else {
                 const value: string = item._dictionary.get('DA');
                 if (value && value !== '' && value.indexOf('Tf') !== -1) {
                     const textCollection: string[] = value.split(' ');
-                    for (let i: number = 0; i < textCollection.length; i++) {
-                        if (textCollection[Number.parseInt(i.toString(), 10)].indexOf('Tf') !== -1) {
-                            fontFamily = textCollection[i - 2];
+                    textCollection.forEach((text: string, index: number) => {
+                        if (text.indexOf('Tf') !== -1) {
+                            fontFamily = textCollection[index - 2];
                             while (fontFamily !== '' && fontFamily.length > 1 && fontFamily[0] === '/') {
                                 fontFamily = fontFamily.substring(1);
                             }
-                            fontSize = Number.parseFloat(textCollection[i - 1]);
+                            fontSize = Number.parseFloat(textCollection[index - 1]);
                         }
-                    }
+                    });
                     let height: number = 0.0;
                     if (fontSize === 0) {
                         const font: PdfStandardFont = new PdfStandardFont(PdfFontFamily.helvetica, height);
@@ -6096,9 +6090,7 @@ export abstract class PdfListField extends PdfField {
                 if (typeof primitive === 'string') {
                     result.push(primitive);
                 } else if (Array.isArray(primitive)) {
-                    array.forEach((element: any) => { // eslint-disable-line
-                        result.push(element);
-                    });
+                    result.push(...array);
                 }
             }
         } else {
@@ -6109,9 +6101,7 @@ export abstract class PdfListField extends PdfField {
                 selectedIndexes[0] > -1 &&
                 this._options &&
                 this._options.length > 0) {
-                selectedIndexes.forEach((index: number) => {
-                    result.push(this._options[Number.parseInt(index.toString(), 10)][0]);
-                });
+                result.push(...selectedIndexes.map((index: number) => this._options[<number>index][0]));
             }
         }
         return result;
@@ -6167,7 +6157,7 @@ export abstract class PdfListField extends PdfField {
         let index: number = -1;
         if (this._options && this._options.length > 0) {
             for (let i: number = 0; i < this._options.length; i++) {
-                if (value === this._options[Number.parseInt(i.toString(), 10)][0]) {
+                if (value === this._options[<number>i][0]) {
                     index = i;
                     break;
                 }
@@ -6285,9 +6275,8 @@ export class PdfComboBoxField extends PdfListField {
                                 }
                             }
                             if (!fontSize) {
-                                for (let i: number = 0; i < this._kids.length; i++) {
+                                this._kids.forEach((reference: _PdfReference) => {
                                     let dictionary: _PdfDictionary;
-                                    const reference: _PdfReference = this._kids[Number.parseInt(i.toString(), 10)];
                                     if (reference && reference instanceof _PdfReference) {
                                         dictionary = this._crossReference._fetch(reference);
                                     }
@@ -6308,7 +6297,7 @@ export class PdfComboBoxField extends PdfListField {
                                             isAutoFontSize = true;
                                         }
                                     }
-                                }
+                                });
                             }
                         } else {
                             if (this._dictionary.has('DA')) {
@@ -6374,7 +6363,7 @@ export class PdfComboBoxField extends PdfListField {
                 const itemsCount: number = this._kidsCount;
                 const count: number = options.length <= itemsCount ? options.length : itemsCount;
                 for (let i: number = 0; i < count; i++) {
-                    const text: string = options[Number.parseInt(i.toString(), 10)][1];
+                    const text: string = options[<number>i][1];
                     if (text) {
                         this.itemAt(i)._text = text ? text : '';
                     }
@@ -6503,7 +6492,7 @@ export class PdfComboBoxField extends PdfListField {
             i = selectedIndexes[0];
         }
         if (i >= 0 && i < options.length) {
-            const item: any = options[Number.parseInt(i.toString(), 10)]; // eslint-disable-line 
+            const item: any = options[<number>i]; // eslint-disable-line 
             const location: number[] = [0, 0];
             const borderWidth: number = parameter.borderWidth;
             const doubleBorderWidth: number = 2 * borderWidth;
@@ -6601,12 +6590,12 @@ export class PdfComboBoxField extends PdfListField {
             const widths: number[] = [];
             if (values && values.length > 0) {
                 values.forEach((entry: number) => {
-                    widths.push(itemFont.measureString(options[Number.parseInt(entry.toString(), 10)][1], [0, 0], format, 0, 0)[0]);
+                    widths.push(itemFont.measureString(options[<number>entry][1], [0, 0], format, 0, 0)[0]);
                 });
             } else if (options.length > 0) {
                 let max: number = itemFont.measureString(options[0][1], [0, 0], format, 0, 0)[0];
                 for (let i: number = 1; i < options.length; ++i) {
-                    const width: number = itemFont.measureString(options[Number.parseInt(i.toString(), 10)][1], [0, 0], format, 0, 0)[0];
+                    const width: number = itemFont.measureString(options[<number>i][1], [0, 0], format, 0, 0)[0];
                     max = Math.max(max, width);
                     widths.push(max);
                 }
@@ -6789,17 +6778,17 @@ export class PdfListBoxField extends PdfListField {
                     const item: PdfListFieldItem = this.itemAt(i);
                     if (item) {
                         if (_isNullOrUndefined(index) && this._listValues !== null && typeof this._listValues !== 'undefined') {
-                            const value: any = options[Number.parseInt(i.toString(), 10)]; // eslint-disable-line
+                            const value: any = options[<number>i]; // eslint-disable-line
                             if (Array.isArray(value)) {
-                                this._listValues[Number.parseInt(i.toString(), 10)] = value[1];
+                                this._listValues[<number>i] = value[1];
                             } else {
-                                this._listValues[Number.parseInt(i.toString(), 10)] = value;
+                                this._listValues[<number>i] = value;
                             }
                             if (i === index) {
-                                item._text = this._listValues[Number.parseInt(i.toString(), 10)];
+                                item._text = this._listValues[<number>i];
                                 this._selectedIndex = i;
                             } else {
-                                item._text = this._listValues[Number.parseInt(i.toString(), 10)];
+                                item._text = this._listValues[<number>i];
                             }
                         } else {
                             item._text = '';
@@ -6922,7 +6911,7 @@ export class PdfListBoxField extends PdfListField {
         }
         const options: Array<string[]> = this._options;
         for (let index: number = 0; index < options.length; ++index) {
-            const item: string[] = options[Number.parseInt(index.toString(), 10)];
+            const item: string[] = options[<number>index];
             const location: number[] = [];
             const borderWidth: number = parameter.borderWidth;
             const doubleBorderWidth: number = 2 * borderWidth;
@@ -7015,7 +7004,7 @@ export class PdfListBoxField extends PdfListField {
         if (_isNullOrUndefined(this._listValues) && this._listValues.length > 0) {
             let max: number = itemFont.measureString(this._listValues[0], [0, 0], format, 0, 0)[0];
             for (let i: number = 1; i < this._listValues.length; ++i) {
-                const value: number = itemFont.measureString(this._listValues[Number.parseInt(i.toString(), 10)], [0, 0], format, 0, 0)[0];
+                const value: number = itemFont.measureString(this._listValues[<number>i], [0, 0], format, 0, 0)[0];
                 max = (max > value) ? max : value;
             }
             s = ((12 * (this.bounds.width - 4 * this.border.width)) / max);
@@ -7380,8 +7369,8 @@ export class _PdfDefaultAppearance {
         let fontSize: number = 0;
         if (da && typeof da === 'string' && da !== '') {
             const sliced: string[] = da.split(' ');
-            for (let i: number = 0; i < sliced.length; i++) {
-                switch (sliced[Number.parseInt(i.toString(), 10)]) {
+            sliced.forEach((item: string, i: number) => {
+                switch (item) {
                 case 'g':
                     color = [Number.parseFloat(sliced[i - 1])];
                     break;
@@ -7400,7 +7389,7 @@ export class _PdfDefaultAppearance {
                     }
                     break;
                 }
-            }
+            });
         }
         this.fontName = fontName;
         this.fontSize = fontSize;

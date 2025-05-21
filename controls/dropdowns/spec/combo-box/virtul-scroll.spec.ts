@@ -3,7 +3,7 @@
  */
 import { ComboBox } from '../../src/combo-box/combo-box';
 import { ChangeEventArgs } from '../../src/drop-down-list/drop-down-list';
-import { DataManager, Query, ODataV4Adaptor, WebApiAdaptor } from '@syncfusion/ej2-data';
+import { DataManager, Query, ODataV4Adaptor, WebApiAdaptor, UrlAdaptor } from '@syncfusion/ej2-data';
 import { profile, inMB, getMemoryProfile } from '../common/common.spec';
 import { EmitType, Browser, createElement, isNullOrUndefined, setCulture, L10n } from '@syncfusion/ej2-base';
 import { DropDownBase, FilteringEventArgs, dropDownBaseClasses, PopupEventArgs, SelectEventArgs } from '../../src/drop-down-base/drop-down-base';
@@ -361,7 +361,7 @@ describe('Combobox_virtualization', () => {
                         url: 'https://ej2services.syncfusion.com/js/development/api/orders',
                         adaptor: new WebApiAdaptor ,
                         crossDomain: true
-                    }), popupHeight: '200px', enableVirtualization: true, allowFiltering: true, debounceDelay: 0, value: 10004, fields: { text: 'OrderID', value: 'OrderID' },
+                    }), popupHeight: '200px', enableVirtualization: true, allowFiltering: true, debounceDelay: 0, allowObjectBinding: true, value: 10004, fields: { text: 'OrderID', value: 'OrderID' },
                 });
                 dropObj.appendTo(ele);
             });
@@ -416,6 +416,49 @@ describe('Combobox_virtualization', () => {
             });
         });
     });
+    describe('Virtualization - Preselected value binding with remote data', () => {
+        let dropObj: any;
+        let ele: HTMLElement;
+        let originalTimeout: number;
+        beforeAll(() => {
+            ele = createElement('input', { id: 'DropDownList' });
+            document.body.appendChild(ele);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 7000;
+            dropObj = new ComboBox({
+                dataSource: new DataManager({
+                    url: 'https://ej2services.syncfusion.com/js/development/api/api/VirtualDropdownData',
+                    adaptor: new UrlAdaptor(),
+                    crossDomain: true
+                }),
+                popupHeight: '200px',
+                enableVirtualization: true,
+                allowFiltering: true,
+                debounceDelay: 0,
+                value: 10248, // preselected OrderID
+                fields: { text: 'OrderID', value: 'OrderID' }
+            });
+            dropObj.appendTo(ele);
+        });
+
+        afterAll(() => {
+            dropObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            document.body.innerHTML = '';
+        });
+
+        it('should populate input with preselected value text after remote data loads', (done) => {
+            setTimeout(() => {
+                expect(dropObj.value).toBe(10248);
+                dropObj.showPopup();
+                dropObj.showPopup();
+                dropObj.allowCustom = false;
+                dropObj.updateValues();
+                done();
+            }, 1000);
+        });
+    });
 
     describe('Virtualization with custom preselect values with', () => {
         let dropObj: any;
@@ -437,6 +480,13 @@ describe('Combobox_virtualization', () => {
             expect(dropObj.inputElement.value).toBe('id160');
             expect(dropObj.text).toBe('id160');
             expect(dropObj.value).toBe('id160');
+            dropObj.isReact = true;
+            dropObj.allowFiltering = false;
+            dropObj.setSearchBox();
+            dropObj.allowCustom = false;
+            dropObj.updateValues();
+            dropObj.allowObjectBinding= true;
+            dropObj.checkCustomValue();
         });
     });
 });

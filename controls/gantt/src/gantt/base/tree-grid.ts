@@ -100,6 +100,7 @@ export class GanttTreeGrid {
         this.parent.treeGrid.enableAdaptiveUI = this.parent.enableAdaptiveUI;
         this.parent.treeGrid.hasChildMapping = this.parent.taskFields.hasChildMapping;
         this.parent.treeGrid.query = this.parent.query;
+        this.parent.treeGrid.locale = this.parent.locale;
         this.parent.treeGrid.loadChildOnDemand = this.parent.loadChildOnDemand;
         this.parent.treeGrid['isFromGantt'] = true;
         this.parent.treeGrid.parentIdMapping = this.parent.taskFields.parentID;

@@ -771,7 +771,7 @@ export class SelectionCommands {
                             }
                             const nodeList: Node[] = [];
                             // Since color is different for different themnes, we need to wrap the fontColor over the text node.
-                            if (format === 'fontcolor') {
+                            if (isFontStyle) {
                                 const closestAnchor: Node = closest(nodes[index as number].parentElement, 'A');
                                 if (!isNOU(closestAnchor) && closestAnchor.firstChild.textContent.trim()
                                      === nodes[index as number].textContent.trim() ) {

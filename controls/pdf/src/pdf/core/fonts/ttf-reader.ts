@@ -1,4 +1,4 @@
-import { _TrueTypeTableInfo, _TrueTypeHorizontalHeaderTable, _TrueTypeNameTable, _TrueTypeHeadTable, _TrueTypeOS2Table, _TrueTypePostTable, _TrueTypeCmapSubTable, _TrueTypeCmapTable, _TrueTypeAppleCmapSubTable, _TrueTypeMicrosoftCmapSubTable, _TrueTypeTrimmedCmapSubTable} from './ttf-table';
+import { _TrueTypeTableInfo, _TrueTypeHorizontalHeaderTable, _TrueTypeNameTable, _TrueTypeHeadTable, _TrueTypeOS2Table, _TrueTypePostTable, _TrueTypeCmapSubTable, _TrueTypeCmapTable, _TrueTypeAppleCmapSubTable, _TrueTypeMicrosoftCmapSubTable, _TrueTypeTrimmedCmapSubTable } from './ttf-table';
 import { Dictionary } from '../pdf-primitives';
 import { _StringTokenizer } from './string-layouter';
 import { _TrueTypeCmapFormat, _TrueTypeCmapEncoding, _TrueTypePlatformID, _TrueTypeMicrosoftEncodingID, _TrueTypeMacintoshEncodingID, _TrueTypeCompositeGlyphFlag } from '../../core/enumerator';
@@ -88,7 +88,7 @@ export class _TrueTypeReader {
         let minOffset: number = Number.MAX_VALUE;
         const tableKeys: string[] = this._tableDirectory.keys();
         for (let i: number = 0; i < tableKeys.length; i++) {
-            const value: _TrueTypeTableInfo = this._tableDirectory.getValue(tableKeys[Number.parseInt(i.toString(), 10)]);
+            const value: _TrueTypeTableInfo = this._tableDirectory.getValue(tableKeys[<number>i]);
             const offset: number = value._offset;
             if (minOffset > offset) {
                 minOffset = offset;
@@ -100,11 +100,11 @@ export class _TrueTypeReader {
         const shift: number = minOffset - this._lowestPosition;
         if (shift !== 0) {
             const table: Dictionary<string, _TrueTypeTableInfo> = new Dictionary<string, _TrueTypeTableInfo>();
-            for (let i: number = 0; i < tableKeys.length; i++) {
-                const value: _TrueTypeTableInfo = this._tableDirectory.getValue(tableKeys[Number.parseInt(i.toString(), 10)]);
+            tableKeys.forEach((key: string) => {
+                const value: _TrueTypeTableInfo = this._tableDirectory.getValue(key);
                 value._offset -= shift;
-                table.setValue(tableKeys[Number.parseInt(i.toString(), 10)], value);
-            }
+                table.setValue(key, value);
+            });
             this._tableDirectory = table;
         }
     }
@@ -152,7 +152,7 @@ export class _TrueTypeReader {
             this._offset = tableInfo._offset + table._offset + record._offset;
             const unicode: boolean = (record._platformID === 0 || record._platformID === 3);
             record._name = this._readString(record._length, unicode);
-            table._nameRecords[Number.parseInt(i.toString(), 10)] = record;
+            table._nameRecords[<number>i] = record;
             position += recordSize;
         }
         return table;
@@ -306,7 +306,7 @@ export class _TrueTypeReader {
             subTable._offset = this._readUInt32(this._offset);
             position = this._offset;
             this._readCmapSubTable(subTable);
-            subTables[Number.parseInt(i.toString(), 10)] = subTable;
+            subTables[<number>i] = subTable;
         }
         return subTables;
     }
@@ -373,18 +373,18 @@ export class _TrueTypeReader {
         let codeOffset: number = 0;
         let index: number = 0;
         for (let j: number = 0; j < segCount; j++) {
-            for (let k: number = table._startCount[Number.parseInt(j.toString(), 10)]; k <=
-            table._endCount[Number.parseInt(j.toString(), 10)] && k !== 65535; k++) {
-                if (table._idRangeOffset[Number.parseInt(j.toString(), 10)] === 0) {
-                    codeOffset = (k + table._idDelta[Number.parseInt(j.toString(), 10)]) & 65535;
+            for (let k: number = table._startCount[<number>j]; k <=
+                table._endCount[<number>j] && k !== 65535; k++) {
+                if (table._idRangeOffset[<number>j] === 0) {
+                    codeOffset = (k + table._idDelta[<number>j]) & 65535;
                 } else {
-                    index = j + table._idRangeOffset[Number.parseInt(j.toString(), 10)] / 2 - segCount +
-                    k - table._startCount[Number.parseInt(j.toString(), 10)];
+                    index = j + table._idRangeOffset[<number>j] / 2 - segCount +
+                        k - table._startCount[<number>j];
                     if (index >= table._glyphID.length) {
                         continue;
                     }
-                    codeOffset = (table._glyphID[Number.parseInt(index.toString(), 10)] +
-                    table._idDelta[Number.parseInt(j.toString(), 10)]) & 65535;
+                    codeOffset = (table._glyphID[<number>index] +
+                        table._idDelta[<number>j]) & 65535;
                 }
                 const glyph: _TrueTypeGlyph = new _TrueTypeGlyph();
                 glyph._index = codeOffset;
@@ -417,7 +417,7 @@ export class _TrueTypeReader {
     }
     _initializeFontName(nameTable: _TrueTypeNameTable): void {
         for (let i: number = 0; i < nameTable._recordsCount; i++) {
-            const record: _TrueTypeNameRecord = nameTable._nameRecords[Number.parseInt(i.toString(), 10)];
+            const record: _TrueTypeNameRecord = nameTable._nameRecords[<number>i];
             if (record._nameID === 1) {
                 this._metrics._fontFamily = record._name;
             } else if (record._nameID === 6) {
@@ -442,7 +442,7 @@ export class _TrueTypeReader {
     }
     _getWidth(glyphCode: number): number {
         glyphCode = (glyphCode < this._width.length) ? glyphCode : this._width.length - 1;
-        return this._width[Number.parseInt(glyphCode.toString(), 10)];
+        return this._width[<number>glyphCode];
     }
     _getCmapEncoding(platformID: number, encodingID: number): _TrueTypeCmapEncoding {
         let format: _TrueTypeCmapEncoding = _TrueTypeCmapEncoding.unknown;
@@ -478,14 +478,10 @@ export class _TrueTypeReader {
                        postTable: _TrueTypePostTable, cmapTables: _TrueTypeCmapSubTable[]): void {
         this._initializeFontName(nameTable);
         let bSymbol: boolean = false;
-        for (let i: number = 0; i < cmapTables.length; i++) {
-            const subTable: _TrueTypeCmapSubTable = cmapTables[Number.parseInt(i.toString(), 10)];
+        bSymbol = cmapTables.some((subTable: _TrueTypeCmapSubTable) => {
             const encoding: _TrueTypeCmapEncoding = this._getCmapEncoding(subTable._platformID, subTable._encodingID);
-            if (encoding === _TrueTypeCmapEncoding.symbol) {
-                bSymbol = true;
-                break;
-            }
-        }
+            return encoding === _TrueTypeCmapEncoding.symbol;
+        });
         this._metrics._isSymbol = bSymbol;
         this._metrics._macStyle = headTable._macStyle;
         this._metrics._isFixedPitch = (postTable._isFixedPitch !== 0);
@@ -514,23 +510,23 @@ export class _TrueTypeReader {
         const bytes: number[] = [];
         if (this._metrics._isSymbol) {
             for (let i: number = 0; i < count; i++) {
-                const glyphInfo: _TrueTypeGlyph = this._getGlyph(String.fromCharCode(Number.parseInt(i.toString(), 10)));
-                bytes[Number.parseInt(i.toString(), 10)] = (glyphInfo._empty) ? 0 : glyphInfo._width;
+                const glyphInfo: _TrueTypeGlyph = this._getGlyph(String.fromCharCode(<number>i));
+                bytes[<number>i] = (glyphInfo._empty) ? 0 : glyphInfo._width;
             }
         } else {
             const byteToProcess: number[] = [];
             const unknown: string = '?';
             const space: string = String.fromCharCode(32);
             for (let i: number = 0; i < count; i++) {
-                byteToProcess[0] = Number.parseInt(i.toString(), 10);
+                byteToProcess[0] = <number>i;
                 const text: string = this._getString(byteToProcess, 0, byteToProcess.length);
                 const ch: string = (text.length > 0) ? text[0] : unknown;
                 let glyphInfo: _TrueTypeGlyph = this._getGlyph(ch);
                 if (!glyphInfo._empty) {
-                    bytes[Number.parseInt(i.toString(), 10)] = glyphInfo._width;
+                    bytes[<number>i] = glyphInfo._width;
                 } else {
                     glyphInfo = this._getGlyph(space);
-                    bytes[Number.parseInt(i.toString(), 10)] = (glyphInfo._empty) ? 0 : glyphInfo._width;
+                    bytes[<number>i] = (glyphInfo._empty) ? 0 : glyphInfo._width;
                 }
             }
         }
@@ -576,12 +572,11 @@ export class _TrueTypeReader {
         const activeGlyphs: number[] = glyphChars.keys();
         activeGlyphs.sort((a: number, b: number) => a - b);
         let glyphSize: number = 0;
-        for (let i: number = 0; i < activeGlyphs.length; i++) {
-            const glyphIndex: number = activeGlyphs[Number.parseInt(i.toString(), 10)];
+        activeGlyphs.forEach((glyphIndex: number) => {
             if (locaTable._offsets.length > 0) {
-                glyphSize += locaTable._offsets[glyphIndex + 1] - locaTable._offsets[Number.parseInt(glyphIndex.toString(), 10)];
+                glyphSize += locaTable._offsets[glyphIndex + 1] - locaTable._offsets[<number>glyphIndex];
             }
-        }
+        });
         const glyphSizeAligned: number = this._align(glyphSize);
         newGlyphTable = [];
         for (let i: number = 0; i < glyphSizeAligned; i++) {
@@ -592,10 +587,10 @@ export class _TrueTypeReader {
         const table: _TrueTypeTableInfo = this._getTable('glyf');
         for (let i: number = 0; i < locaTable._offsets.length; i++) {
             newLocaTable.push(nextGlyphOffset);
-            if (nextGlyphIndex < activeGlyphs.length && activeGlyphs[Number.parseInt(nextGlyphIndex.toString(), 10)] === i) {
+            if (nextGlyphIndex < activeGlyphs.length && activeGlyphs[<number>nextGlyphIndex] === i) {
                 ++nextGlyphIndex;
-                newLocaTable[Number.parseInt(i.toString(), 10)] = nextGlyphOffset;
-                const oldGlyphOffset: number = locaTable._offsets[Number.parseInt(i.toString(), 10)];
+                newLocaTable[<number>i] = nextGlyphOffset;
+                const oldGlyphOffset: number = locaTable._offsets[<number>i];
                 const oldNextGlyphOffset: number = locaTable._offsets[i + 1] - oldGlyphOffset;
                 if (oldNextGlyphOffset > 0) {
                     this._offset = table._offset + oldGlyphOffset;
@@ -616,13 +611,13 @@ export class _TrueTypeReader {
             const len: number = tableInfo._length / 2;
             buffer = [];
             for (let i: number = 0; i < len; i++) {
-                buffer[Number.parseInt(i.toString(), 10)] = this._readUInt16(this._offset) * 2;
+                buffer[<number>i] = this._readUInt16(this._offset) * 2;
             }
         } else {
             const len: number = tableInfo._length / 4;
             buffer = [];
             for (let i: number = 0; i < len; i++) {
-                buffer[Number.parseInt(i.toString(), 10)] = this._readUInt32(this._offset);
+                buffer[<number>i] = this._readUInt32(this._offset);
             }
         }
         table._offsets = buffer;
@@ -634,18 +629,16 @@ export class _TrueTypeReader {
         }
         const clone: Dictionary<number, number> = new Dictionary<number, number>();
         const glyphCharKeys: number[] = glyphChars.keys();
-        for (let i: number = 0; i < glyphCharKeys.length; i++) {
-            clone.setValue(glyphCharKeys[Number.parseInt(i.toString(), 10)],
-                           glyphChars.getValue(glyphCharKeys[Number.parseInt(i.toString(), 10)]));
-        }
-        for (let i: number = 0; i < glyphCharKeys.length; i++) {
-            const nextKey: number = glyphCharKeys[Number.parseInt(i.toString(), 10)];
+        glyphCharKeys.forEach((key: number) => {
+            clone.setValue(key, glyphChars.getValue(key));
+        });
+        glyphCharKeys.forEach((nextKey: number) => {
             this._processCompositeGlyph(glyphChars, nextKey, locaTable);
-        }
+        });
     }
     _processCompositeGlyph(glyphChars: Dictionary<number, number>, glyph: number, locaTable: _TrueTypeLocaTable): void {
         if (glyph < locaTable._offsets.length - 1) {
-            const glyphOffset: number = locaTable._offsets[Number.parseInt(glyph.toString(), 10)];
+            const glyphOffset: number = locaTable._offsets[<number>glyph];
             if (glyphOffset !== locaTable._offsets[glyph + 1]) {
                 const tableInfo: _TrueTypeTableInfo = this._getTable('glyf');
                 this._offset = tableInfo._offset + glyphOffset;
@@ -685,28 +678,27 @@ export class _TrueTypeReader {
         const size: number = (bLocaIsShort) ? newLocaTable.length * 2 : newLocaTable.length * 4;
         const count: number = this._align(size);
         const writer: _BigEndianWriter = new _BigEndianWriter(count);
-        for (let i: number = 0; i < newLocaTable.length; i++) {
-            let value: number = newLocaTable[Number.parseInt(i.toString(), 10)];
+        newLocaTable.forEach((value: number) => {
             if (bLocaIsShort) {
                 value /= 2;
                 writer._writeShort(value);
             } else {
                 writer._writeInt(value);
             }
-        }
+        });
         return { newLocaUpdated: writer._data, newLocaSize: size };
     }
     _align(value: number): number {
         return (value + 3) & (~3);
     }
     _getFontProgram(newLocaTableOut: number[], newGlyphTable: number[], glyphTableSize: number, locaTableSize: number): number[] {
-        const result: {fontProgramLength: number, table: number} = this._getFontProgramLength(newLocaTableOut, newGlyphTable, 0);
+        const result: { fontProgramLength: number, table: number } = this._getFontProgramLength(newLocaTableOut, newGlyphTable, 0);
         const fontProgramLength: number = result.fontProgramLength;
         const table: number = result.table;
         const writer: _BigEndianWriter = new _BigEndianWriter(fontProgramLength);
         writer._writeInt(0x10000);
         writer._writeShort(table);
-        const entrySelector: number = this._entrySelectors[Number.parseInt(table.toString(), 10)];
+        const entrySelector: number = this._entrySelectors[<number>table];
         writer._writeShort((1 << (entrySelector & 31)) * 16);
         writer._writeShort(entrySelector);
         writer._writeShort((table - (1 << (entrySelector & 31))) * 16);
@@ -714,15 +706,13 @@ export class _TrueTypeReader {
         this._writeGlyphs(writer, newLocaTableOut, newGlyphTable);
         return writer._data;
     }
-    _getFontProgramLength(newLocaTableOut: number[], newGlyphTable: number[], table: number):
-    {fontProgramLength: number, table: number} {
+    _getFontProgramLength(newLocaTableOut: number[], newGlyphTable: number[], table: number): { fontProgramLength: number, table: number } {
         let fontProgramLength: number = 0;
         if (newLocaTableOut !== null && typeof newLocaTableOut !== 'undefined' && newLocaTableOut.length > 0 &&
             newGlyphTable !== null && typeof newGlyphTable !== 'undefined' && newGlyphTable.length > 0) {
             table = 2;
             const tableNames: string[] = this._tableNames;
-            for (let i: number = 0; i < tableNames.length; i++) {
-                const tableName: string = tableNames[Number.parseInt(i.toString(), 10)];
+            tableNames.forEach((tableName: string) => {
                 if (tableName !== 'glyf' && tableName !== 'loca') {
                     const tableInfo: _TrueTypeTableInfo = this._getTable(tableName);
                     if (!tableInfo._empty) {
@@ -730,40 +720,38 @@ export class _TrueTypeReader {
                         fontProgramLength += this._align(tableInfo._length);
                     }
                 }
-            }
+            });
             fontProgramLength += newLocaTableOut.length;
             fontProgramLength += newGlyphTable.length;
             const usedTablesSize: number = table * 16 + (3 * 4);
             fontProgramLength += usedTablesSize;
         }
-        return { fontProgramLength: fontProgramLength, table: table};
+        return { fontProgramLength: fontProgramLength, table: table };
     }
     _getGlyphChars(chars: Dictionary<string, string>): Dictionary<number, number> {
         const dictionary: Dictionary<number, number> = new Dictionary<number, number>();
         if (chars !== null && typeof chars !== 'undefined') {
             const charKeys: string[] = chars.keys();
-            for (let i: number = 0; i < charKeys.length; i++) {
-                const ch: string = charKeys[Number.parseInt(i.toString(), 10)];
+            charKeys.forEach((ch: string) => {
                 const glyph: _TrueTypeGlyph = this._getGlyph(ch);
                 if (!glyph._empty) {
                     dictionary.setValue(glyph._index, ch.charCodeAt(0));
                 }
-            }
+            });
         }
         return dictionary;
     }
     _writeCheckSums(writer: _BigEndianWriter, table: number, newLocaTableOut: number[], newGlyphTable: number[], glyphTableSize: number,
                     locaTableSize: number): void {
         if (writer !== null && typeof writer !== 'undefined' && newLocaTableOut !== null && typeof newLocaTableOut !== 'undefined' &&
-        newLocaTableOut.length > 0 && newGlyphTable !== null && typeof newGlyphTable !== 'undefined' && newGlyphTable.length > 0) {
+            newLocaTableOut.length > 0 && newGlyphTable !== null && typeof newGlyphTable !== 'undefined' && newGlyphTable.length > 0) {
             const tableNames: string[] = this._tableNames;
             let usedTablesSize: number = table * 16 + (3 * 4);
             let nextTableSize: number = 0;
-            for (let i: number = 0; i < tableNames.length; i++) {
-                const tableName: string = tableNames[Number.parseInt(i.toString(), 10)];
+            tableNames.forEach((tableName: string) => {
                 const tableInfo: _TrueTypeTableInfo = this._getTable(tableName);
                 if (tableInfo._empty) {
-                    continue;
+                    return;
                 }
                 writer._writeString(tableName);
                 if (tableName === 'glyf') {
@@ -781,7 +769,7 @@ export class _TrueTypeReader {
                 writer._writeUInt(usedTablesSize);
                 writer._writeUInt(nextTableSize);
                 usedTablesSize += this._align(nextTableSize);
-            }
+            });
         }
     }
     _calculateCheckSum(bytes: number[]): number {
@@ -807,13 +795,12 @@ export class _TrueTypeReader {
     }
     _writeGlyphs(writer: _BigEndianWriter, newLocaTable: number[], newGlyphTable: number[]): void {
         if (writer !== null && typeof writer !== 'undefined' && newLocaTable !== null && typeof newLocaTable !== 'undefined' &&
-        newLocaTable.length > 0 && newGlyphTable !== null && typeof newGlyphTable !== 'undefined' && newGlyphTable.length > 0) {
+            newLocaTable.length > 0 && newGlyphTable !== null && typeof newGlyphTable !== 'undefined' && newGlyphTable.length > 0) {
             const tableNames: string[] = this._tableNames;
-            for (let i: number = 0; i < tableNames.length; i++) {
-                const tableName: string = tableNames[Number.parseInt(i.toString(), 10)];
+            tableNames.forEach((tableName: string) => {
                 const tableInfo: _TrueTypeTableInfo = this._getTable(tableName);
                 if (tableInfo._empty) {
-                    continue;
+                    return;
                 }
                 if (tableName === 'glyf') {
                     writer._writeBytes(newGlyphTable);
@@ -826,10 +813,10 @@ export class _TrueTypeReader {
                         buff.push(0);
                     }
                     this._offset = tableInfo._offset;
-                    const result: {buffer: number[], written: number} = this._read(buff, 0, tableInfo._length);
+                    const result: { buffer: number[], written: number } = this._read(buff, 0, tableInfo._length);
                     writer._writeBytes(result.buffer);
                 }
-            }
+            });
         }
     }
     _read(buffer: number[], index: number, count: number): { buffer: number[], written: number } {
@@ -859,8 +846,8 @@ export class _TrueTypeReader {
         const subTables: _TrueTypeCmapSubTable[] = this._readCmapTable();
         this._initializeMetrics(nameTable, headTable, horizontalHeadTable, os2Table, postTable, subTables);
     }
-    _getGlyph(charCode: string ): _TrueTypeGlyph
-    _getGlyph(charCode: number ): _TrueTypeGlyph
+    _getGlyph(charCode: string): _TrueTypeGlyph
+    _getGlyph(charCode: number): _TrueTypeGlyph
     _getGlyph(charCode?: string | number): _TrueTypeGlyph {
         if (typeof charCode === 'number') {
             let obj1: object = null;
@@ -935,24 +922,24 @@ export class _TrueTypeReader {
         return integer + fraction;
     }
     _readInt32(offset: number): number {
-        const i1: number = this._fontData[Number.parseInt(offset.toString(), 10) + 3];
-        const i2: number = this._fontData[Number.parseInt(offset.toString(), 10) + 2];
-        const i3: number = this._fontData[Number.parseInt(offset.toString(), 10) + 1];
-        const i4: number = this._fontData[Number.parseInt(offset.toString(), 10)];
+        const i1: number = this._fontData[<number>offset + 3];
+        const i2: number = this._fontData[<number>offset + 2];
+        const i3: number = this._fontData[<number>offset + 1];
+        const i4: number = this._fontData[<number>offset];
         this._offset += 4;
         return i1 + (i2 << 8) + (i3 << 16) + (i4 << 24);
     }
     _readUInt32(offset: number): number {
-        const i1: number = this._fontData[Number.parseInt(offset.toString(), 10) + 3];
-        const i2: number = this._fontData[Number.parseInt(offset.toString(), 10) + 2];
-        const i3: number = this._fontData[Number.parseInt(offset.toString(), 10) + 1];
-        const i4: number = this._fontData[Number.parseInt(offset.toString(), 10)];
+        const i1: number = this._fontData[<number>offset + 3];
+        const i2: number = this._fontData[<number>offset + 2];
+        const i3: number = this._fontData[<number>offset + 1];
+        const i4: number = this._fontData[<number>offset];
         this._offset += 4;
         return (i1 | i2 << 8 | i3 << 16 | i4 << 24);
     }
     _readInt16(offset: number): number {
-        let result: number = (this._fontData[Number.parseInt(offset.toString(), 10)] << 8) +
-        this._fontData[Number.parseInt(offset.toString(), 10) + 1];
+        let result: number = (this._fontData[<number>offset] << 8) +
+            this._fontData[<number>offset + 1];
         result = result & (1 << 15) ? result - 0x10000 : result;
         this._offset += 2;
         return result;
@@ -966,28 +953,28 @@ export class _TrueTypeReader {
         return n;
     }
     _readUInt16(offset: number): number {
-        const result: number = (this._fontData[Number.parseInt(offset.toString(), 10)] << 8) |
-        this._fontData[Number.parseInt(offset.toString(), 10) + 1];
+        const result: number = (this._fontData[<number>offset] << 8) |
+            this._fontData[<number>offset + 1];
         this._offset += 2;
         return result;
     }
     _readUShortArray(length: number): number[] {
         const buffer: number[] = [];
         for (let i: number = 0; i < length; i++) {
-            buffer[Number.parseInt(i.toString(), 10)] = this._readUInt16(this._offset);
+            buffer[<number>i] = this._readUInt16(this._offset);
         }
         return buffer;
     }
     _readBytes(length: number): number[] {
         const result: number[] = [];
         for (let i: number = 0; i < length; i++) {
-            result.push(this._fontData[Number.parseInt(this._offset.toString(), 10)]);
+            result.push(this._fontData[<number>this._offset]);
             this._offset += 1;
         }
         return result;
     }
     _readByte(offset: number): number {
-        const result: number = this._fontData[Number.parseInt(offset.toString(), 10)];
+        const result: number = this._fontData[<number>offset];
         this._offset += 1;
         return result;
     }
@@ -1001,7 +988,7 @@ export class _TrueTypeReader {
         let glyph: string = '';
         if (text !== null && text !== undefined && text.length > 0) {
             for (let k: number = 0; k < text.length; k++) {
-                const ch: string = text[Number.parseInt(k.toString(), 10)];
+                const ch: string = text[<number>k];
                 const glyphInfo: _TrueTypeGlyph = this._getGlyph(ch);
                 if (!glyphInfo._empty) {
                     glyph += String.fromCharCode(glyphInfo._index);
@@ -1123,7 +1110,7 @@ export class _BigEndianWriter {
         if (buff !== null && typeof buff !== 'undefined') {
             let position: number = this._position;
             for (let i: number = 0; i < buff.length; i++) {
-                this._buffer[Number.parseInt(position.toString(), 10)] = buff[Number.parseInt(i.toString(), 10)];
+                this._buffer[<number>position] = buff[<number>i];
                 position++;
             }
             this._internalPosition += buff.length;

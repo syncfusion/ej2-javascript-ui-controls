@@ -100,7 +100,7 @@ export class Category extends NiceInterval {
         /** Generate axis labels */
         axis.visibleLabels = [];
         axis.visibleRange.interval = axis.visibleRange.interval < 1 ? 1 : axis.visibleRange.interval;
-        let tempInterval: number = Math.ceil(axis.visibleRange.min);
+        let tempInterval: number = axis.intervalOffset ? axis.intervalOffset : Math.ceil(axis.visibleRange.min);
         let labelStyle: Font;
         if (axis.zoomFactor < 1 || axis.zoomPosition > 0) {
             tempInterval = axis.visibleRange.min - (axis.visibleRange.min % axis.visibleRange.interval);

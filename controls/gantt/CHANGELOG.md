@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 29.2.5 (2025-05-21)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I719807` - Parent record reverted to previous state, but child record does not while performing Undo action issue has been fixed.
+- `#I721574` - Localization not applied to Gantt Chart though `locale` property is defined issue has been fixed.
+- `#I647637` - Fixed an issue where the `showWeekend` property did not function correctly during taskbar drag and drop operations in different time zones.
+- `#I718712` - Resolved the issue where dependency arrows were incorrectly positioned on the grid side during PDF exports.
+
 ## 29.2.4 (2025-05-14)
 
 ### GanttChart

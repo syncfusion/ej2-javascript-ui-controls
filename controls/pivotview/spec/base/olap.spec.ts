@@ -942,4 +942,75 @@ describe('Pivot Olap Engine', () => {
     //         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     //     });
     // });
+
+    describe('Olap virtualization', () => {
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        let pivotGridObj: PivotView;
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            document.body.appendChild(elem);
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(VirtualScroll);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    catalog: 'Adventure Works DW Standard Edition',
+                    cube: 'Adventure Works',
+                    providerType: 'SSAS',
+                    url: 'https://olap.flexmonster.com/olap/msmdpump.dll',
+                    localeIdentifier: 1033,
+                    columns: [{ name: '[Customer].[Customer Geography]', caption: 'Customer Geography' }],
+                    rows: [{ name: '[Measures]', caption: 'Measures' }],
+                    values: [{ name: '[Measures].[Internet Sales Amount]', caption: 'Internet Sales Amount' }],
+                    drilledMembers: [{
+                        name: '[Customer].[Customer Geography]', items: [
+                            '[Customer].[Customer Geography].[Country].&[Canada]', '[Customer].[Customer Geography].[Country].&[Australia]'
+                        ]
+                    }]
+                },
+                width: 300,
+                enableVirtualization: true,
+                dataBound: dataBound
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        it('Initial rendering', (done: Function) => {
+            setTimeout(() => {
+                document.querySelectorAll('.e-headercontent')[0].scrollLeft = 400;
+                pivotGridObj.virtualscrollModule.direction = 'horizondal';
+                let args: MouseEvent = new MouseEvent("mousedown", { clientX: 1360, view: window, bubbles: true, cancelable: true });
+                document.querySelector('.e-movablescroll').dispatchEvent(args);
+                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                document.querySelector('.e-movablescroll').dispatchEvent(args);
+                done();
+            }, 1000);
+        });
+        it('Scroll', (done: Function) => {
+            setTimeout(() => {
+                let args: MouseEvent = new MouseEvent("mousedown", { clientX: 1360, view: window, bubbles: true, cancelable: true });
+                document.querySelector('.e-movablescroll').dispatchEvent(args);
+                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                document.querySelector('.e-movablescroll').dispatchEvent(args);
+                done();
+            }, 1000);
+        });
+        it('Validation', (done: Function) => {
+            setTimeout(() => {
+                expect(pivotGridObj.pivotValues[0][1].formattedText === 'Australia').toBeTruthy();
+                done();
+            }, 1000);
+        });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange);
+            //Check average change in memory samples to not be over 10MB
+            let memory: any = inMB(getMemoryProfile());
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });
+    });
 });

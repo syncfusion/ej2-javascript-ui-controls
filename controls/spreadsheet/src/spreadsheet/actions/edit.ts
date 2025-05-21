@@ -1414,13 +1414,15 @@ export class Edit {
     }
 
     private refSelectionRender(): void {
-        const editorElem: HTMLElement = this.getEditElement(this.parent.getActiveSheet());
+        let editorElem: HTMLElement = this.getEditElement(this.parent.getActiveSheet());
         if (editorElem) {
             if (checkIsFormula(editorElem.textContent)) {
                 this.parent.notify(initiateFormulaReference, {
                     range: editorElem.textContent, formulaSheetIdx: this.editCellData.sheetIndex
                 });
             }
+            editorElem = this.parent.getCell(this.editCellData.rowIndex, this.editCellData.colIndex) as HTMLTableCellElement;
+            if (editorElem) { this.editCellData.element = editorElem; }
         }
     }
 

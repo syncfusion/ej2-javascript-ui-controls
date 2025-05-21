@@ -702,7 +702,7 @@ export class PdfListItemCollection {
         if (index === null) {
             throw new Error('index should not be null');
         }
-        const item: PdfListItem = this._listItems[Number.parseInt(index.toString(), 10)];
+        const item: PdfListItem = this._listItems[<number>index];
         return item;
     }
     /**
@@ -744,9 +744,9 @@ export class PdfListItemCollection {
         }
         let found: boolean = false;
         for (let i: number = 0; i < this._listItems.length; i++) {
-            if (this._listItems[Number.parseInt(i.toString(), 10)] === item) {
+            if (this._listItems[<number>i] === item) {
                 found = true;
-                this._listItems.splice(Number.parseInt(i.toString(), 10), 1);
+                this._listItems.splice(i, 1);
                 break;
             }
         }

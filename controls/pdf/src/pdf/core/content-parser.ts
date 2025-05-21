@@ -4,7 +4,7 @@ export class _ContentParser {
     _recordCollection: _PdfRecord[] = [];
     _operands: string[] = [];
     _inlineImageBytes: number[] = [];
-    _isByteOpearand: boolean = false;
+    _isByteOperand: boolean = false;
     constructor(contentStream: number[])
     constructor(contentStream: Uint8Array)
     constructor(contentStream: Uint8Array | number[]) {
@@ -67,7 +67,7 @@ export class _ContentParser {
         let thirdChar: string;
         while (true) { // eslint-disable-line
             let contentCount: number = 0;
-            currentChar = this._lexer._getNextCharforInlineStream();
+            currentChar = this._lexer._getNextCharForInlineStream();
             if (currentChar === 'E' || currentChar === String.fromCharCode(65535)) {
                 nextChar = this._lexer._getNextInlineChar();
                 if (nextChar === 'I' || (nextChar === String.fromCharCode(65535) && currentChar === String.fromCharCode(65535))) {
@@ -83,9 +83,9 @@ export class _ContentParser {
                             this._lexer._operatorParams = '';
                             this._lexer._operatorParams += currentChar;
                             this._lexer._operatorParams += nextChar;
-                            this._isByteOpearand = true;
+                            this._isByteOperand = true;
                             this._createRecord();
-                            this._isByteOpearand = false;
+                            this._isByteOperand = false;
                             this._inlineImageBytes = [];
                             nextChar = this._lexer._getNextInlineChar();
                             break;
@@ -95,7 +95,7 @@ export class _ContentParser {
                         this._inlineImageBytes.push(nextChar.charCodeAt(0) & 0xFF);
                         this._inlineImageBytes.push(secondNextChar.charCodeAt(0) & 0xFF);
                         this._inlineImageBytes.push(thirdChar.charCodeAt(0) & 0xFF);
-                        currentChar = this._lexer._getNextCharforInlineStream();
+                        currentChar = this._lexer._getNextCharForInlineStream();
                     }
                 } else {
                     this._inlineImageBytes.push(currentChar.charCodeAt(0) & 0xFF);
@@ -109,7 +109,7 @@ export class _ContentParser {
     _createRecord(): void {
         const operand: string = this._lexer._operatorParams;
         let record: _PdfRecord;
-        if (this._isByteOpearand) {
+        if (this._isByteOperand) {
             record = new _PdfRecord(operand, new Uint8Array(this._inlineImageBytes));
         } else {
             record = new _PdfRecord(operand, this._operands);
@@ -414,7 +414,7 @@ export class _ContentLexer {
         }
         return this._currentCharacter;
     }
-    _getNextCharforInlineStream(): string {
+    _getNextCharForInlineStream(): string {
         if (this._data.length <= this._offset) {
             this._currentCharacter = String.fromCharCode(65535);
             this._nextCharacter = String.fromCharCode(65535);

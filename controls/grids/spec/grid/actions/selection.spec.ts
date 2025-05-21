@@ -7351,3 +7351,84 @@ describe('EJ2-948229: Focus Border Not Displayed on Cell After Clicking Header a
         gridObj = null;
     });
 });
+
+describe('EJ2-955281: Shift + Checkbox Click Does Not Perform Range Selection in resetOnRowClick Mode', () => {
+    let gridObj: Grid;
+    let rows: any;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                selectionSettings: { checkboxMode: 'ResetOnRowClick' },
+                columns: [
+                    {type: 'checkbox', width: 40},
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID', freeze: 'Right' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: "ShipCity", headerText: "Ship City", width: 250, freeze: 'Left' },
+                ],
+                height: 700,
+            }, done);
+    });
+    
+    it('Selecting First row', (done: Function) => {
+        let rowSelected = (): void => {
+            expect(gridObj.getSelectedRowIndexes().length).toBe(1);
+            gridObj.rowSelected = null;
+            done();
+        };
+        gridObj.rowSelected = rowSelected;
+        (<HTMLElement>gridObj.element.querySelectorAll('.e-row')[0].querySelector('.e-rowcell')).click();
+    });
+
+    it('Shift + Clicking Checkbox in Fourth Row', (done: Function) => {
+        let rowSelected = (): void => {
+            expect(gridObj.getSelectedRowIndexes().length).toBe(4);
+            gridObj.rowSelected = null;
+            done();
+        };
+        gridObj.rowSelected = rowSelected;
+        (gridObj.selectionModule as any)
+        .clickHandler({target: gridObj.element.querySelectorAll('.e-row')[3].querySelector('.e-gridchkbox')
+        .querySelector('.e-checkbox-wrapper'), shiftKey: true});
+    });
+    
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('EJ2-915005: The cell is not highlighted when selecting a row using the method.', () => {
+    let gridObj: Grid;
+    let rows: any;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID', },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: "ShipCity", headerText: "Ship City", width: 250,},
+                ],
+                height: 700,
+            }, done);
+    });
+    it('click any rowcell', (done: Function) => {
+        rows = gridObj.getRows();
+        let rowSelected = (args: any) => {
+            expect(args.row.cells[0].classList.contains('e-focused')).toBeTruthy();
+            gridObj.rowSelected = null;
+            done();
+        };
+        gridObj.rowSelected = rowSelected;
+        gridObj.selectRow(2);
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

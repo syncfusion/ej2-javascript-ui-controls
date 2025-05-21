@@ -4161,4 +4161,26 @@ describe('Spreadsheet base module ->', () => {
             done();
         });
     });
+    describe('EJ2-957571 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ name: 'FEH_00200524_230807145615-UTF8.', ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Checking sheet name length after duplicating the sheet with the name of 31 characters', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            duplicateSheet(spreadsheet, 0);
+            setTimeout(() => {
+                expect(spreadsheet.activeSheetIndex).toEqual(1);
+                expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].name).toBe('FEH_00200524_230807145615-U (2)');
+                duplicateSheet(spreadsheet, 1);
+                setTimeout(() => {
+                    expect(spreadsheet.activeSheetIndex).toEqual(2);
+                    expect(spreadsheet.sheets[spreadsheet.activeSheetIndex].name).toBe('FEH_00200524_230807145615-U (3)');
+                    done();
+                });
+            });
+        });
+    });
 });

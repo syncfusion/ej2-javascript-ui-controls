@@ -42,7 +42,7 @@ export class WorkbookImage {
                 }
             }
         }
-        setCell(indexes[0], indexes[1], sheet, { image: (cell && cell.image) ? oldImgData : imgData }, true, true);
+        setCell(indexes[0], indexes[1], sheet, { image: (cell && cell.image) ? oldImgData : imgData }, true);
         return args.isElementRemoved;
     }
 

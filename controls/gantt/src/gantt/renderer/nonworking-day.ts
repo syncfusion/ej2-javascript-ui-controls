@@ -147,6 +147,7 @@ export class NonWorkingDay {
             this.weekendContainer = null;
             if (this.nonworkingContainer && this.nonworkingContainer.childNodes.length === 0) {
                 remove(this.nonworkingContainer);
+                this.nonworkingContainer = null;
             }
         }
     }
@@ -267,6 +268,7 @@ export class NonWorkingDay {
         }
         if (this.nonworkingContainer) {
             remove(this.nonworkingContainer);
+            this.nonworkingContainer = null;
         }
     }
 }

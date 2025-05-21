@@ -458,6 +458,13 @@ export interface TreeViewModel extends ComponentModel{
     showCheckBox?: boolean;
 
     /**
+     * Specifies whether the item should be checked or unchecked when the node is clicked.
+     *
+     * @default false
+     */
+    checkOnClick?: boolean;
+
+    /**
      * Allow us to specify the parent and child nodes to get auto check while we check or uncheck a node.
      *
      * @default true

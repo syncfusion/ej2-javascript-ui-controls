@@ -1075,7 +1075,10 @@ export class Edit {
         for (let i: number = 0; i < this.parent.predecessorModule.validatedChildItems.length; i++) {
             const child: IGanttData = this.parent.predecessorModule.validatedChildItems[i as number];
             if (child.ganttProperties.predecessor && child.ganttProperties.predecessor.length > 0) {
-                this.parent.editedTaskBarItem = child;
+                if (!this.parent.editedPredecessorRecords.some((item: IGanttData) =>
+                    item[this.parent.taskFields.id] === child[this.parent.taskFields.id])) {
+                    this.parent.editedPredecessorRecords.push(child);
+                }
                 if (!this.isValidatedEditedRecord) {
                     this.isFirstCall = true;
                 }
@@ -1108,7 +1111,7 @@ export class Edit {
             if (ganttRecord.ganttProperties.predecessor) {
                 this.parent.isMileStoneEdited = ganttRecord.ganttProperties.isMilestone;
                 if (this.taskbarMoved) {
-                    this.parent.editedTaskBarItem = ganttRecord;
+                    this.parent.editedPredecessorRecords.push(ganttRecord);
                 }
                 if (!this.isValidatedEditedRecord) {
                     this.isFirstCall = true;
@@ -2034,11 +2037,10 @@ export class Edit {
     private resetEditProperties(args?: object): void {
         this.parent.currentEditedArgs = {};
         this.resetValidateArgs();
-        this.parent.editedTaskBarItem = null;
         this.parent.isOnEdit = false;
         this.parent.predecessorModule.validatedChildItems = [];
         this.parent.isConnectorLineUpdate = false;
-        this.parent.editedTaskBarItem = null;
+        this.parent.editedPredecessorRecords = [];
         this.taskbarMoved = false;
         this.predecessorUpdated = false;
         if (!isNullOrUndefined(this.dialogModule) && (isNullOrUndefined(args) ||

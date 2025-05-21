@@ -44,7 +44,7 @@ export class _RtlRenderer {
             glyphs = [text.length];
             let i: number = 0;
             for (let k: number = 0, len: number = text.length; k < len; k++) {
-                const ch: string = text[Number.parseInt(k.toString(), 10)];
+                const ch: string = text[<number>k];
                 const glyphInfo: _TrueTypeGlyph = ttfReader._getGlyph(ch);
                 if (glyphInfo !== null && typeof glyphInfo !== 'undefined') {
                     glyphs[i++] = (glyphInfo)._index as number;
@@ -78,11 +78,8 @@ export class _RtlRenderer {
                     layouted = this._customLayout(txt, rtl, format);
                 }
                 if (wordSpace) {
-                    const words: string[] = layouted.split('');
-                    const count: number = words.length;
-                    for (let i: number = 0; i < count; i++) {
-                        words[Number.parseInt(i.toString(), 10)] = this._addCharacter(font, words[Number.parseInt(i.toString(), 10)]);
-                    }
+                    let words: string[] = layouted.split('');
+                    words = words.map((word: string) => this._addCharacter(font, word));
                     result = words;
                 } else {
                     result = [];

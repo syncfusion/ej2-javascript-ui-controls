@@ -3023,6 +3023,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         this.engineModule.colFirstLvl = JSON.parse(engine.pivotCount).ColumnFirstLevel;
                         this.engineModule.columnPageCount = JSON.parse(engine.pivotCount).ColumnPageCount;
                         this.engineModule.rowPageCount = JSON.parse(engine.pivotCount).RowPageCount;
+                        this.engineModule.rowMaxLevel = JSON.parse(engine.pivotCount).RowMaxLevel;
                         let rowPos: number;
                         const pivotValues: IAxisSet[][] = JSON.parse(engine.pivotValue);
                         for (let rCnt: number = 0; rCnt < pivotValues.length; rCnt++) {
@@ -3117,7 +3118,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             enableOptimizedRendering: this.enableVirtualization && this.virtualScrollSettings &&
                 this.virtualScrollSettings.allowSinglePage,
             requestType: 'string',
-            headers: { 'Content-type': 'application/json' }
+            headers: { 'Content-type': 'application/json' },
+            isTabular: this.isTabular
         };
         if (this.request.readyState === XMLHttpRequest.UNSENT || this.request.readyState === XMLHttpRequest.OPENED) {
             this.request.withCredentials = false;
@@ -4617,20 +4619,23 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     } else {
                         pivot.engineModule.generateGridData(pivot.dataSourceSettings as IDataOptions, true);
                     }
-                    pivot.allowServerDataBinding = false;
-                    pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
-                    pivot.allowServerDataBinding = true;
-                    const eventArgs: EnginePopulatedEventArgs = {
-                        dataSourceSettings: PivotUtil.getClonedDataSourceSettings(args.dataSourceSettings),
-                        pivotValues: this.pivotValues
-                    };
-                    this.trigger(events.enginePopulated, eventArgs);
-                    pivot.engineModule.pivotValues = eventArgs.pivotValues;
-                    const actionInfo: PivotActionInfo = {
-                        drillInfo: drilledItem
-                    };
-                    this.actionObj.actionInfo = actionInfo;
-                    pivot.renderPivotGrid();
+                    if (this.dataSourceSettings.mode !== 'Server')
+                    {
+                        pivot.allowServerDataBinding = false;
+                        pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+                        pivot.allowServerDataBinding = true;
+                        const eventArgs: EnginePopulatedEventArgs = {
+                            dataSourceSettings: PivotUtil.getClonedDataSourceSettings(args.dataSourceSettings),
+                            pivotValues: this.pivotValues
+                        };
+                        this.trigger(events.enginePopulated, eventArgs);
+                        pivot.engineModule.pivotValues = eventArgs.pivotValues;
+                        const actionInfo: PivotActionInfo = {
+                            drillInfo: drilledItem
+                        };
+                        this.actionObj.actionInfo = actionInfo;
+                        pivot.renderPivotGrid();
+                    }
                 } else {
                     this.hideWaitingPopup();
                     this.setProperties({ dataSourceSettings: { drilledMembers: clonedDrillMembers } }, true);
@@ -5953,6 +5958,16 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     removeClass(this.element.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR), cls.CELL_SELECTED_BGCOLOR);
                 }
             }
+        } else if (this.gridSettings.selectionSettings.mode === 'Both' && this.gridSettings.selectionSettings.type === 'Multiple' &&
+            ele.classList.contains(cls.ROWSHEADER)) {
+            for (const columns of [].slice.call(this.element.querySelectorAll(`.${cls.COLUMNSHEADER}.${cls.SELECTED_BGCOLOR}`))) {
+                const index: number = Number(columns.getAttribute('aria-colindex'));
+                if (index && !isNaN(index)) {
+                    for (const cell of [].slice.call(this.element.querySelectorAll(`[aria-colindex='${index}']:not(.${cls.CELL_ACTIVE_BGCOLOR})`))) {
+                        addClass([cell], [cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR]);
+                    }
+                }
+            }
         }
     }
 
@@ -6011,7 +6026,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 activeColumns.push(cCnt.toString());
             }
             if (!isCtrl || type === 'Single') {
-                for (const ele of [].slice.call(this.element.querySelectorAll('.' + cls.CELL_ACTIVE_BGCOLOR))) {
+                for (const ele of [].slice.call(this.element.querySelectorAll('.' + cls.CELL_ACTIVE_BGCOLOR + ', .' + cls.SELECTED_BGCOLOR))) {
                     removeClass([ele], [cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR]);
                     if (activeColumns.indexOf((parseInt(ele.getAttribute('aria-colindex'), 10) - 1).toString()) === -1) {
                         isToggle = false;

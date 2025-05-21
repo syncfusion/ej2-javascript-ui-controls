@@ -295,7 +295,7 @@ export class Print {
                         if (annotationSource && annotationSource.highlightImg) {
                             context.save();
                             context.globalCompositeOperation = 'multiply';
-                            context.drawImage(annotationImage1, 0, 0, this.printCanvas.width, this.printCanvas.height);
+                            context.drawImage(annotationImage1, 0, 0, this.printCanvas.height, this.printCanvas.width);
                             context.restore();
                         }
                     }

@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 29.2.5 (2025-05-21)
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I712180` - Enhanced the node selection behavior in the `TreeView` component by introducing a new property `checkOnClick`, which provides control over node interaction. This is enabled by default in Dropdown Tree, so that the checkbox will be checked on either clicking node text or checkbox.
+
+### DropdownList
+
+#### Bug Fixes
+
+- `#I715148` - Fixed an issue where group template fails to render properly after selecting value.
+- `#I716996` - Fixed an issue where the popup did not open correctly after simultaneously pressing the space key and clicking on a dropdown list.
+
 ## 29.2.4 (2025-05-14)
 
 ### ComboBox

@@ -30,9 +30,7 @@ export class _PdfFontMetrics {
         let height: number;
         const clearTypeFonts: string[] = [ 'cambria', 'candara', 'constantia', 'corbel', 'cariadings' ];
         const clearTypeFontCollection: string[] = [];
-        for (let index: number  = 0; index < clearTypeFonts.length; index++) {
-            clearTypeFontCollection.push(clearTypeFonts[Number.parseInt(index.toString(), 10)]);
-        }
+        clearTypeFontCollection.push(...clearTypeFonts);
         if (this._getDescent(format) < 0) {
             height = (this._getAscent(format) - this._getDescent(format) + this._getLineGap(format));
         } else {
@@ -69,7 +67,7 @@ export class _StandardWidthTable extends _WidthTable {
         if (index < 0 || index >= this.widths.length) {
             throw new Error('The character is not supported by the font.');
         }
-        return this.widths[Number.parseInt(index.toString(), 10)];
+        return this.widths[<number>index];
     }
     _toArray(): number[] {
         return this.widths;
@@ -153,7 +151,7 @@ export class _CjkDifferentWidth extends _CjkWidth {
         if (index < this._widthFrom || index > this._to) {
             throw new Error('Index is out of range.');
         }
-        return this._widths[Number.parseInt(index.toString(), 10)];
+        return this._widths[<number>index];
     }
     _appendToArray(array: number[]): void {
         array.push(this._from);

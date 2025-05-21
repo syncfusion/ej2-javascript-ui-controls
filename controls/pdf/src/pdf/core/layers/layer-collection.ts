@@ -65,8 +65,8 @@ export class PdfLayerCollection {
                 if (ocProperties && ocProperties.has('OCGs')) {
                     const ocGroup: _PdfReference[] = ocProperties.get('OCGs') as _PdfReference[];
                     if (ocGroup && Array.isArray(ocGroup)) {
-                        for (let i: number = 0; i < ocGroup.length; i++) {
-                            _layerReference = ocGroup[Number.parseInt(i.toString(), 10)] as _PdfReference;
+                        ocGroup.forEach((item: _PdfReference) => {
+                            _layerReference = item;
                             if (_layerReference instanceof _PdfReference) {
                                 _layerDictionary = this._crossReference._fetch(_layerReference) as _PdfDictionary;
                                 const layer: PdfLayer = new PdfLayer();
@@ -130,7 +130,7 @@ export class PdfLayerCollection {
                                     this._list.push(layer);
                                 }
                             }
-                        }
+                        });
                     }
                     this._checkLayerLock(ocProperties);
                     this._checkLayerVisible(ocProperties);
@@ -184,7 +184,7 @@ export class PdfLayerCollection {
      * ```
      */
     at(index: number): PdfLayer {
-        return this._list[Number.parseInt(index.toString(), 10)];
+        return this._list[<number>index];
     }
     /**
      * Create a new `PdfLayer` with name
@@ -292,12 +292,7 @@ export class PdfLayerCollection {
             throw new Error('Layer cannot be null or undefined');
         }
         if (typeof arg === 'string') {
-            for (let i: number = 0; i < this._list.length; i++) {
-                const layer: PdfLayer = this._list[Number.parseInt(i.toString(), 10)];
-                if (layer.name === arg) {
-                    return true;
-                }
-            }
+            return this._list.some((layer: PdfLayer) => layer.name === arg);
         } else if (arg instanceof PdfLayer) {
             if (this._list.indexOf(arg) !== -1) {
                 return true;
@@ -325,7 +320,7 @@ export class PdfLayerCollection {
      */
     clear(): void {
         for (let i: number = this._list.length - 1; i > -1; i--) {
-            const layer: PdfLayer = this._list[Number.parseInt(i.toString(), 10)];
+            const layer: PdfLayer = this._list[<number>i];
             this._removeLayer(layer, true);
         }
         this._list.length = 0;
@@ -390,8 +385,8 @@ export class PdfLayerCollection {
         }
         let position: number;
         for (let i: number = 0; i < this._list.length; i++) {
-            if (this._list[Number.parseInt(i.toString(), 10)] === layer) {
-                position = this.indexOf(this._list[Number.parseInt(i.toString(), 10)]);
+            if (this._list[<number>i] === layer) {
+                position = this.indexOf(this._list[<number>i]);
                 break;
             }
         }
@@ -446,14 +441,14 @@ export class PdfLayerCollection {
         if (arg1 < 0 || arg1 >= this._list.length) {
             throw new Error('Index cannot be less than 0 or greater than array length');
         }
-        const layer: PdfLayer = this._list[Number.parseInt(arg1.toString(), 10)];
+        const layer: PdfLayer = this._list[<number>arg1];
         this._list.splice(arg1, 1);
         if (layer) {
             this._removeLayer(layer, arg2 || false);
             if (layer._child.length > 0) {
-                for (let i: number = 0; i < layer._child.length; i++) {
-                    this._removeLayer(layer._child[Number.parseInt(i.toString(), 10)], false);
-                    const index: number = this._list.indexOf(layer._child[Number.parseInt(i.toString(), 10)]);
+                for (const child of layer._child) {
+                    this._removeLayer(child, false);
+                    const index: number = this._list.indexOf(child);
                     if (index !== -1) {
                         this._list.splice(index, 1);
                     }
@@ -560,7 +555,7 @@ export class PdfLayerCollection {
             }
         } else if (typeof arg1 === 'string') {
             for (let i: number = 0; i < this._list.length; i++) {
-                const layer: PdfLayer = this._list[Number.parseInt(i.toString(), 10)];
+                const layer: PdfLayer = this._list[<number>i];
                 const index: number = this._list.indexOf(layer);
                 if (layer.name === arg1 && index !== -1) {
                     this.removeAt(index, arg2 || false);
@@ -623,9 +618,9 @@ export class PdfLayerCollection {
                             _usage = defaultView.get('AS') as _PdfReference[];
                         }
                         if (_usage) {
-                            for (let i: number = 0; i < _usage.length; i++) {
+                            _usage.forEach((item: _PdfReference) => {
                                 let usageDictionary: _PdfDictionary;
-                                const value: _PdfReference = _usage[Number.parseInt(i.toString(), 10)] as _PdfReference;
+                                const value: _PdfReference = item as _PdfReference;
                                 if (value instanceof _PdfReference) {
                                     usageDictionary = this._crossReference._fetch(value) as _PdfDictionary;
                                     if (usageDictionary && usageDictionary instanceof _PdfDictionary) {
@@ -635,7 +630,7 @@ export class PdfLayerCollection {
                                         }
                                     }
                                 }
-                            }
+                            });
                         }
                         if (layer.visible) {
                             if (on && ocGroups && on.indexOf(layer._referenceHolder) === -1) {
@@ -777,8 +772,8 @@ export class PdfLayerCollection {
                 } else {
                     if (document instanceof PdfDocument) {
                         for (let i: number = 0; i < document._order.length; i++) {
-                            if (Array.isArray(document._order[Number.parseInt(i.toString(), 10)])) {
-                                const value: any = document._order[Number.parseInt(i.toString(), 10)]; // eslint-disable-line
+                            if (Array.isArray(document._order[<number>i])) {
+                                const value: any = document._order[<number>i]; // eslint-disable-line
                                 const orderArray: (_PdfReference | _PdfReference[])[] = value as (_PdfReference | _PdfReference[])[];
                                 if (orderArray.indexOf(this._parent._referenceHolder) !== -1) {
                                     const position: number = orderArray.indexOf(this._parent._referenceHolder);
@@ -798,11 +793,11 @@ export class PdfLayerCollection {
             if (this._parent._parentLayer.length === 0) {
                 layer._parentLayer.push(this._parent);
             } else {
-                for (let i: number = 0; i < this._parent._parentLayer.length; i++) {
-                    if (layer._parentLayer.indexOf(this._parent._parentLayer[Number.parseInt(i.toString(), 10)]) === -1) {
-                        layer._parentLayer.push(this._parent._parentLayer[Number.parseInt(i.toString(), 10)]);
+                (this._parent._parentLayer as Array<PdfLayer>).forEach((element: PdfLayer) => {
+                    if (layer._parentLayer.indexOf(element) === -1) {
+                        layer._parentLayer.push(element);
                     }
-                }
+                });
                 if (layer._parentLayer.indexOf(this._parent) === -1) {
                     layer._parentLayer.push(this._parent);
                 }
@@ -816,15 +811,14 @@ export class PdfLayerCollection {
             locked = defaultView.get('Locked') as _PdfReference[];
         }
         if (locked) {
-            for (let i: number = 0; i < locked.length; i++) {
-                const referenceHolder: _PdfReference = locked[Number.parseInt(i.toString(), 10)] as _PdfReference;
+            locked.forEach((referenceHolder: _PdfReference) => {
                 if (referenceHolder && referenceHolder instanceof _PdfReference) {
                     const pdfLayer: PdfLayer = this._layerDictionary.get(referenceHolder) as PdfLayer;
                     if (pdfLayer) {
                         pdfLayer.locked = true;
                     }
                 }
-            }
+            });
         }
     }
     private _checkLayerVisible(ocProperties: _PdfDictionary): void {
@@ -836,8 +830,7 @@ export class PdfLayerCollection {
                 visible = defaultView.get('OFF') as _PdfReference[];
             }
             if (visible) {
-                for (let i: number = 0; i < visible.length; i++) {
-                    const visibleReference: _PdfReference = visible[Number.parseInt(i.toString(), 10)] as _PdfReference;
+                visible.forEach((visibleReference: _PdfReference) => {
                     if (visibleReference instanceof _PdfReference) {
                         const layerDictionary: Map<_PdfReference, PdfLayer> = this._layerDictionary;
                         if (layerDictionary && layerDictionary.size > 0 && visibleReference && layerDictionary.has(visibleReference)) {
@@ -850,7 +843,7 @@ export class PdfLayerCollection {
                             }
                         }
                     }
-                }
+                });
             }
         }
     }
@@ -871,7 +864,7 @@ export class PdfLayerCollection {
         let reference: _PdfReference;
         let layer: PdfLayer;
         for (let i: number = 0; i < array.length; i++) {
-            reference = array[Number.parseInt(i.toString(), 10)] as _PdfReference;
+            reference = array[<number>i] as _PdfReference;
             if (reference instanceof _PdfReference) {
                 if (layerDictionary.has(reference)) {
                     layer = layerDictionary.get(reference) as PdfLayer;
@@ -885,14 +878,13 @@ export class PdfLayerCollection {
                             layer._parentLayer.push(parent);
                             layer._parent = parent;
                         } else {
-                            for (let j: number = 0; j < parent._parentLayer.length; j++) {
-                                if (layer._parentLayer.indexOf(parent._parentLayer[Number.parseInt(j.toString(), 10)]) === -1) {
-                                    if (!(parent._parentLayer[Number.parseInt(j.toString(), 10)] instanceof PdfLayer)
-                                    && parent._parentLayer[Number.parseInt(j.toString(), 10)]) {
-                                        layer._parentLayer.push(parent._parentLayer[Number.parseInt(j.toString(), 10)]);
+                            parent._parentLayer.forEach((parentLayerElement: PdfLayer) => {
+                                if (layer._parentLayer.indexOf(parentLayerElement) === -1) {
+                                    if (!(parentLayerElement instanceof PdfLayer) && parentLayerElement) {
+                                        layer._parentLayer.push(parentLayerElement);
                                     }
                                 }
-                            }
+                            });
                             layer._parentLayer.push(parent);
                             layer._parent = parent;
                         }
@@ -904,8 +896,8 @@ export class PdfLayerCollection {
                         this._parsingLayerOrder(layer, pdfArray, layerDictionary);
                     }
                 }
-            } else if (Array.isArray(array[Number.parseInt(i.toString(), 10)])) {
-                const value: any = array[Number.parseInt(i.toString(), 10)]; // eslint-disable-line
+            } else if (Array.isArray(array[<number>i])) {
+                const value: any = array[<number>i]; // eslint-disable-line
                 const subArray: (_PdfReference | _PdfReference[])[] = value as (_PdfReference | _PdfReference[])[];
                 if (!subArray || subArray.length === 0) {
                     return;
@@ -940,12 +932,11 @@ export class PdfLayerCollection {
         }
     }
     private _addChildLayer(layer: PdfLayer): void {
-        for (let i: number = 0; i < layer._child.length; i++) {
-            const child: PdfLayer = layer._child[Number.parseInt(i.toString(), 10)];
+        layer._child.forEach((child: PdfLayer) => {
             if (layer.layers.indexOf(child) === -1) {
                 layer.layers._addNestedLayer(child);
             }
-        }
+        });
     }
     private _addNestedLayer(layer: PdfLayer): number {
         this._list.push(layer);
@@ -1043,11 +1034,11 @@ export class PdfLayerCollection {
         if (_usage) {
             let isRemoved: boolean = false;
             for (let i: number = 0; i < _usage.length; i++) {
-                const usage: _PdfReference | _PdfDictionary = _usage[Number.parseInt(i.toString(), 10)];
+                const usage: _PdfReference | _PdfDictionary = _usage[<number>i];
                 if (usage) {
                     let usageDictionary: _PdfDictionary;
                     if (usage instanceof _PdfReference) {
-                        usageDictionary = this._crossReference._fetch(_usage[Number.parseInt(i.toString(), 10)]) as _PdfDictionary;
+                        usageDictionary = this._crossReference._fetch(_usage[<number>i]) as _PdfDictionary;
                     }
                     if (usage instanceof _PdfDictionary) {
                         usageDictionary = usage as _PdfDictionary;
@@ -1076,10 +1067,10 @@ export class PdfLayerCollection {
         let isRemoveOrder: boolean = false;
         if (order) {
             for (let i: number = 0; i < order.length; i++) {
-                const entry: _PdfReference = order[Number.parseInt(i.toString(), 10)] as _PdfReference;
+                const entry: _PdfReference = order[<number>i] as _PdfReference;
                 if (entry && entry instanceof _PdfReference && entry === layer._referenceHolder) {
                     if (i !== order.length - 1) {
-                        if (Array.isArray(order[Number.parseInt(i.toString(), 10) + 1])) {
+                        if (Array.isArray(order[<number>i + 1])) {
                             order.splice(i, 2);
                             isRemoveOrder = true;
                             break;
@@ -1094,13 +1085,13 @@ export class PdfLayerCollection {
                         break;
                     }
                 } else if (Array.isArray(entry)) {
-                    arrayList.push(order[Number.parseInt(i.toString(), 10)]);
+                    arrayList.push(order[<number>i]);
                 }
             }
         }
         if (!isRemoveOrder && arrayList) {
             for (let i: number = 0; i < arrayList.length; i++) {
-                order = arrayList[Number.parseInt(i.toString(), 10)] as [];
+                order = arrayList[<number>i] as [];
                 arrayList.splice(i, 1);
                 i -= 1;
                 this._removeOrder(layer, order, arrayList);
@@ -1135,7 +1126,7 @@ export class PdfLayerCollection {
         let _xObject: _PdfDictionary;
         if (layer._layerPage) {
             for (let i: number = 0; i < layer._pages.length; i++) {
-                const _resource: _PdfDictionary = layer._pages[Number.parseInt(i.toString(), 10)]._pageDictionary.get('Resources') as _PdfDictionary;
+                const _resource: _PdfDictionary = layer._pages[<number>i]._pageDictionary.get('Resources') as _PdfDictionary;
                 if (_resource) {
                     _properties = _resource.get('Properties') as _PdfDictionary;
                     _xObject = _resource.get('XObject') as _PdfDictionary;
@@ -1158,7 +1149,7 @@ export class PdfLayerCollection {
                 const content: any[] = layer._pages[i]._pageDictionary.getArray('Contents'); // eslint-disable-line
                 for (let m: number = 0; m < content.length; m++) {
                     const data: _PdfContentStream = new _PdfContentStream([]);
-                    const stream: _PdfContentStream = content[Number.parseInt(m.toString(), 10)] as _PdfContentStream;
+                    const stream: _PdfContentStream = content[<number>m] as _PdfContentStream;
                     const objID: string = stream.dictionary.objId;
                     const bytes: Uint8Array = stream.getBytes();
                     let parser: _ContentParser;
@@ -1169,7 +1160,7 @@ export class PdfLayerCollection {
                     }
                     const result: _PdfRecord[] = parser._readContent();
                     for (let j: number = 0; j < result.length; j++) {
-                        const entry: _PdfRecord = result[Number.parseInt(j.toString(), 10)];
+                        const entry: _PdfRecord = result[<number>j];
                         const _operator: string = entry._operator;
                         if (_operator === 'BMC' || _operator === 'EMC' || _operator === 'BDC') {
                             const operands: string[] = entry._operands;
@@ -1201,14 +1192,14 @@ export class PdfLayerCollection {
                         }
                     }
                     if (data.length > 0 && !objID) {
-                        const _pages: PdfPage =  layer._pages[Number.parseInt(i.toString(), 10)];
-                        const _reference: _PdfReference = _pages._contents[Number.parseInt(m.toString(), 10)];
+                        const _pages: PdfPage =  layer._pages[<number>i];
+                        const _reference: _PdfReference = _pages._contents[<number>m];
                         const contentStream: _PdfContentStream = this._crossReference._fetch(_reference);
                         contentStream._bytes.length = 0;
                         contentStream.write(data.getString());
                     }
                 }
-                layer._pages[Number.parseInt(i.toString(), 10)]._pageDictionary._updated = true;
+                layer._pages[<number>i]._pageDictionary._updated = true;
             }
         }
     }
@@ -1266,12 +1257,12 @@ export class PdfLayerCollection {
                         if (defaultView) {
                             const order: (_PdfReference | _PdfReference[])[] = defaultView.get('Order') as (_PdfReference | _PdfReference[])[];
                             if (order && ocGroups && order.indexOf(reference) !== -1 && index < order.length) {
-                                if (order[Number.parseInt(index.toString(), 10)] instanceof _PdfReference) {
+                                if (order[<number>index] instanceof _PdfReference) {
                                     if (index + 1 < order.length && index + 2 < order.length) {
                                         const first: number = index + 1;
                                         const second: number = index + 2;
-                                        if (order[Number.parseInt(first.toString(), 10)] instanceof _PdfReference
-                                        && order[Number.parseInt(second.toString(), 10)] instanceof _PdfReference) {
+                                        if (order[<number>first] instanceof _PdfReference
+                                        && order[<number>second] instanceof _PdfReference) {
                                             const position: number = order.indexOf(reference);
                                             order.splice(position, 1);
                                             order.splice(index, 0, reference);

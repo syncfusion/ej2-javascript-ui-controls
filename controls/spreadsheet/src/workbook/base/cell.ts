@@ -212,18 +212,15 @@ export function getCell(
  * @param {SheetModel} sheet - Specifies the sheet.
  * @param {CellModel} cell - Specifies the cell.
  * @param {boolean} isExtend - Specifies the bool value.
- * @param {boolean} isUpdate - If true, allows updating the existing cell data without extending.
  * @returns {void} - set the cell.
  */
-export function setCell(
-    rowIndex: number, colIndex: number, sheet: SheetModel, cell: CellModel, isExtend?: boolean, isUpdate?: boolean
-): void {
+export function setCell(rowIndex: number, colIndex: number, sheet: SheetModel, cell: CellModel, isExtend?: boolean): void {
     if (!sheet.rows[rowIndex as number]) {
         sheet.rows[rowIndex as number] = { cells: [] };
     } else if (!sheet.rows[rowIndex as number].cells) {
         sheet.rows[rowIndex as number].cells = [];
     }
-    if (isExtend && sheet.rows[rowIndex as number].cells[colIndex as number] && !isUpdate) {
+    if (isExtend && sheet.rows[rowIndex as number].cells[colIndex as number]) {
         extend(sheet.rows[rowIndex as number].cells[colIndex as number], cell, null, true);
     } else {
         sheet.rows[rowIndex as number].cells[colIndex as number] = cell;

@@ -1145,10 +1145,13 @@ export class DatePicker extends Calendar implements IInput {
         const target: HTMLElement = <HTMLElement>e.target;
         if (!(closest(target, '.e-datepicker.e-popup-wrapper')) && !isNullOrUndefined(this.inputWrapper)
             && !(closest(target, '.' + INPUTCONTAINER) === this.inputWrapper.container)
-            && (!target.classList.contains('e-day'))
-            && (!target.classList.contains('e-dlg-overlay'))) {
+            && (!target.classList.contains('e-day'))) {
             this.hide(e);
-            this.focusOut();
+            if (target.classList.contains('e-dlg-overlay')) {
+                e.preventDefault();
+            } else {
+                this.focusOut();
+            }
         } else if (closest(target, '.e-datepicker.e-popup-wrapper')) {
             // Fix for close the popup when select the previously selected value.
             if ( target.classList.contains('e-day')

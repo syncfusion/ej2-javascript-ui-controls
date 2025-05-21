@@ -14,18 +14,15 @@ export class _Bidirectional {
     _doMirrorShaping(text: string): string {
         const result: string[] = [];
         for (let i: number = 0; i < text.length; i++) {
-            if (((this._indexLevels[Number.parseInt(i.toString(), 10)] & 1) === 1)
-                && this._mirroringShape.containsKey(text[Number.parseInt(i.toString(), 10)].charCodeAt(0))) {
-                const value: any = text[Number.parseInt(i.toString(), 10)].charCodeAt(0); // eslint-disable-line
-                result[Number.parseInt(i.toString(), 10)] = String.fromCharCode(this._mirroringShape.getValue(value));
+            if (((this._indexLevels[<number>i] & 1) === 1)
+                && this._mirroringShape.containsKey(text[<number>i].charCodeAt(0))) {
+                const value: any = text[<number>i].charCodeAt(0); // eslint-disable-line
+                result[<number>i] = String.fromCharCode(this._mirroringShape.getValue(value));
             } else {
-                result[Number.parseInt(i.toString(), 10)] = text[Number.parseInt(i.toString(), 10)].toString();
+                result[<number>i] = text[<number>i].toString();
             }
         }
-        let res: string = '';
-        for (let j: number = 0; j < result.length; j++) {
-            res = res + result[Number.parseInt(j.toString(), 10)];
-        }
+        const res: string = result.join('');
         return res;
     }
     _getLogicalToVisualString(inputText: string, isRtl: boolean): string {
@@ -34,25 +31,21 @@ export class _Bidirectional {
         this._setDefaultIndexLevel();
         this._doOrder(0, this._indexLevels.length - 1);
         const text: string = this._doMirrorShaping(inputText);
-        let resultBuilder: string = '';
-        for (let i: number = 0; i < this._indexes.length; i++) {
-            const index: number = this._indexes[Number.parseInt(i.toString(), 10)];
-            resultBuilder += text[Number.parseInt(index.toString(), 10)];
-        }
+        const resultBuilder: string = this._indexes.map((index: number) => text[<number>index]).join('');
         return resultBuilder.toString();
     }
     _setDefaultIndexLevel(): void {
         for (let i: number = 0; i < this._indexLevels.length; i++) {
-            this._indexes[Number.parseInt(i.toString(), 10)] = i;
+            this._indexes[<number>i] = i;
         }
     }
     _doOrder(sIndex: number, eIndex: number): void {
-        let max: number = this._indexLevels[Number.parseInt(sIndex.toString(), 10)];
+        let max: number = this._indexLevels[<number>(sIndex)];
         let min: number = max;
         let odd: number = max;
         let even: number = max;
         for (let i: number = sIndex + 1; i <= eIndex; ++i) {
-            const data: number = this._indexLevels[Number.parseInt(i.toString(), 10)];
+            const data: number = this._indexLevels[<number>i];
             if (data > max) {
                 max = data;
             } else if (data < min) {
@@ -73,7 +66,7 @@ export class _Bidirectional {
             let pstart: number = sIndex;
             while (true) { // eslint-disable-line
                 while (pstart <= eIndex) {
-                    if (this._indexLevels[Number.parseInt(pstart.toString(), 10)] >= max) {
+                    if (this._indexLevels[<number>pstart] >= max) {
                         break;
                     }
                     pstart += 1;
@@ -83,7 +76,7 @@ export class _Bidirectional {
                 }
                 let pend: number = pstart + 1;
                 while (pend <= eIndex) {
-                    if (this._indexLevels[Number.parseInt(pend.toString(), 10)] < max) {
+                    if (this._indexLevels[<number>pend] < max) {
                         break;
                     }
                     pend += 1;
@@ -98,9 +91,9 @@ export class _Bidirectional {
         const length: number = (i + j) / 2;
         --j;
         for (; i < length; ++i, --j) {
-            const temp: number = this._indexes[Number.parseInt(i.toString(), 10)];
-            this._indexes[Number.parseInt(i.toString(), 10)] = this._indexes[Number.parseInt(j.toString(), 10)];
-            this._indexes[Number.parseInt(j.toString(), 10)] = temp;
+            const temp: number = this._indexes[<number>i];
+            this._indexes[<number>i] = this._indexes[<number>j];
+            this._indexes[<number>j] = temp;
         }
     }
     _update(): void {
@@ -553,7 +546,7 @@ export class _RtlCharacters {
      */
     constructor() {
         for (let i: number = 0; i < this._charTypes.length; ++i) {
-            let start: number = this._charTypes[Number.parseInt(i.toString(), 10)];
+            let start: number = this._charTypes[<number>i];
             const end: number = this._charTypes[++i];
             const b: number = this._charTypes[++i];
             while (start <= end) {
@@ -565,45 +558,42 @@ export class _RtlCharacters {
         this._type = this._getCharacterCode(inputText);
         this._textOrder = isRtl ? this.lre : this.L;
         this._doVisualOrder();
-        const result: number[] = [];
-        for (let i: number = 0; i < this._levels.length; i++) {
-            result[Number.parseInt(i.toString(), 10)] = this._levels[Number.parseInt(i.toString(), 10)];
-        }
+        const result: number[] = this._levels.slice();
         return result;
     }
     _getCharacterCode(text: string): number[] {
         const characterCodes: number[] = [];
         for (let i: number = 0; i < text.length; i++) {
-            const value: any = text[Number.parseInt(i.toString(), 10)].charCodeAt(0); // eslint-disable-line
-            characterCodes[Number.parseInt(i.toString(), 10)] = this._rtlCharacterTypes[Number.parseInt(value.toString(), 10)];
+            const value: any = text[<number>i].charCodeAt(0); // eslint-disable-line
+            characterCodes[<number>i] = this._rtlCharacterTypes[<number>value];
         }
         return characterCodes;
     }
     _setDefaultLevels(): void {
         for (let i: number = 0; i < this._length; i++) {
-            this._levels[Number.parseInt(i.toString(), 10)] = this._textOrder;
+            this._levels[<number>i] = this._textOrder;
         }
     }
     _setLevels(): void {
         this._setDefaultLevels();
         for (let n: number = 0; n < this._length; ++n) {
-            const level: number = this._levels[Number.parseInt(n.toString(), 10)];
-            this._levels[Number.parseInt(n.toString(), 10)] = level;
+            const level: number = this._levels[<number>n];
+            this._levels[<number>n] = level;
         }
     }
     _updateLevels(index: number, level: number, length: number): void {
         if ((level & 1) === 0) {
             for (let i: number = index; i < length; ++i) {
-                if (this._result[Number.parseInt(i.toString(), 10)] === this.R) {
-                    this._levels[Number.parseInt(i.toString(), 10)] += 1;
-                } else if (this._result[Number.parseInt(i.toString(), 10)] !== this.L) {
-                    this._levels[Number.parseInt(i.toString(), 10)] += 2;
+                if (this._result[<number>i] === this.R) {
+                    this._levels[<number>i] += 1;
+                } else if (this._result[<number>i] !== this.L) {
+                    this._levels[<number>i] += 2;
                 }
             }
         } else {
             for (let i: number = index; i < length; ++i) {
-                if (this._result[Number.parseInt(i.toString(), 10)] !== this.R) {
-                    this._levels[Number.parseInt(i.toString(), 10)] += 1;
+                if (this._result[<number>i] !== this.R) {
+                    this._levels[<number>i] += 1;
                 }
             }
         }
@@ -617,13 +607,13 @@ export class _RtlCharacters {
         let preview: number = this._textOrder;
         let i: number = 0;
         while (i < this._length) {
-            const level: number = this._levels[Number.parseInt(i.toString(), 10)];
+            const level: number = this._levels[<number>i];
             const preType: number = ((Math.max(preview, level) & 0x1) === 0) ? this.L : this.R;
             let length: number = i + 1;
-            while (length < this._length && this._levels[Number.parseInt(length.toString(), 10)] === level) {
+            while (length < this._length && this._levels[<number>length] === level) {
                 ++length;
             }
-            const success: number = length < this._length ? this._levels[Number.parseInt(length.toString(), 10)] : this._textOrder;
+            const success: number = length < this._length ? this._levels[<number>length] : this._textOrder;
             const type: number = ((Math.max(success, level) & 0x1) === 0) ? this.L : this.R;
             this._check(i, length, level, preType, type);
             this._updateLevels(i, level, length);
@@ -635,12 +625,12 @@ export class _RtlCharacters {
     _getEmbeddedCharactersLength(): number {
         let index: number = 0;
         for (let i: number = 0; i < this._length; ++i) {
-            if (!(this._type[Number.parseInt(i.toString(), 10)] === this.lre || this._type[Number.parseInt(i.toString(), 10)] === this.rle
-                  || this._type[Number.parseInt(i.toString(), 10)] === this.lro ||
-                  this._type[Number.parseInt(i.toString(), 10)] === this.rlo || this._type[Number.parseInt(i.toString(), 10)] === this.pdf
-                  || this._type[Number.parseInt(i.toString(), 10)] === this.BN)) {
-                this._result[Number.parseInt(index.toString(), 10)] = this._result[Number.parseInt(i.toString(), 10)];
-                this._levels[Number.parseInt(index.toString(), 10)] = this._levels[Number.parseInt(i.toString(), 10)];
+            if (!(this._type[<number>i] === this.lre || this._type[<number>i] === this.rle
+                  || this._type[<number>i] === this.lro ||
+                  this._type[<number>i] === this.rlo || this._type[<number>i] === this.pdf
+                  || this._type[<number>i] === this.BN)) {
+                this._result[<number>index] = this._result[<number>i];
+                this._levels[<number>index] = this._levels[<number>i];
                 index++;
             }
         }
@@ -648,44 +638,44 @@ export class _RtlCharacters {
     }
     _checkEmbeddedCharacters(length: number): void {
         for (let i: number = this._type.length - 1; i >= 0; --i) {
-            if (this._type[Number.parseInt(i.toString(), 10)] === this.lre || this._type[Number.parseInt(i.toString(), 10)] === this.rle
-                || this._type[Number.parseInt(i.toString(), 10)] === this.lro ||
-                this._type[Number.parseInt(i.toString(), 10)] === this.rlo || this._type[Number.parseInt(i.toString(), 10)] === this.pdf
-                || this._type[Number.parseInt(i.toString(), 10)] === this.BN) {
-                this._result[Number.parseInt(i.toString(), 10)] = this._type[Number.parseInt(i.toString(), 10)];
-                this._levels[Number.parseInt(i.toString(), 10)] = -1;
+            if (this._type[<number>i] === this.lre || this._type[<number>i] === this.rle
+                || this._type[<number>i] === this.lro ||
+                this._type[<number>i] === this.rlo || this._type[<number>i] === this.pdf
+                || this._type[<number>i] === this.BN) {
+                this._result[<number>i] = this._type[<number>i];
+                this._levels[<number>i] = -1;
             } else {
                 length -= 1;
-                this._result[Number.parseInt(i.toString(), 10)] = this._result[Number.parseInt(length.toString(), 10)];
-                this._levels[Number.parseInt(i.toString(), 10)] = this._levels[Number.parseInt(length.toString(), 10)];
+                this._result[<number>i] = this._result[<number>length];
+                this._levels[<number>i] = this._levels[<number>length];
             }
         }
         for (let i: number = 0; i < this._type.length; i++) {
-            if (this._levels[Number.parseInt(i.toString(), 10)] === -1) {
-                this._levels[Number.parseInt(i.toString(), 10)] = this._levels[i - 1];
+            if (this._levels[<number>i] === -1) {
+                this._levels[<number>i] = this._levels[i - 1];
             }
         }
     }
     _check(index: number, length: number, level: number, startType: number, endType: number): void {
         let charType: number = startType;
         for (let i: number = index; i < length; ++i) {
-            if (this._result[Number.parseInt(i.toString(), 10)] === this.nsm) {
-                this._result[Number.parseInt(i.toString(), 10)] = charType;
+            if (this._result[<number>i] === this.nsm) {
+                this._result[<number>i] = charType;
             } else {
-                charType = this._result[Number.parseInt(i.toString(), 10)];
+                charType = this._result[<number>i];
             }
         }
         this._checkEuropeanDigits(index, length, level, startType, endType);
     }
     _checkEuropeanDigits(index: number, length: number, level: number, startType: number, endType: number): void {
         for (let i: number = index; i < length; ++i) {
-            if (this._result[Number.parseInt(i.toString(), 10)] === this.EN) {
+            if (this._result[<number>i] === this.EN) {
                 for (let j: number = i - 1; j >= index; --j) {
-                    if (this._result[Number.parseInt(j.toString(), 10)] === this.L ||
-                        this._result[Number.parseInt(j.toString(), 10)] === this.R ||
-                        this._result[Number.parseInt(j.toString(), 10)] === this.AL) {
-                        if (this._result[Number.parseInt(j.toString(), 10)] === this.AL) {
-                            this._result[Number.parseInt(i.toString(), 10)] = this.AN;
+                    if (this._result[<number>j] === this.L ||
+                        this._result[<number>j] === this.R ||
+                        this._result[<number>j] === this.AL) {
+                        if (this._result[<number>j] === this.AL) {
+                            this._result[<number>i] = this.AN;
                         }
                         break;
                     }
@@ -696,22 +686,22 @@ export class _RtlCharacters {
     }
     _checkArabicCharacters(index: number, length: number, level: number, startType: number, endType: number): void {
         for (let i: number = index; i < length; ++i) {
-            if (this._result[Number.parseInt(i.toString(), 10)] === this.AL) {
-                this._result[Number.parseInt(i.toString(), 10)] = this.R;
+            if (this._result[<number>i] === this.AL) {
+                this._result[<number>i] = this.R;
             }
         }
         this._checkEuropeanNumberSeparator(index, length, level, startType, endType);
     }
     _checkEuropeanNumberSeparator(index: number, length: number, level: number, startType: number, endType: number): void {
         for (let i: number = index + 1; i < length - 1; ++i) {
-            if (this._result[Number.parseInt(i.toString(), 10)] === this.ES ||
-                this._result[Number.parseInt(i.toString(), 10)] === this.CS) {
+            if (this._result[<number>i] === this.ES ||
+                this._result[<number>i] === this.CS) {
                 const preview: number = this._result[i - 1];
                 const success: number = this._result[i + 1];
                 if (preview === this.EN && success === this.EN) {
-                    this._result[Number.parseInt(i.toString(), 10)] = this.EN;
-                } else if (this._result[Number.parseInt(i.toString(), 10)] === this.CS && preview === this.AN && success === this.AN) {
-                    this._result[Number.parseInt(i.toString(), 10)] = this.AN;
+                    this._result[<number>i] = this.EN;
+                } else if (this._result[<number>i] === this.CS && preview === this.AN && success === this.AN) {
+                    this._result[<number>i] = this.AN;
                 }
             }
         }
@@ -719,14 +709,14 @@ export class _RtlCharacters {
     }
     _checkEuropeanNumberTerminator(index: number, length: number, level: number, startType: number, endType: number): void {
         for (let i: number = index; i < length; ++i) {
-            if (this._result[Number.parseInt(i.toString(), 10)] === this.ET) {
+            if (this._result[<number>i] === this.ET) {
                 const s: number = i;
                 const b: number[] = [];
                 b.push(this.ET);
                 const l: number = this._getLength(s, length, b);
                 let data: number = s === index ? startType : this._result[s - 1];
                 if (data !== this.EN) {
-                    data = (l === length) ? endType : this._result[Number.parseInt(l.toString(), 10)];
+                    data = (l === length) ? endType : this._result[<number>l];
                 }
                 i = l;
             }
@@ -735,26 +725,26 @@ export class _RtlCharacters {
     }
     _checkOtherNeutrals(index: number, length: number, level: number, startType: number, endType: number): void {
         for (let i: number = index; i < length; ++i) {
-            if (this._result[Number.parseInt(i.toString(), 10)] === this.ES || this._result[Number.parseInt(i.toString(), 10)] === this.ET
-                || this._result[Number.parseInt(i.toString(), 10)] === this.CS) {
-                this._result[Number.parseInt(i.toString(), 10)] = this.ON;
+            if (this._result[<number>i] === this.ES || this._result[<number>i] === this.ET
+                || this._result[<number>i] === this.CS) {
+                this._result[<number>i] = this.ON;
             }
         }
         this._checkOtherCharacters(index, length, level, startType, endType);
     }
     _checkOtherCharacters(index: number, length: number, level: number, startType: number, endType: number): void {
         for (let i: number = index; i < length; ++i) {
-            if (this._result[Number.parseInt(i.toString(), 10)] === this.EN) {
+            if (this._result[<number>i] === this.EN) {
                 let pst: number = startType;
                 for (let j: number = i - 1; j >= index; --j) {
-                    if (this._result[Number.parseInt(j.toString(), 10)] === this.L ||
-                        this._result[Number.parseInt(j.toString(), 10)] === this.R) {
-                        pst = this._result[Number.parseInt(j.toString(), 10)];
+                    if (this._result[<number>j] === this.L ||
+                        this._result[<number>j] === this.R) {
+                        pst = this._result[<number>j];
                         break;
                     }
                 }
                 if (pst === this.L) {
-                    this._result[Number.parseInt(i.toString(), 10)] = this.L;
+                    this._result[<number>i] = this.L;
                 }
             }
         }
@@ -763,9 +753,9 @@ export class _RtlCharacters {
     _getLength(index: number, length: number, validSet: number[]): number {
         --index;
         while (++index < length) {
-            const t: number = this._result[Number.parseInt(index.toString(), 10)];
+            const t: number = this._result[<number>index];
             for (let i: number = 0; i < validSet.length; ++i) {
-                if (t === validSet[Number.parseInt(i.toString(), 10)]) {
+                if (t === validSet[<number>i]) {
                     index = this._getLength(++index, length, validSet);
                 }
             }
@@ -775,10 +765,10 @@ export class _RtlCharacters {
     }
     _checkCharacters(index: number, length: number, level: number, startType: number, endType: number): void {
         for (let i: number = index; i < length; ++i) {
-            if (this._result[Number.parseInt(i.toString(), 10)] === this.WS ||
-                this._result[Number.parseInt(i.toString(), 10)] === this.ON ||
-                this._result[Number.parseInt(i.toString(), 10)] === this.B ||
-                this._result[Number.parseInt(i.toString(), 10)] === this.S) {
+            if (this._result[<number>i] === this.WS ||
+                this._result[<number>i] === this.ON ||
+                this._result[<number>i] === this.B ||
+                this._result[<number>i] === this.S) {
                 const s: number = i;
                 const byte: number[] = [this.B, this.S, this.WS, this.ON];
                 const l : number = this._getLength(s, length, byte);
@@ -798,7 +788,7 @@ export class _RtlCharacters {
                 if (l === length) {
                     tt = endType;
                 } else {
-                    tt = this._result[Number.parseInt(l.toString(), 10)];
+                    tt = this._result[<number>l];
                     if (tt === this.AN) {
                         tt = this.R;
                     }
@@ -809,7 +799,7 @@ export class _RtlCharacters {
                     rt = ((level & 0x1) === 0) ? this.L : this.R;
                 }
                 for (let j: number = s; j < l; ++j) {
-                    this._result[Number.parseInt(j.toString(), 10)] = rt;
+                    this._result[<number>j] = rt;
                 }
                 i = l;
             }

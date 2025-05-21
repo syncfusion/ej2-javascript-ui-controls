@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 29.2.5 (2025-05-21)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I721515` - Resolved an issue where a script error occurred while scrolling through a customer-provided document.
+- `#I719937` - The script error no longer occurs when loading the customer provided document.
+- `#I719934` - Resolved an issue where custom fonts were not preserved in the downloaded document for form fields on the server side.
+- `#I720572` - Fixed an issue where the `fireFormFieldRemoveEvent` is not triggered when deleting the form fields on non-render pages.
+- `#I721617` - Resolved an issue where an undefined exception was thrown while accessing the destination page of child bookmarks in the provided document.
+
 ## 29.2.4 (2025-05-14)
 
 ### PDF Viewer
@@ -13,6 +25,7 @@
 - `#I643817` - Resolved an issue where calibration was not functioning correctly for measurement annotations.
 - `#I715531` - Resolved an issue where hyperlinks were not rendered when `enableTileRendering` was set to true.
 - `#I715989` - Resolved an issue where the rectangle annotation was not properly added when the cursor was quickly moved outside the page during drawing.
+- `#I714312` , `#I712195` - Improved loading and interaction performance when opening documents containing a more number of form fields.
 
 ## 29.1.41 (2025-05-06)
 
@@ -22,7 +35,6 @@
 
 - `#I712197` - Fixed an issue where the form field value and font size not preserved when downloading the document without form designer module.
 - `#I713625` - Resolved an issue where form field data was not retained in the downloaded document without annotation module.
-- `#I714312` , `#I712195` - Improved loading and interaction performance when opening documents containing a more number of form fields.
 
 ## 29.1.40 (2025-04-29)
 

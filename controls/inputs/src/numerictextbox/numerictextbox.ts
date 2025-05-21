@@ -559,7 +559,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             attributes(this.element, { 'aria-readonly': 'true' });
         }
         this.hiddenInput = <HTMLInputElement>(this.createElement('input', { attrs: { type: 'text',
-            'validateHidden': 'true', 'aria-label': 'hidden', 'class': HIDDENELEMENT } }));
+            'data-validateHidden': 'true', 'aria-label': 'hidden', 'class': HIDDENELEMENT } }));
         this.inputName = this.inputName !== null ? this.inputName : this.element.id;
         this.element.removeAttribute('name');
         if (this.isAngular && this.angularTagName === 'EJS-NUMERICTEXTBOX' && this.cloneElement.id.length > 0) {

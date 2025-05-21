@@ -903,7 +903,7 @@ export function toggleFilterUI(
             columnID = 'numberui-' + columnUid;
         } else if (columnType === 'boolean') {
             columnID = 'bool-ui-' + columnUid;
-        } else if (columnType === 'date') {
+        } else if (columnType === 'date' || columnType === 'datetime') {
             columnID = 'dateui-' + columnUid;
         }
         const isPreviousValue: boolean = previousValue === 'in' || previousValue === 'notin';

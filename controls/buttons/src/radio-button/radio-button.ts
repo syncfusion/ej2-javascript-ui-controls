@@ -527,11 +527,13 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
         EventHandler.remove(this.element, 'focus', this.focusHandler);
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
         EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
-        const rippleLabel: Element = label.getElementsByTagName('label')[0];
-        if (rippleLabel) {
-            EventHandler.remove(rippleLabel, 'mousedown', this.labelMouseDownHandler);
-            EventHandler.remove(rippleLabel, 'mouseup', this.labelMouseUpHandler);
-            EventHandler.remove(rippleLabel, 'mouseleave', this.labelMouseLeaveHandler);
+        if (label) {
+            const rippleLabel: Element = label.getElementsByTagName('label')[0];
+            if (rippleLabel) {
+                EventHandler.remove(rippleLabel, 'mousedown', this.labelMouseDownHandler);
+                EventHandler.remove(rippleLabel, 'mouseup', this.labelMouseUpHandler);
+                EventHandler.remove(rippleLabel, 'mouseleave', this.labelMouseLeaveHandler);
+            }
         }
         if (this.formElement) {
             EventHandler.remove(this.formElement, 'reset', this.formResetHandler);

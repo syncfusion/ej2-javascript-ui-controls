@@ -111,9 +111,7 @@ export class _PdfMergeHelper {
             const bookMarkMap: Map<PdfPage, PdfBookmarkBase[]> = this._sourceDocument._parseBookmarkDestination();
             if (bookMarkMap && bookMarkMap.has(page)) {
                 const bookmarks: PdfBookmarkBase[] = bookMarkMap.get(page);
-                bookmarks.forEach((bookmark: PdfBookmarkBase) => {
-                    this._bookmarks.push(bookmark);
-                });
+                this._bookmarks.push(...bookmarks);
             }
         }
         if ((!isCopiedPage && layers) || !this._options.optimizeResources) {
@@ -136,9 +134,7 @@ export class _PdfMergeHelper {
                         const destinationArray: any = annotationDictionary.get('Dest'); // eslint-disable-line
                         const destination: any = annotationDictionary._get('Dest'); // eslint-disable-line
                         if (Array.isArray(destinationArray)) {
-                            destinationArray.forEach((d: any) => { // eslint-disable-line
-                                dest.push(d);
-                            });
+                            dest.push(...destinationArray);
                             isDestination = true;
                         } else if (destination instanceof _PdfReference) {
                             dest.push(destination);
@@ -424,18 +420,18 @@ export class _PdfMergeHelper {
         if (item && (item.has('DS') || item.has('DA'))) {
             if (item.has('DS')) {
                 const collection: string[] = item.get('DS').split(';');
-                for (let i: number = 0; i < collection.length; i++) {
-                    const entry: string[] = collection[Number.parseInt(i.toString(), 10)].split(':');
-                    if (collection[Number.parseInt(i.toString(), 10)].indexOf('font-family') !== -1) {
+                collection.forEach((item: string) => {
+                    const entry: string[] = item.split(':');
+                    if (item.indexOf('font-family') !== -1) {
                         fontFamily = entry[1];
-                    } else if (collection[Number.parseInt(i.toString(), 10)].indexOf('font-style') === -1 && collection[Number.parseInt(i.toString(), 10)].indexOf('font') !== -1) {
+                    } else if (item.indexOf('font-style') === -1 && item.indexOf('font') !== -1) {
                         const name: string = entry[1];
                         const split: string[] = name.split(' ');
-                        for (let j: number = 0; j < split.length; j++) {
-                            if (split[Number.parseInt(j.toString(), 10)] !== '' && !split[Number.parseInt(j.toString(), 10)].endsWith('pt')) {
-                                fontFamily += split[Number.parseInt(j.toString(), 10)] + ' ';
+                        split.forEach((part: string) => {
+                            if (part !== '' && !part.endsWith('pt')) {
+                                fontFamily += part + ' ';
                             }
-                        }
+                        });
                         while (fontFamily !== ' ' && fontFamily.endsWith(' ')) {
                             fontFamily = fontFamily.substring(0, fontFamily.length - 2);
                         }
@@ -443,20 +439,20 @@ export class _PdfMergeHelper {
                             fontFamily = fontFamily.split(',')[0];
                         }
                     }
-                }
+                });
             } else {
                 const value: string = item.get('DA');
                 if (value && value !== '' && value.indexOf('Tf') !== -1) {
                     const textCollection: string[] = value.split(' ');
-                    for (let i: number = 0; i < textCollection.length; i++) {
-                        if (textCollection[Number.parseInt(i.toString(), 10)].indexOf('Tf') !== -1) {
-                            fontFamily = textCollection[i - 2];
+                    textCollection.forEach((text: string, index: number) => {
+                        if (text.indexOf('Tf') !== -1) {
+                            fontFamily = textCollection[index - 2];
                             while (fontFamily !== '' && fontFamily.length > 1 && fontFamily[0] === '/') {
                                 fontFamily = fontFamily.substring(1);
                             }
-                            fontSize = Number.parseFloat(textCollection[i - 1]);
+                            fontSize = Number.parseFloat(textCollection[index - 1]);
                         }
-                    }
+                    });
                     if (fontSize === 0) {
                         fontSize = 8;
                     }
@@ -594,9 +590,9 @@ export class _PdfMergeHelper {
         if (pdfField._dictionary.has('Kids')) {
             const oldKids: _PdfReference[] = pdfField._dictionary.get('Kids');
             const kids: _PdfReference[] = [];
-            for (let j: number = 0; j < oldKids.length ; j++) {
-                if ((kidsArray.indexOf(oldKids[Number.parseInt(j.toString(), 10)]) !== -1)) {
-                    const oldDictionary: _PdfDictionary = pdfField._crossReference._fetch(oldKids[Number.parseInt(j.toString(), 10)]);
+            oldKids.forEach((kid: _PdfReference) => {
+                if (kidsArray.indexOf(kid) !== -1) {
+                    const oldDictionary: _PdfDictionary = pdfField._crossReference._fetch(kid);
                     const dict: _PdfDictionary = this._copier._copyDictionary(oldDictionary);
                     dict.update('P', ref);
                     dict.update('Parent', newReference);
@@ -606,7 +602,7 @@ export class _PdfMergeHelper {
                     array.push(reference);
                     kids.push(reference);
                 }
-            }
+            });
             dictionary.update('Kids', kids);
             field._kids = kids;
         } else {
@@ -643,7 +639,7 @@ export class _PdfMergeHelper {
         if (this._formFieldsCollection.size > 0) {
             pdfFields = this._destinationDocument.form._dictionary.get('Fields');
             this._formFieldsCollection.forEach((value: _PdfReference, key: number) => {
-                pdfFields[Number.parseInt(key.toString(), 10)] = value;
+                pdfFields[<number>key] = value;
             });
         } else {
             pdfFields = this._destinationDocument.form._fields;
@@ -664,9 +660,7 @@ export class _PdfMergeHelper {
                 const ocgs: any[] = destinationOCProperties.get('OCGs'); // eslint-disable-line
                 const Cocgs: any[] = currentOCProperties.get('OCGs'); // eslint-disable-line
                 if (ocgs.length > 0) {
-                    for (let i: number = 0; i < Cocgs.length; i++) {
-                        ocgs.push(Cocgs[Number.parseInt(i.toString(), 10)]);
-                    }
+                    ocgs.push(...Cocgs);
                 }
             }
             destinationOCProperties._updated = true;
@@ -678,9 +672,7 @@ export class _PdfMergeHelper {
                         const order: any[] = curreneDefaultView.get('Order'); // eslint-disable-line
                         const existingOrder: any[] = existingDefaultView.get('Order'); // eslint-disable-line
                         if (order.length > 0 && existingOrder.length > 0) {
-                            for (let i: number = 0; i < existingOrder.length; i++) {
-                                order.push(existingOrder[Number.parseInt(i.toString(), 10)]);
-                            }
+                            order.push(...existingOrder);
                         }
                     } else if (existingDefaultView.has('Order')) {
                         curreneDefaultView.set('Order', existingDefaultView.get('Order'));
@@ -689,9 +681,7 @@ export class _PdfMergeHelper {
                         const groups: any[] = curreneDefaultView.get('RBGroups'); // eslint-disable-line
                         const existingRBGroups: any[] = existingDefaultView.get('RBGroups'); // eslint-disable-line
                         if (groups.length > 0 && existingRBGroups.length > 0) {
-                            for (let i: number = 0; i < existingRBGroups.length; i++) {
-                                groups.push(existingRBGroups[Number.parseInt(i.toString(), 10)]);
-                            }
+                            groups.push(...existingRBGroups);
                         }
                     } else if (existingDefaultView.has('RBGroups')) {
                         curreneDefaultView.set('RBGroups', existingDefaultView.get('RBGroups'));
@@ -701,9 +691,7 @@ export class _PdfMergeHelper {
                         const on: any[] = curreneDefaultView.get('ON'); // eslint-disable-line
                         const existingON: any[] = existingDefaultView.get('ON'); // eslint-disable-line
                         if (on.length > 0 && existingON.length > 0) {
-                            for (let i: number = 0; i < existingON.length; i++) {
-                                on.push(existingON[Number.parseInt(i.toString(), 10)]);
-                            }
+                            on.push(...existingON);
                         }
                     } else if (existingDefaultView.has('ON')) {
                         curreneDefaultView.set('ON', existingDefaultView.get('ON'));
@@ -722,14 +710,10 @@ export class _PdfMergeHelper {
                                 const usageGroup: any[] = asDictionary.get('OCGs'); // eslint-disable-line
                                 const currentUsageGroup: any[] = currentASDictionary.get('OCGs'); // eslint-disable-line
                                 if (usageGroup.length > 0 && currentUsageGroup.length > 0) {
-                                    for (let i: number = 0; i < usageGroup.length; i++) {
-                                        currentUsageGroup.push(usageGroup[Number.parseInt(i.toString(), 10)]);
-                                    }
+                                    currentUsageGroup.push(...usageGroup);
                                 }
                             }
-                            for (let i: number = 0; i < existingElements.length; i++) {
-                                elements.push(existingElements[Number.parseInt(i.toString(), 10)]);
-                            }
+                            elements.push(...existingElements);
                         }
                     } else if (existingDefaultView.has('AS')) {
                         curreneDefaultView.set('AS', existingDefaultView.get('AS'));
@@ -738,9 +722,7 @@ export class _PdfMergeHelper {
                         const off: any[] = curreneDefaultView.get('OFF'); // eslint-disable-line
                         const existingOff:any[] = existingDefaultView.get('OFF'); // eslint-disable-line
                         if (off.length > 0 && existingOff.length > 0) {
-                            for (let i: number = 0; i < existingOff.length; i++) {
-                                off.push(existingOff[Number.parseInt(i.toString(), 10)]);
-                            }
+                            off.push(...existingOff);
                         }
                     } else if (existingDefaultView.has('OFF')) {
                         curreneDefaultView.set('OFF', existingDefaultView.get('OFF'));
@@ -750,9 +732,7 @@ export class _PdfMergeHelper {
                     const locked: any[] = curreneDefaultView.get('Locked'); // eslint-disable-line
                     const existingLocked: any[] = existingDefaultView.get('Locked'); // eslint-disable-line
                     if (locked.length > 0 && existingLocked.length > 0) {
-                        for (let i: number = 0; i < existingLocked.length; i++) {
-                            locked.push(existingLocked[Number.parseInt(i.toString(), 10)]);
-                        }
+                        locked.push(...existingLocked);
                     }
                 } else if (existingDefaultView.has('Locked')) {
                     curreneDefaultView.set('Locked', existingDefaultView.get('Locked'));
@@ -828,7 +808,7 @@ export class _PdfMergeHelper {
         if (this._annotationLayer.size > 0) {
             let annotations: any = newPageDictionary._get('Annots'); // eslint-disable-line
             this._annotationLayer.forEach((reference, index) => { // eslint-disable-line
-                const pdfAnnotation: any = annotations[Number.parseInt(index.toString(), 10)]; // eslint-disable-line
+                const pdfAnnotation: any = annotations[<number>index]; // eslint-disable-line
                 const annotDictionary: _PdfDictionary = this._crossReference._fetch(pdfAnnotation);
                 this._newList.forEach((value , oldReference) => { // eslint-disable-line
                     if (reference === oldReference) {
@@ -1048,9 +1028,9 @@ export class _PdfMergeHelper {
         }
     }
     _writeArray(document: PdfDocument, array: any[], value: any[], dictionary: _PdfDictionary): void { // eslint-disable-line
-        for (let i: number = 0; i < value.length; i++) {
-            this._writeObject(document, null, value[Number.parseInt(i.toString(), 10)], dictionary, null, array);
-        }
+        value.forEach((item: any) => { // eslint-disable-line
+            this._writeObject(document, null, item, dictionary, null, array);
+        });
     }
     _writePropertiesDictionary(document: PdfDocument, table: _PdfDictionary, dictionary: _PdfDictionary): void {
         if (dictionary && dictionary.size > 0) {
@@ -1062,8 +1042,7 @@ export class _PdfMergeHelper {
     _fixDestinations(document: PdfDocument): void {
         const pageLinkReference: Map<_PdfDictionary, PdfPage> = this._pageReference;
         if (this._destination.length > 0) {
-            for (let i: number = 0; i < this._destination.length; i++) {
-                const dest: any = this._destination[Number.parseInt(i.toString(), 10)]; // eslint-disable-line
+            this._destination.forEach((dest: any) => { // eslint-disable-line
                 if (dest instanceof Array) {
                     const destination: any = dest; // eslint-disable-line
                     if (destination.length > 0 && destination[0] && destination[0] instanceof _PdfReference) {
@@ -1077,7 +1056,7 @@ export class _PdfMergeHelper {
                         }
                     }
                 }
-            }
+            });
         }
     }
     _insertNewPage(page: PdfPage, index?: number): PdfPage {
@@ -1176,10 +1155,10 @@ export class _PdfCopier {
         return clonedDictionary;
     }
     _copyArray(originalArray: any[]): any[] { // eslint-disable-line 
-        const newArray: any[] = []; // eslint-disable-line 
-        for (let i: number = 0; i < originalArray.length; i++) {
-            newArray.push(this._copy(originalArray[Number.parseInt(i.toString(), 10)]));
-        }
+        const newArray: any[] = []; // eslint-disable-line
+        originalArray.forEach((item: any) => { // eslint-disable-line
+            newArray.push(this._copy(item));
+        });
         return newArray;
     }
     _copyStream(originalStream: _PdfBaseStream): _PdfBaseStream {

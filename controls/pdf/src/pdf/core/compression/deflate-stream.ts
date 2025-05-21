@@ -52,7 +52,7 @@ export class _DeflateStream {
         } else {
             let count: number = 0;
             for (let i: number = 0; i < this._buffer.length && i + this._offset < this._data.length; i++) {
-                this._buffer[Number.parseInt(i.toString(), 10)] = this._data[this._offset + i];
+                this._buffer[<number>i] = this._data[this._offset + i];
                 count++;
             }
             this._offset += count;

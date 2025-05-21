@@ -1038,7 +1038,7 @@ export class PdfRenderer {
                 this.pageIndex = !isNullOrUndefined(childBookmarkDestination) ? childBookmarkDestination.pageIndex : 0;
                 this.x = !isNullOrUndefined(childBookmarkDestination) ? childBookmarkDestination.location[0] : 0;
                 const yPosition: number = !isNullOrUndefined(childBookmarkDestination) ? Math.abs(childBookmarkDestination.location[1]) : 0;
-                if (!isNullOrUndefined(childBookmarkDestination)) {
+                if (!isNullOrUndefined(childBookmarkDestination) && !isNullOrUndefined(childBookmarkDestination.page)) {
                     if (childBookmarkDestination.page.rotation === PdfRotationAngle.angle90) {
                         this.y = this.convertPointToPixel(childBookmarkDestination.page.size[0]) - this.convertPointToPixel(yPosition);
                     }
@@ -1133,7 +1133,8 @@ export class PdfRenderer {
                         this.renderer.annotationYPosition = [];
                     }
                     if (!isNullOrUndefined(pdfLoadedDocumentLinkAnnotation.destination)) {
-                        const linkPageIndex: number = pdfLoadedDocumentLinkAnnotation.destination.pageIndex;
+                        const linkPageIndex: number = !isNullOrUndefined(pdfLoadedDocumentLinkAnnotation.destination.pageIndex) ?
+                            pdfLoadedDocumentLinkAnnotation.destination.pageIndex : 0;
                         this.renderer.annotationDestPage.push(linkPageIndex);
                         this.renderer.annotationList.push(rectangle);
                         if (page.rotation === PdfRotationAngle.angle180) {

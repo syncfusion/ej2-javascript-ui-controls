@@ -442,8 +442,7 @@ export class PdfForm {
                 if (_isNullOrUndefined(this._fieldCollection) && this._fieldCollection.length > 0) {
                     const page: PdfPage = this._fieldCollection[0].page;
                     if (page && document) {
-                        for (let i: number = 0; i < this._fieldCollection.length; i++) {
-                            const field: PdfField = this._fieldCollection[Number.parseInt(i.toString(), 10)];
+                        this._fieldCollection.forEach((field: PdfField) => {
                             if (field.page) {
                                 const index: number = _getPageIndex(document, this._sortItemByPageIndex(field, true)._pageDictionary);
                                 if (index >= 0) {
@@ -464,7 +463,7 @@ export class PdfForm {
                                     }
                                 }
                             }
-                        }
+                        });
                         let fieldsCount: number = 0;
                         fieldCollection.forEach((value: PdfField[], key: number) => {
                             this._tabOrder = this._tabCollection.get(key);
@@ -473,14 +472,14 @@ export class PdfForm {
                                 fields.sort((pdfField1: object, pdfField2: object) => {
                                     return this._compareFields(pdfField1, pdfField2);
                                 });
-                                for (let j: number = 0; j < fields.length; j++) {
-                                    const fieldIndex: number = this._fieldCollection.indexOf(fields[Number.parseInt(j.toString(), 10)]);
+                                fields.forEach((field: PdfField, j: number) => {
+                                    const fieldIndex: number = this._fieldCollection.indexOf(field);
                                     if (fieldIndex !== -1 && fieldIndex !== fieldsCount + j) {
-                                        const field: PdfField = this._fieldCollection[Number.parseInt(fieldIndex.toString(), 10)];
+                                        const fieldToMove: PdfField = this._fieldCollection[<number>fieldIndex];
                                         this._fieldCollection.splice(fieldIndex, 1);
-                                        this._fieldCollection.splice(fieldsCount + j, 0, field);
+                                        this._fieldCollection.splice(fieldsCount + j, 0, fieldToMove);
                                     }
-                                }
+                                });
                             }
                             fieldsCount += value.length;
                         });
@@ -495,13 +494,13 @@ export class PdfForm {
                 });
             }
             this._parsedFields.clear();
-            for (let i: number = 0; i < this._fieldCollection.length; i++) {
-                this._parsedFields.set(Number.parseInt(i.toString(), 10), this._fieldCollection[Number.parseInt(i.toString(), 10)]);
-                this._fields[Number.parseInt(i.toString(), 10)] = this._fieldCollection[Number.parseInt(i.toString(), 10)]._ref;
+            this._fieldCollection.forEach((field: PdfField, i: number) => {
+                this._parsedFields.set(i, field);
+                this._fields[<number>i] = field._ref;
                 if (tab) {
-                    this._fieldCollection[Number.parseInt(i.toString(), 10)].page._pageDictionary.update('Tabs', tab);
+                    field.page._pageDictionary.update('Tabs', tab);
                 }
-            }
+            });
             this._dictionary.update('Fields', this._fields);
         }
     }
@@ -533,9 +532,8 @@ export class PdfForm {
                 if (fieldDictionary && fieldDictionary.has('Kids')) {
                     fieldKids = fieldDictionary.get('Kids');
                     if (typeof fieldKids !== 'undefined' && fieldKids.length > 0) {
-                        for (let i: number = 0; i < fieldKids.length; i++) {
-                            const reference: _PdfReference = fieldKids[Number.parseInt(i.toString(), 10)];
-                            if (reference && reference instanceof _PdfReference) {
+                        fieldKids.forEach((reference: _PdfReference) => {
+                            if (reference instanceof _PdfReference) {
                                 const kidsDict: _PdfDictionary = this._crossReference._fetch(reference);
                                 if (typeof kidsDict !== 'undefined' && !kidsDict.has('Parent')) {
                                     kidsDict.update('Parent', ref);
@@ -543,7 +541,7 @@ export class PdfForm {
                             } else if ((fieldFlags & _FieldFlag.radio) !== 0) {
                                 hasNoKids = true;
                             }
-                        }
+                        });
                     }
                 }
                 if (typeof fieldKids === 'undefined') {
@@ -934,9 +932,9 @@ export class PdfForm {
                 return this._compareFieldItem(item1, item2);
             });
             field._parsedItems.clear();
-            for (let i: number = 0; i < collection.length; i++) {
-                field._parsedItems.set(i, collection[Number.parseInt(i.toString(), 10)]);
-            }
+            collection.forEach((item: any, i: number) => { // eslint-disable-line
+                field._parsedItems.set(i, item);
+            });
         }
     }
     _compareFieldItem(item1: any, item2: any): number { // eslint-disable-line

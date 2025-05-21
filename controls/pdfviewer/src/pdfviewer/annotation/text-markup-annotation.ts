@@ -664,12 +664,14 @@ export class TextMarkupAnnotation {
                     this.isAnnotationSelect = false;
                 }
             }
-            const annotImg: string = (canvas as HTMLCanvasElement).toDataURL();
-            let highlightImg: string;
-            if (highlightCanvasContext) {
-                highlightImg = (highlightCanvasContext.canvas as HTMLCanvasElement).toDataURL();
+            if (this.pdfViewerBase.isPrint) {
+                const annotImg: string = (canvas as HTMLCanvasElement).toDataURL();
+                let highlightImg: string;
+                if (highlightCanvasContext) {
+                    highlightImg = (highlightCanvasContext.canvas as HTMLCanvasElement).toDataURL();
+                }
+                return { annotImg, highlightImg };
             }
-            return { annotImg, highlightImg };
         }
     }
 
@@ -679,10 +681,11 @@ export class TextMarkupAnnotation {
             canvas = this.pdfViewerBase.getElement('_blendAnnotationsIntoCanvas_' + pageNumber);
             if (isNullOrUndefined(canvas)) {
                 const pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageNumber);
-                canvas = this.pdfViewer.annotationModule.createBlendAnnotationsIntoCanvas(pageDiv,
-                                                                                          parseFloat(pageDiv.style.width),
-                                                                                          parseFloat(pageDiv.style.height),
-                                                                                          pageNumber);
+                const pageSize: ISize = this.pdfViewerBase.pageSize[parseInt(pageNumber.toString(), 10)];
+                if (pageDiv && pageSize && pageSize.width && pageSize.height) {
+                    canvas = this.pdfViewer.annotationModule.createBlendAnnotationsIntoCanvas(pageDiv, pageSize.width,
+                                                                                              pageSize.height, pageNumber);
+                }
             }
         } else {
             canvas = this.pdfViewerBase.getElement(this.pdfViewer.element.id + '_print_blendAnnotations_canvas_' + pageNumber) as HTMLCanvasElement;
@@ -1215,12 +1218,13 @@ export class TextMarkupAnnotation {
         const pageRotation: number = this.pdfViewerBase.getAngle(pageDetails.rotation);
         if (isNullOrUndefined(context)) {
             const pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageNumber);
-            // If the 'blendAnnotationsIntoCanvas' is not implemented, it should be created to highlight annotations.
-            const canvas: HTMLElement = this.pdfViewer.annotationModule.createBlendAnnotationsIntoCanvas(pageDiv,
-                                                                                                         parseFloat(pageDiv.style.width),
-                                                                                                         parseFloat(pageDiv.style.height),
-                                                                                                         pageNumber);
-            context = (canvas as HTMLCanvasElement).getContext('2d');
+            if (pageDiv && pageDetails && pageDetails.width && pageDetails.height) {
+                // If the 'blendAnnotationsIntoCanvas' is not implemented, it should be created to highlight annotations.
+                const canvas: HTMLElement = this.pdfViewer.annotationModule.createBlendAnnotationsIntoCanvas(pageDiv, pageDetails.width,
+                                                                                                             pageDetails.height,
+                                                                                                             pageNumber);
+                context = (canvas as HTMLCanvasElement).getContext('2d');
+            }
         }
         if (context) {
             context.setLineDash([]);

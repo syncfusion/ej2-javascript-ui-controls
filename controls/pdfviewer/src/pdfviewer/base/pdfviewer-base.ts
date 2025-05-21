@@ -1757,7 +1757,9 @@ export class PdfViewerBase {
             this.documentLiveCount = data.documentLiveCount;
             this.isAnnotationCollectionRemoved = false;
             this.saveDocumentHashData();
-            this.saveFormfieldsData(data);
+            if (data.pageCount < 100) {
+                this.saveFormfieldsData(data);
+            }
             this.pdfViewer.allowServerDataBinding = true;
             if (this.clientSideRendering) {
                 this.isDigitalSignaturePresent = data.isDigitalSignaturePresent;
@@ -2247,7 +2249,7 @@ export class PdfViewerBase {
                 this.setItemInSessionStorage(data.PdfRenderedFormFields, '_formfields');
             }
             if (this.pdfViewer.enableFormFields && this.pdfViewer.formFieldsModule) {
-                this.pdfViewer.formFieldsModule.formFieldCollections();
+                this.pdfViewer.formFieldsModule.formFieldCollections(data);
             }
             if (this.pdfViewer.formFieldCollections.length > 0) {
                 this.pdfViewer.isFormFieldDocument = true;
@@ -6241,6 +6243,7 @@ export class PdfViewerBase {
                     }
                     const pageIndex: number = 0;
                     proxy.loadPage(pageIndex);
+                    proxy.saveFormfieldsData(data);
                 }
                 proxy.pageContainer.style.height = proxy.getPageTop(proxy.pageSize.length - 1) + proxy.getPageHeight(proxy.pageSize.length - 1) + 'px';
                 const pageData: string = PdfViewerBase.sessionStorageManager.getItem(proxy.documentId + '_pagedata');
@@ -8196,7 +8199,7 @@ export class PdfViewerBase {
                 return item.pageNumber + 1;
             }
         });
-        const annotActionCollection: any[] = !isNullOrUndefined(this.pdfViewer.annotationModule) ? this.pdfViewer.annotationModule.actionCollection.filter((value: any) => value.annotation.propName === 'formFields' || !isNullOrUndefined(value.annotation.formFieldAnnotationType)).map((a: any) => a.pageIndex) : [];
+        const annotActionCollection: any[] = !isNullOrUndefined(this.pdfViewer.annotationModule) ? this.pdfViewer.annotationModule.actionCollection.filter((value: any) => value.annotation.propName === 'formFields' || !isNullOrUndefined(value.annotation.formFieldAnnotationType) || !isNullOrUndefined(value.annotation.type)).map((a: any) => a.pageIndex) : [];
         const fullPageList: any[] = formFieldsCollection.concat(annotActionCollection);
         let designerDataList: any;
         if (!isNullOrUndefined(formDesignerData)) {
@@ -11181,7 +11184,9 @@ export class PdfViewerBase {
             }
             this.formFieldStorage[this.documentId + type] = JSON.stringify(formFieldsData);
         } else {
-            PdfViewerBase.sessionStorageManager.setItem(this.documentId + type, JSON.stringify(formFieldsData));
+            if (!isNullOrUndefined(formFieldsData)) {
+                PdfViewerBase.sessionStorageManager.setItem(this.documentId + type, JSON.stringify(formFieldsData));
+            }
         }
     }
 

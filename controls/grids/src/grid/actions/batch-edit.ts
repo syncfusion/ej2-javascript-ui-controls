@@ -936,7 +936,7 @@ export class BatchEdit {
                         if (gObj.isEdit) {
                             break;
                         }
-                        else if (insertedRows[parseInt(i.toString(), 10)].querySelectorAll('td:not(.e-hide)')[this.validationColObj[parseInt(j.toString(), 10)].cellIdx].innerHTML === '') {
+                        else if (insertedRows[parseInt(i.toString(), 10)].querySelectorAll('td:not(.e-hide, .e-rowdragdrop, .e-detailrowcollapse, .e-detailrowexpand, .e-indentcell)')[this.validationColObj[parseInt(j.toString(), 10)].cellIdx].innerHTML === '') {
                             this.editCell(parseInt(insertedRows[parseInt(i.toString(), 10)].getAttribute('aria-rowindex'), 10) - 1, this.validationColObj[parseInt(j.toString(), 10)].field);
                             if (this.validateFormObj()) {
                                 this.saveCell();

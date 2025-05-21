@@ -3893,9 +3893,14 @@ export class FormDesigner {
                     for (let j: number = 0; j < FormfieldsData.length; j++) {
                         if ((formFieldId as { name: string }).name === FormfieldsData[parseInt(j.toString(), 10)].FieldName) {
                             FormfieldsData.splice(j, 1);
+                            const field: any = this.pdfViewer.formFieldCollections[parseInt(j.toString(), 10)];
                             this.pdfViewer.formFieldCollections.splice(i, 1);
                             const stringify: any = JSON.stringify(FormfieldsData);
                             PdfViewerBase.sessionStorageManager.setItem(this.pdfViewerBase.documentId + '_formfields', stringify);
+                            this.pdfViewer.fireFormFieldRemoveEvent('formFieldRemove', field, field.pageIndex);
+                            if (addAction && this.pdfViewer.annotation) {
+                                this.pdfViewer.annotation.addAction(field.pageIndex, null, field, 'Delete', '', field, field);
+                            }
                         }
                     }
                 }
@@ -4239,7 +4244,7 @@ export class FormDesigner {
             inputElement.style.fontFamily = 'monospace';
             inputElement.style.paddingLeft = (font / 2) + 'px';
         }else{
-            inputElement.style.fontFamily = obj.fontFamily && this.getFontFamily(obj.fontFamily) ? obj.fontFamily : 'Helvetica';
+            inputElement.style.fontFamily = obj.fontFamily ? obj.fontFamily : 'Helvetica';
         }
         inputElement.style.fontSize = obj.fontSize ? (obj.fontSize * zoomValue) + 'px' : (10 * zoomValue) + 'px';
         if (obj.font.isBold) {
@@ -4620,7 +4625,10 @@ export class FormDesigner {
      * @returns {string} - string
      */
     public downloadFormDesigner(): string {
-        const data: string = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
+        let data: string = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
+        if (this.pdfViewer.formFieldCollections.length === 0) {
+            data = '[]';
+        }
         if (data || (this.pdfViewer.formDesignerModule && this.pdfViewer.formFieldCollections.length > 0)) {
             const formFieldsData: any = !isNullOrUndefined(data) ? JSON.parse(data) : [];
             // Get Formfields present in non rendered pages
@@ -4941,8 +4949,8 @@ export class FormDesigner {
             isSelected: currentData.isSelected ? currentData.isSelected : false, fontFamily: currentData.fontFamily,
             fontStyle: currentData.fontStyle, backgroundColor: backColor, fontColor: foreColor, borderColor: borderRGB,
             thickness: currentData.thickness,
-            fontSize: currentData.fontSize, isMultiline: currentData.isMultiline ? currentData.isMultiline : false, rotation: 0,
-            isReadOnly: currentData.isReadOnly ? currentData.isReadOnly : false,
+            fontSize: currentData.fontSize, isMultiline: currentData.isMultiline ? currentData.isMultiline : false,
+            rotation: currentData.rotateAngle, isReadOnly: currentData.isReadOnly ? currentData.isReadOnly : false,
             isRequired: currentData.isRequired ? currentData.isRequired : false, textAlign: currentData.alignment,
             formFieldAnnotationType: currentData.type,
             zoomValue: 1, option: options, maxLength: currentData.maxLength ? currentData.maxLength : 0,

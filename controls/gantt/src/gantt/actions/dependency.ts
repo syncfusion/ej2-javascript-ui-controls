@@ -735,7 +735,7 @@ export class Dependency {
      */
     private validateChildGanttRecord(parentGanttRecord: IGanttData, childGanttRecord: IGanttData,
                                      flatDataCollection: Map<string, IGanttData> = null): void {
-        if (this.parent.editedTaskBarItem === childGanttRecord || (parentGanttRecord &&
+        if ((this.parent.editedPredecessorRecords.indexOf(childGanttRecord) !== -1) || (parentGanttRecord &&
             isNullOrUndefined(isScheduledTask(parentGanttRecord.ganttProperties)))
             || (childGanttRecord && isNullOrUndefined(isScheduledTask(childGanttRecord.ganttProperties)))) {
             return;

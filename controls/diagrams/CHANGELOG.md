@@ -8,7 +8,7 @@
 
 #### Bug Fixes
 
-- `#I952617` - Connectors in the layout will now render with the correct appearance when a specific type is explicitly defined in the `getConnectorDefaults` function.
+- `#I713407` - Connectors in the layout will now render with the correct appearance when a specific type is explicitly defined in the `getConnectorDefaults` function.
 - `#F196439` - Independent nodes in complex hierarchical trees will now render without overlapping other nodes.
 - `#I700206` - Now connectors will not overlap nodes of varying size in layout.
 - `#I713490` - Now the nodes will have property defined in `getNodeDefaults` on performing undo and redo.

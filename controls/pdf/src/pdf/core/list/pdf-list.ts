@@ -1808,7 +1808,7 @@ export class _PdfListLayouter {
         if (list.enableHierarchy) {
             const collection: _PdfListInfo[] = infromation.slice();
             for (let i: number = 0; i < collection.length; i++) {
-                const listInfo: _PdfListInfo = collection[Number.parseInt(i.toString(), 10)];
+                const listInfo: _PdfListInfo = collection[<number>i];
                 const orderedList: PdfList = listInfo._list;
                 if (!(orderedList && orderedList instanceof PdfOrderedList && orderedList.style !== PdfNumberStyle.none)) {
                     break;

@@ -1846,7 +1846,7 @@ export class Render {
                         //     horizontalOverflow = false;
                         // }
                         //let verticalOverflow: boolean = contentHeight < tableHeight;
-                        const commonOverflow: boolean = horizontalOverflow && ((gridHeight - tableHeight) < 18) ? true : false;
+                        const commonOverflow: boolean = horizontalOverflow && ((gridHeight - tableHeight) < 15) ? true : false;
                         if (gridHeight >= tableHeight && (horizontalOverflow ? gridHeight >= contentHeight : true) &&
                             !commonOverflow) {
                             this.parent.grid.height = 'auto';
@@ -1902,7 +1902,7 @@ export class Render {
                 headerCnt--;
                 const colField: IAxisSet[] = this.engine.headerContent[headerCnt as number];
                 const colCount: number = colField ? Object.keys(colField).length : 0;
-                if (colField) {
+                if (colField && colCount > 0) {
                     const colLength: number = this.parent.isTabular ? (this.parent.engineModule.rowMaxLevel + 1) : (colField[0] ? 0 : 1);
                     for (let cCnt: number = 0, cLen: number = Object.keys(colField).length + colLength; cCnt < cLen; cCnt++) {
                         let colSpan: number = (colField[cCnt as number] && colField[cCnt as number].colSpan) ?
@@ -1967,6 +1967,9 @@ export class Render {
                                         visible: true,
                                         headerTextAlign: this.parent.enableRtl ? 'Right' : 'Left'
                                     };
+                                    if (!this.pivotColumns[splitPos[innerPos as number] as number]) {
+                                        break;
+                                    }
                                     innerModel = [this.pivotColumns[splitPos[innerPos as number] as number] as Column];
                                 }
                                 this.isAutoFitEnabled = this.isAutoFitEnabled ? true : autoFitApplied;

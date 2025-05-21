@@ -2424,7 +2424,8 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             loadOnDemand: this.treeSettings.loadOnDemand,
             nodeSelecting: this.onBeforeSelect.bind(this),
             nodeTemplate: this.itemTemplate,
-            checkDisabledChildren: this.treeSettings.checkDisabledChildren
+            checkDisabledChildren: this.treeSettings.checkDisabledChildren,
+            checkOnClick: true
         });
         this.treeObj.root = this.root ? this.root : this;
         this.treeObj.appendTo(this.tree);
@@ -2496,7 +2497,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 this.popupObj.refreshPosition();
                 if (!(this.showSelectAll || this.allowFiltering) && (!this.popupDiv.classList.contains(NODATA)
                     && this.treeItems.length > 0)) {
-                    let focusedElement: HTMLElement = this.value != null && this.text != null ? this.treeObj.element.querySelector('[data-uid="' + this.value[0] + '"]') : null;
+                    let focusedElement: HTMLElement = this.value != null && this.text != null ? this.treeObj.element.querySelector('[data-uid="' + this.value[this.value.length - 1] + '"]') : null;
                     if (focusedElement) {
                         this.treeObj.element.querySelector('li').setAttribute('tabindex', '-1');
                         focusedElement.setAttribute('tabindex', '0');
@@ -2941,14 +2942,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
         const target: Element = <Element>args.event.target;
         if ((target.classList.contains('e-fullrow') || target.classList.contains('e-list-text')) && this.showCheckBox) {
-            this.isClicked = true;
-            const getNodeDetails: { [key: string]: Object } = this.treeObj.getNode(args.node);
-            if (getNodeDetails.isChecked === 'true') {
-                this.treeObj.uncheckAll([args.node]);
-            } else {
-                this.treeObj.checkAll([args.node]);
-            }
-            this.isClicked = false;
             this.setMultiSelect();
             this.ensurePlaceHolder();
         }

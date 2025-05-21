@@ -384,15 +384,17 @@ export class FormFields {
         const options: ItemModel[] = [];
         if (this.getFormFieldType(currentData) === 'DropDown'){
             listItem = currentData['ComboBoxList'];
-            for (let i: number = 0; i < listItem.length; i++) {
-                const itemValue: string = listItem[parseInt(i.toString(), 10)].itemValue ? listItem[parseInt(i.toString(), 10)].itemValue
-                    : listItem[parseInt(i.toString(), 10)].ItemValue;
-                const itemName: string = listItem[parseInt(i.toString(), 10)].itemName ? listItem[parseInt(i.toString(), 10)].itemName
-                    : listItem[parseInt(i.toString(), 10)].ItemName;
-                if (itemName === currentData['SelectedValue']) {
-                    this.selectedIndex.push(i);
+            if (!isNullOrUndefined(listItem)) {
+                for (let i: number = 0; i < listItem.length; i++) {
+                    const itemValue: string = listItem[parseInt(i.toString(), 10)].itemValue ?
+                        listItem[parseInt(i.toString(), 10)].itemValue : listItem[parseInt(i.toString(), 10)].ItemValue;
+                    const itemName: string = listItem[parseInt(i.toString(), 10)].itemName ? listItem[parseInt(i.toString(), 10)].itemName
+                        : listItem[parseInt(i.toString(), 10)].ItemName;
+                    if (itemName === currentData['SelectedValue']) {
+                        this.selectedIndex.push(i);
+                    }
+                    options.push({ itemName: itemName, itemValue: itemValue });
                 }
-                options.push({ itemName: itemName, itemValue: itemValue });
             }
         }
         else {
@@ -430,14 +432,21 @@ export class FormFields {
 
     /**
      * @param {number} pageIndex -  It describes about the page index
+     * @param {any} data - It gets the page data
      * @private
      * @returns {number} - number
      */
-    public getAngle(pageIndex: number): number {
+    public getAngle(pageIndex: number, data?: any): number {
         let angle: any = 0;
         const pageDetails: any = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)];
-        if (pageDetails && pageDetails.rotation) {
-            switch (pageDetails.rotation) {
+        let pageRotation: any;
+        if (!pageDetails && data && data.pageSizes && data.pageSizes[parseInt(pageIndex.toString(), 10)]) {
+            pageRotation = data.pageRotation[parseInt(pageIndex.toString(), 10)];
+        } else if (pageDetails && pageDetails.rotation) {
+            pageRotation = pageDetails.rotation;
+        }
+        if ((pageDetails || data.pageSizes[parseInt(pageIndex.toString(), 10)]) && pageRotation) {
+            switch (pageRotation) {
             case 0:
                 angle = 0;
                 break;
@@ -603,10 +612,11 @@ export class FormFields {
     }
 
     /**
+     * @param {any} pageData - It gets the page data
      * @private
      * @returns {void}
      */
-    public formFieldCollections(): void {
+    public formFieldCollections(pageData: any): void {
         const data: string = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
         if (data) {
             const formFieldsData: any = JSON.parse(data);
@@ -615,7 +625,7 @@ export class FormFields {
                 const type: FormFieldType = currentData['Name'];
                 if (this.pdfViewer.formDesignerModule) {
                     if (currentData.Name !== 'ink' && currentData.Name !== 'SignatureImage' && currentData.Name !== 'SignatureText') {
-                        this.retreiveFormFieldsData(currentData, true);
+                        this.retreiveFormFieldsData(currentData, true, pageData);
                     }
                     else {
                         const index: number = this.pdfViewer.formFieldCollections.findIndex(
@@ -656,7 +666,7 @@ export class FormFields {
         }
     }
 
-    private retreiveFormFieldsData(currentData: any, isCollection: boolean): void {
+    private retreiveFormFieldsData(currentData: any, isCollection: boolean, data: any): void {
         let fontFamily: string;
         let fontStyle: string;
         let fontSize: number;
@@ -698,7 +708,6 @@ export class FormFields {
             const top: number = this.ConvertPointToPixel(bounds.Y);
             const width: number = this.ConvertPointToPixel(bounds.Width);
             const height: number = this.ConvertPointToPixel(bounds.Height);
-            const boundArray: any = { left: left, top: top, width: width, height: height };
             let foreColor: string = 'rgba(' + fontColor.R + ',' + fontColor.G + ',' + fontColor.B + ',' + 1 + ')';
             foreColor = this.rgbaToHex(foreColor);
             const borderColor: any = currentData['BorderColor'];
@@ -709,6 +718,18 @@ export class FormFields {
             }
             const borderWidth: number = currentData['BorderWidth'];
             this.selectedIndex = [];
+            let boundArray: any = { left: left, top: top, width: width, height: height };
+            let isFieldRotated: boolean = false;
+            let rotateFieldAngle: number = 0;
+            if (currentData['Rotation'] !== 0) {
+                if (currentData['RotationAngle'] === -90 || currentData['RotationAngle'] === -270 || currentData['RotationAngle'] === -180) {
+                    boundArray = this.getBounds(boundArray, currentData.PageIndex, 0, isFieldRotated, data);
+                }
+            } else {
+                isFieldRotated = true;
+                boundArray = this.getBounds(boundArray, currentData.PageIndex, 0, isFieldRotated, data);
+                rotateFieldAngle = this.getAngle(currentData.PageIndex, data);
+            }
             const fieldProperties: any = {
                 bounds: { X: boundArray.left, Y: boundArray.top, Width: boundArray.width, Height: boundArray.height },
                 pageNumber: parseFloat(currentData['PageIndex']) + 1, name: currentData['ActualFieldName'], tooltip: currentData['ToolTip'],
@@ -721,7 +742,7 @@ export class FormFields {
                 font: { isItalic: !isNullOrUndefined(font) ? font.Italic : false, isBold: !isNullOrUndefined(font) ? font.Bold : false,
                     isStrikeout: !isNullOrUndefined(font) ? font.Strikeout : false, isUnderline: !isNullOrUndefined(font) ?
                         font.Underline : false }, pageIndex : currentData['PageIndex'], isTransparent : currentData['IsTransparent'],
-                rotationAngle : currentData['RotationAngle'], signatureType : currentData['SignatureType'] ? currentData['SignatureType'] : '',
+                rotationAngle : rotateFieldAngle, signatureType : currentData['SignatureType'] ? currentData['SignatureType'] : '',
                 signatureIndicatorSettings : currentData['SignatureIndicatorSettings'], zIndex: currentData['zIndex'],
                 customData: !isNullOrUndefined(currentData['CustomData']) ? typeof currentData['CustomData'] === 'object'
                     ? currentData['CustomData'] : currentData['CustomData'].trim() !== ''
@@ -1772,7 +1793,8 @@ export class FormFields {
         const inputField: HTMLElement = document.getElementById(this.pdfViewer.element.id + 'input_' + pageIndex + '_' + index);
         if (inputField) {
             const textLayer: any = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageIndex);
-            if (inputdiv.type === 'text' && inputField.parentElement !== textLayer) {
+            if ((inputdiv.type === 'text' || inputdiv.type === 'password' || inputdiv.type === 'textarea') &&
+                inputField.parentElement !== textLayer) {
                 inputField.parentElement.remove();
             }
             if (!(inputField.className === 'e-pdfviewer-signatureformfields e-pv-signature-focus')){
@@ -2330,13 +2352,27 @@ export class FormFields {
         return this.isSignatureField;
     }
 
-    private getBounds(bound: any, pageIndex: number, rotation?: any, isFieldRotated? : boolean): any {
-        const pageDetails: any = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)];
+    private getBounds(bound: any, pageIndex: number, rotation?: any, isFieldRotated?: boolean, data?: any): any {
+        let pageDetails: any = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)];
+        let pageRotation: any = rotation;
+        if (pageDetails) {
+            pageRotation = pageDetails.rotation;
+        }
+        if (!pageDetails && data && data.pageSizes && data.pageSizes[parseInt(pageIndex.toString(), 10)]) {
+            const size: any = data.pageSizes[parseInt(pageIndex.toString(), 10)];
+            pageDetails = {
+                width: size.width,
+                height: size.height,
+                rotation: data.pageRotation[parseInt(pageIndex.toString(), 10)],
+                top: this.pdfViewerBase.pageGap
+            };
+            pageRotation = data.pageRotation[parseInt(pageIndex.toString(), 10)];
+        }
         let bounds: any;
-        if (rotation > 0) {
-            bounds = this.getBoundsPosition(rotation, bound, pageDetails, isFieldRotated);
+        if (pageRotation > 0) {
+            bounds = this.getBoundsPosition(pageRotation, bound, pageDetails, isFieldRotated);
         } else {
-            bounds = this.getBoundsPosition(pageDetails.rotation, bound, pageDetails, isFieldRotated);
+            bounds = this.getBoundsPosition(pageRotation, bound, pageDetails, isFieldRotated);
         }
         return bounds;
     }

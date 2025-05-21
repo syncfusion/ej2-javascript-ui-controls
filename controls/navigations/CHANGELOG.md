@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 29.2.5 (2025-05-21)
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I725006` - The issue where the ID attribute was missing when template support was enabled in the Context Menu component has been resolved.
+
+- `#I725680` - The issue where item in arguments of the select event was undefined when template support was enabled in the Context Menu component has been resolved.
+
+### TreeView
+
+#### Bug Fixes
+
+- `#I712180` - Enhanced the node selection behavior in the TreeView component by introducing a new property `checkOnClick`, which provides control over node interaction and helps prevent unintended actions during user interactions.
+
 ## 29.2.4 (2025-05-14)
 
 ### Toolbar

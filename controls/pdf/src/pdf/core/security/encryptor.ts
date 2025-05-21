@@ -212,21 +212,21 @@ export class _PdfEncryptor {
         if (password) {
             n = Math.min(32, password.length);
             for (; i < n; ++i) {
-                hashData[Number.parseInt(i.toString(), 10)] = password[Number.parseInt(i.toString(), 10)];
+                hashData[<number>i] = password[<number>i];
             }
         }
         while (i < 32) {
             hashData[i++] = this._defaultPasswordBytes[j++];
         }
         for (j = 0, n = ownerPassword.length; j < n; ++j) {
-            hashData[i++] = ownerPassword[Number.parseInt(j.toString(), 10)];
+            hashData[i++] = ownerPassword[<number>j];
         }
         hashData[i++] = flags & 0xff;
         hashData[i++] = (flags >> 8) & 0xff;
         hashData[i++] = (flags >> 16) & 0xff;
         hashData[i++] = (flags >>> 24) & 0xff;
         for (j = 0, n = id.length; j < n; ++j) {
-            hashData[i++] = id[Number.parseInt(j.toString(), 10)];
+            hashData[i++] = id[<number>j];
         }
         if (revision >= 4 && !encryptMetaData) {
             hashData[i++] = 0xff;
@@ -246,10 +246,10 @@ export class _PdfEncryptor {
         let checkData: Uint8Array;
         if (revision >= 3) {
             for (i = 0; i < 32; ++i) {
-                hashData[Number.parseInt(i.toString(), 10)] = this._defaultPasswordBytes[Number.parseInt(i.toString(), 10)];
+                hashData[<number>i] = this._defaultPasswordBytes[<number>i];
             }
             for (j = 0, n = id.length; j < n; ++j) {
-                hashData[i++] = id[Number.parseInt(j.toString(), 10)];
+                hashData[i++] = id[<number>j];
             }
             cipher = new _NormalCipherFour(encryptionKey);
             checkData = cipher._encryptBlock(this._md5.hash(hashData, 0, i));
@@ -257,13 +257,13 @@ export class _PdfEncryptor {
             const derivedKey: Uint8Array = new Uint8Array(n);
             for (j = 1; j <= 19; ++j) {
                 for (let k: number = 0; k < n; ++k) {
-                    derivedKey[Number.parseInt(k.toString(), 10)] = encryptionKey[Number.parseInt(k.toString(), 10)] ^ j;
+                    derivedKey[<number>k] = encryptionKey[<number>k] ^ j;
                 }
                 cipher = new _NormalCipherFour(derivedKey);
                 checkData = cipher._encryptBlock(checkData);
             }
             for (j = 0, n = checkData.length; j < n; ++j) {
-                if (userPassword[Number.parseInt(j.toString(), 10)] !== checkData[Number.parseInt(j.toString(), 10)]) {
+                if (userPassword[<number>j] !== checkData[<number>j]) {
                     return null;
                 }
             }
@@ -271,7 +271,7 @@ export class _PdfEncryptor {
             cipher = new _NormalCipherFour(encryptionKey);
             checkData = cipher._encryptBlock(this._defaultPasswordBytes);
             for (j = 0, n = checkData.length; j < n; ++j) {
-                if (userPassword[Number.parseInt(j.toString(), 10)] !== checkData[Number.parseInt(j.toString(), 10)]) {
+                if (userPassword[<number>j] !== checkData[<number>j]) {
                     return null;
                 }
             }
@@ -284,7 +284,7 @@ export class _PdfEncryptor {
         let j: number = 0;
         const n: number = Math.min(32, password.length);
         for (; i < n; ++i) {
-            hashData[Number.parseInt(i.toString(), 10)] = password[Number.parseInt(i.toString(), 10)];
+            hashData[<number>i] = password[<number>i];
         }
         while (i < 32) {
             hashData[i++] = this._defaultPasswordBytes[j++];
@@ -303,7 +303,7 @@ export class _PdfEncryptor {
             const derivedKey: Uint8Array = new Uint8Array(keyLengthInBytes);
             for (j = 19; j >= 0; j--) {
                 for (let k: number = 0; k < keyLengthInBytes; ++k) {
-                    derivedKey[Number.parseInt(k.toString(), 10)] = hash[Number.parseInt(k.toString(), 10)] ^ j;
+                    derivedKey[<number>k] = hash[<number>k] ^ j;
                 }
                 cipher = new _NormalCipherFour(derivedKey);
                 userPassword = cipher._encryptBlock(userPassword);
@@ -363,7 +363,7 @@ export class _PdfEncryptor {
         const key: Uint8Array = new Uint8Array(encryptionKey.length + 9);
         let i: number;
         for (i = 0; i < encryptionKey.length; ++i) {
-            key[Number.parseInt(i.toString(), 10)] = encryptionKey[Number.parseInt(i.toString(), 10)];
+            key[<number>i] = encryptionKey[<number>i];
         }
         key[i++] = objectNumber & 0xff;
         key[i++] = (objectNumber >> 8) & 0xff;
@@ -401,7 +401,7 @@ export class _MD5 {
         let i: number = 0;
         let j: number = 0;
         for (; i < length; ++i) {
-            padded[Number.parseInt(i.toString(), 10)] = data[offset++];
+            padded[<number>i] = data[offset++];
         }
         padded[i++] = 0x80;
         const n: number = paddedLength - 8;
@@ -419,7 +419,7 @@ export class _MD5 {
         const w: Int32Array = new Int32Array(16);
         for (i = 0; i < paddedLength;) {
             for (j = 0; j < 16; ++j, i += 4) {
-                w[Number.parseInt(j.toString(), 10)] = padded[Number.parseInt(i.toString(), 10)] |
+                w[<number>j] = padded[<number>i] |
                     (padded[i + 1] << 8) |
                     (padded[i + 2] << 16) |
                     (padded[i + 3] << 24);
@@ -445,8 +445,8 @@ export class _MD5 {
                     f = (7 * j) & 15;
                 }
                 const previous: number = d;
-                const current: number = (a + e + this._k[Number.parseInt(j.toString(), 10)] + w[Number.parseInt(f.toString(), 10)]) | 0;
-                const rotate: number = this._r[Number.parseInt(j.toString(), 10)];
+                const current: number = (a + e + this._k[<number>j] + w[<number>f]) | 0;
+                const rotate: number = this._r[<number>j];
                 d = c;
                 c = b;
                 b = (b + ((current << rotate) | (current >>> (32 - rotate)))) | 0;
@@ -500,7 +500,7 @@ export class _Sha256 {
         let i: number = 0;
         let j: number;
         for (; i < length; ++i) {
-            padded[Number.parseInt(i.toString(), 10)] = data[offset++];
+            padded[<number>i] = data[offset++];
         }
         padded[i++] = 0x80;
         const n: number = paddedLength - 8;
@@ -518,14 +518,14 @@ export class _Sha256 {
         const w: Uint32Array = new Uint32Array(64);
         for (i = 0; i < paddedLength;) {
             for (j = 0; j < 16; ++j) {
-                w[Number.parseInt(j.toString(), 10)] = (padded[Number.parseInt(i.toString(), 10)] << 24) |
+                w[<number>j] = (padded[<number>i] << 24) |
                     (padded[i + 1] << 16) |
                     (padded[i + 2] << 8) |
                     padded[i + 3];
                 i += 4;
             }
             for (j = 16; j < 64; ++j) {
-                w[Number.parseInt(j.toString(), 10)] = (this._littleSigmaPrime(w[j - 2]) +
+                w[<number>j] = (this._littleSigmaPrime(w[j - 2]) +
                     w[j - 7] +
                     this._littleSigma(w[j - 15]) + w[j - 16]) | 0;
             }
@@ -543,8 +543,8 @@ export class _Sha256 {
                 t1 = h +
                     this._sigmaPrime(e) +
                     ((e & f) ^ (~e & g)) +
-                    k[Number.parseInt(j.toString(), 10)] +
-                    w[Number.parseInt(j.toString(), 10)];
+                    k[<number>j] +
+                    w[<number>j];
                 t2 = this._sigma(a) + ((a & b) ^ (a & c) ^ (b & c));
                 h = g;
                 g = f;
@@ -685,7 +685,7 @@ export class _Sha512 {
         const padded: Uint8Array = new Uint8Array(paddedLength);
         let i: number;
         for (i = 0; i < length; ++i) {
-            padded[Number.parseInt(i.toString(), 10)] = data[offset++];
+            padded[<number>i] = data[offset++];
         }
         padded[i++] = 0x80;
         const n: number = paddedLength - 16;
@@ -710,7 +710,7 @@ export class _Sha512 {
         padded[i++] = (length << 3) & 0xff;
         const w: Array<_Word64> = new Array<_Word64>(80);
         for (i = 0; i < 80; i++) {
-            w[Number.parseInt(i.toString(), 10)] = new _Word64(0, 0);
+            w[<number>i] = new _Word64(0, 0);
         }
         let a: _Word64 = new _Word64(0, 0);
         let b: _Word64 = new _Word64(0, 0);
@@ -728,12 +728,12 @@ export class _Sha512 {
         for (i = 0; i < paddedLength;) {
             let j: number;
             for (j = 0; j < 16; ++j) {
-                w[Number.parseInt(j.toString(), 10)].high =
-                    (padded[Number.parseInt(i.toString(), 10)] << 24) |
+                w[<number>j].high =
+                    (padded[<number>i] << 24) |
                     (padded[i + 1] << 16) |
                     (padded[i + 2] << 8) |
                     padded[i + 3];
-                w[Number.parseInt(j.toString(), 10)].low =
+                w[<number>j].low =
                     (padded[i + 4] << 24) |
                     (padded[i + 5] << 16) |
                     (padded[i + 6] << 8) |
@@ -741,7 +741,7 @@ export class _Sha512 {
                 i += 8;
             }
             for (j = 16; j < 80; ++j) {
-                buffer3 = w[Number.parseInt(j.toString(), 10)];
+                buffer3 = w[<number>j];
                 this._littleSigmaPrime(buffer3, w[j - 2], buffer2);
                 buffer3.add(w[j - 7]);
                 this._littleSigma(buffer1, w[j - 15], buffer2);
@@ -767,8 +767,8 @@ export class _Sha512 {
                 buffer2.and(g);
                 buffer1.xor(buffer2);
                 t1.add(buffer1);
-                t1.add(this._k[Number.parseInt(j.toString(), 10)]);
-                t1.add(w[Number.parseInt(j.toString(), 10)]);
+                t1.add(this._k[<number>j]);
+                t1.add(w[<number>j]);
                 this._sigma(t2, a, buffer2);
                 buffer1.assign(a);
                 buffer1.and(b);
@@ -889,7 +889,7 @@ export class _Word64 {
         this.high = highAdd | 0;
     }
     copyTo(bytes: Uint8Array, offset: number): void {
-        bytes[Number.parseInt(offset.toString(), 10)] = (this.high >>> 24) & 0xff;
+        bytes[<number>offset] = (this.high >>> 24) & 0xff;
         bytes[offset + 1] = (this.high >> 16) & 0xff;
         bytes[offset + 2] = (this.high >> 8) & 0xff;
         bytes[offset + 3] = this.high & 0xff;
@@ -1022,7 +1022,7 @@ export class _AdvancedEncryption extends _EncryptionKey {
             for (let z: number = 0; z < 16; z++) {
                 remainder *= 256 % 3;
                 remainder %= 3;
-                remainder += (encrypted[Number.parseInt(z.toString(), 10)] >>> 0) % 3;
+                remainder += (encrypted[<number>z] >>> 0) % 3;
                 remainder %= 3;
             }
             if (remainder === 2) {
@@ -1051,14 +1051,14 @@ export class _NormalCipherFour extends _Cipher {
         this._b = 0;
         const s: Uint8Array = new Uint8Array(256);
         for (let i: number = 0; i < 256; ++i) {
-            s[Number.parseInt(i.toString(), 10)] = i;
+            s[<number>i] = i;
         }
         const keyLength: number = key.length;
         for (let i: number = 0, j: number = 0; i < 256; ++i) {
-            const buffer: number = s[Number.parseInt(i.toString(), 10)];
+            const buffer: number = s[<number>i];
             j = (j + buffer + key[i % keyLength]) & 0xff;
-            s[Number.parseInt(i.toString(), 10)] = s[Number.parseInt(j.toString(), 10)];
-            s[Number.parseInt(j.toString(), 10)] = buffer;
+            s[<number>i] = s[<number>j];
+            s[<number>j] = buffer;
         }
         this._s = s;
     }
@@ -1070,12 +1070,12 @@ export class _NormalCipherFour extends _Cipher {
         const output: Uint8Array = new Uint8Array(n);
         for (let i: number = 0; i < n; ++i) {
             a = (a + 1) & 0xff;
-            const first: number = s[Number.parseInt(a.toString(), 10)];
+            const first: number = s[<number>a];
             b = (b + first) & 0xff;
-            const second: number = s[Number.parseInt(b.toString(), 10)];
-            s[Number.parseInt(a.toString(), 10)] = second;
-            s[Number.parseInt(b.toString(), 10)] = first;
-            output[Number.parseInt(i.toString(), 10)] = data[Number.parseInt(i.toString(), 10)] ^ s[(first + second) & 0xff];
+            const second: number = s[<number>b];
+            s[<number>a] = second;
+            s[<number>b] = first;
+            output[<number>i] = data[<number>i] ^ s[(first + second) & 0xff];
         }
         this._a = a;
         this._b = b;
@@ -1195,9 +1195,9 @@ export abstract class _AdvancedEncryptionBaseCipher extends _Cipher {
             this._mixC = new Uint8Array(256);
             for (let i: number = 0; i < 256; i++) {
                 if (i < 128) {
-                    this._mixC[Number.parseInt(i.toString(), 10)] = i << 1;
+                    this._mixC[<number>i] = i << 1;
                 } else {
-                    this._mixC[Number.parseInt(i.toString(), 10)] = (i << 1) ^ 0x1b;
+                    this._mixC[<number>i] = (i << 1) ^ 0x1b;
                 }
             }
         }
@@ -1211,7 +1211,7 @@ export abstract class _AdvancedEncryptionBaseCipher extends _Cipher {
         const state: Uint8Array = new Uint8Array(16);
         state.set(input);
         for (let j: number = 0, k: number = this._keySize; j < 16; ++j, ++k) {
-            state[Number.parseInt(j.toString(), 10)] ^= key[Number.parseInt(k.toString(), 10)];
+            state[<number>j] ^= key[<number>k];
         }
         for (let i: number = this._cyclesOfRepetition - 1; i >= 1; --i) {
             t = state[13];
@@ -1233,18 +1233,18 @@ export abstract class _AdvancedEncryptionBaseCipher extends _Cipher {
             state[7] = u;
             state[3] = v;
             for (let j: number = 0; j < 16; ++j) {
-                state[Number.parseInt(j.toString(), 10)] = this._inverseS[state[Number.parseInt(j.toString(), 10)]];
+                state[<number>j] = this._inverseS[state[<number>j]];
             }
             for (let j: number = 0, k: number = i * 16; j < 16; ++j, ++k) {
-                state[Number.parseInt(j.toString(), 10)] ^= key[Number.parseInt(k.toString(), 10)];
+                state[<number>j] ^= key[<number>k];
             }
             for (let j: number = 0; j < 16; j += 4) {
-                const s0: number = this._mix[state[Number.parseInt(j.toString(), 10)]];
+                const s0: number = this._mix[state[<number>j]];
                 const s1: number = this._mix[state[j + 1]];
                 const s2: number = this._mix[state[j + 2]];
                 const s3: number = this._mix[state[j + 3]];
                 t = s0 ^ (s1 >>> 8) ^ (s1 << 24) ^ (s2 >>> 16) ^ (s2 << 16) ^ (s3 >>> 24) ^ (s3 << 8);
-                state[Number.parseInt(j.toString(), 10)] = (t >>> 24) & 0xff;
+                state[<number>j] = (t >>> 24) & 0xff;
                 state[j + 1] = (t >> 16) & 0xff;
                 state[j + 2] = (t >> 8) & 0xff;
                 state[j + 3] = t & 0xff;
@@ -1269,8 +1269,8 @@ export abstract class _AdvancedEncryptionBaseCipher extends _Cipher {
         state[7] = u;
         state[3] = v;
         for (let j: number = 0; j < 16; ++j) {
-            state[Number.parseInt(j.toString(), 10)] = this._inverseS[state[Number.parseInt(j.toString(), 10)]];
-            state[Number.parseInt(j.toString(), 10)] ^= key[Number.parseInt(j.toString(), 10)];
+            state[<number>j] = this._inverseS[state[<number>j]];
+            state[<number>j] ^= key[<number>j];
         }
         return state;
     }
@@ -1282,11 +1282,11 @@ export abstract class _AdvancedEncryptionBaseCipher extends _Cipher {
         const state: Uint8Array = new Uint8Array(16);
         state.set(input);
         for (let j: number = 0; j < 16; ++j) {
-            state[Number.parseInt(j.toString(), 10)] ^= key[Number.parseInt(j.toString(), 10)];
+            state[<number>j] ^= key[<number>j];
         }
         for (let i: number = 1; i < this._cyclesOfRepetition; i++) {
             for (let j: number = 0; j < 16; ++j) {
-                state[Number.parseInt(j.toString(), 10)] = s[state[Number.parseInt(j.toString(), 10)]];
+                state[<number>j] = s[state[<number>j]];
             }
             v = state[1];
             state[1] = state[5];
@@ -1318,11 +1318,11 @@ export abstract class _AdvancedEncryptionBaseCipher extends _Cipher {
                 state[j + 3] ^= t ^ this._mixCol[s3 ^ s0];
             }
             for (let j: number = 0, k: number = i * 16; j < 16; ++j, ++k) {
-                state[Number.parseInt(j.toString(), 10)] ^= key[Number.parseInt(k.toString(), 10)];
+                state[<number>j] ^= key[<number>k];
             }
         }
         for (let j: number = 0; j < 16; ++j) {
-            state[Number.parseInt(j.toString(), 10)] = s[state[Number.parseInt(j.toString(), 10)]];
+            state[<number>j] = s[state[<number>j]];
         }
         v = state[1];
         state[1] = state[5];
@@ -1343,7 +1343,7 @@ export abstract class _AdvancedEncryptionBaseCipher extends _Cipher {
         state[11] = u;
         state[15] = t;
         for (let j: number = 0, k: number = this._keySize; j < 16; ++j, ++k) {
-            state[Number.parseInt(j.toString(), 10)] ^= key[Number.parseInt(k.toString(), 10)];
+            state[<number>j] ^= key[<number>k];
         }
         return state;
     }
@@ -1354,14 +1354,14 @@ export abstract class _AdvancedEncryptionBaseCipher extends _Cipher {
         const result: Array<Uint8Array> = [];
         let iv: Uint8Array = this._iv;
         for (let i: number = 0; i < sourceLength; ++i) {
-            buffer[Number.parseInt(bufferLength.toString(), 10)] = data[Number.parseInt(i.toString(), 10)];
+            buffer[<number>bufferLength] = data[<number>i];
             ++bufferLength;
             if (bufferLength < 16) {
                 continue;
             }
             const plain: Uint8Array = this._decrypt(buffer, this._key);
             for (let j: number = 0; j < 16; ++j) {
-                plain[Number.parseInt(j.toString(), 10)] ^= iv[Number.parseInt(j.toString(), 10)];
+                plain[<number>j] ^= iv[<number>j];
             }
             iv = buffer;
             result.push(plain);
@@ -1380,7 +1380,7 @@ export abstract class _AdvancedEncryptionBaseCipher extends _Cipher {
             let length: number = lastBlock[15];
             if (length <= 16) {
                 for (let i: number = 15, ii: number = 16 - length; i >= ii; --i) {
-                    if (lastBlock[Number.parseInt(i.toString(), 10)] !== length) {
+                    if (lastBlock[<number>i] !== length) {
                         length = 0;
                         break;
                     }
@@ -1391,7 +1391,7 @@ export abstract class _AdvancedEncryptionBaseCipher extends _Cipher {
         }
         const output: Uint8Array = new Uint8Array(outputLength);
         for (let i: number = 0, j: number = 0; i < result.length; ++i, j += 16) {
-            output.set(result[Number.parseInt(i.toString(), 10)], j);
+            output.set(result[<number>i], j);
         }
         return output;
     }
@@ -1403,7 +1403,7 @@ export abstract class _AdvancedEncryptionBaseCipher extends _Cipher {
             this._iv = iv;
         } else {
             for (let i: number = 0; bufferLength < 16 && i < sourceLength; ++i, ++bufferLength) {
-                buffer[Number.parseInt(bufferLength.toString(), 10)] = data[Number.parseInt(i.toString(), 10)];
+                buffer[<number>bufferLength] = data[<number>i];
             }
             if (bufferLength < 16) {
                 this._bufferLength = bufferLength;

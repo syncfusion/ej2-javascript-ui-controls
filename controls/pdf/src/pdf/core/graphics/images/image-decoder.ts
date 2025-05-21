@@ -27,7 +27,7 @@ export abstract class _ImageDecoder {
             let result: number = 0;
             if (count <= stream.length && stream.length - offset >= count) {
                 for (let i: number = 0; i < count; i++) {
-                    buffer[Number.parseInt(i.toString(), 10)] = stream[Number.parseInt(offset.toString(), 10)];
+                    buffer[<number>i] = stream[<number>offset];
                     offset++;
                     result++;
                 }
@@ -36,7 +36,7 @@ export abstract class _ImageDecoder {
         } else {
             for (let index: number = offset; index < count; index++) {
                 const position: number = this._position;
-                buffer[Number.parseInt(index.toString(), 10)] = this._getBuffer(position);
+                buffer[<number>index] = this._getBuffer(position);
                 this._position++;
             }
         }

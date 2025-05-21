@@ -591,15 +591,17 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
 
     protected unWireEvents(): void {
         const wrapper: Element = this.wrapper;
-        EventHandler.remove(wrapper, 'click', this.clickHandler);
         EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
-        const label: Element = wrapper.getElementsByTagName('label')[0];
-        if (label) {
-            EventHandler.remove(label, 'mousedown', this.labelMouseDownHandler);
-            EventHandler.remove(label, 'mouseup', this.labelMouseUpHandler);
-            EventHandler.remove(label, 'mouseleave', this.labelMouseLeaveHandler);
+        if (wrapper) {
+            EventHandler.remove(wrapper, 'click', this.clickHandler);
+            const label: Element = wrapper.getElementsByTagName('label')[0];
+            if (label) {
+                EventHandler.remove(label, 'mousedown', this.labelMouseDownHandler);
+                EventHandler.remove(label, 'mouseup', this.labelMouseUpHandler);
+                EventHandler.remove(label, 'mouseleave', this.labelMouseLeaveHandler);
+            }
         }
         const formElem: HTMLFormElement = <HTMLFormElement>closest(this.element, 'form');
         if (formElem) {

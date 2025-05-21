@@ -1,9 +1,8 @@
 import { PdfWidgetAnnotation } from './annotations/annotation';
 import { PdfDestinationMode } from './enumerator';
 import { PdfField } from './form';
-import { PdfDestination, PdfPage } from './pdf-page';
+import { _PdfDestinationHelper, PdfDestination, PdfPage } from './pdf-page';
 import { _PdfDictionary, _PdfName, _PdfReference } from './pdf-primitives';
-import { _obtainDestination } from './utils';
 /**
  * Represents base class for all action types.
  * ```typescript
@@ -648,7 +647,8 @@ export class PdfFieldActions {
                         if (!dictionary._crossReference) {
                             dictionary._crossReference = widget._crossReference;
                         }
-                        result = new PdfGoToAction(_obtainDestination(dictionary, 'D'));
+                        const destinationHelper: _PdfDestinationHelper = new _PdfDestinationHelper(dictionary, 'D');
+                        result = new PdfGoToAction(destinationHelper._obtainDestination());
                     }
                 }
             }

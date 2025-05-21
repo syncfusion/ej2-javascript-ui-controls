@@ -1,9 +1,9 @@
 import { _PdfCrossReference } from './../pdf-cross-reference';
-import { PdfPage, PdfDestination } from './../pdf-page';
+import { PdfPage, PdfDestination, _PdfDestinationHelper } from './../pdf-page';
 import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
-import { PdfFormFieldVisibility, _PdfCheckFieldState, PdfAnnotationFlag, PdfBorderStyle, PdfHighlightMode, PdfLineCaptionType, PdfLineEndingStyle, PdfLineIntent, PdfRotationAngle, PdfTextAlignment , PdfBorderEffectStyle, PdfMeasurementUnit, _PdfGraphicsUnit, PdfCircleMeasurementType, PdfRubberStampAnnotationIcon, PdfCheckBoxStyle, PdfTextMarkupAnnotationType, PdfPopupIcon, PdfAnnotationState, PdfAnnotationStateModel, PdfAttachmentIcon, PdfAnnotationIntent, _PdfAnnotationType, PdfDestinationMode, PdfBlendMode, PdfDashStyle, PdfLineCap, PathPointType, _PdfColorSpace } from './../enumerator';
-import { _checkField, _removeDuplicateReference, _updateVisibility, _getPageIndex, _checkComment, _checkReview, _mapAnnotationStateModel, _mapAnnotationState, _decode, _setMatrix, _convertToColor, _findPage, _getItemValue, _areNotEqual, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _getUpdatedBounds, _mapBorderStyle, _mapLineEndingStyle, _reverseMapEndingStyle, _toRectangle, _mapBorderEffectStyle, _getStateTemplate, _mapMeasurementUnit, _mapGraphicsUnit, _stringToStyle, _styleToString, _mapMarkupAnnotationType, _reverseMarkupAnnotationType, _reverseMapAnnotationState, _reverseMapAnnotationStateModel, _mapPopupIcon, _mapRubberStampIcon, _mapAttachmentIcon, _mapAnnotationIntent, _reverseMapPdfFontStyle, _fromRectangle, _getNewGuidString, _getFontStyle, _mapFont, _checkInkPoints, _updateBounds, _stringToBytes, _isNullOrUndefined, Rectangle, _obtainFontDetails } from './../utils';
-import { PdfField, PdfRadioButtonListField, _PdfDefaultAppearance, PdfListBoxField, PdfCheckBoxField, PdfComboBoxField, PdfTextBoxField } from './../form/field';
+import { PdfFormFieldVisibility, _PdfCheckFieldState, PdfAnnotationFlag, PdfBorderStyle, PdfHighlightMode, PdfLineCaptionType, PdfLineEndingStyle, PdfLineIntent, PdfRotationAngle, PdfTextAlignment , PdfBorderEffectStyle, PdfMeasurementUnit, _PdfGraphicsUnit, PdfCircleMeasurementType, PdfRubberStampAnnotationIcon, PdfCheckBoxStyle, PdfTextMarkupAnnotationType, PdfPopupIcon, PdfAnnotationState, PdfAnnotationStateModel, PdfAttachmentIcon, PdfAnnotationIntent, _PdfAnnotationType, PdfBlendMode, PdfDashStyle, PdfLineCap, PathPointType, _PdfColorSpace} from './../enumerator';
+import { _checkField, _removeDuplicateReference, _updateVisibility, _checkComment, _checkReview, _mapAnnotationStateModel, _mapAnnotationState, _decode, _setMatrix, _convertToColor, _findPage, _getItemValue, _areNotEqual, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _getUpdatedBounds, _mapBorderStyle, _mapLineEndingStyle, _reverseMapEndingStyle, _toRectangle, _mapBorderEffectStyle, _getStateTemplate, _mapMeasurementUnit, _mapGraphicsUnit, _stringToStyle, _styleToString, _mapMarkupAnnotationType, _reverseMarkupAnnotationType, _reverseMapAnnotationState, _reverseMapAnnotationStateModel, _mapPopupIcon, _mapRubberStampIcon, _mapAttachmentIcon, _mapAnnotationIntent, _reverseMapPdfFontStyle, _fromRectangle, _getNewGuidString, _getFontStyle, _mapFont, _checkInkPoints, _updateBounds, _isNullOrUndefined, Rectangle, _obtainFontDetails} from './../utils';
+import { PdfField, PdfTextBoxField, PdfRadioButtonListField, _PdfDefaultAppearance, PdfListBoxField, PdfCheckBoxField, PdfComboBoxField } from './../form/field';
 import { PdfTemplate } from './../graphics/pdf-template';
 import { _TextRenderingMode, PdfBrush, PdfGraphics, PdfPen, PdfGraphicsState, _PdfTransformationMatrix, _PdfUnitConvertor } from './../graphics/pdf-graphics';
 import { PdfPath } from './../graphics/pdf-path';
@@ -15,7 +15,6 @@ import { PdfAppearance } from './pdf-appearance';
 import { PdfPopupAnnotationCollection } from './annotation-collection';
 import { _PdfPaddings } from './pdf-paddings';
 import { PdfForm } from '../form';
-import { _PdfCatalog } from '../pdf-catalog';
 import { PdfLayer } from '../layers/layer';
 import { PdfLayerCollection } from '../layers/layer-collection';
 /**
@@ -1149,8 +1148,7 @@ export abstract class PdfAnnotation {
             let value: any = this._dictionary.get(name);// eslint-disable-line
             if (Array.isArray(value)) {
                 value = this._dictionary.getArray(name);
-                for (let i: number = 0; i < value.length; i++) {
-                    const element: any = value[Number.parseInt(i.toString(), 10)];// eslint-disable-line
+                value.forEach((element: any) => { // eslint-disable-line
                     if (element instanceof _PdfName) {
                         values.push(element.name);
                     } else if (typeof element === 'string') {
@@ -1158,7 +1156,7 @@ export abstract class PdfAnnotation {
                     } else if (typeof element === 'number') {
                         values.push(element.toString());
                     }
-                }
+                });
             } else if (value instanceof _PdfName) {
                 values.push(value.name);
             } else if (typeof value === 'string') {
@@ -1238,22 +1236,13 @@ export abstract class PdfAnnotation {
         const x: number[] = [];
         const y: number[] = [];
         if (count > 0) {
-            const points: number[] = [];
-            for (let i: number = 0; i < linePoints.length; i++) {
-                const value: number = linePoints[Number.parseInt(i.toString(), 10)];
-                points.push(value);
-            }
-            let x1: number = 0;
-            let y1: number = 0;
-            for (let i: number = 0; i < points.length; i++) {
+            linePoints.forEach((value: number, i: number) => {
                 if (i % 2 === 0) {
-                    x[Number.parseInt(x1.toString(), 10)] = points[Number.parseInt(i.toString(), 10)];
-                    x1++;
+                    x.push(value);
                 } else {
-                    y[Number.parseInt(y1.toString(), 10)] = points[Number.parseInt(i.toString(), 10)];
-                    y1++;
+                    y.push(value);
                 }
-            }
+            });
         }
         x.sort((a: number, b: number) => a > b ? 1 : -1);
         y.sort((a: number, b: number) => a > b ? 1 : -1);
@@ -1619,11 +1608,7 @@ export abstract class PdfAnnotation {
                     points: Array<number[]>,
                     isAppearance: boolean): void {
         if (_isNullOrUndefined(points) && this._isClockWise(points)) {
-            const sortedPoints: Array<number[]> = [];
-            for (let i: number = points.length - 1; i >= 0; i--) {
-                sortedPoints.push(points[Number.parseInt(i.toString(), 10)]);
-            }
-            points = sortedPoints;
+            points.reverse();
         }
         const circles: Array<_CloudStyleArc> = [];
         const circleOverlap: number = 2 * radius * overlap;
@@ -1634,7 +1619,7 @@ export abstract class PdfAnnotation {
             points = [];
         }
         for (let i: number = 0; i < points.length; i++) {
-            const currentPoint: number[] = points[Number.parseInt(i.toString(), 10)];
+            const currentPoint: number[] = points[<number>i];
             let dx: number = currentPoint[0] - previousPoint[0];
             let dy: number = currentPoint[1] - previousPoint[1];
             const length: number = Math.sqrt(dx * dx + dy * dy);
@@ -1649,7 +1634,7 @@ export abstract class PdfAnnotation {
         }
         let previousCurvedStyleArc: _CloudStyleArc = circles[circles.length - 1];
         for (let i: number = 0; i < circles.length; i++) {
-            const currentCurvedStyleArc: _CloudStyleArc = circles[Number.parseInt(i.toString(), 10)];
+            const currentCurvedStyleArc: _CloudStyleArc = circles[<number>i];
             const angle: number[] = this._getIntersectionDegrees(previousCurvedStyleArc.point, currentCurvedStyleArc.point, radius);
             previousCurvedStyleArc.endAngle = angle[0];
             currentCurvedStyleArc.startAngle = angle[1];
@@ -1657,7 +1642,7 @@ export abstract class PdfAnnotation {
         }
         let path: PdfPath = new PdfPath();
         for (let i: number = 0; i < circles.length; i++) {
-            const current: _CloudStyleArc = circles[Number.parseInt(i.toString(), 10)];
+            const current: _CloudStyleArc = circles[<number>i];
             const startAngle: number = current.startAngle % 360;
             const endAngle: number = current.endAngle % 360;
             let sweepAngel: number = 0;
@@ -1691,9 +1676,7 @@ export abstract class PdfAnnotation {
         path.closeFigure();
         let tempPoints: Array<number[]> = [];
         if (isAppearance) {
-            for (let i: number = 0; i < path._points.length; i++) {
-                tempPoints.push([path._points[Number.parseInt(i.toString(), 10)][0], -path._points[Number.parseInt(i.toString(), 10)][1]]);
-            }
+            tempPoints = path._points.map((point: number[]) => [point[0], -point[1]]);
         }
         let pdfpath: PdfPath;
         if (isAppearance) {
@@ -1711,7 +1694,7 @@ export abstract class PdfAnnotation {
         const incise: number = 180 / (Math.PI * 3);
         path = new PdfPath();
         for (let i: number = 0; i < circles.length; i++) {
-            const current: _CloudStyleArc = circles[Number.parseInt(i.toString(), 10)];
+            const current: _CloudStyleArc = circles[<number>i];
             path.addArc(current.point[0] - radius,
                         current.point[1] - radius,
                         2 * radius,
@@ -1722,9 +1705,7 @@ export abstract class PdfAnnotation {
         path.closeFigure();
         tempPoints = [];
         if (isAppearance) {
-            for (let i: number = 0; i < path._points.length; i++) {
-                tempPoints.push([path._points[Number.parseInt(i.toString(), 10)][0], -path._points[Number.parseInt(i.toString(), 10)][1]]);
-            }
+            tempPoints = path._points.map((point: number[]) => [point[0], -point[1]]);
         }
         if (isAppearance) {
             pdfpath = new PdfPath();
@@ -1741,7 +1722,7 @@ export abstract class PdfAnnotation {
         let sum: number = 0;
         if (_isNullOrUndefined(points)) {
             for (let i: number = 0; i < points.length; i++) {
-                const first: number[] = points[Number.parseInt(i.toString(), 10)];
+                const first: number[] = points[<number>i];
                 const second: number[] = points[(i + 1) % points.length];
                 sum += (second[0] - first[0]) * (second[1] + first[1]);
             }
@@ -1765,14 +1746,9 @@ export abstract class PdfAnnotation {
     _obtainStyle(borderPen: PdfPen, rectangle: number[], borderWidth: number, parameter?: PdfBorderEffect | _PaintParameter): number[] {
         const dash: number[] = this.border.dash;
         if (dash && dash.length > 0) {
-            const dashPattern: number[] = [];
             let isDash: boolean = false;
-            for (let i: number = 0; i < dash.length; i++) {
-                dashPattern[Number.parseInt(i.toString(), 10)] = dash[Number.parseInt(i.toString(), 10)];
-                if (dashPattern[Number.parseInt(i.toString(), 10)] > 0) {
-                    isDash = true;
-                }
-            }
+            const dashPattern: number[] = [...dash];
+            isDash = dash.some((value: number) => value > 0);
             if (isDash && this.border.style === PdfBorderStyle.dashed) {
                 borderPen._dashStyle = PdfDashStyle.dash;
                 borderPen._dashPattern = dashPattern;
@@ -1903,12 +1879,7 @@ export abstract class PdfAnnotation {
             radius = intensity * 4.25;
         }
         if (radius > 0) {
-            const points: Array<number[]> = [];
-            for (let i: number = 0; i < graphicsPath._points.length; i++) {
-                const sublist: number[] = [graphicsPath._points[Number.parseInt(i.toString(), 10)][0],
-                    -graphicsPath._points[Number.parseInt(i.toString(), 10)][1]];
-                points.push(sublist);
-            }
+            const points: Array<number[]> = graphicsPath._points.map((point: number[]) => [point[0], -point[1]]);
             graphicsPath = new PdfPath();
             graphicsPath.addPolygon(points);
             this._drawCloudStyle(graphics, parameter.backBrush, parameter.borderPen, radius, 0.833, graphicsPath._points, false);
@@ -1929,6 +1900,13 @@ export abstract class PdfAnnotation {
         const graphics: PdfGraphics = template.graphics;
         const width: number = this.border.width;
         const borderPen: PdfPen = new PdfPen(this.color, width);
+        if (this.border.style === PdfBorderStyle.dashed) {
+            borderPen._dashStyle = PdfDashStyle.dash;
+            borderPen._dashPattern = [3, 1];
+        } else if (this.border.style === PdfBorderStyle.dot) {
+            borderPen._dashStyle = PdfDashStyle.dot;
+            borderPen._dashPattern = [1, 1];
+        }
         const parameter: _PaintParameter = new _PaintParameter();
         if (this.innerColor) {
             parameter.backBrush = new PdfBrush(this._innerColor);
@@ -1995,9 +1973,9 @@ export abstract class PdfAnnotation {
             endPointList.push([right, top + (rect[3] / 2)]);
             const points: Array<number[]> = [];
             for (let i: number = 0; i < controlPointList.length; i++) {
-                this._createBezier(startPointList[Number.parseInt(i.toString(), 10)],
-                                   controlPointList[Number.parseInt(i.toString(), 10)],
-                                   endPointList[Number.parseInt(i.toString(), 10)],
+                this._createBezier(startPointList[<number>i],
+                                   controlPointList[<number>i],
+                                   endPointList[<number>i],
                                    points);
             }
             this._drawCloudStyle(graphics, parameter.backBrush, parameter.borderPen, radius, 0.833, points, false);
@@ -2297,27 +2275,27 @@ export abstract class PdfAnnotation {
             let fontStyle: string;
             if (this._dictionary.has('DS')) {
                 const collection: string[] = this._dictionary.get('DS').split(';');
-                for (let i: number = 0; i < collection.length; i++) {
-                    const entry: string[] = collection[Number.parseInt(i.toString(), 10)].split(':');
-                    if (collection[Number.parseInt(i.toString(), 10)].indexOf('font-family') !== -1) {
+                collection.forEach((item: string) => {
+                    const entry: string[] = item.split(':');
+                    if (item.indexOf('font-family') !== -1) {
                         fontFamily = entry[1];
-                    } else if (collection[Number.parseInt(i.toString(), 10)].indexOf('font-size') !== -1) {
+                    } else if (item.indexOf('font-size') !== -1) {
                         if (entry[1].endsWith('pt')) {
                             fontSize = Number.parseFloat(entry[1].replace('pt', ''));
                         }
-                    } else if (collection[Number.parseInt(i.toString(), 10)].indexOf('font-style') !== -1 || collection[Number.parseInt(i.toString(), 10)].indexOf('style') !== -1) {
+                    } else if (item.indexOf('font-style') !== -1 || item.indexOf('style') !== -1) {
                         fontStyle = entry[1];
-                    } else if (collection[Number.parseInt(i.toString(), 10)].indexOf('font') !== -1) {
+                    } else if (item.indexOf('font') !== -1) {
                         const name: string = entry[1];
                         const split: string[] = name.split(' ');
-                        for (let j: number = 0; j < split.length; j++) {
-                            if (split[Number.parseInt(j.toString(), 10)] !== '' && !split[Number.parseInt(j.toString(), 10)].endsWith('pt')) {
-                                fontFamily += split[Number.parseInt(j.toString(), 10)] + ' ';
+                        split.forEach((part: string) => {
+                            if (part !== '' && !part.endsWith('pt')) {
+                                fontFamily += part + ' ';
                             }
-                            if (split[Number.parseInt(j.toString(), 10)].endsWith('pt')) {
-                                fontSize = Number.parseFloat(split[Number.parseInt(j.toString(), 10)].replace('pt', ''));
+                            if (part.endsWith('pt')) {
+                                fontSize = Number.parseFloat(part.replace('pt', ''));
                             }
-                        }
+                        });
                         while (fontFamily !== ' ' && fontFamily.endsWith(' ')) {
                             fontFamily = fontFamily.substring(0, fontFamily.length - 1);
                         }
@@ -2325,20 +2303,20 @@ export abstract class PdfAnnotation {
                             fontFamily = fontFamily.split(',')[0];
                         }
                     }
-                }
+                });
             } else {
                 const value: string = this._dictionary.get('DA');
                 if (value && value !== '' && value.indexOf('Tf') !== -1) {
                     const textCollection: string[] = value.split(' ');
-                    for (let i: number = 0; i < textCollection.length; i++) {
-                        if (textCollection[Number.parseInt(i.toString(), 10)].indexOf('Tf') !== -1) {
+                    textCollection.forEach((text: string, i: number) => {
+                        if (text.indexOf('Tf') !== -1) {
                             fontFamily = textCollection[i - 2];
                             while (fontFamily !== '' && fontFamily.length > 1 && fontFamily[0] === '/') {
                                 fontFamily = fontFamily.substring(1);
                             }
                             fontSize = Number.parseFloat(textCollection[i - 1]);
                         }
-                    }
+                    });
                 }
             }
             if (fontStyle && fontStyle !== '') {
@@ -2468,35 +2446,31 @@ export abstract class PdfAnnotation {
         if (bounds.width > 0 && bounds.height > 0) {
             const matrix: _PdfTransformationMatrix = new _PdfTransformationMatrix();
             matrix._rotate(rotateAngle);
-            const corners: Array<number[]> = [];
+            let corners: Array<number[]> = [];
             corners.push([bounds.x, bounds.y]);
             corners.push([bounds.x + bounds.width, bounds.y]);
             corners.push([bounds.x + bounds.width, bounds.y + bounds.height]);
             corners.push([bounds.x, bounds.y + bounds.height]);
-            for (let i: number = 0; i < corners.length; i++) {
-                corners[Number.parseInt(i.toString(), 10)] = matrix._matrix._transform(corners[Number.parseInt(i.toString(), 10)]);
-            }
+            corners = corners.map((point: number[]) => matrix._matrix._transform(point));
             const path: PdfPath = new PdfPath();
             path.addRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
-            for (let i: number = 0; i < 4; i++) {
-                path._points[Number.parseInt(i.toString(), 10)] = corners[Number.parseInt(i.toString(), 10)];
-            }
+            path._points = corners.slice(0, 4);
             let minX: number = corners[0][0];
             let maxX: number = corners[3][0];
             let minY: number = corners[0][1];
             let maxY: number = corners[3][1];
             for (let i: number = 0; i < 4; i++) {
-                if (corners[Number.parseInt(i.toString(), 10)][0] < minX) {
-                    minX = corners[Number.parseInt(i.toString(), 10)][0];
+                if (corners[<number>i][0] < minX) {
+                    minX = corners[<number>i][0];
                 }
-                if (corners[Number.parseInt(i.toString(), 10)][0] > maxX) {
-                    maxX = corners[Number.parseInt(i.toString(), 10)][0];
+                if (corners[<number>i][0] > maxX) {
+                    maxX = corners[<number>i][0];
                 }
-                if (corners[Number.parseInt(i.toString(), 10)][1] < minY) {
-                    minY = corners[Number.parseInt(i.toString(), 10)][1];
+                if (corners[<number>i][1] < minY) {
+                    minY = corners[<number>i][1];
                 }
-                if (corners[Number.parseInt(i.toString(), 10)][1] > maxY) {
-                    maxY = corners[Number.parseInt(i.toString(), 10)][1];
+                if (corners[<number>i][1] > maxY) {
+                    maxY = corners[<number>i][1];
                 }
             }
             return { x: bounds.x, y: bounds.y, width: Math.round(maxX - minX), height: Math.round(maxY - minY) };
@@ -2778,19 +2752,19 @@ export abstract class PdfAnnotation {
             month = '0' + month;
         }
         let date: string = (dateTime.getDate()).toString();
-        if (Number.parseInt(date) < 10) { // eslint-disable-line
+        if (Number(date) < 10) {
             date = '0' + date;
         }
         let hours: string = (dateTime.getHours()).toString();
-        if (Number.parseInt(hours) < 10) { // eslint-disable-line
+        if (Number(hours) < 10) {
             hours = '0' + hours;
         }
         let minutes: string = (dateTime.getMinutes()).toString();
-        if (Number.parseInt(minutes) < 10) { // eslint-disable-line
+        if (Number(minutes) < 10) {
             minutes = '0' + minutes;
         }
         let seconds: string = (dateTime.getSeconds()).toString();
-        if (Number.parseInt(seconds) < 10) { // eslint-disable-line
+        if (Number(seconds) < 10) {
             seconds = '0' + seconds;
         }
         return 'D:' + dateTime.getFullYear().toString() + month + date + hours + minutes + seconds + '+05\'30\'';
@@ -2812,15 +2786,12 @@ export abstract class PdfAnnotation {
         const cropOrMediaBox: number[] = this._getCropOrMediaBox();
         const points: number[] = polygonPoints;
         if (cropOrMediaBox && cropOrMediaBox.length > 3 && typeof cropOrMediaBox[0] === 'number' && typeof cropOrMediaBox[1] === 'number' && (cropOrMediaBox[0] !== 0 || cropOrMediaBox[1] !== 0)) {
-            const modifiedPoints: number[] = [];
-            for (let i: number = 0; i < points.length; i++) {
-                modifiedPoints.push(points[Number.parseInt(i.toString(), 10)]);
-            }
+            const modifiedPoints: number[] = points.map((point: number) => point);
             for (let j: number = 0; j < modifiedPoints.length; j = j + 2) {
-                const x: number = modifiedPoints[Number.parseInt(j.toString(), 10)];
+                const x: number = modifiedPoints[<number>j];
                 const y: number = modifiedPoints[j + 1];
                 if (cropOrMediaBox) {
-                    points[Number.parseInt(j.toString(), 10)] = x + cropOrMediaBox[0];
+                    points[<number>j] = x + cropOrMediaBox[0];
                     if (this._page._pageDictionary.has('MediaBox') && !this._page._pageDictionary.has('CropBox') && cropOrMediaBox[3] === 0 && cropOrMediaBox[1] > 0) {
                         points[j + 1] = y + cropOrMediaBox[3];
                     } else {
@@ -3539,7 +3510,7 @@ export class PdfLineAnnotation extends PdfComment {
                 const dictionary: _PdfDictionary = this._dictionary.get('AP');
                 if (dictionary && dictionary.has('N')) {
                     const appearanceStream: _PdfBaseStream = dictionary.get('N');
-                    if (appearanceStream) {
+                    if (appearanceStream instanceof _PdfBaseStream) {
                         const reference: _PdfReference = dictionary.getRaw('N');
                         if (reference) {
                             appearanceStream.reference = reference;
@@ -3612,7 +3583,7 @@ export class PdfLineAnnotation extends PdfComment {
         const linePoints1: number[] = this._obtainLinePoints();
         const points: Array<number[]> = [];
         for (let j: number = 0; j < linePoints1.length; j = j + 2) {
-            points.push([linePoints1[Number.parseInt(j.toString(), 10)], (linePoints1[j + 1])]);
+            points.push([linePoints1[<number>j], (linePoints1[j + 1])]);
         }
         const graphicsPath: PdfPath = new PdfPath();
         graphicsPath._points = points;
@@ -3932,7 +3903,7 @@ export class PdfLineAnnotation extends PdfComment {
             let ymin: number = points[0].y;
             let ymax: number = points[0].y;
             for (let i: number = 1; i < points.length; ++i) {
-                const point: {x: number, y: number} = points[Number.parseInt(i.toString(), 10)];
+                const point: {x: number, y: number} = points[<number>i];
                 xmin = Math.min(point.x, xmin);
                 xmax = Math.max(point.x, xmax);
                 ymin = Math.min(point.y, ymin);
@@ -3962,7 +3933,8 @@ export class PdfLineAnnotation extends PdfComment {
         return [bounds.x, bounds.y, bounds.width, bounds.height];
     }
     _createAppearance(): PdfTemplate {
-        const template: PdfTemplate = new PdfTemplate(this._obtainLineBounds(), this._crossReference);
+        const bounds: number[] = this._obtainLineBounds();
+        const template: PdfTemplate = new PdfTemplate(bounds, this._crossReference);
         const parameter: _PaintParameter = new _PaintParameter();
         _setMatrix(template, 0);
         template._writeTransformation = false;
@@ -3974,6 +3946,9 @@ export class PdfLineAnnotation extends PdfComment {
         } else if (this.border.style === PdfBorderStyle.dot) {
             pen._dashStyle = PdfDashStyle.dot;
             pen._dashPattern = [1, 1];
+        }
+        if (this.border.style !== PdfBorderStyle.solid && this.border.dash) {
+            pen._dashPattern = this.border.dash;
         }
         parameter.borderPen = pen;
         parameter.foreBrush = new PdfBrush(this.color);
@@ -4067,7 +4042,6 @@ export class PdfLineAnnotation extends PdfComment {
                 graphics.drawString(this.text, font, [(-lineWidth / 2), 0, 0, 0], null, parameter.foreBrush);
             }
             graphics.restore();
-            const bounds: number[] = this._obtainLineBounds();
             const rectangleBounds: number[] = _fromRectangle({ x: bounds[0], y: bounds[1], width: bounds[2], height: bounds[3] });
             this.bounds = { x: rectangleBounds[0], y: rectangleBounds[1], width: rectangleBounds[2], height: rectangleBounds[3] };
             if ((!this.measure) && (!this._dictionary.has('Measure'))) {
@@ -4092,7 +4066,7 @@ export class PdfLineAnnotation extends PdfComment {
         const data: Array<number[]> = new Array(points.length / 2);
         let count: number = 0;
         for (let j: number = 0; j < points.length; j = j + 2) {
-            data[Number.parseInt(count.toString(), 10)] = [points[Number.parseInt(j.toString(), 10)], (points[j + 1])];
+            data[<number>count] = [points[<number>j], (points[j + 1])];
             count++;
         }
         const distance: number = Math.sqrt(Math.pow((data[1][0] - data[0][0]), 2) + Math.pow((data[1][1] - data[0][1]), 2));
@@ -4101,12 +4075,7 @@ export class PdfLineAnnotation extends PdfComment {
         return (new _PdfUnitConvertor())._convertUnits(distance, _PdfGraphicsUnit.point, value.graphicsUnit);
     }
     _obtainLinePoints(): number[] {
-        const points: number[] = [];
-        if (this.linePoints) {
-            for (let i: number = 0; i < this._linePoints.length; i++) {
-                points[Number.parseInt(i.toString(), 10)] = this._linePoints[Number.parseInt(i.toString(), 10)];
-            }
-        }
+        const points: number[] = this.linePoints ? [...this._linePoints] : [];
         return points;
     }
 }
@@ -4185,8 +4154,8 @@ export class PdfCircleAnnotation extends PdfComment {
      * ```
      */
     get measure(): boolean {
-        if (typeof this._measure === 'undefined' && this._dictionary.has('Measure')) {
-            this._measure =  this._dictionary.get('Measure');
+        if (!this._measure) {
+            this._measure = this._dictionary.has('Measure');
         }
         return this._measure;
     }
@@ -5050,8 +5019,8 @@ export class PdfSquareAnnotation extends PdfComment {
             (this.bounds.y + this.bounds.height),
             this.bounds.width,
             this.bounds.height];
-        const appearanceBounds: number[] = [this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height];
-        const appearance: PdfAppearance = new PdfAppearance(this, appearanceBounds);
+        const appearance: PdfAppearance = new PdfAppearance({x: this.bounds.x, y: this.bounds.y, width: this.bounds.width,
+            height: this.bounds.height}, this);
         nativeRectangle[1] = nativeRectangle[1] - nativeRectangle[3];
         appearance.normal = new PdfTemplate(nativeRectangle, this._crossReference);
         const template: PdfTemplate =  appearance.normal;
@@ -5625,10 +5594,7 @@ export class PdfPolygonAnnotation extends PdfComment {
             borderWidth = 1;
         }
         const array: number[] = [];
-        for (let i: number = 0; i < this._points.length; i++) {
-            const value: number = this._points[Number.parseInt(i.toString(), 10)];
-            array.push(value);
-        }
+        array.push(...this._points);
         this._points = this._getPoints(this._points);
         if (array[0] !== array[array.length - 2] || array[1] !== array[array.length - 1]) {
             this._points.push(this._points[0]);
@@ -5780,7 +5746,7 @@ export class PdfPolygonAnnotation extends PdfComment {
                 rect.width = boundsValue.width + (2 * this.border.width);
                 rect.height = boundsValue.height + (2 * this.border.width);
             }
-            const appearance: PdfAppearance = new PdfAppearance(this, [rect.x, rect.y, rect.width, rect.height]);
+            const appearance: PdfAppearance = new PdfAppearance({x: rect.x, y: rect.y, width: rect.width, height: rect.height}, this);
             appearance.normal = new PdfTemplate([rect.x, rect.y, rect.width, rect.height], this._crossReference);
             const template: PdfTemplate =  appearance.normal;
             _setMatrix(template, this._getRotationAngle());
@@ -5845,59 +5811,44 @@ export class PdfPolygonAnnotation extends PdfComment {
             }
             const linePoints: number[] = this._dictionary.getArray('Vertices');
             if (linePoints) {
-                const points: number[] = [];
-                linePoints.forEach((value: number) => {
-                    points.push(value);
-                });
+                const points: number[] = [...linePoints];
                 polygonPoints = [];
                 for (let j: number = 0; j < points.length; j = j + 2) {
-                    if (this.flatten) {
-                        polygonPoints.push([points[Number.parseInt(j.toString(), 10)], (pageHeight - points[j + 1])]);
-                    } else {
-                        polygonPoints.push([points[Number.parseInt(j.toString(), 10)], -points[j + 1]]);
-                    }
+                    const yValue: number = this.flatten ? (pageHeight - points[j + 1]) : -points[j + 1];
+                    polygonPoints.push([points[<number>j], yValue]);
                 }
                 if (rotation) {
                     if (rotation === 270) {
-                        for (let k: number = 0; k < polygonPoints.length; k++) {
-                            const x: number = polygonPoints[Number.parseInt(k.toString(), 10)][0];
-                            polygonPoints[Number.parseInt(k.toString(), 10)][0] = polygonPoints[Number.parseInt(k.toString(), 10)][1];
-                            polygonPoints[Number.parseInt(k.toString(), 10)][1] = pageWidth - x;
-                        }
+                        polygonPoints.forEach((point: number[]) => {
+                            const x: number = point[0];
+                            point[0] = point[1];
+                            point[1] = pageWidth - x;
+                        });
                     } else if (rotation === 90) {
-                        for (let k: number = 0; k < polygonPoints.length; k++) {
-                            const x: number = polygonPoints[Number.parseInt(k.toString(), 10)][0];
+                        polygonPoints.forEach((point: number[]) => {
+                            const x: number = point[0];
                             if (this._page._origin[1] !== 0) {
-                                polygonPoints[Number.parseInt(k.toString(), 10)][0] = pageHeight -
-                                    (polygonPoints[Number.parseInt(k.toString(), 10)][1] - pageHeight);
+                                point[0] = pageHeight - (point[1] - pageHeight);
                             } else {
-                                polygonPoints[Number.parseInt(k.toString(), 10)][0] = pageHeight -
-                                    polygonPoints[Number.parseInt(k.toString(), 10)][1];
+                                point[0] = pageHeight - point[1];
                             }
-                            polygonPoints[Number.parseInt(k.toString(), 10)][1] = x;
-                        }
+                            point[1] = x;
+                        });
                     } else if (rotation === 180) {
-                        for (let k: number = 0; k < polygonPoints.length; k++) {
-                            const x: number = polygonPoints[Number.parseInt(k.toString(), 10)][0];
-                            polygonPoints[Number.parseInt(k.toString(), 10)][0] = pageWidth - x;
-                            polygonPoints[Number.parseInt(k.toString(), 10)][1] = pageHeight -
-                                polygonPoints[Number.parseInt(k.toString(), 10)][1];
-                        }
+                        polygonPoints.forEach((point: number[]) => {
+                            const x: number = point[0];
+                            point[0] = pageWidth - x;
+                            point[1] = pageHeight - point[1];
+                        });
                     }
                 }
             }
         } else if (this._points) {
-            const points: number[] = [];
-            this._points.forEach((value: number) => {
-                points.push(value);
-            });
+            const points: number[] = [...this._points];
             polygonPoints = [];
             for (let j: number = 0; j < this._points.length; j = j + 2) {
-                if (this.flatten) {
-                    polygonPoints.push([points[Number.parseInt(j.toString(), 10)], (pageHeight - points[j + 1])]);
-                } else {
-                    polygonPoints.push([points[Number.parseInt(j.toString(), 10)], - points[j + 1]]);
-                }
+                const yValue: number = this.flatten ? (pageHeight - points[j + 1]) : -points[j + 1];
+                polygonPoints.push([points[<number>j], yValue]);
             }
         }
         return polygonPoints;
@@ -6263,8 +6214,8 @@ export class PdfPolyLineAnnotation extends PdfComment {
     _transformToPdfCoordinates(points: number[]): number[] {
         const transformedPoints: number[] = [];
         for (let i: number = 0; i < points.length; i += 2) {
-            transformedPoints.push(points[Number.parseInt(i.toString(), 10)]);
-            transformedPoints.push(-points[Number.parseInt(i.toString(), 10) + 1]);
+            transformedPoints.push(points[<number>i]);
+            transformedPoints.push(-points[<number>i + 1]);
         }
         return transformedPoints;
     }
@@ -6405,7 +6356,7 @@ export class PdfPolyLineAnnotation extends PdfComment {
                                                                      this.border.width, false);
                 rect = this._getCombinedRectangleBounds(rect, endLineStyleBounds);
             }
-            const appearance: PdfAppearance = new PdfAppearance(this, [rect.x, rect.y, rect.width, rect.height]);
+            const appearance: PdfAppearance = new PdfAppearance({x: rect.x, y: rect.y, width: rect.width, height: rect.height}, this);
             appearance.normal = new PdfTemplate([rect.x, rect.y, rect.width, rect.height], this._crossReference);
             const template: PdfTemplate = appearance.normal;
             _setMatrix(template, 0);
@@ -6449,22 +6400,16 @@ export class PdfPolyLineAnnotation extends PdfComment {
             if (linePoints) {
                 points = [];
                 for (let j: number = 0; j < linePoints.length; j = j + 2) {
-                    points.push([linePoints[Number.parseInt(j.toString(), 10)], (pageHeight - linePoints[j + 1])]);
+                    points.push([linePoints[<number>j], (pageHeight - linePoints[j + 1])]);
                 }
             }
         } else if (this._points) {
             this._points = this._getPoints(this._points);
-            const polyLinepoints: number[] = [];
-            this._points.forEach((value: number) => {
-                polyLinepoints.push(value);
-            });
+            const polyLinepoints: number[] = [...this._points];
             points = [];
-            for (let j: number = 0; j < polyLinepoints.length; j = j + 2) {
-                if (this.flatten) {
-                    points.push([polyLinepoints[Number.parseInt(j.toString(), 10)], (pageHeight - polyLinepoints[j + 1])]);
-                } else {
-                    points.push([polyLinepoints[Number.parseInt(j.toString(), 10)], - polyLinepoints[j + 1]]);
-                }
+            for (let j: number = 0; j < polyLinepoints.length; j += 2) {
+                const yValue: number = this.flatten ? (pageHeight - polyLinepoints[j + 1]) : -polyLinepoints[j + 1];
+                points.push([polyLinepoints[<number>j], yValue]);
             }
         }
         return points;
@@ -6528,10 +6473,10 @@ export class PdfAngleMeasurementAnnotation extends PdfComment {
                 throw new Error('Points length should not be greater than 3');
             }
             this._pointArray = points;
-            for (let i: number = 0; i < points.length; i++) {
-                this._linePoints.push(points[Number.parseInt(i.toString(), 10)][0]);
-                this._linePoints.push(points[Number.parseInt(i.toString(), 10)][1]);
-            }
+            points.forEach((point: number[]) => {
+                this._linePoints.push(point[0]);
+                this._linePoints.push(point[1]);
+            });
         }
         this._type = _PdfAnnotationType.angleMeasurementAnnotation;
     }
@@ -6815,7 +6760,8 @@ export class PdfAngleMeasurementAnnotation extends PdfComment {
         path._pathTypes = pathTypes;
         path._points =  points;
         this._dictionary.set('Rect', [rectValue[0], rectValue[1], rectValue[0] + rectValue[2], rectValue[1] + rectValue[3]]);
-        const appearance: PdfAppearance = new PdfAppearance(this, boundsValue);
+        const appearance: PdfAppearance = new PdfAppearance({x: boundsValue[0], y: boundsValue[1], width: boundsValue[2],
+            height: boundsValue[3]}, this);
         appearance.normal = new PdfTemplate(rectValue, this._crossReference);
         const template: PdfTemplate =  appearance.normal;
         template._writeTransformation = false;
@@ -6872,7 +6818,7 @@ export class PdfAngleMeasurementAnnotation extends PdfComment {
     _getAngleBoundsValue(): number[] {
         const points: Array<number[]> = this._obtainLinePoints();
         for (let i: number = 0; i < points.length; i++) {
-            points[Number.parseInt(i.toString(), 10)][1] = -points[Number.parseInt(i.toString(), 10)][1];
+            points[<number>i][1] = -points[<number>i][1];
         }
         const path: PdfPath = new PdfPath();
         path._points = points;
@@ -6883,32 +6829,27 @@ export class PdfAngleMeasurementAnnotation extends PdfComment {
         let points: number[];
         let collection: Array<number[]>;
         if (this._linePoints) {
-            points = new Array<number>(this._linePoints.length);
-            for (let i: number = 0; i < this._linePoints.length; i++) {
-                points[Number.parseInt(i.toString(), 10)] = this._linePoints[Number.parseInt(i.toString(), 10)];
-            }
+            points = [...this._linePoints];
             collection = new Array<number[]>(points.length / 2);
             let count: number = 0;
             for (let j: number = 0; j < points.length; j = j + 2) {
-                collection[Number.parseInt(count.toString(), 10)] = [points[Number.parseInt(j.toString(), 10)], - points[j + 1]];
+                collection[<number>count] = [points[<number>j], - points[j + 1]];
                 count++;
             }
         }
         return collection;
     }
     _calculateAngle(): number {
-        const points: number[] = [0, 0];
+        let points: number[] = [0, 0];
         if (typeof this._linePoints !== 'undefined' && this._linePoints.length === 0 && this._isLoaded) {
             if (this._dictionary.has('Vertices')) {
                 this._linePoints = this._dictionary.get('Vertices');
             }
         }
-        for (let i: number = 0; i < this._linePoints.length; i++) {
-            points[Number.parseInt(i.toString(), 10)] = this._linePoints[Number.parseInt(i.toString(), 10)];
-        }
+        points = [...this._linePoints];
         const collection: Array<number[]> = [];
         for (let j: number = 0; j < points.length; j = j + 2) {
-            collection.push([points[Number.parseInt(j.toString(), 10)], points[j + 1]]);
+            collection.push([points[<number>j], points[j + 1]]);
         }
         const point1: number[] = collection[0];
         const point2: number[] = collection[1];
@@ -7163,14 +7104,14 @@ export class PdfInkAnnotation extends PdfComment {
         if (typeof borderWidth === 'undefined') {
             borderWidth = 1;
         }
-        const nativeRectangle: number[] = this._addInkPoints();
-        const bounds: number[] = [nativeRectangle[0],
-            nativeRectangle[1],
-            nativeRectangle[0] + nativeRectangle[2],
-            nativeRectangle[1] + nativeRectangle[3]];
+        const nativeRectangle: Rectangle = this._addInkPoints();
+        const bounds: number[] = [nativeRectangle.x,
+            nativeRectangle.y,
+            nativeRectangle.x + nativeRectangle.width,
+            nativeRectangle.y + nativeRectangle.height];
         this._dictionary.update('Rect', bounds);
         if (this._setAppearance) {
-            const appearance: PdfAppearance = new PdfAppearance(this, nativeRectangle);
+            const appearance: PdfAppearance = new PdfAppearance(nativeRectangle, this);
             appearance.normal = new PdfTemplate(nativeRectangle, this._crossReference);
             const template: PdfTemplate = appearance.normal;
             _setMatrix(template, this._getRotationAngle());
@@ -7306,8 +7247,8 @@ export class PdfInkAnnotation extends PdfComment {
             typeof this._color !== 'undefined') {
             for (let l: number = 0; l < this._inkPointsCollection.length; l++) {
                 let isDot: boolean = false;
-                if (this._inkPointsCollection[Number.parseInt(l.toString(), 10)].length % 2 === 0) {
-                    let inkPoints: number[] = this._inkPointsCollection[Number.parseInt(l.toString(), 10)];
+                if (this._inkPointsCollection[<number>l].length % 2 === 0) {
+                    let inkPoints: number[] = this._inkPointsCollection[<number>l];
                     if (inkPoints.length === 2) {
                         const locx: number = inkPoints[0] - 0.5;
                         const locy: number = inkPoints[1] - 0.5;
@@ -7319,7 +7260,7 @@ export class PdfInkAnnotation extends PdfComment {
                     const point: Array<number[]> = new Array(inkPoints.length / 2);
                     let count: number = 0;
                     for (let j: number = 0; j < inkPoints.length; j = j + 2) {
-                        point[Number.parseInt(count.toString(), 10)] = [inkPoints[Number.parseInt(j.toString(), 10)], inkPoints[j + 1]];
+                        point[<number>count] = [inkPoints[<number>j], inkPoints[j + 1]];
                         count++;
                     }
                     let pathPointCont: number = count + (count * 2) - 2;
@@ -7332,9 +7273,9 @@ export class PdfInkAnnotation extends PdfComment {
                         p2 = value.controlP2;
                         let index: number = 0;
                         for (let i: number = 0; i < pathPointCont - 1; i = i + 3) {
-                            pathPoints[Number.parseInt(i.toString(), 10)] = point[Number.parseInt(index.toString(), 10)];
-                            pathPoints[i + 1] = p1[Number.parseInt(index.toString(), 10)];
-                            pathPoints[i + 2] = p2[Number.parseInt(index.toString(), 10)];
+                            pathPoints[<number>i] = point[<number>index];
+                            pathPoints[i + 1] = p1[<number>index];
+                            pathPoints[i + 2] = p2[<number>index];
                             index++;
                         }
                     } else {
@@ -7346,13 +7287,13 @@ export class PdfInkAnnotation extends PdfComment {
                             pathPointCont = count + 1;
                             pathPoints = new Array(pathPointCont);
                             for (let i: number = 0; i < point.length; i++) {
-                                pathPoints[Number.parseInt(i.toString(), 10)] = point[Number.parseInt(i.toString(), 10)];
+                                pathPoints[<number>i] = point[<number>i];
                             }
                         } else {
                             pathPointCont = count + 2;
                             pathPoints = new Array(pathPointCont);
                             for (let i: number = 0; i < point.length; i++) {
-                                pathPoints[Number.parseInt(i.toString(), 10)] = point[Number.parseInt(i.toString(), 10)];
+                                pathPoints[<number>i] = point[<number>i];
                             }
                             pathPoints[pathPointCont - 2] = point[point.length - 2];
                         }
@@ -7361,8 +7302,8 @@ export class PdfInkAnnotation extends PdfComment {
                     if (pathPoints !== null) {
                         const pointsCollection: Array<number[]> = pathPoints;
                         for (let k: number = 0; k < pointsCollection.length; k++) {
-                            const point: number[] = pointsCollection[Number.parseInt(k.toString(), 10)];
-                            pointsCollection[Number.parseInt(k.toString(), 10)] = [point[0], (-point[1])];
+                            const point: number[] = pointsCollection[<number>k];
+                            pointsCollection[<number>k] = [point[0], (-point[1])];
                         }
                         const path1: PdfPath = new PdfPath();
                         let path2: PdfPath = null;
@@ -7431,27 +7372,27 @@ export class PdfInkAnnotation extends PdfComment {
         }
         const rightVector: number[] = [];
         for (let i: number = 1; i < pointCount - 1; ++i) {
-            rightVector[Number.parseInt(i.toString(), 10)] = 4 * point[Number.parseInt(i.toString(), 10)][0] + 2 * point[i + 1][0];
+            rightVector[<number>i] = 4 * point[<number>i][0] + 2 * point[i + 1][0];
         }
         rightVector[0] = point[0][0] + 2 * point[1][0];
-        rightVector[pointCount - 1] = (8 * point[pointCount - 1][0] + point[Number.parseInt(pointCount.toString(), 10)][0]) / 2.0;
+        rightVector[pointCount - 1] = (8 * point[pointCount - 1][0] + point[<number>pointCount][0]) / 2.0;
         const xValue: number[] = this._getSingleControlPoint(rightVector);
         for (let i: number = 1; i < pointCount - 1; ++i) {
-            rightVector[Number.parseInt(i.toString(), 10)] = 4 * point[Number.parseInt(i.toString(), 10)][1] + 2 * point[i + 1][1];
+            rightVector[<number>i] = 4 * point[<number>i][1] + 2 * point[i + 1][1];
         }
         rightVector[0] = point[0][1] + 2 * point[1][1];
-        rightVector[pointCount - 1] = (8 * point[pointCount - 1][1] + point[Number.parseInt(pointCount.toString(), 10)][1]) / 2.0;
+        rightVector[pointCount - 1] = (8 * point[pointCount - 1][1] + point[<number>pointCount][1]) / 2.0;
         const yValue: number[] = this._getSingleControlPoint(rightVector);
         p1 = new Array<number[]>(pointCount);
         p2 = new Array<number[]>(pointCount);
         for (let i: number = 0; i < pointCount; ++i) {
-            p1[Number.parseInt(i.toString(), 10)] = [xValue[Number.parseInt(i.toString(), 10)], yValue[Number.parseInt(i.toString(), 10)]];
+            p1[<number>i] = [xValue[<number>i], yValue[<number>i]];
             if (i < pointCount - 1) {
-                p2[Number.parseInt(i.toString(), 10)] = [2 * point[i + 1][0] - xValue[i + 1], 2 * point[i + 1][1] - yValue[i + 1]];
+                p2[<number>i] = [2 * point[i + 1][0] - xValue[i + 1], 2 * point[i + 1][1] - yValue[i + 1]];
             } else {
-                const x: number = (point[Number.parseInt(pointCount.toString(), 10)][0] + xValue[pointCount - 1]) / 2;
-                const y: number = (point[Number.parseInt(pointCount.toString(), 10)][1] + yValue[pointCount - 1]) / 2;
-                p2[Number.parseInt(i.toString(), 10)] = [x, y];
+                const x: number = (point[<number>pointCount][0] + xValue[pointCount - 1]) / 2;
+                const y: number = (point[<number>pointCount][1] + yValue[pointCount - 1]) / 2;
+                p2[<number>i] = [x, y];
             }
         }
         return {controlP1: p1, controlP2: p2};
@@ -7463,74 +7404,69 @@ export class PdfInkAnnotation extends PdfComment {
         let divisor: number = 2.0;
         vector[0] = rightVector[0] / divisor;
         for (let i: number = 1; i < count; i++) {
-            tmpVector[Number.parseInt(i.toString(), 10)] = 1 / divisor;
-            divisor = (i < count - 1 ? 4.0 : 3.5) - tmpVector[Number.parseInt(i.toString(), 10)];
-            vector[Number.parseInt(i.toString(), 10)] = (rightVector[Number.parseInt(i.toString(), 10)] - vector[i - 1]) / divisor;
+            tmpVector[<number>i] = 1 / divisor;
+            divisor = (i < count - 1 ? 4.0 : 3.5) - tmpVector[<number>i];
+            vector[<number>i] = (rightVector[<number>i] - vector[i - 1]) / divisor;
         }
         for (let i: number = 1; i < count; i++) {
             vector[count - i - 1] -= tmpVector[count - i] * vector[count - i];
         }
         return vector;
     }
-    _addInkPoints(): number[] {
+    _addInkPoints(): Rectangle {
         const inkCollection: Array<number[]> = [];
         if (this._linePoints !== null && (this._previousCollection.length === 0 || this._isModified)) {
             this._inkPointsCollection.unshift(this._linePoints);
         }
         const isEqual: boolean = _checkInkPoints(this._inkPointsCollection, this._previousCollection);
         if (this._inkPointsCollection !== null && !isEqual) {
-            for (let i: number = 0; i < this._inkPointsCollection.length; i++) {
-                const inkList: number[] = this._inkPointsCollection[Number.parseInt(i.toString(), 10)].slice();
+            this._inkPointsCollection.forEach((inkPoint: number[]) => {
+                const inkList: number[] = inkPoint.slice();
                 inkCollection.push(inkList);
-            }
+            });
             this._dictionary.update('InkList', inkCollection);
         }
         if (this._inkPointsCollection.length > 0 && (!isEqual || this._isModified)) {
-            this._inkPointsCollection.forEach((inkList: number[]) => {
-                this._previousCollection.push(inkList);
-                this._isModified = false;
-            });
+            this._previousCollection.push(...this._inkPointsCollection);
+            this._isModified = false;
         }
         const cropOrMediaBox: number[] = this._getCropOrMediaBox();
         let containsCropOrMediaBox: boolean = false;
         if (cropOrMediaBox && cropOrMediaBox.length > 3 && typeof cropOrMediaBox[0] === 'number' && typeof cropOrMediaBox[1] === 'number' && (cropOrMediaBox[0] !== 0 || cropOrMediaBox[1] !== 0)) {
             containsCropOrMediaBox = true;
-            for (let i: number = 0; i < inkCollection.length; i++) {
-                const inkList: number[] = inkCollection[Number.parseInt(i.toString(), 10)];
+            inkCollection.forEach((inkList: number[], i: number) => {
                 const modifiedInkList: number[] = inkList;
-                for (let j: number = 0; j < inkList.length; j = j + 2) {
-                    let x: number = inkList[Number.parseInt(j.toString(), 10)];
+                for (let j: number = 0; j < inkList.length; j += 2) {
+                    let x: number = inkList[<number>j];
                     let y: number = inkList[j + 1];
                     x = x + cropOrMediaBox[0];
-                    if (this._page._pageDictionary.has('MediaBox') && !this._page._pageDictionary.has('CropBox') && cropOrMediaBox[3] === 0 && cropOrMediaBox[1] > 0) {
+                    if (this._page._pageDictionary.has('MediaBox') && !this._page._pageDictionary.has('CropBox') &&
+                        cropOrMediaBox[3] === 0 && cropOrMediaBox[1] > 0) {
                         y = y + cropOrMediaBox[3];
                     } else {
                         y = y + cropOrMediaBox[1];
                     }
-                    modifiedInkList[Number.parseInt(j.toString(), 10)] = x;
+                    modifiedInkList[<number>j] = x;
                     modifiedInkList[j + 1] = y;
-                    inkCollection[Number.parseInt(i.toString(), 10)] = modifiedInkList;
+                    inkCollection[<number>i] = modifiedInkList;
                 }
-            }
+            });
             this._dictionary.update('InkList', inkCollection);
         }
         if (this._isEnableControlPoints || containsCropOrMediaBox) {
-            return this._getInkBoundsValue(inkCollection);
+            const result: number[] = this._getInkBoundsValue(inkCollection);
+            return {x: result[0], y: result[1], width: result[2], height: result[3]};
         } else {
             if (!this._isFlatten) {
                 this._updateInkListCollection(inkCollection);
             }
-            return [this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height];
+            return this.bounds;
         }
     }
     _updateInkListCollection(inkCollection: Array<number[]>): void {
-        for (let i: number = 0; i < inkCollection.length; i++) {
-            const inkList: number[] = [];
-            for (let j: number = 0; j < inkCollection[Number.parseInt(i.toString(), 10)].length; j++) {
-                inkList.push(inkCollection[Number.parseInt(i.toString(), 10)][Number.parseInt(j.toString(), 10)]);
-            }
-            this._inkPointsCollection[Number.parseInt(i.toString(), 10)] = inkList;
-        }
+        inkCollection.forEach((currentInkList: number[], i: number) => {
+            this._inkPointsCollection[<number>i] = [...currentInkList];
+        });
     }
     _getInkBoundsValue(inkCollection?: Array<number[]>): number[] {
         let bounds: number[] = [0, 0, 0, 0];
@@ -7542,16 +7478,13 @@ export class PdfInkAnnotation extends PdfComment {
         if (this._inkPointsCollection !== null) {
             if (this._inkPointsCollection.length > 0) {
                 const termsList: Array<number> = [];
-                for (let i: number = 0; i < this._inkPointsCollection.length; i++) {
-                    const subList: number[] = this._inkPointsCollection[Number.parseInt(i.toString(), 10)];
+                this._inkPointsCollection.forEach((subList: number[]) => {
                     if (subList !== null) {
                         if (subList.length % 2 === 0) {
-                            for (let j: number = 0; j < subList.length; j++) {
-                                termsList.push(subList[Number.parseInt(j.toString(), 10)]);
-                            }
+                            termsList.push(...subList);
                         }
                     }
-                }
+                });
                 let isTwoPoints: boolean = false;
                 if (!this._isLoaded && termsList.length === 2) {
                     isTwoPoints = true;
@@ -7561,7 +7494,7 @@ export class PdfInkAnnotation extends PdfComment {
                 const pointCollection: Array<number[]> = new Array(termsList.length / 2);
                 let count: number = 0;
                 for (let j: number = 0; j < termsList.length; j = j + 2) {
-                    pointCollection[Number.parseInt(count.toString(), 10)] = [termsList[Number.parseInt(j.toString(), 10)],
+                    pointCollection[<number>count] = [termsList[<number>j],
                         termsList[j + 1]];
                     count++;
                 }
@@ -7572,8 +7505,7 @@ export class PdfInkAnnotation extends PdfComment {
                         let xMax: number = 0;
                         let yMax: number = 0;
                         let first: boolean = true;
-                        for (let i: number = 0; i < pointCollection.length; i++) {
-                            const point: number[] = pointCollection[Number.parseInt(i.toString(), 10)];
+                        pointCollection.forEach((point: number[]) => {
                             if (first) {
                                 xMin = point[0];
                                 yMin = point[1];
@@ -7590,7 +7522,7 @@ export class PdfInkAnnotation extends PdfComment {
                                     yMax = point[1];
                                 }
                             }
-                        }
+                        });
                         bounds = [xMin, yMin, xMax - xMin, yMax - yMin];
                         this.bounds = {x: bounds[0], y: bounds[1], width: bounds[2], height: bounds[3]};
                         if (this._isFlatten || this._setAppearance) {
@@ -7626,8 +7558,7 @@ export class PdfInkAnnotation extends PdfComment {
             let xMax: number = 0;
             let yMax: number = 0;
             let first: boolean = true;
-            for (let i: number = 0; i < pointCollection.length; i++) {
-                const point: number[] = pointCollection[Number.parseInt(i.toString(), 10)];
+            pointCollection.forEach((point: number[]) => {
                 if (first) {
                     xMin = point[0];
                     yMin = point[1];
@@ -7646,7 +7577,7 @@ export class PdfInkAnnotation extends PdfComment {
                         yMax = point[1];
                     }
                 }
-            }
+            });
             const cropOrMediaBox: number[] = this._getCropOrMediaBox();
             if (bounds[2] < xMax) {
                 xMax = bounds[2];
@@ -7688,9 +7619,9 @@ export class PdfInkAnnotation extends PdfComment {
             const inkList: Array<number[]> = this._dictionary.getArray('InkList');
             let list: number[] = [];
             for (let i: number = 0; i < inkList.length; i++) {
-                const innerList: number[] = inkList[Number.parseInt(i.toString(), 10)];
+                const innerList: number[] = inkList[<number>i];
                 for (let j: number = 0; j < innerList.length; j++) {
-                    list.push(innerList[Number.parseInt(j.toString(), 10)]);
+                    list.push(innerList[<number>j]);
                 }
                 path.push(list);
                 if (list.length === innerList.length) {
@@ -8259,15 +8190,14 @@ export class PdfFileLinkAnnotation extends PdfAnnotation {
             if (dictionary && dictionary.has('Next')) {
                 const action: Array<_PdfReference> = dictionary.get('Next');
                 if (Array.isArray(action)) {
-                    for (let i: number = 0; i < action.length; i++) {
-                        const reference: _PdfReference = action[Number.parseInt(i.toString(), 10)];
+                    action.forEach((reference: _PdfReference) => {
                         if (reference && reference instanceof _PdfReference) {
                             const actionDictionary: _PdfDictionary = this._crossReference._fetch(reference);
                             if (actionDictionary.has('JS')) {
                                 this._action = actionDictionary.get('JS');
                             }
                         }
-                    }
+                    });
                 }
             }
         }
@@ -8302,8 +8232,7 @@ export class PdfFileLinkAnnotation extends PdfAnnotation {
                 if (dictionary && dictionary.has('Next')) {
                     const action: _PdfReference[] = dictionary.get('Next');
                     if (Array.isArray(action)) {
-                        for (let i: number = 0; i < action.length; i++) {
-                            const reference: _PdfReference = action[Number.parseInt(i.toString(), 10)];
+                        action.forEach((reference: _PdfReference) => {
                             if (reference && reference instanceof _PdfReference) {
                                 const actionDictionary: _PdfDictionary = this._crossReference._fetch(reference);
                                 if (actionDictionary.has('JS')) {
@@ -8312,7 +8241,7 @@ export class PdfFileLinkAnnotation extends PdfAnnotation {
                                     this._dictionary._updated = true;
                                 }
                             }
-                        }
+                        });
                     }
                 }
             }
@@ -8691,7 +8620,17 @@ export class PdfDocumentLinkAnnotation extends PdfAnnotation {
      */
     get destination(): PdfDestination {
         if (this._isLoaded && !this._destination) {
-            this.destination = this._obtainDestination();
+            let destinationHelper: _PdfDestinationHelper;
+            if (this._dictionary.has('Dest')) {
+                destinationHelper = new _PdfDestinationHelper(this._dictionary, 'Dest');
+                this.destination = destinationHelper._obtainDestination();
+            } else if (!this._destination && this._dictionary.has('A')) {
+                const action: _PdfDictionary = this._dictionary.get('A');
+                if (action && action instanceof _PdfDictionary && action.has('D')) {
+                    destinationHelper = new _PdfDestinationHelper(action, 'D');
+                    this.destination = destinationHelper._obtainDestination();
+                }
+            }
         }
         return this._destination;
     }
@@ -8749,310 +8688,6 @@ export class PdfDocumentLinkAnnotation extends PdfAnnotation {
         }
         this._addDocument();
         this._dictionary.update('Rect', _updateBounds(this));
-    }
-    _obtainDestination(): PdfDestination {
-        let index: number;
-        if (this._dictionary.has('Dest')) {
-            let array: any[] = this._dictionary.get('Dest');// eslint-disable-line
-            let holder: _PdfReference;
-            if (typeof array === 'string' || (array instanceof _PdfName && typeof array.name === 'string')) {
-                array = this._getDestination(array);
-            }
-            if (array && array[0] instanceof _PdfReference) {
-                holder = array[0];
-            }
-            if ((typeof holder === 'undefined' || holder === null) && array && typeof array[0] === 'number') {
-                const pageNumber: number = array[0];
-                if (pageNumber >= 0 && pageNumber < this._crossReference._document.pageCount) {
-                    const page: PdfPage = this._crossReference._document.getPage(pageNumber);
-                    if (page) {
-                        const mode: _PdfName = array[1];
-                        if (mode.name === 'XYZ') {
-                            const left: number = array[2];
-                            const top: number = array[3];
-                            const zoom: number = array[4];
-                            const topValue: number = (typeof top !== 'undefined' && top !== null) ? (page.size[1] - top) : 0;
-                            const leftValue: number = (typeof left !== 'undefined' && left !== null) ? left : 0;
-                            this._destination = new PdfDestination(page , [leftValue, topValue]);
-                            if (typeof zoom !== 'undefined' && zoom !== null) {
-                                this._destination.zoom = zoom;
-                            }
-                            if ((typeof left === 'undefined' && left === null) || (typeof top === 'undefined' && top === null)
-                                || (typeof zoom === 'undefined' && zoom === null)) {
-                                this._destination._setValidation(false);
-                            }
-                        } else {
-                            this._destination = new PdfDestination(page);
-                            this._destination.mode = PdfDestinationMode.fitToPage;
-                        }
-                    }
-                }
-            }
-            if (holder) {
-                const pageDictionary: _PdfDictionary = this._crossReference._fetch(holder);
-                if (pageDictionary && pageDictionary instanceof _PdfDictionary) {
-                    index = _getPageIndex(this._crossReference._document, pageDictionary);
-                }
-                if (typeof index === 'number' && index >= 0 && index < this._crossReference._document.pageCount) {
-                    const page: PdfPage = this._crossReference._document.getPage(index);
-                    if (page && array[1] instanceof _PdfName) {
-                        const mode: _PdfName = array[1];
-                        if (mode) {
-                            if (mode.name === 'XYZ') {
-                                const left: number = array[2];
-                                const top: number = array[3];
-                                const zoom: number = array[4];
-                                const topValue: number = (typeof top !== 'undefined' && top !== null) ? (page.size[1] - top) : 0;
-                                const leftValue: number = (typeof left !== 'undefined' && left !== null) ? left : 0;
-                                this._destination = new PdfDestination(page, [leftValue, topValue]);
-                                if (typeof zoom !== 'undefined' && zoom !== null) {
-                                    this._destination.zoom = zoom;
-                                }
-                                if ((typeof left === 'undefined' && left === null) || (typeof top === 'undefined' && top === null)
-                                    || (typeof zoom === 'undefined' && zoom === null)) {
-                                    this._destination._setValidation(false);
-                                }
-                            } else if (mode.name === 'Fit') {
-                                this._destination = new PdfDestination(page);
-                                this._destination.mode = PdfDestinationMode.fitToPage;
-                            }
-                        }
-                    }
-                } else {
-                    this._destination = new PdfDestination();
-                    const zoom: number = array[4];
-                    const mode: _PdfName = array[1];
-                    if (typeof zoom !== 'undefined' && zoom !== null) {
-                        this._destination.zoom = zoom;
-                    }
-                    if (mode.name === 'Fit') {
-                        this._destination.mode = PdfDestinationMode.fitToPage;
-                    } else if (mode.name === 'XYZ') {
-                        const left: number = array[2];
-                        const topValue: number = array[3];
-                        if ((typeof left === 'undefined' && left === null) || (typeof topValue === 'undefined' && topValue === null)
-                            || (typeof zoom === 'undefined' && zoom === null)) {
-                            this._destination._setValidation(false);
-                        }
-                    }
-                    this._destination._index = index;
-                }
-            }
-        } else if (this._dictionary.has('A') && !this._destination) {
-            const action: _PdfDictionary = this._dictionary.get('A');
-            if (action.has('D')) {
-                const reference: any = action.get('D');// eslint-disable-line
-                if (reference !== null && typeof reference !== 'undefined') {
-                    let referenceArray: any[];// eslint-disable-line
-                    if (Array.isArray(reference)) {
-                        referenceArray = reference;
-                    } else if (reference && reference instanceof _PdfReference) {
-                        const referenceValue: any[] = this._crossReference._fetch(reference);// eslint-disable-line
-                        if (Array.isArray(referenceValue)) {
-                            referenceArray = referenceValue;
-                        }
-                    } else if (typeof reference === 'string') {
-                        referenceArray = this._getDestination(reference);
-                    }
-                    if (referenceArray && (referenceArray[0] instanceof _PdfReference || typeof referenceArray[0] === 'number')) {
-                        const document: PdfDocument = this._crossReference._document;
-                        if (referenceArray[0] instanceof _PdfReference) {
-                            const pageDictionary: _PdfDictionary = this._crossReference._fetch(referenceArray[0]);
-                            index = _getPageIndex(document, pageDictionary);
-                        } else {
-                            index = referenceArray[0];
-                        }
-                        if (index >= 0 && index < this._crossReference._document.pageCount) {
-                            const page: PdfPage = document.getPage(index);
-                            if (page) {
-                                const mode: _PdfName = referenceArray[1];
-                                if (mode.name === 'FitBH' || mode.name === 'FitH') {
-                                    const top: number = referenceArray[2];
-                                    const topValue: number = (typeof top !== 'undefined' && top !== null) ? (page.size[1] - top) : 0;
-                                    this._destination = new PdfDestination(page, [0, topValue]);
-                                    if (typeof top === 'undefined' || top === null) {
-                                        this._destination._setValidation(false);
-                                    }
-                                } else if (mode.name === 'XYZ') {
-                                    const left: number = referenceArray[2];
-                                    const top: number = referenceArray[3];
-                                    const zoom: number = referenceArray[4];
-                                    const topValue: number = (typeof top !== 'undefined' && top !== null) ? (page.size[1] - top) : 0;
-                                    const leftValue: number = (typeof left !== 'undefined' && left !== null) ? left : 0;
-                                    this._destination = new PdfDestination(page, [leftValue, topValue]);
-                                    if (typeof zoom !== 'undefined' && zoom !== null) {
-                                        this._destination.zoom = zoom;
-                                    }
-                                    if ((typeof left !== 'undefined' && left !== null) || (typeof top !== 'undefined' && top !== null)
-                                        || (typeof zoom !== 'undefined' && zoom !== null)) {
-                                        this._destination._setValidation(false);
-                                    }
-                                } else if (mode.name === 'FitR') {
-                                    if (referenceArray.length === 6) {
-                                        const left: number = referenceArray[2];
-                                        const bottom: number = referenceArray[3];
-                                        const right: number = referenceArray[4];
-                                        const top: number = referenceArray[5];
-                                        this._destination = new PdfDestination(page, [left, bottom, right, top]);
-                                    }
-                                } else if (mode.name === 'Fit') {
-                                    this._destination = new PdfDestination(page);
-                                    this._destination.mode = PdfDestinationMode.fitToPage;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return this._destination;
-    }
-    _getDestination(name: _PdfName): any[] // eslint-disable-line
-    _getDestination(name: string): any[] // eslint-disable-line
-    _getDestination(name: _PdfName | string): any[] { // eslint-disable-line
-        const document: PdfDocument = this._crossReference._document;
-        let destinationArray: any[]; // eslint-disable-line
-        if (document) {
-            destinationArray = this._getNamedDestination(document, name);
-        }
-        return destinationArray;
-    }
-    _getNamedDestination(document: PdfDocument, result: _PdfName | string): any[] { // eslint-disable-line
-        let destination: any[]; // eslint-disable-line
-        const catalog: _PdfCatalog = document._catalog;
-        if (catalog && catalog._catalogDictionary) {
-            if (result && typeof result === 'string') {
-                if (catalog._catalogDictionary.has('Names')) {
-                    const names: _PdfDictionary = catalog._catalogDictionary.get('Names');
-                    if (names && names.has('Dests')) {
-                        const kids: _PdfDictionary = names.get('Dests');
-                        if (kids) {
-                            const ref: _PdfReference = this._getNamedObjectFromTree(kids, result);
-                            destination = this._extractDestination(ref, document);
-                        }
-                    }
-                }
-            } else if (result && result instanceof _PdfName) {
-                const destinations: _PdfDictionary = catalog._catalogDictionary.get('Dests');
-                if (destinations) {
-                    destination = destinations.get(result.name);
-                }
-            }
-        }
-        return destination;
-    }
-    _extractDestination(ref: any, document: PdfDocument): any[] { // eslint-disable-line
-        let dict: any; // eslint-disable-line
-        let destinationArray: any[]; // eslint-disable-line
-        if (ref && ref instanceof _PdfReference) {
-            dict = document._crossReference._fetch(ref);
-        }
-        if (dict) {
-            if (dict instanceof _PdfDictionary && dict.has('D')) {
-                destinationArray = dict.getRaw('D');
-            } else if (Array.isArray(dict)) {
-                destinationArray = dict;
-            }
-        }
-        return destinationArray ? destinationArray : ref;
-    }
-    _getNamedObjectFromTree(kids: _PdfDictionary, name: string): _PdfReference {
-        let found: boolean = false;
-        let currentDictionary: _PdfDictionary = kids;
-        let reference: _PdfReference;
-        while (!found && currentDictionary) {
-            if (currentDictionary && currentDictionary.has('Kids')) {
-                currentDictionary = this._getProperKid(currentDictionary, name);
-            }
-            else if (currentDictionary && currentDictionary.has('Names')) {
-                reference = this._findName(currentDictionary, name);
-                found = true;
-            }
-        }
-        return reference;
-    }
-    _findName(current: _PdfDictionary, name: string): _PdfReference {
-        const names: any[] = current.get('Names'); // eslint-disable-line
-        const halfLength: number = names.length / 2;
-        let lowerIndex: number = 0;
-        let topIndex: number = halfLength - 1;
-        let half: number = 0;
-        let found: boolean = false;
-        let destinationReference: _PdfReference;
-        while (!found) {
-            half = Math.floor((lowerIndex + topIndex) / 2);
-            if (lowerIndex > topIndex) {
-                break;
-            }
-            let result: any = names[Number.parseInt(half.toString(), 10) * 2]; // eslint-disable-line
-            if (result && result instanceof _PdfReference) {
-                result = current._crossReference._fetch(result);
-            }
-            const cmp: number = this._stringCompare(name, result);
-            if (cmp > 0) {
-                lowerIndex = half + 1;
-            } else if (cmp < 0) {
-                topIndex = half - 1;
-            } else {
-                found = true;
-                break;
-            }
-        }
-        if (found) {
-            destinationReference = names[half * 2 + 1];
-        }
-        return destinationReference;
-    }
-    _getProperKid(kids: _PdfDictionary, name: string): _PdfDictionary {
-        let kidsArray: any; // eslint-disable-line
-        let kid: _PdfDictionary;
-        if (kids && kids.has('Kids')) {
-            kidsArray = kids.getRaw('Kids');
-        }
-        if (kidsArray && Array.isArray(kidsArray) && kidsArray.length !== 0) {
-            kidsArray = kids.getArray('Kids');
-            for (let i: number = 0; i < kidsArray.length; i++) {
-                kid = kidsArray[Number.parseInt(i.toString(), 10)];
-                if (this._checkLimits(kid, name)) {
-                    break;
-                }
-            }
-        }
-        return kid;
-    }
-    _checkLimits (kid: _PdfDictionary, result: string): boolean {
-        let found: boolean = false;
-        if (kid && kid.has('Limits')) {
-            const limits: any[] = kid.get('Limits'); // eslint-disable-line
-            const lowerLimit: string = limits[0];
-            const higherLimit: string = limits[1];
-            const lowCompare: number = this._stringCompare(lowerLimit, result);
-            const highCompare: number = this._stringCompare(higherLimit, result);
-            if (lowCompare === 0 || highCompare === 0) {
-                found = true;
-            } else if (lowCompare < 0 && highCompare > 0) {
-                found = true;
-            }
-        }
-        return found;
-    }
-    _stringCompare(limits: string, result: string): number {
-        const byteArray: Uint8Array = _stringToBytes(limits) as Uint8Array;
-        const byteArray1: Uint8Array = _stringToBytes(result) as Uint8Array;
-        const commonSize: number = Math.min(byteArray.length, byteArray1.length);
-        let resultValue: number = 0;
-        for (let i: number = 0; i < commonSize; i++) {
-            const byte: number = byteArray[Number.parseInt(i.toString(), 10)];
-            const byte1: number = byteArray1[Number.parseInt(i.toString(), 10)];
-            resultValue = byte - byte1;
-            if (resultValue !== 0) {
-                break;
-            }
-        }
-        if (resultValue === 0) {
-            resultValue = byteArray.length - byteArray1.length;
-        }
-        return resultValue;
     }
     _addDocument(): void {
         if (this.destination) {
@@ -9996,9 +9631,7 @@ export class PdfTextMarkupAnnotation extends PdfComment {
         if (!this._isLoaded && typeof value !== 'undefined') {
             if (value.length > 0) {
                 this._quadPoints = new Array<number>((value.length * 8));
-                for (let i: number = 0; i < value.length; i++) {
-                    this._boundsCollection.push(value[Number.parseInt(i.toString(), 10)]);
-                }
+                this._boundsCollection.push(...value);
             } else {
                 this._quadPoints = new Array<number>(8);
                 this._boundsCollection = value;
@@ -10009,10 +9642,10 @@ export class PdfTextMarkupAnnotation extends PdfComment {
             let isChanged: boolean = false;
             if (this.boundsCollection.length === value.length) {
                 for (let i: number = 0; i < value.length; i++) {
-                    const values: number[] = value[Number.parseInt(i.toString(), 10)];
+                    const values: number[] = value[<number>i];
                     for (let j: number = 0; j < values.length; j++) {
-                        if (value[Number.parseInt(i.toString(), 10)][Number.parseInt(j.toString(), 10)] !==
-                            this.boundsCollection[Number.parseInt(i.toString(), 10)][Number.parseInt(j.toString(), 10)]) {
+                        if (value[<number>i][<number>j] !==
+                            this.boundsCollection[<number>i][<number>j]) {
                             isChanged = true;
                             break;
                         }
@@ -10026,20 +9659,20 @@ export class PdfTextMarkupAnnotation extends PdfComment {
                 this._quadPoints = new Array<number>((value.length * 8));
                 const pageHeight: number = this._page.size[1];
                 for (let i: number = 0; i < value.length; i++) {
-                    this._quadPoints[0 + (Number.parseInt(i.toString(), 10) * 8)] = value[Number.parseInt(i.toString(), 10)][0];
-                    this._quadPoints[1 + (Number.parseInt(i.toString(), 10) * 8)] = pageHeight -
-                    value[Number.parseInt(i.toString(), 10)][1];
-                    this._quadPoints[2 + (Number.parseInt(i.toString(), 10) * 8)] = value[Number.parseInt(i.toString(), 10)][0] +
-                    value[Number.parseInt(i.toString(), 10)][2];
-                    this._quadPoints[3 + (Number.parseInt(i.toString(), 10) * 8)] = pageHeight -
-                    value[Number.parseInt(i.toString(), 10)][1];
-                    this._quadPoints[4 + (Number.parseInt(i.toString(), 10) * 8)] = value[Number.parseInt(i.toString(), 10)][0];
-                    this._quadPoints[5 + (Number.parseInt(i.toString(), 10) * 8)] = this._quadPoints[1 + (i * 8)] -
-                    value[Number.parseInt(i.toString(), 10)][3];
-                    this._quadPoints[6 + (Number.parseInt(i.toString(), 10) * 8)] = value[Number.parseInt(i.toString(), 10)][0] +
-                    value[Number.parseInt(i.toString(), 10)][2];
-                    this._quadPoints[7 + (Number.parseInt(i.toString(), 10) * 8)] = this._quadPoints[5 +
-                        (Number.parseInt(i.toString(), 10) * 8)];
+                    this._quadPoints[0 + <number>i * 8] = value[<number>i][0];
+                    this._quadPoints[1 + (<number>i * 8)] = pageHeight -
+                    value[<number>i][1];
+                    this._quadPoints[2 + <number>i * 8] = value[<number>i][0] +
+                    value[<number>i][2];
+                    this._quadPoints[3 + <number>i * 8] = pageHeight -
+                    value[<number>i][1];
+                    this._quadPoints[4 + <number>i * 8] = value[<number>i][0];
+                    this._quadPoints[5 + <number>i * 8] = this._quadPoints[1 + (i * 8)] -
+                    value[<number>i][3];
+                    this._quadPoints[6 + <number>i * 8] = value[<number>i][0] +
+                    value[<number>i][2];
+                    this._quadPoints[7 + <number>i * 8] = this._quadPoints[5 +
+                        <number>i * 8];
                 }
                 this._dictionary.update('QuadPoints', this._quadPoints);
                 this._isChanged = true;
@@ -10210,7 +9843,8 @@ export class PdfTextMarkupAnnotation extends PdfComment {
             } else if (!this._dictionary.has('AP') && this._appearanceTemplate) {
                 this._flattenAnnotationTemplate(this._appearanceTemplate, isNormalMatrix);
             }
-        } else if (isFlatten) {
+        }
+        if (isFlatten) {
             this._page.annotations.remove(this);
         }
     }
@@ -10222,10 +9856,10 @@ export class PdfTextMarkupAnnotation extends PdfComment {
             const pdfPath: PdfPath = new PdfPath();
             for (let i: number = 0; i < this.boundsCollection.length; i++) {
                 const bounds: number[] = [];
-                bounds[0] = this.boundsCollection[Number.parseInt(i.toString(), 10)][0];
-                bounds[1] = this.boundsCollection[Number.parseInt(i.toString(), 10)][1];
-                bounds[2] = this.boundsCollection[Number.parseInt(i.toString(), 10)][2];
-                bounds[3] = this.boundsCollection[Number.parseInt(i.toString(), 10)][3];
+                bounds[0] = this.boundsCollection[<number>i][0];
+                bounds[1] = this.boundsCollection[<number>i][1];
+                bounds[2] = this.boundsCollection[<number>i][2];
+                bounds[3] = this.boundsCollection[<number>i][3];
                 pdfPath.addRectangle(bounds[0], bounds[1], bounds[2], bounds[3]);
             }
             const rect: number[] = pdfPath._getBounds();
@@ -10242,9 +9876,9 @@ export class PdfTextMarkupAnnotation extends PdfComment {
                             const point: Array<number[]> = new Array<number[]>();
                             let j: number = 0;
                             for (let k: number = 0; k < quadPoints.length;) {
-                                const x1: number = quadPoints[Number.parseInt(k.toString(), 10)];
+                                const x1: number = quadPoints[<number>k];
                                 const y1: number = quadPoints[k + 1];
-                                point[Number.parseInt(j.toString(), 10)] = [x1, y1];
+                                point[<number>j] = [x1, y1];
                                 k = k + 2;
                                 j++;
                             }
@@ -10284,10 +9918,10 @@ export class PdfTextMarkupAnnotation extends PdfComment {
             if (this.boundsCollection.length > 1) {
                 for (let i: number = 0; i < this.boundsCollection.length; i++) {
                     const bounds: number[] = [];
-                    bounds[0] = this.boundsCollection[Number.parseInt(i.toString(), 10)][0];
-                    bounds[1] = this.boundsCollection[Number.parseInt(i.toString(), 10)][1];
-                    bounds[2] = this.boundsCollection[Number.parseInt(i.toString(), 10)][2];
-                    bounds[3] = this.boundsCollection[Number.parseInt(i.toString(), 10)][3];
+                    bounds[0] = this.boundsCollection[<number>i][0];
+                    bounds[1] = this.boundsCollection[<number>i][1];
+                    bounds[2] = this.boundsCollection[<number>i][2];
+                    bounds[3] = this.boundsCollection[<number>i][3];
                     if (this.textMarkupType === PdfTextMarkupAnnotationType.highlight) {
                         graphics.drawRectangle(bounds[0] - rectangle.x, bounds[1] - rectangle.y, bounds[2], bounds[3], brush);
                     } else if (this.textMarkupType === PdfTextMarkupAnnotationType.underline) {
@@ -10377,19 +10011,19 @@ export class PdfTextMarkupAnnotation extends PdfComment {
             const cropOrMediaBoxY: number = cropOrMediaBox[1];
             if (cropOrMediaBoxX !== 0 || cropOrMediaBoxY !== 0) {
                 for (let i: number = 0; i < noofRect; i++) {
-                    const locationX: number = this._boundsCollection[Number.parseInt(i.toString(), 10)][0] + margins.left + cropOrMediaBoxX;
+                    const locationX: number = this._boundsCollection[<number>i][0] + margins.left + cropOrMediaBoxX;
                     const locationY: number = cropOrMediaBoxY + margins.top;
                     textQuadLocation[0 + (i * 8)] = locationX + margins.left;
                     textQuadLocation[1 + (i * 8)] = (pageHeight - (-locationY)) - margins.top -
-                    this._boundsCollection[Number.parseInt(i.toString(), 10)][1];
-                    textQuadLocation[2 + (i * 8)] = (locationX + this._boundsCollection[Number.parseInt(i.toString(), 10)][2]) +
+                    this._boundsCollection[<number>i][1];
+                    textQuadLocation[2 + (i * 8)] = (locationX + this._boundsCollection[<number>i][2]) +
                     margins.left;
                     textQuadLocation[3 + (i * 8)] = (pageHeight - (-locationY)) - margins.top -
-                    this._boundsCollection[Number.parseInt(i.toString(), 10)][1];
+                    this._boundsCollection[<number>i][1];
                     textQuadLocation[4 + (i * 8)] = locationX + margins.left;
                     textQuadLocation[5 + (i * 8)] = (textQuadLocation[1 + (i * 8)] -
-                    this._boundsCollection[Number.parseInt(i.toString(), 10)][3]);
-                    textQuadLocation[6 + (i * 8)] = (locationX + this._boundsCollection[Number.parseInt(i.toString(), 10)][2]) +
+                    this._boundsCollection[<number>i][3]);
+                    textQuadLocation[6 + (i * 8)] = (locationX + this._boundsCollection[<number>i][2]) +
                     margins.left;
                     textQuadLocation[7 + (i * 8)] = textQuadLocation[5 + (i * 8)];
                 }
@@ -10398,16 +10032,16 @@ export class PdfTextMarkupAnnotation extends PdfComment {
         }
         if (!isContainscropOrMediaBox) {
             for (let i: number = 0; i < noofRect; i++) {
-                const locationX: number = this._boundsCollection[Number.parseInt(i.toString(), 10)][0];
-                const locationY: number = this._boundsCollection[Number.parseInt(i.toString(), 10)][1];
+                const locationX: number = this._boundsCollection[<number>i][0];
+                const locationY: number = this._boundsCollection[<number>i][1];
                 textQuadLocation[0 + (i * 8)] = locationX + margins.left;
                 textQuadLocation[1 + (i * 8)] = (pageHeight - locationY) - margins.top;
-                textQuadLocation[2 + (i * 8)] = (locationX + this._boundsCollection[Number.parseInt(i.toString(), 10)][2]) + margins.left;
+                textQuadLocation[2 + (i * 8)] = (locationX + this._boundsCollection[<number>i][2]) + margins.left;
                 textQuadLocation[3 + (i * 8)] = (pageHeight - locationY) - margins.top;
                 textQuadLocation[4 + (i * 8)] = locationX + margins.left;
                 textQuadLocation[5 + (i * 8)] = (textQuadLocation[1 + (i * 8)] -
-                this._boundsCollection[Number.parseInt(i.toString(), 10)][3]);
-                textQuadLocation[6 + (i * 8)] = (locationX + this._boundsCollection[Number.parseInt(i.toString(), 10)][2]) + margins.left;
+                this._boundsCollection[<number>i][3]);
+                textQuadLocation[6 + (i * 8)] = (locationX + this._boundsCollection[<number>i][2]) + margins.left;
                 textQuadLocation[7 + (i * 8)] = textQuadLocation[5 + (i * 8)];
             }
         }
@@ -10530,7 +10164,7 @@ export class PdfWatermarkAnnotation extends PdfAnnotation {
             this.bounds = this._getRotatedBounds(this.bounds, this._rotateAngle);
         }
         const nativeRectangle: number[] = [0, 0, this.bounds.width, this.bounds.height];
-        const appearance: PdfAppearance = new PdfAppearance(this, nativeRectangle);
+        const appearance: PdfAppearance = new PdfAppearance({x: 0, y: 0, width: this.bounds.width, height: this.bounds.height}, this);
         appearance.normal = new PdfTemplate(nativeRectangle, this._crossReference);
         const template: PdfTemplate =  appearance.normal;
         _setMatrix(template, this._rotateAngle);
@@ -10767,8 +10401,8 @@ export class PdfRubberStampAnnotation extends PdfComment {
             return null;
         }
         if (typeof this._appearance === 'undefined') {
-            const nativeRectangle: number[] = [0, 0, this.bounds.width, this.bounds.height];
-            this._appearance = new PdfAppearance(this, nativeRectangle);
+            const nativeRectangle: Rectangle = {x: 0, y: 0, width: this.bounds.width, height: this.bounds.height};
+            this._appearance = new PdfAppearance(nativeRectangle, this);
             this._appearance.normal = new PdfTemplate(nativeRectangle, this._crossReference);
         }
         return this._appearance;
@@ -10808,8 +10442,8 @@ export class PdfRubberStampAnnotation extends PdfComment {
                         if (matrix) {
                             const mMatrix: number[] = [];
                             for (let i: number = 0; i < matrix.length; i++) {
-                                const value: number = matrix[Number.parseInt(i.toString(), 10)];
-                                mMatrix[Number.parseInt(i.toString(), 10)] = value;
+                                const value: number = matrix[<number>i];
+                                mMatrix[<number>i] = value;
                             }
                             if (bounds && bounds.length > 3) {
                                 const rect: { x: number, y: number, width: number, height: number } = _toRectangle(bounds);
@@ -10897,8 +10531,8 @@ export class PdfRubberStampAnnotation extends PdfComment {
     _minValue(values: number[]): number {
         let minimum: number = values[0];
         for (let i: number = 1; i < values.length; i++) {
-            if (values[Number.parseInt(i.toString(), 10)] < minimum) {
-                minimum = values[Number.parseInt(i.toString(), 10)];
+            if (values[<number>i] < minimum) {
+                minimum = values[<number>i];
             }
         }
         return minimum;
@@ -10906,8 +10540,8 @@ export class PdfRubberStampAnnotation extends PdfComment {
     _maxValue(values: number[]): number {
         let maximum: number = values[0];
         for (let i: number = 1; i < values.length; i++) {
-            if (values[Number.parseInt(i.toString(), 10)] > maximum) {
-                maximum = values[Number.parseInt(i.toString(), 10)];
+            if (values[<number>i] > maximum) {
+                maximum = values[<number>i];
             }
         }
         return maximum;
@@ -10996,11 +10630,7 @@ export class PdfRubberStampAnnotation extends PdfComment {
                     if (isTransformBBox && appearanceStream instanceof _PdfBaseStream) {
                         const matrix: number[] = appearanceStream.dictionary.getArray('Matrix');
                         if (matrix) {
-                            const mMatrix: number[] = [];
-                            for (let i: number = 0; i < matrix.length; i++) {
-                                const value: number = matrix[Number.parseInt(i.toString(), 10)];
-                                mMatrix[Number.parseInt(i.toString(), 10)] = value;
-                            }
+                            const mMatrix: number[] = [...matrix];
                             const bounds: number[] = appearanceStream.dictionary.getArray('BBox');
                             if (bounds && bounds.length > 3) {
                                 rect = _toRectangle(bounds);
@@ -11023,7 +10653,7 @@ export class PdfRubberStampAnnotation extends PdfComment {
         return isTransformBBox;
     }
     _createRubberStampAppearance(): PdfTemplate {
-        const nativeRectangle: number[] = [0, 0, this.bounds.width, this.bounds.height];
+        const nativeRectangle: Rectangle = {x: 0, y: 0, width: this.bounds.width, height: this.bounds.height};
         let appearance: PdfAppearance;
         if (this._appearance) {
             appearance = this._appearance;
@@ -11033,7 +10663,7 @@ export class PdfRubberStampAnnotation extends PdfComment {
         } else {
             this._iconString = this._obtainIconName(this.icon);
             this._dictionary.update('Name', _PdfName.get('#23' + this._iconString));
-            appearance = new PdfAppearance(this, nativeRectangle);
+            appearance = new PdfAppearance(nativeRectangle, this);
             appearance.normal = new PdfTemplate(nativeRectangle, this._crossReference);
         }
         const template: PdfTemplate =  appearance.normal;
@@ -11415,10 +11045,10 @@ export class PdfFreeTextAnnotation extends PdfComment {
         if (this._isLoaded && value.length >= 2) {
             if (this._calloutLines.length === value.length) {
                 for (let i: number = 0; i < value.length; i++) {
-                    const values: number[] = value[Number.parseInt(i.toString(), 10)];
+                    const values: number[] = value[<number>i];
                     for (let j: number = 0; j < values.length; j++) {
-                        if (value[Number.parseInt(i.toString(), 10)][Number.parseInt(j.toString(), 10)] !==
-                            this._calloutLines[Number.parseInt(i.toString(), 10)][Number.parseInt(j.toString(), 10)]) {
+                        if (value[<number>i][<number>j] !==
+                            this._calloutLines[<number>i][<number>j]) {
                             isChanged = true;
                             break;
                         }
@@ -11434,8 +11064,8 @@ export class PdfFreeTextAnnotation extends PdfComment {
             const lines: Array<number> = [];
             for (let i: number = 0; i < value.length; i++) {
                 if (i < value.length) {
-                    lines.push(value[Number.parseInt(i.toString(), 10)][0] + this._cropBoxValueX);
-                    lines.push((pageHeight + this._cropBoxValueY) - value[Number.parseInt(i.toString(), 10)][1]);
+                    lines.push(value[<number>i][0] + this._cropBoxValueX);
+                    lines.push((pageHeight + this._cropBoxValueY) - value[<number>i][1]);
                 } else {
                     break;
                 }
@@ -11523,8 +11153,8 @@ export class PdfFreeTextAnnotation extends PdfComment {
             if (this._dictionary.has('DS')) {
                 const collections: string[] = this._dictionary.get('DS').split(';');
                 for (let i: number = 0; i < collections.length; i++) {
-                    if (collections[Number.parseInt(i.toString(), 10)].indexOf('color') !== -1) {
-                        color = collections[Number.parseInt(i.toString(), 10)].split(':')[1];
+                    if (collections[<number>i].indexOf('color') !== -1) {
+                        color = collections[<number>i].split(':')[1];
                         if (color.startsWith('#')) {
                             color = color.substring(1);
                         }
@@ -12046,8 +11676,8 @@ export class PdfFreeTextAnnotation extends PdfComment {
         const value: number[] = [rectangle[0] - outerRectangle[0], (-(rectangle[1])) - outerRectangle[1], rectangle[2] - outerRectangle[2],
             (((-rectangle[1]) - outerRectangle[1]) + (-rectangle[3])) - outerRectangle[3]];
         for (let i: number = 0; i < value.length; i++) {
-            if (value[Number.parseInt(i.toString(), 10)] < 0) {
-                value[Number.parseInt(i.toString(), 10)] = -value[Number.parseInt(i.toString(), 10)];
+            if (value[<number>i] < 0) {
+                value[<number>i] = -value[<number>i];
             }
         }
         this._dictionary.update('RD', value);
@@ -12081,8 +11711,8 @@ export class PdfFreeTextAnnotation extends PdfComment {
             (-(innerRectangle[1])) - outerRectangle[1], innerRectangle[2] - outerRectangle[2],
             (((-innerRectangle[1]) - outerRectangle[1]) + (-innerRectangle[3])) - outerRectangle[3] ];
         for (let i: number = 0; i < 4; i++) {
-            if (value[Number.parseInt(i.toString(), 10)] < 0) {
-                value[Number.parseInt(i.toString(), 10)] = -value[Number.parseInt(i.toString(), 10)];
+            if (value[<number>i] < 0) {
+                value[<number>i] = -value[<number>i];
             }
         }
         this._dictionary.set('RD', value);
@@ -12271,8 +11901,8 @@ export class PdfFreeTextAnnotation extends PdfComment {
         const isRotation: boolean = false;
         if (this._dictionary.has('BE')) {
             for (let i: number = 0; i < rectangle.length; i++) {
-                if (rectangle[Number.parseInt(i.toString(), 10)] < 0) {
-                    rectangle[Number.parseInt(i.toString(), 10)] = -rectangle[Number.parseInt(i.toString(), 10)];
+                if (rectangle[<number>i] < 0) {
+                    rectangle[<number>i] = -rectangle[<number>i];
                 }
             }
             this._drawAppearance(graphics, parameter, rectangle);
@@ -12361,8 +11991,8 @@ export class PdfFreeTextAnnotation extends PdfComment {
                 this._obtainCallOutsNative();
                 for (let i: number = 0; i < this._calloutLines.length; i++) {
                     if (i < 3) {
-                        pointArray[Number.parseInt(i.toString(), 10)] = [this._calloutsClone[Number.parseInt(i.toString(), 10)][0],
-                            this._calloutsClone[Number.parseInt(i.toString(), 10)][1]];
+                        pointArray[<number>i] = [this._calloutsClone[<number>i][0],
+                            this._calloutsClone[<number>i][1]];
                     } else {
                         break;
                     }
@@ -12402,8 +12032,8 @@ export class PdfFreeTextAnnotation extends PdfComment {
             const size: number[] = this._page.size;
             this._calloutsClone = [];
             for (let i: number = 0; i < this._calloutLines.length; i++) {
-                this._calloutsClone.push([this._calloutLines[Number.parseInt(i.toString(), 10)][0] + this._cropBoxValueX,
-                    (size[1] + this._cropBoxValueY) - this._calloutLines[Number.parseInt(i.toString(), 10)][1]]);
+                this._calloutsClone.push([this._calloutLines[<number>i][0] + this._cropBoxValueX,
+                    (size[1] + this._cropBoxValueY) - this._calloutLines[<number>i][1]]);
             }
         }
     }
@@ -12415,9 +12045,13 @@ export class PdfFreeTextAnnotation extends PdfComment {
             (pageHeight + this._cropBoxValueY) - this.calloutLines[0][1]];
     }
     _obtainLineEndingStyle(): PdfLineEndingStyle {
-        let lineEndingStyle: PdfLineEndingStyle = PdfLineEndingStyle.square;
+        let lineEndingStyle: PdfLineEndingStyle;
         if (this._dictionary.has('LE')) {
-            lineEndingStyle = _mapLineEndingStyle(this._dictionary.get('LE').name, lineEndingStyle);
+            let endingStyle: any = this._dictionary.get('LE'); // eslint-disable-line
+            if (endingStyle instanceof _PdfName) {
+                endingStyle = endingStyle.name;
+            }
+            lineEndingStyle = _mapLineEndingStyle(endingStyle);
         }
         return lineEndingStyle;
     }
@@ -12458,9 +12092,9 @@ export class PdfFreeTextAnnotation extends PdfComment {
         if (!hasAlignment && this._dictionary.has('DS')) {
             const value: string = this._dictionary.get('DS');
             const collections: string[] = value.split(';');
-            for (let i: number = 0; i < collections.length; i++) {
-                if (collections[Number.parseInt(i.toString(), 10)].indexOf('text-align') !== -1) {
-                    switch (collections[Number.parseInt(i.toString(), 10)]) {
+            collections.forEach((collectionItem: string) => {
+                if (collectionItem.indexOf('text-align') !== -1) {
+                    switch (collectionItem) {
                     case 'left':
                         textAlignment = PdfTextAlignment.left;
                         break;
@@ -12475,7 +12109,7 @@ export class PdfFreeTextAnnotation extends PdfComment {
                         break;
                     }
                 }
-            }
+            });
         }
         return textAlignment;
     }
@@ -12532,8 +12166,8 @@ export class PdfFreeTextAnnotation extends PdfComment {
         if (this._calloutLines.length >= 2) {
             this._obtainCallOutsNative();
             for (let i: number = 0; i < this._calloutLines.length && i < 3; i++) {
-                pointArray[Number.parseInt(i.toString(), 10)] = [this._calloutsClone[Number.parseInt(i.toString(), 10)][0],
-                    -this._calloutsClone[Number.parseInt(i.toString(), 10)][1]];
+                pointArray[<number>i] = [this._calloutsClone[<number>i][0],
+                    -this._calloutsClone[<number>i][1]];
             }
         }
         if (pointArray.length > 0) {
@@ -12557,6 +12191,10 @@ export class PdfFreeTextAnnotation extends PdfComment {
             (!this._calloutLines || (this._calloutLines && this._calloutLines.length === 0))) {
             this._dictionary.update('Subj', 'Text Box');
         } else {
+            if ((this._calloutLines && this._calloutLines.length >= 2) &&
+                this.annotationIntent === PdfAnnotationIntent.none) {
+                this._annotationIntent =  PdfAnnotationIntent.freeTextCallout;
+            }
             this._dictionary.update('IT', _PdfName.get(this._obtainAnnotationIntent(this._annotationIntent)));
         }
         this._updateStyle(this.font, this.textMarkUpColor, this._textAlignment);
@@ -12565,8 +12203,8 @@ export class PdfFreeTextAnnotation extends PdfComment {
             const pageHeight: number = this._page.size[1];
             const lines: Array<number> = [];
             for (let i: number = 0; i < this._calloutLines.length && i < 3; i++) {
-                lines.push(this._calloutLines[Number.parseInt(i.toString(), 10)][0] + this._cropBoxValueX);
-                lines.push((pageHeight + this._cropBoxValueY) - this._calloutLines[Number.parseInt(i.toString(), 10)][1]);
+                lines.push(this._calloutLines[<number>i][0] + this._cropBoxValueX);
+                lines.push((pageHeight + this._cropBoxValueY) - this._calloutLines[<number>i][1]);
             }
             this._dictionary.update('CL', lines);
         }
@@ -14589,7 +14227,7 @@ export class PdfStateItem extends PdfWidgetAnnotation {
                     });
                     if (keyList.length > 0) {
                         for (let i: number = 0; i < keyList.length; i++) {
-                            const key: string = keyList[Number.parseInt(i.toString(), 10)];
+                            const key: string = keyList[<number>i];
                             if (key && key !== 'Off') {
                                 itemValue = key;
                                 break;
@@ -15073,7 +14711,7 @@ export class PdfListFieldItem extends PdfStateItem {
         if (typeof this._text === 'undefined' &&
             typeof this._field !== 'undefined' &&
             (this._field instanceof PdfListBoxField || this._field instanceof PdfComboBoxField)) {
-            this._text = this._field._options[Number.parseInt(this._index.toString(), 10)][1];
+            this._text = this._field._options[<number>this._index][1];
         }
         return this._text;
     }
@@ -15104,8 +14742,8 @@ export class PdfListFieldItem extends PdfStateItem {
         if (typeof value === 'string' &&
             typeof this._field !== 'undefined' &&
             (this._field instanceof PdfListBoxField || this._field instanceof PdfComboBoxField)) {
-            if (value !== this._field._options[Number.parseInt(this._index.toString(), 10)][1]) {
-                this._field._options[Number.parseInt(this._index.toString(), 10)][1] = value;
+            if (value !== this._field._options[<number>this._index][1]) {
+                this._field._options[<number>this._index][1] = value;
                 this._text = value;
                 this._field._dictionary._updated = true;
             }
@@ -15296,12 +14934,12 @@ export class PdfAnnotationCaption {
      * // Get the first annotation of the page
      * let annotation: PdfLineAnnotation = page.annotations.at(0) as PdfLineAnnotation;
      * // Gets the offset position of the annotation.
-     * let offset: Array<number> = annotation.caption.offset;
+     * let offset: Array<number>= annotation.caption.offset;
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    get offset(): Array<number> {
+    get offset(): Array<number>{
         return this._offset;
     }
     /**
@@ -15671,7 +15309,7 @@ export class PdfInteractiveBorder {
                 if (value === PdfBorderStyle.dot) {
                     this._dash = [1, 1];
                 } else if (value === PdfBorderStyle.dashed) {
-                    this._dash = [3, 2];
+                    this._dash = [3, 1];
                 }
             }
             if (this._dictionary) {
@@ -15697,12 +15335,12 @@ export class PdfInteractiveBorder {
      * // Get the PDF form field
      * let field: PdfField = document.form.fieldAt(0);
      * // Gets the dash pattern of the field border.
-     * let dash: Array<number> = field.border.dash;
+     * let dash: Array<number>= field.border.dash;
      * // Destroy the document
      * document.destroy();
      * ```
      */
-    get dash(): Array<number> {
+    get dash(): Array<number>{
         return this._dash;
     }
     /**

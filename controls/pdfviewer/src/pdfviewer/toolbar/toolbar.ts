@@ -934,8 +934,12 @@ export class Toolbar {
         }
     }
     private disableUndoRedoButtons(): void {
-        this.enableItems(this.undoItem.parentElement, false);
-        this.enableItems(this.redoItem.parentElement, false);
+        if (!isNullOrUndefined(this.undoItem)) {
+            this.enableItems(this.undoItem.parentElement, false);
+        }
+        if (!isNullOrUndefined(this.redoItem)) {
+            this.enableItems(this.redoItem.parentElement, false);
+        }
     }
 
     /**

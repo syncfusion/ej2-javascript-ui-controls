@@ -202,8 +202,9 @@ export class PivotChart {
             if (rowsInclude) {
                 firstRowCell = pivotValues[rowIndex - rowReduction][this.parent.engineModule.rowMaxLevel as number];
             } else {
-                firstRowCell = pivotValues[rowIndex as number][this.parent.gridSettings.layout === 'Tabular' ?
-                    this.parent.engineModule.rowMaxLevel : 0];
+                firstRowCell = pivotValues[rowIndex as number] &&
+                    pivotValues[rowIndex as number][this.parent.gridSettings.layout === 'Tabular' ?
+                        this.parent.engineModule.rowMaxLevel : 0];
             }
             if (firstRowCell) {
                 indexReduction = rowReduction === firstRowCell.level ? 1 : (rowReduction + 1);

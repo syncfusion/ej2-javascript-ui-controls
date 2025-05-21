@@ -45,7 +45,7 @@ export class _UnicodeTrueTypeFont {
         this._cmapBeginSave();
         this._fontDictionaryBeginSave();
         this._fontProgramBeginSave();
-        if (this._fontDescriptor){
+        if (this._fontDescriptor) {
             this._fontDescriptor.update('FontFile2', this._fontProgram);
             this._fontDescriptor._updated = true;
             this._fontDescriptor._isFont = true;
@@ -102,7 +102,7 @@ export class _UnicodeTrueTypeFont {
         let builder: string = '';
         for (let i: number = 0; i < 6; i++) {
             const index: number = Math.floor(Math.random() * (25 - 0 + 1)) + 0;
-            builder += this._nameString[Number.parseInt(index.toString(), 10)];
+            builder += this._nameString[<number>index];
         }
         builder += '+';
         builder += this._ttfReader._metrics._postScriptName;
@@ -185,21 +185,20 @@ export class _UnicodeTrueTypeFont {
                 builder += middlePart;
                 builder += this._cmapEndCodeSpaceRange;
                 let nextRange: number = 0;
-                for (let i: number = 0; i < keys.length; i++) {
+                keys.forEach((key: number, index: number) => {
                     if (nextRange === 0) {
-                        if (i !== 0) {
+                        if (index !== 0) {
                             builder += this._cmapEndRange;
                         }
-                        nextRange = Math.min(100, keys.length - i);
+                        nextRange = Math.min(100, keys.length - index);
                         builder += nextRange;
                         builder += ' ';
                         builder += this._cmapBeginRange;
                     }
                     nextRange -= 1;
-                    const key: number = keys[Number.parseInt(i.toString(), 10)];
                     builder += this._toHexString(key, true) + this._toHexString(key, true);
                     builder += this._toHexString(glyphChars.getValue(key), true) + '\n';
-                }
+                });
                 builder += this._cmapSuffix;
                 this._cmap._clearStream();
                 this._cmap._write(builder);
@@ -252,10 +251,9 @@ export class _UnicodeTrueTypeFont {
             if (this._usedChars === null || typeof this._usedChars === 'undefined') {
                 this._usedChars = new Dictionary<string, string>();
             }
-            for (let i: number = 0; i < text.length; i++) {
-                const ch: string = text[Number.parseInt(i.toString(), 10)];
+            text.split('').forEach((ch: string) => {
                 this._usedChars.setValue(ch, String.fromCharCode(0));
-            }
+            });
         }
     }
     _getDescendantWidth(): Array<any> { // eslint-disable-line
@@ -263,38 +261,36 @@ export class _UnicodeTrueTypeFont {
         if (this._usedChars !== null && typeof this._usedChars !== 'undefined' && this._usedChars._size() > 0) {
             const glyphInfo: _TrueTypeGlyph[] = [];
             const keys: string[] = this._usedChars.keys();
-            for (let i: number = 0; i < keys.length; i++) {
-                const chLen: string = keys[Number.parseInt(i.toString(), 10)];
+            keys.forEach((chLen: string) => {
                 const glyph: _TrueTypeGlyph = this._ttfReader._getGlyph(chLen);
                 glyphInfo.push(glyph);
-            }
+            });
             glyphInfo.sort((a: _TrueTypeGlyph, b: _TrueTypeGlyph) => a._index - b._index);
             let firstGlyphIndex: number = 0;
             let lastGlyphIndex: number = 0;
             let firstGlyphIndexWasSet: boolean = false;
             let widthDetails: Array<any> = new Array<any>(); // eslint-disable-line
-            for (let i: number = 0; i < glyphInfo.length; i++) {
-                const glyph: _TrueTypeGlyph = glyphInfo[Number.parseInt(i.toString(), 10)];
+            glyphInfo.forEach((glyph: _TrueTypeGlyph, index: number) => {
                 if (!firstGlyphIndexWasSet) {
                     firstGlyphIndexWasSet = true;
                     firstGlyphIndex = glyph._index;
                     lastGlyphIndex = glyph._index - 1;
                 }
-                if ((lastGlyphIndex + 1 !== glyph._index || (i + 1 === glyphInfo.length)) && glyphInfo.length > 1) {
+                if ((lastGlyphIndex + 1 !== glyph._index || (index + 1 === glyphInfo.length)) && glyphInfo.length > 1) {
                     array.push(Number(firstGlyphIndex));
-                    if (i !== 0) {
+                    if (index !== 0) {
                         array.push(widthDetails);
                     }
                     firstGlyphIndex = glyph._index;
                     widthDetails = new Array<any>(); // eslint-disable-line
                 }
                 widthDetails.push(Number(glyph._width));
-                if ((i + 1) === glyphInfo.length) {
+                if ((index + 1) === glyphInfo.length) {
                     array.push(Number(firstGlyphIndex));
                     array.push(widthDetails);
                 }
                 lastGlyphIndex = glyph._index;
-            }
+            });
         }
         return array;
     }

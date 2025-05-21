@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 29.2.5 (2025-05-21)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I719879` - Fixed an issue where inserting multiple new rows in batch editing and pressing the Update button caused focus to incorrectly return to a cell input with validation errors.
+- `#I720056` - In `ResetOnRowClick` mode, fixed an issue where using `SHIFT + click` on checkbox selected only a single row instead of a range of rows.
+- `#I726231` – Resolved a script error that occurred when changing the operator in `the filter menu popup` for a date time column.
+
 ## 29.2.4 (2025-05-14)
 
 ### Grid

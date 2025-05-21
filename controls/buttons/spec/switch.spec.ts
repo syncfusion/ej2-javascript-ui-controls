@@ -434,22 +434,25 @@ describe('Switch', () => {
 
     describe('Parent element click event prevented while clicking on switch component', () => {
         let switchBtn: Switch;
-        let input: HTMLElement;
-        let parentElement: HTMLElement;
+        let input: HTMLElement; let input1: HTMLElement;
+        let parentElement: HTMLElement; let parentElement1: HTMLElement;
         let parentChecked: boolean = false;
         beforeEach(() => {
-            parentElement = createElement('div', {
-                id: 'form'
-            }) as HTMLElement;
+            parentElement = createElement('div', { id: 'form' }) as HTMLElement;
+            parentElement1 = createElement('label', { id: 'label1' }) as HTMLElement;
             input = createElement('input', { id: 'switch1' }) as HTMLElement;
+            input1 = createElement('input', { id: 'switch2' }) as HTMLElement;
             parentElement.appendChild(input);
+            parentElement1.appendChild(input1);
             parentElement.onclick = function () {
                 parentChecked = true;
             }
             document.body.appendChild(parentElement);
+            document.body.appendChild(parentElement1);
         });
         afterEach(() => {
             parentElement.remove();
+            parentElement1.remove();
             switchBtn.destroy();
         })
         it('ej2-918217: Parent element click event prevented while clicking on switch component in angular platforms.', () => {
@@ -458,6 +461,27 @@ describe('Switch', () => {
             }, '#switch1');
             switchBtn.click();
             expect(parentChecked).toBeTruthy();
+        });
+        it('959152: Click event trigger twice when we placed switch component within the label tag', () => {
+            switchBtn = new Switch({
+                checked: true
+            }, '#switch2');
+            switchBtn.element.parentElement.click();
+            expect(switchBtn.checked).toEqual(false);
+        });
+        it('Coverage improvement for switch focus handler', () => {
+            switchBtn = new Switch({
+                checked: true
+            }, '#switch1');
+            switchBtn.isAngular = true;
+            (switchBtn as any).mouseLeaveHandler();
+            const keyArgs: KeyboardEvent = new KeyboardEvent('keyup', {
+                key: 'space',
+                code: 'Space',
+                bubbles: true,
+                cancelable: true
+            });
+            (switchBtn as any).switchFocusHandler(keyArgs);
         });
     });
 

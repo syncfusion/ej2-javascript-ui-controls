@@ -1981,4 +1981,103 @@ describe('ContextMenu', () => {
             expect(contextMenu.element.querySelector('.e-focused')).not.toBeNull();
         });
     });
+
+    describe('Context Menu Template Select Event', () => {
+        let contextMenu: ContextMenu;
+        let div: HTMLElement;
+        let ul: HTMLElement;
+
+        beforeEach(() => {
+            div = document.createElement('div');
+            div.id = 'target';
+            document.body.appendChild(div);
+            ul = document.createElement('ul');
+            ul.id = 'contextmenu';
+            document.body.appendChild(ul);
+        });
+
+        afterEach(() => {
+            if (contextMenu) {
+                contextMenu.destroy();
+            }
+            document.body.removeChild(div);
+            document.body.removeChild(ul);
+        });
+
+        it('Context Menu With Template Select Event not undefined', (done) => {
+            const items = [
+                { text: 'JavaScript' },
+                { text: 'TypeScript' },
+                { text: 'Angular' },
+                { text: 'React' },
+                { text: 'Vue' }
+            ];
+            contextMenu = new ContextMenu({
+                items: items,
+                target: '#target',
+                itemTemplate: "<span class='ename'>${text}</span>",
+                select: (args: MenuEventArgs) => {
+                    expect(args.item).not.toBeUndefined();
+                    done();
+                }
+            }, '#contextmenu');
+
+            contextMenu.open(40, 62);
+            const liElements = contextMenu.element.querySelectorAll('li .ename');
+            expect(liElements[0].innerHTML).toEqual("JavaScript");
+            (liElements[0] as HTMLElement).click();
+        });
+    });
+    
+    describe('Context Menu With Template ID Attribute', () => {
+        let contextMenu: ContextMenu;
+        let div: HTMLElement;
+        let ul: HTMLElement;
+
+        beforeEach(() => {
+            div = document.createElement('div');
+            div.id = 'target';
+            document.body.appendChild(div);
+            ul = document.createElement('ul');
+            ul.id = 'contextmenu';
+            document.body.appendChild(ul);
+        });
+
+        afterEach(() => {
+            if (contextMenu) {
+                contextMenu.destroy();
+            }
+            document.body.removeChild(div);
+            document.body.removeChild(ul);
+        });
+
+        it('should assign ID attribute correctly on list elements when using itemTemplate', (done) => {
+            const items = [
+                { text: 'JavaScript' },
+                { text: 'TypeScript' },
+                { text: 'Angular' },
+                { text: 'React' },
+                { text: 'Vue' }
+            ];
+            contextMenu = new ContextMenu({
+                items: items,
+                target: '#target',
+                itemTemplate: "<span class='ename'>${text}</span>",
+                beforeOpen: (args: { element: HTMLElement }) => {
+                    if (args.element.classList.contains('e-ul')) {
+                        args.element.classList.add('e-contextMenu-template');
+                    }
+                }
+            }, '#contextmenu');
+
+            contextMenu.open(40, 62);
+            setTimeout(() => {
+                const liElements = contextMenu.element.querySelectorAll('li .e-menu-item');
+                liElements.forEach((li: Element, index: number) => {
+                    expect((li as HTMLElement).id).toBe(`menuitem_${index + 1}`);
+                });
+                done();
+            }, 100);
+        });
+    });
 });

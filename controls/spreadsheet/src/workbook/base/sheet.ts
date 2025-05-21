@@ -684,8 +684,12 @@ export function duplicateSheet(context: Workbook, sheetIndex?: number, action?: 
             sheetNames.push(sheet.name);
         });
         for (let i: number = 2; ; i++) {
-            if (sheetNames.indexOf(name + ' (' + i + ')') === -1) {
-                sheet.name = name + ' (' + i + ')';
+            const suffix: string = ' (' + i + ')';
+            if ((name + suffix).length > 31) {
+                name = name.slice(0, 31 - suffix.length);
+            }
+            if (sheetNames.indexOf(name + suffix) === -1) {
+                sheet.name = name + suffix;
                 break;
             }
         }

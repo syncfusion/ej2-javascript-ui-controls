@@ -842,7 +842,7 @@ export class FormFieldsBase {
             const fieldBounds: any = this.getBounds(bounds, page.size[1], page.size[0], rotationAngle, isFieldRotated);
             const bound: any = { x: fieldBounds.X, y: fieldBounds.Y, width: fieldBounds.Width, height: fieldBounds.Height };
             const radioButtonItem: PdfRadioButtonListItem = new PdfRadioButtonListItem(radioButtonName, bound, page);
-            if (isFieldRotated) {
+            if (!isFieldRotated) {
                 radioButtonItem.rotationAngle = this.GetRotateAngle(page.rotation);
             }
             if (radiobuttonItem.isReadonly) {
@@ -2174,7 +2174,8 @@ export class FormFieldsBase {
                                                                !isFieldRotated);
                         formFields.Value = outputstring;
                         formFields.PageIndex = i;
-                        formFields.BorderColor = [inkAnnot.color[0], inkAnnot.color[1], inkAnnot.color[2]];
+                        formFields.BorderColor = !isNullOrUndefined(inkAnnot.color) ?
+                            [inkAnnot.color[0], inkAnnot.color[1], inkAnnot.color[2]] : { R: 0, G: 0, B: 0 };
                         formFields.Rotation = annotation.rotationAngle;
                         this.PdfRenderedFormFields.push(formFields);
                         count++;

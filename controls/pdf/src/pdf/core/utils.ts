@@ -1,6 +1,6 @@
 import { _PdfDictionary, _PdfName, _PdfReference } from './pdf-primitives';
-import { PdfDestination, PdfPage } from './pdf-page';
-import { PdfFormFieldVisibility, PdfAnnotationFlag, PdfCheckBoxStyle, PdfHighlightMode, PdfBorderStyle, PdfBorderEffectStyle, PdfLineEndingStyle, _PdfCheckFieldState, PdfMeasurementUnit, _PdfGraphicsUnit, PdfTextMarkupAnnotationType, PdfRotationAngle, PdfAnnotationState, PdfAnnotationStateModel, PdfPopupIcon, PdfRubberStampAnnotationIcon, PdfAttachmentIcon, PdfAnnotationIntent, PdfBlendMode, _PdfAnnotationType, PdfDestinationMode, PdfNumberStyle } from './enumerator';
+import { PdfPage } from './pdf-page';
+import { PdfFormFieldVisibility, PdfAnnotationFlag, PdfCheckBoxStyle, PdfHighlightMode, PdfBorderStyle, PdfBorderEffectStyle, PdfLineEndingStyle, _PdfCheckFieldState, PdfMeasurementUnit, _PdfGraphicsUnit, PdfTextMarkupAnnotationType, PdfRotationAngle, PdfAnnotationState, PdfAnnotationStateModel, PdfPopupIcon, PdfRubberStampAnnotationIcon, PdfAttachmentIcon, PdfAnnotationIntent, PdfBlendMode, _PdfAnnotationType, PdfNumberStyle } from './enumerator';
 import { _PdfTransformationMatrix } from './graphics/pdf-graphics';
 import { PdfDocument, PdfPageSettings } from './pdf-document';
 import { _PdfBaseStream, _PdfStream } from './base-stream';
@@ -100,12 +100,7 @@ export function _copyRange(
  * @returns {boolean} Header matched or not.
  */
 export function _checkType(imageData: Uint8Array, header: number[]): boolean {
-    for (let i: number = 0; i < header.length; i++) {
-        if (header[<number>i] !== imageData[<number>i]) {
-            return false;
-        }
-    }
-    return true;
+    return header.every((value: number, index: number) => value === imageData[<number>index]);
 }
 /**
  * Gets the image decoder.
@@ -466,7 +461,7 @@ export function _hexStringToByteArray(hexString: string, isDirect: boolean = fal
     const array: number[] = [];
     if (hexString) {
         for (let i: number = 0; i < hexString.length; i += 2) {
-            array.push(Number.parseInt(hexString.substring(i, i + 2), 16));
+            array.push(parseInt(hexString.substring(i, i + 2), 16));
         }
     }
     return isDirect ? array : new Uint8Array(array);
@@ -483,7 +478,7 @@ export function _hexStringToString(hexString: string): string {
     if (hexString && hexString[0] === '#') {
         hexString = hexString.substring(1);
         for (let i: number = 0; i < hexString.length; i += 2) {
-            result += String.fromCharCode(Number.parseInt(hexString.substring(i, i + 2), 16));
+            result += String.fromCharCode(parseInt(hexString.substring(i, i + 2), 16));
         }
         return result;
     }
@@ -899,7 +894,7 @@ export function _convertToColor(colorString: string): number[] {
     if (!color) {
         const result: RegExpExecArray = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(colorString);
         if (result) {
-            color = [Number.parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)];
+            color = [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)];
         }
     }
     return color;
@@ -1031,11 +1026,10 @@ export function _reverseMapEndingStyle(style: PdfLineEndingStyle): string {
  *
  * @private
  * @param {string} style Style value in string.
- * @param {PdfLineEndingStyle} defaultValue Default style value to return.
  * @returns {PdfLineEndingStyle} enum value default 0.
  */
-export function _mapLineEndingStyle(style: string, defaultValue?: PdfLineEndingStyle): PdfLineEndingStyle {
-    let value: PdfLineEndingStyle = typeof defaultValue !== 'undefined' ? defaultValue : PdfLineEndingStyle.none;
+export function _mapLineEndingStyle(style: string): PdfLineEndingStyle {
+    let value: PdfLineEndingStyle;
     switch (style.toLowerCase()) {
     case 'openarrow':
         value = PdfLineEndingStyle.openArrow;
@@ -1063,6 +1057,9 @@ export function _mapLineEndingStyle(style: string, defaultValue?: PdfLineEndingS
         break;
     case 'slash':
         value = PdfLineEndingStyle.slash;
+        break;
+    default:
+        value = PdfLineEndingStyle.none;
         break;
     }
     return value;
@@ -3912,163 +3909,9 @@ export function _checkInkPoints(inkPointsCollection: Array<number[]>, previousCo
     if (inkPointsCollection.length !== previousCollection.length) {
         return false;
     }
-    for (let i: number = 0; i < inkPointsCollection.length; i++) {
-        if (!_areArrayEqual(inkPointsCollection[<number>i], previousCollection[<number>i])) {
-            return false;
-        }
-    }
-    return true;
-}
-/**
- * Gets the Destination.
- *
- * @param {_PdfDictionary} dictionary widget dictionary.
- * @param {string} key bookmark or action dictionary key.
- * @returns {PdfDestination} destination.
- */
-export function _obtainDestination(dictionary: _PdfDictionary, key: string): PdfDestination {
-    let page: PdfPage;
-    let destination: PdfDestination;
-    if (dictionary) {
-        let destinationArray: any[]; // eslint-disable-line
-        if (dictionary.has(key)) {
-            destinationArray = dictionary.getArray(key);
-        }
-        const loadedDocument: PdfDocument = dictionary._crossReference._document;
-        let mode: _PdfName;
-        if (destinationArray && Array.isArray(destinationArray) && destinationArray.length > 0) {
-            const value: any = destinationArray[0]; // eslint-disable-line
-            let left: number;
-            let height: number;
-            let bottom: number;
-            let right: number;
-            let zoom: number;
-            if (typeof value === 'number') {
-                const pageNumber: number = destinationArray[0];
-                if (pageNumber >= 0) {
-                    const document: PdfDocument = dictionary._crossReference._document;
-                    if (document && document.pageCount > pageNumber) {
-                        page = document.getPage(pageNumber);
-                    }
-                    if (destinationArray.length > 1) {
-                        mode = destinationArray[1];
-                    }
-                    if (mode && mode.name === 'XYZ') {
-                        if (destinationArray.length > 2) {
-                            left = destinationArray[2];
-                        }
-                        if (destinationArray.length > 3) {
-                            height = destinationArray[3];
-                        }
-                        if (destinationArray.length > 4) {
-                            zoom = destinationArray[4];
-                        }
-                        if (page) {
-                            const topValue: number = (height === null || typeof height === 'undefined') ? 0 : page.size[1] - height;
-                            const leftValue: number = (left === null || typeof left === 'undefined') ? 0 : left;
-                            if (page.rotation !== PdfRotationAngle.angle0) {
-                                _checkRotation(page, height, left);
-                            }
-                            destination = new PdfDestination(page, [leftValue, topValue]);
-                            destination._index = pageNumber;
-                            destination.zoom = (typeof zoom !== 'undefined' && zoom !== null) ? zoom : 0;
-                            if (left === null || height === null || zoom === null || typeof left === 'undefined'
-                                 || typeof height === 'undefined' || typeof zoom === 'undefined') {
-                                destination._setValidation(false);
-                            }
-                        }
-                    }
-                }
-            }
-            if (value instanceof _PdfDictionary) {
-                const pageDictionary: _PdfDictionary = value;
-                let index: number;
-                if (loadedDocument && pageDictionary) {
-                    index = _getPageIndex(loadedDocument, pageDictionary);
-                }
-                if (typeof index !== 'undefined' && index !== null && index >= 0) {
-                    page = loadedDocument.getPage(index);
-                }
-                if (destinationArray.length > 1) {
-                    mode = destinationArray[1];
-                }
-                if (mode) {
-                    if (mode.name === 'XYZ') {
-                        if (destinationArray.length > 2) {
-                            left = destinationArray[2];
-                        }
-                        if (destinationArray.length > 3) {
-                            height = destinationArray[3] as number;
-                        }
-                        if (destinationArray.length > 4) {
-                            zoom = destinationArray[4];
-                        }
-                        if (page) {
-                            let topValue: number = (height === null || typeof height === 'undefined') ? 0 : page.size[1] - height;
-                            const leftValue: number = (left === null || typeof left === 'undefined') ? 0 : left;
-                            if (page.rotation !== PdfRotationAngle.angle0) {
-                                topValue = _checkRotation(page, height, left);
-                            }
-                            destination = new PdfDestination(page, [leftValue, topValue]);
-                            destination._index = index;
-                            destination.zoom = (typeof zoom !== 'undefined' && zoom !== null) ? zoom : 0;
-                            if (left === null || height === null || zoom === null || typeof left === 'undefined' ||
-                                 typeof height === 'undefined' || typeof zoom === 'undefined') {
-                                destination._setValidation(false);
-                            }
-                        }
-                    } else {
-                        if (mode.name === 'FitR') {
-                            if (destinationArray.length > 2) {
-                                left = destinationArray[2];
-                            }
-                            if (destinationArray.length > 3) {
-                                bottom = destinationArray[3];
-                            }
-                            if (destinationArray.length > 4) {
-                                right = destinationArray[4];
-                            }
-                            if (destinationArray.length > 5) {
-                                height = destinationArray[5];
-                            }
-                            if (page) {
-                                left = (left === null || typeof left === 'undefined') ? 0 : left;
-                                bottom = (bottom === null || typeof bottom === 'undefined') ? 0 : bottom;
-                                height = (height === null || typeof height === 'undefined') ? 0 : height;
-                                right = (right === null || typeof right === 'undefined') ? 0 : right;
-                                destination = new PdfDestination(page, [left, bottom, right, height]);
-                                destination._index = index;
-                                destination.mode = PdfDestinationMode.fitR;
-                            }
-                        } else if (mode.name === 'FitBH' || mode.name === 'FitH') {
-                            if (destinationArray.length >= 3) {
-                                height = destinationArray[2];
-                            }
-                            if (typeof index !== 'undefined' && index !== null && index >= 0) {
-                                page = loadedDocument.getPage(index);
-                            }
-                            if (page && page.size) {
-                                const topValue: number = (height === null || typeof height === 'undefined') ? 0 : page.size[1] - height;
-                                destination = new PdfDestination(page, [0, topValue]);
-                                destination._index = index;
-                                destination.mode = PdfDestinationMode.fitH;
-                                if (height === null || typeof height === 'undefined') {
-                                    destination._setValidation(false);
-                                }
-                            }
-                        } else {
-                            if (page && mode.name === 'Fit') {
-                                destination = new PdfDestination(page);
-                                destination._index = index;
-                                destination.mode = PdfDestinationMode.fitToPage;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return destination;
+    return inkPointsCollection.every((point: number[], index: number) =>
+        _areArrayEqual(point, previousCollection[<number>index])
+    );
 }
 /**
  * Update the annotation bounds.
@@ -4169,7 +4012,7 @@ export function _getSize(input: number): number {
 export function _stringToBigEndianBytes(input: string): number[] {
     const bytes: number[] = [];
     for (let i: number = 0; i < input.length; i++) {
-        const charCode: number = input.charCodeAt(Number.parseInt(i.toString(), 10));
+        const charCode: number = input.charCodeAt(<number>i);
         if (charCode <= 0xFFFF) {
             bytes.push((charCode >> 8) & 0xFF);
             bytes.push(charCode & 0xFF);

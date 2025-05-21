@@ -415,8 +415,7 @@ export class Link {
 
     private hasAnchorNodePresent(elements: Node[]): boolean {
         return !isNOU(elements) && elements.length > 0 &&
-            elements.some((element: HTMLElement) => element && (element as HTMLElement).classList
-                && (element as HTMLElement).classList.contains('e-rte-anchor'));
+            elements.some((element: HTMLElement) => element && closest(element, 'a') !== null);
     }
 
     // eslint-disable-next-line

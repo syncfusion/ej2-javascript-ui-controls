@@ -1180,10 +1180,14 @@ export class DateTimePicker extends DatePicker {
             event.preventDefault();
         }
         if (!(closest(target, '[id="' + (this.popupObject && this.popupObject.element.id + '"]'))) && target !== this.inputElement
-            && target !== this.timeIcon && !isNullOrUndefined(this.inputWrapper) && target !== this.inputWrapper.container && !target.classList.contains('e-dlg-overlay')) {
+            && target !== this.timeIcon && !isNullOrUndefined(this.inputWrapper) && target !== this.inputWrapper.container) {
             if (this.isTimePopupOpen()) {
                 this.hide(event);
-                this.focusOut();
+                if (target.classList.contains('e-dlg-overlay')) {
+                    event.preventDefault();
+                } else {
+                    this.focusOut();
+                }
             }
         } else if (target !== this.inputElement) {
             if (!Browser.isDevice) {

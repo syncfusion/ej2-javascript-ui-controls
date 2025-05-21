@@ -1611,7 +1611,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     args.item.setAttribute('aria-expanded', 'false');
                     (args.item as HTMLElement).classList.add('e-menu-caret-icon');
                 }
-                if (this.isMenu && this.template) {
+                if (this.template) {
                     args.item.setAttribute('id', (<obj>args.curData)[args.fields.id as string].toString());
                     args.item.removeAttribute('data-uid');
                     if (args.item.classList.contains('e-level-1')) { args.item.classList.remove('e-level-1'); }

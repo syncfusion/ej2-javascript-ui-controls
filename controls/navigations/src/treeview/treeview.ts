@@ -1005,6 +1005,14 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public showCheckBox: boolean;
 
     /**
+     * Specifies whether the item should be checked or unchecked when the node is clicked.
+     *
+     * @default false
+     */
+    @Property(false)
+    public checkOnClick: boolean;
+
+    /**
      * Allow us to specify the parent and child nodes to get auto check while we check or uncheck a node.
      *
      * @default true
@@ -2660,8 +2668,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 const rippleIcons: Element = select('.' + ICON, li);
                 this.removeHover();
                 this.setFocusElement(li);
-                if (this.showCheckBox && !li.classList.contains('e-disable')) {
-                    const checkWrapper: HTMLElement = closest(target, '.' + CHECKBOXWRAP) as HTMLElement;
+                const isExpandCollapseIcon: boolean = classList.contains(EXPANDABLE) || classList.contains(COLLAPSIBLE);
+                if (this.showCheckBox && !li.classList.contains('e-disable') && !isExpandCollapseIcon) {
+                    const checkWrapper: HTMLElement = this.checkOnClick ? select('.' + CHECKBOXWRAP, li) : closest(target, '.' + CHECKBOXWRAP) as HTMLElement;
                     if (!isNOU(checkWrapper)) {
                         const checkElement: Element = select('.' + CHECKBOXFRAME, checkWrapper);
                         this.validateCheckNode(checkWrapper, checkElement.classList.contains(CHECK), li, event.originalEvent);
@@ -3222,6 +3231,14 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     private selectNode(li: Element, e: MouseEvent | KeyboardEventArgs, multiSelect?: boolean): void {
         if (isNOU(li) || (!this.allowMultiSelection && this.isActive(li) && !isNOU(e))) {
+            if (this.checkOnClick) {
+                const checkboxElement: HTMLElement = select(' .' + CHECKBOXFRAME, li);
+                if (!isNOU(checkboxElement) && checkboxElement.classList.contains(CHECK)) {
+                    addClass([li], ACTIVE);
+                } else {
+                    removeClass([li], ACTIVE);
+                }
+            }
             this.setFocusElement(li);
             return;
         }
@@ -3600,6 +3617,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             }
         }
         this.changeState(checkWrap, isCheck ? 'uncheck' : 'check', e, true);
+        this.updateActiveClass(li, isCheck);
         if (this.autoCheck) {
             this.ensureChildCheckState(li);
             this.updateOldCheckedData([this.getNodeData(li)]);
@@ -3613,6 +3631,17 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             this.ensureStateChange(li, doCheck);
         }
         this.nodeCheckedEvent(checkWrap, isCheck, e);
+    }
+
+    private updateActiveClass(liElement: HTMLElement | Element, checkStatus: boolean | string): void {
+        if (this.showCheckBox && this.checkOnClick) {
+            if (checkStatus === 'check' || checkStatus === false) {
+                this.removeSelectAll();
+                addClass([liElement], ACTIVE);
+            } else if (checkStatus === 'uncheck' || checkStatus === 'indeterminate' || checkStatus === true) {
+                removeClass([liElement], ACTIVE);
+            }
+        }
     }
 
     /**

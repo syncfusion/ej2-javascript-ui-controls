@@ -1288,7 +1288,7 @@ export class PdfGraphics {
         let point: number[] = [points[0], points[1], points[2], points[3], points[4], points[5], points[6], points[7]];
         this._sw._beginPath(point[0], point[1]);
         for (let i: number = 0 ; i < points.length; i = i + 8) {
-            point = [points[Number.parseInt(i.toString(), 10)],
+            point = [points[<number>i],
                 points[i + 1],
                 points[i + 2],
                 points[i + 3],
@@ -1305,7 +1305,7 @@ export class PdfGraphics {
             let point: number[] = [points[0], points[1], points[2], points[3], points[4], points[5], points[6], points[7]];
             this._sw._beginPath(point[0], point[1]);
             for (let i: number = 0; i < points.length; i = i + 8) {
-                point = [points[Number.parseInt(i.toString(), 10)],
+                point = [points[<number>i],
                     points[i + 1],
                     points[i + 2],
                     points[i + 3],
@@ -1320,11 +1320,7 @@ export class PdfGraphics {
     _writePen(pen: PdfPen): void {
         const lineWidth: number = pen._width;
         const pattern: number[] = pen._dashPattern;
-        const setPattern: number[] = [];
-        for (let i: number = 0; i < pattern.length; ++i) {
-            setPattern[i] = pattern[i] * pen._width; // eslint-disable-line
-        }
-        this._sw._setLineDashPattern(setPattern, pen._dashOffset * lineWidth);
+        this._sw._setLineDashPattern(pattern, pen._dashOffset * lineWidth);
         this._sw._setLineWidth(pen._width);
         this._sw._setLineJoin(pen._lineJoin);
         this._sw._setLineCap(pen._lineCap);
@@ -1395,8 +1391,8 @@ export class PdfGraphics {
     }
     _buildUpPath(points: Array<number[]>, types: PathPointType[]): void {
         for (let i: number = 0; i < points.length; i++) {
-            const point: number[] = points[Number.parseInt(i.toString(), 10)];
-            let type: PathPointType = types[Number.parseInt(i.toString(), 10)];
+            const point: number[] = points[<number>i];
+            let type: PathPointType = types[<number>i];
             switch (type & 0xf) {
             case PathPointType.start:
                 this._sw._beginPath(point[0], point[1]);
@@ -1619,10 +1615,13 @@ export class PdfGraphics {
             let shift: number = 0;
             shift = (script) ? height - (font.height + font._metrics._getDescent(format)) : (height - font._metrics._getAscent(format));
             if (format && format.lineAlignment === PdfVerticalAlignment.bottom) {
+                const layoutStr: string = _numberToString(layoutRectangle[3]);
+                const fontHeightStr: string = _numberToString(font._metrics._getHeight(format));
                 if (layoutRectangle[3] - result._actualSize[1] !== 0 &&
                     (layoutRectangle[3] - result._actualSize[1]) < (font._metrics._size / 2) - 1) {
-                    if (Number.parseFloat(_numberToString(layoutRectangle[3])) <=
-                        Number.parseFloat(_numberToString(font._metrics._getHeight(format)))) {
+                    const layoutNum: number = +layoutStr;
+                    const fontHeightNum: number = +fontHeightStr;
+                    if (layoutNum <= fontHeightNum) {
                         shift = -(height / font._metrics._size);
                     }
                 }
@@ -2806,10 +2805,10 @@ export class _PdfUnitConvertor {
     }
     _convertFromPixels(value: number, to: _PdfGraphicsUnit): number {
         const index: number = to;
-        return (value / this._proportions[Number.parseInt(index.toString(), 10)]);
+        return (value / this._proportions[<number>index]);
     }
     _convertToPixels(value: number, from: _PdfGraphicsUnit): number {
         const index: number = from;
-        return (value * this._proportions[Number.parseInt(index.toString(), 10)]);
+        return (value * this._proportions[<number>index]);
     }
 }

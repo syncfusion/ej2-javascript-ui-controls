@@ -481,7 +481,7 @@ export class _PngDecoder extends _ImageDecoder {
         } else {
             const position: number = Math.floor((bpr * y + x) / (8 / bitDepth));
             const t: number = data[<number>offset]
-                << Number.parseInt((8 - bitDepth * (x % (8 / bitDepth)) - bitDepth).toString(), 10);
+                << <number>(8 - bitDepth * (x % (8 / bitDepth)) - bitDepth);
             imageData[<number>position] = imageData[<number>position] | _toUnsigned(t, 8);
         }
         return imageData;

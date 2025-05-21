@@ -308,9 +308,11 @@ export class OlapEngine {
             isCalculated = true;
             const measureInfo: IMeasureInfo = this.getMeasureInfo();
             const isColGrandTolExists: boolean = !isNullOrUndefined(colTuples[0]) &&
-                (Number(colTuples[0].querySelectorAll('Member')[0].querySelector('LNum').textContent) === 0);
+                (Number(colTuples[0].querySelectorAll('Member')[0].querySelector('LNum').textContent) === 0) &&
+                    colTuples[0].querySelectorAll('Member')[0].querySelector('MEMBER_VALUE').textContent.startsWith('All');
             const isRowGrandTolExists: boolean = !isNullOrUndefined(rowTuples[0]) &&
-                (Number(rowTuples[0].querySelectorAll('Member')[0].querySelector('LNum').textContent) === 0);
+                (Number(rowTuples[0].querySelectorAll('Member')[0].querySelector('LNum').textContent) === 0) &&
+                    rowTuples[0].querySelectorAll('Member')[0].querySelector('MEMBER_VALUE').textContent.startsWith('All');
             const isAddColGrandTotals: boolean = isColGrandTolExists ? (calColPage + calColSize >= colTuples.length - 1) : false;
             const isAddRowGrandTotals: boolean = isRowGrandTolExists ? (calRowPage + calRowSize >= rowTuples.length - 1) : false;
             const colDepth: number = isColGrandTolExists ?
@@ -342,9 +344,9 @@ export class OlapEngine {
                 colData.indexCollection, rowData.indexCollection, colTuples.length, rowTuples.length, colDepth,
                 rowDepth, isRowGrandTolExists
             );
-            colTuples = virtualColTuples.slice();
-            rowTuples = virtualRowTuples.slice();
-            valTuples = virtualValuesTupples.slice();
+            colTuples = [...virtualColTuples];
+            rowTuples = [...virtualRowTuples];
+            valTuples = [...virtualValuesTupples];
         }
         this.pageColStartPos = calColPage;
         this.pageRowStartPos = calRowPage;
@@ -1515,11 +1517,6 @@ export class OlapEngine {
                 this.tupColumnInfo, this.showColumnSubTotals, this.hideColumnTotalsObject, 'column');
             tupPos++;
         }
-        if (this.olapVirtualization) {
-            maxLevel = maxLevel.slice(0, maxLevel.length - 1).map(
-                (level: number) => level === 0 ? 1 : level
-            ).concat(maxLevel.slice(maxLevel.length - 1));
-        }
         if (tuples.length > 0) {
             const members: NodeListOf<Element> = tuples[0].querySelectorAll('Member');
             let memPos: number = 0;
@@ -2688,8 +2685,18 @@ export class OlapEngine {
                             currCell.colSpan = 1;
                         }
                     } else {
-                        currCell.colSpan = nextColCell.colSpan + 1;
-                        currCell.ordinal = nextColCell.ordinal;
+                        const vsHeaderDelimiter: string = this.dataSourceSettings.valueSortSettings.headerDelimiter;
+                        const [cCellVSort, nCellVSort] = [currCell, nextColCell].map((cell: IAxisSet) =>
+                            cell.valueSort.levelName.toString().split(vsHeaderDelimiter)
+                        );
+                        const cCellBase: string = cCellVSort.slice(0, -1).join(vsHeaderDelimiter);
+                        const nCellBase: string = nCellVSort.slice(0, -1).join(vsHeaderDelimiter);
+                        if (cCellBase === nCellBase) {
+                            currCell.colSpan = nextColCell.colSpan + 1;
+                            currCell.ordinal = nextColCell.ordinal;
+                        } else {
+                            currCell.colSpan = 1;
+                        }
                     }
                     colflag = true;
                 }
@@ -2780,8 +2787,9 @@ export class OlapEngine {
     }
 
     private frameValues(valCollection: { [key: string]: Element }, colLength: number): void {
-        let rowStartPos: number = this.colDepth;
         let rowEndPos: number = this.pivotValues.length;
+        let rowStartPos: number = rowEndPos > 0 ?
+            this.pivotValues.findIndex((row: IAxisSet[]) => row && !isNullOrUndefined(row[0])) : this.colDepth;
         let startRowOrdinal: number = 0;
         if (this.customArgs.action === 'down') {
             const keys: string[] = Object.keys(this.onDemandDrillEngine);

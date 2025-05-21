@@ -1,11 +1,11 @@
 import { PdfDocument } from './../pdf-document';
 import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
 import { _PdfParser, _PdfLexicalOperator } from '../pdf-parser';
-import { _PdfStream } from '../base-stream';
+import { _PdfContentStream, _PdfStream } from '../base-stream';
 import { _PdfCommand } from './../pdf-primitives';
 import { _ExportHelper } from './xfdf-document';
 import { PdfForm } from './../form/form';
-import { PdfAnnotation, PdfUriAnnotation, PdfRubberStampAnnotation, PdfFileLinkAnnotation, PdfTextWebLinkAnnotation, PdfRectangleAnnotation, PdfDocumentLinkAnnotation } from './../annotations/annotation';
+import { PdfAnnotation, PdfUriAnnotation, PdfRubberStampAnnotation, PdfFileLinkAnnotation, PdfTextWebLinkAnnotation, PdfRectangleAnnotation, PdfDocumentLinkAnnotation, PdfPopupAnnotation } from './../annotations/annotation';
 import { PdfAnnotationCollection } from './../annotations/annotation-collection';
 import { PdfField } from './../form/field';
 import { _bytesToString, _getNewGuidString, _byteArrayToHexString, _stringToBytes, _isNullOrUndefined } from './../utils';
@@ -67,12 +67,12 @@ export class _FdfDocument extends _ExportHelper {
                                 this.fdfString += '<' + this._stringToHexString((Array.isArray(value) ? value[0] : value)) + '>';
                             } else if (Array.isArray(value)) {
                                 this.fdfString += '[';
-                                for (let j: number = 0; j < value.length; j++) {
-                                    this.fdfString += '<' + this._stringToHexString(value[Number.parseInt(j.toString(), 10)]) + '>';
-                                    if (j !== value.length - 1) {
+                                value.forEach((val: string, index: number) => {
+                                    this.fdfString += '<' + this._stringToHexString(val) + '>';
+                                    if (index !== value.length - 1) {
                                         this.fdfString += ' ';
                                     }
-                                }
+                                });
                                 this.fdfString += ']';
                             }
                             this.fdfString += ' >>endobj\n';
@@ -89,12 +89,12 @@ export class _FdfDocument extends _ExportHelper {
                                 this.fdfString += '(' + (Array.isArray(value) ? value[0] : value) + ')';
                             } else if (Array.isArray(value)) {
                                 this.fdfString += '[';
-                                for (let j: number = 0; j < value.length; j++) {
-                                    this.fdfString += '(' + value[Number.parseInt(j.toString(), 10)] + ')';
-                                    if (j !== value.length - 1) {
+                                value.forEach((val: string, index: number) => {
+                                    this.fdfString += '(' + val + ')';
+                                    if (index !== value.length - 1) {
                                         this.fdfString += ' ';
                                     }
-                                }
+                                });
                                 this.fdfString += ']';
                             }
                             this.fdfString += '>>';
@@ -114,7 +114,7 @@ export class _FdfDocument extends _ExportHelper {
                 for (let i: number = 0; i < this._table.size; i++) {
                     const field: PdfField = this._document.form.fieldAt(i);
                     if (field !== null && typeof field !== 'undefined' && field.export) {
-                        this.fdfString += objectArray[Number.parseInt(i.toString(), 10)] + ' 0 R ';
+                        this.fdfString += objectArray[<number>i] + ' 0 R ';
                     }
                 }
                 this.fdfString += ']>>endobj\n';
@@ -165,6 +165,9 @@ export class _FdfDocument extends _ExportHelper {
                 } else if (token instanceof _PdfStream || token instanceof _PdfFlateStream) {
                     this._table.set(key, token);
                     key = '';
+                } else if (token instanceof _PdfName || Array.isArray(token)) {
+                    this._table.set(key, token);
+                    key = '';
                 } else if (token !== null && Number.isInteger(token) && token !== 0) {
                     if (parser.first >= 0) {
                         key = token.toString() + ' ' + parser.first.toString();
@@ -178,6 +181,7 @@ export class _FdfDocument extends _ExportHelper {
             this._annotationObjects = this._parseAnnotationData();
             this._annotationObjects.forEach((value: any, key: any) => { // eslint-disable-line
                 const dictionary: _PdfDictionary = value as _PdfDictionary;
+                this._parseDictionary(dictionary);
                 dictionary._crossReference = this._crossReference;
                 dictionary._updated = true;
                 if (dictionary && dictionary.has('Page')) {
@@ -199,6 +203,11 @@ export class _FdfDocument extends _ExportHelper {
                                     }
                                     annotation._ref = reference;
                                     const index: number = annotations._annotations.length;
+                                    if (!annotation._dictionary.has('P') && annotation._dictionary.get('Subtype').name !== 'Popup') {
+                                        const [objNum, genNum] = pageDictionary.objId.split(' ').map(Number);
+                                        annotation._dictionary.update('P', _PdfReference.get(objNum, genNum));
+                                    }
+                                    delete annotation._dictionary._map.Page;
                                     annotations._annotations.push(reference);
                                     if (annotations._comments && annotations._comments.length > 0) {
                                         annotations._comments = [];
@@ -207,6 +216,18 @@ export class _FdfDocument extends _ExportHelper {
                                     pageDictionary._updated = true;
                                     annotations._parsedAnnotations.set(index, annotation);
                                     this._handlePopup(annotations, reference, dictionary, pageDictionary);
+                                    if (annotation instanceof PdfPopupAnnotation && annotation._dictionary.has('Parent')) {
+                                        const parent: _PdfReference = annotation._dictionary.getRaw('Parent') as _PdfReference;
+                                        if (parent && parent instanceof _PdfReference) {
+                                            const Parent: _PdfDictionary = this._crossReference._cacheMap.get(parent);
+                                            if (Parent && Parent instanceof _PdfDictionary && Parent.has('Popup')) {
+                                                const value: any = Parent.get('Popup'); // eslint-disable-line
+                                                if (value instanceof _PdfDictionary && value.has('Parent')) {
+                                                    Parent.update('Popup', reference);
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -214,8 +235,7 @@ export class _FdfDocument extends _ExportHelper {
                 }
             });
             if (this._groupHolders && this._groupHolders.length > 0) {
-                for (let i: number = 0; i < this._groupHolders.length; i++) {
-                    const dictionary: _PdfDictionary = this._groupHolders[Number.parseInt(i.toString(), 10)];
+                this._groupHolders.forEach((dictionary: _PdfDictionary) => {
                     if (dictionary && dictionary.has('IRT')) {
                         const inReplyTo: string = dictionary.get('IRT');
                         if (inReplyTo) {
@@ -226,7 +246,7 @@ export class _FdfDocument extends _ExportHelper {
                             }
                         }
                     }
-                }
+                });
             }
             this._groupHolders = [];
             this._groupReferences = new Map<string, _PdfReference>();
@@ -260,8 +280,7 @@ export class _FdfDocument extends _ExportHelper {
                         if (token instanceof _PdfDictionary && token._map.Fields !== null && token._map.Fields !== undefined) {
                             token = token._map.Fields;
                             if (token !== null && token !== undefined) {
-                                for (let i: number = 0; i < token.length; i++) {
-                                    const field: _PdfDictionary = token[Number.parseInt(i.toString(), 10)] as _PdfDictionary;
+                                token.forEach((field: _PdfDictionary) => {
                                     if (field instanceof _PdfDictionary && field !== null && field !== undefined) {
                                         const t: any[] = field.getArray('T'); // eslint-disable-line
                                         let v: any; // eslint-disable-line
@@ -274,7 +293,7 @@ export class _FdfDocument extends _ExportHelper {
                                             this._table.set(t, v);
                                         }
                                     }
-                                }
+                                });
                             }
                         }
                     }
@@ -282,6 +301,91 @@ export class _FdfDocument extends _ExportHelper {
                 }
             }
             this._importField();
+        }
+    }
+    _parseDictionary(dictionary: _PdfDictionary): void {
+        if (dictionary != null && dictionary.size > 0)
+        {
+            dictionary.forEach((key: string, value: any) => { // eslint-disable-line
+                if (key !== 'Parent' && key !== 'P' && key !== 'Page') {
+                    this._parseDictionaryData(dictionary, key);
+                }
+            });
+        }
+    }
+    _parseDictionaryData(dictionary: _PdfDictionary, key: string): void {
+        const value: any = dictionary.get(key); // eslint-disable-line
+        if (value instanceof _PdfDictionary) {
+            this._parseDictionary(value as _PdfDictionary);
+        } else if (value instanceof _PdfFlateStream) {
+            this._parseDictionary(value.dictionary as _PdfDictionary);
+        } else if (Array.isArray(value)) {
+            this._parseArray(value as Array<any>); // eslint-disable-line
+        } else if (value instanceof _PdfReference) {
+            const reference: _PdfReference = value as _PdfReference;
+            if (reference) {
+                const objectKey: string = `${reference.objectNumber} ${reference.generationNumber}`;
+                if (this._annotationObjects.has(objectKey)) {
+                    dictionary.update(key, this._annotationObjects.get(objectKey));
+                } else if (this._table.has(objectKey)) {
+                    const objects: Map<any, any> = this._table; // eslint-disable-line
+                    const object: any = objects.get(objectKey); // eslint-disable-line
+                    if (object instanceof _PdfStream || object instanceof _PdfFlateStream) {
+                        this._parseDictionary(object.dictionary);
+                        const reference: _PdfReference = this._crossReference._getNextReference();
+                        this._crossReference._cacheMap.set(reference, object);
+                        object.dictionary._updated = true;
+                        dictionary.update(key, reference);
+                        objects.set(objectKey, reference);
+                    } else if (object instanceof _PdfDictionary) {
+                        this._parseDictionary(object);
+                        const reference: _PdfReference = this._crossReference._getNextReference();
+                        this._crossReference._cacheMap.set(reference, object);
+                        dictionary.update(key, reference);
+                        objects.set(objectKey, reference);
+                    } else if (object instanceof _PdfReference) {
+                        dictionary.update(key, object);
+                    } else if (object instanceof _PdfName) {
+                        const reference: _PdfReference = this._crossReference._getNextReference();
+                        this._crossReference._cacheMap.set(reference, object);
+                        dictionary.update(key, reference);
+                        objects.set(objectKey, reference);
+                    } else if (Array.isArray(object)) {
+                        this._parseArray(object as Array<any>); // eslint-disable-line
+                        const reference: _PdfReference = this._crossReference._getNextReference();
+                        this._crossReference._cacheMap.set(reference, object);
+                        dictionary.update(key, reference);
+                        objects.set(objectKey, reference);
+                    }
+                } else {
+                    delete dictionary._map[key.toString()];
+                }
+            }
+        }
+    }
+    _parseArray(array: Array<any>): void { // eslint-disable-line
+        if (Array.isArray(array) && array.length > 0) {
+            const count: number = array.length;
+            for (let i: number = 0; i < count; i++) {
+                const referenceHolder: _PdfReference = array[Number.parseInt(i.toString(), 10)] as _PdfReference;
+                if (referenceHolder && referenceHolder instanceof _PdfReference) {
+                    const objectKey: string = `${referenceHolder.objectNumber} ${referenceHolder.generationNumber}`;
+                    if (this._annotationObjects.has(objectKey)) {
+                        array[Number.parseInt(i.toString(), 10)] = this._annotationObjects.get(objectKey);
+                    } else if (this._table.has(objectKey)) {
+                        const objects: Map<any, any> = this._table; // eslint-disable-line
+                        const object: any = objects.get(objectKey); // eslint-disable-line
+                        if (object instanceof _PdfReference) {
+                            array[Number.parseInt(i.toString(), 10)] = object;
+                        } else if (object instanceof _PdfDictionary || object instanceof _PdfStream) {
+                            const reference: _PdfReference = this._crossReference._getNextReference();
+                            this._crossReference._cacheMap.set(reference, object);
+                            array[Number.parseInt(i.toString(), 10)] = reference;
+                            objects.set(objectKey, reference);
+                        }
+                    }
+                }
+            }
         }
     }
     _parseAnnotationData(): Map<any, any> {  // eslint-disable-line
@@ -370,6 +474,9 @@ export class _FdfDocument extends _ExportHelper {
                     if (annotation !== null && typeof annotation !== 'undefined' && !(annotation instanceof PdfFileLinkAnnotation ||
                         annotation instanceof PdfTextWebLinkAnnotation || annotation instanceof PdfDocumentLinkAnnotation ||
                         annotation instanceof PdfUriAnnotation)) {
+                        if (annotation instanceof PdfPopupAnnotation && annotation._dictionary.has('Parent')) {
+                            continue;
+                        }
                         if (annotation instanceof PdfRubberStampAnnotation || annotation instanceof PdfRectangleAnnotation) {
                             const value: _FdfHelper = this._exportAnnotation(annotation, this.fdfString, index, annot, i, true);
                             index = value.index;
@@ -388,7 +495,7 @@ export class _FdfDocument extends _ExportHelper {
             const root: string = '1' + genNumber;
             this.fdfString += root + 'obj' + '\r\n' + startDictionary + 'FDF' + startDictionary + 'Annots' + '[';
             for (let i: number = 0; i < annot.length - 1; i++) {
-                this.fdfString += annot[Number.parseInt(i.toString(), 10)] + genNumber + 'R' + ' ';
+                this.fdfString += annot[<number>i] + genNumber + 'R' + ' ';
             }
             this.fdfString += annot[annot.length - 1] + genNumber + 'R' + ']' + '/' + 'F' + '(' + this._fileName + ')' + '/' + 'UF' + '(';
             this.fdfString += this._fileName + ')>>' + '/' + 'Type' + '/' + 'Catalog' + '>>' + '\r\n' + 'endobj' + '\r\n';
@@ -420,9 +527,9 @@ export class _FdfDocument extends _ExportHelper {
                 keys.push(value);
             });
             for (let i: number = 0; i < keys.length; i++) {
-                const key: number = keys[Number.parseInt(i.toString(), 10)];
+                const key: number = keys[<number>i];
                 if (list.get(key) instanceof _PdfDictionary || list.get(key) instanceof _PdfStream ||
-                    list.get(key) instanceof _PdfFlateStream) {
+                    list.get(key) instanceof _PdfContentStream || list.get(key) instanceof _PdfFlateStream) {
                     if (list.get(key) instanceof _PdfDictionary) {
                         dictionary = list.get(key);
                     } else {
@@ -450,6 +557,24 @@ export class _FdfDocument extends _ExportHelper {
                         }
                         this.fdfString += endObject;
                     }
+                } else if (list.get(key) instanceof _PdfName) {
+                    this.fdfString += key + startObject;
+                    this.fdfString += '/' + list.get(key).name;
+                    this.fdfString += endObject;
+                } else if (Array.isArray(list.get(key))) {
+                    this.fdfString += key + startObject;
+                    let primitive: any[] = list.get(key) as any[]; // eslint-disable-line
+                    const value: _FdfHelper = this._appendArray(primitive, this.fdfString, index, appearance, list, streamReference);
+                    index = value.index;
+                    this.fdfString += endObject;
+                } else if (typeof list.get(key) === 'boolean') {
+                    this.fdfString += key + startObject;
+                    this.fdfString += ' ' + (((list.get(key) as boolean)) ? 'true' : 'false');
+                    this.fdfString += endObject;
+                } else if (typeof list.get(key) === 'string') {
+                    this.fdfString += key + startObject;
+                    this.fdfString += '(' + this._getFormattedString((list.get(key) as string)) + ')';
+                    this.fdfString += endObject;
                 }
                 list.delete(key);
             }
@@ -462,20 +587,31 @@ export class _FdfDocument extends _ExportHelper {
     _appendStream(value: any, fdfString: string) { // eslint-disable-line
         let stream: any = value; // eslint-disable-line
         this.fdfString = fdfString;
-        if (value instanceof _PdfFlateStream || value instanceof _PdfStream) {
+        if (value instanceof _PdfFlateStream || value instanceof _PdfStream || value instanceof _PdfContentStream) {
             if (value instanceof _PdfFlateStream) {
                 stream = value.stream;
             } else {
                 stream = value;
             }
         }
-        if (value instanceof _PdfFlateStream || value instanceof _PdfStream) {
-            const byteArray: number[] = stream.getBytes();
-            const dataArray : Uint8Array = new Uint8Array(byteArray);
-            const sw : CompressedStreamWriter = new CompressedStreamWriter();
-            sw.write(dataArray, 0, dataArray.length);
-            sw.close();
-            const compressString: string = sw.getCompressedString;
+        if (value instanceof _PdfFlateStream || value instanceof _PdfStream || value instanceof _PdfContentStream) {
+            let byteArray: number[];
+            let compressString: string;
+            let dataArray : Uint8Array;
+            if (value instanceof _PdfContentStream) {
+                compressString = stream.getString();
+            } else if (value instanceof _PdfFlateStream || value instanceof _PdfStream) {
+                byteArray = stream.getByteRange(stream.start, stream.end);
+                dataArray = new Uint8Array(byteArray);
+                compressString = _bytesToString(dataArray);
+            } else {
+                byteArray = stream.getBytes();
+                dataArray = new Uint8Array(byteArray);
+                const sw : CompressedStreamWriter = new CompressedStreamWriter();
+                sw.write(dataArray, 0, dataArray.length);
+                sw.close();
+                compressString = sw.getCompressedString;
+            }
             this.fdfString += 'stream' + '\r\n';
             this.fdfString += compressString;
             this.fdfString += '\r\n' + 'endstream';
@@ -543,6 +679,9 @@ export class _FdfDocument extends _ExportHelper {
                             if (flag) {
                                 streamReference.push(index);
                             }
+                            if (!dictionary._crossReference) {
+                                dictionary.assignXref(this._crossReference);
+                            }
                             listDictionary.set(index, dictionary.get(key));
                         }
                     }
@@ -565,7 +704,7 @@ export class _FdfDocument extends _ExportHelper {
         if (_isNullOrUndefined(array) && array.length > 0) {
             const count: number = array.length;
             for (let i: number = 0; i < count; i++) {
-                const element: any = array[Number.parseInt(i.toString(), 10)]; // eslint-disable-line
+                const element: any = array[<number>i]; // eslint-disable-line
                 if (i !== 0 && (typeof element === 'number' || element instanceof _PdfReference || typeof element === 'boolean')) {
                     this.fdfString += ' ';
                 }
@@ -590,7 +729,7 @@ export class _FdfDocument extends _ExportHelper {
         if (typeof element === 'number') {
             this.fdfString += (element).toString();
         } else if (element instanceof _PdfName) {
-            this.fdfString += (element.name.toString());
+            this.fdfString += '/' + (element.name.toString());
         } else if (element instanceof Array) {
             element = element as any[]; // eslint-disable-line
             const value: _FdfHelper = this._appendArray(element, this.fdfString, index, flag, listDictionary, streamReference);
@@ -605,6 +744,20 @@ export class _FdfDocument extends _ExportHelper {
             streamReference = value.streamReference;
             index = value.index;
             this.fdfString += '>>';
+        } else if (element instanceof _PdfReference) {
+            const holder: _PdfReference = element as _PdfReference;
+            if (holder !== null && typeof holder !== 'undefined') {
+                index++;
+                this.fdfString += ' ' + index + ' 0 R';
+                if (flag) {
+                    streamReference.push(index);
+                }
+                listDictionary.set(index, this._crossReference._cacheMap.get(element));
+            }
+        } else if (typeof element === 'boolean') {
+            this.fdfString += ' ' + (((element as boolean)) ? 'true' : 'false');
+        } else if (typeof element === 'string') {
+            this.fdfString += '(' + this._getFormattedString((element as string)) + ')';
         }
         helper.list = listDictionary;
         helper.streamReference = streamReference;

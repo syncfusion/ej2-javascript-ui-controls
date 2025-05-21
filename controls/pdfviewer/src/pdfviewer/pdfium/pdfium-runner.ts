@@ -273,7 +273,7 @@ export function PdfiumRunner(): void {
                         const charLength: any = FPDF.TextFindCount(searchHandle);
                         const startIndex: any = FPDF.TextFindResultIndex(searchHandle);
                         if (!pageSearchCounts[parseInt(a.toString(), 10)]) {
-                            pageSearchCounts[parseInt(a.toString(), 10)] = { Indices: [], Bounds: {}, pageOccurrence: 0 };
+                            pageSearchCounts[parseInt(a.toString(), 10)] = { Indices: [], Bounds: {}, PageOccurrence: 0 };
                         }
                         if (!pageSearchCounts[parseInt(a.toString(), 10)].Bounds[parseInt(pageOccurrence.toString(), 10)]) {
                             pageSearchCounts[parseInt(a.toString(), 10)].Bounds[parseInt(pageOccurrence.toString(), 10)] = [];
@@ -317,7 +317,7 @@ export function PdfiumRunner(): void {
                             (a: any, b: any): number => {
                                 return a.Top === b.Top ? a.Left - b.Left : a.Top - b.Top;
                             });
-                        pageSearchCounts[parseInt(a.toString(), 10)].pageOccurrence = pageOccurrence + 1;
+                        pageSearchCounts[parseInt(a.toString(), 10)].PageOccurrence = pageOccurrence + 1;
                     }
                     FPDF.TextFindClose(searchHandle);
                     FPDF.ClosePage(page);

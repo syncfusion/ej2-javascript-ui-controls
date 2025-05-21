@@ -65,7 +65,7 @@ export class _JsonDocument extends _ExportHelper {
                 this._jsonData.push(this._doubleQuotes, this._colon, this._openingBracket);
                 for (let j: number = 0; j < value.length; j++) {
                     this._jsonData.push(this._doubleQuotes);
-                    const entry: string = value[Number.parseInt(j.toString(), 10)];
+                    const entry: string = value[<number>j];
                     for (let k: number = 0; k < entry.length; k++) {
                         this._jsonData.push(entry.charCodeAt(k));
                     }
@@ -441,13 +441,13 @@ export class _JsonDocument extends _ExportHelper {
             if (_isNullOrUndefined(value)) {
                 const styleTable: Map<string, string> = new Map<string, string>();
                 const textStyle: string[] = value.split(';');
-                for (let i: number = 0; i < textStyle.length; i++) {
-                    const text: string[] = textStyle[Number.parseInt(i.toString(), 10)].split(':');
+                textStyle.forEach((item: string) => {
+                    const text: string[] = item.split(':');
                     if (text && text.length > 0 && text[0] && text[0].length > 1 && text[0].startsWith(' ')) {
                         text[0] = text[0].substring(1);
                     }
                     styleTable.set(text[0], text[1]);
-                }
+                });
                 this._table.set('defaultStyle', this._convertToJson(styleTable));
             }
             break;
@@ -506,7 +506,7 @@ export class _JsonDocument extends _ExportHelper {
             if (elementCount % 2 === 0) {
                 let vertice: string = '';
                 for (let i: number = 0; i < elementCount - 1; i++) {
-                    vertice += this._getValue(vertices[Number.parseInt(i.toString(), 10)], true) + (i % 2 !== 0 ? ';' : ',');
+                    vertice += this._getValue(vertices[<number>i], true) + (i % 2 !== 0 ? ';' : ',');
                 }
                 vertice += this._getValue(vertices[elementCount - 1], true);
                 if (vertice && vertice !== '') {
@@ -521,7 +521,7 @@ export class _JsonDocument extends _ExportHelper {
             const points: Map<string, string> = new Map<string, string>();
             let json: string = '[';
             for (let j: number = 0; j < inkList.length; j++) {
-                json += '[' + this._getValue(inkList[Number.parseInt(j.toString(), 10)], true) + ']';
+                json += '[' + this._getValue(inkList[<number>j], true) + ']';
                 if (j < inkList.length - 1) {
                     json += ',';
                 }
@@ -742,12 +742,12 @@ export class _JsonDocument extends _ExportHelper {
         }
     }
     _writeArray(array: Map<string, string>[], value: any[], dictionary: _PdfDictionary, isColorSpace: boolean = false): void { // eslint-disable-line
-        for (let i: number = 0; i < value.length; i++) {
-            if (isColorSpace && typeof value[Number.parseInt(i.toString(), 10)] === 'string') {
+        value.forEach((item: any) => { // eslint-disable-line
+            if (isColorSpace && typeof item === 'string') {
                 this._isColorSpace = true;
             }
-            this._writeObject(null, value[Number.parseInt(i.toString(), 10)], dictionary, null, array, isColorSpace);
-        }
+            this._writeObject(null, item, dictionary, null, array, isColorSpace);
+        });
     }
     _convertToJson(table: Map<string, string>): string {
         let j: number = 0;
@@ -775,7 +775,7 @@ export class _JsonDocument extends _ExportHelper {
     _convertToJsonArray(array: Map<string, string>[]): string {
         let json: string = '[';
         for (let i: number = 0; i < array.length; i++) {
-            json += this._convertToJson(array[Number.parseInt(i.toString(), 10)]);
+            json += this._convertToJson(array[<number>i]);
             if (i < array.length - 1) {
                 json += ',';
             }
@@ -800,7 +800,7 @@ export class _JsonDocument extends _ExportHelper {
             const keys: string[] = Object.keys(json);
             if (keys && keys.length > 0) {
                 for (let i: number = 0; i < keys.length; i++) {
-                    const key: string = keys[Number.parseInt(i.toString(), 10)];
+                    const key: string = keys[<number>i];
                     const value = json[key]; // eslint-disable-line
                     if (Array.isArray(value)) {
                         if (this._fields.has('key')) {
@@ -833,7 +833,7 @@ export class _JsonDocument extends _ExportHelper {
                 const pageKeys: string[] = Object.keys(pageAnnotations);
                 if (pageKeys && pageKeys.length > 0) {
                     pageKeys.forEach((key: string) => {
-                        const pageIndex: number = Number.parseInt(key, 10);
+                        const pageIndex: number = Number(key);
                         if (typeof pageIndex !== 'undefined' && pageIndex < pageCount) {
                             const page: PdfPage = document.getPage(pageIndex);
                             const pageAnnotation: any = pageAnnotations[key]; // eslint-disable-line
@@ -942,8 +942,7 @@ export class _JsonDocument extends _ExportHelper {
                     });
                 }
                 if (this._groupHolders.length > 0) {
-                    for (let i: number = 0; i < this._groupHolders.length; i++) {
-                        const dictionary: _PdfDictionary = this._groupHolders[Number.parseInt(i.toString(), 10)];
+                    this._groupHolders.forEach((dictionary: _PdfDictionary) => {
                         const inReplyTo: string = dictionary.get('IRT');
                         if (inReplyTo && inReplyTo !== '') {
                             if (this._groupReferences.has(inReplyTo)) {
@@ -952,7 +951,7 @@ export class _JsonDocument extends _ExportHelper {
                                 delete dictionary._map.IRT;
                             }
                         }
-                    }
+                    });
                 }
                 this._groupHolders = [];
                 this._groupReferences = new Map<string, _PdfReference>();
@@ -1024,10 +1023,7 @@ export class _JsonDocument extends _ExportHelper {
             case 'oc':
                 if (value && dictionary.get('Subtype').name === 'Redact') {
                     outColor = value.split(',');
-                    const color: number[] = [];
-                    outColor.forEach((entry: string) => {
-                        color.push(Number.parseFloat(entry));
-                    });
+                    const color: number[] = outColor.map((entry: string) => Number.parseFloat(entry));
                     if (color && color.length > 0) {
                         dictionary.update('OC', color);
                     }
@@ -1126,14 +1122,14 @@ export class _JsonDocument extends _ExportHelper {
                 if (value && typeof value === 'string') {
                     let annotFlag: PdfAnnotationFlag = PdfAnnotationFlag.default;
                     const flags: string[] = value.split(',');
-                    for (let i: number = 0; i < flags.length; i++) {
-                        const flagType: PdfAnnotationFlag = _stringToAnnotationFlags(flags[Number.parseInt(i.toString(), 10)]);
-                        if (i === 0) {
+                    flags.forEach((flag: string, index: number) => {
+                        const flagType: PdfAnnotationFlag = _stringToAnnotationFlags(flag);
+                        if (index === 0) {
                             annotFlag = flagType;
                         } else {
                             annotFlag |= flagType;
                         }
-                    }
+                    });
                     dictionary.update('F', annotFlag);
                 }
                 break;
@@ -1157,7 +1153,7 @@ export class _JsonDocument extends _ExportHelper {
                 }
                 break;
             case 'q':
-                dictionary.update('Q', Number.parseInt(value, 10));
+                dictionary.update('Q', Number(value));
                 break;
             case 'inklist':
                 if (value) {
@@ -1196,10 +1192,7 @@ export class _JsonDocument extends _ExportHelper {
                 if (value && typeof value === 'string') {
                     const split: string[] = value.split(/[,;]/);
                     if (split && split.length > 0) {
-                        const vertices: number[] = [];
-                        for (let i: number = 0; i < split.length; i++) {
-                            vertices.push(Number.parseFloat(split[Number.parseInt(i.toString(), 10)]));
-                        }
+                        const vertices: number[] = split.map((value: string) => Number(value));
                         if (vertices.length > 0 && vertices.length % 2 === 0) {
                             dictionary.update('Vertices', vertices);
                         }
@@ -1320,12 +1313,7 @@ export class _JsonDocument extends _ExportHelper {
         }
     }
     _parseFloatPoints(value: string): number[] {
-        const dashes: string[] = value.split(',');
-        const dashArray: number[] = [];
-        dashes.forEach((dash: string) => {
-            dashArray.push(Number.parseFloat(dash));
-        });
-        return dashArray;
+        return value.split(',').map((dash: string) => Number.parseFloat(dash));
     }
     _addFloatPoints(dictionary: _PdfDictionary, key: string, value: number[]): void {
         if (value && value.length > 0) {
@@ -1430,7 +1418,7 @@ export class _JsonDocument extends _ExportHelper {
                     case 'bits':
                     case 'rate':
                     case 'channels':
-                        soundStream.dictionary.set(key, Number.parseInt(value, 10));
+                        soundStream.dictionary.set(key, Number(value));
                         break;
                     case 'encoding':
                         soundStream.dictionary.set('E', _PdfName.get(value));
@@ -1460,7 +1448,7 @@ export class _JsonDocument extends _ExportHelper {
                         this._addString(fileDictionary, 'UF', value);
                         break;
                     case 'size':
-                        size = Number.parseInt(value, 10);
+                        size = Number(value);
                         if (typeof size !== 'undefined') {
                             param.update('Size', size);
                             fileStream.dictionary.update('DL', size);
@@ -1513,7 +1501,7 @@ export class _JsonDocument extends _ExportHelper {
         if (keys.indexOf('name') !== -1) {
             value = _PdfName.get(element.name);
         } else if (keys.indexOf('int') !== -1) {
-            value = Number.parseInt(element.int, 10);
+            value = Number(element.int);
         } else if (keys.indexOf('fixed') !== -1) {
             value = Number.parseFloat(element.fixed);
         } else if (keys.indexOf('string') !== -1) {
@@ -1605,6 +1593,9 @@ export class _JsonDocument extends _ExportHelper {
             }
             if (isImage || (this._isImport && stream._isCompress)) {
                 stream._isCompress = false;
+                if (!isImage) {
+                    delete dictionary._map.Filter;
+                }
             } else {
                 if (dictionary.has('Length')) {
                     delete dictionary._map.Length;

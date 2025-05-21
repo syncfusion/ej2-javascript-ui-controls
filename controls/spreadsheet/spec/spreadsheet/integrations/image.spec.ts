@@ -448,6 +448,25 @@ describe('Image ->', () => {
         });
     });
 
+    describe('EJ2-958393 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Cell data not exported properly after image insertion', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].rows[2].cells[3].value.toString()).toBe('20');
+            helper.invoke('insertImage', [[{ src: "https://www.w3schools.com/images/w3schools_green.jpg", width: 110, height: 70 }], 'D3']);
+            const image: ImageModel = spreadsheet.sheets[0].rows[2].cells[3].image[0];
+            const imageOverlay: HTMLElement = helper.getElementFromSpreadsheet('#' + image.id);
+            expect(imageOverlay.style.backgroundImage).toBe('url("https://www.w3schools.com/images/w3schools_green.jpg")');
+            expect(spreadsheet.sheets[0].rows[2].cells[3].value.toString()).toBe('20');
+            done();
+        });
+    });
+
     describe('EJ2-882964 ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{}] }, done);

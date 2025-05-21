@@ -86,14 +86,14 @@ export class PdfAnnotationCollection {
             throw Error('Index out of range.');
         }
         if (!this._parsedAnnotations.has(index)) {
-            let dictionary: _PdfReference | _PdfDictionary = this._annotations[Number.parseInt(index.toString(), 10)];
+            let dictionary: _PdfReference | _PdfDictionary = this._annotations[<number>index];
             if (dictionary && dictionary instanceof _PdfReference) {
                 dictionary = this._crossReference._fetch(dictionary);
             }
             if (dictionary && dictionary instanceof _PdfDictionary) {
                 const annotation: PdfAnnotation = this._parseAnnotation(dictionary);
                 if (annotation) {
-                    annotation._ref = this._annotations[Number.parseInt(index.toString(), 10)];
+                    annotation._ref = this._annotations[<number>index];
                     this._parsedAnnotations.set(index, annotation);
                 }
             }
@@ -215,7 +215,7 @@ export class PdfAnnotationCollection {
         if (index < 0 || index >= this._annotations.length) {
             throw Error('Index out of range.');
         }
-        const reference: _PdfReference = this._annotations[Number.parseInt(index.toString(), 10)];
+        const reference: _PdfReference = this._annotations[<number>index];
         if (reference && this._page) {
             const array: _PdfReference[] = this._page._getProperty('Annots');
             const actualIndex: number = array.indexOf(reference);
@@ -260,8 +260,7 @@ export class PdfAnnotationCollection {
     _updateChildReference(annotation: PdfComment, collection: PdfPopupAnnotationCollection, flag: number): void {
         if (collection && collection.count > 0) {
             if (flag !== 30) {
-                for (let i: number = 0; i < collection.count; i++) {
-                    const childAnnotation: PdfPopupAnnotation = collection._collection[Number.parseInt(i.toString(), 10)];
+                collection._collection.forEach((childAnnotation: PdfPopupAnnotation, i: number) => {
                     if (childAnnotation && !childAnnotation._dictionary.has('IRT')) {
                         if (i === 0 || !collection._isReview) {
                             childAnnotation._dictionary.update('IRT', annotation._ref);
@@ -275,7 +274,7 @@ export class PdfAnnotationCollection {
                         }
                         this.add(childAnnotation);
                     }
-                }
+                });
             } else {
                 throw new Error('Could not add comments/reviews to the review');
             }
@@ -384,6 +383,7 @@ export class PdfAnnotationCollection {
                 case 'Sound':
                     annot = PdfSoundAnnotation._load(this._page, dictionary);
                     break;
+                case 'Caret':
                 case 'Highlight':
                 case 'Squiggly':
                 case 'StrikeOut':
@@ -418,17 +418,13 @@ export class PdfAnnotationCollection {
         if (typeof border === 'undefined' || border === null) {
             return false;
         }
-        for (let i: number = 0; i < border.length; i++) {
-            let val: number = 0;
-            const value: number = border[Number.parseInt(i.toString(), 10)];
-            if (value !== null && typeof value !== 'undefined') {
-                val = value;
-            }
-            if (val > 0) {
+        const isValid: boolean = !border.some((value: number) => {
+            if (typeof value === 'undefined' || value === null) {
                 return false;
             }
-        }
-        return true;
+            return value > 0;
+        });
+        return isValid;
     }
     _doPostProcess(isFlatten: boolean): void {
         let index: number = 0;
@@ -458,14 +454,14 @@ export class PdfAnnotationCollection {
                 index = this._annotations.indexOf(ref);
             }
             const annotationDictionary: _PdfDictionary = this._crossReference.
-                _fetch(this._annotations[Number.parseInt(index.toString(), 10)]);
+                _fetch(this._annotations[<number>index]);
             if (annotationDictionary && annotationDictionary.has('Parent')) {
                 const parentReference: _PdfReference = annotationDictionary.getRaw('Parent');
                 if ((parentReference && parentReference === ref) || ref ===
-                    this._annotations[Number.parseInt(index.toString(), 10)]) {
-                    const temp: _PdfReference = this._annotations[Number.parseInt(index.toString(), 10)];
-                    this._annotations[Number.parseInt(index.toString(), 10)] = this._annotations[Number.parseInt(tabIndex.toString(), 10)];
-                    this._annotations[Number.parseInt(tabIndex.toString(), 10)] = temp;
+                    this._annotations[<number>index]) {
+                    const temp: _PdfReference = this._annotations[<number>index];
+                    this._annotations[<number>index] = this._annotations[<number>tabIndex];
+                    this._annotations[<number>tabIndex] = temp;
                 }
             }
         }
@@ -569,7 +565,7 @@ export class PdfPopupAnnotationCollection {
         if (index < 0 || index >= this._collection.length) {
             throw Error('Index out of range.');
         }
-        return this._collection[Number.parseInt(index.toString(), 10)];
+        return this._collection[<number>index];
     }
     /**
      * Add a new popup annotation into the collection
@@ -604,7 +600,7 @@ export class PdfPopupAnnotationCollection {
             if (length === 0 || !this._isReview) {
                 annotation._dictionary.update('IRT', this._annotation._ref);
             } else {
-                annotation._dictionary.update('IRT', this._collection[Number.parseInt((length - 1).toString(), 10)]._ref);
+                annotation._dictionary.update('IRT', this._collection[<number>(length - 1)]._ref);
             }
             if (this._isReview) {
                 annotation._isReview = true;
@@ -666,9 +662,9 @@ export class PdfPopupAnnotationCollection {
      */
     removeAt(index: number): void {
         if (index > -1 && index < this._collection.length) {
-            const annotation: PdfPopupAnnotation = this._collection[Number.parseInt(index.toString(), 10)];
+            const annotation: PdfPopupAnnotation = this._collection[<number>index];
             if (this._isReview && index < this._collection.length - 1) {
-                const nextAnnotation: PdfPopupAnnotation = this._collection[Number.parseInt((index + 1).toString(), 10)];
+                const nextAnnotation: PdfPopupAnnotation = this._collection[<number>(index + 1)];
                 const previous: _PdfReference = annotation._dictionary._get('IRT');
                 nextAnnotation._dictionary.set('IRT', previous);
                 nextAnnotation._dictionary._updated = true;
@@ -695,8 +691,7 @@ export class PdfPopupAnnotationCollection {
         map.set(this._annotation._ref, this._annotation);
         if (collection && collection._comments && collection._comments.length > 0) {
             const remaining: PdfPopupAnnotation[] = [];
-            for (let i: number = 0; i < collection._comments.length; i++) {
-                const annotation: PdfPopupAnnotation = collection._comments[Number.parseInt(i.toString(), 10)];
+            collection._comments.forEach((annotation: PdfPopupAnnotation) => {
                 const reference: _PdfReference = annotation._dictionary._get('IRT') as _PdfReference;
                 if (annotation._isReview && reference && map.has(reference)) {
                     this._collection.push(annotation);
@@ -704,7 +699,7 @@ export class PdfPopupAnnotationCollection {
                 } else {
                     remaining.push(annotation);
                 }
-            }
+            });
             if (remaining.length > 0) {
                 collection._comments = remaining;
             } else {
@@ -737,8 +732,7 @@ export class PdfPopupAnnotationCollection {
         }
         if (collection && collection._comments && collection._comments.length > 0) {
             const remaining: PdfPopupAnnotation[] = [];
-            for (let i: number = 0; i < collection._comments.length; i++) {
-                const annotation: PdfPopupAnnotation = collection._comments[Number.parseInt(i.toString(), 10)];
+            collection._comments.forEach((annotation: PdfPopupAnnotation) => {
                 const dictionary: _PdfDictionary = annotation._dictionary;
                 const isReview: boolean = _checkReview(dictionary);
                 const reference: _PdfReference = dictionary._get('IRT') as _PdfReference;
@@ -747,7 +741,7 @@ export class PdfPopupAnnotationCollection {
                 } else {
                     remaining.push(annotation);
                 }
-            }
+            });
             if (remaining.length > 0) {
                 collection._comments = remaining;
             } else {
