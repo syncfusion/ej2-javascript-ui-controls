@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 29.2.7 (2025-05-27)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I723392` -  Fixed an issue where the target argument in the `taskbarEdited` event returned null when resizing a taskbar.
+- `#I723681` -  Resolved an issue where the end date of the last segment in a split taskbar was calculated incorrectly.
+- `#I725138` -  Fixed a misalignment issue in the timeline virtualization that occurred when dragging and dropping a taskbar and using `updateDataSource` method.
+
 ## 29.2.5 (2025-05-21)
 
 ### GanttChart

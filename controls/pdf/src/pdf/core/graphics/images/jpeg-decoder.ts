@@ -67,8 +67,12 @@ export class _JpegDecoder extends _ImageDecoder {
             this._imageStream.isImageStream = true;
             const entryLength: number = this._imageDataAsNumberArray.byteLength;
             this._imageStream.bytes = new Uint8Array(entryLength);
-            for (let i: number = 0; i < entryLength; i++) {
-                this._imageStream.bytes[<number>i] = this._getBuffer(i);
+            const chunkSize: number = 1024;
+            for (let offset: number = 0; offset < entryLength; offset += chunkSize) {
+                const length: number = Math.min(chunkSize, entryLength - offset);
+                for (let i: number = 0; i < length; i++) {
+                    this._imageStream.bytes[offset + i] = this._getBuffer(offset + i);
+                }
             }
             this._imageStream._isCompress = false;
             const dictionary: _PdfDictionary = new _PdfDictionary();

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.2.7 (2025-05-27)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Fixed an issue where Font is not parsed from default appearance from an existing list box field.
+
 ## 29.2.5 (2025-05-21)
 
 ### PDF Parser

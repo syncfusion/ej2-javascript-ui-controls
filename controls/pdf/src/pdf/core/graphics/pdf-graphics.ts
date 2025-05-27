@@ -1373,6 +1373,9 @@ export class PdfGraphics {
         if (!format) {
             format = new PdfStringFormat();
         }
+        if (value) {
+            value = this._normalizeText(font, value);
+        }
         const result: _PdfStringLayoutResult = layouter._layout(value, font, format, [bounds[2], bounds[3]]);
         if (!result._empty) {
             const rect: number[] = this._checkCorrectLayoutRectangle(result._actualSize, bounds[0], bounds[1], format);
@@ -1388,6 +1391,30 @@ export class PdfGraphics {
         }
         _addProcSet('Text', this._resourceObject);
         this._endMarkContent();
+    }
+    _normalizeText(font: PdfFont, value: string): string {
+        let resultantValue: string = '';
+        if (font instanceof PdfStandardFont) {
+            const result: number[] = [];
+            if (value !== null && typeof value !== 'undefined' && value.length > 0) {
+                for (let i: number = 0; i < value.length; i++) {
+                    const charCode: number = value.charCodeAt(i);
+                    if (charCode >= 0x4E00 && charCode <= 0x9FFF) {
+                        continue;
+                    } else {
+                        result.push(charCode);
+                    }
+                }
+            }
+            if (result && result.length > 0) {
+                for (let i: number = 0; i < result.length; ++i) {
+                    resultantValue += String.fromCharCode(result[Number.parseInt(i.toString(), 10)]);
+                }
+            }
+        } else {
+            resultantValue = value;
+        }
+        return resultantValue;
     }
     _buildUpPath(points: Array<number[]>, types: PathPointType[]): void {
         for (let i: number = 0; i < points.length; i++) {
@@ -1656,7 +1683,8 @@ export class PdfGraphics {
 
             this._drawLayoutResult(result, font, format, layoutRectangle);
             const internal: _UnicodeTrueTypeFont = this._currentFont._fontInternal;
-            if (internal && internal._fontDictionary && internal._fontDictionary._currentObj) {
+            if ((font instanceof PdfTrueTypeFont) && font.isUnicode &&
+                internal && internal._fontDictionary && internal._fontDictionary._currentObj) {
                 this._resourceMap.forEach((value: _PdfName, key: _PdfReference) => {
                     if (this._crossReference && this._crossReference._cacheMap
                         && !this._crossReference._cacheMap.has(key)) {

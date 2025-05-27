@@ -465,7 +465,7 @@ export class EditorHistory {
             }
             if (this.currentHistoryInfo.action === 'ReplaceAll') {
                 this.documentHelper.contentControlCollection = [];
-                this.owner.editorModule.layoutWholeDocument();
+                this.documentHelper.layout.layoutWholeDocument();
             } else if (selection.owner.isShiftingEnabled) {
                 if (!isNullOrUndefined(selection.editRegionHighlighters)) {
                     selection.editRegionHighlighters.clear();
@@ -608,7 +608,7 @@ export class EditorHistory {
         this.documentHelper.owner.isLayoutEnabled = true;
         this.documentHelper.renderedLists.clear();
         this.documentHelper.renderedLevelOverrides = [];
-        this.owner.editorModule.layoutWholeDocument();
+        this.documentHelper.layout.layoutWholeDocument();
         const selection: Selection = this.documentHelper.selection;
         selection.start.updatePhysicalPosition(true);
         if (selection.isEmpty) {

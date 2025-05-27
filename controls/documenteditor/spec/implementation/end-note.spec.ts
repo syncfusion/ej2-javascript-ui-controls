@@ -140,7 +140,7 @@ describe('Switch weblayout when track change revision added in endnote widget', 
         let length: number = editor.documentHelper.pages[editor.documentHelper.pages.length - 1].endnoteWidget.bodyWidgets.length;
         editor.layoutType = 'Continuous';
         editor.layoutType = 'Pages';
-        expect(() => { editor.editorModule.layoutWholeDocument() }).not.toThrowError();
+        expect(() => { editor.documentHelper.layout.layoutWholeDocument() }).not.toThrowError();
         expect(editor.documentHelper.pages[editor.documentHelper.pages.length - 1].endnoteWidget.bodyWidgets.length).toBe(length);
     });
 });

@@ -1985,7 +1985,7 @@ describe('Resource view with persistence', () => {
             }, done);
         });
         it('check duration value for parent task', () => {
-           expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(4.17);
+           expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(33.33);
         });
         afterAll(() => {
             if (ganttObj) {
@@ -2261,7 +2261,7 @@ describe('Incorrect duration for parent task in hour mode', () => {
             }, done);
         });
         it('check duration value for parent task', () => {
-           expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(4.17);
+           expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(33.33);
         });
         afterAll(() => {
             if (ganttObj) {

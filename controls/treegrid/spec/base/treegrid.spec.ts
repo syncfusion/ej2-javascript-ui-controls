@@ -3469,7 +3469,7 @@ describe('Remote data', () => {
     let gridObj: TreeGrid;
     let actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
     let data: Object = new DataManager({
-        url: 'https://ej2services.syncfusion.com/js/development/api/SelfReferenceData',
+        url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
         adaptor: new WebApiAdaptor,
         crossDomain: true
     });
@@ -3504,7 +3504,7 @@ describe('Remote data with TotalRecords count', () => {
     let gridObj: TreeGrid;
     let rows: HTMLTableRowElement[];
     let data: Object = new DataManager({
-        url: 'https://ej2services.syncfusion.com/js/development/api/SelfReferenceData',
+        url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
         adaptor: new WebApiAdaptor,
         crossDomain: true
     });
@@ -3757,7 +3757,7 @@ describe('code improvement', () => {
 describe('Remote data', () => {
     let gridObj: TreeGrid;
     let data: Object = new DataManager({
-        url: 'https://ej2services.syncfusion.com/js/development/api/SelfReferenceData',
+        url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
         adaptor: new WebApiAdaptor,
         crossDomain: true
     });
@@ -3797,7 +3797,7 @@ describe('Remote data', () => {
 // describe('Remote data', () => {
 //     let gridObj: TreeGrid;
 //     let data: Object = new DataManager({
-//         url: 'https://ej2services.syncfusion.com/js/development/api/SelfReferenceData',
+//         url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
 //         adaptor: new WebApiAdaptor,
 //         crossDomain: true
 //     });
@@ -3837,7 +3837,7 @@ describe('Remote data', () => {
 describe('Remote data', () => {
     let gridObj: TreeGrid;
     let data: Object = new DataManager({
-        url: 'https://ej2services.syncfusion.com/js/development/api/SelfReferenceData',
+        url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
         adaptor: new WebApiAdaptor,
         crossDomain: true
     });
@@ -3877,7 +3877,7 @@ describe('Remote data', () => {
 describe('Remote data', () => {
     let gridObj: TreeGrid;
     let data: Object = new DataManager({
-        url: 'https://ej2services.syncfusion.com/js/development/api/SelfReferenceData',
+        url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
         adaptor: new WebApiAdaptor,
         crossDomain: true
     });
@@ -3934,7 +3934,7 @@ describe('code coverage improvement', () => {
 describe('Remote data', () => {
     let gridObj: TreeGrid;
     let data: Object = new DataManager({
-        url: 'https://ej2services.syncfusion.com/js/development/api/SelfReferenceData',
+        url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
         adaptor: new WebApiAdaptor,
         crossDomain: true
     });
@@ -4468,6 +4468,39 @@ describe('Bug 908257: Last row border line is not visible', () => {
         const lastVisibleRow: HTMLTableRowElement = visibleRows[visibleRows.length - 1];
 
         expect(lastVisibleRow.cells[0].classList.contains('e-lastrowcell')).toBe(true);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+describe('coverage', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                frozenColumns: 2,
+                height: 400,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', textAlign: 'Right', width: 100 },
+                    { field: 'taskName', headerText: 'Task Name', width: 260 },
+                    { field: 'startDate', headerText: 'Start Date', width: 230, textAlign: 'Right', type: 'date', format: { type: 'dateTime', format: 'dd/MM/yyyy' } },
+                    { field: 'endDate', headerText: 'End Date', width: 230, textAlign: 'Right', type: 'date', format: { type: 'dateTime', format: 'dd/MM/yyyy' } },
+                ]
+            },
+            done
+        );
+    });
+
+    it('checking if last row border is visible after sorting', () => {
+        const columns = gridObj.columns;
+        gridObj['frozenLeftBorderColumns'](columns as any);
+        gridObj['frozenRightBorderColumns'](columns as any);
     });
 
     afterAll(() => {

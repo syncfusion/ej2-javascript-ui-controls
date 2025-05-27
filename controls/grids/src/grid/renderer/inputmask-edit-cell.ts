@@ -23,7 +23,8 @@ export class MaskedTextBoxCellEdit extends EditCellBase implements IEditCell {
                 value: getObject(args.column.field, args.rowData),
                 floatLabelType: isInlineEdit ? 'Never' : 'Always',
                 mask: '000-000-0000',
-                enabled: isEditable(args.column, args.requestType, args.element) && isCellHaveWidth(parentsUntil(args.element, 'e-rowcell')),
+                enabled: isEditable(args.column, args.requestType, args.element) &&
+                    isCellHaveWidth(parentsUntil(args.element, 'e-rowcell'), this.parent),
                 cssClass: this.parent.cssClass ? this.parent.cssClass : null
             },
             args.column.edit.params));

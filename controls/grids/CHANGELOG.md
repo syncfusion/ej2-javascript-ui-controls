@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 29.2.7 (2025-05-27)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I723930` - The issue where the browser scroll to the grid when it loads with initial grouping and empty data has been resolved.
+- `#I724420` - The issue where the Excel Filter Dialog operator sub-menu opened on the right side instead of the left in `RTL` mode, causing UI misalignment, has been resolved.
+
 ## 29.2.5 (2025-05-21)
 
 ### Grid

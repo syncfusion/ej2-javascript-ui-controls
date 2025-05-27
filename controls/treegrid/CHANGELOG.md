@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.2.7 (2025-05-27)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I722548` - Fixed an issue where records are in expanded state after searching when virtualization and collapseAll enabled.
+
 ## 29.1.39 (2025-04-22)
 
 ### Tree Grid

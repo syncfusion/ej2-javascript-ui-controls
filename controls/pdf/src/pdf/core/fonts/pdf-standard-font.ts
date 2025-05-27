@@ -1109,6 +1109,9 @@ export class PdfTrueTypeFont extends PdfFont {
                 width += this._getCharacterWidthInternal(line[<number>i]);
             }
         }
+        if (isNaN(width)) {
+            width = 0;
+        }
         width *= (0.001 * this._metrics._size);
         width = this._applyFormatSettings(line, format, width);
         return width;
@@ -1124,9 +1127,11 @@ export class PdfTrueTypeFont extends PdfFont {
         if (result && glyphIndex !== null) {
             const ttfReader: _TrueTypeReader = (this._fontInternal as _UnicodeTrueTypeFont)._ttfReader;
             glyphIndex.forEach((index: number) => {
-                const glyph: _TrueTypeGlyph = ttfReader._getGlyph(index);
-                if (glyph !== null && typeof glyph !== 'undefined') {
-                    width += glyph._width;
+                if (index !== null && typeof index !== 'undefined') {
+                    const glyph: _TrueTypeGlyph = ttfReader._getGlyph(index);
+                    if (glyph !== null && typeof glyph !== 'undefined') {
+                        width += glyph._width;
+                    }
                 }
             });
         }

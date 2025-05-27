@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 29.2.7 (2025-05-27)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I957375` - Resolved an issue where the fill color was not applied when changed from transparent to white.
+- `#I721139` - Fixed an issue where `retrieveFormFields` method returns empty values for Textbox and Password fields without injecting Form Designer module.
+
 ## 29.2.5 (2025-05-21)
 
 ### PDF Viewer
@@ -13,6 +22,7 @@
 - `#I719934` - Resolved an issue where custom fonts were not preserved in the downloaded document for form fields on the server side.
 - `#I720572` - Fixed an issue where the `fireFormFieldRemoveEvent` is not triggered when deleting the form fields on non-render pages.
 - `#I721617` - Resolved an issue where an undefined exception was thrown while accessing the destination page of child bookmarks in the provided document.
+- `#I723539` - Resolved an issue where importing text markup annotations was slow for large documents at higher zoom levels.
 
 ## 29.2.4 (2025-05-14)
 

@@ -624,6 +624,7 @@ export class TaskProcessor extends DateProcessor {
         let segments: ITaskSegment[];
         let sumOfDuration: number = 0;
         let remainingDuration: number = 0;
+        let totalOffsetDuration: number = 0;
         const predefinedProperties: string[] = [this.parent.taskFields.duration, this.parent.taskFields.endDate,
             this.parent.taskFields.startDate, this.parent.taskFields.id];
         const taskData: object[] = [];
@@ -697,8 +698,14 @@ export class TaskProcessor extends DateProcessor {
                         endDate = this.checkEndDate(endDate, data.ganttProperties, false);
                         duration = this.getDuration(startDate, endDate, data.ganttProperties.durationUnit,
                                                     data.ganttProperties.isAutoSchedule, data.ganttProperties.isMilestone);
+                        if (!isNullOrUndefined(ganttSegments[i - 1])) {
+                            totalOffsetDuration += this.getDuration(ganttSegments[i - 1].endDate, startDate,
+                                                                    data.ganttProperties.durationUnit, data.ganttProperties.isAutoSchedule,
+                                                                    data.ganttProperties.isMilestone);
+                            totalOffsetDuration = (totalOffsetDuration < 1) ? 1 : totalOffsetDuration;
+                        }
                         if (taskSettings.duration) {
-                            remainingDuration = data.ganttProperties.duration - sumOfDuration - 1 ;
+                            remainingDuration = data.ganttProperties.duration - sumOfDuration - totalOffsetDuration ;
                             if (remainingDuration <= 0) {
                                 continue;
                             }
@@ -706,8 +713,6 @@ export class TaskProcessor extends DateProcessor {
                                     duration > remainingDuration ? remainingDuration : duration;
                             endDate = this.getEndDate(startDate, duration, data.ganttProperties.durationUnit, data.ganttProperties, false);
                         } else if (!taskSettings.duration && taskSettings.endDate && endDate) {
-                            endDate = (!isNullOrUndefined(data.ganttProperties.endDate)) && endDate.getTime() >=
-                            data.ganttProperties.endDate.getTime() && i === segments.length - 1 ? data.ganttProperties.endDate : endDate;
                             duration = this.getDuration(
                                 startDate, endDate, data.ganttProperties.durationUnit, data.ganttProperties.isAutoSchedule,
                                 data.ganttProperties.isMilestone
@@ -1100,7 +1105,7 @@ export class TaskProcessor extends DateProcessor {
         if (!isNullOrUndefined(taskSettings.work)) {
             const durationUnit : DurationUnit = this.parent.taskFields.durationUnit && data[taskSettings.durationUnit] ?
                 data[taskSettings.durationUnit] : this.parent.durationUnit;
-            this.parent.setRecordValue('durationUnit', durationUnit, ganttProperties, true);
+            ganttProperties.durationUnit =  this.validateDurationUnitMapping(durationUnit);
             if (isNaN(work) || isNullOrUndefined(work)) {
                 this.parent.setRecordValue('work', 0, ganttProperties, true);
                 this.parent.setRecordValue('duration', 0, ganttProperties, true);

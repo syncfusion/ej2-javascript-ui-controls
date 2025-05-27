@@ -1,11 +1,12 @@
 /* eslint-disable */
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Dictionary } from '../../base/dictionary';
+import { TextPosition } from '../selection/selection-helper';
 import {
     HeaderFooterType, HorizontalAlignment, VerticalAlignment, HorizontalOrigin, HeightType, LineSpacingType, ListLevelPattern,
     TextAlignment, VerticalOrigin, TextWrappingStyle, FootEndNoteNumberFormat, CharacterRangeType, FontScriptType
 } from '../../base/types';
-import { BodyWidgetInfo, HelperMethods, LineElementInfo, SubWidthInfo, Point, FootNoteWidgetsInfo, WrapPosition, BlockInfo, SizeInfo, BorderRenderInfo, LineCountInfo } from '../editor/editor-helper';
+import { BodyWidgetInfo, HelperMethods, LineElementInfo, SubWidthInfo, Point, FootNoteWidgetsInfo, WrapPosition, BlockInfo, SizeInfo, BorderRenderInfo, LineCountInfo, ParagraphInfo } from '../editor/editor-helper';
 import { WBorder, WBorders, WCharacterFormat, WListFormat, WParagraphFormat, WTabStop, WSectionFormat, WCellFormat, WColumnFormat } from '../format/index';
 import { WAbstractList } from '../list/abstract-list';
 import { WLevelOverride } from '../list/level-override';
@@ -327,6 +328,54 @@ export class Layout {
         this.isMultiColumnDoc = undefined;
         this.isIFfield = undefined;
         this.isPastingContent = undefined;
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public layoutWholeDocument(isLayoutChanged?: boolean, skipClearContent?: boolean): void {
+        this.isInitialLoad = true;
+        this.isLayoutWhole = true;
+        let startPosition: TextPosition = undefined;
+        let endPosition: TextPosition = undefined;
+        let startIndex: string = undefined;
+        let endIndex: string = undefined;
+        if (this.documentHelper.selection) {
+            startPosition = this.documentHelper.selection.start;
+            endPosition = this.documentHelper.selection.end;
+            if (startPosition.isExistAfter(endPosition)) {
+                startPosition = this.documentHelper.selection.end.clone();
+                endPosition = this.documentHelper.selection.start.clone();
+            }
+            if (this.documentHelper.owner.layoutType == 'Continuous' && (this.documentHelper.selection.isinEndnote || this.documentHelper.selection.isinFootnote)) {
+                this.documentHelper.selection.footnoteReferenceElement(startPosition, endPosition);
+                startPosition = endPosition;
+            }
+            let startInfo: ParagraphInfo = this.documentHelper.selection.getParagraphInfo(startPosition);
+            let endInfo: ParagraphInfo = this.documentHelper.selection.getParagraphInfo(endPosition);
+            startIndex = this.documentHelper.selection.getHierarchicalIndex(startInfo.paragraph, startInfo.offset.toString());
+            endIndex = this.documentHelper.selection.getHierarchicalIndex(endInfo.paragraph, endInfo.offset.toString());
+        }
+        this.documentHelper.renderedLists.clear();
+        this.documentHelper.renderedLevelOverrides = [];
+        // this.viewer.owner.isLayoutEnabled = true;
+        let sections: BodyWidget[] = this.documentHelper.combineSection();
+        if (!skipClearContent) {
+            this.documentHelper.clearContent();
+        }
+        // this.documentHelper.layout.isRelayout = false;
+        this.layoutItems(sections, true);
+        // this.documentHelper.layout.isRelayout = true;
+        this.documentHelper.owner.isShiftingEnabled = false;
+
+        if (this.documentHelper.selection && this.documentHelper.owner.editorModule) {
+            this.documentHelper.owner.editorModule.setPositionForCurrentIndex(startPosition, startIndex);
+            this.documentHelper.owner.editorModule.setPositionForCurrentIndex(endPosition, endIndex);
+            this.documentHelper.selection.selectPosition(startPosition, endPosition);
+            this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection, undefined, isLayoutChanged);
+        }
+        this.isLayoutWhole = false;
+        this.isInitialLoad = false;
     }
 
     public layoutItems(sections: BodyWidget[], isReLayout: boolean, isContinuousSection?: boolean): void {

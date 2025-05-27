@@ -531,7 +531,7 @@ export class DateProcessor {
             durationValue = 0;
         } else {
             if (!durationUnit || durationUnit === 'day') {
-                durationValue = durationHours / totSeconds;
+                durationValue = (totSeconds === 0) ? 0 : durationHours / totSeconds;
             } else if (durationUnit === 'minute') {
                 durationValue = durationHours / 60;
             } else {

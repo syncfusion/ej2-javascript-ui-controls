@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 29.2.7 (2025-05-27)
+
+### Tab
+
+#### Bug Fixes
+
+- `#I717262` - The issue with `hideTab` not working correctly in mobile (popup) mode of the Tab component has been resolved.
+
+### Toolbar
+
+#### Bug Fixes
+
+- `#I705994` - The issue with the tooltip and click handling, which occurred when hovering over the toolbar item instead of the button has been resolved.
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I715938` - Resolved an issue in the Context Menu component where the scrollbar was not added when menu items were changed dynamically, and unwanted spacing was being added to the element.
+
 ## 29.2.5 (2025-05-21)
 
 ### ContextMenu

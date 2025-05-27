@@ -5432,6 +5432,7 @@ export class Gantt extends Component<HTMLElement>
                 }
             }
         }
+        this.ganttChartModule.scrollObject.element.scrollLeft = 0;
         this.dataSource = dataSource;
     }
 

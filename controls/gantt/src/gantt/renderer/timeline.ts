@@ -2384,7 +2384,7 @@ export class Timeline {
                 this.parent.element.querySelector('.e-timeline-header-container').scrollLeft = currentScrollLeft;
                 this.parent.timelineModule.isZoomToFit = false;
             }
-            if (isFrom === 'TaskbarEditing' && this.parent.enableTimelineVirtualization && (this.wholeTimelineWidth > this.parent.element.offsetWidth * 3  || (isNullOrUndefined(this.parent.projectStartDate) && isNullOrUndefined(this.parent.projectEndDate)))) {
+            if (isFrom === 'TaskbarEditing' && this.parent.enableTimelineVirtualization && (this.wholeTimelineWidth > this.parent.element.offsetWidth * 3)) {
                 this.parent.ganttChartModule.scrollObject.setScrollLeft(previousScrollLeft);
                 this.parent.ganttChartModule.scrollObject.updateContent();
             }

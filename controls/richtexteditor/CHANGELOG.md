@@ -8,6 +8,7 @@
 
 #### Bug Fixes
 
+- `#I723390` - Now, The issue with the Table Tools Alignment and Vertical Align Not Applied on Row/Column Selection has been resolved.
 - `#I724398` - Now, the issue with the console error while running `Vitest` unit tests in the rich text editor has been resolved.
 - `#FB67289` - Now, the issue where the Edit Link popup did not retain the URL after applying font color in the Rich Text Editor has been resolved.
 

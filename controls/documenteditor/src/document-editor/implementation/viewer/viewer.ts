@@ -3411,7 +3411,7 @@ export class DocumentHelper {
                         this.owner.viewer.preVisibleWidth = 0;
                     }
                     if ((!isNullOrUndefined(this.visibleBounds) && (currentVisibleWidth !== this.owner.viewer.preVisibleWidth))) {
-                        this.owner.editorModule.layoutWholeDocument();
+                        this.layout.layoutWholeDocument();
                         this.owner.viewer.preVisibleWidth = currentVisibleWidth;
                     }
                     if (this.resizerTimer) {
@@ -5055,6 +5055,72 @@ export class DocumentHelper {
         }
         return nextValidInline;
     }
+    /**
+     * @private
+     */
+    public combineSection(): BodyWidget[] {
+        let sections: BodyWidget[] = [];
+        let nextSection: BodyWidget = this.pages[0].bodyWidgets[0];
+        if (!isNullOrUndefined(this.owner.selectionModule)) {
+            this.removeEmptyPages(true);
+        }
+        do {
+            nextSection = this.combineSectionChild(nextSection, sections, false);
+        } while (nextSection);
+        for (let j: number = 0; j < this.pages.length; j++) {
+            this.pages[j].destroy();
+            j--;
+        }
+        return sections;
+    }
+    /**
+     * @private
+     */
+    public combineSectionChild(bodyWidget: BodyWidget, sections: BodyWidget[], destoryPage: boolean): BodyWidget {
+        let previousBodyWidget: BodyWidget = bodyWidget;
+        let temp: BodyWidget = new BodyWidget();
+        let emptyBody: boolean = false;
+        temp.sectionFormat = bodyWidget.sectionFormat;
+        temp.index = previousBodyWidget.index;
+        do {
+            emptyBody = false;
+            previousBodyWidget = bodyWidget;
+            if (bodyWidget.lastChild) {
+                (bodyWidget.lastChild as BlockWidget).combineWidget(this.owner.viewer);
+            }
+            bodyWidget = bodyWidget.nextRenderedWidget as BodyWidget;
+            for (let j: number = 0; j < previousBodyWidget.childWidgets.length; j++) {
+                let block: BlockWidget = previousBodyWidget.childWidgets[j] as BlockWidget;
+                if (block instanceof TableWidget) {
+                    this.layout.clearTableWidget(block, true, true, true);
+                } else {
+                    block.x = 0;
+                    block.y = 0;
+                    block.width = 0;
+                    block.height = 0;
+                }
+                temp.childWidgets.push(block);
+                previousBodyWidget.childWidgets.splice(j, 1);
+                j--;
+                block.containerWidget = temp;
+            }
+            for (let i: number = 0; i < previousBodyWidget.page.bodyWidgets.length; i++) {
+                if (previousBodyWidget.page.bodyWidgets[i].childWidgets.length === 0) {
+                    emptyBody = true;
+                } else {
+                    emptyBody = false;
+                    break;
+                }
+            }
+            if (emptyBody && destoryPage) {
+                previousBodyWidget.page.destroy();
+            }
+            // this.documentHelper.pages.splice(previousBodyWidget.page.index, 1);
+        } while (bodyWidget && previousBodyWidget.index === bodyWidget.index);
+        sections.push(temp);
+        return bodyWidget;
+    }
+
 }
 /**
  * @private
@@ -6223,7 +6289,7 @@ export abstract class LayoutViewer {
             this.documentHelper.scrollToPosition(this.documentHelper.selection.start, this.documentHelper.selection.end);
         }
         if (this instanceof WebLayoutViewer) {
-            this.owner.editorModule.layoutWholeDocument();
+            this.documentHelper.layout.layoutWholeDocument();
         }
     }
     public updateCanvasWidthAndHeight(viewerWidth: number, viewerHeight: number, containerHeight: number, containerWidth: number, width: number, height: number): CanvasInfo {

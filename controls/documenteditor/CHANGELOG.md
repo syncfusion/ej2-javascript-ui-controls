@@ -8,6 +8,18 @@
 
 #### Bug Fixes
 
+- `#I710210` - Fixed the issue with bookmark navigation in the editor.
+- `#I715670` - Addressed the problem where the `LinkToPrevious` property for header and footer table widgets was not updating correctly.
+- `#I713244` - Fixed the scrollbar not updating properly in the Document Editor when using Web Layout.
+- `#I710185` - Resolved the issue where pasted content inside a table was not tracked correctly.
+- `#I724703` - Fixed the issue with incorrect list numbering when pasting content.
+
+## 29.2.4 (2025-05-14)
+
+### DocumentEditor
+
+#### Bug Fixes
+
 - `#I709841`,`#I722525` - Improved editing performance when spell check is enabled.
 - `#I716525` - Fixed performance issues related to bookmark manipulation during editing operations.
 - `#I715428` - Resolved a script error that occurred when loading SFDT without injecting the editor module.

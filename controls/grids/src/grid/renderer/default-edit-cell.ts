@@ -37,7 +37,9 @@ export class DefaultEditCell extends EditCellBase implements IEditCell {
         const isInline: boolean = this.parent.editSettings.mode !== 'Dialog';
         const props: Object = {
             element: args.element as HTMLInputElement, floatLabelType: this.parent.editSettings.mode !== 'Dialog' ? 'Never' : 'Always',
-            enableRtl: this.parent.enableRtl, enabled: isEditable(args.column, args.requestType, args.element) && isCellHaveWidth(parentsUntil(args.element, 'e-rowcell')),
+            enableRtl: this.parent.enableRtl,
+            enabled: isEditable(args.column, args.requestType, args.element) &&
+                isCellHaveWidth(parentsUntil(args.element, 'e-rowcell'), this.parent),
             placeholder: isInline ? '' : args.column.headerText,
             cssClass: this.parent.cssClass ? this.parent.cssClass : ''
         };

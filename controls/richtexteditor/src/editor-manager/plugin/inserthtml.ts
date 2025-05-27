@@ -26,6 +26,7 @@ export class InsertHtml {
         'q', 'ruby', 's', 'samp', 'script', 'select', 'slot', 'small', 'span', 'strong', 'sub', 'sup', 'svg',
         'template', 'textarea', 'time', 'u', 'tt', 'var', 'video', 'wbr'];
     public static contentsDeleted: boolean = false;
+    private static isAnotherLiFromEndLi: boolean = false;
     public static Insert(
         docElement: Document, insertNode: Node | string,
         editNode?: Element, isExternal?: boolean, enterAction?: string): void {
@@ -305,7 +306,11 @@ export class InsertHtml {
                     nodeSelection.setSelectionContents(docElement, preNode);
                     range = nodeSelection.getRange(docElement); isSingleNode = true;
                 } else {
+                    const textContent: string = nodes[nodes.length - 1].textContent ? nodes[nodes.length - 1].textContent : '';
                     lasNode = nodeCutter.GetSpliceNode(range, nodes[nodes.length - 1].parentElement as HTMLElement);
+                    if (lasNode && lasNode.nodeName === 'LI' && lasNode.nextSibling && lasNode.nextSibling.nodeName === 'LI') {
+                        this.isAnotherLiFromEndLi = textContent === lasNode.textContent ? false : true;
+                    }
                     lasNode = isNOU(lasNode) ? preNode : lasNode;
                     nodeSelection.setSelectionText(docElement, preNode, lasNode, 0, (lasNode.nodeType === 3) ?
                         lasNode.textContent.length : lasNode.childNodes.length);
@@ -443,7 +448,9 @@ export class InsertHtml {
                         isFirstTextNode = false;
                     }
                 }
-                node.parentNode.replaceChild(fragment, node);
+                if (node.parentNode) {
+                    node.parentNode.replaceChild(fragment, node);
+                }
             }
         }
         if (lastSelectionNode instanceof Element && lastSelectionNode.nodeName === 'GOOGLE-SHEETS-HTML-ORIGIN') {
@@ -487,8 +494,21 @@ export class InsertHtml {
             }
             nodeSelection.setSelectionText(docElement, lastSelectionNode, lastSelectionNode, 0, 0);
         }
-        else if (lastSelectionNode) {
+        else if (editNode.contains(lastSelectionNode) && isNOU(editNode.querySelector('.paste-cursor'))) {
             this.cursorPos(lastSelectionNode, node, nodeSelection, docElement, editNode);
+        } else {
+            const cursorElm: HTMLElement = editNode.querySelector('.paste-cursor');
+            if (!isNOU(cursorElm)) {
+                nodeSelection.setCursorPoint(docElement, cursorElm, 0);
+                cursorElm.remove();
+            }
+            else {
+                const nodeList: NodeListOf<HTMLElement> = editNode.querySelectorAll('.pasteContent_RTE');
+                if (nodeList.length > 0) {
+                    const lastElement: HTMLElement = nodeList[nodeList.length - 1];
+                    this.cursorPos(lastElement, node, nodeSelection, docElement, editNode);
+                }
+            }
         }
         this.alignCheck(editNode as HTMLElement);
         this.listCleanUp(nodeSelection, docElement);
@@ -783,12 +803,21 @@ export class InsertHtml {
                         currentNode.nextSibling.nodeName === 'BR') {
                         detach(currentNode.nextSibling);
                     }
-                    if (currentNode.parentElement.nodeName === 'LI' && currentNode.parentElement.textContent === '') {
+                    if ((currentNode.parentElement.nodeName === 'LI' || currentNode.parentElement.closest('li')) &&
+                        currentNode.parentElement.textContent === '') {
                         this.removeListfromPaste(range);
                         if (currentNode.parentElement.childNodes.length === 1 && currentNode.nodeName === 'BR') {
                             detach(currentNode);
                         }
-                        range.insertNode(node);
+                        const filteredChildNodes: Node[] = Array.from(node.childNodes).filter((child: Node) => {
+                            return !(child.nodeName === 'LI' || child.nodeName === 'UL' || child.nodeName === 'OL');
+                        });
+                        const insertNodes: Node[] = this.extractChildNodes(node);
+                        if (filteredChildNodes.length > 0 && insertNodes.length > 1) {
+                            this.insertBlockNodesInLI(insertNodes, range);
+                        } else {
+                            range.insertNode(node);
+                        }
                         this.contentsDeleted = true;
                         return;
                     }
@@ -800,20 +829,599 @@ export class InsertHtml {
                     currentNode.nextSibling.nodeName === 'BR') {
                         detach(currentNode.nextSibling);
                     }
+                    const filteredChildNodes: Node[] = Array.from(node.childNodes).filter((child: Node) => {
+                        return !(child.nodeName === 'LI' || child.nodeName === 'UL' || child.nodeName === 'OL');
+                    });
+                    const mergeNode: Node = currentNode.parentElement;
+                    let cloneRange: Range | null = null;
+                    const isCollapsed: boolean = range.collapsed;
+                    const parentLi: Node = isCollapsed ? currentNode.parentElement.closest('LI') : null;
+                    let startLi: Node | null = null;
+                    let endLi: Node | null = null;
                     if (!range.collapsed) {
                         const startContainer: Node = range.startContainer;
                         const startOffset: number = range.startOffset;
+                        cloneRange = range.cloneRange();
+                        startLi = this.findLiFromContainer(cloneRange.startContainer);
+                        endLi = this.findLiFromContainer(cloneRange.endContainer);
                         this.removeListfromPaste(range);
+                        if (startLi && filteredChildNodes.length > 0) {
+                            this.removeEmptyAfterStartLI(startLi as HTMLElement, editNode as HTMLElement);
+                        }
                         range.setStart(startContainer, startOffset);
                         range.setEnd(startContainer, startOffset);
                     }
-                    range.insertNode(node);
+                    const blockNode: Node = this.getImmediateBlockNode(currentNode, node);
+                    if (isCollapsed && parentLi && filteredChildNodes.length > 0) {
+                        this.pasteLI(node, parentLi, mergeNode, blockNode, range, nodeCutter);
+                    } else if (!isCollapsed && startLi && endLi && filteredChildNodes.length > 0) {
+                        this.nonCollapsedInsertion(node, cloneRange, nodeCutter, endLi);
+                    } else {
+                        range.insertNode(node);
+                    }
                     this.contentsDeleted = true;
                     return;
                 } else {
                     splitedElm = nodeCutter.GetSpliceNode(range, blockNode as HTMLElement);
                 }
                 splitedElm.parentNode.replaceChild(node, splitedElm);
+            }
+        }
+    }
+    // Extracts child nodes of a node.
+    private static extractChildNodes(node: Node): Node[] {
+        const children: Node[] = [];
+        for (let i: number = 0; i < node.childNodes.length; i++) {
+            children.push(node.childNodes.item(i));
+        }
+        return children;
+    }
+
+    // Inserts a block nodes in separate list items.
+    private static insertBlockNodesInLI(children: Node[], range: Range): void {
+        children = this.processInsertNodes(children);
+        const fragment: DocumentFragment = document.createDocumentFragment();
+        for (const block of children) {
+            const newLi: HTMLElement = createElement('li');
+            newLi.appendChild(block.cloneNode(true));
+            fragment.appendChild(newLi);
+        }
+        this.unwrapInlineWrappers(fragment);
+        range.insertNode(fragment);
+    }
+
+    // Processes and adjusts the child nodes before any block.
+    private static processInsertNodes(children: Node[]): Node[] {
+        const result: Node[] = [];
+        let inlineGroup: Node[] = [];
+        for (const child of children) {
+            const isBlock: boolean = child.nodeType === Node.ELEMENT_NODE &&
+                CONSTANT.BLOCK_TAGS.indexOf((child as HTMLElement).nodeName.toLowerCase()) !== -1;
+            if (isBlock) {
+                if (inlineGroup.length > 0) {
+                    result.push(this.wrapInlineElementsInSpan(inlineGroup));
+                    inlineGroup = [];
+                }
+                result.push(child);
+            } else {
+                inlineGroup.push(child);
+            }
+        }
+        if (inlineGroup.length > 0) {
+            result.push(this.wrapInlineElementsInSpan(inlineGroup));
+        }
+        return result;
+    }
+
+    // Wraps inline elements in a span.
+    private static wrapInlineElementsInSpan(inlineNodes: Node[]): HTMLElement {
+        const wrapper: HTMLElement = createElement('span');
+        wrapper.className = 'inline-wrapper';
+        inlineNodes.forEach((node: Node) => wrapper.appendChild(node));
+        return wrapper;
+    }
+
+    // Unwraps inline wrappers
+    private static unwrapInlineWrappers(root: Node): void {
+        const wrappers: NodeListOf<HTMLElement> = (root as HTMLElement).querySelectorAll('.inline-wrapper');
+        wrappers.forEach((wrapper: HTMLElement) => {
+            const parent: Node = wrapper.parentNode;
+            if (!parent) {
+                return;
+            }
+            while (wrapper.firstChild) {
+                parent.insertBefore(wrapper.firstChild, wrapper);
+            }
+            parent.removeChild(wrapper);
+        });
+    }
+
+    // Remove empty list items after start LI
+    private static removeEmptyAfterStartLI(liElement: HTMLElement, editNode: HTMLElement): void {
+        this.clearIfCompletelyEmpty(liElement);
+        const rootList: HTMLElement = this.getRootList(liElement, editNode);
+        if (!rootList) {
+            return;
+        }
+        const listItems: NodeListOf<HTMLLIElement> = rootList.querySelectorAll('li');
+        listItems.forEach((item: HTMLLIElement) => {
+            if (this.isRemovableEmptyListItem(item, liElement)) {
+                detach(item);
+            }
+        });
+    }
+
+    // Clear if completely empty
+    private static clearIfCompletelyEmpty(li: HTMLElement): void {
+        if (li.textContent.length === 0 && !li.querySelector('audio,video,img,table,br,hr')) {
+            li.innerHTML = '';
+        }
+    }
+
+    // Get root list
+    private static getRootList(li: HTMLElement, editNode: HTMLElement): HTMLElement | null {
+        let rootList: HTMLElement = closest(li, 'ul,ol') as HTMLElement;
+        while (rootList && rootList.parentElement && editNode.contains(rootList.parentElement)) {
+            const parentRootList: HTMLElement = closest(rootList.parentElement, 'ul,ol') as HTMLElement;
+            if (editNode.contains(parentRootList)) {
+                rootList = parentRootList;
+            } else {
+                return rootList;
+            }
+        }
+        return rootList || null;
+    }
+
+    // Remove empty list items
+    private static isRemovableEmptyListItem(item: HTMLLIElement, skipElement: HTMLElement): boolean {
+        return item !== skipElement &&
+            item.textContent.trim() === '' &&
+            !item.querySelector('audio,video,img,table,br');
+    }
+
+    // Resolves a LI node from any container
+    private static findLiFromContainer(container: Node): Node | null {
+        if (container.nodeName === 'LI') {
+            return container;
+        }
+
+        let parent: Node = container.parentNode;
+        while (parent && parent.nodeName !== 'LI') {
+            parent = parent.parentNode;
+        }
+        return parent;
+    }
+
+    //Handles non-collapsed list insertion logic for splitting and merging list items based on selection range.
+    private static nonCollapsedInsertion(node: Node, cloneRange: Range, nodeCutter: NodeCutter, endSelectionLi: Node): void {
+        let children: Node[] = this.extractChildNodes(node);
+        children = this.processInsertNodes(children);
+        const startContainer: Node = cloneRange.startContainer;
+        const endContainer: Node = cloneRange.endContainer;
+        const parentLi: HTMLElement = this.getClosestLi(startContainer);
+        const previousLi: HTMLElement = this.getPreviousLi(parentLi);
+        let endLi: HTMLElement = this.getNextLi(parentLi);
+        const parentList: Node = parentLi.parentNode;
+        if (endLi && parentList === endContainer) {
+            if ((endContainer.nodeName === 'UL' || endContainer.nodeName === 'OL') && endSelectionLi.textContent === '') {
+                endLi = null;
+            }
+        }
+        if (startContainer === endContainer || !endLi && !this.isAnotherLiFromEndLi ||
+            this.isAnotherLiFromEndLi && parentList !== endContainer) {
+            this.handleSingleLiInsertion(parentLi, previousLi, endLi, children, startContainer, cloneRange, nodeCutter, parentList);
+        } else {
+            this.handleMultiLiInsertion(parentLi, children, startContainer, endContainer, parentList);
+        }
+        this.unwrapInlineWrappers(parentList);
+    }
+
+    // Returns the nearest ancestor LI element for a given node
+    private static getClosestLi(node: Node): HTMLElement {
+        let current: Node = node.nodeType === Node.TEXT_NODE ? node.parentNode : node;
+        while (current && current.nodeName !== 'LI') {
+            current = current.parentNode;
+        }
+        return current as HTMLElement;
+    }
+
+    // Returns the previous LI sibling if available
+    private static getPreviousLi(li: Node): HTMLElement {
+        const prev: Node = li.previousSibling;
+        return (prev && prev.nodeName === 'LI') ? prev as HTMLElement : null;
+    }
+
+    // Returns the next LI sibling if available
+    private static getNextLi(li: Node): HTMLElement {
+        const next: Node = li.nextSibling;
+        return (next && next.nodeName === 'LI') ? next as HTMLElement : null;
+    }
+
+    // Appends list items to a fragment and returns the last appended list item
+    private static appendListItems(fragment: DocumentFragment, children: Node[],
+                                   startIndex: number, endIndex: number): HTMLLIElement | null {
+        let lastNewLi: HTMLLIElement = null;
+        for (let i: number = startIndex; i < endIndex; i++) {
+            const li: HTMLLIElement = document.createElement('li');
+            li.appendChild(children[i as number]);
+            fragment.appendChild(li);
+            lastNewLi = li;
+        }
+        return lastNewLi;
+    }
+
+    // Handles insertion when start and end container are in different LIs
+    private static moveSiblingsToLiAndInsert(fromNode: Node, targetLi: HTMLElement, fragment: DocumentFragment,
+                                             parentLi: HTMLElement, parentList: Node): void {
+        const elementsToMove: ChildNode[] = [];
+        while (fromNode) {
+            elementsToMove.push(fromNode as ChildNode);
+            fromNode = fromNode.nextSibling;
+        }
+        for (let i: number = 0; i < elementsToMove.length; i++) {
+            if (parentLi.contains(elementsToMove[i as number])) {
+                parentLi.removeChild(elementsToMove[i as number]);
+            }
+        }
+        for (let i: number = 0; i < elementsToMove.length; i++) {
+            targetLi.appendChild(elementsToMove[i as number]);
+        }
+        if (parentLi.nextSibling) {
+            parentList.insertBefore(fragment, parentLi.nextSibling);
+        } else {
+            parentLi.appendChild(fragment);
+        }
+    }
+
+    // Handles insertion when start and end container are in same LI or no end LI
+    private static handleSingleLiInsertion(parentLi: HTMLElement, previousLi: HTMLElement, endLi: HTMLElement, children: Node[],
+                                           startContainer: Node, cloneRange: Range, nodeCutter: NodeCutter, parentList: Node): void {
+        const fragment: DocumentFragment = document.createDocumentFragment();
+        this.extractNestedListsIntoNewListItem(parentLi);
+        let middleLi: Node = null;
+        let lastNode: Node = null;
+        let preNode: Node = parentLi.hasChildNodes() &&
+            (parentLi.lastChild.nodeType === Node.TEXT_NODE || parentLi.textContent === '')
+            ? parentLi : parentLi.lastChild;
+        if (startContainer && startContainer.textContent && startContainer.textContent.length > 0) {
+            middleLi = nodeCutter.GetSpliceNode(cloneRange, startContainer as HTMLElement);
+            preNode = middleLi.previousSibling !== previousLi ? middleLi.previousSibling : null;
+            lastNode = middleLi.nextSibling !== endLi ? middleLi.nextSibling : null;
+        }
+        const firstBlock: Node = children[0];
+        const isSingleBlock: boolean = children.length === 1;
+        if (isSingleBlock) {
+            if (lastNode) {
+                this.addCursorMarker(lastNode);
+                this.moveAllChildren(lastNode, firstBlock);
+                lastNode.parentNode.removeChild(lastNode);
+            } else {
+                this.addCursorMarker(firstBlock, true);
+            }
+        }
+        if (preNode && preNode !== previousLi && preNode.textContent && preNode.textContent.length > 0) {
+            this.moveAllChildren(firstBlock, preNode);
+        } else if (isSingleBlock && parentLi.textContent === '') {
+            parentLi.appendChild(firstBlock);
+        } else {
+            const newLi: HTMLLIElement = document.createElement('li');
+            newLi.appendChild(firstBlock);
+            fragment.appendChild(newLi);
+        }
+        const lastNewLi: HTMLLIElement = this.appendListItems(fragment, children, 1, children.length);
+        if (lastNewLi && lastNode) {
+            this.addCursorMarker(lastNode);
+            this.mergeLastNodeContent(lastNode, lastNewLi);
+        }
+        const shouldInsertAfter: boolean = lastNode && (lastNode.nodeName === 'LI' || !lastNode.nextSibling);
+        if (shouldInsertAfter) {
+            parentList.insertBefore(fragment, parentLi.nextSibling);
+            if (lastNode && lastNode.parentNode && lastNode.textContent.length === 0) {
+                lastNode.parentNode.removeChild(lastNode);
+            }
+        } else if (lastNewLi) {
+            this.moveSiblingsToLiAndInsert(lastNode, lastNewLi, fragment, parentLi, parentList);
+        }
+        if (middleLi && middleLi.parentNode && middleLi.textContent === '') {
+            middleLi.parentNode.removeChild(middleLi);
+        }
+        if (parentLi && parentLi.parentNode && parentLi.textContent === '') {
+            parentLi.parentNode.removeChild(parentLi);
+        }
+    }
+
+    // Handles insertion when selection spans multiple LIs
+    private static handleMultiLiInsertion(parentLi: HTMLElement, children: Node[], startContainer: Node,
+                                          endContainer: Node, parentList: Node): void {
+        const fragment: DocumentFragment = document.createDocumentFragment();
+        this.extractNestedListsIntoNewListItem(parentLi);
+        const endLi: Node = parentLi.nextSibling;
+        this.extractNestedListsIntoNewListItem(endLi);
+        startContainer = startContainer.nodeType === Node.TEXT_NODE ? startContainer.parentNode : startContainer;
+        if (endContainer.textContent === '' && endContainer.nextSibling) {
+            endContainer = endContainer.nextSibling;
+        }
+        if (!endLi.contains(endContainer) || endContainer.nodeName === 'UL' || endContainer.nodeName === 'OL') {
+            endContainer = endLi;
+        }
+        const firstBlock: Node = children[0];
+        const lastBlock: Node = children[children.length - 1];
+        if (endContainer.nodeType === Node.TEXT_NODE && children.length > 1) {
+            lastBlock.appendChild(endContainer);
+        } else if (children.length > 1) {
+            this.addCursorMarker(endContainer);
+            this.moveAllChildren(endContainer, lastBlock);
+            endLi.insertBefore(lastBlock, endLi.firstChild);
+            (endLi as HTMLElement).style.removeProperty('list-style-type');
+        }
+        if (children.length === 1) {
+            this.addCursorMarker(endContainer);
+            this.moveAllChildren(endContainer, firstBlock);
+            if (endLi && endLi.parentNode) {
+                endLi.parentNode.removeChild(endLi);
+            }
+        }
+        let lastNewLi: HTMLLIElement = null;
+        if (startContainer.textContent.length > 0 && parentLi.textContent.length > 0) {
+            this.moveAllChildren(firstBlock, startContainer);
+        } else {
+            const newLi: HTMLLIElement = document.createElement('li');
+            newLi.appendChild(firstBlock);
+            fragment.appendChild(newLi);
+            if (children.length === 1) {
+                lastNewLi = newLi;
+            }
+        }
+        if (isNOU(lastNewLi)) {
+            lastNewLi = this.appendListItems(fragment, children, 1, children.length - 1);
+        }
+        if (isNOU(startContainer.nextSibling)) {
+            parentList.insertBefore(fragment, parentLi.nextSibling);
+        } else if (lastNewLi) {
+            this.moveSiblingsToLiAndInsert(startContainer.nextSibling, lastNewLi, fragment, parentLi, parentList);
+        }
+        if (parentLi.textContent === '' && parentLi.parentNode) {
+            parentLi.parentNode.removeChild(parentLi);
+        }
+    }
+
+    // Handles insertion for collapsed selection
+    private static pasteLI(node: Node, parentLi: Node, mergeNode: Node, blockNode: Node, range: Range, nodeCutter: NodeCutter): void {
+        let children: Node[] = this.extractChildNodes(node);
+        children = this.processInsertNodes(children);
+        const blockNodeLength: number = this.getBlockNodeLength(blockNode);
+        const parentList: Node = parentLi.parentNode;
+        let isStart: boolean = true;
+        let isEnd: boolean = false;
+        if (parentLi.contains(mergeNode) && mergeNode.previousSibling && mergeNode.previousSibling.nodeName !== 'LI') {
+            isStart = false;
+        }
+        if (parentLi.contains(mergeNode) && (isNOU(mergeNode.nextSibling) || mergeNode.nextSibling && ['LI', 'UL', 'OL'].indexOf(mergeNode.nextSibling.nodeName) !== -1) && range.startOffset === mergeNode.textContent.length) {
+            let previousSib: Node = mergeNode.previousSibling;
+            let textLength: number = range.startOffset;
+            while (previousSib && previousSib.nodeName !== 'LI') {
+                textLength += previousSib.textContent.length;
+                previousSib = previousSib.previousSibling;
+            }
+            isEnd = textLength === blockNodeLength;
+        }
+        const isAtStart: boolean = range.startOffset === 0 && isStart;
+        const isAtEnd: boolean = range.startOffset === blockNodeLength || isEnd;
+        if (isAtStart) {
+            this.handlePasteAtStart(children, parentLi, mergeNode, parentList);
+        } else if (isAtEnd) {
+            this.handlePasteAtEnd(children, parentLi, mergeNode, parentList);
+        } else {
+            this.handlePasteInMiddle(children, parentLi, mergeNode, range, parentList, nodeCutter);
+        }
+        this.unwrapInlineWrappers(parentList);
+    }
+
+    // Handles insertion at start
+    private static handlePasteAtStart(children: Node[], parentLi: Node, mergeNode: Node, parentList: Node): void {
+        const lastBlock: Node = children[children.length - 1];
+        this.addCursorMarker(mergeNode);
+        if (mergeNode.nodeType === Node.TEXT_NODE) {
+            lastBlock.appendChild(mergeNode);
+        } else {
+            this.moveAllChildren(mergeNode, lastBlock);
+            parentLi.insertBefore(lastBlock, parentLi.firstChild);
+        }
+        const fragment: DocumentFragment = this.createLiFragment(children, 0, children.length - 1); // exclude last
+        parentList.insertBefore(fragment, parentLi);
+    }
+
+    // Handles insertion at end
+    private static handlePasteAtEnd(children: Node[], parentLi: Node, mergeNode: Node, parentList: Node): void {
+        const firstBlock: Node = children[0];
+        const hasNestedList: HTMLElement | null = this.hasNestedListInsideLi(mergeNode);
+        if (mergeNode.nodeName === 'LI' && hasNestedList) {
+            const movedNodes: Node[] = this.collectAndRemoveFollowingNodes(parentLi, hasNestedList);
+            this.moveAllChildren(firstBlock, mergeNode);
+            movedNodes.forEach((node: Node) => mergeNode.appendChild(node));
+        }
+        else {
+            this.moveAllChildren(firstBlock, mergeNode);
+        }
+        const fragment: DocumentFragment = this.createLiFragment(children, 1, children.length); // exclude first
+        const lastNewLi: HTMLLIElement = fragment.lastChild as HTMLLIElement | null;
+        if (isNOU(mergeNode.nextSibling) && isNOU(hasNestedList) || mergeNode.nodeName === 'LI' && isNOU(hasNestedList)) {
+            parentList.insertBefore(fragment, parentLi.nextSibling);
+        } else if (lastNewLi) {
+            const movedNodes: Node[] = this.collectAndRemoveFollowingNodes(parentLi, hasNestedList ? hasNestedList : mergeNode.nextSibling);
+            movedNodes.forEach((node: Node) => lastNewLi.appendChild(node));
+            this.insertFragmentAfterLi(fragment, parentLi, parentList);
+        }
+    }
+
+    // Handles insertion in middle
+    private static handlePasteInMiddle(children: Node[], parentLi: Node, mergeNode: Node,
+                                       range: Range, parentList: Node, nodeCutter: NodeCutter): void {
+        const middleLi: Node = nodeCutter.GetSpliceNode(range, mergeNode as HTMLElement);
+        const preNode: Node = middleLi.previousSibling;
+        const lastNode: Node = middleLi.nextSibling;
+        const firstBlock: Node = children[0];
+        if (children.length === 1) {
+            this.addCursorMarker(lastNode);
+            this.moveAllChildren(lastNode, firstBlock);
+        }
+        this.moveAllChildren(firstBlock, preNode);
+        const fragment: DocumentFragment = this.createLiFragment(children, 1, children.length); // exclude first
+        const lastNewLi: HTMLLIElement = fragment.lastChild as HTMLLIElement | null;
+        if (lastNewLi) {
+            this.addCursorMarker(lastNode);
+            this.mergeLastNodeContent(lastNode, lastNewLi);
+        }
+        if ((lastNode && isNOU(lastNode.nextSibling) && lastNewLi) || lastNode.nodeName === 'LI') {
+            parentList.insertBefore(fragment, parentLi.nextSibling);
+            if (lastNode.textContent.length === 0) {
+                lastNode.parentNode.removeChild(lastNode);
+            }
+        } else if (lastNewLi) {
+            const movedNodes: Node[] = this.collectAndRemoveFollowingNodes(parentLi, lastNode);
+            movedNodes.forEach((node: Node) => lastNewLi.appendChild(node));
+            this.insertFragmentAfterLi(fragment, parentLi, parentList);
+        }
+        middleLi.parentNode.removeChild(middleLi);
+    }
+
+    // Checks if there is any nested list inside li
+    private static hasNestedListInsideLi(node: Node): HTMLElement | null {
+        if (node.nodeName === 'LI') {
+            for (const child of Array.from((node as Element).children)) {
+                if (child.tagName === 'UL' || child.tagName === 'OL') {
+                    return child as HTMLElement;
+                }
+            }
+        }
+        const closestLi: HTMLElement = (node as Element).closest('LI') as HTMLElement;
+        if (!closestLi) {
+            return null;
+        }
+        for (const child of Array.from(closestLi.children)) {
+            if (child.tagName === 'UL' || child.tagName === 'OL') {
+                return child as HTMLElement;
+            }
+        }
+        return null;
+    }
+
+    // Returns the length of block node
+    private static getBlockNodeLength(blockNode: Node): number {
+        if (blockNode.nodeName === 'LI') {
+            let length: number = 0;
+            for (const child of Array.from(blockNode.childNodes)) {
+                if (child.nodeType === Node.ELEMENT_NODE && ['UL', 'OL'].indexOf((child as HTMLElement).tagName) !== -1) {
+                    break;
+                }
+                length += child.textContent ? child.textContent.length : 0;
+            }
+            return length;
+        }
+        return blockNode.textContent ? blockNode.textContent.length : 0;
+    }
+
+    // Adds cursor marker
+    private static addCursorMarker(lastNode: Node, isEnd?: boolean): void {
+        const span: HTMLSpanElement = document.createElement('span');
+        span.className = 'paste-cursor';
+        if (isEnd) {
+            lastNode.appendChild(span);
+        } else {
+            lastNode.insertBefore(span, lastNode.firstChild);
+        }
+    }
+
+    // Checks if list item has another list
+    private static extractNestedListsIntoNewListItem(listItem: Node): void {
+        const childNodes: Node[] = Array.from(listItem.childNodes);
+        const listNodes: Node[] = [];
+        // Find ul/ol nodes
+        for (const node of childNodes) {
+            if (node.nodeType === Node.ELEMENT_NODE &&
+                ((node as HTMLElement).tagName === 'UL' || (node as HTMLElement).tagName === 'OL')) {
+                listNodes.push(node);
+            }
+        }
+        if (listNodes.length > 0) {
+            // Create a new <li>
+            const newLi: HTMLLIElement = document.createElement('li');
+            // Move ul/ol into the new <li>
+            for (const list of listNodes) {
+                newLi.appendChild(list);
+            }
+            // Insert new <li> after mergeNode
+            const parent: Node = listItem.parentNode;
+            if (parent) {
+                const next: Node = listItem.nextSibling;
+                if (next) {
+                    parent.insertBefore(newLi, next);
+                } else {
+                    parent.appendChild(newLi);
+                }
+            }
+        }
+    }
+
+    // Creates a fragment of list items
+    private static createLiFragment(nodes: Node[], start: number, end: number): DocumentFragment {
+        const fragment: DocumentFragment = document.createDocumentFragment();
+        for (let i: number = start; i < end; i++) {
+            const li: HTMLLIElement = document.createElement('li');
+            li.appendChild(nodes[i as number]);
+            fragment.appendChild(li);
+        }
+        return fragment;
+    }
+
+    // Collects and removes following nodes
+    private static collectAndRemoveFollowingNodes(parentLi: Node, startNode: Node | null): ChildNode[] {
+        const nodes: ChildNode[] = [];
+        let current: ChildNode | null = startNode as ChildNode;
+        while (current) {
+            const next: Node = current.nextSibling;
+            nodes.push(current);
+            parentLi.removeChild(current);
+            current = next as ChildNode;
+        }
+        return nodes;
+    }
+
+    // Inserts fragment after list item
+    private static insertFragmentAfterLi(fragment: DocumentFragment, parentLi: Node, parentList: Node): void {
+        if (parentLi.nextSibling) {
+            parentList.insertBefore(fragment, parentLi.nextSibling);
+        } else {
+            parentLi.appendChild(fragment);
+        }
+    }
+
+    // Moves all children
+    private static moveAllChildren(sourceNode: Node, targetNode: Node): void {
+        while (sourceNode.firstChild) {
+            const firstChild: ChildNode | null = sourceNode.firstChild;
+            if (firstChild.nodeName === 'UL' || firstChild.nodeName === 'OL') {
+                return;
+            }
+            targetNode.appendChild(firstChild);
+        }
+    }
+
+    // Merges last node content
+    private static mergeLastNodeContent(lastNode: Node, lastNewLi: HTMLLIElement): void {
+        while (lastNode && lastNode.firstChild) {
+            const firstChild: ChildNode | null = lastNode.firstChild;
+            if (!firstChild) {
+                continue;
+            }
+            const isBlockTag: boolean = CONSTANT.BLOCK_TAGS.indexOf(firstChild.nodeName.toLowerCase()) >= 0;
+            if (!isBlockTag) {
+                lastNewLi.lastChild.appendChild(firstChild);
+            } else if (firstChild.nodeName === 'UL' || firstChild.nodeName === 'OL') {
+                lastNewLi.appendChild(firstChild);
+            } else {
+                this.moveAllChildren(firstChild, lastNewLi.lastChild);
+                lastNode.removeChild(firstChild);
             }
         }
     }

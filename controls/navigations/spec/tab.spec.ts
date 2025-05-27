@@ -4085,58 +4085,67 @@ describe('Tab Control', () => {
             }, 1000);
         });
     });
-    // describe('hideTab method testing for multiple hide and show', () => {
-    //     let tabObj: Tab;
-    //     beforeEach((): void => {
-    //         tabObj = undefined;
-    //         let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
-    //         document.body.appendChild(ele);
-    //     });
-    //     afterEach((): void => {
-    //         if (tabObj) {
-    //             tabObj.destroy();
-    //         }
-    //         document.body.innerHTML = '';
-    //     });
-    //     it('Tab Hide/Show - Complex multi-step operation with active and hidden validations', () => {
-    //         tabObj = new Tab({
-    //             selectedItem: 0,
-    //             items: [
-    //                 { header: { text: 'Tab1' }, content: 'Content1' }, // index 0
-    //                 { header: { text: 'Tab2' }, content: 'Content2' }, // index 1
-    //                 { header: { text: 'Tab3' }, content: 'Content3' }, // index 2
-    //                 { header: { text: 'Tab4' }, content: 'Content4' }, // index 3
-    //                 { header: { text: 'Tab5' }, content: 'Content5' }, // index 4
-    //                 { header: { text: 'Tab6' }, content: 'Content6' }  // index 5
-    //             ]
-    //         });
-    //         tabObj.appendTo('#ej2Tab');
-    //         let element: HTMLElement = document.getElementById('ej2Tab');
-    //         const tabHeaderItems = () => Array.from(document.querySelectorAll('.e-tab .e-toolbar-item')) as HTMLElement[];
+    describe('hideTab method testing for multiple hide and show', () => {
+        let tabObj: Tab;
+        beforeEach((): void => {
+            tabObj = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tabObj) {
+                tabObj.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Tab Hide/Show - Complex multi-step operation with active and hidden validations', () => {
+            tabObj = new Tab({
+                selectedItem: 0,
+                items: [
+                    { header: { text: 'Tab1' }, content: 'Content1' }, // index 0
+                    { header: { text: 'Tab2' }, content: 'Content2' }, // index 1
+                    { header: { text: 'Tab3' }, content: 'Content3' }, // index 2
+                    { header: { text: 'Tab4' }, content: 'Content4' }, // index 3
+                    { header: { text: 'Tab5' }, content: 'Content5' }, // index 4
+                    { header: { text: 'Tab6' }, content: 'Content6' }  // index 5
+                ]
+            });
+            tabObj.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            let newItems: Object[] = [
+                { header: { "text": "item3" }, content: "Content3" }
+            ];
+            const tabHeaderItems = () => Array.from(document.querySelectorAll('.e-tab .e-toolbar-item')) as HTMLElement[];
 
-    //         tabObj.hideTab(2, true);  // Hide Tab3
-    //         tabObj.hideTab(4, true);  // Hide Tab5
-    //         tabObj.hideTab(5, true);  // Hide Tab6
-    //         tabObj.hideTab(3, false); // Show Tab4
+            tabObj.hideTab(2, true);  // Hide Tab3
+            tabObj.hideTab(4, true);  // Hide Tab5
+            tabObj.hideTab(5, true);  // Hide Tab6
+            tabObj.hideTab(3, false); // Show Tab4
 
-    //         let items = tabHeaderItems();
-    //         expect(element.querySelectorAll('.e-toolbar-item').item(2).classList.contains('e-hidden')).toEqual(true);
-    //         expect(element.querySelectorAll('.e-toolbar-item').item(4).classList.contains('e-hidden')).toEqual(true);
-    //         expect(element.querySelectorAll('.e-toolbar-item').item(5).classList.contains('e-hidden')).toEqual(true);
-    //         expect(element.querySelectorAll('.e-toolbar-item').item(3).classList.contains('e-hidden')).toEqual(false);
+            let items = tabHeaderItems();
+            expect(element.querySelectorAll('.e-toolbar-item').item(2).classList.contains('e-hidden')).toEqual(true);
+            expect(element.querySelectorAll('.e-toolbar-item').item(4).classList.contains('e-hidden')).toEqual(true);
+            expect(element.querySelectorAll('.e-toolbar-item').item(5).classList.contains('e-hidden')).toEqual(true);
+            expect(element.querySelectorAll('.e-toolbar-item').item(3).classList.contains('e-hidden')).toEqual(false);
 
-    //         tabObj.hideTab(3, true);  // Hide Tab4
-    //         tabObj.hideTab(2, false); // Show Tab3
-    //         tabObj.hideTab(4, false); // Show Tab5
-    //         tabObj.hideTab(5, false); // Show Tab6
+            tabObj.hideTab(3, true);  // Hide Tab4
+            tabObj.hideTab(2, false); // Show Tab3
+            tabObj.hideTab(4, false); // Show Tab5
+            tabObj.hideTab(5, false); // Show Tab6
 
-    //         items = tabHeaderItems();
-    //         expect(element.querySelectorAll('.e-toolbar-item').item(2).classList.contains('e-hidden')).toEqual(false);
-    //         expect(element.querySelectorAll('.e-toolbar-item').item(4).classList.contains('e-hidden')).toEqual(false);
-    //         expect(element.querySelectorAll('.e-toolbar-item').item(5).classList.contains('e-hidden')).toEqual(false);
-    //         expect(element.querySelectorAll('.e-toolbar-item').item(3).classList.contains('e-hidden')).toEqual(true);
-    //     });
-    // });
+            items = tabHeaderItems();
+            expect(element.querySelectorAll('.e-toolbar-item').item(2).classList.contains('e-hidden')).toEqual(false);
+            expect(element.querySelectorAll('.e-toolbar-item').item(4).classList.contains('e-hidden')).toEqual(false);
+            expect(element.querySelectorAll('.e-toolbar-item').item(5).classList.contains('e-hidden')).toEqual(false);
+            expect(element.querySelectorAll('.e-toolbar-item').item(3).classList.contains('e-hidden')).toEqual(true);
+
+            tabObj.addTab(newItems, 0);
+            tabObj.hideTab(0, true);
+            tabObj.hideTab(20, true);
+            tabObj.hideTab(-2, true);
+            expect(element.querySelectorAll('.e-toolbar-item').item(0).classList.contains('e-hidden')).toEqual(true);
+        });
+    });
     
     describe('hideTab method testing', () => {
         let tab: Tab;

@@ -50,7 +50,9 @@ export class DropDownEditCell extends EditCellBase implements IEditCell {
             {
                 dataSource: this.parent.dataSource instanceof DataManager ?
                     this.parent.dataSource : new DataManager(this.parent.dataSource),
-                query: new Query().where(pred).select(args.column.field), enabled: isEditable(args.column, args.requestType, args.element) && isCellHaveWidth(parentsUntil(args.element, 'e-rowcell')),
+                query: new Query().where(pred).select(args.column.field),
+                enabled: isEditable(args.column, args.requestType, args.element) &&
+                    isCellHaveWidth(parentsUntil(args.element, 'e-rowcell'), this.parent),
                 fields: { value: args.column.field },
                 value: getObject(args.column.field, args.rowData),
                 enableRtl: this.parent.enableRtl,

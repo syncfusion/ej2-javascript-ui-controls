@@ -2773,6 +2773,9 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         if (this.getInitialData){
             this.updateActionCompleteDataValues(ulElement, list);
+            if (this.enableVirtualization) {
+                this.updateSelectElementData(this.allowFiltering);
+            }
             this.getInitialData = false;
             this.isReactTemplateUpdate = true;
             this.searchLists(this.filterArgs);
@@ -3777,6 +3780,7 @@ export class DropDownList extends DropDownBase implements IInput {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             dataSourceCount = this.dataSource && (this.dataSource as any).length ? (this.dataSource as any).length : 0;
         }
+        this.customFilterQuery = null;
         if (this.enableVirtualization && this.isFiltering() && isFilterValue && this.totalItemCount !== dataSourceCount) {
             this.updateInitialData();
             this.checkAndResetCache();

@@ -821,7 +821,7 @@ export class StyleDialog {
 
                 this.documentHelper.owner.isShiftingEnabled = true;
                 this.documentHelper.owner.editorModule.isSkipOperationsBuild = this.documentHelper.owner.enableCollaborativeEditing;
-                this.documentHelper.owner.editorModule.layoutWholeDocument();
+                this.documentHelper.layout.layoutWholeDocument();
                 this.documentHelper.owner.editorModule.isSkipOperationsBuild = false;
                 this.documentHelper.owner.isShiftingEnabled = false;
             } else {

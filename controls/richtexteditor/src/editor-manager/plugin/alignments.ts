@@ -104,7 +104,15 @@ export class Alignments {
             }
             save.restore();
         } else {
-            setStyleAttribute(this.getTableNode(range)[0] as HTMLElement, { 'text-align': this.alignments[e.subCommand] });
+            const selectedTableCells: NodeListOf<HTMLElement> = this.parent.editableElement.querySelectorAll('.e-cell-select');
+            if (selectedTableCells.length > 0) {
+                for (let i: number = 0; i < selectedTableCells.length; i++) {
+                    setStyleAttribute(selectedTableCells[i as number] as HTMLElement, { 'text-align': this.alignments[e.subCommand] });
+                }
+            }
+            else {
+                setStyleAttribute(this.getTableNode(range)[0] as HTMLElement, { 'text-align': this.alignments[e.subCommand] });
+            }
         }
         if (e.callBack) {
             e.callBack({

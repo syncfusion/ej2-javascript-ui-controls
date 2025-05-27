@@ -731,10 +731,14 @@ export function isEditable(col: Column, type: string, elem: Element): boolean {
 
 /**
  * @param {Element} elem - Defines th element
+ * @param {IGrid} parent - Defines parent instance
  * @returns {boolean} Returns is Editable
  * @hidden
  */
-export function isCellHaveWidth(elem: Element): boolean {
+export function isCellHaveWidth(elem: Element, parent?: IGrid): boolean {
+    if (parent && parent.element && parent.element.offsetWidth === 0) {
+        return true;
+    }
     return elem.getBoundingClientRect().width === 0 ? false : true;
 }
 
@@ -852,21 +856,32 @@ export function distinctStringValues(result: string[]): string[] {
 /**
  * @param {Element} target - Defines the target
  * @param {Dialog} dialogObj - Defines the dialog
+ * @param {IGrid} parent - Defines the grid
  * @returns {void}
  * @hidden
  */
-export function getFilterMenuPostion(target: Element, dialogObj: Dialog): void {
+export function getFilterMenuPostion(target: Element, dialogObj: Dialog, parent?: IGrid): void {
     const elementVisible: string = dialogObj.element.style.display;
     dialogObj.element.style.display = 'block';
     const dlgWidth: number = dialogObj.width as number;
     const newpos: { top: number, left: number } = calculateRelativeBasedPosition((<HTMLElement>target), dialogObj.element);
     dialogObj.element.style.display = elementVisible;
     dialogObj.element.style.top = (newpos.top + target.getBoundingClientRect().height) - 5 + 'px';
-    const leftPos: number = ((newpos.left - dlgWidth) + target.clientWidth);
-    if (leftPos < 1) {
-        dialogObj.element.style.left = (dlgWidth + leftPos) - 16 + 'px'; // right calculation
+    const leftPosition: number = newpos.left - dlgWidth + target.clientWidth;
+    if (parent && parent.enableRtl) {
+        const parentWidth: number = parent.element ? parent.element.clientWidth : 0;
+        const rightPosition: number = target.getBoundingClientRect().right + dlgWidth - parentWidth;
+        if (rightPosition > 1) {
+            dialogObj.element.style.left = leftPosition - 4 + 'px';
+        } else {
+            dialogObj.element.style.left = (dlgWidth + leftPosition) - 16 + 'px';
+        }
     } else {
-        dialogObj.element.style.left = leftPos + -4 + 'px';
+        if (leftPosition < 1) {
+            dialogObj.element.style.left = (dlgWidth + leftPosition) - 16 + 'px'; // right calculation
+        } else {
+            dialogObj.element.style.left = leftPosition - 4 + 'px';
+        }
     }
 }
 

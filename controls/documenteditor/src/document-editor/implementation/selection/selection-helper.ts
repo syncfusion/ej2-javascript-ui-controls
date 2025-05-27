@@ -540,7 +540,7 @@ export class TextPosition {
                 this.offset++;
             }
         } else {
-            this.updateOffsetToNextParagraph(index, false);
+            this.updateOffsetToNextParagraph(index, false, isNavigate);
         }
         //Gets physical position in current page.
         this.updatePhysicalPosition(true);
@@ -586,7 +586,7 @@ export class TextPosition {
             this.setPosition(this.getValidVisibleLine(visibleBlock.childWidgets[0] as LineWidget, isNext), positionAtStart);
         }
     }
-    private updateOffsetToNextParagraph(indexInInline: number, isHighlight: boolean): void {
+    private updateOffsetToNextParagraph(indexInInline: number, isHighlight: boolean, isNavigate?: boolean): void {
         //Moves to owner and get next paragraph.
         let inline: ElementBox;
         let positionAtStart: boolean = false;
@@ -618,7 +618,7 @@ export class TextPosition {
         if (!isNullOrUndefined(nextParagraph) && nextParagraph.childWidgets.length > 0) {
             if (!positionAtStart) {
                 this.currentWidget = this.getValidVisibleLine(nextParagraph.firstChild as LineWidget, true);
-                this.offset = isHighlight ? 1 : this.selection.getStartLineOffset(this.currentWidget);
+                this.offset = isHighlight ? 1 : this.selection.getStartLineOffset(this.currentWidget, isNavigate);
             } else {
                 this.currentWidget = this.getValidVisibleLine(nextParagraph.lastChild as LineWidget, false);
                 this.offset = this.selection.getLineLength(this.currentWidget) + 1;
@@ -773,7 +773,7 @@ export class TextPosition {
         index = inlineInfo.index;
         const lineIndex: number = this.paragraph.childWidgets.indexOf(this.currentWidget);
         if (inline instanceof FieldElementBox && inline.fieldType === 1 && !isNullOrUndefined((inline as FieldElementBox).fieldBegin)
-            || inline instanceof BookmarkElementBox && inline.bookmarkType === 1) {
+            || inline instanceof BookmarkElementBox) {
             this.movePreviousPositionInternal(inline as FieldElementBox);
         }
         this.updateOffsetToPrevPosition(index, false);
@@ -983,7 +983,7 @@ export class TextPosition {
         }
         this.currentWidget = inline.line;
 
-        const index: number = inline instanceof FieldElementBox || inline instanceof BookmarkElementBox && inline.bookmarkType === 1 ? 0 : inline.length;
+        const index: number = inline instanceof FieldElementBox || inline instanceof BookmarkElementBox ? 0 : inline.length;
         this.offset = this.currentWidget.getOffset(inline, index);
     }
     /**

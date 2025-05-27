@@ -210,7 +210,7 @@ export class TextSearch {
                                 break;
                             }
                         }
-                        if (element && element instanceof TextElementBox && element.text.charAt(0) !== ' ') {
+                        if (element && element instanceof TextElementBox && element.text.charAt(0) !== ' ' && element.text.charAt(0) !== '') {
                             isContainField = true;
                             continue;
                         }

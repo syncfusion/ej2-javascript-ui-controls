@@ -391,10 +391,13 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
     private getCMenuYPosition(target: Element): number {
         const contextWidth: number = this.getContextBounds().width;
         const targetPosition: ClientRect = target.getBoundingClientRect();
-        const leftPos: number = targetPosition.right + contextWidth - this.parent.element.clientWidth;
+        const parentElementPosition: ClientRect = this.parent.element.getBoundingClientRect();
+        const rightPosition: number = targetPosition.left - contextWidth - parentElementPosition.left;
+        const leftPosition: number = targetPosition.right + contextWidth - parentElementPosition.right;
         let targetBorder: number = (target as HTMLElement).offsetWidth - (target as HTMLElement).clientWidth;
         targetBorder = targetBorder ? targetBorder + 1 : 0;
-        return (leftPos < 1) ? (targetPosition.right + 1 - targetBorder) : (targetPosition.left - contextWidth - 1 + targetBorder);
+        const position: number = this.parent.enableRtl ? rightPosition : leftPosition;
+        return position < 1 ? (targetPosition.right + 1 - targetBorder) : (targetPosition.left - contextWidth - 1 + targetBorder);
     }
 
     public openDialog(options: IFilterArgs): void {

@@ -1935,10 +1935,12 @@ export class MultiSelect extends DropDownBase implements IInput {
         while (scrollElement) {
             const scrollElementStyle: CSSStyleDeclaration = getComputedStyle(scrollElement);
             const scrollElmentHeight: number = parseFloat(scrollElementStyle.maxHeight) || parseFloat(scrollElementStyle.height);
-            if (!isNaN(scrollElmentHeight)) {
+            if (!isNaN(scrollElmentHeight) && this.isPopupOpen()) {
                 const overflowY: string = scrollElementStyle.overflowY;
-                if (overflowY === 'auto' || overflowY === 'scroll') {
-                    scrollElement.scrollTop = scrollElement.scrollHeight;
+                const wrapperBottom: number = this.overAllWrapper.getBoundingClientRect().bottom;
+                const scrollElementBottom: number = scrollElement.getBoundingClientRect().bottom;
+                if ((overflowY === 'auto' || overflowY === 'scroll') && wrapperBottom > scrollElementBottom) {
+                    scrollElement.scrollTop += (wrapperBottom - scrollElementBottom) + 10;
                     return;
                 }
             }

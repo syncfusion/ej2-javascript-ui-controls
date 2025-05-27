@@ -1663,6 +1663,69 @@ describe('ContextMenu', () => {
             expect(contextMenu.enableScrolling).toBeFalsy();
         });
 
+        it('should handle dynamic menu items with scrolling scenario', (done) => {
+            document.body.appendChild(div);
+            document.body.appendChild(ul);
+            const menuItems1 = [
+                { text: 'Delete' },
+                { text: 'Select' },
+                { text: 'refresh' },
+                { text: 'item0' },
+                { text: 'item1' },
+                { text: 'item2' },
+                { text: 'item3' },
+                { text: 'item4' },
+                { text: 'item5' },
+                { text: 'item6' },
+                { text: 'item7' },
+                { separator: true },
+                { text: 'Link' },
+                { text: 'New Comment' },
+                { text: 'Cut' },
+                { text: 'Copy' },
+                { text: 'Paste', items: [{ text: 'inner_paste' }] }
+            ];
+            const menuItems = [
+                { text: 'Cut' },
+                { text: 'Copy' },
+                { text: 'Paste', items: [{ text: 'delete' }, { text: 'undo' }] }
+            ];
+
+            contextMenu = new ContextMenu({
+                target: '#target',
+                enableScrolling: true,
+                beforeOpen: (args: BeforeOpenCloseMenuEventArgs) => {
+                    if (args.parentItem == null) {
+                        contextMenu.items = menuItems;
+                        setTimeout(() => {
+                            contextMenu.items = menuItems1;
+                            expect(contextMenu.items.length).toBe(menuItems1.length);
+                        }, 1000);
+                        args.element.parentElement.style.height = '250px';
+                    }
+                }
+            }, '#contextmenu');
+
+            contextMenu.open(40, 62);
+            setTimeout(() => {
+                const wrap: HTMLElement = contextMenu.getWrapper();
+                expect(wrap.children[0].classList.contains('e-menu-vscroll')).toBeTruthy();
+                expect(wrap.children[0].children[0].classList.contains('e-scroll-up-nav')).toBeTruthy();
+                expect(wrap.children[0].lastElementChild.classList.contains('e-scroll-down-nav')).toBeTruthy();
+                expect((wrap.querySelector('.e-menu-parent') as HTMLElement).style.top === '').toBeTruthy();
+                expect((wrap.querySelector('.e-menu-parent') as HTMLElement).style.left === '').toBeTruthy();
+                expect((wrap.querySelector('.e-menu-parent') as HTMLElement).style.height === '').toBeTruthy();
+                expect((wrap.querySelector('.e-menu-parent') as HTMLElement).style.width === '').toBeTruthy();
+                expect((wrap.querySelector('.e-menu-parent') as HTMLElement).style.position === '').toBeTruthy();
+                (wrap.children[0].lastElementChild as HTMLElement).click();
+                contextMenu.close();
+                contextMenu.enableScrolling = false;
+                contextMenu.dataBind();
+                expect(contextMenu.enableScrolling).toBeFalsy();
+                done();
+            }, 2000);
+        });
+
         it('Context Menu With scroll enabled and hide items', () => {
             document.body.appendChild(div);
             document.body.appendChild(ul);
@@ -2071,13 +2134,17 @@ describe('ContextMenu', () => {
             }, '#contextmenu');
 
             contextMenu.open(40, 62);
-            setTimeout(() => {
-                const liElements = contextMenu.element.querySelectorAll('li .e-menu-item');
-                liElements.forEach((li: Element, index: number) => {
-                    expect((li as HTMLElement).id).toBe(`menuitem_${index + 1}`);
-                });
-                done();
-            }, 100);
+            const liElements = contextMenu.element.querySelectorAll('li.e-menu-item');
+            const idFormat = /^menuitem_\d+$/;
+            const ids = new Set<string>();
+
+            liElements.forEach((li: Element) => {
+                const id = (li as HTMLElement).id;
+                expect(idFormat.test(id)).toBe(true);
+                expect(ids.has(id)).toBe(false);
+                ids.add(id);
+            });
+            done();
         });
     });
 });

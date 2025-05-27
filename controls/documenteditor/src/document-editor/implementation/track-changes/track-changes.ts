@@ -354,7 +354,9 @@ export class Revision {
                 this.owner.editorModule.deleteSelectedContents(this.owner.selectionModule, true);
                 this.removeRevisionFromPara(start, end);
                 let rangeIndex: number = revision.range.indexOf(item);
-                revision.range.splice(rangeIndex, 1);
+                if (rangeIndex >=0) {
+                    revision.range.splice(rangeIndex, 1);
+                }
                 this.owner.trackChangesPane.updateCurrentTrackChanges(revision);
                 while (this.range.length > 0) {
                     this.removeRangeRevisionForItem(this.range[0]);

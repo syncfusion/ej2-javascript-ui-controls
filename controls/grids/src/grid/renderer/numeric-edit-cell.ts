@@ -46,7 +46,8 @@ export class NumericEditCell implements IEditCell {
                 value: parseFloat(getObject(args.column.field, args.rowData)),
                 enableRtl: this.parent.enableRtl,
                 placeholder: isInline ? '' : args.column.headerText,
-                enabled: isEditable(args.column, args.requestType, args.element) && isCellHaveWidth(parentsUntil(args.element, 'e-rowcell')),
+                enabled: isEditable(args.column, args.requestType, args.element) &&
+                    isCellHaveWidth(parentsUntil(args.element, 'e-rowcell'), this.parent),
                 floatLabelType: this.parent.editSettings.mode !== 'Dialog' ? 'Never' : 'Always',
                 locale: this.parent.locale,
                 cssClass: this.parent.cssClass ? this.parent.cssClass : null

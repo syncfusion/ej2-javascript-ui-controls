@@ -55,6 +55,7 @@ interface EJ2Instance extends HTMLElement {
             expect(args['name']).toBe('taskbarEdited');
             expect(args.taskBarEditAction).toBe('LeftResizing');
             expect(ganttObj.getFormatedDate(args.previousData.startDate, 'MM/dd/yyyy HH:mm')).toBe('10/23/2017 08:00');
+            expect(args.target.classList.contains('e-taskbar-main-container')).toBe(true);
         };
         
         let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-taskbar-left-resizer.e-icon') as HTMLElement;

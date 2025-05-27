@@ -1069,7 +1069,7 @@ export class TaskbarEdit extends DateProcessor {
             args.previousData = this.previousItem;
             args.segmentIndex = this.segmentIndex;
             this.roundOffDuration = args.roundOffDuration;
-            this.targetElement = args.target = closest((e.target as Element), '.e-gantt-child-taskbar');
+            this.targetElement = args.target = this.cloneTaskbarElement;
             this.updateMouseMoveProperties(e);
             if (!this.oldData) {
                 this.oldData = extend([], [], [this.taskBarEditRecord], true)[0];

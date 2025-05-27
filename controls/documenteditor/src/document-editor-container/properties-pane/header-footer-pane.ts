@@ -10,6 +10,7 @@ import { DocumentEditorContainer } from '../document-editor-container';
 import { DocumentEditor } from '../../document-editor/document-editor';
 import { HeaderFooterWidget } from '../../document-editor/implementation/viewer';
 import { HeaderFooterType } from '../../document-editor/base';
+import { TableCellWidget } from '../../document-editor/index';
 /**
  * @private
  */
@@ -353,8 +354,15 @@ export class HeaderFooterProperties {
             this.linkToPrevious.disabled = true;
         } else {
             this.linkToPrevious.disabled = false;
-            const headerFooterType: HeaderFooterType = (
-                (this.documentEditor.selectionModule.start.paragraph.containerWidget) as HeaderFooterWidget).headerFooterType;
+            let headerFooterWidget: HeaderFooterWidget;
+            if (this.documentEditor.selectionModule.start.paragraph.containerWidget instanceof TableCellWidget) {
+                /* eslint-disable-next-line max-len */
+                headerFooterWidget = this.documentEditor.selectionModule.getContainerWidget(this.documentEditor.selectionModule.start.paragraph.containerWidget) as HeaderFooterWidget;
+            }
+            else {
+                headerFooterWidget = this.documentEditor.selectionModule.start.paragraph.containerWidget as HeaderFooterWidget;
+            }
+            const headerFooterType: HeaderFooterType = headerFooterWidget.headerFooterType;
             switch (headerFooterType) {
             case 'OddHeader':
                 this.linkToPrevious.checked = this.documentEditor.selectionModule.sectionFormat.oddPageHeader.linkToPrevious;

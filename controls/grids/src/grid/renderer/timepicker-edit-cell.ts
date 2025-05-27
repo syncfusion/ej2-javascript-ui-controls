@@ -23,7 +23,8 @@ export class TimePickerEditCell extends EditCellBase implements IEditCell {
                     value: rowDataValue,
                     placeholder: isInlineEdit ?
                         '' : args.column.headerText, enableRtl: this.parent.enableRtl,
-                    enabled: isEditable(args.column, args.requestType, args.element) && isCellHaveWidth(parentsUntil(args.element, 'e-rowcell')),
+                    enabled: isEditable(args.column, args.requestType, args.element) &&
+                        isCellHaveWidth(parentsUntil(args.element, 'e-rowcell'), this.parent),
                     cssClass: this.parent.cssClass ? this.parent.cssClass : null
                 },
                 args.column.edit.params));

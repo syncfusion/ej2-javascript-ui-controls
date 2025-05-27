@@ -6637,15 +6637,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             } else {
                 const data: FlowChartData = dataCollection.find((data: FlowChartData) => data.id === secondId);
-                if (data.parentId) {
-                    (data.parentId as string[]).push(firstId);
-                } else {
-                    data.parentId = [firstId];
-                }
-                if (data.label) {
-                    (data.label as string[]).push(connectorLabel);
-                } else {
-                    data.label = [connectorLabel];
+                if (data) {
+                    if (data.parentId) {
+                        (data.parentId as string[]).push(firstId);
+                    } else {
+                        data.parentId = [firstId];
+                    }
+                    if (data.label) {
+                        (data.label as string[]).push(connectorLabel);
+                    } else {
+                        data.label = [connectorLabel];
+                    }
                 }
             }
         } else if (isExistCount === 2) {

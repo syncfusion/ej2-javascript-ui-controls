@@ -2061,6 +2061,7 @@ export class Edit {
     public endEditAction(args: ITaskbarEditedEventArgs): void {
         this.resetEditProperties();
         if (args.action === 'TaskbarEditing') {
+            args.target = this.taskbarEditModule['editElement'];
             this.parent.trigger('taskbarEdited', args);
         } else if (args.action === 'CellEditing') {
             this.parent.trigger('endEdit', args);

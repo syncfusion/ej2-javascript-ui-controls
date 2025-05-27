@@ -6093,3 +6093,81 @@ describe('autoCalculateDateScheduling property false  ', () => {
         }
     });
 });
+describe('public method to update datasource', () => {
+    let ganttObj: Gantt;
+    let data = [
+        { TaskID: 1, TaskName: 'Task 1', StartDate: new Date('2025-05-01'), Duration: 1 },
+        { TaskID: 2, TaskName: 'Task 2', StartDate: new Date('2025-05-08'), Duration: 2 },
+        { TaskID: 3, TaskName: 'Task 3', StartDate: new Date('2025-05-04'), Duration: 3 },
+        { TaskID: 4, TaskName: 'Task 4', StartDate: new Date('2025-01-06'), Duration: 2 },
+    ]
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            { 
+                dataSource: data,
+                dayWorkingTime: [],
+                workWeek : [
+                'Monday',
+                'Tuesday',
+                'Wednesday',
+                'Thursday',
+                'Friday',
+                ],
+                taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                parentID: 'ParentID'
+                },
+                labelSettings: {
+                rightLabel: 'TaskName',
+                taskLabel: 'Progress',
+                },
+                splitterSettings: {
+                columnIndex: 3,
+                },
+                gridLines: 'Horizontal',
+                allowSelection: true,
+                allowFiltering: true,
+                treeColumnIndex: 1,
+                autoFocusTasks: true,
+                searchSettings: {
+                fields: ['name'],
+                ignoreCase: true,
+                hierarchyMode: 'Both',
+                },
+                enableVirtualization: true,
+                enableTimelineVirtualization: true,
+                height: '400px',
+                highlightWeekends: true,
+                editSettings: {
+                allowEditing: true,
+                allowTaskbarEditing: true,
+                },
+                allowRowDragAndDrop: true,
+                enableUndoRedo: true,
+                undoRedoActions: ['Edit', 'RowDragAndDrop'],
+                undoRedoStepsCount: 50,
+                toolbar: ['Undo', 'Redo', { text: 'Discard All', tooltipText: 'Discard all changes', id: 'discardAllButton', align: 'Left' }],
+
+            }, done);
+    });
+    it('using public method to updatedasource', () => {
+        const projectStartDate = new Date('2025-01-01');
+        const projectEndDate = new Date('2025-12-31');
+        ganttObj.updateDataSource(data.slice(0), {
+            projectStartDate,
+            projectEndDate,
+        });
+        expect(ganttObj.ganttChartModule.scrollObject.element.scrollLeft).toBe(0);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

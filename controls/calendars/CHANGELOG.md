@@ -10,6 +10,12 @@
 
 - `#I711579` - Fixed an issue where the DatePicker popup did not close on mobile devices when clicking outside of it.
 
+### DateRangePicker
+
+#### Bug Fixes
+
+- `#709169` - Fixed an issue where the Daterangepicker popup did not update the selected range when using min and max dates with mid-month values, with depth set to year and decade.
+
 ## 29.1.40 (2025-04-29)
 
 ### DateRangePicker

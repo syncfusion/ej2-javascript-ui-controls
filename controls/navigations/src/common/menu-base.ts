@@ -1454,7 +1454,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         }
     }
 
-    private setPosition(li: Element, ul: HTMLElement, top: number, left: number): void {
+    private setPosition(li: Element, ul: HTMLElement, top: number, left: number, isOpen: boolean = false): void {
         const px: string = 'px';
         this.toggleVisiblity(ul);
         if (ul === this.element || (left > -1 && top > -1)) {
@@ -1508,6 +1508,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         this.toggleVisiblity(ul, false);
         if (this.isCMenu && this.enableScrolling && ul) {
             ul.style.height = '';
+            ul.style.top = '';
+            ul.style.left = '';
+            ul.style.width = '';
+            ul.style.position = '';
         }
         const wrapper: HTMLElement = closest(this.element, '.e-' + this.getModuleName() + '-wrapper') as HTMLElement;
         if (!this.isMenu && this.enableScrolling && ul && wrapper && wrapper.offsetHeight > 0) {
@@ -1525,7 +1529,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 left: `${left}px`,
                 width: `${cmenuWidth}px`,
                 position: 'absolute',
-                display: 'none'
+                display: !isOpen ? 'none' : 'block'
             });
         } else {
             ul.style.top = top + px;
@@ -2102,6 +2106,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         } else {
                             addScrolling(this.createElement, wrapper, this.element, 'hscroll', this.enableRtl);
                         }
+                    }
+                    if (this.enableScrolling && this.element.classList.contains('e-contextmenu')) {
+                        this.isCMenu = true;
+                        this.setPosition(this.lItem, this.uList, this.top, this.left, true);
+                        this.isCMenu = false;
                     }
                     if (!this.hamburgerMode) {
                         for (let i: number = 1, count: number = wrapper.childElementCount; i < count; i++) {

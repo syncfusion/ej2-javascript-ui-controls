@@ -416,7 +416,7 @@ export class CheckBoxFilterBase {
             this.dialogObj.element.style.left = '0px';
         } else {
             if (!Browser.isDevice) {
-                getFilterMenuPostion(this.options.target, this.dialogObj);
+                getFilterMenuPostion(this.options.target, this.dialogObj, this.parent as IGrid);
             } else {
                 this.dialogObj.position = { X: 'center', Y: 'center' };
             }

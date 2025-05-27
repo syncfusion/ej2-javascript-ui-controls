@@ -707,7 +707,7 @@ export class Selection {
             this.owner.layoutType = 'Pages';
             this.owner.viewer.destroy();
             this.owner.viewer = new PageLayoutViewer(this.owner);
-            this.owner.editorModule.layoutWholeDocument();
+            this.documentHelper.layout.layoutWholeDocument();
         }
     }
     //Public API
@@ -2212,7 +2212,7 @@ export class Selection {
      * @returns {void}
      */
     public getFirstParagraph(tableCell: TableCellWidget): ParagraphWidget {
-        while (tableCell.previousSplitWidget) {
+        while (tableCell.previousSplitWidget && tableCell.previousSplitWidget.childWidgets.length > 0) {
             tableCell = tableCell.previousSplitWidget as TableCellWidget;
         }
         const firstBlock: BlockWidget = tableCell.firstChild as BlockWidget;
@@ -4915,7 +4915,7 @@ export class Selection {
     /**
      * @private
      */
-    public getStartLineOffset(line: LineWidget): number {
+    public getStartLineOffset(line: LineWidget, isNavigate?: boolean): number {
         let startOffset: number = 0;
         let isHidden: boolean = true;
         for (let i: number = 0; i < line.children.length; i++) {
@@ -4930,6 +4930,10 @@ export class Selection {
                     isHidden = false;
                 }
                 continue;
+            }
+            // if the first element in the line is a Bookmark Start, need to move the cursor inside bookmark start element.
+            if (inline instanceof BookmarkElementBox && inline.bookmarkType == 0 && isNavigate) {
+                return startOffset + inline.length;
             }
             if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof BookmarkElementBox
                 || inline instanceof ShapeElementBox || inline instanceof EditRangeStartElementBox
@@ -5233,7 +5237,7 @@ export class Selection {
      *
      * @private
      */
-    public getNextValidOffset(line: LineWidget, offset: number): number {
+    public getNextValidOffset(line: LineWidget, offset: number, isNavigate?: boolean): number {
         let count: number = 0;
         // if (!line.paragraph.paragraphFormat.bidi) {
         for (let i: number = 0; i < line.children.length; i++) {
@@ -5248,7 +5252,12 @@ export class Selection {
             if (offset < count + inline.length) {
                 if (inline instanceof TextElementBox || inline instanceof ContentControl || inline instanceof ImageElementBox
                     || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)))) {
-                    return (offset > count ? offset : count) + 1;
+                    // If the next element is a Bookmark Start and the current offset is just before it,
+                    // recursively call getNextValidOffset to move the cursor inside the bookmark start position.
+                    if (inline.nextNode instanceof BookmarkElementBox && inline.nextNode.bookmarkType == 0 && offset + 1 == count + inline.length) {
+                        return this.getNextValidOffset(line, count + inline.length, true);
+                    }
+                    return isNullOrUndefined(isNavigate) ? (offset > count ? offset : count) + 1 : count;
                 }
             }
             if (offset === count + inline.length && inline instanceof FieldElementBox &&
@@ -7244,6 +7253,10 @@ export class Selection {
                                         }
                                     }
                                 }
+                                // If the next element is a Bookmark Start and the current offset is just before it,need to move the cursor inside the bookmark start position.
+                                if (i == element.length && element.nextNode instanceof BookmarkElementBox && element.nextNode.bookmarkType == 0) {
+                                    charIndex += this.getNextValidOffset(element.line, charIndex, true);
+                                }
                                 break;
                             }
                             prevWidth = width;
@@ -7270,7 +7283,10 @@ export class Selection {
                     isParaBidi = element.line.paragraph.paragraphFormat.bidi;
                     if (element instanceof TextElementBox && (isParaBidi || isRtlText) && caretPosition.x < left + element.margin.left + element.width + element.padding.left) {
                         index = this.getTextLength(element.line, element) + (element as TextElementBox).length;
-                    } else {
+                    } else if (element instanceof BookmarkElementBox && element.bookmarkType == 0) {
+                        index = this.getNextValidOffset(element.line, 0, true);
+                    }
+                    else {
                         index = this.getTextLength(element.line, element);
                     }
                     left += element.margin.left;
@@ -8466,7 +8482,10 @@ export class Selection {
         }
         return undefined;
     }
-    private getContainerWidget(block: BlockWidget): BlockContainer {
+    /**
+     * @private
+     */
+    public getContainerWidget(block: BlockWidget): BlockContainer {
         let bodyWidget: Widget;
         if (block.containerWidget instanceof TextFrame) {
             bodyWidget = block.containerWidget.containerShape.line.paragraph.bodyWidget;

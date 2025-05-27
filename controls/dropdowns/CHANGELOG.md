@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.2.7 (2025-05-27)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I696602` - Fixed an issue where the popup remains open if the MultiSelect input is not visible in the viewport.
+
 ## 29.2.5 (2025-05-21)
 
 ### DropDownTree

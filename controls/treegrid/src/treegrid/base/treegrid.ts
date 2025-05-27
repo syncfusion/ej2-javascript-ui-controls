@@ -160,6 +160,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     private treeColumnTextAlign: TextAlign;
     private treeColumnField: string;
     private stackedHeader: boolean = false;
+    private freezeColumnRefresh: boolean = true;
     private isExcel: boolean;
     /** @hidden */
     public initialRender: boolean;
@@ -1795,6 +1796,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         this.columnModel = [];
         this.isExpandAll = false;
         this.isCollapseAll = false;
+        this.freezeColumnRefresh = true;
         this.keyConfigs = {
             ctrlDownArrow: 'ctrl+downarrow',
             ctrlUpArrow: 'ctrl+uparrow',
@@ -1840,6 +1842,10 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public requiredModules(): ModuleDeclaration[] {
         const modules: ModuleDeclaration[] = [];
         const splitFrozenCount: string = 'splitFrozenCount';
+        const mergedColumns: string = 'mergedColumns';
+        if (this[`${mergedColumns}`]) {
+            this.grid[`${mergedColumns}`] = this[`${mergedColumns}`];
+        }
         if (isNullOrUndefined(this['changedProperties'].columns)) {
             this.grid[`${splitFrozenCount}`](this.getColumns());
         }
@@ -2780,16 +2786,16 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             if (args.requestType === 'save' && this.aggregates.map((ag: AggregateRow) => ag.showChildSummary === true).length) {
                 this.grid.refresh();
             }
-            if (args.action === 'filter') {
-                if (this.filterModule['currentFilterObject'] !== '' && this.enableVirtualization && !this.initialRender && !(isRemoteData(this) && this.enableVirtualization)) {
-                    this.expandAll();
-                }
-            }
-            if (args.requestType === 'searching') {
-                if (this.searchSettings.key !== '' && this.enableVirtualization && !this.initialRender && !(isRemoteData(this) && this.enableVirtualization)) {
-                    this.expandAll();
-                }
-            }
+            // if (args.action === 'filter') {
+            //     if (this.filterModule['currentFilterObject'] !== '' && this.enableVirtualization && !this.initialRender && !(isRemoteData(this) && this.enableVirtualization)) {
+            //         this.expandAll();
+            //     }
+            // }
+            // if (args.requestType === 'searching') {
+            //     if (this.searchSettings.key !== '' && this.enableVirtualization && !this.initialRender && !(isRemoteData(this) && this.enableVirtualization)) {
+            //         this.expandAll();
+            //     }
+            // }
             if (args.action === 'clearFilter' && this.enableCollapseAll) {
                 this.collapseAll();
             }
@@ -4047,14 +4053,30 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
     private setFrozenCount(): void {
         const persist3: string = 'setFrozenCount';
-        this.grid[`${persist3}`].apply(this.grid);
+        this.grid[`${persist3}`].apply(this);
     }
     private splitFrozenCount(columns: Column[]): void {
         const persist4: string = 'splitFrozenCount';
-        this.grid[`${persist4}`].apply(this.grid, [columns]);
+        const instance: any = this.frozenColumns > 0 ? this.grid : this;
+        this.grid[`${persist4}`].apply(instance, [columns]);
+    }
+    private removeBorder(columns: Column[]): void {
+        const persist5: string = 'removeBorder';
+        this.grid[`${persist5}`].apply(this.grid, [columns]);
+    }
+    private frozenLeftBorderColumns(columns: Column) : void {
+        const persist6: string = 'frozenLeftBorderColumns';
+        this.grid[`${persist6}`].apply(this.grid, [columns]);
+    }
+    private frozenRightBorderColumns(columns: Column) : void {
+        const persist7: string = 'frozenRightBorderColumns';
+        this.grid[`${persist7}`].apply(this.grid, [columns]);
     }
     private isFrozenGrid(): boolean {
-        return this.grid.isFrozenGrid();
+        const hasFreezeProp: boolean = Array.isArray(this.columns) &&
+        (this.columns as ColumnModel[]).some((col: ColumnModel) => !!col.freeze);
+        return (this.frozenColumns > 0 || this.frozenRows > 0 || this.getFrozenColumns() > 0 ||
+            hasFreezeProp);
     }
 
     private updateTreeGridModel() : void {

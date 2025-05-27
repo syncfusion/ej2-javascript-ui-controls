@@ -748,7 +748,7 @@ export class CollaborativeEditingHandler {
         }
         contentControlProperties = undefined;
         if (this.documentEditor.editor.isFieldOperation) {
-            this.documentEditor.editorModule.layoutWholeDocument();
+            this.documentEditor.documentHelper.layout.layoutWholeDocument();
             this.documentEditor.editor.isFieldOperation = false;
         }
         if (!isNullOrUndefined(this.rowWidget)) {

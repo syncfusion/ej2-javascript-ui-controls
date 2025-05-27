@@ -1703,13 +1703,17 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     this.viewer = new WebLayoutViewer(this);
                 }
                 /* eslint-disable */
-                    const paragraph: ParagraphWidget = this.selectionModule.start.paragraph;
-                    if (paragraph.containerWidget instanceof FootNoteWidget) {
-                        this.selectionModule.clearSelectionHighlightInSelectedWidgets();
-                        this.selectionModule.selectContent(this.documentStart, true);
+                    if (this.selectionModule) {
+                        const paragraph: ParagraphWidget = this.selectionModule.start.paragraph;
+                        if (paragraph.containerWidget instanceof FootNoteWidget) {
+                            this.selectionModule.clearSelectionHighlightInSelectedWidgets();
+                            this.selectionModule.selectContent(this.documentStart, true);
+                        }
                     }
-                    this.editorModule.layoutWholeDocument(true);
-                    this.selectionModule.onHighlight();
+                    this.documentHelper.layout.layoutWholeDocument(true);
+                    if (this.selectionModule) {
+                        this.selectionModule.onHighlight();
+                    }
                     setTimeout((): void => {
                         this.fireViewChange();
                     }, 200);
@@ -1779,7 +1783,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                         if ((oldValue == "Word2013" && newValue != "Word2013") || (oldValue != "Word2013" && newValue == "Word2013")) {
                             if (this.documentHelper.compatibilityMode !== newValue) {
                                 this.documentHelper.compatibilityMode = newValue;
-                                this.editorModule.layoutWholeDocument(true);
+                                this.documentHelper.layout.layoutWholeDocument(true);
                             }
                         }
                     }
@@ -1920,7 +1924,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 
         }           
     }
-
+    
     private localizeDialogs(enableRtl?: boolean): void {
         if (this.locale !== '') {
             const l10n: L10n = new L10n('documenteditor', this.defaultLocale);
@@ -4138,10 +4142,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             if (this.layoutType === 'Continuous') {
                 this.documentHelper.isWebPrinting = true;
                 this.viewer = new PageLayoutViewer(this);
-                this.editorModule.layoutWholeDocument();
+                this.documentHelper.layout.layoutWholeDocument();
                 this.printModule.print(this.documentHelper, printWindow);
                 this.viewer = new WebLayoutViewer(this);
-                this.editorModule.layoutWholeDocument();
+                this.documentHelper.layout.layoutWholeDocument();
                 this.documentHelper.isWebPrinting = false;
             } else {
                 this.printModule.print(this.documentHelper, printWindow);

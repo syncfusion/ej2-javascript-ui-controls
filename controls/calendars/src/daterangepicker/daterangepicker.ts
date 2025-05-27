@@ -1550,6 +1550,7 @@ export class DateRangePicker extends CalendarBase {
                         if (this.inputElement.defaultValue !== value){
                             endDate = this.getStartEndDate(endDate, true);
                         }
+                        if (endDate >= this.max) { endDate = this.max; }
                     }
                     if (!isNullOrUndefined(startDate) && !isNaN(+startDate) && !isNullOrUndefined(endDate) && !isNaN(+endDate)) {
                         const prevStartVal: Date = this.startValue;
@@ -2394,8 +2395,27 @@ export class DateRangePicker extends CalendarBase {
                 this.checkMinMaxDays();
             }
         }
-
-
+        const isCustomMin: boolean = this.min.getTime() !== new Date(1900, 0, 1).getTime();
+        const isCustomMax: boolean = this.max.getTime() !== new Date(2099, 11, 31).getTime();
+        if (this.currentView() === 'Year' && this.depth === 'Year') {
+            const startMonth: Date = new Date(this.min.getFullYear(), this.min.getMonth(), 1);
+            if (!isNullOrUndefined(this.startValue) && isCustomMin && +this.startValue <= +startMonth) {
+                this.startValue = this.min;
+            }
+            const endMonth: Date = new Date(this.max.getFullYear(), this.max.getMonth() + 1, 0);
+            if (!isNullOrUndefined(this.endValue) && isCustomMax && +this.endValue >= +endMonth) {
+                this.endValue = this.max;
+            }
+        } else if (this.currentView() === 'Decade' && this.depth === 'Decade') {
+            if (!isNullOrUndefined(this.startValue) && isCustomMin && this.startValue.getFullYear() <= this.min.getFullYear()) {
+                this.startValue = this.min;
+            } else if (isCustomMin && this.startValue.getFullYear() > this.min.getFullYear()) {
+                this.startValue = new Date(this.startValue.getFullYear(), 0, 1);
+            }
+            if (!isNullOrUndefined(this.endValue) && isCustomMax && this.endValue.getFullYear() >= this.max.getFullYear()) {
+                this.endValue = this.max;
+            }
+        }
         if (event) {
             leftCalendar = <HTMLElement>closest(<HTMLElement>event.target, '.' + LEFTCALENDER);
         }

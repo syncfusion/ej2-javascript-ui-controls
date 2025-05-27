@@ -834,7 +834,7 @@ export class BaseHistoryInfo {
                 if (insertTextPosition.offset === 0 && !isNullOrUndefined(insertTextPosition.paragraph.previousRenderedWidget) && insertTextPosition.paragraph.previousRenderedWidget instanceof ParagraphWidget && insertTextPosition.paragraph.previousRenderedWidget.isEndsWithPageBreak && insertTextPosition.paragraph.containerWidget instanceof BodyWidget && insertTextPosition.currentWidget === insertTextPosition.currentWidget.paragraph.firstChild && insertTextPosition.paragraph.containerWidget.sectionFormat.breakCode === 'NoBreak') {
                     let section: BodyWidget = (insertTextPosition.paragraph.previousRenderedWidget as ParagraphWidget).containerWidget as BodyWidget;
                     this.owner.editorModule.combineSectionInternal(this.owner.selectionModule, section, insertTextPosition.paragraph.containerWidget);
-                    this.owner.editorModule.layoutWholeDocument();
+                    this.documentHelper.layout.layoutWholeDocument();
                 }
             } else {
                 isRemoveContent = false;
@@ -909,7 +909,7 @@ export class BaseHistoryInfo {
         this.owner.editorModule.reLayout(this.owner.selectionModule, this.owner.selectionModule.isEmpty);
         if (this.editorHistory.isUndoing && this.action === 'SectionBreak') {
             this.owner.editorModule.isSkipOperationsBuild = this.owner.enableCollaborativeEditing;
-            this.owner.editorModule.layoutWholeDocument();
+            this.documentHelper.layout.layoutWholeDocument();
             this.owner.editorModule.isSkipOperationsBuild = false;            
         }
         if (isSelectionChanged) {
@@ -1382,7 +1382,7 @@ export class BaseHistoryInfo {
         }
         if (isRelayout) {
             this.documentHelper.contentControlCollection = [];
-            this.owner.editorModule.layoutWholeDocument(true);
+            this.documentHelper.layout.layoutWholeDocument(true);
         }
         deletedNodes = [];
     }

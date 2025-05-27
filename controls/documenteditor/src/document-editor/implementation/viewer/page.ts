@@ -3073,6 +3073,7 @@ export class TableRowWidget extends BlockWidget {
         for (let i: number = 0; i < this.childWidgets.length; i++) {
             let cell: TableCellWidget = this.childWidgets[i] as TableCellWidget;
             cell.combineWidget(viewer);
+            cell.index = cell.indexInOwner;
             if (!isNullOrUndefined(cell.cellFormat) && cell.cellFormat.rowSpan === 1) {
                 let cellHeight: number = cell.height + cell.margin.top + cell.margin.bottom;
                 if ((this.height - this.ownerTable.tableFormat.cellSpacing) < cell.height) {

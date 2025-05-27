@@ -5352,7 +5352,7 @@ describe("Virtualization coverage", () => {
 describe('Remote data', () => {
   let gridObj: TreeGrid;
   let data: Object = new DataManager({
-      url: 'https://ej2services.syncfusion.com/js/development/api/SelfReferenceData',
+      url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
       adaptor: new WebApiAdaptor,
       crossDomain: true
   });
@@ -5391,5 +5391,53 @@ describe('Remote data', () => {
   afterAll(() => {
       destroy(gridObj);
       gridObj = null;
+  });
+});
+
+describe("filtering with CollapseAll", () => {
+  let treegrid: TreeGrid;
+  beforeAll((done: Function) => {
+    treegrid = createGrid(
+      {
+        dataSource: virtualData.slice(0, 500),
+        parentIdMapping: "ParentID",
+        idMapping: "TaskID",
+        enableVirtualMaskRow: false,
+        height: 200,
+        enableVirtualization: true,
+        enableCollapseAll:true,
+        columns: [
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+
+        ],
+        treeColumnIndex: 0,
+      },
+      done
+    );
+  });
+  it("should return records in collapsed state", (done: Function) => {
+    treegrid.filterByColumn("FIELD1", "contains", "Aiden-Jack");
+    expect(
+      (treegrid.getRows()[0] as HTMLTableRowElement).getElementsByClassName(
+        "e-treegridcollapse"
+      ).length
+    ).toBe(1);
+    done();
+  });
+
+  afterAll(() => {
+    destroy(treegrid);
   });
 });

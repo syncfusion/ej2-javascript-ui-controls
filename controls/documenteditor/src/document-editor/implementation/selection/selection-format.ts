@@ -12,7 +12,7 @@ import {
 } from '../format/index';
 import { DocumentHelper, HelperMethods, PageLayoutViewer } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { TableWidget, ImageElementBox, ListTextElementBox, HeaderFooterWidget, HeaderFooters } from '../viewer/page';
+import { TableWidget, ImageElementBox, ListTextElementBox, HeaderFooterWidget, HeaderFooters, TableCellWidget } from '../viewer/page';
 import { Editor } from '../index';
 import { EditorHistory } from '../editor-history/index';
 import { ModifiedLevel } from '../editor-history/history-helper';
@@ -1669,7 +1669,7 @@ export class SelectionParagraphFormat {
             if (isListDialog) {
                 this.documentHelper.layout.clearInvalidList(listAdv);
             }
-            this.documentHelper.owner.editorModule.layoutWholeDocument();
+            this.documentHelper.layout.layoutWholeDocument();
             this.documentHelper.owner.editorModule.updateSelectionTextPosition(false);
             if (history && history.currentBaseHistoryInfo) {
                 if (history.currentBaseHistoryInfo.modifiedProperties.length > 0) {
@@ -2288,7 +2288,12 @@ export class SelectionSectionFormat {
         this.breakCode = format.breakCode;
         if (this.selection.owner.enableHeaderAndFooter) {
             let headerFootersColletion: HeaderFooters[] = this.selection.documentHelper.headersFooters;
-            const headerFooterWidget: HeaderFooterWidget = this.selection.start.paragraph.containerWidget as HeaderFooterWidget;
+            let headerFooterWidget: HeaderFooterWidget;
+            if (this.selection.start.paragraph.containerWidget instanceof TableCellWidget) {
+                headerFooterWidget = this.selection.getContainerWidget(this.selection.start.paragraph.containerWidget) as HeaderFooterWidget;
+            } else {
+                headerFooterWidget = this.selection.start.paragraph.containerWidget as HeaderFooterWidget;
+            }
             let sectionIndex: number = headerFooterWidget.sectionIndex;
             let headerFooterType: HeaderFooterType = headerFooterWidget.headerFooterType;
             let isLinkedToPrevious: boolean = false;

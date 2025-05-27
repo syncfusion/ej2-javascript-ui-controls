@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.2.7 (2025-05-27)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#I722514` - Resolved an issue where the Dialog component was misaligned when setting the target to body and enabling isModal within the open event.
+
 ## 29.1.37 (2025-04-08)
 
 ### Tooltip

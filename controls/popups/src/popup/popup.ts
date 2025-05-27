@@ -752,6 +752,7 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public show(animationOptions?: AnimationModel, relativeElement?: HTMLElement): void {
         this.wireEvents();
+        this.getRelateToElement();
         if (this.zIndex === 1000 || !isNullOrUndefined(relativeElement)) {
             const zIndexElement: HTMLElement = ( isNullOrUndefined(relativeElement)) ? this.element : relativeElement;
             this.zIndex = getZindexPartial(zIndexElement as HTMLElement);

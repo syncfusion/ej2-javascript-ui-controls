@@ -529,7 +529,15 @@ export class TableCommand {
             value = 'bottom';
             break;
         }
-        e.item.tableCell.style.verticalAlign = value;
+        const selectedCells: NodeListOf<HTMLElement> = this.curTable && this.curTable.querySelectorAll('.e-cell-select');
+        if (selectedCells && selectedCells.length > 0) {
+            for (let i: number = 0; i < selectedCells.length; i++) {
+                (selectedCells[i as number] as HTMLElement).style.verticalAlign = value;
+            }
+        }
+        else {
+            e.item.tableCell.style.verticalAlign = value;
+        }
         if (value && value !== '' && e.item.tableCell.getAttribute('valign')) {
             e.item.tableCell.removeAttribute('valign');
         }

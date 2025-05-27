@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.2.7 (2025-05-27)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I718482` - Now, Flowchart layout will render without console error while loading mermaid syntax data.
+
 ## 29.2.4 (2025-05-14)
 
 ### Diagram

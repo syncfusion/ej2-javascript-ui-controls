@@ -57,11 +57,13 @@ export class Table {
     private isTableMoveActive: boolean = false;
     private resizeIconPositionTime: number;
     private isResizeBind: boolean = true;
+    private isEnableIframe : boolean;
     private isDestroyed: boolean;
     private createTablePopupBoundFn: () => void
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.rteID = parent.element.id;
+        this.isEnableIframe = parent.iframeSettings.enable;
         this.l10n = serviceLocator.getService<L10n>('rteLocale');
         this.rendererFactory = serviceLocator.getService<RendererFactory>('rendererFactory');
         this.dialogRenderObj = serviceLocator.getService<DialogRenderer>('dialogRenderObject');
@@ -112,8 +114,9 @@ export class Table {
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.afterKeyDown, this.afterKeyDown);
         if (!Browser.isDevice && this.parent.tableSettings.resize) {
-            EventHandler.remove(this.contentModule.getEditPanel(), 'mouseover', this.resizeHelper);
-            EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart);
+            EventHandler.remove(this.isEnableIframe ? this.contentModule.getEditPanel() : this.contentModule.getPanel(), 'mouseover', this.resizeHelper);
+            EventHandler.remove(this.isEnableIframe ? this.contentModule.getEditPanel() :
+                this.contentModule.getPanel(), Browser.touchStartEvent, this.resizeStart);
         }
     }
 
@@ -151,10 +154,12 @@ export class Table {
             this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
             this.parent.on(events.mouseDown, this.cellSelect, this);
             if (this.parent.tableSettings.resize) {
-                EventHandler.add(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
+                EventHandler.add(this.isEnableIframe ? this.parent.contentModule.getEditPanel() :
+                    this.parent.contentModule.getPanel(), Browser.touchStartEvent, this.resizeStart, this);
             }
             if (!Browser.isDevice && this.parent.tableSettings.resize) {
-                EventHandler.add(this.contentModule.getEditPanel(), 'mouseover', this.resizeHelper, this);
+                EventHandler.add(this.isEnableIframe ? this.contentModule.getEditPanel() :
+                    this.contentModule.getPanel(), 'mouseover', this.resizeHelper, this);
             }
         }
     }
@@ -1206,12 +1211,19 @@ export class Table {
             colReEle.classList.add(classes.CLS_RTE_TABLE_RESIZE, classes.CLS_TB_COL_RES);
             if (columns.length === i) {
                 colReEle.style.cssText = 'height: ' + height + 'px; width: 4px; top: ' + pos.top +
-                'px; left:' + ((columns[i - 1].classList.contains('e-multi-cells-select') ? 0 : pos.left) + this.calcPos(columns[i - 1] as HTMLElement).left + (columns[i - 1] as HTMLElement).offsetWidth - 2) + 'px;';
+                'px; left:' + ((columns[i - 1].classList.contains('e-multi-cells-select') ? 0 : pos.left) +
+                this.calcPos(columns[i - 1] as HTMLElement).left + (columns[i - 1] as HTMLElement).offsetWidth - 2) + 'px; z-index: 2;';
             } else {
                 colReEle.style.cssText = 'height: ' + height + 'px; width: 4px; top: ' + pos.top +
-                'px; left:' + ((columns[i as number].classList.contains('e-multi-cells-select') ? 0 : pos.left) + this.calcPos(columns[i as number] as HTMLElement).left - 2) + 'px;';
+                'px; left:' + ((columns[i as number].classList.contains('e-multi-cells-select') ? 0 : pos.left) + this.calcPos(columns[i as number] as HTMLElement).left - 2) +
+                'px; z-index: 2;';
             }
-            this.contentModule.getEditPanel().appendChild(colReEle);
+            if (this.isEnableIframe) {
+                this.contentModule.getEditPanel().appendChild(colReEle);
+            }
+            else {
+                this.contentModule.getPanel().appendChild(colReEle);
+            }
         }
         for (let i: number = 0; rows.length > i; i++) {
             const rowReEle: HTMLElement = this.parent.createElement('span', {
@@ -1224,8 +1236,13 @@ export class Table {
                 0 : this.calcPos(rows[i as number] as HTMLElement).left;
             rowReEle.style.cssText = 'width: ' + width + 'px; height: 4px; top: ' +
                 (this.calcPos(rows[i as number] as HTMLElement).top + (rows[i as number].classList.contains('e-multi-cells-select') ? 0 : pos.top) + (rows[i as number] as HTMLElement).offsetHeight - 2) +
-                'px; left:' + (rowPosLeft + pos.left) + 'px;';
-            this.contentModule.getEditPanel().appendChild(rowReEle);
+                'px; left:' + (rowPosLeft + pos.left) + 'px; z-index: 2;';
+            if (this.isEnableIframe) {
+                this.contentModule.getEditPanel().appendChild(rowReEle);
+            }
+            else {
+                this.contentModule.getPanel().appendChild(rowReEle);
+            }
         }
         const tableReBox: HTMLElement = this.parent.createElement('span', {
             className: classes.CLS_TB_BOX_RES + this.parent.getCssClass(true), attrs: {
@@ -1233,16 +1250,21 @@ export class Table {
             }
         });
         tableReBox.style.cssText = 'top: ' + (pos.top + height - 4) +
-            'px; left:' + (pos.left + width - 4) + 'px;';
+            'px; left:' + (pos.left + width - 4) + 'px; z-index: 2;';
         if (Browser.isDevice) {
             tableReBox.classList.add('e-rmob');
         }
-        this.contentModule.getEditPanel().appendChild(tableReBox);
+        if (this.isEnableIframe) {
+            this.contentModule.getEditPanel().appendChild(tableReBox);
+        }
+        else {
+            this.contentModule.getPanel().appendChild(tableReBox);
+        }
     }
 
     public removeResizeElement(): void {
-        const item: NodeListOf<Element> = this.parent.contentModule.getEditPanel().
-            querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box');
+        const editorPanel: Element = this.isEnableIframe ? this.parent.contentModule.getEditPanel() : this.parent.contentModule.getPanel();
+        const item: NodeListOf<Element> = editorPanel.querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box');
         if (item.length > 0) {
             for (let i: number = 0; i < item.length; i++) {
                 detach(item[i as number]);
@@ -1511,7 +1533,8 @@ export class Table {
             if (resizingArgs.cancel) {
                 this.cancelResizeAction();
             } else {
-                const tableReBox: HTMLElement = this.contentModule.getEditPanel().querySelector('.e-table-box') as HTMLElement;
+                const editorPanel: Element = this.isEnableIframe ? this.contentModule.getEditPanel() : this.contentModule.getPanel();
+                const tableReBox: HTMLElement = editorPanel.querySelector('.e-table-box') as HTMLElement;
                 const tableWidth: number = parseInt(getComputedStyle(this.curTable).width as string, 10);
                 const tableHeight: number = !isNaN(parseInt(this.curTable.style.height, 10)) ?
                     parseInt(this.curTable.style.height, 10) : parseInt(getComputedStyle(this.curTable).height, 10);
@@ -1730,11 +1753,12 @@ export class Table {
         this.isResizeBind = true;
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing);
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchEndEvent, this.resizeEnd);
-        if (this.contentModule.getEditPanel().querySelector('.e-table-box') &&
-            this.contentModule.getEditPanel().contains(this.contentModule.getEditPanel().querySelector('.e-table-box'))) {
+        const editorPanel: Element = this.isEnableIframe ? this.contentModule.getEditPanel() : this.contentModule.getPanel();
+        if (editorPanel.querySelector('.e-table-box') &&
+            editorPanel.contains(editorPanel.querySelector('.e-table-box'))) {
             this.removeResizeElement();
         }
-        if (this.helper && this.contentModule.getEditPanel().contains(this.helper)) {
+        if (this.helper && editorPanel.contains(this.helper)) {
             detach(this.helper); this.helper = null;
         }
         this.resetResizeHelper(this.curTable);

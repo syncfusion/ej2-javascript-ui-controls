@@ -796,7 +796,7 @@ export class FormFields {
             name: this.retriveFieldName(formField), id: formField.uniqueID, isReadOnly: formField.IsReadonly,
             isRequired: formField.IsRequired, isSelected: formField.Selected,
             isChecked: type === 'RadioButton' ? false : formField.Selected, type: type, value: type === 'ListBox' || type === 'DropDown' ?
-                formField.SelectedValue : formField.Value, fontName: formField.FontFamily ? formField.FontFamily : '',
+                formField.SelectedValue : (type === 'Textbox' || type === 'Password' ) ? formField.Text : formField.Value, fontName: formField.FontFamily ? formField.FontFamily : '',
             pageIndex: formField.PageIndex, pageNumber: formField.PageIndex + 1, isMultiline: formField.isMultiline ?
                 formField.isMultiline : formField.Multiline, insertSpaces: formField.insertSpaces ?
                 formField.insertSpaces : formField.InsertSpaces, isTransparent: formField.isTransparent ? formField.isTransparent :

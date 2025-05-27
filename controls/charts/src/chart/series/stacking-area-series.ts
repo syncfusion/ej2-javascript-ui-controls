@@ -46,7 +46,7 @@ export class StackingAreaSeries extends LineBase {
         const isPolar: boolean = (series.chart && series.chart.chartAreaType === 'PolarRadar');
         let index: number;
         for (let i: number = series.index; i >= 0; i--) {
-            if (series.chart.visibleSeries[i as number].visible) {
+            if (series.chart.visibleSeries[i as number].visible && series.chart.visibleSeries[i as number].type.indexOf('Stacking') > -1) {
                 index = series.chart.visibleSeries[i as number].index;
                 break;
             }
@@ -57,7 +57,7 @@ export class StackingAreaSeries extends LineBase {
             if (visiblePoints[i as number].visible && withInRange(visiblePoints[i - 1], visiblePoints[i as number],
                                                                   visiblePoints[i + 1], series)) {
                 const startvalue: number = series.index > 0 && index !== undefined ?
-                    this.chart.visibleSeries[series.index as number].stackedValues.endValues[pointIndex as number] :
+                    this.chart.visibleSeries[index as number].stackedValues.endValues[pointIndex as number] :
                     stackedvalue.startValues[pointIndex as number];
                 point1 = getCoordinate(
                     visiblePoints[i as number].xValue, (!series.visible && series.isLegendClicked) ? startvalue :
@@ -119,7 +119,7 @@ export class StackingAreaSeries extends LineBase {
                 if (previousSeries.emptyPointSettings.mode !== 'Drop' || !previousSeries.points[j as number].isEmpty) {
                     point2 = getCoordinate(visiblePoints[j as number].xValue, (!series.visible && series.isLegendClicked && series.index > 0
                         && index !== undefined) ?
-                        this.chart.visibleSeries[series.index as number].stackedValues.endValues[pointIndex as number]
+                        this.chart.visibleSeries[index as number].stackedValues.endValues[pointIndex as number]
                         : stackedvalue.startValues[pointIndex as number], xAxis, yAxis, isInverted, series);
                     if (stackedvalue.startValues[pointIndex as number] === stackedvalue.endValues[pointIndex as number]) {
                         point2.y = Math.floor(point2.y);

@@ -7,7 +7,7 @@ import { _PdfBaseStream, _PdfStream } from './base-stream';
 import { PdfStateItem, PdfComment, PdfWidgetAnnotation, PdfAnnotation, PdfLineAnnotation } from './annotations/annotation';
 import { PdfPopupAnnotationCollection } from './annotations/annotation-collection';
 import { PdfTemplate } from './graphics/pdf-template';
-import { PdfField, PdfTextBoxField } from './form/field';
+import { PdfField, PdfTextBoxField, PdfComboBoxField } from './form/field';
 import { PdfCjkFontFamily, PdfCjkStandardFont, PdfFont, PdfFontFamily, PdfFontStyle, PdfStandardFont, PdfTrueTypeFont } from './fonts/pdf-standard-font';
 import { _PdfCrossReference } from './pdf-cross-reference';
 import { PdfForm } from './form';
@@ -3624,6 +3624,9 @@ export function _obtainFontDetails(form: PdfForm, widget: PdfWidgetAnnotation, f
             if (fontFamily.startsWith('/')) {
                 fontFamily = fontFamily.slice(1);
             }
+            if (fontFamily) {
+                fontFamily = _decodeFontFamily(fontFamily);
+            }
             fontSize = parseFloat(parts[index - 1]);
         }
     }
@@ -3641,6 +3644,9 @@ export function _obtainFontDetails(form: PdfForm, widget: PdfWidgetAnnotation, f
                     let textFontStyle: PdfFontStyle = PdfFontStyle.regular;
                     if (baseFont) {
                         defaultAppearance = baseFont.name;
+                        if (baseFont.name === 'Helvetica') {
+                            baseFont.name = 'Helv';
+                        }
                         textFontStyle = _getFontStyle(baseFont.name);
                         if (defaultAppearance.includes('-')) {
                             defaultAppearance = defaultAppearance.substring(0, defaultAppearance.indexOf('-'));
@@ -3662,14 +3668,42 @@ export function _obtainFontDetails(form: PdfForm, widget: PdfWidgetAnnotation, f
                 }
             }
         }
+        if (font && font._dictionary && font._dictionary.has('BaseFont')) {
+            const fontName: string = font._dictionary.get('BaseFont').name;
+            if (fontName && fontName !== fontFamily) {
+                const fonts: _PdfDictionary = resources.get('Font');
+                if (fonts) {
+                    if (fonts.has(fontFamily)) {
+                        const fontDictionary: _PdfDictionary = fonts.get(fontFamily);
+                        const fontSubtType: any = fontDictionary.get('Subtype').name; // eslint-disable-line
+                        if (fontDictionary && fontFamily && fontDictionary.has('BaseFont')) {
+                            const baseFont: _PdfName = fontDictionary.get('BaseFont');
+                            let textFontStyle: PdfFontStyle = PdfFontStyle.regular;
+                            if (baseFont) {
+                                textFontStyle = _getFontStyle(baseFont.name);
+                                if (fontSubtType === 'TrueType') {
+                                    const fontData: Uint8Array = _createFontStream(form, fontDictionary);
+                                    if (fontData && fontData.length > 0) {
+                                        const base64String: string = _encode(fontData);
+                                        if (base64String && base64String.length > 0) {
+                                            font = new PdfTrueTypeFont(base64String, fontSize, textFontStyle);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
     if ((font === null || typeof font === 'undefined') && fontSize) {
         font = new PdfStandardFont(PdfFontFamily.helvetica, fontSize, PdfFontStyle.regular);
     }
     if ((font === null || typeof font === 'undefined') || (font && font.size === 1)) {
-        if (widget) {
+        if (widget && !(widget._field instanceof PdfComboBoxField)) {
             font = widget._circleCaptionFont;
-        } else if (field) {
+        } else if (field && !(field instanceof PdfComboBoxField)) {
             font = field._circleCaptionFont;
         }
     }
@@ -3782,7 +3816,37 @@ export function _mapFont(name: string, size: number, style: PdfFontStyle, annota
                 fontData = _getFontFromDescriptor(fontDictionary);
             }
             if (fontData && fontData.length > 0) {
-                font = new PdfTrueTypeFont(fontData, fontSize, style);
+                let isUnicode: boolean = true;
+                if (annotation._dictionary && annotation._dictionary.has('V')) {
+                    const text: string = annotation._dictionary.get('V');
+                    if (text !== null && typeof text !== 'undefined') {
+                        isUnicode = _isUnicode(text);
+                        if (annotation._dictionary.has('FT')) {
+                            const type: _PdfName = annotation._dictionary.get('FT');
+                            if (type.name === 'Ch' && annotation._dictionary.has('Opt')) {
+                                const options: Array<string>[] = annotation._dictionary.get('Opt');
+                                if (options && options.length > 0) {
+                                    for (let i: number = 0 ; i < options.length; i++) {
+                                        const innerArray: string[] = options[<number>i];
+                                        if (innerArray && innerArray.length > 1) {
+                                            const itemsKey: string = innerArray[0];
+                                            const itemsValue: string = innerArray[1];
+                                            if (itemsKey && itemsValue) {
+                                                if (itemsKey === text &&  itemsValue) {
+                                                    isUnicode = _isUnicode(itemsValue);
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                const ttf: PdfTrueTypeFont = new PdfTrueTypeFont(fontData, fontSize, style) as PdfTrueTypeFont;
+                ttf._isUnicode = isUnicode;
+                font = ttf;
             }
             break;
         }
@@ -3795,7 +3859,8 @@ export function _mapFont(name: string, size: number, style: PdfFontStyle, annota
             const hasCircleFont: boolean = annotation._circleCaptionFont && fontSize > annotation._circleCaptionFont.size;
             const isWidget: boolean = isAnnotation && annotationType !== _PdfAnnotationType.widgetAnnotation;
             const isLargerTextBox: boolean = annotation instanceof PdfTextBoxField && hasCircleFont;
-            if (isWidget || isLargerTextBox) {
+            const isLargerComboBox: boolean  = annotation instanceof PdfComboBoxField && hasCircleFont;
+            if (isWidget || isLargerTextBox || isLargerComboBox) {
                 font = new PdfStandardFont(PdfFontFamily.helvetica, fontSize, style);
             } else {
                 font = annotation._circleCaptionFont;
@@ -3839,7 +3904,7 @@ export function _tryParseFontStream(widgetDictionary: _PdfDictionary, crossRefer
                 const fontDictionary: _PdfDictionary = resourcesDictionary.get('Font');
                 if (fontDictionary && fontDictionary instanceof _PdfDictionary) {
                     fontDictionary.forEach((key: _PdfName, value: _PdfReference) => {
-                        if (value) {
+                        if (value instanceof _PdfReference) {
                             const dictionary: _PdfDictionary = crossReference._fetch(value);
                             fontData = _getFontFromDescriptor(dictionary);
                         }
@@ -4211,4 +4276,98 @@ export const _emptyPdfData: string = 'JVBERi0xLjQNCiWDkvr+DQoxIDAgb2JqDQo8PA0KL1
 export function _hasUnicodeCharacters(value: string): boolean {
     const unicodeRegex = /[^\x00-\x7F]/; // eslint-disable-line
     return value.split('').some(char => unicodeRegex.exec(char) !== null); // eslint-disable-line
+}
+/**
+ * Creates a font stream for the given font and form, extracting the font data from font descriptors.
+ *
+ * @param {PdfForm} form - The target PDF form containing cross-references to the font data.
+ * @param {_PdfDictionary} font - The dictionary that defines the font, containing references to font descriptors.
+ * @returns {Uint8Array} The font data extracted from the font file.
+ */
+export function _createFontStream(form: PdfForm, font: _PdfDictionary): Uint8Array {
+    let fontData: Uint8Array;
+    if (font) {
+        font.forEach((key: any, value: _PdfReference) => { // eslint-disable-line
+            if (value && value.objectNumber) {
+                const dictionary: _PdfDictionary = form._crossReference._fetch(value);
+                if (dictionary) {
+                    dictionary.forEach((key: any, value: any) => { // eslint-disable-line
+                        if (value && value instanceof _PdfName && value.name === 'FontDescriptor') {
+                            let fontFile: any; // eslint-disable-line
+                            if (dictionary && dictionary.has('FontFile2')) {
+                                fontFile = dictionary.get('FontFile2');
+                                if (fontFile && fontFile instanceof _PdfBaseStream) {
+                                    fontData = fontFile.getBytes();
+                                }
+                            } else if (dictionary && dictionary.has('FontFile3')) {
+                                fontFile = dictionary.get('FontFile3');
+                                if (fontFile && fontFile instanceof _PdfBaseStream) {
+                                    fontData = fontFile.getBytes();
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    }
+    return fontData;
+}
+/**
+ * Determines whether a given string contains Unicode characters.
+ *
+ * @param {string} value - The string to be checked.
+ * @returns {boolean} True if the string contains Unicode characters; otherwise, false.
+ * @throws {Error} If the input value is null or undefined.
+ */
+export function _isUnicode(value: string): boolean {
+    if (value === null || typeof value === 'undefined') {
+        throw new Error('ArgumentNullException: value');
+    }
+    for (let i: number = 0; i < value.length; i++) {
+        if (value.charCodeAt(i) > 127) {
+            return true;
+        }
+    }
+    return false;
+}
+/**
+ * Converts a single hexadecimal character to its numeric value.
+ *
+ * @param {string} char - A single character string representing a hexadecimal digit ('0'-'9', 'A'-'F', 'a'-'f').
+ * @returns {number} The numeric value corresponding to the hexadecimal character.
+ * @throws {Error} Throws an error if the input character is not a valid hexadecimal character.
+ */
+export function _convertToHex(char: string): number {
+    if (char >= '0' && char <= '9') {
+        return char.charCodeAt(0) - '0'.charCodeAt(0);
+    } else if (char >= 'A' && char <= 'F') {
+        return char.charCodeAt(0) - 'A'.charCodeAt(0) + 10;
+    } else if (char >= 'a' && char <= 'f') {
+        return char.charCodeAt(0) - 'a'.charCodeAt(0) + 10;
+    } else {
+        throw new Error(`Invalid hex character: ${char}`);
+    }
+}
+/**
+ * Decodes a font family string that contains hexadecimal encoded characters.
+ *
+ * @param {string} fontFamily - The font family string to be decoded. May contain hex encoded characters prefixed by '#'.
+ * @returns {string} The decoded font family string with hex characters replaced by their ASCII equivalents.
+ * @throws {Error} Throws an error if the input contains invalid hexadecimal sequences.
+ */
+export function _decodeFontFamily(fontFamily: string): string {
+    const builder: string[] = [];
+    const length: number = fontFamily.length;
+    for (let k: number = 0; k < length; ++k) {
+        let character: string = fontFamily[<number>k];
+        if (character === '#') {
+            const hex1: number = _convertToHex(fontFamily[k + 1]);
+            const hex2: number = _convertToHex(fontFamily[k + 2]);
+            character = String.fromCharCode((hex1 << 4) + hex2);
+            k += 2;
+        }
+        builder.push(character);
+    }
+    return builder.join('');
 }

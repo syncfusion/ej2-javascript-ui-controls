@@ -2399,7 +2399,11 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      */
     public hideTab(index: number, value?: boolean): void {
         let items: HTMLElement[];
-        const item: HTEle = selectAll('.' + CLS_TB_ITEM, this.element)[index];
+        let tabId: string;
+        if (index >= 0 && index < this.tbItem.length) {
+            tabId = this.tbItem[index].getAttribute('id');
+        }
+        const item: HTEle = this.element.querySelector(`[id="${tabId}"]`);
         if (isNOU(item)) {
             return;
         }

@@ -5231,7 +5231,7 @@ const employeeData61 = [
       "color": "#034d6d"
     }
 ];
-  
+
 const employeeData62 = [
     {
       "empId": "1",
@@ -5530,7 +5530,7 @@ const employeeData63 = [
       "color": "#034d6d"
     }
 ];
-  
+
 const employeeData64 = [
     {
       "empId": "1",
@@ -6719,8 +6719,8 @@ let businessStartup = [
         "stroke": "#333",
         "strokeWidth": 2
     },
-    
-    
+
+
     {
         "empId": "A1",
         "name": "Start",
@@ -7794,6 +7794,340 @@ describe('Flowchart orientation and layout settings-Dynamic dataSource change', 
     it('Changing LayoutSettings', (done: Function) => {
         diagram.layout.flowchartLayoutSettings.yesBranchDirection = 'RightInFlow';
         diagram.dataBind();
+        done();
+    });
+});
+describe('954960 Error while loading single node data', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    beforeAll(() => {
+        ele = createElement('div', { id: 'flowchartSingleData' });
+        document.body.appendChild(ele);
+        diagram = new Diagram({
+            width: '100%', height: '700px',
+            layout: {
+                type: 'Flowchart',
+                verticalSpacing: 50,
+                horizontalSpacing: 50,
+                orientation: 'TopToBottom',
+                flowchartLayoutSettings: {
+                    yesBranchDirection: 'LeftInFlow',
+                    noBranchDirection: 'RightInFlow',
+                    yesBranchValues: ["Yes", "True", "Y"],
+                    noBranchValues: ["No", "None", "False",]
+                }
+            },
+            getNodeDefaults: (obj: NodeModel) => {
+                obj.width = 120;
+                obj.height = 50;
+                if ((obj.shape as FlowShapeModel).shape === 'Decision' || (obj.shape as BpmnShapeModel).shape === 'DataSource') {
+                    obj.height = 80;
+                }
+                return obj;
+            }, getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                connector.type = 'Orthogonal';
+                return connector;
+            }
+        });
+        diagram.appendTo('#flowchartSingleData');
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking FlowChart Layout with single node', (done: Function) => {
+        const mermaidData = `flowchart LR
+        A:::someclass --> B
+        classDef someclass fill:#f96`;
+        diagram.loadDiagramFromMermaid(mermaidData);
+        //Failure case - nodes length should be 2
+        expect(diagram.nodes.length === 3).toBe(true);
+        expect(diagram.connectors.length === 1).toBe(true);
+        done();
+    });
+    it('Checking FlowChart Layout with Load single Node 2', (done: Function) => {
+        const mermaidData = `flowchart TD
+        A[Start]
+        style A fill:#90EE90,stroke:#333,stroke-width:2px;`;
+        diagram.loadDiagramFromMermaid(mermaidData);
+        expect(diagram.nodes.length === 1).toBe(true);
+        expect(diagram.connectors.length === 0).toBe(true);
+        done();
+    });
+    it('Checking FlowChart Layout Load Mermaid Node 3', (done: Function) => {
+        const mermaidData = `flowchart LR
+        markdown["This **is** _Markdown_"]
+        newLines["Line1
+        Line 2
+        Line 3"]
+        markdown --> newLines`;
+        //Failure case - nodes length should be 2
+        diagram.loadDiagramFromMermaid(mermaidData);
+        expect(diagram.nodes.length === 4).toBe(true);
+        expect(diagram.connectors.length === 1).toBe(true);
+        done();
+    });
+    it('Checking FlowChart Layout Load Mermaid 4', (done: Function) => {
+        const mermaidData = `graph LR;
+        A(["Start"]) --> B{"Is it raining (or snowing)?"};
+        B -->|Yes| C["Take an umbrella"];
+        B -->|No| D["Leave umbrella at home (if dry)"];
+        C --> E["Go to work"]; D --> E;
+        E --> F{"Do you have a meeting?"};
+        F -->|Yes| G["Prepare documents"];
+        F -->|No| H["Proceed with daily tasks"];
+        G --> I["Attend meeting"];
+        H --> I;
+        I --> J{"Is it lunchtime?"};
+        J -->|Yes| K["Go to lunch"];
+        J -->|No| L["Continue working"];
+        K --> M["Return to work"];
+        L --> M;
+        M --> N{"End of day?"};
+        N -->|Yes| O["Go home"];
+        N -->|No| P["Finish remaining tasks"];
+        O --> Q(["End"]);
+        %% Additional elements
+        subgraph "Optional Tasks";
+            R["Check emails"] --> S["Respond to emails"];
+            T["Review reports"] --> U["Update project status"];
+        end;
+        M --> R;
+        M --> T;
+        %% Corrected shapes
+        A1(("Circle")) --> A2(("Circle with text"));
+        A2 --> A3>"Asymmetric shape"];
+        A3 --> A4{"Rhombus"};
+        A4 --> A5{{"Hexagon"}};
+        A5 --> A6[/"Parallelogram"/];
+        A6 --> A7[\"Parallelogram alt"\];
+        A7 --> A8[/"Trapezoid"\];
+        A8 --> A9[\"Trapezoid alt"/];
+        A9 --> A10(["Stadium"]);
+        A10 --> A11[["Subroutine"]];
+        A11 --> A12[("Cylinder")];
+        A12 --> A13[("Database")];
+        A13 --> A14A["Rectangle"];
+        A13 --> A14B["Rectangular callout"];
+        A14A --> A15("Rounded rectangular callout");
+        A15 --> A16{"Diamond callout"};
+        A16 --> A17{{"Hexagonal callout"}};
+        A17 --> A18[/"Parallelogram callout"/];
+        A18 --> A19[/"Trapezoid callout"\];
+        A19 --> A20(["Stadium callout"]);
+        A20 --> A21[["Subroutine callout"]];
+        A21 --> A22[("Cylinder callout")];
+        A22 --> A23[("Database callout")];
+        %% Line types
+        A -->|"Solid line"| B;
+        C ===|"Thick line"| D;
+        D -.-|"Dotted line"| E;
+        %% Arrow types
+        G -->|"Arrow"| H;
+        H --o|"Open arrow"| I;
+        I --x|"Cross arrow"| J;
+        K --x|"Cross dashed arrow"| L;
+        %% Connector types
+        O --- P;
+        P -->|"Connector"| Q;
+        Q ---|"Thick connector"| R;
+        R -.-|"Dotted connector"| S;
+        S ===|"Dashed connector"| T;`;
+        diagram.loadDiagramFromMermaid(mermaidData);
+        //Failure case - nodes and connectors should not overlap/recursive conectors should not considered
+        expect(diagram.nodes.length === 45).toBe(true);
+        expect(diagram.connectors.length === 55).toBe(true);
+        done();
+    });
+    it('Checking FlowChart Layout Load Mermaid with subgraph', (done: Function) => {
+        const mermaidData = `graph LR;
+        A(["Start"]) --> B{"Is it raining (or snowing)?"};
+        B -->|Yes| C["Take an umbrella"];
+        B -->|No| D["Leave umbrella at home (if dry)"];
+        C --> E["Go to work"]; D --> E;E --> F{"Do you have a meeting?"};
+        F -->|Yes| G["Prepare documents"];
+        F -->|No| H["Proceed with daily tasks"];
+        G --> I["Attend meeting"];
+        H --> I;
+        I --> J{"Is it lunchtime?"};
+        J -->|Yes| K["Go to lunch"];J -->|No| L["Continue working"];
+        K --> M["Return to work"];
+        L --> M;
+        M --> N{"End of day?"};
+        N -->|Yes| O["Go home"];N -->|No| P["Finish remaining tasks"];
+        P --> N;
+        O --> Q(["End"]);
+        subgraph "Optional Tasks";
+        R["Check emails"] --> S["Respond to emails"];
+        T["Review reports"] --> U["Update project status"];
+        end;
+        M --> R;
+        M --> T;`;
+        diagram.loadDiagramFromMermaid(mermaidData);
+        expect(diagram.nodes.length === 21).toBe(true);
+        expect(diagram.connectors.length === 24).toBe(true);
+        done();
+    });
+    it('Checking FlowChart Layout Load Mermaid with comment line', (done: Function) => {
+        const mermaidData = `graph LR
+        %% Line types
+        A -->|"Solid line"| B;
+        B -.->|"Dashed line"| C;
+        C ===|"Thick line"| D;
+        D -.-|"Dotted line"| E;`;
+        diagram.loadDiagramFromMermaid(mermaidData);
+        expect(diagram.nodes.length === 5).toBe(true);
+        expect(diagram.connectors.length === 4).toBe(true);
+        done();
+    });
+    it('Checking FlowChart Layout Load Mermaid with subgraph and comment line', (done: Function) => {
+        const mermaidData = `graph LR;
+        A(["Start"]) --> B{"Is it raining (or snowing)?"};
+        B -->|Yes| C["Take an umbrella"];
+        B -->|No| D["Leave umbrella at home (if dry)"];
+        C --> E["Go to work"]; D --> E;
+        E --> F{"Do you have a meeting?"};
+        F -->|Yes| G["Prepare documents"];
+        F -->|No| H["Proceed with daily tasks"];
+        G --> I["Attend meeting"];
+        H --> I;
+        I --> J{"Is it lunchtime?"};
+        J -->|Yes| K["Go to lunch"];
+        J -->|No| L["Continue working"];
+        K --> M["Return to work"];
+        L --> M;
+        M --> N{"End of day?"};
+        N -->|Yes| O["Go home"];
+        N -->|No| P["Finish remaining tasks"];
+        P --> N;
+        O --> Q(["End"]);
+        %% Additional elements
+        subgraph "Optional Tasks";
+        R["Check emails"] --> S["Respond to emails"];
+        T["Review reports"] --> U["Update project status"];
+        end;
+        M --> R;
+        M --> T;
+        %% Corrected shapes
+        A1(("Circle")) --> A2(("Circle with text"));
+        A2 --> A3>"Asymmetric shape"];
+        A3 --> A4{"Rhombus"};
+        A4 --> A5{{"Hexagon"}};
+        A5 --> A6[/"Parallelogram"/];
+        A6 --> A7[\"Parallelogram alt"\];
+        A7 --> A8[/"Trapezoid"\];
+        A8 --> A9[\"Trapezoid alt"/];
+        A9 --> A10(["Stadium"]);
+        A10 --> A11[["Subroutine"]];
+        A11 --> A12[("Cylinder")];
+        A12 --> A13[("Database")];
+        A13 --> A14A["Rectangle"];
+        A13 --> A14B["Rectangular callout"];
+        A14A --> A15("Rounded rectangular callout");
+        A15 --> A16{"Diamond callout"};
+        A16 --> A17{{"Hexagonal callout"}};
+        A17 --> A18[/"Parallelogram callout"/];
+        A18 --> A19[/"Trapezoid callout"\];
+        A19 --> A20(["Stadium callout"]);
+        A20 --> A21[["Subroutine callout"]];
+        A21 --> A22[("Cylinder callout")];
+        A22 --> A23[("Database callout")];
+        %% Line types
+        A -->|"Solid line"| B;
+        B -.->|"Dashed line"| C;
+        C ===|"Thick line"| D;
+        D -.-|"Dotted line"| E;
+        %% Arrow types
+        G -->|"Arrow"| H;
+        H --o|"Open arrow"| I;
+        I --x|"Cross arrow"| J;
+        J --o|"Open dashed arrow"| K;
+        K --x|"Cross dashed arrow"| L;
+        %% Connector types
+        N --> O;
+        O --- P;
+        P -->|"Connector"| Q;
+        Q ---|"Thick connector"| R;
+        R -.-|"Dotted connector"| S;
+        S ===|"Dashed connector"| T;
+        `;
+        diagram.loadDiagramFromMermaid(mermaidData);
+        //Failure case - nodes and connectors should not overlap/recursive conectors should not considered
+        expect(diagram.nodes.length === 45).toBe(true);
+        expect(diagram.connectors.length === 58).toBe(true);
+        done();
+    });
+    it('Checking FlowChart Layout Load Mermaid with same line 2 data', (done: Function) => {
+        const mermaidData = `[graph LR;
+        A(["Start"]) --> B{"Is it raining (or snowing)?"};
+        B -->|Yes| C["Take an umbrella"];
+        B -->|No| D["Leave umbrella at home (if dry)"];
+        C --> E["Go to work"];
+        D --> E;
+        E --> F{"Do you have a meeting?"};
+        F -->|Yes| G["Prepare documents"];
+        F -->|No| H["Proceed with daily tasks"];
+        G --> I["Attend meeting"];
+        H --> I`;
+        diagram.loadDiagramFromMermaid(mermaidData);
+        expect(diagram.nodes.length === 9).toBe(true);
+        expect(diagram.connectors.length === 10).toBe(true);
+        done();
+    });
+    it('Checking FlowChart Layout Load Mermaid with single alphabet with ;', (done: Function) => {
+        const mermaidData = `graph LR;
+        A --> B;
+        B --> C;
+        B --> D;
+        C --> E;
+        D --> E;
+        E --> F;
+        F --> G;
+        F --> H;
+        G --> I;
+        H --> I;`;
+        diagram.loadDiagramFromMermaid(mermaidData);
+        expect(diagram.nodes.length === 9).toBe(true);
+        expect(diagram.connectors.length === 10).toBe(true);
+        done();
+    });
+    it('Checking FlowChart Layout load overlap multiple tree', (done: Function) => {
+        const mermaidData = `graph LR;
+        A(["Start"]) --> B{"Is it raining (or snowing)?"};
+        B -->|Yes| C["Take an umbrella"];
+        B -->|No| D["Leave umbrella at home (if dry)"];
+        C --> E["Go to work"];
+        D --> E;
+        A1(("Circle")) --> A2(("Circle with text"));
+        A2 --> A3>"Asymmetric shape"];
+        A3 --> A4{"Rhombus"};
+        A4 --> A5{{"Hexagon"}};
+        A -->|"Solid line"| B(["check"]);
+        C ===|"Thick line"| D;
+        D -.-|"Dotted line"| E;
+        N --> O;
+        O --- P;
+        P -->|"Connector"| Q;
+        Q ---|"Thick connector"| R;
+        R -.-|"Dotted connector"| S;`;
+        diagram.loadDiagramFromMermaid(mermaidData);
+        expect(diagram.nodes.length === 16).toBe(true);
+        expect(diagram.connectors.length === 17).toBe(true);
+        done();
+    });
+    it('Checking FlowChart Layout with simple multiple tree', (done: Function) => {
+        const mermaidData = `graph LR;
+        A(["Start"]) --> B{"Is it raining (or snowing)?"};
+        B -->|Yes| C["Take an umbrella"];
+        B -->|No| D["Leave umbrella at home (if dry)"];
+        C --> E["Go to work"]; D --> E;
+        A1(("Circle")) --> A2(("Circle with text"));
+        A2 --> A3>"Asymmetric shape"];
+        A3 --> A4{"Rhombus"};
+        A4 --> A5{{"Hexagon"}}`;
+        diagram.loadDiagramFromMermaid(mermaidData);
+        expect(diagram.nodes.length === 10).toBe(true);
+        expect(diagram.connectors.length === 9).toBe(true);
         done();
     });
 });

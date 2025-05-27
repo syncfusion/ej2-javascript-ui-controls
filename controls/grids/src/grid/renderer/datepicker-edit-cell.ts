@@ -58,7 +58,9 @@ function dateanddatetimerender(args: {
         format: format,
         placeholder: isInline ?
             '' : args.column.headerText, enableRtl: rtl,
-        enabled: isEditable(args.column, args.requestType, args.element) && isCellHaveWidth(parentsUntil(args.element, 'e-rowcell')),
+        enabled: isEditable(args.column, args.requestType, args.element) &&
+            isCellHaveWidth(parentsUntil(args.element, 'e-rowcell'),
+                            datePickerEditCell && datePickerEditCell['parent'] ? datePickerEditCell['parent'] : null),
         cssClass: css ? css : null,
         close: datePickerClose.bind(datePickerEditCell)
     };

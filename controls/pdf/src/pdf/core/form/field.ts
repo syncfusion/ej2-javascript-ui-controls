@@ -2,7 +2,7 @@ import { _PdfDictionary, _PdfReference, _PdfName } from './../pdf-primitives';
 import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfForm } from './form';
 import { PdfRadioButtonListItem, PdfStateItem, PdfWidgetAnnotation, PdfListFieldItem, _PaintParameter, PdfInteractiveBorder } from './../annotations/annotation';
-import { _getItemValue, _checkField, _removeReferences, _removeDuplicateReference, _updateVisibility, _styleToString, _getStateTemplate, _findPage, _getInheritableProperty, _getNewGuidString, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _mapBorderStyle, _getUpdatedBounds, _setMatrix, _obtainFontDetails, _isNullOrUndefined, _stringToPdfString, _mapFont, _isRightToLeftCharacters } from './../utils';
+import { _getItemValue, _checkField, _removeReferences, _removeDuplicateReference, _updateVisibility, _styleToString, _getStateTemplate, _findPage, _getInheritableProperty, _getNewGuidString, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _mapBorderStyle, _getUpdatedBounds, _setMatrix, _obtainFontDetails, _isNullOrUndefined, _stringToPdfString, _mapFont, _isRightToLeftCharacters, _getFontFromDescriptor, _encode, _getFontStyle, _createFontStream, _decodeFontFamily } from './../utils';
 import { _PdfCheckFieldState, PdfFormFieldVisibility, _FieldFlag, PdfAnnotationFlag, PdfTextAlignment, PdfHighlightMode, PdfBorderStyle, PdfRotationAngle, PdfCheckBoxStyle, PdfFormFieldsTabOrder, PdfFillMode, PdfTextDirection } from './../enumerator';
 import { PdfPage } from './../pdf-page';
 import { PdfDocument } from './../pdf-document';
@@ -6057,6 +6057,9 @@ export abstract class PdfListField extends PdfField {
                 }
             }
             fontFamily = fontFamily.trim();
+            if (fontFamily) {
+                fontFamily = _decodeFontFamily(fontFamily);
+            }
             switch (fontFamily) {
             case 'Helv':
                 this._font = new PdfStandardFont(PdfFontFamily.helvetica, fontSize, PdfFontStyle.regular);
@@ -6077,6 +6080,45 @@ export abstract class PdfListField extends PdfField {
             default:
                 this._font = new PdfStandardFont(PdfFontFamily.helvetica, fontSize, PdfFontStyle.regular);
                 break;
+            }
+            if (this._font && this._font._dictionary && this._font._dictionary.has('BaseFont')) {
+                const fontName: string = this._font._dictionary.get('BaseFont').name;
+                if (fontName && fontName !== fontFamily) {
+                    if (this.form._dictionary.has('DR')) {
+                        const resources: _PdfDictionary = this.form._dictionary.get('DR');
+                        const fonts: _PdfDictionary = resources.get('Font');
+                        if (fonts) {
+                            if (fonts.has(fontFamily)) {
+                                const fontDictionary: _PdfDictionary = fonts.get(fontFamily);
+                                const fontSubtType: any = fontDictionary.get('Subtype').name; // eslint-disable-line
+                                if (fontDictionary && fontFamily && fontDictionary.has('BaseFont')) {
+                                    const baseFont: _PdfName = fontDictionary.get('BaseFont');
+                                    let textFontStyle: PdfFontStyle = PdfFontStyle.regular;
+                                    if (baseFont && baseFont.name !== null && typeof baseFont.name !== 'undefined') {
+                                        textFontStyle = _getFontStyle(baseFont.name);
+                                        if (fontSubtType && fontSubtType === 'TrueType') {
+                                            const fontData: Uint8Array = _createFontStream(this.form, fontDictionary);
+                                            if (fontData && fontData.length > 0) {
+                                                const base64String: string = _encode(fontData);
+                                                if (base64String && base64String.length > 0) {
+                                                    this._font = new PdfTrueTypeFont(base64String, fontSize, textFontStyle);
+                                                }
+                                            }
+                                        } else if (fontSubtType && fontSubtType === 'Type0') {
+                                            const fontData: Uint8Array = _getFontFromDescriptor(fontDictionary);
+                                            if (fontData && fontData.length > 0) {
+                                                const base64String: string = _encode(fontData);
+                                                if (base64String && base64String.length > 0) {
+                                                    this._font = new PdfTrueTypeFont(base64String, fontSize, textFontStyle);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
         return this._font;
@@ -6459,6 +6501,9 @@ export class PdfComboBoxField extends PdfListField {
                 font = this._obtainFont(item);
             }
             if (typeof font === 'undefined' || font === null) {
+                font = this.font;
+            }
+            if (!font || font.size === 0) {
                 font = this._appearanceFont;
             }
             this._drawComboBox(graphics, parameter, font, parameter.stringFormat);
@@ -6953,7 +6998,12 @@ export class PdfListBoxField extends PdfListField {
                     brush = new PdfBrush([0, 0, 0]);
                 }
             }
-            const value: string = item[1] ? item[1] : item[0];
+            let value: string;
+            if (item && typeof item === 'string') {
+                value = item;
+            } else {
+                value = item[1] ? item[1] : item[0];
+            }
             const itemTextBound: number[] = [location[0], location[1], width - location[0], font._metrics._getHeight()];
             if (parameter.rotationAngle > 0) {
                 const state: PdfGraphicsState = graphics.save();

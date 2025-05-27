@@ -3110,7 +3110,8 @@ export class AnnotationToolbar {
                     this.pdfViewer.annotation.modifyFillColor(currentColor);
                 }
             } else {
-                if (args.currentValue.hex !== args.previousValue.hex) {
+                if (args.currentValue.hex !== args.previousValue.hex ||
+                    args.currentValue.hex !== this.pdfViewer.selectedItems.annotations[0].fillColor) {
                     this.pdfViewer.annotation.modifyFillColor(currentColor);
                 }
             }

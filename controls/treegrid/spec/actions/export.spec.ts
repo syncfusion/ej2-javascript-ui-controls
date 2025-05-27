@@ -142,7 +142,7 @@ describe('Pdf Exporting custom data', () => {
 describe('Excel Exporting Remote data', () => {
     let gridObj: TreeGrid;
     let data: Object = new DataManager({
-        url: 'https://ej2services.syncfusion.com/js/development/api/SelfReferenceData',
+        url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
         adaptor: new WebApiAdaptor,
         crossDomain: true
     });
@@ -182,7 +182,7 @@ describe('Excel Exporting Remote data', () => {
 describe('Excel Exporting Remote data with custom data source', () => {
     let gridObj: TreeGrid;
     let data: Object = new DataManager({
-        url: 'https://ej2services.syncfusion.com/js/development/api/SelfReferenceData',
+        url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
         adaptor: new WebApiAdaptor,
         crossDomain: true
     });
@@ -229,7 +229,7 @@ describe('Excel Exporting Remote data with custom data source', () => {
 // describe('Pdf Exporting Remote data', () => {
 //     let gridObj: TreeGrid;
 //     let data: Object = new DataManager({
-//         url: 'https://ej2services.syncfusion.com/js/development/api/SelfReferenceData',
+//         url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
 //         adaptor: new WebApiAdaptor,
 //         crossDomain: true
 //     });
@@ -268,7 +268,7 @@ describe('Excel Exporting Remote data with custom data source', () => {
 // describe('Pdf Exporting Remote data with custom data source', () => {
 //     let gridObj: TreeGrid;
 //     let data: Object = new DataManager({
-//         url: 'https://ej2services.syncfusion.com/js/development/api/SelfReferenceData',
+//         url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
 //         adaptor: new WebApiAdaptor,
 //         crossDomain: true
 //     });
@@ -444,7 +444,7 @@ describe('Exporting with aggregates', () => {
 describe('Excel Exporting Remote data without exportType', () => {
     let gridObj: TreeGrid;
     let data: Object = new DataManager({
-        url: 'https://ej2services.syncfusion.com/js/development/api/SelfReferenceData',
+        url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
         adaptor: new WebApiAdaptor,
         crossDomain: true
     });
@@ -516,7 +516,7 @@ describe('Pdf Exporting local data without enable the property', () => {
 describe('Excel Exporting Remote data with exportType as AllPage', () => {
     let gridObj: TreeGrid;
     let data: Object = new DataManager({
-        url: 'https://ej2services.syncfusion.com/js/development/api/SelfReferenceData',
+        url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
         adaptor: new WebApiAdaptor,
         crossDomain: true
     });

@@ -235,6 +235,11 @@
         padding: $tbar-item-nrml-padding;
       }
 
+      &:not(.e-separator):not(.e-spacer),
+      &.e-overlay > * {
+        pointer-events: none;
+      }
+
       &.e-separator {
         margin: $tbar-separator-nrml-mrgn;
         min-height: $tbar-separator-nrml-minheight;
@@ -260,6 +265,10 @@
 
       > * {
         text-overflow: ellipsis;
+      }
+
+      &:not(.e-overlay) > * {
+        pointer-events: auto;
       }
 
       &.e-hidden {
@@ -451,6 +460,10 @@
           text-overflow: ellipsis;
         }
 
+        &:not(.e-overlay) > * {
+          pointer-events: auto;
+        }
+
         &.e-tbtn-align .e-btn.e-control .e-icons.e-btn-icon {
           min-width: 100%;
         }
@@ -576,6 +589,10 @@
             &:not(.e-separator) {
               height: auto;
             }
+
+            &:not(.e-overlay) > * {
+              pointer-events: auto;
+            }
           }
 
           .e-toolbar-item > * {
@@ -595,6 +612,10 @@
   
           &.e-separator:last-of-type {
             display: inline-flex;
+          }
+
+          &:not(.e-overlay) > * {
+            pointer-events: auto;
           }
         }
       }

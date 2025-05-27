@@ -188,7 +188,7 @@ export class FilterMenuRenderer {
 
     private dialogCreated(target: Element, column: Column): void {
         if (!Browser.isDevice && target) {
-            getFilterMenuPostion(target, this.dlgObj);
+            getFilterMenuPostion(target, this.dlgObj, this.parent);
         }
         else if (!this.options.isResponsiveFilter) {
             this.dlgObj.position = { X: 'center', Y: 'center' };
