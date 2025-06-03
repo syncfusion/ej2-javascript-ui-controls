@@ -5,6 +5,7 @@ import { measureText } from './../../utility/dom-util';
 import { HyperlinkModel } from './../../objects/annotation-model';
 import { AnnotationConstraints, RotationReference } from '../../enum/enum';
 import { SubTextElement, TextBounds } from '../../rendering/canvas-interface';
+import { PointModel } from '../../primitives/point-model';
 
 /**
  * TextElement is used to display text/annotations
@@ -52,6 +53,12 @@ export class TextElement extends DiagramElement {
 
     /** @private */
     public doWrap: boolean = true;
+
+    /** @private */
+    public flippedPoint: PointModel;
+
+    /** @private */
+    public flipTransformOffset: PointModel;
 
 
     /**

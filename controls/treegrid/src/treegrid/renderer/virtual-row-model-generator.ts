@@ -4,7 +4,7 @@ import { ITreeData } from '../base';
 import * as events from '../base/constant';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
-import { isCountRequired } from '../utils';
+import { isCountRequired, isRemoteData } from '../utils';
 /**
  * RowModelGenerator is used to generate grid data rows.
  *
@@ -27,22 +27,11 @@ export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
         return super.getData();
     }
     public generateRows(data: Object[], notifyArgs?: NotifyArgs): Row<Column>[] {
-        if (!isNullOrUndefined(notifyArgs.virtualInfo) && notifyArgs.virtualInfo.loadNext &&
-            notifyArgs.virtualInfo.nextInfo.page !== this.parent.pageSettings.currentPage) {
-            this.parent.setProperties({ pageSettings: { currentPage: notifyArgs.virtualInfo.nextInfo.page } }, true);
-        }
-        else if (!isNullOrUndefined(notifyArgs.virtualInfo) && !notifyArgs.virtualInfo.loadNext &&
-                 notifyArgs.virtualInfo.page !== this.parent.pageSettings.currentPage) {
-            this.parent.setProperties({ pageSettings: { currentPage: notifyArgs.virtualInfo.page } }, true);
-        }
         const info: VirtualInfo = this.getDataInfo();
         if (!isNullOrUndefined(notifyArgs.virtualInfo)) {
-            if (notifyArgs.virtualInfo.direction !== 'right' && notifyArgs.virtualInfo.direction !== 'left') {
-                if (!((this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
-                && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent))
+            if ((!isRemoteData(this.parent.root) || isCountRequired(this.parent))
                 || notifyArgs.virtualInfo.blockIndexes.length === 1) {
-                    notifyArgs.virtualInfo.blockIndexes = info.blockIndexes;
-                }
+                notifyArgs.virtualInfo.blockIndexes = info.blockIndexes;
             } else {
                 notifyArgs.virtualInfo.blockIndexes = this.getBlockIndexes(notifyArgs.virtualInfo.page);
             }

@@ -2432,6 +2432,26 @@ export class TableWidget extends BlockWidget {
         }
         return false;
     }
+    /**
+     * @private
+     */
+    public updateRowSpan(): void {
+        const rowsLength: number = this.childWidgets.length;
+        for (let i: number = 0; i < rowsLength; i++) {
+            const row: TableRowWidget = this.childWidgets[i] as TableRowWidget;
+            for (let j: number = 0; j < row.childWidgets.length; j++) {
+                const cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                if (cell.cellFormat.rowSpan > 1) {
+                    // Check if the rowSpan extends beyond the table's boundaries
+                    const remainingRows: number = rowsLength - row.rowIndex;
+                    if (cell.cellFormat.rowSpan > remainingRows) {
+                        // Reset rowSpan to the number of remaining rows
+                        cell.cellFormat.rowSpan = remainingRows;
+                    }
+                }
+            }
+        }
+    }
 
     /**
      * @private
@@ -3073,7 +3093,6 @@ export class TableRowWidget extends BlockWidget {
         for (let i: number = 0; i < this.childWidgets.length; i++) {
             let cell: TableCellWidget = this.childWidgets[i] as TableCellWidget;
             cell.combineWidget(viewer);
-            cell.index = cell.indexInOwner;
             if (!isNullOrUndefined(cell.cellFormat) && cell.cellFormat.rowSpan === 1) {
                 let cellHeight: number = cell.height + cell.margin.top + cell.margin.bottom;
                 if ((this.height - this.ownerTable.tableFormat.cellSpacing) < cell.height) {
@@ -9799,6 +9818,7 @@ export class WTableHolder {
                                 }
                             }
                         }
+                        isTableHasPointWidth = !isAuto && tablePreferredWidthType === "Point" && HelperMethods.round(preferredTableWidth, 2) <= HelperMethods.round(totalColumnsPreferredWidth, 2);
                         totalPreferredWidth = this.getTotalWidth(0);
                     }
                 }

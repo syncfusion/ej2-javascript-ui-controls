@@ -470,7 +470,7 @@ export class EditorHistory {
                 if (!isNullOrUndefined(selection.editRegionHighlighters)) {
                     selection.editRegionHighlighters.clear();
                 }
-                this.documentHelper.layout.shiftLayoutedItems(false);
+                this.documentHelper.layout.shiftLayoutedItems(true);
                 if (this.owner.enableHeaderAndFooter) {
                     this.owner.editorModule.updateHeaderFooterWidget();
                 }

@@ -813,7 +813,9 @@ export class Selection implements IAction {
             this.prevCIdxs = undefined;
             this.prevECIdxs = undefined;
             this.enableSelectMultiTouch = false;
-            this.isInteracted = false;
+            if (!(this.selectionSettings.checkboxMode === 'ResetOnRowClick' && this.target &&  parentsUntil(this.target, 'e-rowcell'))) {
+                this.isInteracted = false;
+            }
             this.checkSelectAllClicked = false;
             this.isHdrSelectAllClicked = false;
         }

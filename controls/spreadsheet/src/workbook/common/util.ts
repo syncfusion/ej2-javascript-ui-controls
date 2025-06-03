@@ -227,9 +227,22 @@ export function isValidCellReference(value: string): boolean {
                 if (cellColIndex < 1 || cellColIndex > 16384) {
                     return false;
                 }
-                const cellNumber: number = parseFloat(text.substring(endNum, textLength));
-                if (cellNumber > 0 && cellNumber < 1048577) { // 1048576 - Maximum number of rows in excel.
-                    return true;
+                const rowText: string = text.substring(endNum, textLength);
+                if (rowText.length > 0) {
+                    let isNumeric: boolean = true;
+                    for (let j: number = 0; j < rowText.length; j++) {
+                        const charCode: number = rowText.charCodeAt(j as number);
+                        if (charCode < 48 || charCode > 57) {
+                            isNumeric = false;
+                            break;
+                        }
+                    }
+                    if (isNumeric) {
+                        const cellNumber: number = parseFloat(rowText);
+                        if (cellNumber > 0 && cellNumber < 1048577) { // 1048576 - Maximum number of rows in excel.
+                            return true;
+                        }
+                    }
                 }
             }
         }

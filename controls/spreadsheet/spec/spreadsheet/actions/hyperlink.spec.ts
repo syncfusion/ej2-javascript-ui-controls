@@ -454,7 +454,7 @@ describe('Hyperlink ->', () => {
                 setTimeout(() => {
                     expect(helper.getInstance().sheets[0].selectedRange).toBe('A10:A10');
                     done();
-                });
+                }, 10);
             });
         });
 
@@ -702,7 +702,7 @@ describe('Hyperlink ->', () => {
                             setTimeout(() => {
                                 expect(helper.getInstance().sheets[0].selectedRange).toBe('A2:A5');
                                 done();
-                            });
+                            }, 10);
                         });
                     });
                 });

@@ -373,6 +373,11 @@ export class Revision {
             this.owner.editorModule.cloneTableToHistoryInfo(tableWidget);
             this.owner.editorModule.removeDeletedCellRevision(currentRow);
             this.isContentRemoved = true;
+            let startCell: TableCellWidget = this.owner.selectionModule.start.paragraph.associatedCell;
+            let endCell: TableCellWidget = this.owner.selectionModule.end.paragraph.associatedCell;
+            if (startCell && endCell) {
+                this.owner.editorModule.onConfirmedCellDeletion(currentRow, this.owner.selectionModule, startCell.rowIndex, endCell.rowIndex, startCell.columnIndex, endCell.columnIndex, true, 1, true);
+            }
             tableWidget.removeChild(tableWidget.childWidgets.indexOf(currentRow));
             this.canSkipTableItems = true;
             // Before destroying the table row widget, delete the field element from the row.

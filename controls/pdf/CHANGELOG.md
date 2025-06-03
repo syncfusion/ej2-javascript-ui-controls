@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 29.2.8 (2025-06-03)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Fixed an issue where existing stamp is not properly preserved when flatten was enabled.
+- Fixed an issue where font is not parsed properly from an existing combo box field of particular document.
+- Resolved an issue with preserving page content while flattening the signature field.
+- Resolved an issue with the annotation count while parsing from a PDF page.
+- Resolved an issue with preserving the text box field when the multiline property is set to true.
+
 ## 29.2.7 (2025-05-27)
 
 ### PDF Parser

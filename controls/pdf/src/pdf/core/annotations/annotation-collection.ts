@@ -60,6 +60,7 @@ export class PdfAnnotationCollection {
      * ```
      */
     get count(): number {
+        this._getAnnotations();
         return this._annotations.length;
     }
     /**
@@ -91,7 +92,7 @@ export class PdfAnnotationCollection {
                 dictionary = this._crossReference._fetch(dictionary);
             }
             if (dictionary && dictionary instanceof _PdfDictionary) {
-                const annotation: PdfAnnotation = this._parseAnnotation(dictionary);
+                const annotation: PdfAnnotation = this._parseAnnotation(dictionary, index);
                 if (annotation) {
                     annotation._ref = this._annotations[<number>index];
                     this._parsedAnnotations.set(index, annotation);
@@ -280,8 +281,41 @@ export class PdfAnnotationCollection {
             }
         }
     }
-    _parseAnnotation(dictionary: _PdfDictionary): PdfAnnotation {
+    _getAnnotations(): void {
+        if (this._parsedAnnotations.size === 0) {
+            for (let i: number = 0; i < this._annotations.length; i++) {
+                let dictionary: _PdfReference | _PdfDictionary = this._annotations[<number>i];
+                if (dictionary && dictionary instanceof _PdfReference) {
+                    dictionary = this._crossReference._fetch(dictionary);
+                }
+                if (dictionary && dictionary instanceof _PdfDictionary) {
+                    const isPopupWithExternalParent: boolean = this._isPopupWithExternalParent(dictionary);
+                    const annotation: PdfAnnotation = this._parseAnnotation(dictionary, i);
+                    if (annotation) {
+                        annotation._ref = this._annotations[<number>i];
+                        this._parsedAnnotations.set(i, annotation);
+                    } else if (isPopupWithExternalParent) {
+                        i--;
+                    }
+                }
+            }
+        }
+    }
+    _isPopupWithExternalParent(dictionary: _PdfDictionary): boolean {
+        if (dictionary && dictionary.has('Subtype')) {
+            const key: _PdfName = dictionary.get('Subtype');
+            if (key && key.name === 'Popup' && dictionary.has('Parent')) {
+                const parentEntry: _PdfReference = dictionary.getRaw('Parent');
+                if (parentEntry && parentEntry instanceof _PdfReference && this._annotations.indexOf(parentEntry) === -1) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    _parseAnnotation(dictionary: _PdfDictionary, index?: number): PdfAnnotation {
         let annot: PdfAnnotation;
+        let hasParent: boolean = false;
         if (dictionary && dictionary.has('Subtype') && this._page !== null && typeof this._page !== 'undefined') {
             const key: _PdfName = dictionary.get('Subtype');
             const size: number[] = dictionary.get('Rect');
@@ -329,7 +363,12 @@ export class PdfAnnotationCollection {
                     annot = PdfInkAnnotation._load(this._page, dictionary);
                     break;
                 case 'Popup':
-                    annot = PdfPopupAnnotation._load(this._page, dictionary);
+                    hasParent = this._isPopupWithExternalParent(dictionary);
+                    if (typeof index === 'number' && hasParent) {
+                        this._annotations.splice(index, 1);
+                    } else {
+                        annot = PdfPopupAnnotation._load(this._page, dictionary);
+                    }
                     break;
                 case 'Text':
                     annot = PdfPopupAnnotation._load(this._page, dictionary);

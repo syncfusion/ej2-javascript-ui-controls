@@ -2,13 +2,14 @@
 
 ## [Unreleased]
 
-## 29.2.7 (2025-05-27)
+## 29.2.8 (2025-06-03)
 
 ### Tree Grid
 
 #### Bug Fixes
 
-- `#I722548` - Fixed an issue where records are in expanded state after searching when virtualization and collapseAll enabled.
+- `#726732` - Fixed a filter issue where sorting after filtering with Query Builder, the sorting was applied to the entire data source instead of the filtered results.
+- `#I722548` - Fixed an issue where records are in expanded state after searching when `enableVirtualization` and `enableCollapseAll` set to true.
 
 ## 29.1.39 (2025-04-22)
 

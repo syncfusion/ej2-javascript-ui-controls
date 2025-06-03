@@ -3672,23 +3672,44 @@ export function _obtainFontDetails(form: PdfForm, widget: PdfWidgetAnnotation, f
             const fontName: string = font._dictionary.get('BaseFont').name;
             if (fontName && fontName !== fontFamily) {
                 const fonts: _PdfDictionary = resources.get('Font');
-                if (fonts) {
-                    if (fonts.has(fontFamily)) {
-                        const fontDictionary: _PdfDictionary = fonts.get(fontFamily);
-                        const fontSubtType: any = fontDictionary.get('Subtype').name; // eslint-disable-line
-                        if (fontDictionary && fontFamily && fontDictionary.has('BaseFont')) {
-                            const baseFont: _PdfName = fontDictionary.get('BaseFont');
-                            let textFontStyle: PdfFontStyle = PdfFontStyle.regular;
-                            if (baseFont) {
-                                textFontStyle = _getFontStyle(baseFont.name);
-                                if (fontSubtType === 'TrueType') {
-                                    const fontData: Uint8Array = _createFontStream(form, fontDictionary);
-                                    if (fontData && fontData.length > 0) {
-                                        const base64String: string = _encode(fontData);
-                                        if (base64String && base64String.length > 0) {
-                                            font = new PdfTrueTypeFont(base64String, fontSize, textFontStyle);
+                if (fonts && fonts.has(fontFamily)) {
+                    const fontDictionary: _PdfDictionary = fonts.get(fontFamily);
+                    const fontSubtType: any = fontDictionary.get('Subtype').name; // eslint-disable-line
+                    if (fontDictionary && fontFamily && fontDictionary.has('BaseFont')) {
+                        const baseFont: _PdfName = fontDictionary.get('BaseFont');
+                        const textFontStyle: PdfFontStyle = baseFont ? _getFontStyle(baseFont.name) : PdfFontStyle.regular;
+                        if (fontSubtType === 'TrueType') {
+                            const fontData: Uint8Array = _createFontStream(form, fontDictionary);
+                            if (fontData && fontData.length > 0) {
+                                const base64String: string = _encode(fontData);
+                                if (base64String && base64String.length > 0) {
+                                    let isUnicode: boolean = true;
+                                    if (widget || field) {
+                                        const dictionary: _PdfDictionary = widget ? widget._dictionary : field._dictionary;
+                                        if (dictionary && dictionary.has('V')) {
+                                            const text: string = dictionary.get('V');
+                                            if (text !== null && typeof text !== 'undefined') {
+                                                isUnicode = _isUnicode(text);
+                                                if (dictionary.has('FT')) {
+                                                    const type: _PdfName = dictionary.get('FT');
+                                                    if (type.name === 'Ch' && dictionary.has('Opt')) {
+                                                        const options: Array<string>[] = dictionary.get('Opt');
+                                                        if (options && options.length > 0) {
+                                                            for (const [itemsKey, itemsValue]
+                                                                of options.filter((innerArray: string[]) => innerArray.length > 1)) {
+                                                                if (itemsKey === text) {
+                                                                    isUnicode = _isUnicode(itemsValue);
+                                                                    break;
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
+                                    font = new PdfTrueTypeFont(base64String, fontSize, textFontStyle);
+                                    (font as PdfTrueTypeFont)._isUnicode = isUnicode;
                                 }
                             }
                         }

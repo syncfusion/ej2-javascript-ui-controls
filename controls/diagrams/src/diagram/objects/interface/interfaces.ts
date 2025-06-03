@@ -1,5 +1,5 @@
 import { MenuItemModel, MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { ZoomTypes, PageOrientation, DiagramRegions, FitModes, RenderingMode, SegmentEditing, BranchTypes, DecoratorShapes } from '../../enum/enum';
+import { ZoomTypes, PageOrientation, DiagramRegions, FitModes, RenderingMode, SegmentEditing, BranchTypes, DecoratorShapes, HorizontalAlignment, VerticalAlignment } from '../../enum/enum';
 import { PointModel } from '../../primitives/point-model';
 import { Rect } from '../../primitives/rect';
 import { MarginModel } from '../../core/appearance-model';
@@ -8,6 +8,8 @@ import { DiagramRenderer } from '../../rendering/renderer';
 import { BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { ConnectorModel } from '../connector-model';
 import { BasicShapeModel, FlowShapeModel, NodeModel, PathModel } from '../node-model';
+import { Thickness } from '../../core/appearance';
+import { Size } from '../../primitives/size';
 
 
 /**
@@ -324,4 +326,23 @@ export interface MermaidStyle {
 export interface TouchArgs {
     target: HTMLElement;
     type: string;
+}
+
+export interface ParentContainer {
+    width: number;
+    height: number;
+    offsetX: number;
+    offsetY: number;
+    parentTransform: number;
+    rotateAngle: number;
+    padding: Thickness;
+}
+
+export interface ChildTextElement {
+    horizontalAlignment: HorizontalAlignment;
+    verticalAlignment: VerticalAlignment;
+    margin: MarginModel;
+    desiredSize: Size;
+    inversedAlignment: boolean;
+    pivot: PointModel;
 }

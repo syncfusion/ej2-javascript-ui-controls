@@ -8,7 +8,7 @@ import { profile, inMB, getMemoryProfile } from '../common.spec';
 import * as util from '../utils.spec';
 import { FieldDragStartEventArgs, FieldDropEventArgs, FieldDroppedEventArgs, FieldRemoveEventArgs, CalculatedFieldCreateEventArgs } from '../../src/common/base/interface';
 import { DataManager, ODataV4Adaptor, Query, WebApiAdaptor } from '@syncfusion/ej2-data';
-import { TextBox } from '@syncfusion/ej2-inputs';
+import { MaskedTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { PivotView } from '../../src/pivotview/base/pivotview';
 import { FieldList } from '../../src/common/actions/field-list';
 
@@ -24,6 +24,113 @@ describe('PivotFieldList spec', () => {
             pending(); //Skips test (in Chai)
             return;
         }
+    });
+
+    describe('Field searching - coverage', () => {
+        describe('Field list', () => {
+            let fieldListObj1: PivotFieldList;
+            let searchField1: TextBox;
+            let elem1: HTMLElement = createElement('div', { id: 'PivotFieldList1', styles: 'height:400px;width:60%' });
+            afterAll(() => {
+                if (fieldListObj1) {
+                    fieldListObj1.destroy();
+                }
+                remove(elem1);
+            });
+            beforeAll(() => {
+                if (document.getElementById(elem1.id)) {
+                    remove(document.getElementById(elem1.id));
+                }
+                document.body.appendChild(elem1);
+                fieldListObj1 = new PivotFieldList({
+                    dataSourceSettings: {
+                        dataSource: pivotDatas as IDataSet[],
+                        groupSettings: [
+                            { name: 'date', type: 'Date', groupInterval: ['Years', 'Quarters', 'Months', 'Days'] },
+                        ]
+                    },
+                    enableFieldSearching: true,
+                    renderMode: 'Fixed'
+                });
+                fieldListObj1.appendTo('#PivotFieldList1');
+            });
+            it('Field searing', (done: Function) => {
+                setTimeout(() => {
+                    searchField1 = getInstance(document.querySelectorAll('.e-textbox.e-input')[0] as HTMLElement, TextBox) as TextBox;
+                    searchField1.value = 'Year';
+                    searchField1.element.dispatchEvent(new Event('input', { bubbles: true }));
+                    done();
+                }, 1000);
+            });
+            it('Field searing - ensuring', (done: Function) => {
+                searchField1.element.dispatchEvent(new Event('input', { bubbles: true }));
+                setTimeout(() => {
+                    expect(fieldListObj1.element.querySelectorAll('.e-field-table .e-field-list ul li:not(.e-disable)')[0].textContent).toBe('dateMonths (date)Quarters (date)Years (date)Days (date)');
+                    done();
+                }, 1500);
+            });
+            it('Field searing - child', (done: Function) => {
+                searchField1.value = 'Date';
+                searchField1.element.dispatchEvent(new Event('input', { bubbles: true }));
+                setTimeout(() => {
+                    searchField1.element.dispatchEvent(new Event('input', { bubbles: true }));
+                    expect(fieldListObj1.element.querySelectorAll('.e-field-table .e-field-list ul li:not(.e-disable)')[0].textContent).toBe('dateMonths (date)Quarters (date)Years (date)Days (date)');
+                    fieldListObj1.dataSourceSettings.groupSettings = [];
+                    done();
+                }, 1500);
+            });
+        });
+
+        describe('Field searching - coverage', () => {
+            let fieldListObj2: PivotFieldList;
+            let searchFieldFilter2: MaskedTextBox;
+            let elem1: HTMLElement = createElement('div', { id: 'PivotFieldList1', styles: 'height:400px;width:60%' });
+            afterAll(() => {
+                if (fieldListObj2) {
+                    fieldListObj2.destroy();
+                }
+                remove(elem1);
+            });
+            beforeAll(() => {
+                if (document.getElementById(elem1.id)) {
+                    remove(document.getElementById(elem1.id));
+                }
+                document.body.appendChild(elem1);
+                fieldListObj2 = new PivotFieldList({
+                    dataSourceSettings: {
+                        dataSource: pivot_dataset as IDataSet[],
+                        rows: [{ name: 'product' }],
+                    },
+                    maxNodeLimitInMemberEditor: 3,
+                    renderMode: 'Fixed'
+                });
+                fieldListObj2.appendTo('#PivotFieldList1');
+            });
+            it('Searching filter - 1', (done: Function) => {
+                (fieldListObj2.element.querySelectorAll('.e-pv-filter')[0] as HTMLElement).click();
+                setTimeout(() => {
+                    searchFieldFilter2 = getInstance(document.querySelectorAll('.e-maskedtextbox.e-input')[0] as HTMLElement, MaskedTextBox) as MaskedTextBox;
+                    done();
+                }, 1000);
+            });
+            it('Searching filter - 2', (done: Function) => {
+                searchFieldFilter2.value = 'C';
+                setTimeout(() => {
+                    searchFieldFilter2.element.dispatchEvent(new Event('keyup', { bubbles: true }));
+                    expect(fieldListObj2.element.querySelectorAll('.e-member-editor-dialog .e-member-editor-container ul li:not(.e-disable)')[0].textContent).toBe('Car');
+                    done();
+                }, 1000);
+            });
+            it('Checking filter', (done: Function) => {
+                searchFieldFilter2.value = '';
+                setTimeout(() => {
+                    searchFieldFilter2.element.dispatchEvent(new Event('keyup', { bubbles: true }));
+                    expect(fieldListObj2.element.querySelectorAll('.e-member-editor-dialog .e-member-editor-container ul li:not(.e-disable)')[0].textContent).toBe('Bike');
+                    (fieldListObj2.element.querySelector('.e-cancel-btn') as HTMLElement).click();
+                    done();
+                }, 1000);
+            });
+        });
     });
 
     describe('Pivot Field List base module', () => {
@@ -758,4 +865,174 @@ describe('PivotFieldList spec', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
+
+    let pivotDatas: IDataSet[] = [
+        {
+            _id: "5a940692c2d185d9fde50e5e",
+            index: 0,
+            guid: "810a1191-81bd-4c18-ac73-d16ad3fc80eb",
+            isActive: "false",
+            balance: 2430.87,
+            advance: 7658,
+            quantity: 11,
+            age: 21,
+            eyeColor: "blue",
+            name: "Skinner Ward",
+            gender: "male",
+            company: "GROK",
+            email: "skinnerward@grok.com",
+            phone: "+1 (931) 600-3042",
+            date: "Wed Feb 16 2000 15:01:01 GMT+0530 (India Standard Time)",
+            product: "Flight",
+            state: "New Jercy",
+            pno: "FEDD2340",
+        },
+        {
+            _id: "5a940692c5752f1ed81bbb3d",
+            index: 1,
+            guid: "41c9986b-ccef-459e-a22d-5458bbdca9c7",
+            isActive: "true",
+            balance: 3192.7,
+            advance: 6124,
+            quantity: 15,
+    
+            age: 27,
+            eyeColor: "brown",
+            name: "Gwen Dixon",
+            gender: "female",
+            company: "ICOLOGY",
+            email: "gwendixon@icology.com",
+            phone: "+1 (951) 589-2187",
+            date: "Sun Feb 10 1991 20:28:59 GMT+0530 (India Standard Time)",
+            product: "Jet",
+            state: "Vetaikan",
+            pno: "ERTS4512",
+        },
+        {
+            _id: "5a9406924c0e7f4c98a82ca7",
+            index: 2,
+            guid: "50d2bf16-9092-4202-84f6-e892721fe5a5",
+            isActive: "true",
+            balance: 1663.84,
+            advance: 7631,
+            quantity: 14,
+    
+            age: 28,
+            eyeColor: "green",
+            name: "Deena Gillespie",
+            gender: "female",
+            company: "OVERPLEX",
+            email: "deenagillespie@overplex.com",
+            phone: "+1 (826) 588-3430",
+            date: "Thu Mar 18 1993 17:07:48 GMT+0530 (India Standard Time)",
+            product: "Car",
+            state: "New Jercy",
+            pno: "ERTS4512",
+        },
+        {
+            _id: "5a940692dd9db638eee09828",
+            index: 3,
+            guid: "b8bdc65e-4338-440f-a731-810186ce0b3a",
+            isActive: "true",
+            balance: 1601.82,
+            advance: 6519,
+            quantity: 18,
+    
+            age: 33,
+            eyeColor: "green",
+            name: "Susanne Peterson",
+            gender: "female",
+            company: "KROG",
+            email: "susannepeterson@krog.com",
+            phone: "+1 (868) 499-3292",
+            date: "Sat Feb 09 2002 04:28:45 GMT+0530 (India Standard Time)",
+            product: "Jet",
+            state: "Vetaikan",
+            pno: "CCOP1239",
+        },
+        {
+            _id: "5a9406926f9971a87eae51af",
+            index: 4,
+            guid: "3f4c79ec-a227-4210-940f-162ca0c293de",
+            isActive: "false",
+            balance: 1855.77,
+            advance: 7333,
+            quantity: 20,
+    
+            age: 33,
+            eyeColor: "green",
+            name: "Stokes Hicks",
+            gender: "male",
+            company: "SIGNITY",
+            email: "stokeshicks@signity.com",
+            phone: "+1 (927) 585-2980",
+            date: "Fri Mar 12 2004 11:08:06 GMT+0530 (India Standard Time)",
+            product: "Van",
+            state: "Tamilnadu",
+            pno: "MEWD9812",
+        },
+        {
+            _id: "5a940692bcbbcdde08fcf7ec",
+            index: 5,
+            guid: "1d0ee387-14d4-403e-9a0c-3a8514a64281",
+            isActive: "true",
+            balance: 1372.23,
+            advance: 5668,
+            quantity: 16,
+    
+            age: 39,
+            eyeColor: "green",
+            name: "Sandoval Nicholson",
+            gender: "male",
+            company: "IDEALIS",
+            email: "sandovalnicholson@idealis.com",
+            phone: "+1 (951) 438-3539",
+            date: "Sat Aug 30 1975 22:02:15 GMT+0530 (India Standard Time)",
+            product: "Bike",
+            state: "Tamilnadu",
+            pno: "CCOP1239",
+        },
+        {
+            _id: "5a940692ff31a6e1cdd10487",
+            index: 6,
+            guid: "58417d45-f279-4e21-ba61-16943d0f11c1",
+            isActive: "false",
+            balance: 2008.28,
+            advance: 7107,
+            quantity: 14,
+    
+            age: 20,
+            eyeColor: "brown",
+            name: "Blake Thornton",
+            gender: "male",
+            company: "IMMUNICS",
+            email: "blakethornton@immunics.com",
+            phone: "+1 (852) 462-3571",
+            date: "Mon Oct 03 2005 05:16:53 GMT+0530 (India Standard Time)",
+            product: "Tempo",
+            state: "New Jercy",
+            pno: "CCOP1239",
+        },
+        {
+            _id: "5a9406928f2f2598c7ac7809",
+            index: 7,
+            guid: "d16299e3-e243-4e57-90fb-52446c4c0275",
+            isActive: "false",
+            balance: 2052.58,
+            advance: 7431,
+            quantity: 20,
+    
+            age: 22,
+            eyeColor: "blue",
+            name: "Dillard Sharpe",
+            gender: "male",
+            company: "INEAR",
+            email: "dillardsharpe@inear.com",
+            phone: "+1 (963) 473-2308",
+            date: "Thu May 25 1978 04:57:00 GMT+0530 (India Standard Time)",
+            product: "Tempo",
+            state: "Rajkot",
+            pno: "ERTS4512",
+        },
+    ];
 });

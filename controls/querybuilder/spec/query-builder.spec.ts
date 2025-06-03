@@ -885,9 +885,14 @@ describe('QueryBuilder', () => {
                 'operator': 'In',
                 'value': ['BERGS']
             }], 'group0');
-            expect(queryBuilder.displayMode).toEqual('Horizontal');
             let ruleElem: HTMLElement = queryBuilder.element.querySelector('.e-rule-container');
-            expect(ruleElem.classList.contains('e-horizontal-mode')).toBeTruthy();
+            if (window.innerWidth < 768) {
+                expect(queryBuilder.displayMode).toEqual('Vertical');
+                expect(ruleElem.classList.contains('e-vertical-mode')).toBeTruthy();
+            } else {
+                expect(queryBuilder.displayMode).toEqual('Horizontal');
+                expect(ruleElem.classList.contains('e-horizontal-mode')).toBeTruthy();
+            }
             ruleElem = queryBuilder.element.querySelector('.e-rule-filter');
             expect(queryBuilder.element.querySelector('.e-rule-filter').style.display).toEqual('');
         });
@@ -4231,6 +4236,10 @@ describe('QueryBuilder', () => {
                 queryBuilder.locale = 'de';
                 queryBuilder.dataBind();
             });
+            const template: Element = createElement('script', { id: 'template' });
+            template.setAttribute('type', 'text/x-template');
+            template.innerHTML = '<div class="e-rule e-rule-template"><div class="e-rule-filter"><input id = ${ruleID}_filterkey class="e-filter-input"></div><div class="e-rule-operator e-operator"><input id = ${ruleID}_operatorkey class="e-operator-input"></div><div class="e-value e-rule-value e-slider-value"><div id = ${ruleID}_valuekey0 class="ticks_slider"></div></div><div class="e-rule-btn"><button class="e-removerule e-rule-delete e-css e-btn e-small e-round"><span class="e-btn-icon e-icons e-delete-icon"/></button></div></div>';
+            document.body.appendChild(template);
         });
         it('EJ2 - 96184 - When dynamically changing the locale property the custom operator was not set in QueryBuilder', () => {
             let columnData: ColumnsModel[] = [
@@ -4319,6 +4328,84 @@ describe('QueryBuilder', () => {
                 rule: importRules
             }, '#querybuilder');
             expect(queryBuilder.getSqlFromRules()).toEqual('FirstName BETWEEN a AND b');
+        });
+        it('954398 - Exception occurs when we clear the value on custom dropdown field in QueryBuilder component', () => {
+            const customFieldData: ColumnsModel[] = [
+                { field: 'EmployeeID', label: 'Employee ID', type: 'number', ruleTemplate: '#template' },
+                { field: 'FirstName', label: 'First Name', type: 'string' },
+                { field: 'City', label: 'City', type: 'string' }
+            ];
+            let valueObj: Slider;
+            let rule: RuleModel = {
+                'condition': 'and',
+                'rules': [{
+                    'label': 'Employee ID',
+                    'field': 'EmployeeID',
+                    'type': 'number',
+                    'operator': 'equal',
+                    'value': 40
+                }]
+            }
+            queryBuilder = new QueryBuilder({
+                columns: customFieldData,
+                rule: rule,
+                actionBegin: (args: any) => {
+                    if (args.requestType === 'template-create') {
+                        const defaultNumber: number = 31;
+                        const fieldObj: DropDownList = new DropDownList({
+                            dataSource: customFieldData as any, // tslint:disable-line
+                            fields: args.fields,
+                            value: args.rule.field,
+                            showClearButton: true,
+                            change: (e: any) => {
+                                queryBuilder.notifyChange(e.value, e.element, 'field');
+                            }
+                        });
+                        const operatorObj: DropDownList = new DropDownList({
+                            dataSource: [{key: 'equal', value: 'equal'}, {key:'between', value:'between'}, {key:'notbetween', value:'notbetween'}], // tslint:disable-line
+                            fields: { text: 'key', value: 'value' },
+                            value: args.rule.operator,
+                            change: (e: any) => {
+                                queryBuilder.notifyChange(e.value, e.element, 'operator');
+                            }
+                        });
+                        if (args.rule.value === '') {
+                            args.rule.value = defaultNumber;
+                        }
+                        valueObj = new Slider({
+                            cssClass: 'e-custom-ddl-value',
+                            value: args.rule.value as number, min: 30, max: 50,
+                            ticks: { placement: 'Before', largeStep: 5, smallStep: 1 },
+                            change: (e: any) => {
+                                const elem: HTMLElement = document.querySelector('.e-rule-value .e-control.e-slider');
+                                queryBuilder.notifyChange(e.value, elem, 'value');
+                            }
+                        });
+                        fieldObj.appendTo('#' + args.ruleID + '_filterkey');
+                        operatorObj.appendTo('#' + args.ruleID + '_operatorkey');
+                        valueObj.appendTo('#' + args.ruleID + '_valuekey0');
+                    }
+                }
+            }, '#querybuilder');
+            expect(queryBuilder.getSqlFromRules()).toEqual("EmployeeID = 40");
+            let clearIcon: HTMLElement = queryBuilder.element.querySelector('.e-rule-filter .e-ddl .e-clear-icon');
+            mouseEvent.initEvent('mousedown', true, true);
+            if (clearIcon) {
+                clearIcon.dispatchEvent(mouseEvent);
+            } else {
+                const fieldElem: Element = queryBuilder.element.querySelector('.e-custom-ddl-value');
+                queryBuilder.notifyChange(null, fieldElem, 'field');
+            }
+	        expect(queryBuilder.getSqlFromRules()).toEqual('');
+        });
+	it('957276 - Issue with setRulesFromSql in QueryBuilder – Fails on Valid SQL Syntax Without Parentheses in LIKE Clause.', () => {
+            queryBuilder = new QueryBuilder({
+                dataSource: employeeData
+            }, '#querybuilder');
+            let actualSql: string = "FirstName LIKE \'ewfew%\'";
+            queryBuilder.setRulesFromSql(actualSql);
+            queryBuilder.dataBind();
+            expect(queryBuilder.element.querySelector('.e-rule-operator .e-dropdownlist').value).toEqual('Starts With');
         });
     });
 

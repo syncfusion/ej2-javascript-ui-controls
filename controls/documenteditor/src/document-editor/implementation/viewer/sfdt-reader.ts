@@ -1065,6 +1065,7 @@ export class SfdtReader {
             blocks.push(table);
         }
         table.isGridUpdated = false;
+        table.updateRowSpan();
     }
     private parseTablePositioning(block: any, table: TableWidget): void {
         table.wrapTextAround = !isNullOrUndefined(block[wrapTextAroundProperty[this.keywordIndex]]) ? HelperMethods.parseBoolValue(block[wrapTextAroundProperty[this.keywordIndex]]) : false;
@@ -2138,6 +2139,9 @@ export class SfdtReader {
         }
         if (this.documentHelper.owner.enableCollaborativeEditing && !isNullOrUndefined(sourceFormat[descriptionProperty[keywordIndex]])) {
             tableFormat.description = sourceFormat[descriptionProperty[keywordIndex]];
+        }
+        if (this.isPaste && !isNullOrUndefined(this.documentHelper.owner.editorModule) && !isNullOrUndefined(sourceFormat[lastParagraphMarkCopiedProperty[keywordIndex]])) {
+            this.documentHelper.owner.editorModule.isLastParaMarkCopied = sourceFormat[lastParagraphMarkCopiedProperty[keywordIndex]];
         }
     }
     /**

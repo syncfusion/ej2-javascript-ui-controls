@@ -24,14 +24,14 @@ import { Diagram } from '../../diagram/diagram';
 import { DiagramElement, Corners } from './../core/elements/diagram-element';
 import { identityMatrix, rotateMatrix, transformPointByMatrix, scaleMatrix, Matrix } from './../primitives/matrix';
 import { cloneObject as clone, cloneObject, getBounds, getFunction, getIndex } from './../utility/base-util';
-import { completeRegion, getTooltipOffset, sort, findObjectIndex, intersect3, getAnnotationPosition, findParentInSwimlane, findPortIndex } from './../utility/diagram-util';
+import { completeRegion, getTooltipOffset, sort, findObjectIndex, intersect3, getAnnotationPosition, findParentInSwimlane, findPortIndex, isLabelFlipped } from './../utility/diagram-util';
 import { updatePathElement, cloneBlazorObject, getUserHandlePosition, cloneSelectedObjects } from './../utility/diagram-util';
 import { updateDefaultValues } from './../utility/diagram-util';
 import { randomId, cornersPointsBeforeRotation } from './../utility/base-util';
 import { SelectorModel } from '../objects/node-model';
 import { Selector } from '../objects/node';
 import { hasSelection, isSelected, hasSingleConnection, contains } from './actions';
-import { AlignmentOptions, DistributeOptions, SizingOptions, DiagramEvent, BoundaryConstraints, AlignmentMode, ConnectorConstraints, NodeConstraints, BezierSmoothness } from '../enum/enum';
+import { AlignmentOptions, DistributeOptions, SizingOptions, DiagramEvent, BoundaryConstraints, AlignmentMode, ConnectorConstraints, NodeConstraints, BezierSmoothness, FlipDirection } from '../enum/enum';
 import { BlazorAction, EntryType } from '../enum/enum';
 import { HistoryEntry } from '../diagram/history';
 import { canSelect, canMove, canRotate, canDragSourceEnd, canDragTargetEnd, canSingleSelect, canDrag } from './../utility/constraints-util';
@@ -5692,8 +5692,14 @@ Remove terinal segment in initial
         const oldValues: Object = this.getAnnotationChanges(obj, label as ShapeAnnotation | PathAnnotation);
         const oldValue = this.getSelectedObject() as (NodeModel | ConnectorModel | AnnotationModel)[];
         if (label instanceof ShapeAnnotation) {
-            label.offset.x += (tx / bounds.width);
-            label.offset.y += (ty / bounds.height);
+            // Calculate sign multipliers based on flip direction
+            const xSign = ((textElement as TextElement).flippedPoint && textElement.flip === FlipDirection.Horizontal ||
+                            textElement.flip === FlipDirection.Both) ? -1 : 1;
+            const ySign = ((textElement as TextElement).flippedPoint && textElement.flip === FlipDirection.Vertical ||
+                            textElement.flip === FlipDirection.Both) ? -1 : 1;
+            // Apply offsets in a single operation
+            label.offset.x += (xSign * tx / bounds.width);
+            label.offset.y += (ySign * ty / bounds.height);
         } else {
             this.updatePathAnnotationOffset(obj as Connector, label as PathAnnotation, tx, ty);
             if (label instanceof PathAnnotation) { label.alignment = 'Center'; }
@@ -6104,7 +6110,13 @@ Remove terinal segment in initial
         const matrix: Matrix = identityMatrix();
         const rotateAngle: number = (label as ShapeAnnotation).rotateAngle;
         const labelWrapper: DiagramElement = this.diagram.getWrapper(object.wrapper, label.id);
-        let angle: number = findAngle({ x: labelWrapper.offsetX, y: labelWrapper.offsetY }, currentPosition) + 90;
+        //Calculate the trasformed label bounds by using flipped point and apply it to calculate the rotate angle if the label is flipped.
+        let x: number = 0; let y: number = 0;
+        if ((labelWrapper as TextElement).flippedPoint) {
+            x = (labelWrapper as TextElement).flippedPoint.x - labelWrapper.corners.topLeft.x;
+            y = (labelWrapper as TextElement).flippedPoint.y - labelWrapper.corners.topLeft.y;
+        }
+        let angle: number = findAngle({ x: labelWrapper.offsetX + x, y: labelWrapper.offsetY + y }, currentPosition) + 90;
         const snapAngle: number = this.snapAngle(angle);
         angle = snapAngle !== 0 ? snapAngle : angle;
         if (label instanceof PathAnnotation && label.segmentAngle) {
@@ -6173,11 +6185,21 @@ Remove terinal segment in initial
                 const offsety: number = bounds.height / (newPosition.y - bounds.y);
                 if (width > 1) {
                     shape.width = width;
+                    const prevOffsetX: number = shape.offset.x;
                     shape.offset.x = 1 / offsetx;
+                    //Modify the offset for the text element based if the element is flipped.
+                    if ((textElement as TextElement).flippedPoint && (textElement.flip === FlipDirection.Horizontal || textElement.flip === FlipDirection.Both)) {
+                        shape.offset.x = prevOffsetX + prevOffsetX - shape.offset.x;
+                    }
                 }
                 if (height > 1) {
                     shape.height = height;
+                    const prevOffsetY: number = shape.offset.y;
                     shape.offset.y = 1 / offsety;
+                    //Modify the offset for the text element based if the element is flipped.
+                    if ((textElement as TextElement).flippedPoint && (textElement.flip === FlipDirection.Vertical || textElement.flip === FlipDirection.Both)) {
+                        shape.offset.y = prevOffsetY + prevOffsetY - shape.offset.y;
+                    }
                 }
             }
         }

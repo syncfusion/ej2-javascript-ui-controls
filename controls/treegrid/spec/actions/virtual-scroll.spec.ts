@@ -20,7 +20,7 @@ import { select } from "@syncfusion/ej2-base";
 import { RowDD } from "../../src/treegrid/actions/rowdragdrop";
 import { Sort } from "../../src/treegrid/actions/sort";
 import { Filter } from "../../src/treegrid/actions/filter";
-import { ITreeData } from "../../src/treegrid/base/interface";
+import { ITreeData, ActionEventArgs } from "../../src/treegrid/base/interface";
 import { Selection } from "../../src/treegrid/actions/selection";
 import { Freeze } from "../../src/treegrid/actions/freeze-column";
 import { VirtualTreeContentRenderer } from "../../src/treegrid/renderer/virtual-tree-content-render";
@@ -5420,7 +5420,7 @@ describe("filtering with CollapseAll", () => {
             width: 120,
             textAlign: "Right",
           },
-
+          
         ],
         treeColumnIndex: 0,
       },
@@ -5428,6 +5428,9 @@ describe("filtering with CollapseAll", () => {
     );
   });
   it("should return records in collapsed state", (done: Function) => {
+    treegrid.actionBegin = (args?: ActionEventArgs) : void => {
+            args.isCollapseMaintain = true;
+    };
     treegrid.filterByColumn("FIELD1", "contains", "Aiden-Jack");
     expect(
       (treegrid.getRows()[0] as HTMLTableRowElement).getElementsByClassName(
@@ -5436,7 +5439,7 @@ describe("filtering with CollapseAll", () => {
     ).toBe(1);
     done();
   });
-
+  
   afterAll(() => {
     destroy(treegrid);
   });

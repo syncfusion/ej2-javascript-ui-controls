@@ -801,6 +801,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                     || (this.parent.isFrozenGrid() && this.parent.getVisibleFrozenLeftCount() >= viewInfo.columnIndexes[0]
                         && this.prevInfo.columnIndexes.toString().includes(viewInfo.columnIndexes.toString()))))) {
                 this.parent.removeMaskRow();
+                this.parent.notify('removeGanttShimmer', { requestType: 'hideShimmer'});
                 if (Browser.isIE) {
                     this.parent.hideSpinner();
                 }

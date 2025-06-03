@@ -1726,7 +1726,7 @@ export class CartesianAxisLayoutPanel {
             if (isAxisBreakLabel) {
                 anchor = this.getAnchor(axis); // for break label self alignment
             } else {
-                anchor = (chart.enableRtl) ? ((isEndAnchor) ? '' : 'end') : (chart.isRtlEnabled || isEndAnchor) ? 'end' : '';
+                anchor = (chart.enableRtl) ? ((isEndAnchor) ? '' : 'end') : (chart.isRtlEnabled || isEndAnchor) ? 'end' : 'start';
             }
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, anchor);
             options.id = pointsRemoved && axislabelElement &&
@@ -1759,7 +1759,7 @@ export class CartesianAxisLayoutPanel {
                     }
                     if ((i === 0 || (isInverse && i === len - 1)) && (options.x < rect.x || (angle !== 0 && isLeft && options.x  < rect.x) || (axis.lineBreakAlignment === 'Center' && options.x - (label.size.width / label.text.length) / 2 < rect.x && angle === 0))) {
                         intervalLength -= (rect.x - options.x);
-                        if (anchor === '') {
+                        if (anchor === '' || anchor === 'start') {
                             if (options.x <= 0) { pointX = options.x = 0; }
                             else { pointX = options.x; }
                             intervalLength = rect.width / length;
@@ -1791,7 +1791,7 @@ export class CartesianAxisLayoutPanel {
                         (i === len - 1 || (isInverse && i === 0)) &&
                         (
                             ((options.x + width) > chart.availableSize.width - chart.border.width - legendWidth && (anchor === 'start' || anchor === '') && angle === 0) ||
-                            ((anchor === 'start') && angle !== 0 && !isLeft && (options.x + rotatedLabelSize.width) > chart.availableSize.width - chart.border.width - legendWidth) ||
+                            ((anchor === '') && angle !== 0 && !isLeft && (options.x + rotatedLabelSize.width) > chart.availableSize.width - chart.border.width - legendWidth) ||
                             (anchor === 'middle' && angle !== 0 && !isLeft && (options.x + rotatedLabelSize.width / 2) > chart.availableSize.width - chart.border.width - legendWidth) ||
                             (anchor === 'end' && angle !== 0 && !isLeft && options.x > chart.availableSize.width - chart.border.width - legendWidth) ||
                             (anchor === 'end' && options.x > chart.availableSize.width - chart.border.width - legendWidth && angle === 0) ||

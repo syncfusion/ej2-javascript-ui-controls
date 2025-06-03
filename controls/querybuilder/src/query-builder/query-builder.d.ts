@@ -347,6 +347,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private prvtEvtTgrDaD;
     private isDragEventPrevent;
     private isValueEmpty;
+    private isPropChange;
     private ddTree;
     /**
      * Triggers when the component is created.
@@ -768,6 +769,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private deleteRuleSuccessCallBack;
     private setGroupRules;
     private keyBoardHandler;
+    private windowResizeHandler;
     private clearQBTemplate;
     private disableRuleCondition;
     /**

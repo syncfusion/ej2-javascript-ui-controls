@@ -27,7 +27,7 @@ import { ConnectorEditing } from './connector-editing';
 import { Selector } from '../objects/node';
 import { CommandHandler } from './command-manager';
 import { Actions, findToolToActivate, isSelected, getCursor, contains } from './actions';
-import { DiagramAction, KeyModifiers, Keys, DiagramEvent, DiagramTools, RendererAction, DiagramConstraints, PortConstraints, NudgeDirection } from '../enum/enum';
+import { DiagramAction, KeyModifiers, Keys, DiagramEvent, DiagramTools, RendererAction, DiagramConstraints, PortConstraints, NudgeDirection, FlipDirection } from '../enum/enum';
 import { BlazorAction, ScrollActions } from '../enum/enum';
 import { isPointOverConnector, findObjectType, insertObject, getObjectFromCollection, getTooltipOffset, findParentInSwimlane, findPort } from '../utility/diagram-util';
 import { getObjectType, getInOutConnectPorts, removeChildNodes, cloneBlazorObject, checkPort } from '../utility/diagram-util';
@@ -50,7 +50,7 @@ import { InputArgs } from '@syncfusion/ej2-inputs';
 import { Rect } from '../primitives/rect';
 import { identityMatrix, rotateMatrix, transformPointByMatrix, Matrix } from './../primitives/matrix';
 import { LayerModel } from '../diagram/layer-model';
-import { ITouches, ActiveLabel, View, TouchArgs } from '../objects/interface/interfaces';
+import { ITouches, ActiveLabel, View, TouchArgs, ParentContainer } from '../objects/interface/interfaces';
 import { removeRulerMarkers, drawRulerMarkers, getRulerSize, updateRuler } from '../ruler/ruler';
 import { canContinuousDraw, canDrawOnce } from '../utility/constraints-util';
 import { SelectorModel } from '../objects/node-model';
@@ -65,7 +65,7 @@ import { HistoryEntry } from '../diagram/history';
 import { GridPanel } from '../core/containers/grid';
 import { Canvas } from '../core/containers/canvas';
 import { DiagramHtmlElement } from '../core/elements/html-element';
-import { getPoint, PathElement, randomId } from '../index';
+import { containsBounds, getFlippedPoint, getPoint, isLabelFlipped, PathElement, randomId } from '../index';
 import { Tooltip } from '@syncfusion/ej2-popups';
 import { isBlazor } from '@syncfusion/ej2-base';
 import { PathPort, PointPort } from '../objects/port';
@@ -2210,6 +2210,10 @@ export class DiagramEventHandler {
             height = ((minHeight > textBounds.height) ? minHeight : textBounds.height) * scale;
             editTextBoxDiv.style.left = ((((textWrapper.bounds.center.x + transforms.tx) * transforms.scale) - width / 2) - 2.5) + 'px';
             editTextBoxDiv.style.top = ((((textWrapper.bounds.center.y + transforms.ty) * transforms.scale) - height / 2) - 3) + 'px';
+            if ((textWrapper as TextElement).flipTransformOffset) {
+                editTextBoxDiv.style.left = `${parseFloat(editTextBoxDiv.style.left) + (textWrapper as TextElement).flipTransformOffset.x}px`;
+                editTextBoxDiv.style.top = `${parseFloat(editTextBoxDiv.style.top) + (textWrapper as TextElement).flipTransformOffset.y}px`;
+            }
             editTextBoxDiv.style.width = width + 'px';
             editTextBoxDiv.style.height = height + 'px';
             editTextBox.style.minHeight = minHeight + 'px';
@@ -2932,7 +2936,7 @@ class ObjectFinder {
                     }
                     if (!source || (isSelected(diagram, obj) === false)) {
                         if (canEnablePointerEvents(obj, diagram)) {
-                            if ((obj instanceof Connector) ? isPointOverConnector(obj, pt) : pointInBounds) {
+                            if ((obj instanceof Connector) ? isPointOverConnector(obj, pt) : (pointInBounds || (obj as NodeModel).flip)) {
                                 const padding: number = (obj instanceof Connector) ? obj.hitPadding || 0 : 0; //let element: DiagramElement;
                                 const element: DiagramElement
                                     = this.findElementUnderMouse(obj as IElement, pt, diagram, endPadding || padding);
@@ -3253,8 +3257,31 @@ class ObjectFinder {
     public findTargetElement(container: Container, position: PointModel, diagram: Diagram, padding?: number): DiagramElement {
         for (let i: number = container.children.length - 1; i >= 0; i--) {
             const element: DiagramElement = container.children[parseInt(i.toString(), 10)];
+            //Bug 957467: Annotation text box not rendered properly after flip the node
+            //We calculate the flippedPoint on mousemove in findTargetElement method and assign
+            //it to element and if the label is flipped we use this point to calculate the element flipped offset.
+            let flippedBounds: MarginModel;
+            if (element instanceof TextElement && isLabelFlipped(element) && (element as any).position) {
+                const parentSize: ParentContainer = { width: container.desiredSize.width, height: container.desiredSize.height,
+                    padding: container.padding, offsetX: container.offsetX, offsetY: container.offsetY,
+                    parentTransform: container.parentTransform, rotateAngle: container.rotateAngle };
+                const point: PointModel = getFlippedPoint(parentSize, element);
+                element.flippedPoint = point;
+                const px: number = point.x - element.corners.topLeft.x;
+                const py: number = point.y - element.corners.topLeft.y;
+                if (point) {
+                    flippedBounds = { left: element.bounds.x + px, top: element.bounds.y + py,
+                        right: element.bounds.x + px + element.bounds.width, bottom: element.bounds.y + py + element.bounds.height };
+                    element.flippedPoint = point;
+                } else {
+                    element.flippedPoint = undefined;
+                }
+            } else {
+                (element as TextElement).flippedPoint = undefined;
+            }
             //Checking whether the annotation is visible or not
-            if (element && element.outerBounds.containsPoint(position, padding || 0)) {
+            if (element && (flippedBounds ? containsBounds(flippedBounds, position, padding || 0)
+                : element.outerBounds.containsPoint(position, padding || 0))) {
                 if (element.visible) {
                     if (element instanceof Container) {
                         const target: DiagramElement = this.findTargetElement(element, position, diagram);
@@ -3265,7 +3292,8 @@ class ObjectFinder {
                     //EJ2-69047 - Node selection is improper while adding annotation for multiple nodes
                     //Checked textOverflow property to avoid the selection of text element with clip and ellipsis;
                     const textOverflow: boolean = ((element.style as TextStyleModel).textOverflow === 'Clip' || (element.style as TextStyleModel).textOverflow === 'Ellipsis');
-                    if (element.bounds.containsPoint(position, padding || 0) && !textOverflow) {
+                    if ((flippedBounds ? containsBounds(flippedBounds, position, padding || 0)
+                        : element.bounds.containsPoint(position, padding || 0)) && !textOverflow) {
                         return element;
                     } else if (container.bounds.containsPoint(position, padding || 0) && textOverflow) {
                         // 913240 - Tooltip for annotation not visible while text overflow sets to Clip or Ellipsis

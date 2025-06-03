@@ -70,7 +70,15 @@ export function findToolToActivate(
         const element: DiagramElement = ((diagram.selectedItems as Selector).annotation) ?
             diagram.selectedItems.wrapper.children[0] : diagram.selectedItems.wrapper;
         const selectorBnds: Rect = element.bounds; const handle: SelectorModel = diagram.selectedItems;
-        const paddedBounds: Rect = new Rect(selectorBnds.x, selectorBnds.y, selectorBnds.width, selectorBnds.height);
+        let x: number = 0; let y: number = 0;
+        let paddedBounds: Rect;
+        if ((element as TextElement).flippedPoint) {
+            x = (element as TextElement).flippedPoint.x;
+            y = (element as TextElement).flippedPoint.y;
+            paddedBounds = new Rect(x, y, selectorBnds.width, selectorBnds.height);
+        } else {
+            paddedBounds = new Rect(selectorBnds.x, selectorBnds.y, selectorBnds.width, selectorBnds.height);
+        }
         if (hasSingleConnection(diagram) && !(diagram.selectedItems as Selector).annotation) {
             const conn: Connector = diagram.selectedItems.connectors[0] as Connector;
             const sourcePaddingValue: number = (diagram.selectedItems.handleSize/2) / diagram.scrollSettings.currentZoom;
@@ -102,10 +110,16 @@ export function findToolToActivate(
             const ten: number = (diagram.selectedItems.handleSize/2) / diagram.scroller.currentZoom;
             const tenRotate = 10 / diagram.scroller.currentZoom;
             const matrix: Matrix = identityMatrix();
-            rotateMatrix(matrix, element.rotateAngle + element.parentTransform, element.offsetX, element.offsetY);
+            let offX: number = element.offsetX; let offY: number = element.offsetY;
+            //Bug 957467: Annotation text box not rendered properly after flip the node
+            if ((element as TextElement).flippedPoint) {
+                offX = offX + (element as TextElement).flippedPoint.x - element.corners.topLeft.x;
+                offY = offY + (element as TextElement).flippedPoint.y - element.corners.topLeft.y;
+            }
+            rotateMatrix(matrix, element.rotateAngle + element.parentTransform, offX, offY);
             //check for resizing tool
-            const x: number = element.offsetX - element.pivot.x * element.actualSize.width;
-            const y: number = element.offsetY - element.pivot.y * element.actualSize.height;
+            const x: number = offX - element.pivot.x * element.actualSize.width;
+            const y: number = offY - element.pivot.y * element.actualSize.height;
             let rotateThumb: PointModel = {
                 x: x + ((element.pivot.x === 0.5 ? element.pivot.x * 2 : element.pivot.x) * element.actualSize.width / 2),
                 y: y - 30 / diagram.scroller.currentZoom

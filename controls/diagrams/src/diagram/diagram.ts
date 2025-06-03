@@ -45,7 +45,7 @@ import { ZoomOptions, IPrintOptions, IExportOptions, IFitOptions, ActiveLabel, I
 import { View, IDataSource, IFields } from './objects/interface/interfaces';
 import { Container } from './core/containers/container';
 import { Node, BpmnShape, BpmnAnnotation, SwimLane, Path, DiagramShape, UmlActivityShape, FlowShape, BasicShape, UmlClassMethod, MethodArguments, UmlEnumerationMember, UmlClassAttribute, Lane, Shape } from './objects/node';
-import { cloneBlazorObject, cloneSelectedObjects, findObjectIndex, getConnectorArrowType, selectionHasConnector } from './utility/diagram-util';
+import { cloneBlazorObject, cloneSelectedObjects, findObjectIndex, getConnectorArrowType, selectionHasConnector, isLabelFlipped } from './utility/diagram-util';
 import { checkBrowserInfo } from './utility/diagram-util';
 import { updateDefaultValues, getCollectionChangeEventArguements } from './utility/diagram-util';
 import { flipConnector, updatePortEdges, alignElement, setConnectorDefaults, getPreviewSize } from './utility/diagram-util';
@@ -1670,6 +1670,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public pathDataStorage: Map<string, PointModel[]> = new Map();
     // To check current action is undo or redo
     private isUndo: boolean = false;
+    /**@private */
+    public groupBounds: Rect;
     /**
      * Constructor for creating the widget
      */
@@ -5518,6 +5520,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         x = ((((textWrapper.bounds.center.x + transform.tx) * transform.scale) - (bounds.width / 2) * scale) - 2.5);
                         y = ((((textWrapper.bounds.center.y + transform.ty) * transform.scale) - (bounds.height / 2) * scale) - 3);
                     }
+                    if ((textWrapper as TextElement).flippedPoint && isLabelFlipped(textWrapper as TextElement)) {
+                        const transX: number = (textWrapper as TextElement).flippedPoint.x - textWrapper.corners.topLeft.x;
+                        const transY: number = (textWrapper as TextElement).flippedPoint.y - textWrapper.corners.topLeft.y;
+                        x+= transX; y+= transY;
+                        (textWrapper as TextElement).flipTransformOffset = { x: transX, y: transY };
+                    }
                     attributes = {
                         'id': this.element.id + '_editTextBoxDiv', 'style': 'position: absolute' + ';left:' + x + 'px;top:' +
                             y + 'px;width:' + ((bounds.width + 1) * scale) + 'px;height:' + (bounds.height * scale) +
@@ -8492,6 +8500,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             //EJ2-865476 - Issue with Pivot Point in group node during resizing
             portContainer.pivot = obj.pivot;
             canvas.style = obj.style;
+            //958066 - corner radius is not applied for group on initial rendering
+            if (obj.shape && obj.shape.type === 'Basic') {
+                canvas.cornerRadius = (obj.shape as BasicShapeModel).cornerRadius;
+            }
             canvas.padding.left = obj.padding.left; canvas.padding.right = obj.padding.right; canvas.padding.top = obj.padding.top; canvas.padding.bottom = obj.padding.bottom;
             portContainer.children = []; portContainer.preventContainer = true;
             if (obj.container) { portContainer.relativeMode = 'Object'; }
@@ -11796,6 +11808,17 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             update = true;
             updateConnector = true;
+            if (actualObject.children) {
+                const connectorInGroup: string[] = actualObject.children.filter((con: string)=>this.nameTable[`${con}`] &&
+                    this.nameTable[`${con}`] instanceof Connector);
+                if (connectorInGroup && connectorInGroup.length > 0) {
+                    this.groupBounds = actualObject.wrapper.bounds;
+                } else {
+                    this.groupBounds = null;
+                }
+            } else {
+                this.groupBounds = null;
+            }
             alignElement(actualObject.wrapper, actualObject.offsetX, actualObject.offsetY, this, undefined, horizontal, vertical);
             //To update the port and text wrapper element flip
             this.updateWrapperChildFlip(actualObject);
@@ -11923,6 +11946,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (node.tooltip !== undefined) { this.updateTooltip(actualObject, node); }
         if (update) {
             if (this.bpmnModule !== undefined && (offsetChanged || sizeChanged) && !angleChanged) {
+
                 // eslint-disable-next-line max-len
                 this.updateBpmnAnnotationPosition(oldBpmnOffsetX, oldBpmnOffsetY, newBpmnOffsetX, newBpmnOffsetY, actualObject, actualObject.wrapper, (actualObject.shape as BpmnShape), (actualObject.shape as BpmnShape).shape === 'TextAnnotation',oldObject, sizeChanged, (this as any).sizeUndo);
             }
@@ -12404,8 +12428,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             outerFinalNode.height = changedProp.height / 1.5;
         }
     }
-
-    private updateConnectorProperties(connector: ConnectorModel): void {
+    /**
+     * updateConnectorProperties method \
+     *
+     * @returns { void }
+     * @param {connector} connector - provide the connector value.
+     *
+     * @private
+     */
+    public updateConnectorProperties(connector: ConnectorModel): void {
         if (this.preventConnectorsUpdate) {
             const index: number = this.selectionConnectorsList.indexOf(connector);
             if (index === -1 && connector) { this.selectionConnectorsList.push(connector); }
@@ -12552,7 +12583,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     actualObject.targetPortWrapper = undefined;
                 }
             }
-            if (newProp.flip !== undefined) { actualObject.flip = newProp.flip; flipConnector(actualObject); }
+            if (newProp.flip !== undefined) {
+                actualObject.flip = newProp.flip;
+                flipConnector(actualObject, this);
+                actualObject.wrapper.flip = newProp.flip;
+            }
             //EJ2-867479 - Performance issue in complexhierarchical layout due to linerouting injection
             if (actualObject.type === 'Orthogonal' && this.lineRoutingModule && this.diagramActions &&
                 (this.constraints & DiagramConstraints.LineRouting) && !(this.diagramActions & DiagramAction.ToolAction) && this.layout.type !== 'ComplexHierarchicalTree') {

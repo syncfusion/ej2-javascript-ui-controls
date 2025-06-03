@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 29.2.8 (2025-06-03)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I724519` - Fixed a script error that occurred when pasting content into a table.
+- `#I717943` - Addressed a performance issue when deleting content on the last page.
+- `#I715113` - Fixed an issue where image width values were not preserved when exporting to DOCX.
+- `#I715058`, `#I712565` - Resolved issues with mapped content controls in headers and footers.
+- `#I709838` - Fixed script errors that occurred during `Accept All` and `Reject All` operations in track changes.
+- `#I714933` - Fixed paragraph layout issues in multi-column documents.
+- `#I707365` - Addressed the auto fit table layout problems occurring during text insertion.
+- `#I718360` - Fixed placeholder text insertion issue when using the `insertContentControl` API.
+- `#I712236` - Fixed the style preservation issue when inserting text programmatically within selected bookmarks.
+- `#I712559` - Improved behaviour when pasting table content into another table in the Document Editor.
+- `#I715683` - Resolved layout inconsistencies in headers and footers while loading documents.
+- `#I713462` - Fixed layout issues in footnote body content when pressing the Enter key.
+- `#I720302` - Fixed the page number field updates issue during edit operations.
+
 ## 29.2.5 (2025-05-21)
 
 ### DocumentEditor

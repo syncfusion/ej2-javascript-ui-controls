@@ -119,7 +119,7 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
                 spreadsheet.dialogBeforeOpen = undefined;
                 spreadsheet.dataBind();
                 done();
-            });
+            }, 10);
         });
     });
 

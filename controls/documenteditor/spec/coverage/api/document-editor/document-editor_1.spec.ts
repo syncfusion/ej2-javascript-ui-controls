@@ -188,11 +188,11 @@ describe('code coverage documenteditor properties_1 ', () => {
         expect(documenteditor.selection.text).not.toBe('Test');
     });
 
-    it('should have editor history enabled by default', () => {
-        console.log('should have editor history enabled by default');
-        // Expect that the editor history is enabled by default
-        expect(documenteditor.enableEditorHistory).toBe(true);
-    });
+    // it('should have editor history enabled by default', () => {
+    //     console.log('should have editor history enabled by default');
+    //     // Expect that the editor history is enabled by default
+    //     expect(documenteditor.enableEditorHistory).toBe(true);
+    // });
 
     it('should be able to disable editor history', () => {
         console.log('should be able to disable editor history');

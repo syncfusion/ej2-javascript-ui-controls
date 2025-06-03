@@ -64,6 +64,10 @@ export class SfdtExport {
     private isBlockClosed: boolean = true;
     private isWriteInlinesFootNote = false;
     private isWriteEndFootNote = false;
+    public bookmarkCollection: BookmarkElementBox[] = [];
+    /**
+     * @private
+     */
     // For spell check when serailize the page no to need to wirte the formatting. So we do this property as true it will skip the formatting.
     private skipExporting: boolean = false;
     /**
@@ -1548,6 +1552,9 @@ export class SfdtExport {
             if (!started) {
                 continue;
             }
+            if (element instanceof BookmarkElementBox && !isNullOrUndefined(this.bookmarkCollection) && ((element.bookmarkType === 0 && this.bookmarkCollection.indexOf(element) === -1) || (element.bookmarkType === 1 && this.bookmarkCollection.indexOf(element.reference) === -1))) {
+                continue;
+            }
             if (element instanceof ContentControl || this.startContent || this.blockContent) {
                 if (ended) {
                     this.startContent = false;
@@ -2043,6 +2050,9 @@ export class SfdtExport {
         tableFormat[bidiProperty[keyIndex]] = wTableFormat.hasValue('bidi') ? HelperMethods.getBoolInfo(wTableFormat.bidi, this.keywordIndex) : undefined;
         tableFormat[allowAutoFitProperty[keyIndex]] = wTableFormat.hasValue('allowAutoFit') ? HelperMethods.getBoolInfo(wTableFormat.allowAutoFit, this.keywordIndex) : undefined;
         tableFormat[styleNameProperty[keyIndex]] = !isNullOrUndefined(wTableFormat.styleName) ? wTableFormat.styleName : undefined;
+        if (this.owner.documentHelper.isCopying && this.documentHelper.selection && this.documentHelper.selection.isWholeColumnSelected()) {
+            tableFormat[lastParagraphMarkCopiedProperty[this.keywordIndex]] = true;
+        }
         return tableFormat;
     }
     private footnotes(documentHelper: DocumentHelper): void {
@@ -3227,6 +3237,9 @@ export class SfdtExport {
         this.startLine = undefined;
         this.endOffset = undefined;
         this.documentHelper = undefined;
+        if (this.bookmarkCollection) {
+            this.bookmarkCollection = undefined;
+        }
     }
     /* eslint-enable @typescript-eslint/no-explicit-any */
 }

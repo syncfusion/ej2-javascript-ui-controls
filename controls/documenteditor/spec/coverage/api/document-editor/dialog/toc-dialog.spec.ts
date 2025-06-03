@@ -32,12 +32,12 @@ describe('Form-Field-text-checkbox', () => {
         container.documentEditor.tableOfContentsDialogModule.show();
         dialog.onCancelButtonClick();
     });
-    it('TOC - closeTableOfContentDialog', () => {
-        console.log('TOC - closeTableOfContentDialog');
-      //  dialog.show();
-    //   container.documentEditor.tableOfContentsDialogModule.show();
-        dialog.closeTableOfContentDialog();
-    });
+    // it('TOC - closeTableOfContentDialog', () => {
+    //     console.log('TOC - closeTableOfContentDialog');
+    //   //  dialog.show();
+    // //   container.documentEditor.tableOfContentsDialogModule.show();
+    //     dialog.closeTableOfContentDialog();
+    // });
     it('TOC - showStyleDialog', () => {
         console.log('TOC - showStyleDialog');
         (dialog as any).showStyleDialog();

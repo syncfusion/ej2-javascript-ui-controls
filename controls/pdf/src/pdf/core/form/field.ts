@@ -2387,6 +2387,9 @@ export class PdfTextBoxField extends PdfField {
         } else {
             this._fieldFlags &= ~_FieldFlag.multiLine;
         }
+        if (this._stringFormat) {
+            this._stringFormat.lineAlignment = value ? PdfVerticalAlignment.top : PdfVerticalAlignment.middle;
+        }
     }
     /**
      * Gets a value indicating whether this `PdfTextBoxField` is password.
@@ -7248,7 +7251,7 @@ export class PdfSignatureField extends PdfField {
                 for (let i: number = 0; i < count; i++) {
                     const item: PdfWidgetAnnotation = this.itemAt(i);
                     if (item && item._dictionary) {
-                        const page: PdfPage = item._getPage();
+                        const page: PdfPage = item.page;
                         if (page) {
                             if (!firstItemTemplate && i === 0) {
                                 firstItemTemplate = this._getItemTemplate(item._dictionary);
@@ -7321,7 +7324,9 @@ export class PdfSignatureField extends PdfField {
                             template._isSignature = true;
                         }
                         if (page.rotation !== PdfRotationAngle.angle0) {
-                            graphics.drawTemplate(template, this._calculateTemplateBounds(bounds, page, template, graphics));
+                            const newGraphics: PdfGraphics = new PdfGraphics(graphics._size, graphics._sw._stream,
+                                                                             graphics._crossReference, page);
+                            newGraphics.drawTemplate(template, this._calculateTemplateBounds(bounds, page, template, newGraphics));
                         } else {
                             graphics.drawTemplate(template, bounds);
                         }
@@ -7334,7 +7339,8 @@ export class PdfSignatureField extends PdfField {
             const graphics: PdfGraphics = page.graphics;
             const state: PdfGraphicsState = graphics.save();
             if (page.rotation !== PdfRotationAngle.angle0) {
-                graphics.drawTemplate(template, this._calculateTemplateBounds(bounds, page, template, graphics));
+                const newGraphics: PdfGraphics = new PdfGraphics(graphics._size, graphics._sw._stream, graphics._crossReference, page);
+                newGraphics.drawTemplate(template, this._calculateTemplateBounds(bounds, page, template, newGraphics));
             } else {
                 graphics.drawTemplate(template, bounds);
             }
@@ -7348,7 +7354,7 @@ export class PdfSignatureField extends PdfField {
         let x: number = bounds.x;
         let y: number = bounds.y;
         if (page) {
-            const graphicsRotation: number = this._obtainGraphicsRotation(graphics._matrix);
+            const graphicsRotation: number = this._obtainGraphicsRotation(page.graphics._matrix);
             if (graphicsRotation === 90) {
                 graphics.translateTransform(template._size[1], 0);
                 graphics.rotateTransform(90);

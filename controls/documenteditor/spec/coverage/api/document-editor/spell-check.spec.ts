@@ -139,7 +139,7 @@ describe('Spell Checker API', () => {
         let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
         let lineInfo: LineInfo = editor.documentHelper.selection.getLineInfo(paragraph, 0);
         let element: TextElementBox = lineInfo.line.children[0] as TextElementBox;
-        expect(() => { editor.spellChecker.handleCombinedElements(element, 'paragraph', 0, 0) }).not.toThrowError();
+        expect(() => { editor.spellChecker.handleCombinedElements(element, 'paragraph', 0) }).not.toThrowError();
     });
     it('Handle combined elements API testing 1', () => {
         console.log('Handle combined elements API testing 1');
@@ -150,7 +150,7 @@ describe('Spell Checker API', () => {
         let paragraph: ParagraphWidget = editor.documentHelper.selection.start.paragraph;
         let lineInfo: LineInfo = editor.documentHelper.selection.getLineInfo(paragraph, 0);
         let element: TextElementBox = lineInfo.line.children[0] as TextElementBox;
-        expect(() => { editor.spellChecker.handleCombinedElements(element, 'Empty Txt', 0, 0) }).not.toThrowError();
+        expect(() => { editor.spellChecker.handleCombinedElements(element, 'Empty Txt', 0) }).not.toThrowError();
     });
     it('Spell check for HandleErrorCollection testing', () => {
         console.log('Spell check for HandleErrorCollection testing');

@@ -773,6 +773,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         if (this.isReact && (this as Record<string, any>).portals && (this as Record<string, any>).portals.length > 0) {
             this.renderReactTemplates(() => {
                 this.refreshOverflow();
+                this.selectingContent(this.selectedItem, this.isInteracted);
                 this.refreshActiveBorder();
             });
         }

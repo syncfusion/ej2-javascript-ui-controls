@@ -1387,6 +1387,17 @@ private calculatePathBounds(data: string): Rect {
                     const contentControl: ContentControl = contentControls[i];
                     let widgetInfo: Dictionary<LineWidget, SelectionWidgetInfo[]> = this.documentHelper.selection.contentControleditRegionHighlighters.get(contentControl);
                     if (!isNullOrUndefined(widgetInfo)) {
+                        if (this.documentHelper.owner.enableHeaderAndFooter) {
+                            let contentControlParent: HeaderFooterWidget = contentControl.paragraph.containerWidget instanceof TableCellWidget
+                                ? this.documentHelper.selection.getContainerWidget(contentControl.paragraph.containerWidget) as HeaderFooterWidget
+                                : contentControl.paragraph.containerWidget as HeaderFooterWidget;
+                            let lineParent: HeaderFooterWidget = lineWidget.paragraph.containerWidget instanceof TableCellWidget
+                                ? this.documentHelper.selection.getContainerWidget(lineWidget.paragraph.containerWidget) as HeaderFooterWidget
+                                : lineWidget.paragraph.containerWidget as HeaderFooterWidget;
+                            if (contentControlParent == lineParent.parentHeaderFooter && contentControl.paragraph.index == lineWidget.paragraph.index && contentControl.line.indexInOwner == lineWidget.indexInOwner) {
+                                lineWidget = contentControl.line;
+                            }
+                        }
                         const lineIndex: number = widgetInfo.keys.indexOf(lineWidget);
                         if (lineIndex !== -1) {
                             let color: string = contentControl.contentControlProperties.color;
@@ -1813,10 +1824,14 @@ private calculatePathBounds(data: string): Rect {
             }
             if (elementBox instanceof FieldElementBox || this.isFieldCode ||
                 (elementBox.width === 0 && elementBox.height === 0)) {
-                if (this.isFieldCode) {
-                    elementBox.width = 0;
+               let width: number = elementBox.width;
+                if (this.isFieldCode) {             
+                    if (!(elementBox instanceof ImageElementBox)) {
+                        elementBox.width = 0;
+                    }
+                    width = 0;
                 }
-                left += elementBox.width + elementBox.margin.left;
+                left += width + elementBox.margin.left;
                 this.toSkipFieldCode(elementBox);
                 continue;
             }
@@ -2392,7 +2407,17 @@ private calculatePathBounds(data: string): Rect {
                 }
                 if (!isDeleteRevision) {
                     let errorDetails: ErrorInfo = this.spellChecker.checktextElementHasErrors(elementBox.text, elementBox, left);
-                    if (errorDetails.errorFound && !this.isPrinting) {
+                    if (elementBox.istextCombined) {
+                        if (errorDetails.errorFound && !this.isPrinting) {
+                            for (let i: number = 0; i < errorDetails.elements.length; i++) {
+                                let currentElement: ErrorTextElementBox = errorDetails.elements[i];
+                                if (elementBox.ignoreOnceItems.indexOf(currentElement.text) === -1) {
+                                    let backgroundColor: string = (containerWidget instanceof TableCellWidget) ? (containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
+                                    this.renderWavyLine(elementBox, left, top, underlineY, '#FF0000', 'Single', format.baselineAlignment, backgroundColor);
+                                }
+                            }
+                        }
+                    } else if (errorDetails.errorFound && !this.isPrinting) {
                         color = '#FF0000';
                         let backgroundColor: string = (containerWidget instanceof TableCellWidget) ? (containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
                         const errors = this.spellChecker.errorWordCollection;
@@ -2557,7 +2582,7 @@ private calculatePathBounds(data: string): Rect {
                     let currentText: string = splittedText[i];
                     let retrievedText: string = this.spellChecker.manageSpecialCharacters(currentText, undefined, true);
                     if (this.spellChecker.ignoreAllItems.indexOf(retrievedText) === -1 && elementBox.ignoreOnceItems.indexOf(retrievedText) === -1) {
-                        this.handleUnorderedElements(retrievedText, elementBox, underlineY, i, markindex, i === splittedText.length - 1, beforeIndex);
+                        this.handleUnorderedElements(retrievedText, elementBox, underlineY, i, markindex, i === splittedText.length - 1);
                         markindex += currentText.length + spaceValue;
                     }
                 }
@@ -2598,27 +2623,50 @@ private calculatePathBounds(data: string): Rect {
     }
 
 
-    public handleUnorderedElements(currentText: string, elementBox: TextElementBox, underlineY: number, iteration: number, markIndex: number, isLastItem?: boolean, beforeIndex?: number): void {
+    public handleUnorderedElements(currentText: string, elementBox: TextElementBox, underlineY: number, iteration: number, markIndex: number, isLastItem?: boolean, combinedElements?: TextElementBox[]): void {
         let indexInLine: number = elementBox.indexInOwner;
         let indexinParagraph: number = elementBox.line.paragraph.indexInOwner;
         if (currentText.length > 0) {
             let spellInfo: WordSpellInfo = this.spellChecker.checkSpellingInPageInfo(currentText);
             if (spellInfo.isElementPresent && this.spellChecker.enableOptimizedSpellCheck) {
                 let jsonObject: any = JSON.parse('{\"HasSpellingError\":' + spellInfo.hasSpellError + '}');
-                this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, true, underlineY, iteration, markIndex, isLastItem);
+                this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, true, underlineY, iteration, markIndex, isLastItem, combinedElements);
             } else {
                 let canUpdate: boolean = (elementBox.isVisible) && (indexInLine === elementBox.indexInOwner) && (indexinParagraph === elementBox.line.paragraph.indexInOwner);
                 if (this.spellChecker.isInUniqueWords(currentText)) {
                     let hasSpellingError: boolean = this.spellChecker.isErrorWord(currentText) ? true : false;
                     let jsonObject: any = JSON.parse('{\"HasSpellingError\":' + hasSpellingError + '}');
-                    this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markIndex, isLastItem);
+                    this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markIndex, isLastItem, combinedElements);
                 } else if ((!this.documentHelper.owner.editorModule.triggerPageSpellCheck || this.documentHelper.triggerElementsOnLoading) && this.documentHelper.triggerSpellCheck) {
+                    const prevCombined: TextElementBox[] = [...combinedElements];
                     /* eslint-disable @typescript-eslint/no-explicit-any */
                     this.spellChecker.callSpellChecker(this.spellChecker.languageID, currentText, true, this.spellChecker.allowSpellCheckAndSuggestion).then((data: any) => {
                         /* eslint-disable @typescript-eslint/no-explicit-any */
                         let jsonObject: any = JSON.parse(data);
                         if (!isNullOrUndefined(this.spellChecker)) {
-                            this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markIndex, isLastItem);
+                            if (prevCombined && prevCombined.length > 0) {
+                                this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, true, underlineY, iteration, markIndex, isLastItem, prevCombined);
+                                for (let i: number = 0; i < prevCombined.length; i++) {
+                                    const textElement: TextElementBox = prevCombined[i];
+                                    if (textElement.istextCombined) {
+                                        const backgroundColor: string = (elementBox.line.paragraph.containerWidget instanceof TableCellWidget) ? (elementBox.paragraph.containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
+                                        const para = elementBox.line.paragraph;
+                                        let lineY = para.y;
+                                        for (let i = 0; i < para.childWidgets.length; i++) {
+                                            if (para.childWidgets[i] == elementBox.line) break;
+                                            lineY += (para.childWidgets[i] as LineWidget).height;
+                                        }
+                                        const xPosition: number = this.documentHelper.selection.getLeftInternal(textElement.line, textElement, textElement.line.indexInOwner);
+                                        if (elementBox.isRightToLeft) {
+                                            this.documentHelper.render.renderWavyLine(textElement, xPosition, lineY, underlineY, '#FF0000', 'Single', elementBox.characterFormat.baselineAlignment, backgroundColor);
+                                        } else {
+                                            this.documentHelper.render.renderWavyLine(textElement, xPosition, lineY, underlineY, '#FF0000', 'Single', elementBox.characterFormat.baselineAlignment, backgroundColor);
+                                        }
+                                    }
+                                }
+                            } else {
+                                this.spellChecker.handleSplitWordSpellCheck(jsonObject, currentText, elementBox, canUpdate, underlineY, iteration, markIndex, isLastItem, prevCombined);
+                            }
                         }
                     });
                     elementBox.ischangeDetected = false;
@@ -2819,9 +2867,9 @@ private calculatePathBounds(data: string): Rect {
         if (containerWid instanceof TableCellWidget) {
             isHeightType = ((containerWid as TableCellWidget).ownerRow.rowFormat.heightType === 'Exactly');
         }
-
         if (elementBox.textWrappingStyle === 'Inline') {
-            if (topMargin < 0 || elementBox.line.paragraph.width < elementBox.width) {
+            //If the image width is greater than the paragraph width, then we clip the image based on the current linewidget position from the top(X-axis) and left(Y-axis).
+            if ((topMargin < 0 || elementBox.line.paragraph.width < elementBox.width)) {
                 // if (containerWid instanceof BodyWidget) {
                 //     widgetWidth = containerWid.width + containerWid.x;
                 // } else 
@@ -2833,13 +2881,12 @@ private calculatePathBounds(data: string): Rect {
                     }
                     widgetWidth = containerWid.width + containerWid.margin.left - containerWid.leftBorderWidth - leftIndent;
                     isClipped = true;
-
                     this.clipRect(left + leftMargin, top + topMargin, this.getScaledValue(widgetWidth), this.getScaledValue(containerWid.height));
                 }
+                // If the containterWidget's(TableCellWdiget) row height type is 'Exactly', then we clip the image based on the containerWid.x(X-axis) and containerWid.y(Y-axis).
             } else if (isHeightType) {
                 let width: number = containerWid.width + containerWid.margin.left - (containerWid as TableCellWidget).leftBorderWidth;
                 isClipped = true;
-
                 this.clipRect(containerWid.x, containerWid.y, this.getScaledValue(width), this.getScaledValue(containerWid.height));
             }
         }

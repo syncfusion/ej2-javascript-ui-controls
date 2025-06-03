@@ -1017,6 +1017,103 @@ describe('Keyboard interaction', () => {
         });
     });
 
+    describe('Quick Info Popup Keyboard Interaction', () => {
+        let schObj: Schedule;
+        let keyModule: any;
+    
+        beforeAll((done: DoneFn) => {
+            const elem: HTMLElement = createElement('div', { id: 'Schedule' });
+            document.body.appendChild(elem);
+            const schOptions: ScheduleModel = {
+                selectedDate: new Date(2023, 7, 1),
+                views: ['Day', 'Week', 'Month', 'Agenda'],
+                allowClipboard: true
+            };
+            schObj = util.createSchedule(schOptions, [], done, elem);
+            keyModule = schObj.keyboardInteractionModule;
+        });
+    
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+    
+        it('should not close Quick Info Popup when "C" key is pressed alone', () => {
+            const workCell = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            workCell.click();
+            const quickPopup = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(quickPopup.classList).toContain('e-popup-open');
+            
+            const e: KeyboardEventArgs = {
+                action: '',
+                key: 'c',
+                target: workCell,
+                ctrlKey: false,
+                metaKey: false,
+                preventDefault: (): void => { /** */ },
+            } as any;
+            keyModule.keyActionHandler(e);
+            
+            expect(quickPopup.classList).toContain('e-popup-open');
+        });
+    
+        it('should not close Quick Info Popup when "X" key is pressed alone', () => {
+            const workCell = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            workCell.click();
+            const quickPopup = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(quickPopup.classList).toContain('e-popup-open');
+            
+            const e: KeyboardEventArgs = {
+                action: '',
+                key: 'x',
+                target: workCell,
+                ctrlKey: false,
+                metaKey: false,
+                preventDefault: (): void => { /** */ },
+            } as any;
+            keyModule.keyActionHandler(e);
+            
+            expect(quickPopup.classList).toContain('e-popup-open');
+        });
+    
+        it('should trigger clipboard action and close Quick Info Popup with Ctrl+C', () => {
+            const workCell = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            workCell.click();
+            const quickPopup = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(quickPopup.classList).toContain('e-popup-open');
+            
+            const e: KeyboardEventArgs = {
+                action: 'copy',
+                key: 'c',
+                target: workCell,
+                ctrlKey: true,
+                metaKey: false,
+                preventDefault: (): void => { /** */ },
+            } as any;
+            keyModule.keyActionHandler(e);
+            
+            expect(quickPopup.classList).toContain('e-popup-close');
+        });
+    
+        it('should trigger clipboard action and close Quick Info Popup with Ctrl+X', () => {
+            const workCell = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+            workCell.click();
+            const quickPopup = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(quickPopup.classList).toContain('e-popup-open');
+            
+            const e: KeyboardEventArgs = {
+                action: 'cut',
+                key: 'x',
+                target: workCell,
+                ctrlKey: true,
+                metaKey: false,
+                preventDefault: (): void => { /** */ },
+            } as any;
+            keyModule.keyActionHandler(e);
+            
+            expect(quickPopup.classList).toContain('e-popup-close');
+        });
+    });    
+
     describe('vertical month view arrow keys', () => {
         let schObj: Schedule;
         let keyModule: any;
@@ -4114,7 +4211,7 @@ describe('Keyboard interaction', () => {
             const target: NodeListOf<Element> = schObj.element.querySelectorAll('.e-appointment');
             const elementToCopy: HTMLElement = target[1] as HTMLElement;
             elementToCopy.click();
-            keyModule.keyActionHandler({ action: 'copy', shiftKey: false, target: elementToCopy });
+            keyModule.keyActionHandler({ action: 'copy', shiftKey: false, ctrlKey: true, target: elementToCopy });
             const clipboardElement: HTMLInputElement = schObj.element.querySelector('.e-clipboard');
             const clipboardContent: string = clipboardElement.value;
             const parsedContent: any = JSON.parse(clipboardContent);
@@ -4232,7 +4329,7 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toBe(1);
             const elementToCopy: HTMLElement = schObj.element.querySelector('.e-appointment-border');
             elementToCopy.classList.remove('e-appointment-border');
-            keyModule.keyActionHandler({ action: 'copy', shiftKey: false, target: elementToCopy });
+            keyModule.keyActionHandler({ action: 'copy', ctrlKey: true, shiftKey: false, target: elementToCopy });
             const clipboardElement: HTMLInputElement = schObj.element.querySelector('.e-clipboard');
             const clipboardContent: string = clipboardElement.value;
             const parsedContent: any = JSON.parse(clipboardContent);
@@ -4262,7 +4359,7 @@ describe('Keyboard interaction', () => {
             const appointments: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment')) as HTMLElement[];
             const elementToCopy: HTMLElement = appointments[0] as HTMLElement;
             elementToCopy.click();
-            keyModule.keyActionHandler({ action: 'copy', shiftKey: false, target: elementToCopy });
+            keyModule.keyActionHandler({ action: 'copy', ctrlKey: true, shiftKey: false, target: elementToCopy });
             const clipboardElement: HTMLInputElement = schObj.element.querySelector('.e-clipboard');
             const clipboardContent: string = clipboardElement.value;
             const parsedContent: any = JSON.parse(clipboardContent);
@@ -4291,7 +4388,7 @@ describe('Keyboard interaction', () => {
             const appointments: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment')) as HTMLElement[];
             const elementToCopy: HTMLElement = appointments[1] as HTMLElement;
             elementToCopy.click();
-            keyModule.keyActionHandler({ action: 'copy', shiftKey: false, target: elementToCopy });
+            keyModule.keyActionHandler({ action: 'copy', ctrlKey: true, shiftKey: false, target: elementToCopy });
             const clipboardElement: HTMLInputElement = schObj.element.querySelector('.e-clipboard');
             const clipboardContent: string = clipboardElement.value;
             const parsedContent: any = JSON.parse(clipboardContent);
@@ -4317,7 +4414,7 @@ describe('Keyboard interaction', () => {
             const appointments: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment')) as HTMLElement[];
             const elementToCopy: HTMLElement = appointments[0] as HTMLElement;
             elementToCopy.click();
-            keyModule.keyActionHandler({ action: 'copy', shiftKey: false, target: elementToCopy });
+            keyModule.keyActionHandler({ action: 'copy', ctrlKey: true, shiftKey: false, target: elementToCopy });
             const clipboardElement: HTMLInputElement = schObj.element.querySelector('.e-clipboard');
             const clipboardContent: string = clipboardElement.value;
             const parsedContent: any = JSON.parse(clipboardContent);
@@ -4477,7 +4574,7 @@ describe('Keyboard interaction', () => {
             const target: NodeListOf<Element> = schObj.element.querySelectorAll('.e-appointment');
             const elementToCut: HTMLElement = target[1] as HTMLElement;
             elementToCut.click();
-            keyModule.keyActionHandler({ action: 'cut', shiftKey: false, target: elementToCut });
+            keyModule.keyActionHandler({ action: 'cut', ctrlKey: true, shiftKey: false, target: elementToCut });
             const clipboardElement: HTMLInputElement = schObj.element.querySelector('.e-clipboard');
             const clipboardContent: string = clipboardElement.value;
             const parsedContent: any = JSON.parse(clipboardContent);
@@ -4595,7 +4692,7 @@ describe('Keyboard interaction', () => {
             expect(schObj.element.querySelectorAll('.e-appointment-border').length).toBe(1);
             const elementToCopy: HTMLElement = schObj.element.querySelector('.e-appointment-border');
             elementToCopy.classList.remove('e-appointment-border');
-            keyModule.keyActionHandler({ action: 'cut', shiftKey: false, target: elementToCopy });
+            keyModule.keyActionHandler({ action: 'cut', ctrlKey: true, shiftKey: false, target: elementToCopy });
             const clipboardElement: HTMLInputElement = schObj.element.querySelector('.e-clipboard');
             const clipboardContent: string = clipboardElement.value;
             const parsedContent: any = JSON.parse(clipboardContent);

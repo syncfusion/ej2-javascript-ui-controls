@@ -1,5 +1,5 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { DataManager, Query } from '@syncfusion/ej2-data';
+import { DataManager, Query, QueryOptions } from '@syncfusion/ej2-data';
 import { ITreeData } from '../base/interface';
 import { TreeGrid } from '../base/treegrid';
 import { Sort as GridSort, Grid, SortDirection, getActualProperties } from '@syncfusion/ej2-grids';
@@ -65,8 +65,13 @@ export class Sort {
         this.flatSortedData = [];
     }
     private iterateSort(data: ITreeData[], srtQry: Query): void {
+        const gridQuery: Query = this.parent.query;
+        let filterQuery: QueryOptions[] = [];
+        if (!isNullOrUndefined(gridQuery)) {
+            filterQuery = gridQuery.queries.filter((q: QueryOptions) => q.fn === 'onWhere');
+        }
         for (let d: number = 0; d < data.length; d++) {
-            if (this.parent.grid.filterSettings.columns.length > 0 || this.parent.grid.searchSettings.key !== '') {
+            if (filterQuery.length > 0 || this.parent.grid.filterSettings.columns.length > 0 || this.parent.grid.searchSettings.key !== '') {
                 if (!isNullOrUndefined(getParentData(this.parent, data[parseInt(d.toString(), 10)].uniqueID, true))) {
                     this.storedIndex++;
                     this.flatSortedData[this.storedIndex] = data[parseInt(d.toString(), 10)];

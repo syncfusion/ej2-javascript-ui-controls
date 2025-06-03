@@ -168,7 +168,7 @@ export class SplineSeries extends SplineBase {
                         }
                     }
                 }
-                animateAddPoints(points.element, options.d, series.chart.redraw, startPathCommands.join(' '), this.chart.duration);
+                animateAddPoints(points.element, options.d, series.chart.redraw, startPathCommands.join(' '), this.chart.duration, '', true);
             } else if (startPathCommands.length > endPathCommands.length) {
                 for (let i: number = minLength; i < maxLength; i++) {
                     if (series.removedPointIndex === series.points.length && endPathCommands.length !== startPathCommands.length) {
@@ -193,9 +193,9 @@ export class SplineSeries extends SplineBase {
                         }
                     }
                 }
-                animateAddPoints(points.element, endPathCommands.join(''), series.chart.redraw, points.previousDirection, this.chart.duration, options.d);
+                animateAddPoints(points.element, endPathCommands.join(''), series.chart.redraw, points.previousDirection, this.chart.duration, options.d, true);
             } else {
-                animateAddPoints(points.element, options.d, series.chart.redraw, points.previousDirection, this.chart.duration);
+                animateAddPoints(points.element, options.d, series.chart.redraw, points.previousDirection, this.chart.duration, '', true);
             }
         }
     }

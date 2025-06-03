@@ -2673,6 +2673,21 @@ describe('Data validation ->', () => {
                     done();
                 });
             });
+            it('EJ2-959309 -> Custom Data Validation Formula Containing Double Quotes Is Altered Unexpectedly', (done: Function) => {
+                helper.invoke('selectRange', ['A7:A11']);
+                helper.getElementFromSpreadsheet('#' + helper.id + '_datavalidation').click();
+                helper.click('.e-datavalidation-ddb li:nth-child(1)');
+                setTimeout(() => {
+                    const ddlElem: any = helper.getElements('.e-datavalidation-dlg .e-allow .e-dropdownlist')[0];
+                    ddlElem.ej2_instances[0].value = 'Custom';
+                    ddlElem.ej2_instances[0].dataBind();
+                    helper.getElements('.e-datavalidation-dlg .e-values .e-input')[0].value = '=COUNTIF(G83:G83,"42*C2")';
+                    helper.setAnimationToNone('.e-datavalidation-dlg.e-dialog');
+                    helper.click('.e-datavalidation-dlg .e-footer-content button:nth-child(2)');
+                    expect(helper.getInstance().sheets[0].rows[6].cells[0].validation.value1).toBe('=COUNTIF(G83:G83,"42*C2")');
+                    done();
+                });
+            });
         });
     });
     describe('EJ2-65124->', () => {

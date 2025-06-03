@@ -1330,11 +1330,12 @@ export function pathAnimation(
  * @param {string} previousDirection previous direction of the path.
  * @param {number} animateDuration animateDuration of the path.
  * @param {string} removeDirection removeDirection of the path.
+ * @param {boolean} isSpline gets true for splline series.
  * @returns {void}
  */
 export function animateAddPoints(
-    element: Element, direction: string, redraw: boolean, previousDirection?: string, animateDuration?: number, removeDirection?: string
-): void {
+    element: Element, direction: string, redraw: boolean, previousDirection?: string, animateDuration?: number, removeDirection?: string,
+    isSpline?: boolean): void {
     if (!redraw || (!previousDirection && !element)) {
         return null;
     }
@@ -1362,7 +1363,7 @@ export function animateAddPoints(
                 for (let j: number = 1; j < startCoords.length; j++) {
                     const startCoord: number = parseFloat(startCoords[j as number]);
                     const endCoord: number = parseFloat(endCoords[j as number]);
-                    if (!isNaN(startCoord) && !isNaN(endCoord) && startCoords.length === endCoords.length) {
+                    if (!isNaN(startCoord) && !isNaN(endCoord) && (startCoords.length === endCoords.length || isSpline)) {
                         const interpolatedValue: number = linear(args.timeStamp, startCoord, (endCoord - startCoord), duration);
                         if (i === maxLength - 1) {
                             interpolatedCoords.push(interpolatedValue);

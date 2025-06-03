@@ -1399,7 +1399,8 @@ export abstract class PdfAnnotation {
                     const dictionary: _PdfDictionary = this._dictionary.get('AP');
                     if (dictionary && dictionary.has('N')) {
                         const appearanceStream: _PdfBaseStream = dictionary.get('N');
-                        if (this.rotate === PdfRotationAngle.angle270 && this._page.rotation === PdfRotationAngle.angle270
+                        if (this.rotate === 270 && this._page.rotation === PdfRotationAngle.angle270
+                            && appearanceStream && appearanceStream.dictionary
                             && appearanceStream.dictionary.has('Matrix')) {
                             const matrix: number[] = appearanceStream.dictionary.getArray('Matrix');
                             if (matrix && matrix.length === 6 && matrix[4] === 0 && matrix[5] !== 0) {

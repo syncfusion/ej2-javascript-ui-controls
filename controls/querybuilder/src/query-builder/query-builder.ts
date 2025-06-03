@@ -394,6 +394,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private prvtEvtTgrDaD: boolean;
     private isDragEventPrevent: boolean;
     private isValueEmpty: boolean = false;
+    private isPropChange: boolean = false;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private ddTree: any;
 
@@ -1545,8 +1546,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
 
     private changeRuleTemplate(column: ColumnsModel, element: Element): void {
-        const operVal: { [key: string]: Object }[] = this.selectedColumn.operators;
-        if (column.ruleTemplate) {
+        if (column && column.ruleTemplate) {
             return ;
         } else {
             const parentGroup: HTMLElement = closest(element, '.e-group-container') as HTMLElement;
@@ -1556,7 +1556,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 this.clearQBTemplate([parentId]);
             }
             if (column) {
+                const operVal: { [key: string]: Object }[] = this.selectedColumn.operators;
                 const rule: RuleModel = {field: column.field, label: column.label, operator: operVal[0].value as string, value: ''};
+                this.addRuleElement(parentGroup, rule, column, 'change', parentId, true);
+            } else {
+                const rule: RuleModel = {field: '', label: '', operator: '', value: ''};
                 this.addRuleElement(parentGroup, rule, column, 'change', parentId, true);
             }
         }
@@ -2086,14 +2090,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             } else {
                 prevRule = this.getGroup(prevElem as HTMLElement);
             }
-            if (isNullOrUndefined(prevRule.condition)) {
+            if (!isNullOrUndefined(prevRule) && isNullOrUndefined(prevRule.condition)) {
                 prevRule.condition = 'and';
             }
             const orElem: HTMLInputElement = elem.previousElementSibling.querySelector('.e-btngroup-or') as HTMLInputElement;
             const andElem: HTMLInputElement = elem.previousElementSibling.querySelector('.e-btngroup-and') as HTMLInputElement;
             orElem.disabled = false;
             andElem.disabled = false;
-            if (prevRule.condition === 'or') {
+            if (!isNullOrUndefined(prevRule) && prevRule.condition === 'or') {
                 orElem.checked = true;
             } else {
                 andElem.checked = true;
@@ -2280,9 +2284,13 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         const arrOper: string[] = ['in', 'notin', 'between', 'notbetween']; let prevOper: string;
         switch (type) {
         case 'field':
-            rule.field = value as string; rule.label = this.selectedColumn.label;
-            rule.type = this.selectedColumn.type; rule.value = '';
-            rule.operator = operVal[0].value as string;
+            if (isNullOrUndefined(value)) {
+                rule.field = ''; rule.label = ''; rule.type = ''; rule.value = ''; rule.operator = '';
+            } else {
+                rule.field = value as string; rule.label = this.selectedColumn.label;
+                rule.type = this.selectedColumn.type; rule.value = '';
+                rule.operator = operVal[0].value as string;
+            }
             break;
         case 'operator':
             prevOper = rule.operator; rule.operator = value as string;
@@ -4090,8 +4098,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         } else {
             this.addGroupElement(false, this.element);
         }
-        if (Browser.isDevice || this.displayMode === 'Vertical') {
-            if (Browser.isDevice) {
+        if (Browser.isDevice || (window.innerWidth < 768 && !this.isPropChange) || this.displayMode === 'Vertical') {
+            if (Browser.isDevice || window.innerWidth < 768) {
                 this.element.style.width = '100%';
                 this.element.classList.add('e-device');
             }
@@ -4206,7 +4214,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         return rule;
     }
     public onPropertyChanged(newProp: QueryBuilderModel, oldProp: QueryBuilderModel): void {
-        const properties: string[] = Object.keys(newProp);
+        const properties: string[] = Object.keys(newProp); this.isPropChange = true;
         const groupElem: HTMLElement = this.element.querySelector('.e-group-container') as HTMLElement;
         let summaryElem: HTMLElement = this.element.querySelector('.e-summary-content') as HTMLElement;
         for (const prop of properties) {
@@ -4344,6 +4352,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 break;
             }
         }
+        this.isPropChange = false;
     }
     protected preRender(): void {
         this.element.id = this.element.id || getUniqueID('ej2-querybuilder');
@@ -4857,6 +4866,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         EventHandler.add(wrapper, 'focusin', this.focusEventHandler, this);
         EventHandler.add(this.element, 'keydown', this.keyBoardHandler, this);
         EventHandler.add(document, 'keydown', this.keyBoardHandler, this);
+        window.addEventListener('resize', this.windowResizeHandler.bind(this));
     }
     protected unWireEvents(): void {
         const wrapper: Element = this.getWrapper();
@@ -4865,6 +4875,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         EventHandler.remove(wrapper, 'focusin', this.focusEventHandler);
         EventHandler.remove(this.element, 'keydown', this.keyBoardHandler);
         EventHandler.remove(document, 'keydown', this.keyBoardHandler);
+        window.removeEventListener('resize', this.windowResizeHandler);
     }
     private getParentGroup(target: Element| string, isParent ?: boolean): RuleModel {
         const groupLevel: number[] = (target instanceof Element) ? this.levelColl[target.id] : this.levelColl[`${target}`];
@@ -5113,6 +5124,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             if (this.enableSeparateConnector) {
                 this.refresh();
             }
+        }
+    }
+
+    private windowResizeHandler(): void {
+        if (Browser.isDevice || window.innerWidth < 768) {
+            this.displayMode = 'Vertical';
+        } else {
+            this.displayMode = 'Horizontal';
         }
     }
 
@@ -5877,7 +5896,16 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     parentElem = this.renderGroup(ruleColl[i as number], ruleColl[i as number].condition, parentElem,
                                                   ruleColl[i as number].not);
                     parentElem = this.importRules(ruleColl[i as number], parentElem, true);
-                } else {
+                }
+                else if (!isNullOrUndefined(ruleColl[i as number].rules)) {
+                    parentElem = this.renderGroup(ruleColl[i as number], ruleColl[i as number].condition, parentElem,
+                                                  ruleColl[i as number].not);
+                    const andElem: HTMLInputElement = parentElem.querySelector('.e-btngroup-and');
+                    const orElem: HTMLInputElement = parentElem.querySelector('.e-btngroup-or');
+                    andElem.disabled = true;
+                    orElem.disabled = true;
+                }
+                else {
                     this.renderRule(ruleColl[i as number], parentElem);
                 }
                 if (!isNullOrUndefined(ruleColl[i as number].rules) && ruleColl[i as number].isLocked) {
@@ -6702,8 +6730,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         rule.operator = this.getOperator(' ', parser[i + 1][1], sqlLocale);
                         rule.value = null; rule.type = this.getTypeFromColumn(rule);
                     } else {
-                        const oper: string = parser[i + 3][1] ? parser[i + 3][1].replace(/'/g, '') : parser[i + 3][1];
-                        rule.operator = this.getOperator(oper, parser[i + 1][1], sqlLocale); }
+                        if (parser.length === 3 && parser[2][0] === 'String' && (parser[2][1]).indexOf('%') !== -1) {
+                            const oper: string = parser[i + 2][1] ? parser[i + 2][1].replace(/'/g, '') : parser[i + 2][1];
+                            rule.operator = this.getOperator(oper, parser[i + 1][1], sqlLocale);
+                        } else {
+                            const oper: string = parser[i + 3][1] ? parser[i + 3][1].replace(/'/g, '') : parser[i + 3][1];
+                            rule.operator = this.getOperator(oper, parser[i + 1][1], sqlLocale);
+                        }
+                    }
                     operator = parser[i + 1][1]; i++; j = i + 1; jLen = iLen;
                     if (sqlLocale && rule.operator === 'contains' || rule.operator === 'startswith' || rule.operator === 'endswith') {
                         operator = 'like';

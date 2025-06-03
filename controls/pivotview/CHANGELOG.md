@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 29.2.8 (2025-06-03)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I722574` - The correct index is now returned after editing and selecting the first row data cell in the pivot table.
+- `#I720862` - Performance improvements have been implemented in the pivot field list when adding OLAP fields after a field search.
+- `#I728517` - The `beforeServiceInvoke` event will now be triggered correctly when applying changes through the popup field list in the pivot table.
+- `#I720862` - The `ExcelHeaderQueryCellInfo` event will now be triggered appropriately for empty cells in the first column of the pivot table during server-side engine export.
+
 ## 29.1.40 (2025-04-29)
 
 ### Pivot Table

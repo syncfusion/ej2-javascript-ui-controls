@@ -7,7 +7,7 @@ import { GridModel, ColumnQueryModeType, HeaderCellInfoEventArgs, EditSettingsMo
 import { RowDragEventArgs, RowDropEventArgs, RowDropSettingsModel, RowDropSettings, getUid, parentsUntil } from '@syncfusion/ej2-grids';
 import { LoadingIndicator } from '../models/loading-indicator';
 import { LoadingIndicatorModel } from '../models/loading-indicator-model';
-import { ActionEventArgs, TextAlign } from'@syncfusion/ej2-grids';
+import { TextAlign } from'@syncfusion/ej2-grids';
 import { DetailDataBoundEventArgs, ClipMode, ColumnChooser}  from '@syncfusion/ej2-grids';
 import { SearchEventArgs, AddEventArgs, EditEventArgs, DeleteEventArgs}  from '@syncfusion/ej2-grids';
 import { SaveEventArgs, CellSaveArgs, BatchAddArgs, BatchCancelArgs,  BeginEditArgs, CellEditArgs}  from '@syncfusion/ej2-grids';
@@ -53,7 +53,7 @@ import { VirtualTreeContentRenderer } from '../renderer/virtual-tree-content-ren
 import { DataManipulation } from './data';
 import { RowDD } from '../actions/rowdragdrop';
 import { Sort } from '../actions/sort';
-import { ITreeData, RowExpandedEventArgs, RowCollapsedEventArgs, RowCollapsingEventArgs, TreeGridExcelExportProperties } from './interface';
+import { ITreeData, RowExpandedEventArgs, RowCollapsedEventArgs, RowCollapsingEventArgs, TreeGridExcelExportProperties, ActionEventArgs } from './interface';
 import { DataStateChangeEventArgs, RowExpandingEventArgs, TreeGridPdfExportProperties } from './interface';
 import { iterateArrayOrObject, GridLine } from '@syncfusion/ej2-grids';
 import { DataSourceChangedEventArgs, RecordDoubleClickEventArgs, ResizeArgs } from '@syncfusion/ej2-grids';
@@ -2786,16 +2786,16 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             if (args.requestType === 'save' && this.aggregates.map((ag: AggregateRow) => ag.showChildSummary === true).length) {
                 this.grid.refresh();
             }
-            // if (args.action === 'filter') {
-            //     if (this.filterModule['currentFilterObject'] !== '' && this.enableVirtualization && !this.initialRender && !(isRemoteData(this) && this.enableVirtualization)) {
-            //         this.expandAll();
-            //     }
-            // }
-            // if (args.requestType === 'searching') {
-            //     if (this.searchSettings.key !== '' && this.enableVirtualization && !this.initialRender && !(isRemoteData(this) && this.enableVirtualization)) {
-            //         this.expandAll();
-            //     }
-            // }
+            if (args.action === 'filter') {
+                if (!args.isCollapseMaintain && this.filterModule['currentFilterObject'] !== '' && this.enableVirtualization && !this.initialRender && !(isRemoteData(this) && this.enableVirtualization)) {
+                    this.expandAll();
+                }
+            }
+            if (args.requestType === 'searching') {
+                if (!args.isCollapseMaintain && this.searchSettings.key !== '' && this.enableVirtualization && !this.initialRender && !(isRemoteData(this) && this.enableVirtualization)) {
+                    this.expandAll();
+                }
+            }
             if (args.action === 'clearFilter' && this.enableCollapseAll) {
                 this.collapseAll();
             }

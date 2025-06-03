@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.2.8 (2025-06-03)
+
+### Spreadsheet
+
+#### Bug fixes
+
+- `#I714036` - Issue with "custom data validation formula containing double quotes with cell reference is altered unexpectedly" has been resolved.
+
 ## 29.1.41 (2025-05-06)
 
 ### Spreadsheet

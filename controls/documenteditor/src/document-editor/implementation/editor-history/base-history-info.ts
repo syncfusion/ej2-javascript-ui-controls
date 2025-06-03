@@ -22,7 +22,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ElementBox, CommentCharacterElementBox } from '../viewer/page';
 import { TableResizer } from '../editor/table-resizer';
 import { WTableFormat, WRowFormat, WCellFormat, WParagraphStyle, WCharacterStyle, WShading, WBorders} from '../format/index';
-import { ParagraphInfo, HelperMethods, AbsolutePositionInfo, CellInfo, PositionInfo } from '../editor/editor-helper';
+import { ParagraphInfo, HelperMethods, AbsolutePositionInfo, CellInfo, PositionInfo, ElementInfo } from '../editor/editor-helper';
 import { BookmarkInfo } from './history-helper';
 import { DocumentHelper, TextHelper } from '../viewer';
 import { CONTROL_CHARACTERS, HeaderFooterType, ListLevelPattern, ProtectionType } from '../../base/types';
@@ -1242,9 +1242,17 @@ export class BaseHistoryInfo {
                             }
                         }
                     }
+                    let elementInfo: ElementInfo = this.owner.selectionModule.start.currentWidget.getInline(this.owner.selectionModule.start.offset, 0);
+                    let elementBox: ElementBox = elementInfo.element;
+                    let lastLine: LineWidget = (this.owner.selectionModule.start.paragraph.lastChild as LineWidget);
+                    if (this.owner.selectionModule.start.currentWidget.isEndsWithLineBreak && this.owner.selectionModule.start.offset > 0
+                        && this.owner.documentHelper.layout.isConsiderAsEmptyLineWidget(lastLine) && !isNullOrUndefined(lastLine.previousLine)) {
+                        lastLine = lastLine.previousLine;
+                    }
+                    let lastElement: ElementBox = lastLine.children[lastLine.children.length - 1];
                     //Checks if first node is paragraph and current insert position is paragraph end.
                     if (firstNode instanceof ParagraphWidget && this.owner.selectionModule.start.offset > 0
-                        && this.owner.selectionModule.start.offset === this.owner.selectionModule.getLineLength(this.owner.selectionModule.start.paragraph.lastChild as LineWidget)) {
+                        && elementBox === lastElement) {
                         let editor: Editor = this.owner.editorModule;
                         editor.insertNewParagraphWidget(firstNode as ParagraphWidget, false);
                         if (firstNode.characterFormat.removedIds.length > 0) {

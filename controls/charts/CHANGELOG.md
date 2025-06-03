@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 29.2.8 (2025-06-03)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I956983` - The console warning for an empty text anchor will no longer occur on canvas-enabled charts.
+- `#I727900` - Resolved a console error that occurred when updating the spline series using the add Point method.
+
 ## 29.2.5 (2025-05-21)
 
 ### Chart

@@ -15,6 +15,7 @@ import { MaskedTextBox, MaskChangeEventArgs, TextBox } from '@syncfusion/ej2-inp
 import { PivotUtil } from '../../base/util';
 import { IOlapField } from '../../base/olap/engine';
 import { PivotView } from '../../pivotview/base/pivotview';
+import { DataManager, Predicate, Query } from '@syncfusion/ej2-data';
 
 /**
  * Module to render Field List
@@ -37,6 +38,7 @@ export class TreeViewRenderer implements IAction {
     private isSearching: boolean = false;
     private parentIDs: string[] = [];
     private isSpaceKey: boolean = false;
+    private olapFieldListData: { [key: string]: Object }[] = [];
 
     /** Constructor for render module
      *
@@ -233,35 +235,17 @@ export class TreeViewRenderer implements IAction {
         if (args.node.querySelector('.' + cls.NODE_CHECK_CLASS)) {
             addClass([args.node.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
         }
-        if (this.parent.enableFieldSearching && this.isSearching) {
+        if (this.parent.enableFieldSearching && this.isSearching && this.parent.dataType === 'pivot') {
             const liElement: HTMLElement = args.node;
-            if (this.parent.dataType === 'olap') {
-                const id: string = liElement.getAttribute('data-uid');
-                const searchItem: HTMLElement[] = this.parent.pivotCommon.eventBase.searchListItem;
-                for (let i: number = 0; i < this.parentIDs.length; i++) {
-                    if (id === this.parentIDs[i as number]) {
-                        addClass([liElement], cls.ICON_DISABLE);
-                    }
-                    for (const li2 of searchItem) {
-                        const parentID: string[] = this.parent.pivotCommon.eventBase.getParentIDs(this.fieldTable, li2.getAttribute('data-uid'), []);
-                        if (PivotUtil.inArray(id, parentID) > -1) {
-                            removeClass([liElement], cls.ICON_DISABLE);
-                            break;
-                        }
-                    }
+            for (let i: number = 0; i < this.nonSearchList.length; i++) {
+                if (liElement.textContent === this.nonSearchList[i as number].textContent) {
+                    addClass([liElement], cls.ICON_DISABLE);
+                    break;
                 }
-            }
-            else {
-                for (let i: number = 0; i < this.nonSearchList.length; i++) {
-                    if (liElement.textContent === this.nonSearchList[i as number].textContent) {
+                else {
+                    if (liElement.innerText === this.nonSearchList[i as number].textContent) {
                         addClass([liElement], cls.ICON_DISABLE);
                         break;
-                    }
-                    else {
-                        if (liElement.innerText === this.nonSearchList[i as number].textContent) {
-                            addClass([liElement], cls.ICON_DISABLE);
-                            break;
-                        }
                     }
                 }
             }
@@ -399,7 +383,33 @@ export class TreeViewRenderer implements IAction {
     }
 
     private textChange(e: MaskChangeEventArgs): void {
-        this.parent.pivotCommon.eventBase.searchTreeNodes(e, this.fieldTable, true);
+        if (this.parent.dataType === 'olap') {
+            if (e.value === '') {
+                this.fieldTable.fields.dataSource = this.olapFieldListData;
+                setTimeout(() => {
+                    this.fieldTable.collapseAll();
+                });
+                this.isSearching = false;
+                this.promptVisibility(false);
+            } else {
+                this.fieldTable.fields.dataSource = this.performeSearching(e.value) as { [key: string]: Object; }[];
+                setTimeout(() => {
+                    this.fieldTable.expandAll();
+                });
+                this.isSearching = true;
+                this.promptVisibility(this.fieldTable.fields.dataSource.length === 0);
+            }
+        } else {
+            this.parent.pivotCommon.eventBase.searchTreeNodes(e, this.fieldTable, true);
+            const liList: HTMLElement[] = [].slice.call(this.fieldTable.element.querySelectorAll('li')) as HTMLElement[];
+            const disabledList: HTMLElement[] = [].slice.call(this.fieldTable.element.querySelectorAll('li.' + cls.ICON_DISABLE)) as HTMLElement[];
+            this.promptVisibility(liList.length === disabledList.length);
+            this.isSearching = disabledList.length > 0 ? true : false;
+            this.nonSearchList = disabledList;
+        }
+    }
+
+    private promptVisibility(isPromptVisible: boolean): void {
         let promptDiv: HTMLElement;
         let treeOuterDiv: HTMLElement;
         if (this.parent.isAdaptive) {
@@ -409,32 +419,61 @@ export class TreeViewRenderer implements IAction {
             promptDiv = this.parentElement.querySelector('.' + cls.EMPTY_MEMBER_CLASS);
             treeOuterDiv = this.parentElement.querySelector('.' + cls.TREE_CONTAINER);
         }
-        const liList: HTMLElement[] = [].slice.call(this.fieldTable.element.querySelectorAll('li')) as HTMLElement[];
-        const disabledList: HTMLElement[] = [].slice.call(this.fieldTable.element.querySelectorAll('li.' + cls.ICON_DISABLE)) as HTMLElement[];
-        if (liList.length === disabledList.length) {
+        if (isPromptVisible) {
             removeClass([promptDiv], cls.ICON_DISABLE);
             if (!this.parent.isAdaptive) {
                 addClass([treeOuterDiv], cls.ICON_DISABLE);
-                removeClass([treeOuterDiv], cls.FIELD_LIST_TREE_OUTER_DIV_SEARCH_CLASS);
+                removeClass([promptDiv], cls.FIELD_LIST_TREE_OUTER_DIV_SEARCH_CLASS);
             }
         } else {
             addClass([promptDiv], cls.ICON_DISABLE);
             if (!this.parent.isAdaptive) {
                 removeClass([treeOuterDiv], cls.ICON_DISABLE);
-                addClass([treeOuterDiv], cls.FIELD_LIST_TREE_OUTER_DIV_SEARCH_CLASS);
+                addClass([promptDiv], cls.FIELD_LIST_TREE_OUTER_DIV_SEARCH_CLASS);
             }
         }
-        this.isSearching = disabledList.length > 0 ? true : false;
-        this.nonSearchList = disabledList;
-        if (this.parent.dataType === 'olap') {
-            this.parentIDs = [];
-            for (let i: number = 0; i < liList.length; i++) {
-                if (liList[i as number].classList.contains('e-level-1')) {
-                    const id: string = liList[i as number].getAttribute('data-uid');
-                    this.parentIDs.push(id);
+    }
+
+    private performeSearching(searchValue: string): Object[] {
+        const dataManager: DataManager = new DataManager(this.olapFieldListData);
+        const filteredList: Object[] = dataManager.executeLocal(
+            new Query().where(new Predicate(this.fieldTable.fields.text, 'contains', searchValue, true))
+        );
+        const predicates: Predicate[] = [];
+        const filterId: Set<string | number> = new Set<number | string>();
+        filteredList.forEach((item: { [key: string]: Object; }) => {
+            if (item) {
+                let parentItems: Object[] = [];
+                let childItems: Object[] = [];
+                if (item['pid']) {
+                    parentItems = this.getParentItems(dataManager, 'id', item['pid'] as string | number);
                 }
+                if (item['hasChildren'] ) {
+                    childItems = dataManager.executeLocal(
+                        new Query().where('pid', 'equal', item['id'] as string | number, false)
+                    ) as { [key: string]: Object }[];
+                }
+                const filteredItem: Object[] = parentItems.concat([item]).concat(childItems);
+                filteredItem.forEach((child: { [key: string]: Object; }) => {
+                    const childId: string | number = child['id'] as string | number;
+                    if (!filterId.has(childId)) {
+                        filterId.add(childId);
+                        predicates.push(new Predicate('id', 'equal', childId, false));
+                    }
+                });
             }
+        });
+        return predicates.length > 0 ? dataManager.executeLocal(new Query().where(Predicate.or(...predicates))) : [];
+    }
+
+    private getParentItems(dataManager: DataManager, key: string, value: string | number): { [key: string]: Object }[] {
+        let parentItems: { [key: string]: Object }[] = dataManager.executeLocal(
+            new Query().where(key, 'equal', value, false)
+        ) as { [key: string]: Object }[];
+        if (parentItems && parentItems[0] && parentItems[0]['pid']) {
+            parentItems = this.getParentItems(dataManager, key, parentItems[0]['pid'] as string | number).concat(parentItems);
         }
+        return parentItems;
     }
 
     private dragStart(args: DragAndDropEventArgs): void {
@@ -872,7 +911,10 @@ export class TreeViewRenderer implements IAction {
     private getTreeData(axis?: number): { [key: string]: Object }[] {
         let data: { [key: string]: Object }[] = [];
         if (this.parent.dataType === 'olap') {
-            data = this.getOlapTreeData(axis);
+            data = this.getOlapTreeData(axis) as { [key: string]: Object; }[];
+            if (this.isSearching && this.olapFieldListData.length > 0) {
+                data = this.performeSearching(this.fieldSearch.value) as { [key: string]: Object; }[];
+            }
         } else {
             const keys: string[] = this.parent.pivotFieldList ? Object.keys(this.parent.pivotFieldList) : [];
             const treeDataInfo: { [key: string]: { id?: string; pid?: string; caption?: string; isSelected?: boolean;
@@ -974,6 +1016,7 @@ export class TreeViewRenderer implements IAction {
             data = isNullOrUndefined(this.parent.olapEngineModule.fieldListData) ? [] :
                 PivotUtil.getClonedData(this.parent.olapEngineModule.fieldListData as { [key: string]: Object }[]);
         }
+        this.olapFieldListData = data;
         return data;
     }
     private updateExpandedNodes(data: { [key: string]: Object }[], expandedNodes: string[]): void {

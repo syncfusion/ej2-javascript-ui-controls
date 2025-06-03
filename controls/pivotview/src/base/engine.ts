@@ -5178,8 +5178,8 @@ export class PivotEngine {
         } else if (rowAxis.length === 0 && (
             this.valueAxis && (this.isMultiMeasures || this.dataSourceSettings.alwaysShowValueHeader)) &&
             this.dataSourceSettings.values.length > 0) {
-            if (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals &&
-                this.rMembers[this.rMembers.length - 1].type === 'grand sum') {
+            if (this.dataSourceSettings.showGrandTotals && this.dataSourceSettings.showRowGrandTotals && !isNullOrUndefined(this.rMembers)
+                && this.rMembers.length > 0 && this.rMembers[this.rMembers.length - 1].type === 'grand sum') {
                 this.updateValueMembers(
                     this.measureIndex === 0 && this.rMembers.length > 1, null, null, rowAxis, this.rMembers.slice(
                         0, this.rMembers.length - 1), this.dataSourceSettings.values.length, 0);

@@ -2,13 +2,15 @@
 
 ## [Unreleased]
 
-## 29.2.7 (2025-05-27)
+## 29.2.8 (2025-06-03)
 
 ### Diagram
 
 #### Bug Fixes
 
-- `#I718482` - Now, Flowchart layout will render without console error while loading mermaid syntax data.
+- `#I724541` - Corner radius will now apply correctly to group nodes.
+- `#I723106` - The annotation's edit box will now render correctly at its position after flipping the parent node.
+- `#I724169` - Now, flipping a group with a connector at runtime works properly.
 
 ## 29.2.4 (2025-05-14)
 

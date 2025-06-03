@@ -2332,6 +2332,65 @@ describe('Chart ->', () => {
                 done();
             });
         });
+        describe('EJ2-957830 -> Chart design properties not updating correctly when selecting different charts', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Insert chart and apply Material 3 Dark theme from dropdown', (done: Function) => {
+                helper.invoke('selectRange', ['A1:D5']);
+                helper.switchRibbonTab(2);
+                helper.getElement('#' + helper.id + '_chart-btn').click();
+                const target: HTMLElement = helper.getElement('#' + helper.id + '_chart-btn-popup .e-menu-item[aria-label="Line"]');
+                (getComponent(target.parentElement, 'menu') as any).animationSettings.effect = 'None';
+                helper.triggerMouseAction('mouseover', { x: target.getBoundingClientRect().left + 5, y: target.getBoundingClientRect().top + 5 }, document, target);
+                helper.getElement('#line').click();
+                helper.switchRibbonTab(6);
+                helper.getElement('#' + helper.id + '_chart_theme').click();
+                helper.getElement('.e-item[aria-label="Material 3 Dark"]').click();
+                setTimeout(() => {
+                    expect(helper.getElement('#' + helper.id + '_chart_theme').textContent).toContain('Material 3 Dark');
+                    done();
+                }, 10);
+            });
+            it('Insert chart and apply Fluent 2 Dark theme->', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.insertChart([{ type: "Column", range: 'G1:H11' }]);
+                helper.switchRibbonTab(6);
+                helper.getElement('#' + helper.id + '_chart_theme').click();
+                helper.getElement('.e-item[aria-label="Fluent 2 Dark"]').click();
+                setTimeout(() => {
+                    expect(helper.getElement('#' + helper.id + '_chart_theme').textContent).toContain('Fluent 2 Dark');
+                    done();
+                }, 10);
+            });
+            it('Switch chart and apply Fabric theme ->', (done: Function) => {
+                helper.invoke('selectRange', ['A1']);
+                helper.invoke('selectChart');
+                helper.switchRibbonTab(6);
+                expect(helper.getElement('#' + helper.id + '_chart_theme').textContent).toContain('Material 3 Dark');
+                helper.getElement('#' + helper.id + '_chart_theme').click();
+                helper.getElement('.e-item[aria-label="Fabric"]').click();
+                setTimeout(() => {
+                    expect(helper.getElement('#' + helper.id + '_chart_theme').textContent).toContain('Fabric');
+                    done();
+                }, 10);
+            });
+            it('Switch chart and apply Bootstrap theme->', (done: Function) => {
+                helper.invoke('selectRange', ['G1']);
+                helper.invoke('selectChart');
+                helper.switchRibbonTab(6);
+                expect(helper.getElement('#' + helper.id + '_chart_theme').textContent).toContain('Fluent 2 Dark');
+                helper.getElement('#' + helper.id + '_chart_theme').click();
+                helper.getElement('.e-item[aria-label="Bootstrap"]').click();
+                setTimeout(() => {
+                    expect(helper.getElement('#' + helper.id + '_chart_theme').textContent).toContain('Bootstrap');
+                    done();
+                }, 10);
+            });
+        });
         describe('EJ2-896138 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({

@@ -154,7 +154,7 @@ export class DateProcessor {
         const hour: number = this.getSecondsInDecimal(cloneEndDate);
         if (hour > dayEndTime) {
             this.setTime(dayEndTime, cloneEndDate);
-        } else if (hour <= dayStartTime && !validateAsMilestone) {
+        } else if (hour <= dayStartTime && dayEndTime !== 86400 && !validateAsMilestone) {
             const taskfields: TaskFieldsModel = this.parent.taskFields;
             if (this.parent.editModule && this.parent.editModule['editedRecord'] && (!this.parent.editModule['editedRecord'][taskfields.startDate] && this.parent.editModule['editedRecord'][taskfields.endDate])) {
                 cloneEndDate.setDate(cloneEndDate.getDate());
@@ -1315,7 +1315,7 @@ export class DateProcessor {
         const previousIndex: number = (dayIndex === 0) ? 6 : dayIndex - 1;
         const dayEndTime: number = this.parent['getCurrentDayEndTime'](date);
         if (this.parent.nonWorkingDayIndex.indexOf(dayIndex) !== -1 || (this.parent.nonWorkingDayIndex.indexOf(previousIndex) !== -1
-            && dayEndTime === 86400 && this.getSecondsInDecimal(date) === 0)) {
+            && dayEndTime !== 86400 && this.getSecondsInDecimal(date) === 0)) {
             date.setDate(date.getDate() - 1);
             if (this.parent.nonWorkingDayIndex.indexOf(date.getDay()) !== -1) {
                 date = this.getPreviousWorkingDay(date);

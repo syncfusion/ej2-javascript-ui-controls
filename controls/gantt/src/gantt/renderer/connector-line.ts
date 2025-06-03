@@ -502,6 +502,7 @@ export class ConnectorLine {
                 return this.parent.chartRowsModule.taskBarMarginTop;
             }
         case 'SSType3':
+        case 'SSType4':
             if (data.milestoneParent) {
                 return -this.parent.chartRowsModule.taskBarMarginTop;
             }
@@ -763,15 +764,12 @@ export class ConnectorLine {
                 const adjustedX: number = adjustments['adjustX'] !== 0 ? adjustments['adjustX'] + 2 : adjustments['adjustX'];
                 this.taskLineValue = this.parent.renderBaseline ? this.taskLineValue : 0;
                 this.point1 = heightValue + this.taskLineValue + borderTopWidth;
-                this.point2 = rowPositionHeight;
                 this.x1 = data.parentLeft - 10;
                 this.x2 = data.childLeft - data.parentLeft;
-                this.y1 = this.point2 + (data.milestoneChild ? 1 : 0);
-                this.y2 = (!data.milestoneChild ? (this.parent.chartRowsModule.milestoneMarginTop +
-                        (this.parent.chartRowsModule.milestoneHeight / 2)) :
-                    (this.parent.chartRowsModule.taskBarMarginTop + (this.parent.chartRowsModule.taskBarHeight / 2))) + this.point1;
+                this.y1 = rowPositionHeight;
+                this.y2 = this.y1 + this.point1;
                 this.connectorLinePath = 'M ' + ((this.x1 + this.x2) + adjustedX) + ' ' + (this.y1) + ' L ' + this.x1 + ' ' + (this.y1) +
-                    ' L ' + this.x1 + ' ' + (this.y2) + ' L ' + (this.x1 + 10) + ' ' + (this.y2);
+                    ' L ' + this.x1 + ' ' + (this.y2 - adjustedValue) + ' L ' + (this.x1 + 10) + ' ' + (this.y2 - adjustedValue);
                 this.arrowPath = 'M ' + ((this.x1 + this.x2 + 8) + adjustedX) + ' ' + (this.y1) +
                     ' L ' + ((this.x1 + this.x2) + adjustedX) + ' ' + (this.y1 - (4 + this.lineStroke)) +
                     ' L ' + ((this.x1 + this.x2) + adjustedX) + ' ' + (this.y1 + 4 + this.lineStroke) + ' Z';

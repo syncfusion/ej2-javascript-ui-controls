@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## 29.2.7 (2025-05-27)
+## 29.2.8 (2025-06-03)
 
 ### Tab
 
@@ -10,11 +10,15 @@
 
 - `#I717262` - The issue with `hideTab` not working correctly in mobile (popup) mode of the Tab component has been resolved.
 
+- `#I696042` - The issue with the `ActiveTab` is not set properly in the mobile mode of the Tab component has been resolved.
+
 ### Toolbar
 
 #### Bug Fixes
 
 - `#I705994` - The issue with the tooltip and click handling, which occurred when hovering over the toolbar item instead of the button has been resolved.
+
+- `#I727011` - The issue with the Height difference when buttons are inserted inside toolbar has been resolved.
 
 ### ContextMenu
 

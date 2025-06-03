@@ -449,9 +449,11 @@ export class Overlay {
             this.isResizerClicked = true;
         }
         if (overlayElem.classList.contains('e-datavisualization-chart')) {
-            this.parent.notify(focusChartBorder, { id : overlayElem.id });
+            this.parent.notify(focusChartBorder, { id: overlayElem.id });
             if (!actOverlayElem) {
                 this.parent.notify(insertDesignChart, { id: overlayElem.id });
+            } else if (actOverlayElem.id !== overlayElem.id) {
+                this.parent.notify(insertDesignChart, { refreshChartTheme: true });
             }
         }
         const clientRect: ClientRect = overlayElem.getBoundingClientRect();

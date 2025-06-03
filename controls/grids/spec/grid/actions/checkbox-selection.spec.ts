@@ -1181,4 +1181,38 @@ describe('Grid checkbox selection functionality', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-958083: isInteracted property is set to false in rowSelected event when checkboxMode set to ResetOnRowClick', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowPaging: true,
+                    allowSelection: true,
+                    selectionSettings: { checkboxMode: 'ResetOnRowClick' },
+                    columns: [
+                        { type: 'checkbox', width: 50 },
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 120, textAlign: 'Right', minWidth: 10 },
+                        { field: 'Freight', width: 125, minWidth: 10 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, minWidth: 10 },
+                    ],
+                }, done);
+        });
+
+        it('checking all row selection reset with persistence', (done: Function) => {
+            let rowSelected = (args: any) => {
+                expect(args.isInteracted).toBeTruthy();
+                gridObj.rowSelected = null;
+                done();
+            };
+            gridObj.rowSelected = rowSelected;
+            (gridObj.getRows()[0].querySelectorAll('.e-rowcell')[1] as HTMLElement).click();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

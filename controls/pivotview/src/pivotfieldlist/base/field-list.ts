@@ -893,7 +893,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             isGroupingUpdated: (this.currentAction === 'onRefresh' && this.dataSourceSettings.groupSettings.length > 0) ? true :
                 ((this.pivotGridModule && this.pivotGridModule.groupingModule) ? this.pivotGridModule.groupingModule.isUpdate : false)
         };
-        this.trigger(events.beforeServiceInvoke, params, (observedArgs: BeforeServiceInvokeEventArgs) => {
+        const control: PivotView | PivotFieldList = this.isPopupView ? this.pivotGridModule : this;
+        control.trigger(events.beforeServiceInvoke, params, (observedArgs: BeforeServiceInvokeEventArgs) => {
             this.request = observedArgs.request;
             params.internalProperties = observedArgs.internalProperties;
             params.customProperties = observedArgs.customProperties;
@@ -930,7 +931,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     action: this.currentAction,
                     response: this.request.responseText
                 };
-                this.trigger(events.afterServiceInvoke, params);
+                const control: PivotView | PivotFieldList = this.isPopupView ? this.pivotGridModule : this;
+                control.trigger(events.afterServiceInvoke, params);
                 const engine: {
                     members: string,
                     memberName: string,

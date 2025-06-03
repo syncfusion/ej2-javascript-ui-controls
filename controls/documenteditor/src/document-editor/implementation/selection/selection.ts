@@ -637,8 +637,8 @@ export class Selection {
                 if (isNullOrUndefined(elementEnd)) {
                     continue;
                 }
-                const bmStartPos: TextPosition = this.getElementPosition(elementStart).startPosition;
-                const bmEndPos: TextPosition = this.getElementPosition(elementEnd, true).startPosition;
+                const bmStartPos: TextPosition = this.getElementPosition(elementStart, false, true).startPosition;
+                const bmEndPos: TextPosition = this.getElementPosition(elementEnd, true, true).startPosition;
                 if (bmStartPos.paragraph.isInsideTable || bmEndPos.paragraph.isInsideTable) {
                     if (selectedCells.length > 0) {
                         if (selectedCells.indexOf(bmStartPos.paragraph.associatedCell) >= 0
@@ -3497,6 +3497,13 @@ export class Selection {
                     index = ind + ';' + offset;
                 } else {
                     let blockIndex: number = block.index;
+                    // we need to consider index of cells only if the cell is from same row.
+                    if (block instanceof TableCellWidget) {
+                        let cells: TableCellWidget[] = block.ownerRow.childWidgets.filter(cell => (cell as TableCellWidget).rowIndex === (cell as TableCellWidget).ownerRow.index) as TableCellWidget[];
+                        if (cells.length > 0) {
+                            blockIndex = cells.indexOf(block);
+                        }
+                    }
                     // If the cell's row span is greater than 1, then the cell is spitted into mutiple page. We should not consider spitted cell. Becuase the cell index may change.
                     // So need to consider the split widget index. 
                     if (block instanceof TableCellWidget && block.cellFormat.rowSpan > 1) {
@@ -3753,14 +3760,23 @@ export class Selection {
     public getBlockByIndex(container: Widget, blockIndex: number, position?: IndexInfo): Widget {
         let childWidget: Widget;
         if (container) {
-            for (let j: number = 0; j < container.childWidgets.length; j++) {
-                if ((container.childWidgets[j] as Widget).index === blockIndex) {
-                    childWidget = container.childWidgets[j] as Widget;
-                    break;
+            // the cell index is considered only if it is from same row.
+            if (container instanceof TableRowWidget) {
+                let cells: TableCellWidget[] = container.childWidgets.filter(cell=> (cell as TableCellWidget).rowIndex === (cell as TableCellWidget).ownerRow.index) as TableCellWidget[];
+                if (cells.length > 0) {
+                    childWidget = cells[blockIndex];
+                }
+            }
+            else {
+                for (let j: number = 0; j < container.childWidgets.length; j++) {
+                    if ((container.childWidgets[j] as Widget).index === blockIndex) {
+                        childWidget = container.childWidgets[j] as Widget;
+                        break;
+                    }
                 }
             }
             // If the row contains a vertically merged cell and the cell count differs between the current row and the split row. So, we have added the following code to update the split cell widget for selection.
-            if (!isNullOrUndefined(childWidget) && childWidget instanceof TableRowWidget && childWidget.nextSplitWidget && this.documentHelper.layout.isVerticalMergedCellContinue(childWidget)) {
+            if (!isNullOrUndefined(childWidget) && childWidget instanceof TableRowWidget && childWidget.nextSplitWidget && this.documentHelper.layout.isVerticalMergedCellContinue(childWidget) && !isNullOrUndefined(position)) {
                 let positionIndex: string = position.index;
                 let index: number = positionIndex.indexOf(';');
                 let cellIndexValue: string = positionIndex.substring(0, index);
@@ -5939,7 +5955,7 @@ export class Selection {
     public isCellSelected(cell: TableCellWidget, startPosition: TextPosition, endPosition: TextPosition, skipParaMark?: boolean): boolean {
         const lastParagraph: ParagraphWidget = this.getLastParagraph(cell as TableCellWidget) as ParagraphWidget;
 
-        const isAtCellEnd: boolean = lastParagraph === endPosition.paragraph && endPosition.offset === this.getParagraphLength(lastParagraph) + (!skipParaMark ? 1 : 0);
+        const isAtCellEnd: boolean = lastParagraph === endPosition.paragraph && endPosition.offset === this.getLineLength((lastParagraph.lastChild as LineWidget)) + (!skipParaMark ? 1 : 0);
 
         return isAtCellEnd || (!this.containsCell(cell, startPosition.paragraph.associatedCell) ||
             !this.containsCell(cell, endPosition.paragraph.associatedCell));
@@ -10108,6 +10124,29 @@ export class Selection {
     }
 
     /**
+     * Returns true if the complete columns in the table is selected
+     * @private
+     */
+    public isWholeColumnSelected(): boolean {
+        let start: TextPosition = this.start;
+        let end: TextPosition = this.end;
+        if (!this.isForward) {
+            start = this.end;
+            end = this.start;
+        }
+        if (isNullOrUndefined(start.paragraph.associatedCell) ||
+            isNullOrUndefined(end.paragraph.associatedCell)) {
+            return false;
+        }
+        let startCell: TableCellWidget = start.paragraph.associatedCell as TableCellWidget;
+        let endCell: TableCellWidget = end.paragraph.associatedCell as TableCellWidget;
+        let table: TableWidget[] = start.paragraph.associatedCell.ownerTable.getSplitWidgets() as TableWidget[];
+        let firstParagraph: ParagraphWidget = this.getFirstBlockInFirstCell(table[0]) as ParagraphWidget;
+        let lastParagraph: ParagraphWidget = this.getLastBlockInLastCell(table[table.length - 1]) as ParagraphWidget;
+        return startCell.ownerRow.equals(firstParagraph.associatedCell.ownerRow) && endCell.ownerRow.equals(lastParagraph.associatedCell.ownerRow);
+    }
+
+    /**
      * Select List Text
      * @private
      */
@@ -10242,7 +10281,16 @@ export class Selection {
             startPosition = this.end;
             endPosition = this.start;
         }
-        return (this.owner.sfdtExportModule.write((this.owner.documentEditorSettings.optimizeSfdt ? 1 : 0), startPosition.currentWidget, startPosition.offset, endPosition.currentWidget, endPosition.offset, true));
+        let bookmarks: Dictionary<string, BookmarkElementBox>  = this.documentHelper.bookmarks;
+        for (let index = 0; index < bookmarks.length; index++) {
+            let bookmrkStart: BookmarkElementBox = bookmarks.get(bookmarks.keys[index]);
+            if (!isNullOrUndefined(bookmrkStart.reference) && this.isElementInSelection(bookmrkStart, false) && this.isElementInSelection(bookmrkStart.reference, true)) {
+                this.owner.sfdtExportModule.bookmarkCollection.push(bookmrkStart);
+            }
+        }
+        let returnSfdt: any = this.owner.sfdtExportModule.write((this.owner.documentEditorSettings.optimizeSfdt ? 1 : 0), startPosition.currentWidget, startPosition.offset, endPosition.currentWidget, endPosition.offset, true, false);
+        this.owner.sfdtExportModule.bookmarkCollection = [];
+        return returnSfdt;
     }
     /**
      * @private
@@ -11236,7 +11284,7 @@ export class Selection {
                     if (bookmrkEnd instanceof BookmarkElementBox && !excludeBookmarkStartEnd) {
                         if (!isNullOrUndefined(bookmrkEnd.properties)) {
                             if (bookmrkEnd.properties['isAfterParagraphMark']) {
-                                endoffset = bookmrkEnd.line.getOffset(bookmrkEnd, 1)
+                                endoffset = bookmrkEnd.line.getOffset(bookmrkEnd, 2);
                             }
                         }
                     }
@@ -12142,10 +12190,10 @@ export class Selection {
     /**
      * @private
      */
-    public getElementPosition(element: ElementBox, isEnd?: boolean): PositionInfo {
+    public getElementPosition(element: ElementBox, isEnd?: boolean, isRetrieveBookmark?: boolean): PositionInfo {
         let offset: number = element.line.getOffset(element, isEnd ? 0 : 1);
         let startPosition: TextPosition = new TextPosition(this.owner);
-        startPosition.setPositionParagraph(element.line, offset);
+        startPosition.setPositionParagraph(element.line, offset, isRetrieveBookmark);
         return { 'startPosition': startPosition, 'endPosition': undefined };
     }
     //Restrict editing implementation ends

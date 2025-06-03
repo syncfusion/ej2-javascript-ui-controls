@@ -1803,8 +1803,13 @@ export class ChartRows extends DateProcessor {
         }
         if (this.templateData.hasChildRecords) {
             let parentTaskbarTemplateNode: NodeList;
-            if (!this.parent.enableMultiTaskbar || (this.parent.enableMultiTaskbar && this.templateData.expanded)) {
-                parentTaskbarTemplateNode = this.getParentTaskbarNode(i, taskbarContainerNode);
+            if ((!this.parent.enableMultiTaskbar || (this.parent.enableMultiTaskbar && this.templateData.expanded))) {
+                if (this.templateData.ganttProperties.autoDuration !== 0 && !this.templateData.ganttProperties.isMilestone) {
+                    parentTaskbarTemplateNode = this.getParentTaskbarNode(i, taskbarContainerNode);
+                }
+                else {
+                    parentTaskbarTemplateNode = this.getMilestoneNode(i, taskbarContainerNode);
+                }
             }
             else {
                 taskbarContainerNode = [];

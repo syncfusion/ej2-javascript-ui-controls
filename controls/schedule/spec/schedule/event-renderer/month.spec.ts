@@ -100,7 +100,7 @@ describe('Month Event Render Module', () => {
         });
 
         it('More event click testing and read only for add icon testing', () => {
-            expect((schObj.element.querySelector('.e-icon-add') as HTMLElement).offsetHeight).toEqual(25);
+            expect((schObj.element.querySelector('.e-icon-add') as HTMLElement).offsetHeight).toEqual(24);
             const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(9);
             const eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));

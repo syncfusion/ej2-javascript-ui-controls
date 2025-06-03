@@ -2,11 +2,22 @@
 
 ## [Unreleased]
 
-## 29.2.7 (2025-05-27)
+## 29.2.8 (2025-06-03)
 
 ### Schedule
 
 - `#F715433` - The issue with assigning a direct date time value to the `StartDate` property of recurrence editor
+
+## 29.2.5 (2025-05-21)
+
+### Schedule
+
+- `#F723835` - The issue with the Quick Info panel closing unexpectedly on pressing "C" or "X" keys in the Schedule component has been resolved.
+
+## 29.2.4 (2025-05-14)
+
+### Schedule
+
 - `F67156` - The issue where clearing the start and end dates and then selecting the All Day checkbox caused a console error in the Schedule popup has been resolved. .
 
 ## 29.1.41 (2025-05-06)

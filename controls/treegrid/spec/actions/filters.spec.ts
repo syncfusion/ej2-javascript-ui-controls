@@ -1195,3 +1195,37 @@ describe('Code coverage improvement', () => {
         destroy(gridObj);
     });
 });
+
+describe('959378: Filtering using query and Sorting', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                allowFiltering: true,
+                allowSorting:true,
+                columns: ['taskID', 'taskName','duration', 'progress']
+            },
+            done
+        );
+    });
+
+    it('Checked Sorted rows', (done: Function) => {
+        actionComplete = (args?: any): void => {
+            gridObj.sortByColumn('taskName','Ascending');
+            if((args.requestType as any) === 'sorting'){
+            expect(gridObj.getRows().length === 2).toBe(true);
+            done();
+            }
+        };
+        gridObj.grid.actionComplete = actionComplete;
+        gridObj.query = new Query().where('taskID', 'equal', 2);
+        
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

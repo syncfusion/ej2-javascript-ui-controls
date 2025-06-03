@@ -83,19 +83,28 @@ export class PdfGraphics {
             this._source = source._content.dictionary;
             this._template = source;
         }
-        if (this._source && this._source.has('Resources')) {
-            const obj: any = this._source.getRaw('Resources'); // eslint-disable-line
-            if (obj) {
-                if (obj instanceof _PdfReference) {
-                    this._hasResourceReference = true;
-                    this._resourceObject = xref._fetch(obj);
-                } else if (obj instanceof _PdfDictionary) {
-                    this._resourceObject = obj;
+        if (this._source) {
+            let obj: any; // eslint-disable-line
+            if (this._source.has('Resources')) {
+                obj = this._source.getRaw('Resources');
+            } else if (this._source.has('Parent')) {
+                const parentPage: _PdfDictionary = this._source.get('Parent');
+                if (parentPage && parentPage.has('Resources')) {
+                    obj = parentPage.getRaw('Resources');
+                    if (obj && obj instanceof _PdfDictionary) {
+                        this._source.update('Resources', obj);
+                    }
                 }
             }
-        } else {
-            this._resourceObject = new _PdfDictionary();
-            this._source.update('Resources', this._resourceObject);
+            if (obj && obj instanceof _PdfReference) {
+                this._hasResourceReference = true;
+                this._resourceObject = xref._fetch(obj);
+            } else if (obj && obj instanceof _PdfDictionary) {
+                this._resourceObject = obj;
+            } else {
+                this._resourceObject = new _PdfDictionary();
+                this._source.update('Resources', this._resourceObject);
+            }
         }
         this._crossReference = xref;
         this._sw = new _PdfStreamWriter(content);

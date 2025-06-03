@@ -1,4 +1,5 @@
 import { Rect } from '../../primitives/rect';
+import { isLabelFlipped } from '../../utility/diagram-util';
 import { Quad } from './quad';
 
 /**
@@ -217,7 +218,7 @@ export class SpatialSearch {
         const objects: IGroupable[] = [];
         for (const quad of quads) {
             for (const obj of quad.objects) {
-                if (obj.outerBounds.intersects(region)) {
+                if (obj.outerBounds.intersects(region) || isLabelFlipped(obj)) {
                     objects.push(this.objectTable[obj.id]);
                 }
             }

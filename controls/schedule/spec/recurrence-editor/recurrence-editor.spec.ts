@@ -505,7 +505,7 @@ describe('Recurrence Editor Base Module', () => {
         const elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll(() => {
             document.body.appendChild(elem);
-            schObj = new RecurrenceEditor({ startDate: new Date('2020-01-01T00:00:00Z'), firstDayOfWeek: 1 });
+            schObj = new RecurrenceEditor({ startDate: '2020-01-01T00:00:00Z' as any, firstDayOfWeek: 1 });
             schObj.appendTo('#Schedule');
         });
         afterAll(() => {

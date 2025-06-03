@@ -26,6 +26,7 @@ export class DrillThroughDialog {
     /** @hidden */
     public indexString: string[] = [];
     private isUpdated: boolean = false;
+    private isEdited: boolean = false;
     private engine: PivotEngine | OlapEngine;
     private drillthroughKeyboardModule: KeyboardEvents;
 
@@ -97,7 +98,7 @@ export class DrillThroughDialog {
                             const prevItems: IDataSet[] = [];
                             let index: number = 0;
                             for (const item of this.drillThroughGrid.dataSource as IDataSet[]) {
-                                if (item['__index'] === '0' || item['__index'] === '') {
+                                if (!this.isEdited && (item['__index'] === '0' || item['__index'] === '')) {
                                     for (const field of this.engine.fields) {
                                         if (isNullOrUndefined(item[field as string])) {
                                             delete item[field as string];
@@ -167,6 +168,7 @@ export class DrillThroughDialog {
                             this.parent.actionObj.actionInfo = actionInfo;
                         }
                         this.isUpdated = false;
+                        this.isEdited = false;
                         gridIndexObjects = {};
                     },
                     isModal: true,
@@ -425,6 +427,9 @@ export class DrillThroughDialog {
             this.drillThroughGrid.actionComplete = (args: ActionEventArgs) => {
                 if (args.requestType === 'batchsave' || args.requestType === 'save' || args.requestType === 'delete') {
                     dialogModule.isUpdated = true;
+                }
+                if ((args.requestType === 'batchsave' || args.requestType === 'save') && args.action === 'edit') {
+                    dialogModule.isEdited = true;
                 }
                 this.parent.actionObj.actionName = this.parent.getActionCompleteName();
                 const actionInfo: PivotActionInfo = {

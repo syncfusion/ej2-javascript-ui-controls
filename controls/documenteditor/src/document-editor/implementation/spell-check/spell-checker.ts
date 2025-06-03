@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { LayoutViewer, ContextElementInfo, TextPosition, ElementInfo, ErrorInfo, WCharacterFormat, SpecialCharacterInfo, SpaceCharacterInfo, TextSearchResults, TextInLineInfo, TextSearchResult, MatchResults, SfdtExport, TextExport, WordSpellInfo } from '../index';
+import { LayoutViewer, ContextElementInfo, TextPosition, ElementInfo, ErrorInfo, WCharacterFormat, SpecialCharacterInfo, SpaceCharacterInfo, TextSearchResults, TextInLineInfo, TextSearchResult, MatchResults, SfdtExport, TextExport, WordSpellInfo, TextSearch } from '../index';
 import { ServiceFailureArgs, XmlHttpRequestEventArgs, beforeXmlHttpRequestSend } from './../../index';
 import { Dictionary } from '../../base/dictionary';
 import { ElementBox, TextElementBox, ErrorTextElementBox, LineWidget, TableCellWidget, Page, FieldElementBox } from '../viewer/page';
@@ -52,6 +52,7 @@ export class SpellChecker {
     public uniqueKey: string = '';
     private removeUnderlineInternal: boolean = false;
     private spellCheckSuggestion: string[];
+    private combinedElements: TextElementBox[] = [];
     /**
      * @default 1000
      */
@@ -316,15 +317,27 @@ export class SpellChecker {
      */
     public handleIgnoreOnce(startInlineObj: ElementInfo): void {
         const textElement: TextElementBox = (startInlineObj.element as TextElementBox);
-        let exactText: string = '';
-        if (!isNullOrUndefined(this.currentContextInfo) && this.currentContextInfo.element) {
-            exactText = (this.currentContextInfo.element as TextElementBox).text;
+        if (!isNullOrUndefined(this.currentContextInfo) && this.currentContextInfo.element && this.currentContextInfo.element instanceof ErrorTextElementBox) {
+            const errorElement: ErrorTextElementBox = this.currentContextInfo.element;
+            const startPosition: TextPosition = errorElement.start;
+            const endPosition: TextPosition = errorElement.end;
+            let startInlineObj: ElementBox = (startPosition.currentWidget as LineWidget).getInline(startPosition.offset, 0, false, true).element;
+            const endInlineObj: ElementBox = (endPosition.currentWidget as LineWidget).getInline(endPosition.offset, 0, false, true).element;
+            while (true) {
+                const exactText: string = this.manageSpecialCharacters(errorElement.text, undefined, true);
+                if ((startInlineObj as TextElementBox).ignoreOnceItems.indexOf(exactText) === -1) {
+                    (startInlineObj as TextElementBox).ignoreOnceItems.push(exactText);
+                }
+                if (startInlineObj === endInlineObj) {
+                    break;
+                }
+                startInlineObj = startInlineObj.nextNode;
+            }
         } else {
-            exactText = textElement.text;
-        }
-        exactText = this.manageSpecialCharacters(exactText, undefined, true);
-        if (textElement.ignoreOnceItems.indexOf(exactText) === -1) {
-            textElement.ignoreOnceItems.push(exactText);
+            const exactText: string = this.manageSpecialCharacters(textElement.text, undefined, true);
+            if (textElement.ignoreOnceItems.indexOf(exactText) === -1) {
+                textElement.ignoreOnceItems.push(exactText);
+            }
         }
         this.documentHelper.owner.editorModule.reLayout(this.documentHelper.selection);
     }
@@ -500,13 +513,13 @@ export class SpellChecker {
      *
      * @private
      */
-    public checktextElementHasErrors(text: string, element: any, left: number): ErrorInfo {
+    public checktextElementHasErrors(text: string, element: TextElementBox, left: number): ErrorInfo {
         let hasError: boolean = false;
         const erroElements: any[] = [];
         text = text.replace(/[\s]+/g, '');
         if (!isNullOrUndefined(element.errorCollection) && element.errorCollection.length > 0) {
 
-            if (!this.documentHelper.isScrollHandler && (element.ischangeDetected || element.paragraph.isChangeDetected)) {
+            if (!this.documentHelper.isScrollHandler && (element.ischangeDetected || element.paragraph.isChangeDetected) && !element.istextCombined) {
                 this.updateStatusForGlobalErrors(element.errorCollection, element);
                 element.errorCollection = [];
                 element.ischangeDetected = true;
@@ -596,8 +609,7 @@ export class SpellChecker {
             if (!isNullOrUndefined(inlineObj.element.errorCollection) && inlineObj.element.errorCollection.length > 0) {
                 for (let i: number = 0; i < inlineObj.element.errorCollection.length; i++) {
                     const errorElement: ErrorTextElementBox = inlineObj.element.errorCollection[i];
-
-                    if (errorElement.start.location.x <= insertPosition.location.x && errorElement.end.location.x >= insertPosition.location.x) {
+                    if (errorElement.start.isExistBefore(this.documentHelper.selection.start) && errorElement.end.isExistAfter(this.documentHelper.selection.start)) {
                         text = errorElement.text;
                         element = errorElement;
                         break;
@@ -751,11 +763,12 @@ export class SpellChecker {
         let isCombined: boolean = isNullOrUndefined(canCombine) ? false : canCombine;
         const checkPrevious: boolean = !isNullOrUndefined(isPrevious) ? isPrevious : true;
         const checkNext: boolean = !isNullOrUndefined(isNext) ? isNext : true;
-        const combinedElements: TextElementBox[] = [];
         const line: LineWidget = this.documentHelper.selection.getLineWidget(elementBox, 0);
         const index: number = line.children.indexOf(elementBox);
         let prevText: string = elementBox.text;
-        combinedElements.push(elementBox);
+        if (this.combinedElements.indexOf(elementBox) === -1) {
+            this.combinedElements.push(elementBox);
+        }
         const difference: number = (isPrevious) ? 0 : 1;
         let prevCombined: boolean = false;
         let isPrevField: boolean = false;
@@ -773,7 +786,9 @@ export class SpellChecker {
                             currentText = textElement.text + currentText;
                             prevText = textElement.text;
                             isPrevField = false;
-                            combinedElements.push(textElement);
+                            if (this.combinedElements.indexOf(textElement) === -1) {
+                                this.combinedElements.push(textElement);
+                            }
                             isCombined = true;
                         } else if (!isNullOrUndefined(textElement)) {
                             textElement = textElement.nextElement as TextElementBox;
@@ -785,6 +800,7 @@ export class SpellChecker {
                 }
                 const currentElement: TextElementBox = (isCombined) ? textElement : elementBox;
                 if (this.lookThroughPreviousLine(currentText, prevText, currentElement, underlineY, beforeIndex)) {
+                    this.combinedElements.length = 0;
                     return true;
                 }
             }
@@ -808,7 +824,7 @@ export class SpellChecker {
                             currentText += element.text;
                             nextText = element.text;
                             isPrevField = false;
-                            combinedElements.push(element);
+                            this.combinedElements.push(element);
                             canCombine = true;
                             isCombined = true;
                         } else if (!isNullOrUndefined(element)) {
@@ -822,14 +838,26 @@ export class SpellChecker {
                 const currentElement: TextElementBox = (canCombine) ? element : elementBox;
 
                 if (currentElement.text !== '\f' && currentElement.text !== String.fromCharCode(14) && this.lookThroughNextLine(currentText, prevText, currentElement, underlineY, beforeIndex)) {
+                    this.combinedElements.length = 0;
                     return true;
                 }
             }
         }
 
-        if (isCombined && callSpellChecker && !this.checkCombinedElementsBeIgnored(combinedElements, currentText)) {
-            this.handleCombinedElements(elementBox, currentText, underlineY, beforeIndex);
+        if (isCombined && callSpellChecker && !this.checkCombinedElementsBeIgnored(this.combinedElements, currentText)) {
+            if (isPrevious || isNext) {
+                for (let i: number = 0; i < this.combinedElements.length; i++) {
+                    if (i !== 0) {
+                        this.combinedElements[i].istextCombined = true;
+                        this.combinedElements[i].errorCollection = this.combinedElements[0].errorCollection;
+                    }
+                }
+            } else {
+                this.combinedElements.length = 0;
+            }
+            this.handleCombinedElements(elementBox, currentText, underlineY);
         }
+        this.combinedElements.length = 0;
         return isCombined;
     }
 
@@ -880,8 +908,7 @@ export class SpellChecker {
      * @param {number} beforeIndex
      * @private
      */
-    public handleCombinedElements(elementBox: TextElementBox, currentText: string, underlineY: number, beforeIndex: number): void {
-        elementBox.istextCombined = true;
+    public handleCombinedElements(elementBox: TextElementBox, currentText: string, underlineY: number): void {
         const splittedText: any[] = currentText.split(/[\s]+/);
 
         if (this.ignoreAllItems.indexOf(currentText) === -1 && elementBox instanceof TextElementBox && elementBox.ignoreOnceItems.indexOf(currentText) === -1) {
@@ -890,11 +917,11 @@ export class SpellChecker {
                     let currentText: string = splittedText[i];
                     currentText = this.manageSpecialCharacters(currentText, undefined, true);
 
-                    this.documentHelper.render.handleUnorderedElements(currentText, elementBox, underlineY, i, 0, i === splittedText.length - 1, beforeIndex);
+                    this.documentHelper.render.handleUnorderedElements(currentText, elementBox, underlineY, i, 0, i === splittedText.length - 1, this.combinedElements);
                 }
             } else {
                 currentText = this.manageSpecialCharacters(currentText, undefined, true);
-                this.documentHelper.render.handleUnorderedElements(currentText, elementBox, underlineY, 0, 0, true, beforeIndex);
+                this.documentHelper.render.handleUnorderedElements(currentText, elementBox, underlineY, 0, 0, true, this.combinedElements);
             }
         }
     }
@@ -920,16 +947,27 @@ export class SpellChecker {
     /**
      * @private
      */
-    public handleSplitWordSpellCheck(jsonObject: any, currentText: string, elementBox: TextElementBox, isSamePage: boolean, underlineY: number, iteration: number, markIndex: number, isLastItem?: boolean): void {
+    public handleSplitWordSpellCheck(jsonObject: any, currentText: string, elementBox: TextElementBox, isSamePage: boolean, underlineY: number, iteration: number, markIndex: number, isLastItem?: boolean, combinedElements?: TextElementBox[]): void {
         if (jsonObject.HasSpellingError && elementBox.text !== ' ' && isSamePage) {
-            const matchResults: MatchResults = this.getMatchedResultsFromElement(elementBox, currentText);
-            if (elementBox.previousElement instanceof FieldElementBox && (elementBox.previousElement as FieldElementBox).fieldType === 1){
+            const textSearch: TextSearch = this.documentHelper.owner.searchModule.textSearch;
+            let matchResults: MatchResults = this.getMatchedResultsFromElement(elementBox, currentText);
+            if (elementBox.previousElement instanceof FieldElementBox && (elementBox.previousElement as FieldElementBox).fieldType === 1) {
                 matchResults.elementInfo.values.pop();
                 matchResults.elementInfo.values.push(0);
             }
-            markIndex = (elementBox.istextCombined) ? elementBox.line.getOffset(this.getCombinedElement(elementBox), 0) : markIndex;
-            this.documentHelper.owner.searchModule.textSearch.updateMatchedTextLocation(matchResults.matches, matchResults.textResults, matchResults.elementInfo, 0, elementBox, false, null, markIndex);
-            this.handleMatchedResults(matchResults.textResults, elementBox, underlineY, iteration, jsonObject.Suggestions, isLastItem);
+            // Handled combined elements split to multiple lines when textResults is empty.
+            // Only the first element will be rendered with wavy line. Other elements will be rendered in renderTextElementBox method in render Element.
+            if (!isNullOrUndefined(combinedElements) && matchResults.textResults.length === 0 && combinedElements.length > 0) {
+                const combinedElement: TextElementBox = combinedElements[0];
+                matchResults = this.getMatchedResultsFromElement(combinedElement, combinedElement.text);
+                markIndex = combinedElement.line.getOffset(this.getCombinedElement(combinedElement), 0);
+                textSearch.updateMatchedTextLocation(matchResults.matches, matchResults.textResults, matchResults.elementInfo, 0, combinedElement, false, null, markIndex);
+                this.handleMatchedResults(matchResults.textResults, combinedElement, underlineY, iteration, jsonObject.Suggestions, false, currentText, combinedElements);
+            } else {
+                markIndex = (elementBox.istextCombined) ? elementBox.line.getOffset(this.getCombinedElement(elementBox), 0) : markIndex;
+                textSearch.updateMatchedTextLocation(matchResults.matches, matchResults.textResults, matchResults.elementInfo, 0, elementBox, false, null, markIndex);
+                this.handleMatchedResults(matchResults.textResults, elementBox, underlineY, iteration, jsonObject.Suggestions, isLastItem);
+            }
         } else {
             this.addCorrectWordCollection(currentText);
             if (isLastItem) {
@@ -940,7 +978,7 @@ export class SpellChecker {
     }
 
 
-    private handleMatchedResults(results: TextSearchResults, elementBox: TextElementBox, wavyLineY: number, index: number, suggestions?: string[], isLastItem?: boolean): void {
+    private handleMatchedResults(results: TextSearchResults, elementBox: TextElementBox, wavyLineY: number, index: number, suggestions?: string[], isLastItem?: boolean, errorText?: string, combinedElements?: TextElementBox[]): void {
         if (results.length === 0 && isLastItem) {
             elementBox.isSpellChecked = true;
             return;
@@ -948,6 +986,22 @@ export class SpellChecker {
 
         for (let i: number = 0; i < results.length; i++) {
             const span: ErrorTextElementBox = this.createErrorElementWithInfo(results.innerList[i], elementBox);
+            // Updated the error text and text position for combined elements.
+            if (!isNullOrUndefined(errorText)) {
+                span.text = errorText;
+                const startElement: TextElementBox = combinedElements[0];
+                const endElement: TextElementBox = combinedElements[combinedElements.length - 1];
+                if (startElement && endElement) {
+                    let offset: number = startElement.line.getOffset(startElement, 0);
+                    let startPosition: TextPosition = new TextPosition(this.documentHelper.owner);
+                    startPosition.setPositionParagraph(startElement.line, offset);
+                    offset = endElement.line.getOffset(endElement, (endElement.length));
+                    let endPosition: TextPosition = new TextPosition(this.documentHelper.owner);
+                    endPosition.setPositionParagraph(endElement.line, offset);
+                    span.start = startPosition;
+                    span.end = endPosition;
+                }
+            }
             const color: string = '#FF0000';
 
             if (!isNullOrUndefined(elementBox.errorCollection) && !this.checkArrayHasSameElement(elementBox.errorCollection, span)) {

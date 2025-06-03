@@ -427,10 +427,12 @@ export class TextPosition {
     /**
      * @private
      */
-    public setPositionParagraph(line: LineWidget, offsetInLine: number): void {
+    public setPositionParagraph(line: LineWidget, offsetInLine: number, isRetrieveBookmark?: boolean): void {
         this.currentWidget = line;
         this.offset = offsetInLine;
-        this.updatePhysicalPosition(true);
+        if (!isRetrieveBookmark) {
+            this.updatePhysicalPosition(true);
+        }
     }
     /**
      * @private

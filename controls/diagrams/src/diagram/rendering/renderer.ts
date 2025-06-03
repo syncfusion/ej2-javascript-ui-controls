@@ -551,6 +551,21 @@ export class DiagramRenderer {
                 }
             }
         }
+        const selector: HTMLElement = document.getElementById(this.diagramId + '_SelectorElement');
+        if ((element as TextElement).flippedPoint && selector) {
+            const domElement: HTMLElement = document.getElementById(element.id + '_groupElement');
+            let transform: string = domElement.getAttribute('transform');
+            if (transform.includes('scale')) {
+                const x: number = (element as TextElement).flippedPoint.x - element.corners.topLeft.x;
+                const y: number = (element as TextElement).flippedPoint.y - element.corners.topLeft.y;
+                transform = `translate(${x},${y})`;
+            }
+            if (transform) {
+                selector.setAttribute('transform', transform);
+            }
+        } else if (selector) {
+            selector.setAttribute('transform', '');
+        }
     }
 
 

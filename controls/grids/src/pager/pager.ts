@@ -1093,6 +1093,9 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     private updateQueryString(value: number): void {
         const updatedUrl: string = this.getUpdatedURL(window.location.href, 'page', value.toString());
         window.history.pushState({ path: updatedUrl }, '', updatedUrl);
+        if (this.isReact) {
+            window.dispatchEvent(new PopStateEvent('popstate'));
+        }
     }
 
     private getUpdatedURL(uri: string, key: string, value: string): string {

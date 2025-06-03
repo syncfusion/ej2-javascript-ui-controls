@@ -1,5 +1,5 @@
 import { Column } from '../models/column';
-import { SaveEventArgs, DataStateChangeEventArgs as GridDataStateChangeEventArgs, ExcelExportProperties, RowDragEventArgs as GridRowDragEventArgs } from '@syncfusion/ej2-grids';
+import { SaveEventArgs, DataStateChangeEventArgs as GridDataStateChangeEventArgs, ExcelExportProperties, RowDragEventArgs as GridRowDragEventArgs, ActionEventArgs as GridActionEventArgs } from '@syncfusion/ej2-grids';
 import { PdfExportProperties } from '@syncfusion/ej2-grids';
 /**
  * Specifies FlatData interfaces.
@@ -184,4 +184,8 @@ export interface DataStateChangeEventArgs extends GridDataStateChangeEventArgs {
 }
 export interface RowDragEventArgs extends GridRowDragEventArgs {
     dropPosition: string;
+}
+export interface ActionEventArgs extends GridActionEventArgs {
+    /** Maintains Treegrid's Collapse state in virtualization */
+    isCollapseMaintain?: boolean;
 }

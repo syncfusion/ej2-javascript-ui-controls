@@ -400,7 +400,7 @@ export class Ribbon {
         return text;
     }
 
-    private insertDesignChart(): void {
+    private insertDesignChart(args: { refreshChartTheme?: boolean }): void {
         const l10n: L10n = this.parent.serviceLocator.getService(locale);
         const tabIdx: number = this.ribbon.items.length - 1;
         const chartTabHeader: string = l10n.getConstant('ChartDesign');
@@ -432,6 +432,38 @@ export class Ribbon {
             }];
             this.addRibbonTabs({ items: items });
             this.ribbon.tabObj.select(this.ribbon.items.length);
+        } else if (args.refreshChartTheme) {
+            let theme: string;
+            const overlay: HTMLElement = this.parent.element.querySelector('.e-ss-overlay-active');
+            if (overlay) {
+                let chart: HTMLElement = overlay.querySelector('.e-chart');
+                if (chart) {
+                    theme = (getComponent(chart, 'chart') as { theme: ChartTheme }).theme;
+                } else {
+                    chart = overlay.querySelector('.e-accumulationchart');
+                    if (chart) {
+                        theme = (getComponent(chart, 'accumulationchart') as { theme: ChartTheme }).theme;
+                    }
+                }
+            }
+            const chartThemeEle: HTMLElement = document.getElementById(this.parent.element.id + '_chart_theme');
+            if (theme && chartThemeEle) {
+                const chartThemeDdb: DropDownButton = getComponent(chartThemeEle, DropDownButton);
+                if (chartThemeDdb) {
+                    theme = l10n.getConstant(theme);
+                    for (let i: number = 0; i < chartThemeDdb.items.length; i++) {
+                        if (chartThemeDdb.items[i as number].iconCss !== '') {
+                            chartThemeDdb.items[i as number].iconCss = '';
+                        }
+                        if (chartThemeDdb.items[i as number].text === theme) {
+                            chartThemeDdb.items[i as number].iconCss = 'e-icons e-selected-icon';
+                        }
+                    }
+                    chartThemeDdb.element.firstChild.textContent = theme;
+                    chartThemeDdb.setProperties({ 'items': chartThemeDdb.items }, true);
+                    chartThemeDdb.element.setAttribute('aria-label', theme);
+                }
+            }
         }
     }
 
@@ -553,7 +585,7 @@ export class Ribbon {
                 this.parent.notify(selectionComplete, <MouseEvent>{ type: 'mousedown' });
                 if (!args.element || !args.element.querySelector('.e-selected-icon')) {
                     chartThemeDDB.content = args.item.text;
-                    chartThemeDDB.dataBind();
+                    chartThemeDDB.refresh();
                     this.parent.notify(chartDesignTab, { chartTheme: args.item.id, triggerEvent: true });
                     chartThemeDDB.setProperties({ items: this.getChartThemeDdbItems(args.item.id) }, true);
                 }

@@ -45,11 +45,11 @@ import { MarginModel } from '../core/appearance-model';
 import { PointPortModel, PortModel } from './../objects/port-model';
 import { ShapeAnnotationModel, PathAnnotationModel, HyperlinkModel, AnnotationModel } from './../objects/annotation-model';
 import { getContent, removeElement, hasClass, getDiagramElement } from './dom-util';
-import { getBounds, cloneObject, rotatePoint, getFunction } from './base-util';
+import { getBounds, cloneObject, rotatePoint, getFunction, cornersPointsBeforeRotation, getOffset } from './base-util';
 import { getPolygonPath } from './../utility/path-util';
 import { DiagramHtmlElement } from '../core/elements/html-element';
 import { getRulerSize } from '../ruler/ruler';
-import { View } from '../objects/interface/interfaces';
+import { ChildTextElement, ParentContainer, View } from '../objects/interface/interfaces';
 import { TransformFactor as Transforms, Segment } from '../interaction/scroller';
 import { SymbolPalette } from '../../symbol-palette/symbol-palette';
 import { canResize } from './constraints-util';
@@ -2885,8 +2885,92 @@ export let getObjectType: Function = (obj: Object): Object => {
 
 
 /** @private */
-export let flipConnector: Function = (connector: Connector): void => {
-    if (!connector.sourceID && !connector.targetID) {
+export let flipConnector: Function = (connector: Connector, diagram?: Diagram, isGroup?: boolean): void => {
+    // Case 2: Both ends connected to nodes - do nothing
+    if (connector.sourceID && connector.targetID) {
+        return;
+    }
+
+    if (connector.wrapper) {
+        // Determine flip directions by XORing connector and wrapper flip values
+        const horizontal: boolean = ((connector.flip & FlipDirection.Horizontal) ^
+            (connector.wrapper.flip & FlipDirection.Horizontal)) === FlipDirection.Horizontal;
+        const vertical: boolean = ((connector.flip & FlipDirection.Vertical) ^
+            (connector.wrapper.flip & FlipDirection.Vertical)) === FlipDirection.Vertical;
+
+        // Store original points
+        const source = { x: connector.sourcePoint.x, y: connector.sourcePoint.y };
+        const target = { x: connector.targetPoint.x, y: connector.targetPoint.y };
+
+        // Get group bounds and center if this is a connector within a group
+        let groupBounds: Rect;
+        let groupCenter: PointModel;
+
+        if (isGroup && connector.parentId) {
+            const groupWrapper = diagram.nameTable[(connector as Connector).parentId].wrapper;
+            if (groupWrapper) {
+                groupBounds = diagram.groupBounds;
+                groupCenter = { x: groupBounds.center.x, y: groupBounds.center.y };
+            }
+        }
+
+        // Case 1: Not group
+        if (!isGroup) {
+            if (horizontal) {
+                connector.sourcePoint.x = target.x;
+                connector.targetPoint.x = source.x;
+            }
+            if (vertical) {
+                connector.sourcePoint.y = target.y;
+                connector.targetPoint.y = source.y;
+            }
+            if (diagram && !isGroup) {
+                connector.sourceID = '';
+                connector.targetID = '';
+                diagram.updateConnectorProperties(connector);
+            }
+        } else if (isGroup && groupCenter) {
+            // Flipping within a group - need to consider the group's center point
+
+            // Case 1: Both ends not connected to any node within a group
+            if (!connector.sourceID && !connector.targetID) {
+                if (horizontal) {
+                    connector.sourcePoint.x = 2 * groupCenter.x - source.x;
+                    connector.targetPoint.x = 2 * groupCenter.x - target.x;
+                }
+
+                if (vertical) {
+                    connector.sourcePoint.y = 2 * groupCenter.y - source.y;
+                    connector.targetPoint.y = 2 * groupCenter.y - target.y;
+                }
+            }
+            // Case 3: Source connected, target not connected
+            else if (connector.sourceID && !connector.targetID) {
+                if (horizontal) {
+                    // Only flip the unconnected target point horizontally
+                    connector.targetPoint.x = 2 * groupCenter.x - target.x;
+                }
+                if (vertical) {
+                    // Only flip the unconnected target point vertically
+                    connector.targetPoint.y = 2 * groupCenter.y - target.y;
+                }
+            }
+            // Case 4: Source not connected, target connected
+            else if (!connector.sourceID && connector.targetID) {
+                if (horizontal) {
+                    // Only flip the unconnected source point horizontally
+                    connector.sourcePoint.x = 2 * groupCenter.x - source.x;
+                }
+                if (vertical) {
+                    // Only flip the unconnected source point vertically
+                    connector.sourcePoint.y = 2 * groupCenter.y - source.y;
+                }
+            }
+        }
+        if (diagram) {
+            diagram.updateConnectorProperties(connector);
+        }
+    } else {
         let source: PointModel = { x: connector.sourcePoint.x, y: connector.sourcePoint.y };
         let target: PointModel = { x: connector.targetPoint.x, y: connector.targetPoint.y };
         if (connector.flip === FlipDirection.Horizontal) {
@@ -2923,6 +3007,7 @@ export let updatePortEdges: Function = (portContent: DiagramElement, flip: FlipD
 /** @private */
 export let alignElement: Function = (element: Container, offsetX: number, offsetY: number, diagram: Diagram, flip: FlipDirection, isHorizontal: boolean, isVertical: boolean, isInitialRendering?: boolean): void => {
     if (element.hasChildren()) {
+        // First process regular nodes in the group
         for (let child of element.children) {
             let nodeObj: NodeModel;
             if (child instanceof Canvas) {
@@ -2933,6 +3018,21 @@ export let alignElement: Function = (element: Container, offsetX: number, offset
                     }
                     if (isVertical) {
                         nodeObj.flip ^= FlipDirection.Vertical;
+                    }
+                }
+                // Handle connectors within the group
+                let connectorObj = diagram.nameTable[child.id];
+                if (connectorObj && connectorObj instanceof Connector) {
+                    // Call flipConnector for connectors within the group
+                    if (isHorizontal || isVertical) {
+                        flipConnector(connectorObj, diagram, true);
+                        if (isHorizontal) {
+                        connectorObj.wrapper.flip ^= FlipDirection.Horizontal;
+                    }
+                    if (isVertical) {
+                        connectorObj.wrapper.flip ^= FlipDirection.Vertical;
+                    }
+                        continue;
                     }
                 }
             }
@@ -2989,10 +3089,12 @@ export let alignElement: Function = (element: Container, offsetX: number, offset
             }
             child.measure(new Size(child.bounds.width, child.bounds.height));
             child.arrange(child.desiredSize);
-            let node: Node = diagram.nameTable[child.id];
-            if (node) {
-                diagram.updateConnectorEdges(node);
-            }          
+            if (!diagram.groupBounds) {
+                let node: Node = diagram.nameTable[child.id];
+                if (node) {
+                    diagram.updateConnectorEdges(node);
+                }
+            }
         }
     }
 };
@@ -3258,3 +3360,86 @@ export function getConnectorArrowType(data: FlowChartData){
     }
     return { targetDecorator: 'Arrow', strokeWidth: 1 };
 }
+
+
+export function alignChildBasedOnaPoint(child: DiagramElement, x: number, y: number): PointModel {
+    x += child.margin.left - child.margin.right;
+    y += child.margin.top - child.margin.bottom;
+    switch (child.horizontalAlignment) {
+    case 'Auto':
+    case 'Left':
+        x = child.inversedAlignment ? x : (x - child.desiredSize.width);
+        break;
+    case 'Stretch':
+    case 'Center':
+        x -= child.desiredSize.width * child.pivot.x;
+        break;
+    case 'Right':
+        x = child.inversedAlignment ? (x - child.desiredSize.width) : x;
+        break;
+    }
+    switch (child.verticalAlignment) {
+    case 'Auto':
+    case 'Top':
+        y = child.inversedAlignment ? y : (y - child.desiredSize.height);
+        break;
+    case 'Stretch':
+    case 'Center':
+        y -= child.desiredSize.height * child.pivot.y;
+        break;
+    case 'Bottom':
+        y = child.inversedAlignment ? (y - child.desiredSize.height) : y;
+        break;
+    }
+    return { x: x, y: y };
+}
+
+export function getFlippedPoint(parentSize: ParentContainer, element: TextElement) {
+    let offsetX: number = (element as any).position.x; let offsetY: number = (element as any).position.y;
+    if (element.flip === FlipDirection.Horizontal) {
+        offsetX = 1 - offsetX;
+    } else if (element.flip === FlipDirection.Vertical) {
+        offsetY = 1 - offsetY;
+    } else {
+        offsetX = 1 - offsetX;
+        offsetY = 1 - offsetY;
+    }
+    const pX: number = offsetX * parentSize.width; const pY: number = offsetY * parentSize.height;
+    let y: number = parentSize.offsetY - parentSize.height * element.pivot.y + parentSize.padding.top;
+    let x: number = parentSize.offsetX - parentSize.width * element.pivot.x + parentSize.padding.left;
+    const child: ChildTextElement = {
+        horizontalAlignment: element.horizontalAlignment, verticalAlignment: element.verticalAlignment, margin: element.margin,
+        desiredSize: element.desiredSize, inversedAlignment: element.inversedAlignment, pivot: element.pivot
+    };
+    const cX: number = x += pX; const cY: number = y += pY;
+    let point: PointModel = alignChildBasedOnaPoint(child as any, cX, cY);
+    const rotateAngle: number = element.rotateAngle;
+    // Apply rotation if angle is not 0
+    if (rotateAngle !== 0 || element.parentTransform !==0) {
+        const topLeft: PointModel = { x: cX - element.desiredSize.width / 2, y: cY - element.desiredSize.height / 2 };
+        let offset: PointModel = getOffset(topLeft, element);
+        offset = rotatePoint(element.rotateAngle, cX, cY, offset);
+        offset = rotatePoint(parentSize.rotateAngle + parentSize.parentTransform, parentSize.offsetX, parentSize.offsetY, offset);
+        const ele: any = {offsetX: offset.x, offsetY:offset.y, pivot: element.pivot, actualSize: element.actualSize};
+        const corner: Rect = cornersPointsBeforeRotation(ele);
+        point = corner.topLeft;
+        const matrix = identityMatrix();
+        rotateMatrix(matrix,  rotateAngle + element.parentTransform, offset.x, offset.y);
+        point = transformPointByMatrix(matrix, point);
+    }
+    return point;
+}
+
+export function isLabelFlipped(element: TextElement | NodeModel | ConnectorModel): boolean {
+    if (element && element.flip !== FlipDirection.None && (element.flipMode === 'Label' || element.flipMode === 'PortAndLabel'
+        || element.flipMode === 'LabelAndLabelText' || element.flipMode === 'All')) {
+        return true;
+    }
+    return false;
+}
+
+export function containsBounds(bounds: any, point: PointModel, padding: number = 0) {
+    return bounds.left - padding <= point.x && bounds.right + padding >= point.x
+        && bounds.top - padding <= point.y && bounds.bottom + padding >= point.y;
+}
+

@@ -160,11 +160,15 @@ export class KeyboardInteraction {
             break;
         case 'cut':
         case 'cmdCut':
-            this.processClipboardAction(true, undefined, e);
+            if (e.ctrlKey || e.metaKey) {
+                this.processClipboardAction(true, undefined, e);
+            }
             break;
         case 'copy':
         case 'cmdCopy':
-            this.processClipboardAction(false, undefined, e);
+            if (e.ctrlKey || e.metaKey) {
+                this.processClipboardAction(false, undefined, e);
+            }
             break;
         }
     }

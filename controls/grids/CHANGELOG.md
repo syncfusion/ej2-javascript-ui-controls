@@ -2,7 +2,14 @@
 
 ## [Unreleased]
 
-## 29.2.7 (2025-05-27)
+## 29.2.8 (2025-06-03)
+
+### Grid
+
+#### Bug Fixes
+
+- `#FB67561` - Resolved an issue where the Grid's page was not restored when using the browser's back button after navigation, with `pageSettings.enableQueryString` enabled.
+- `#FB67517` - Fixed an issue where `args.isInteracted` was incorrectly set to false in the `rowSelected` event when selecting a row via cell click with `checkboxMode` set to `ResetOnRowClick`.
 
 ### Grid
 
