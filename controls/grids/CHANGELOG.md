@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.2.10 (2025-06-10)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I685339` - Resolved misalignment issue between frozen and movable columns during rapid column resizing in Grid.
+
 ## 29.2.8 (2025-06-03)
 
 ### Grid

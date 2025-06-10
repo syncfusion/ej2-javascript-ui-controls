@@ -726,9 +726,9 @@ export class DropDownList extends DropDownBase implements IInput {
                     if (validateAttr.indexOf(htmlAttr) > -1 || htmlAttr.indexOf('data') === 0) {
                         this.hiddenElement.setAttribute(htmlAttr, this.htmlAttributes[`${htmlAttr}`]);
                     } else if (defaultAttr.indexOf(htmlAttr) > -1) {
-                        if (htmlAttr === 'placeholder') {
+                        if (htmlAttr === 'placeholder' && this.element.getAttribute('placeholder') !== this.htmlAttributes[`${htmlAttr}`]) {
                             Input.setPlaceholder(this.htmlAttributes[`${htmlAttr}`], this.inputElement);
-                        } else {
+                        } else if (htmlAttr !== 'placeholder') {
                             this.inputElement.setAttribute(htmlAttr, this.htmlAttributes[`${htmlAttr}`]);
                         }
                     } else {

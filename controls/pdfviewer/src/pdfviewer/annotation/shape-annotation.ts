@@ -45,6 +45,7 @@ export interface IShapeAnnotation {
     labelBorderColor: string
     fontColor: string
     fontSize: number
+    fontFamily: string
     labelBounds: IRectangle
     annotationSelectorSettings: AnnotationSelectorSettingsModel
     labelSettings?: ShapeLabelSettingsModel
@@ -231,6 +232,7 @@ export class ShapeAnnotation {
                                 annotation.FontColor = annotation.FontColor ? annotation.FontColor : annotation.StrokeColor;
                                 annotation.LabelFillColor = annotation.LabelFillColor ? annotation.LabelFillColor : annotation.FillColor;
                                 annotation.FontSize = annotation.FontSize ? annotation.FontSize : 16;
+                                annotation.FontFamily = annotation.FontFamily ? annotation.FontFamily : 'Helvetica';
                                 annotation.LabelSettings = annotation.LabelSettings ? annotation.LabelSettings :
                                     this.pdfViewer.shapeLabelSettings;
                             }
@@ -268,7 +270,8 @@ export class ShapeAnnotation {
                                     height: height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
                                 labelContent: annotation.LabelContent, enableShapeLabel: annotation.EnableShapeLabel,
                                 labelFillColor: annotation.LabelFillColor, fontColor: annotation.FontColor,
-                                labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
+                                labelBorderColor: annotation.LabelBorderColor, fontSize:
+                                annotation.FontSize, fontFamily: annotation.FontFamily,
                                 labelBounds: annotation.LabelBounds,  annotationSelectorSettings: this.getSettings(annotation),
                                 labelSettings: annotation.LabelSettings, annotationSettings: annotation.AnnotationSettings,
                                 customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint,
@@ -291,7 +294,7 @@ export class ShapeAnnotation {
                                 labelContent: annotation.LabelContent, enableShapeLabel: annotation.EnableShapeLabel,
                                 labelFillColor: annotation.LabelFillColor,
                                 fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor,
-                                fontSize: annotation.FontSize,
+                                fontSize: annotation.FontSize, fontFamily: annotation.FontFamily,
                                 labelBounds: annotation.LabelBounds, annotationSelectorSettings: annotation.AnnotationSelectorSettings,
                                 annotationSettings: annotationObject.annotationSettings, annotationAddMode: annotation.annotationAddMode,
                                 isPrint: annotation.IsPrint, isCommentLock: annotationObject.isCommentLock,
@@ -847,7 +850,8 @@ export class ShapeAnnotation {
             rectangleDifference: [], isLocked: annotationSettings.isLock,
             labelContent: annotationModel.labelContent, enableShapeLabel: annotationModel.enableShapeLabel,
             labelFillColor: annotationModel.labelFillColor,
-            fontColor: annotationModel.fontColor, labelBorderColor: annotationModel.labelBorderColor, fontSize: annotationModel.fontSize,
+            fontColor: annotationModel.fontColor, labelBorderColor: annotationModel.labelBorderColor,
+            fontSize: annotationModel.fontSize, fontFamily: annotationModel.fontFamily,
             labelBounds: labelBound, annotationSelectorSettings: this.getSelector(annotationModel.shapeAnnotationType,
                                                                                   annotationModel.subject ), labelSettings: labelSettings,
             annotationSettings: annotationSettings,
@@ -954,7 +958,8 @@ export class ShapeAnnotation {
             bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width,
                 height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
             labelContent: annotation.LabelContent, enableShapeLabel: annotation.EnableShapeLabel, labelFillColor: annotation.LabelFillColor,
-            labelBorderColor: annotation.LabelBorderColor, fontColor: annotation.FontColor, fontSize: annotation.FontSize,
+            labelBorderColor: annotation.LabelBorderColor, fontColor: annotation.FontColor,
+            fontSize: annotation.FontSize, fontFamily: annotation.FontFamily,
             labelBounds: annotation.LabelBounds, annotationSelectorSettings: this.getSettings(annotation),
             labelSettings: annotation.LabelSettings, annotationSettings: annotation.AnnotationSettings,
             customData: this.pdfViewer.annotation.getCustomData(annotation), isPrint: annotation.IsPrint,

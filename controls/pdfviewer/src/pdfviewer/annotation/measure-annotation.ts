@@ -65,6 +65,7 @@ export interface IMeasureShapeAnnotation {
     isPrint: boolean
     isCommentLock: boolean
     isAnnotationRotated: boolean
+    pageNumber?: number
 }
 
 /**
@@ -368,7 +369,7 @@ export class MeasureAnnotation {
                                 rotateAngle: annotation.RotateAngle, isCloudShape: annotation.IsCloudShape,
                                 cloudIntensity: annotation.CloudIntensity, vertexPoints: vertexPoints,
                                 lineHeadStart: annotation.LineHeadStart, lineHeadEnd: annotation.LineHeadEnd,
-                                isLocked: annotation.IsLocked,
+                                isLocked: annotation.IsLocked, pageNumber: pageNumber,
                                 bounds: { left: left, top: top, width: width, height: height, right: annotation.Bounds.Right,
                                     bottom: annotation.Bounds.Bottom },
                                 caption: annotation.Caption, captionPosition: annotation.CaptionPosition, calibrate: measureObject,
@@ -734,7 +735,8 @@ export class MeasureAnnotation {
             labelBounds: labelBound,  annotationSelectorSettings: this.getSelector(annotationModel.subject),
             labelSettings: labelSettings, annotationSettings: annotationSettings,
             customData: this.pdfViewer.annotation.getMeasureData(annotationModel.subject), isPrint: annotationModel.isPrint,
-            isCommentLock: annotationModel.isCommentLock, isAnnotationRotated: false
+            isCommentLock: annotationModel.isCommentLock, isAnnotationRotated: false,
+            pageNumber: annotationModel.pageIndex
         };
     }
 
@@ -1105,13 +1107,13 @@ export class MeasureAnnotation {
         const sourceContainer: HTMLElement = createElement('div', { id: elementID + '_scale_src_container' });
         element.appendChild(sourceContainer);
         const srcInputElement: HTMLElement = this.createInputElement('input', 'e-pv-scale-ratio-src-input', elementID + '_src_input', sourceContainer);
-        this.sourceTextBox = new NumericTextBox({ value: 1, format: '##', cssClass: 'e-pv-scale-ratio-src-input', min: 1, max: 100 }, (srcInputElement as HTMLInputElement));
+        this.sourceTextBox = new NumericTextBox({ value: 1, format: '##', cssClass: 'e-pv-scale-ratio-src-input', min: 1, max: 100000 }, (srcInputElement as HTMLInputElement));
         const srcUnitElement: HTMLElement = this.createInputElement('button', 'e-pv-scale-ratio-src-unit', elementID + '_src_unit', sourceContainer);
         this.convertUnit = new DropDownButton({ items: items, cssClass: 'e-pv-scale-ratio-src-unit' }, (srcUnitElement as HTMLButtonElement));
         this.convertUnit.select = this.convertUnitSelect.bind(this);
         const destinationContainer: HTMLElement = createElement('div', { id: elementID + '_scale_dest_container' });
         const destInputElement: HTMLElement = this.createInputElement('input', 'e-pv-scale-ratio-dest-input', elementID + '_dest_input', destinationContainer);
-        this.destTextBox = new NumericTextBox({ value: 1, format: '##', cssClass: 'e-pv-scale-ratio-dest-input', min: 1, max: 100 }, (destInputElement as HTMLInputElement));
+        this.destTextBox = new NumericTextBox({ value: 1, format: '##', cssClass: 'e-pv-scale-ratio-dest-input', min: 1, max: 100000 }, (destInputElement as HTMLInputElement));
         const destUnitElement: HTMLElement = this.createInputElement('button', 'e-pv-scale-ratio-dest-unit', elementID + '_dest_unit', destinationContainer);
         this.dispUnit = new DropDownButton({ items: items, cssClass: 'e-pv-scale-ratio-dest-unit' }, (destUnitElement as HTMLButtonElement));
         this.dispUnit.select = this.dispUnitSelect.bind(this);

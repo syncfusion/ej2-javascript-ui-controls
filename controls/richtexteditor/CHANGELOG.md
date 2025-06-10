@@ -2,6 +2,33 @@
 
 ## [Unreleased]
 
+## 29.2.10 (2025-06-10)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I723009` - Now, The issue with the Rich Text Editor related to delete and paste actions when a list is present at the end of the content has now been resolved.
+
+- `#I731671` - Now, The issue where the `contentEditable` attribute of an image caption is not set to false when reusing extracted HTML content in the RichTextEditor has been resolved.
+
+- `#I731567` - Now, The issue with the display text does not update the first time when inserting a link in the RichTextEditor has now been resolved.
+
+- `#I674632` - Now, The issue where an exception was thrown when applying the Bold format after pressing Shift+Enter in the Rich Text Editor has been resolved.
+
+- `#I725085` - Now, The issue with the table resize element being misaligned in the Rich Text Editor when used within Bootstrap grid columns has now been resolved.
+
+- `#I717938` - Now, the styles are correctly applied in the exported documents from the Rich Text Editor.
+
+## 29.2.8 (2025-06-03)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I725085` - Now, The issue with the table resize element being misaligned in the Rich Text Editor when used within Bootstrap grid columns has now been resolved.
+- `#I729572` - Now, The issue where formatted styles were removed when modifying an inserted link in the Rich Text Editor has been resolved.
+
 ## 29.2.5 (2025-05-21)
 
 ### RichTextEditor

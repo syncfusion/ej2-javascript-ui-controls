@@ -477,7 +477,7 @@ export class EditorHistory {
                 this.documentHelper.removeEmptyPages();
             }
         }
-        if (this.owner.showRevisions && !this.owner.editorModule.restrictLayout) {
+        if (this.owner.showRevisions && !this.owner.editorModule.restrictLayout && this.viewer.owner.enableLayout) {
             this.owner.trackChangesPane.updateTrackChanges();
         }
         selection.owner.isShiftingEnabled = false;
@@ -496,7 +496,7 @@ export class EditorHistory {
         }
         selection.upDownSelectionLength = selection.end.location.x;
         this.documentHelper.isScrollHandler = true;
-        if (!this.owner.editorModule.restrictLayout) {
+        if (!this.owner.editorModule.restrictLayout && this.viewer.owner.enableLayout) {
             this.viewer.updateScrollBars();
         }
         selection.fireSelectionChanged(true);

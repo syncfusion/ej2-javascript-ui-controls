@@ -81,12 +81,12 @@ export class Optimized {
         container.innerHTML = '';
         const baselineReferenceSpan: HTMLSpanElement = document.createElement('span');
         baselineReferenceSpan.className = 'e-de-font-info';
-        baselineReferenceSpan.style.cssText = 'font-size: 0; font-family: ' + characterFormat.fontFamily + '; display: inline-block;';
+        baselineReferenceSpan.style.cssText = 'font-size: 0; font-family: ' + `'${characterFormat.fontFamily}'` + '; display: inline-block;';
         baselineReferenceSpan.textContent = 'm';
         const fontMeasurementSpan: HTMLSpanElement = document.createElement('span');
         fontMeasurementSpan.className = 'e-de-font-info';
         fontMeasurementSpan.style.cssText = 'font-size: ' + maxFontHeight + 'pt; ' +
-            'font-family: ' + characterFormat.fontFamily + '; ' +
+            'font-family: ' + `'${characterFormat.fontFamily}'` + '; ' +
             (characterFormat.bold ? 'font-weight: bold; ' : '') +
             (characterFormat.italic ? 'font-style: italic; ' : '') +
             'display: inline-block;';

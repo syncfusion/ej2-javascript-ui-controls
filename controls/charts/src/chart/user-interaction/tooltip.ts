@@ -569,7 +569,7 @@ export class Tooltip extends BaseTooltip {
             format = format.replace(
                 val.source, this.formatPointValue(
                     point, val.source === '${point.x}' ? xAxis : yAxis,
-                    dataValue, val.source === '${point.x}',
+                    dataValue, (val.source === '${point.x}' && series.category !== 'TrendLine'),
                     (
                         val.source === '${point.high}' ||
                         val.source === '${point.open}' ||

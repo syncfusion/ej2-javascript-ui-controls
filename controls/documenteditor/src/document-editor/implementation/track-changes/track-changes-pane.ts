@@ -390,7 +390,7 @@ export class TrackChangesPane {
                 }
             }
         }
-        if (isNoChangeDiv || revisionCount > 0) {
+        if ((isNoChangeDiv && this.isChangesTabVisible) || revisionCount > 0) {
             isUpdate = true;
         }
         return isUpdate;

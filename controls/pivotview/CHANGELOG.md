@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.2.10 (2025-06-10)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#I731323` - The `exportComplete` event will now be triggered correctly when exporting the pivot table to Excel using the server-side engine.
+
 ## 29.2.8 (2025-06-03)
 
 ### Pivot Table

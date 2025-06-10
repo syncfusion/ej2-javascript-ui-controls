@@ -6479,4 +6479,26 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 100);
         });
     });
+
+    describe('960605 - Image captions contentEditable attribute is not set to false when reusing extracted HTML content in the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                value: `<div style="display: inline-block; width: 60%; vertical-align: top; cursor: auto;"><span class="e-img-caption e-rte-img-caption e-caption-inline" contenteditable="false" draggable="false" style="width:auto"><span class="e-img-wrap"><img alt="Sky with sun" src="https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Overview.png" width="309" style="min-width: 10px; min-height: 10px; width: 309px; height: 174px;" class="e-rte-image e-imginline" height="174"><span class="e-img-inner" contenteditable="false">Test</span></span></span></div>`
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it("The contentEditable attribute of the image caption element is correctly set to true when loading content into the RichTextEdito.", (done) => {
+            const imageCaption = rteObj.element.querySelector(".e-img-caption .e-img-inner");
+             setTimeout(function () {
+                expect(imageCaption.getAttribute('contenteditable') === 'true').toBe(true);
+                done();
+            }, 100);
+        });
+    });
+
 });

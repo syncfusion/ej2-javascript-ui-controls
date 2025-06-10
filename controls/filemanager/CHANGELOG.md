@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 29.2.8 (2025-06-03)
+## 29.2.10 (2025-06-10)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I732080` - The issue with the File Manager select event not being triggered for each selection in the navigation pane has been resolved.
+
+## 29.1.39 (2025-04-22)
 
 ### FileManager
 

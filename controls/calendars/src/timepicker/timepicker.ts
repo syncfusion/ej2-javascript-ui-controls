@@ -1766,7 +1766,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     keyConfigs: this.keyConfigure,
                     eventName: 'keydown'
                 });
-            if (this.showClearButton && this.inputElement ) {
+            if (this.inputElement && (this.showClearButton || this.enableMask)) {
                 EventHandler.add(this.inputElement, 'mousedown', this.mouseDownHandler, this);
             }
         }

@@ -384,118 +384,128 @@ export class Layout {
         let width: number = 0;
         for (let i: number = 0; i < sections.length; i++) {
             const section: BodyWidget = sections[i] as BodyWidget;
-            if(section.sectionFormat.numberOfColumns > 1) {
-                this.isMultiColumnDoc = true;
-            }
-            const nextSection: BodyWidget = sections[i + 1] as BodyWidget;
-            this.viewer.columnLayoutArea.setColumns(section.sectionFormat);
-            let lastpage: Page = this.documentHelper.pages[this.documentHelper.pages.length - 1];
-            let bodyWidget: BodyWidget;
-            if (!isNullOrUndefined(lastpage) && !isNullOrUndefined(lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1]) && lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1].childWidgets.length === 0 && !isNullOrUndefined(lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1].previousSplitWidget)) {
-                bodyWidget = lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1].previousSplitWidget as BodyWidget;
-            }
-            /* eslint-disable-next-line max-len */
-            // If page break next para is section last para and it is empty then ms word will layout in the section break in previous para. So checking the next para into existing behaviour.
-            if (i > 0 && !isNullOrUndefined(bodyWidget) && !isNullOrUndefined(bodyWidget.lastChild) && !(bodyWidget.lastChild instanceof TableWidget)) {
-                let lastChild: ParagraphWidget = bodyWidget.lastChild as ParagraphWidget;
-                const previousWidget: Widget = lastChild.previousRenderedWidget;
-                if (lastChild.isSectionBreak && previousWidget instanceof ParagraphWidget && previousWidget.isEndsWithPageBreak) {
-                    lastChild = previousWidget;
+            if (!this.documentHelper.owner.enableLayout) {
+                this.viewer.createNewPage(section);
+            } else {
+                if (section.sectionFormat.numberOfColumns > 1) {
+                    this.isMultiColumnDoc = true;
                 }
-                if ((this.documentHelper.compatibilityMode === 'Word2013' && (lastChild.isEndsWithPageBreak || lastChild.isEndsWithColumnBreak)) && lastpage.bodyWidgets[0].childWidgets.length === 0) {
-                    const removedPages = this.documentHelper.pages.splice(this.documentHelper.pages.length - 1, 1);
-                    removedPages[0].destroy();
-                    lastpage = this.documentHelper.pages[this.documentHelper.pages.length - 1];
+                const nextSection: BodyWidget = sections[i + 1] as BodyWidget;
+                this.viewer.columnLayoutArea.setColumns(section.sectionFormat);
+                let lastpage: Page = this.documentHelper.pages[this.documentHelper.pages.length - 1];
+                let bodyWidget: BodyWidget;
+                if (!isNullOrUndefined(lastpage) && !isNullOrUndefined(lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1]) && lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1].childWidgets.length === 0 && !isNullOrUndefined(lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1].previousSplitWidget)) {
+                    bodyWidget = lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1].previousSplitWidget as BodyWidget;
                 }
-            }
-            let breakCode: string = section.sectionFormat.breakCode;
-            let prevSection: BodyWidget = undefined;
-            if (i !== 0 && this.documentHelper.compatibilityMode === 'Word2010' && breakCode === 'NewColumn') {
-                let splitWidgets: BodyWidget[] = sections[i - 1].getSplitWidgets() as BodyWidget[];
-                prevSection = splitWidgets[splitWidgets.length - 1];
-                if (prevSection.sectionFormat.columns.length > 1 && section.sectionFormat.columns.length > 1 && prevSection.sectionFormat.columns.length === section.sectionFormat.columns.length && prevSection.sectionFormat.columns.length - 1 !== prevSection.columnIndex && !(prevSection.lastChild instanceof ParagraphWidget && prevSection.lastChild.isEndsWithPageBreak)) {
-                    var nextColumn = this.viewer.columnLayoutArea.getNextColumnByBodyWidget(prevSection);
-                    if (!isNullOrUndefined(nextColumn)) {
-                        section.columnIndex = nextColumn.index;
-                        section.isWord2010NextColumn = true;
-                        section.y = prevSection.y;
-                        this.viewer.clientActiveArea.height -= section.y - this.viewer.clientActiveArea.y;
-                        this.viewer.clientActiveArea.y = section.y;
-                    }
-                }
-            }
-            if (!section.isWord2010NextColumn && breakCode !== 'NoBreak') {
-                breakCode = 'NewPage';
-            }
-            // We are layouting the section last paragraph in previous paragraph if its empty So if previous paragraph is page break then we need to create new page.
-            let lastChild: Widget;
-            if (i !== 0) {
-                lastChild = lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1].lastChild as Widget;
-                if (lastChild) {
+                /* eslint-disable-next-line max-len */
+                // If page break next para is section last para and it is empty then ms word will layout in the section break in previous para. So checking the next para into existing behaviour.
+                if (i > 0 && !isNullOrUndefined(bodyWidget) && !isNullOrUndefined(bodyWidget.lastChild) && !(bodyWidget.lastChild instanceof TableWidget)) {
+                    let lastChild: ParagraphWidget = bodyWidget.lastChild as ParagraphWidget;
                     const previousWidget: Widget = lastChild.previousRenderedWidget;
-                    if (lastChild instanceof ParagraphWidget && lastChild.isSectionBreak && previousWidget instanceof ParagraphWidget) {
+                    if (lastChild.isSectionBreak && previousWidget instanceof ParagraphWidget && previousWidget.isEndsWithPageBreak) {
                         lastChild = previousWidget;
                     }
-                }
-            }
-            if ((i === 0 && !isContinuousSection) || (i !== 0 && !section.isWord2010NextColumn && (isNullOrUndefined(breakCode) || breakCode === 'NewPage' || height !== section.sectionFormat.pageHeight || width !== section.sectionFormat.pageWidth || (!isNullOrUndefined(lastChild) && (lastChild as ParagraphWidget).isEndsWithPageBreak)))) {
-                page = this.viewer.createNewPage(section);
-            } else {
-                let clientY: number = this.documentHelper.viewer.clientActiveArea.y;
-                let clientHeight: number = this.documentHelper.viewer.clientActiveArea.height;
-                if (isContinuousSection) {
-                    let section: BodyWidget = this.getBodyWidget(lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1], true);
-                    let height: number = this.getNextWidgetHeight(section);
-                    this.viewer.updateClientArea(section, section.page);
-                    clientHeight = this.viewer.clientActiveArea.height - (height - this.viewer.clientActiveArea.y);
-                    clientY = height;
-                    isContinuousSection = false;
-                }
-                //if (i - 1 > 0) {
-                page = lastpage;
-                //}
-                page.bodyWidgets.push(section);
-                page.bodyWidgets[page.bodyWidgets.length - 1].page = page;
-                this.documentHelper.viewer.updateClientArea(section, page);
-                this.documentHelper.viewer.clientActiveArea.y = clientY;
-                this.documentHelper.viewer.clientActiveArea.height = clientHeight;
-            }
-            height = section.sectionFormat.pageHeight;
-            width = section.sectionFormat.pageWidth;
-            this.addBodyWidget(this.viewer.clientActiveArea, section);
-            if (this.documentHelper.pages.length > 1) {
-                let pageIndex: number = 0;
-                for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
-                    const prevPage: Page = this.documentHelper.pages[i];
-                    const prevSectionIndex: number = prevPage.sectionIndex;
-                    const index: number = section.index;
-                    if (prevSectionIndex > index || prevPage === page) {
-                        break;
+                    if ((this.documentHelper.compatibilityMode === 'Word2013' && (lastChild.isEndsWithPageBreak || lastChild.isEndsWithColumnBreak)) && lastpage.bodyWidgets[0].childWidgets.length === 0) {
+                        const removedPages = this.documentHelper.pages.splice(this.documentHelper.pages.length - 1, 1);
+                        removedPages[0].destroy();
+                        lastpage = this.documentHelper.pages[this.documentHelper.pages.length - 1];
                     }
-                    pageIndex++;
                 }
-                if (pageIndex < this.documentHelper.pages.length - 1) {
-                    this.documentHelper.insertPage(pageIndex, page);
+                let breakCode: string = section.sectionFormat.breakCode;
+                let prevSection: BodyWidget = undefined;
+                if (i !== 0 && this.documentHelper.compatibilityMode === 'Word2010' && breakCode === 'NewColumn') {
+                    let splitWidgets: BodyWidget[] = sections[i - 1].getSplitWidgets() as BodyWidget[];
+                    prevSection = splitWidgets[splitWidgets.length - 1];
+                    if (prevSection.sectionFormat.columns.length > 1 && section.sectionFormat.columns.length > 1 && prevSection.sectionFormat.columns.length === section.sectionFormat.columns.length && prevSection.sectionFormat.columns.length - 1 !== prevSection.columnIndex && !(prevSection.lastChild instanceof ParagraphWidget && prevSection.lastChild.isEndsWithPageBreak)) {
+                        var nextColumn = this.viewer.columnLayoutArea.getNextColumnByBodyWidget(prevSection);
+                        if (!isNullOrUndefined(nextColumn)) {
+                            section.columnIndex = nextColumn.index;
+                            section.isWord2010NextColumn = true;
+                            section.y = prevSection.y;
+                            this.viewer.clientActiveArea.height -= section.y - this.viewer.clientActiveArea.y;
+                            this.viewer.clientActiveArea.y = section.y;
+                        }
+                    }
                 }
-            }
-            this.layoutSection(section, 0, nextSection);
-            if (section.isWord2010NextColumn && !isNullOrUndefined(prevSection)) {
-                const sectionHeight: number = this.getNextWidgetHeight(prevSection);
-                if (this.viewer.clientActiveArea.y < sectionHeight) {
-                    this.viewer.updateClientArea(prevSection, prevSection.page);
-                    this.viewer.clientActiveArea.height = this.viewer.clientActiveArea.height - (sectionHeight - this.viewer.clientActiveArea.y);
-                    this.viewer.clientActiveArea.y = sectionHeight;
+                if (!section.isWord2010NextColumn && breakCode !== 'NoBreak') {
+                    breakCode = 'NewPage';
+                }
+                // We are layouting the section last paragraph in previous paragraph if its empty So if previous paragraph is page break then we need to create new page.
+                let lastChild: Widget;
+                if (i !== 0) {
+                    lastChild = lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1].lastChild as Widget;
+                    if (lastChild) {
+                        const previousWidget: Widget = lastChild.previousRenderedWidget;
+                        if (lastChild instanceof ParagraphWidget && lastChild.isSectionBreak && previousWidget instanceof ParagraphWidget) {
+                            lastChild = previousWidget;
+                        }
+                    }
+                }
+                if ((i === 0 && !isContinuousSection) || (i !== 0 && !section.isWord2010NextColumn && (isNullOrUndefined(breakCode) || breakCode === 'NewPage' || height !== section.sectionFormat.pageHeight || width !== section.sectionFormat.pageWidth || (!isNullOrUndefined(lastChild) && (lastChild as ParagraphWidget).isEndsWithPageBreak)))) {
+                    page = this.viewer.createNewPage(section);
+                } else {
+                    let clientY: number = this.documentHelper.viewer.clientActiveArea.y;
+                    let clientHeight: number = this.documentHelper.viewer.clientActiveArea.height;
+                    if (isContinuousSection) {
+                        let section: BodyWidget = this.getBodyWidget(lastpage.bodyWidgets[lastpage.bodyWidgets.length - 1], true);
+                        let height: number = this.getNextWidgetHeight(section);
+                        this.viewer.updateClientArea(section, section.page);
+                        clientHeight = this.viewer.clientActiveArea.height - (height - this.viewer.clientActiveArea.y);
+                        clientY = height;
+                        isContinuousSection = false;
+                    }
+                    //if (i - 1 > 0) {
+                    page = lastpage;
+                    //}
+                    page.bodyWidgets.push(section);
+                    page.bodyWidgets[page.bodyWidgets.length - 1].page = page;
+                    this.documentHelper.viewer.updateClientArea(section, page);
+                    this.documentHelper.viewer.clientActiveArea.y = clientY;
+                    this.documentHelper.viewer.clientActiveArea.height = clientHeight;
+                }
+                height = section.sectionFormat.pageHeight;
+                width = section.sectionFormat.pageWidth;
+                this.addBodyWidget(this.viewer.clientActiveArea, section);
+                if (this.documentHelper.pages.length > 1) {
+                    let pageIndex: number = 0;
+                    for (let i: number = 0; i < this.documentHelper.pages.length; i++) {
+                        const prevPage: Page = this.documentHelper.pages[i];
+                        const prevSectionIndex: number = prevPage.sectionIndex;
+                        const index: number = section.index;
+                        if (prevSectionIndex > index || prevPage === page) {
+                            break;
+                        }
+                        pageIndex++;
+                    }
+                    if (pageIndex < this.documentHelper.pages.length - 1) {
+                        this.documentHelper.insertPage(pageIndex, page);
+                    }
+                }
+                this.layoutSection(section, 0, nextSection);
+                if (section.isWord2010NextColumn && !isNullOrUndefined(prevSection)) {
+                    const sectionHeight: number = this.getNextWidgetHeight(prevSection);
+                    if (this.viewer.clientActiveArea.y < sectionHeight) {
+                        this.viewer.updateClientArea(prevSection, prevSection.page);
+                        this.viewer.clientActiveArea.height = this.viewer.clientActiveArea.height - (sectionHeight - this.viewer.clientActiveArea.y);
+                        this.viewer.clientActiveArea.y = sectionHeight;
+                    }
                 }
             }
         }
         if (!isReLayout) {
             this.layoutComments(this.documentHelper.comments);
         }
-        this.updateFieldElements();
+        if (this.documentHelper.owner.enableLayout) {
+            this.updateFieldElements();
+        } else if (this.documentHelper.owner.layoutType === 'Pages') {
+            for (let i: number = 0; i < this.documentHelper.footnoteCollection.length; i++) {
+                this.layoutFootEndNoteElement(this.documentHelper.footnoteCollection[i]);
+            }
+        }
         if (this.documentHelper.owner.layoutType === 'Pages') {
             this.layoutEndNoteElement();
         }
-        
+
         /* tslint:disable:align */
         setTimeout((): void => {
             if (this.documentHelper) {
@@ -1639,8 +1649,10 @@ export class Layout {
             paragraph.x = left;
         }
     }
-
-    private addLineWidget(paragraphWidget: ParagraphWidget): LineWidget {
+    /**
+     * @private
+     */
+    public addLineWidget(paragraphWidget: ParagraphWidget): LineWidget {
         let line: LineWidget = undefined;
         line = new LineWidget(paragraphWidget);
         line.width = paragraphWidget.width;
@@ -1944,6 +1956,9 @@ export class Layout {
     }
 
     private layoutParagraph(paragraph: ParagraphWidget, lineIndex: number, isUpdatedList?: boolean): BlockWidget {
+        if(!this.viewer.owner.enableLayout) {
+            return null;
+        }
         if (this.isFieldCode && !this.checkBlockHasField(paragraph)) {
             if (paragraph.childWidgets.length === 0) {
                 this.addLineWidget(paragraph);
@@ -4164,7 +4179,7 @@ export class Layout {
         } else {
             element.text = this.getListNumber(paragraph.paragraphFormat.listFormat);
         }
-        if(currentListLevel.numberFormat === '') {
+        if(currentListLevel.numberFormat === '' && paragraph.paragraphFormat.tabs.length === 0) {
             return;
         }
         this.viewer.updateClientWidth(-HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent));
@@ -7695,7 +7710,7 @@ export class Layout {
                         let block: BlockWidget = cell.childWidgets[k] as BlockWidget;
                         if (block instanceof ParagraphWidget) {
                             let existingPara = existingCell.childWidgets[k] as ParagraphWidget;
-                            if (existingPara.index === block.index) {
+                            if (!isNullOrUndefined(existingPara) && existingPara.index === block.index) {
                                 let paragraph: ParagraphWidget = block as ParagraphWidget;
                                 if (paragraph.childWidgets.length > 0) {
                                     for (let l: number = 0; l < paragraph.childWidgets.length; l++) {
@@ -7857,11 +7872,12 @@ export class Layout {
                     this.insertSplittedCellWidgets(viewer, tableWidgets, tableRowWidget, tableRowWidget.index - 1);
                 }
                 this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget, footnoteElements, undefined, isInitialLayout, startRowIndex, isRepeatRowHeader);
-                if (!isNullOrUndefined(row.bodyWidget) && row.bodyWidget instanceof BodyWidget && this.documentHelper.splittedCellWidgets.length > 0 && isNullOrUndefined(rowWidgets[rowWidgets.length - 1].nextRow)) {
+                let skipToInsert: boolean = this.documentHelper.splittedCellWidgets.length > 0 && row.ownerTable.isInsideTable && !row.ownerTable.equals(this.documentHelper.splittedCellWidgets[0].ownerTable) ? true : false;
+                if (!isNullOrUndefined(row.bodyWidget) && row.bodyWidget instanceof BodyWidget && this.documentHelper.splittedCellWidgets.length > 0 && !skipToInsert && isNullOrUndefined(rowWidgets[rowWidgets.length - 1].nextRow)) {
                     count--;
                     isLastRow = true;
                 // If the entire split cell widget does not fit on the current page, we should consider splitting the row again. This is why we check that the next row is not the end of a row span, and we decrease the count value accordingly.
-                } else if (!isNullOrUndefined(row.bodyWidget) && row.bodyWidget instanceof BodyWidget && this.documentHelper.splittedCellWidgets.length > 0 && !isNullOrUndefined(rowWidgets[rowWidgets.length - 1].nextRow) && !this.isRowSpanEnd(rowWidgets[rowWidgets.length - 1].nextRow, viewer)) {
+                } else if (!isNullOrUndefined(row.bodyWidget) && row.bodyWidget instanceof BodyWidget && this.documentHelper.splittedCellWidgets.length > 0 && !skipToInsert && !isNullOrUndefined(rowWidgets[rowWidgets.length - 1].nextRow) && !this.isRowSpanEnd(rowWidgets[rowWidgets.length - 1].nextRow, viewer)) {
                     count--;
                 }
                 isInitialLayout = false;
@@ -7929,6 +7945,7 @@ export class Layout {
                         } else if (heightType === 'Exactly' && tableRowWidget.y === viewer.clientArea.y) {
                             this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget, footnoteElements);
                             count++;
+                            continue;
                         }
                     }
                 } else {
@@ -9581,7 +9598,7 @@ export class Layout {
 
     /* eslint-disable-next-line max-len */
     public reLayoutParagraph(paragraphWidget: ParagraphWidget, lineIndex: number, elementBoxIndex: number, isBidi?: boolean, isSkip?: boolean): void {
-        if (this.isReplaceAll || (this.viewer.owner.editorModule && this.viewer.owner.editorModule.restrictLayout)) {
+        if (this.isReplaceAll || (this.viewer.owner.editorModule && this.viewer.owner.editorModule.restrictLayout) || !this.viewer.owner.enableLayout) {
             return;
         }
         this.isRelayout = true;
@@ -9789,7 +9806,7 @@ export class Layout {
     }
 
     public reLayoutTable(block: BlockWidget, isFootnoteReLayout?: boolean): void {
-        if (this.viewer.owner.editorModule && this.viewer.owner.editorModule.restrictLayout) {
+        if ((this.viewer.owner.editorModule && this.viewer.owner.editorModule.restrictLayout) || !this.viewer.owner.enableLayout) {
             return;
         }
         //Get Top level owner of block
@@ -9968,7 +9985,7 @@ export class Layout {
         }
         if (!isNullOrUndefined(this.documentHelper.owner)
             && this.documentHelper.owner.isLayoutEnabled) {
-            if (this.viewer.owner.editorModule && this.viewer.owner.editor.restrictLayout) {
+            if ((this.viewer.owner.editorModule && this.viewer.owner.editor.restrictLayout) || !this.viewer.owner.enableLayout) {
                 return;
             }
             if (bodyWidget instanceof BlockContainer || bodyWidget instanceof TextFrame) {
@@ -10801,7 +10818,7 @@ export class Layout {
     //#region Shifting
 
     public shiftLayoutedItems(reLayout: boolean, isMultiColumnShift?: boolean): void {
-        if (isNullOrUndefined(this.documentHelper.blockToShift) || isNullOrUndefined(this.documentHelper.blockToShift.containerWidget) || (this.viewer.owner.editorModule && this.viewer.owner.editorModule.restrictLayout)) {
+        if (isNullOrUndefined(this.documentHelper.blockToShift) || isNullOrUndefined(this.documentHelper.blockToShift.containerWidget) || (this.viewer.owner.editorModule && this.viewer.owner.editorModule.restrictLayout) || !this.viewer.owner.enableLayout) {
             this.documentHelper.blockToShift = undefined;
             this.checkAndShiftEndnote();
             if (!reLayout) {

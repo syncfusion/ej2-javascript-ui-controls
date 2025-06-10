@@ -219,6 +219,20 @@ export class PdfAnnotationCollection {
         const reference: _PdfReference = this._annotations[<number>index];
         if (reference && this._page) {
             const array: _PdfReference[] = this._page._getProperty('Annots');
+            let parsedAnnotation: PdfAnnotation;
+            if (this._parsedAnnotations.has(index)) {
+                parsedAnnotation = this._parsedAnnotations.get(index) as PdfAnnotation;
+            } else {
+                const annotationDictionary: _PdfDictionary = this._crossReference._fetch(reference);
+                parsedAnnotation = this._parseAnnotation(annotationDictionary);
+                parsedAnnotation._ref = reference;
+            }
+            if (parsedAnnotation) {
+                const comments: PdfPopupAnnotationCollection = (parsedAnnotation as PdfComment).comments;
+                const reviewHistory: PdfPopupAnnotationCollection = (parsedAnnotation as PdfComment).reviewHistory;
+                this._processAnnotations(comments, array);
+                this._processAnnotations(reviewHistory, array);
+            }
             const actualIndex: number = array.indexOf(reference);
             if (actualIndex > -1) {
                 array.splice(actualIndex, 1);
@@ -236,6 +250,41 @@ export class PdfAnnotationCollection {
             if (crossReference && crossReference._cacheMap.has(reference)) {
                 crossReference._cacheMap.delete(reference);
             }
+        }
+    }
+    _processReferences(references: _PdfReference[], array: _PdfReference[]): void {
+        references.forEach((ref: _PdfReference): void => {
+            if (ref && array.indexOf(ref) !== -1) {
+                const index: number = array.indexOf(ref);
+                array.splice(index, 1);
+                const annotationsIndex: number = this._annotations.indexOf(ref);
+                if (annotationsIndex > -1) {
+                    this._annotations.splice(annotationsIndex, 1);
+                }
+                if (this._parsedAnnotations.has(index)) {
+                    this._parsedAnnotations.delete(index);
+                    this._reorderParsedAnnotations(index);
+                }
+                const crossReference: _PdfCrossReference = this._page._crossReference;
+                if (crossReference && crossReference._cacheMap.has(ref)) {
+                    crossReference._cacheMap.delete(ref);
+                }
+            }
+        });
+    }
+    _processAnnotations(annotationCollection: PdfPopupAnnotationCollection, array: _PdfReference[]): void {
+        if (annotationCollection && annotationCollection._collection.length > 0) {
+            annotationCollection._collection.forEach((annotation: PdfPopupAnnotation): void => {
+                const annotationReferences: _PdfReference[] = [annotation._ref];
+                if (annotation.reviewHistory && annotation.reviewHistory._collection.length > 0) {
+                    annotationReferences.push(
+                        ...annotation.reviewHistory._collection.map(
+                            (review: PdfPopupAnnotation): _PdfReference => review._ref
+                        )
+                    );
+                }
+                this._processReferences(annotationReferences, array);
+            });
         }
     }
     _reorderParsedAnnotations(index: number): void {

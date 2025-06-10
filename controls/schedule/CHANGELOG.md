@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 29.2.10 (2025-06-10)
+
+### Schedule
+
+- `#F727056` - The issue with CSP occurring in the Schedule component Agenda view has been resolved.
+
 ## 29.2.8 (2025-06-03)
 
 ### Schedule

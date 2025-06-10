@@ -560,6 +560,18 @@ export interface DocumentEditorModel extends ComponentModel{
     enableLockAndEdit?: boolean;
 
     /**
+     * Enables or disables pagination and layout rendering in the document editor.
+     * When set to `false`, the editor skips layout processing such as pagination,
+     * which can significantly improve performance during programmatic document updates.
+     *
+     * This is useful when applying multiple changes in bulk to avoid unnecessary reflows.
+     * Set it back to `true` to re-enable layout and pagination.
+     *
+     * @default true
+     */
+    enableLayout?: boolean;
+
+    /**
      * Defines the settings for DocumentEditor customization.
      *
      * @default {}

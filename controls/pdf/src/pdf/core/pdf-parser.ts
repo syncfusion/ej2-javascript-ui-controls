@@ -554,6 +554,12 @@ export class _PdfParser {
                         value = this.getObject();
                     }
                     value = _decodeText(value, this._isColorSpace, this._isPassword);
+                    if (value && value instanceof _PdfName) {
+                        const name: string = value.name;
+                        if (name.includes('#20')) {
+                            value.name = name.replace(/#20/g, ' ');
+                        }
+                    }
                     this._isPassword = false;
                     dictionary.set(key, value);
                 }

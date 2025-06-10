@@ -1302,6 +1302,16 @@ export class Table {
                 top: topValue,
                 left: leftValue
             };
+        } else if (offsetParent !== this.parent.inputElement && elem.nodeName === 'TABLE') {
+            let tableParent: HTMLElement = elem;
+            while (tableParent && tableParent.parentElement !== this.parent.inputElement) {
+                tableParent = tableParent.parentElement;
+            }
+            const tableParentOffset: OffsetPosition = tableParent.getBoundingClientRect();
+            return {
+                top: this.isEnableIframe ? offset.top : tableParent.offsetTop + offset.top - tableParentOffset.top,
+                left: offset.left - tableParentOffset.left + 1
+            };
         } else {
             return {
                 top: elem.offsetTop,
@@ -1543,12 +1553,16 @@ export class Table {
                     ((this.contentModule.getEditPanel() as HTMLElement).offsetWidth -
                     (this.contentModule.getEditPanel() as HTMLElement).clientWidth) - paddingSize * 2;
                 let widthCompare: number;
+                const tableParentElement : HTMLElement = this.curTable && this.curTable.parentElement;
                 if (!isNOU(this.curTable.parentElement.closest('table')) && !isNOU(this.curTable.closest('td')) &&
                 (this.contentModule.getEditPanel() as HTMLElement).contains(this.curTable.closest('td'))) {
                     const currentTd: HTMLElement = this.curTable.closest('td');
                     const currentTDPad: number = +getComputedStyle(currentTd).paddingRight.match(/\d/g).join('');
                     // Padding of the current table with the parent element multiply with 2.
                     widthCompare = currentTd.offsetWidth - (currentTd.offsetWidth - currentTd.clientWidth) - currentTDPad * 2;
+                } else if (tableParentElement && tableParentElement !== this.parent.inputElement &&
+                          tableParentElement.clientWidth !== rteWidth) {
+                    widthCompare = tableParentElement.clientWidth - +getComputedStyle(tableParentElement).paddingRight.match(/\d/g).join('') * 2;
                 } else {
                     widthCompare = rteWidth;
                 }
@@ -1773,12 +1787,14 @@ export class Table {
             tableTrPercentage[i as number] = percentage;
         }
         for (let i: number = 0; i < currentTableTrElement.length; i++) {
-            if ((currentTableTrElement[i as number] as HTMLElement).parentElement.nodeName === 'THEAD') {
-                (currentTableTrElement[i as number] as HTMLElement).parentElement.style.height = tableTrPercentage[i as number] + '%';
-                (currentTableTrElement[i as number] as HTMLElement).style.height = tableTrPercentage[i as number] + '%';
-            }
-            else {
-                (currentTableTrElement[i as number] as HTMLElement).style.height = tableTrPercentage[i as number] + '%';
+            if ((currentTableTrElement[i as number] as HTMLElement).style.height) {
+                if ((currentTableTrElement[i as number] as HTMLElement).parentElement.nodeName === 'THEAD') {
+                    (currentTableTrElement[i as number] as HTMLElement).parentElement.style.height = tableTrPercentage[i as number] + '%';
+                    (currentTableTrElement[i as number] as HTMLElement).style.height = tableTrPercentage[i as number] + '%';
+                }
+                else {
+                    (currentTableTrElement[i as number] as HTMLElement).style.height = tableTrPercentage[i as number] + '%';
+                }
             }
         }
         const args: ResizeArgs = { event: e, requestType: 'table' };

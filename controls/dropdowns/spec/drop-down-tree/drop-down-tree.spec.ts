@@ -1602,3 +1602,74 @@ describe('DropdownTree', () => {
         }, 450);
     });
 });
+
+describe('Dropdown Tree with Filter', () => {
+    let ddtreeObj: any;
+    let mouseEventArgs: any;
+    let tapEvent: any;
+    let originalTimeout: any;
+    let ele: HTMLInputElement;
+    beforeEach((): void => {
+        originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        mouseEventArgs = {
+            preventDefault: (): void => { },
+            stopImmediatePropagation: (): void => { },
+            target: null,
+            type: null,
+            shiftKey: false,
+            ctrlKey: false,
+            originalEvent: { target: null }
+        };
+        tapEvent = {
+            originalEvent: mouseEventArgs,
+            tapCount: 1
+        };
+        ddtreeObj = undefined;
+        ele = <HTMLInputElement>createElement('input', { id: 'ddtree' });
+        document.body.appendChild(ele);
+    });
+    afterEach((): void => {
+        if (ddtreeObj)
+            ddtreeObj.destroy();
+            ddtreeObj = undefined;
+        ele.remove();
+        document.body.innerHTML = '';
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+    });
+
+    it('filters using "aus", selects "Australia", and ensures it remains selected after further filtering', (done) => {
+        ddtreeObj = new DropDownTree({
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" },
+            allowFiltering:true,
+            showCheckBox: true
+        }, '#ddtree');
+        ddtreeObj.showPopup();
+        let filterEle = ddtreeObj.popupObj.element.querySelector('#' + ddtreeObj.element.id + "_filter");
+        let filterObj = filterEle.ej2_instances[0];
+        filterEle.value = 'aus';
+        filterObj.value = 'aus';
+        filterObj.input({ value: 'aus', container: filterEle });
+        setTimeout(() => {
+            expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item').length).toBeGreaterThanOrEqual(1); // At least one result
+            let li = ddtreeObj.treeObj.element.querySelector('li');
+            mouseEventArgs.target = li.querySelector('.e-list-text');
+            tapEvent.tapCount = 1;
+            ddtreeObj.treeObj.touchClickObj.tap(tapEvent);
+            expect(ddtreeObj.value.length).toBe(1);
+            expect(ddtreeObj.value.indexOf('1') !== -1).toBe(true);
+            expect(ddtreeObj.treeObj.checkedNodes.length).toBe(1);
+            expect(ddtreeObj.treeObj.element.querySelector('li.e-list-item.e-active .e-list-text').innerText).toBe("Australia");
+            filterEle.value = 'aust';
+            filterObj.value = 'aust';
+            filterObj.input({ value: 'aust', container: filterEle });
+            setTimeout(() => {
+                expect(ddtreeObj.treeObj.checkedNodes.length).toBe(1);
+                expect(ddtreeObj.value.length).toBe(1);
+                expect(ddtreeObj.treeObj.element.querySelectorAll('li.e-list-item.e-active').length).toBe(1);
+                expect(ddtreeObj.treeObj.element.querySelector('li.e-list-item.e-active .e-list-text').innerText).toBe("Australia");
+                done();
+            }, 350);
+        }, 350);
+    });
+});

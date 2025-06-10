@@ -4,6 +4,12 @@
 
 ## 29.2.8 (2025-06-03)
 
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I725718` - Issue with "Selected item disappears visually on continued search input after selection in Dropdown Tree" has been resolved.
+
 ### MultiSelect
 
 #### Bug Fixes

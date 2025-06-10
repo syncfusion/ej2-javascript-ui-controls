@@ -3791,7 +3791,7 @@ export class Editor {
             } else {
                 let indexInInline: number = 0;
 
-                let inlineObj: ElementInfo = insertPosition.currentWidget.getInline(insertPosition.offset, indexInInline, bidi, (isReplace) ? false : true, this.documentHelper.owner.isSpellCheck);
+                let inlineObj: ElementInfo = insertPosition.currentWidget.getInline(insertPosition.offset, indexInInline, bidi, (isReplace || this.handledTextInput) ? false : true);
                 let inline: ElementBox = inlineObj.element;
                 indexInInline = inlineObj.index;
                 inline.ischangeDetected = true;
@@ -7606,7 +7606,7 @@ export class Editor {
             if (this.selection.pasteElement) {
                 this.selection.pasteElement.style.display = 'none';
             }
-            if (!this.restrictLayout) {
+            if (!this.restrictLayout && this.viewer.owner.enableLayout) {
                 this.documentHelper.layout.layoutWholeDocument(true);
             }
         }
@@ -7649,6 +7649,9 @@ export class Editor {
                     let row: TableRowWidget = table.childWidgets[j] as TableRowWidget;
                     let rowWidget: TableRowWidget = cloneTable.childWidgets[j] as TableRowWidget;
                     let cellWidget: TableCellWidget = rowWidget.childWidgets[i] as TableCellWidget;
+                    if (isNullOrUndefined(cellWidget)) {
+                        continue;
+                    }
                     let cell: TableCellWidget = row.childWidgets[startCell.columnIndex] as TableCellWidget;
                     newCell = this.createColumn(this.selection.getLastParagraph(startCell));
                     newCell.index = j;
@@ -7767,6 +7770,10 @@ export class Editor {
                     let cellIndexSE: number = 0;
                     for (let cellIndex: number = startCell.columnIndex; cellIndex <= endCell.columnIndex; cellIndex++) {
                         rowWidget = cloneTable.childWidgets[k] as TableRowWidget;
+                        pasteCell = row2.getCell(row2.index, cellIndex) as TableCellWidget;
+                        if (isNullOrUndefined(pasteCell)) {
+                            continue;
+                        }
                         if (rowSpan > 1 && rowSpanIndex === cellIndex) {
                             cellIndex++;
                             rowSpan--;
@@ -7779,7 +7786,6 @@ export class Editor {
                         }
                         newCells = rowWidget.childWidgets[cellIndexSE] as TableCellWidget || rowWidget.childWidgets[cellIndexSE = 0] as TableCellWidget;
                         cloneCells = newCells.clone();
-                        pasteCell = row2.getCell(row2.index, cellIndex) as TableCellWidget;
                         for (let x: number = 0; x < cloneCells.childWidgets.length; x++) {
                             let newPara: ParagraphWidget = cloneCells.childWidgets[x] as ParagraphWidget;
                             newPara.containerWidget = pasteCell;
@@ -18433,7 +18439,6 @@ export class Editor {
             //     this.updateComplexHistory();
             // } else {
             this.reLayout(selection);
-
             let currentPara: ParagraphWidget = this.selection.start.paragraph.containerWidget.firstChild as ParagraphWidget;
             if (!isNullOrUndefined(currentPara)) {
                 currentPara.isChangeDetected = false;
@@ -19035,6 +19040,40 @@ export class Editor {
             }
             this.editorHistory.currentHistoryInfo.endPosition = this.selection.startOffset;
             this.editorHistory.updateComplexHistory();
+        }
+    }    
+    /**
+     * Removes an empty paragraph from in the current selection position.
+     *
+     * This method handles the removal of empty paragraphs by determining the appropriate deletion strategy based on the paragraph's context. 
+     * Only operates when both the paragraph and current selection are empty.
+     *
+     * @public
+     * @returns {void}
+     */
+    public removeEmptyParagraph(): void {
+        let paragraph: ParagraphWidget = this.documentHelper.selection.start.paragraph;
+        if (paragraph.isEmpty() && this.selection.isEmpty) {
+            let currentBody: Widget = paragraph.containerWidget;
+            let prevBody: Widget = currentBody.previousRenderedWidget;
+            let nextBody: Widget = currentBody.nextRenderedWidget;
+            if (currentBody instanceof BodyWidget && currentBody.childWidgets.length == 1) {
+                if (currentBody.equals(prevBody)) {
+                    this.onBackSpace();
+                }
+                else if (currentBody.equals(nextBody)) {
+                    this.delete();
+                }
+                else {
+                    return;
+                }
+            }
+            else if (paragraph.isInsideTable && paragraph.nextWidget == undefined) {
+                this.onBackSpace();
+            }
+            else {
+                this.delete();
+            }
         }
     }
     /**
@@ -20846,7 +20885,6 @@ export class Editor {
                 this.documentHelper.layout.clearListElementBox(nextParagraph);
                 this.documentHelper.layout.clearListElementBox(paragraph);
                 this.updateEditPositionOnMerge(paragraph, nextParagraph);
-
                 let canRemoveParaMark: boolean = (!isNullOrUndefined(handleParaMark) && handleParaMark) ? this.handleDeleteParaMark(paragraph, nextPara[0]) : true;
                 if (canRemoveParaMark) {
                     let prevLastLineIndex: number = paragraph.childWidgets.length - 1;

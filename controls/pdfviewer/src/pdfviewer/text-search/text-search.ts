@@ -140,6 +140,7 @@ export class TextSearch {
     public createTextSearchBox(): void {
         this.searchBox = createElement('div', { id: this.pdfViewer.element.id + '_search_box', className: 'e-pv-text-search-bar' });
         let toolbarElement: HTMLElement;
+        let updatedTypedString: string;
         if (isBlazor()) {
             toolbarElement = document.getElementById('toolbarContainer');
         } else {
@@ -182,7 +183,12 @@ export class TextSearch {
                 this.isExactMatch = true;
                 this.initiateSearch(event.itemData.SearchString);
             },
+            blur: (event: any) => {
+                this.searchAutocompleteObj.value = updatedTypedString;
+                this.searchAutocompleteObj.dataBind();
+            },
             filtering: (event: any) => {
+                updatedTypedString = event.text;
                 if (!this.isDocumentTextCollectionReady) {
                     this.resetVariablesTextSearch();
                     this.clearAllOccurrences();

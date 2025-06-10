@@ -492,7 +492,7 @@ export class AnnotationRenderer {
             const fontFamily: PdfFontFamily = this.getFontFamily(shapeAnnotation.fontFamily);
             const fontJson: { [key: string]: boolean } = {};
             const fontStyle: PdfFontStyle = this.getFontStyle(fontJson);
-            annotation.font = new PdfStandardFont(fontFamily, this.convertPixelToPoint(fontSize), fontStyle);
+            annotation.font = new PdfStandardFont(fontFamily, fontSize, fontStyle);
             annotation.subject = 'Text Box';
             annotation.text = '';
             if (!isNullOrUndefined(shapeAnnotation.labelContent)) {
@@ -2678,6 +2678,7 @@ export class AnnotationRenderer {
             shapeAnnotation.FontColor = 'rgba(' + shapeFreeText.textMarkUpColor[0] + ',' + shapeFreeText.textMarkUpColor[1] + ',' + shapeFreeText.textMarkUpColor[2] + ',' + (shapeFreeText.textMarkUpColor[3] ? shapeFreeText.textMarkUpColor[3] : 1) + ')';
             shapeAnnotation.LabelBorderColor = 'rgba(' + shapeFreeText.borderColor[0] + ',' + shapeFreeText.borderColor[1] + ',' + shapeFreeText.borderColor[2] + ',' + (shapeFreeText.borderColor[3] ? shapeFreeText.borderColor[3] : 1) + ')';
             shapeAnnotation.FontSize = shapeFreeText.font.size;
+            shapeAnnotation.FontFamily = this.getFontFamilyString((shapeFreeText.font as PdfStandardFont)._fontFamily);
         }
         for (let i: number = 0; i < lineAnnot.reviewHistory.count; i++) {
             shapeAnnotation.State = this.getStateString(lineAnnot.reviewHistory.at(parseInt(i.toString(), 10)).state);
@@ -3593,7 +3594,11 @@ export class AnnotationRenderer {
         freeTextAnnotation.Color = new AnnotColor(backgroundColor[0], backgroundColor[1], backgroundColor[2]);
         freeTextAnnotation.Flatten = freeTextAnnot.flatten;
         freeTextAnnotation.FlattenPopups = !isNullOrUndefined(freeTextAnnot.flattenPopups) ? freeTextAnnot.flattenPopups : false; // returns undefined
-        freeTextAnnotation.FontFamily = freeTextAnnot._obtainFontDetails().name;
+        if ((freeTextAnnot.font as PdfStandardFont)._fontFamily === 2) {
+            freeTextAnnotation.FontFamily = this.getFontFamilyString((freeTextAnnot.font as PdfStandardFont)._fontFamily);
+        } else {
+            freeTextAnnotation.FontFamily = freeTextAnnot._obtainFontDetails().name;
+        }
         freeTextAnnotation.FontSize = this.convertPointToPixel(freeTextAnnot.font.size);
         freeTextAnnotation.Font = new FontBase(freeTextAnnot.font, freeTextAnnotation.FontFamily); // need to be checked
         freeTextAnnotation.Thickness = freeTextAnnot.border.width;
@@ -4261,6 +4266,7 @@ export class ShapeAnnotationBase {
     public LabelBorderColor: string;
     public FontColor: string;
     public FontSize: number;
+    public FontFamily: string;
     public CustomData: { [key: string]: any };
     public LabelBounds: AnnotBounds;
     public LabelSettings: any;
@@ -4277,6 +4283,7 @@ export class ShapeAnnotationBase {
         this.LabelSettings = null;
         this.FontColor = null;
         this.FontSize = 0;
+        this.FontFamily = null;
         this.AnnotationSettings = null;
         this.AnnotationSelectorSettings = null;
         this.VertexPoints = null;
@@ -4329,6 +4336,7 @@ export class MeasureShapeAnnotationBase{
     public LabelBorderColor: string;
     public FontColor: string;
     public FontSize: number;
+    public FontFamily: string;
     public CustomData: { [key: string]: any };
     public LabelBounds: AnnotBounds;
     public LabelSettings: any;
@@ -4345,6 +4353,7 @@ export class MeasureShapeAnnotationBase{
         this.LabelSettings = null;
         this.FontColor = null;
         this.FontSize = 0;
+        this.FontFamily = null;
         this.AnnotationSettings = null;
         this.AnnotationSelectorSettings = null;
         this.VertexPoints = null;

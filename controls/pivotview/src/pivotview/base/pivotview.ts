@@ -715,6 +715,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     private isCellBoxMultiSelection: boolean = false;
     private virtualTableDiv: HTMLElement;
     private virtualScrollDiv: HTMLElement;
+    private isBlobData: boolean = false;
     /** @hidden */
     public gridCellCollection: { [key: string]: HTMLElement } = {};
     /** @hidden */
@@ -2921,22 +2922,38 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         }
     }
 
+    private async blobToString(blob: Promise<Response>): Promise<string> {
+        const response: Response = await blob;
+        return response.text();
+    }
+
     private onSuccess(excelExportProperties: ExcelExportProperties): void {
         if (this.request.readyState === XMLHttpRequest.DONE) {
             if (this.currentAction === 'onExcelExport' || this.currentAction === 'onCsvExport') {
                 if (this.request.status === 200) {
-                    const buffer: Blob = this.request.response;
+                    const buffer: Blob | Promise<{ blobData: Blob; }> = this.request.response;
                     const fileName: string = isNullOrUndefined(excelExportProperties.fileName) ? (this.currentAction === 'onExcelExport' ? 'default.xlsx' : 'default.csv') : excelExportProperties.fileName;
-                    Save.save(fileName, buffer);
+                    if (!this.isBlobData) {
+                        Save.save(fileName, buffer as Blob);
+                    } else {
+                        const exportCompleteEventArgs: ExportCompleteEventArgs = {
+                            type: this.currentAction === 'onExcelExport' ? 'xlsx' : 'csv',
+                            promise: this.isBlobData ? (buffer as Promise<{ blobData: Blob; }>) : null
+                        };
+                        this.isBlobData = false;
+                        this.trigger(events.exportComplete, exportCompleteEventArgs);
+                    }
+                    this.triggerAfterServiceInvoke();
+                }
+                else {
+                    this.blobToString(this.request.response).then((result: string) => {
+                        this.triggerAfterServiceInvoke(result);
+                    });
                 }
             } else {
                 this.isServerWaitingPopup = true;
                 try {
-                    const params: AfterServiceInvokeEventArgs = {
-                        action: this.currentAction,
-                        response: this.request.responseText
-                    };
-                    this.trigger(events.afterServiceInvoke, params);
+                    this.triggerAfterServiceInvoke();
                     const engine: {
                         members: string,
                         memberName: string,
@@ -3090,6 +3107,15 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 }
             }
         }
+    }
+
+    private triggerAfterServiceInvoke(response?: string): void {
+        const params: AfterServiceInvokeEventArgs = {
+            action: this.currentAction,
+            response: response ? response : (typeof (this.request.response) === 'string' ?
+                this.request.responseText : this.request.response)
+        };
+        this.trigger(events.afterServiceInvoke, params);
     }
 
     /** @hidden */
@@ -4346,6 +4372,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public excelExport(
         excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean, workbook?: Workbook, isBlob?: boolean
     ): void {
+        this.isBlobData = isBlob;
         if (this.dataSourceSettings.mode === 'Server') {
             this.getEngine('onExcelExport', null, null, null, null, null, null, null, null, excelExportProperties);
         } else {

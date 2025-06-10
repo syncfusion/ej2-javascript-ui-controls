@@ -1,10 +1,10 @@
 import { _PdfDictionary, _PdfName, _PdfReference } from './pdf-primitives';
 import { PdfPage } from './pdf-page';
-import { PdfFormFieldVisibility, PdfAnnotationFlag, PdfCheckBoxStyle, PdfHighlightMode, PdfBorderStyle, PdfBorderEffectStyle, PdfLineEndingStyle, _PdfCheckFieldState, PdfMeasurementUnit, _PdfGraphicsUnit, PdfTextMarkupAnnotationType, PdfRotationAngle, PdfAnnotationState, PdfAnnotationStateModel, PdfPopupIcon, PdfRubberStampAnnotationIcon, PdfAttachmentIcon, PdfAnnotationIntent, PdfBlendMode, _PdfAnnotationType, PdfNumberStyle } from './enumerator';
+import { PdfFormFieldVisibility, PdfAnnotationFlag, PdfCheckBoxStyle, PdfHighlightMode, PdfBorderStyle, PdfBorderEffectStyle, PdfLineEndingStyle, _PdfCheckFieldState, PdfMeasurementUnit, _PdfGraphicsUnit, PdfTextMarkupAnnotationType, PdfRotationAngle, PdfAnnotationState, PdfAnnotationStateModel, PdfPopupIcon, PdfRubberStampAnnotationIcon, PdfAttachmentIcon, PdfAnnotationIntent, PdfBlendMode, _PdfAnnotationType, PdfNumberStyle, PdfDashStyle } from './enumerator';
 import { _PdfTransformationMatrix } from './graphics/pdf-graphics';
 import { PdfDocument, PdfPageSettings } from './pdf-document';
 import { _PdfBaseStream, _PdfStream } from './base-stream';
-import { PdfStateItem, PdfComment, PdfWidgetAnnotation, PdfAnnotation, PdfLineAnnotation } from './annotations/annotation';
+import { PdfStateItem, PdfComment, PdfWidgetAnnotation, PdfAnnotation, PdfLineAnnotation, PdfInteractiveBorder, _PaintParameter } from './annotations/annotation';
 import { PdfPopupAnnotationCollection } from './annotations/annotation-collection';
 import { PdfTemplate } from './graphics/pdf-template';
 import { PdfField, PdfTextBoxField, PdfComboBoxField } from './form/field';
@@ -4391,4 +4391,18 @@ export function _decodeFontFamily(fontFamily: string): string {
         builder.push(character);
     }
     return builder.join('');
+}
+/**
+ * Updates the border style to dashed pattern if the border style is set to dashed.
+ *
+ * @private
+ * @param {PdfInteractiveBorder} border - The interactive border object containing style information.
+ * @param {_PaintParameter} parameter - The paint parameter object that contains the border pen to be updated.
+ * @returns {void} Nothing.
+ */
+export function _updateDashedBorderStyle(border: PdfInteractiveBorder, parameter: _PaintParameter): void {
+    if (border.style === PdfBorderStyle.dashed) {
+        parameter.borderPen._dashStyle = PdfDashStyle.dash;
+        parameter.borderPen._dashPattern = [3];
+    }
 }

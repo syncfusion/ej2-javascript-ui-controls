@@ -57,7 +57,9 @@ export class SpellCheckDialog {
      */
     public constructor(documentHelper: DocumentHelper) {
         this.documentHelper = documentHelper;
-        createSpinner({ target: this.documentHelper.dialog.element, cssClass: 'e-spin-overlay' });
+        if (this.documentHelper) {
+            createSpinner({ target: this.documentHelper.dialog.element, cssClass: 'e-spin-overlay' });
+        }
     }
 
     private get parent(): DocumentEditor {

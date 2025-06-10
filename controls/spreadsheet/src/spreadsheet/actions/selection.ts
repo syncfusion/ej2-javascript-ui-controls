@@ -449,8 +449,12 @@ export class Selection {
                             EventHandler.add(document, getEndEvent(), this.mouseUpHandler, this);
                         }
                     }
-                    const isNoteAvailable: boolean = ((e.target as HTMLElement).className === 'e-addNoteIndicator' ||
-                        ((e.target as HTMLElement).children.length > 0 && (e.target as HTMLElement).children[(e.target as HTMLElement).childElementCount - 1].className.indexOf('e-addNoteIndicator') > -1));
+                    const targetElement: HTMLElement = e.target as HTMLElement;
+                    let isNoteAvailable: boolean = targetElement.className === 'e-addNoteIndicator';
+                    if (!isNoteAvailable && targetElement.children.length > 0) {
+                        const lastChild: HTMLElement = targetElement.children[targetElement.childElementCount - 1] as HTMLElement;
+                        isNoteAvailable = typeof lastChild.className === 'string' && lastChild.className.indexOf('e-addNoteIndicator') > -1;
+                    }
                     if (isTouchStart(e) && isNoteAvailable) {
                         const cellIndexes: number[] = getCellIndexes(getRangeAddress(range).split(':')[0]);
                         this.parent.notify(showNote, { rowIndex: cellIndexes[0], columnIndex: cellIndexes[1], isNoteEditable: false });

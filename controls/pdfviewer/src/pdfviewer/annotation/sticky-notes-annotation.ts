@@ -1,5 +1,5 @@
 import { StickyNotesSettings } from './../pdfviewer';
-import { PdfViewerBase, PdfViewer, IPageAnnotations, AjaxHandler, AllowedInteraction, IPoint } from '../index';
+import { PdfViewerBase, PdfViewer, IPageAnnotations, AjaxHandler, AllowedInteraction, IPoint, AnnotBoundsRect, IRect } from '../index';
 import { createElement, Browser, Internationalization, isBlazor, isNullOrUndefined, SanitizeHtmlHelper} from '@syncfusion/ej2-base';
 import { Accordion, BeforeOpenCloseMenuEventArgs, ContextMenu as Context, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { InPlaceEditor } from '@syncfusion/ej2-inplace-editor';
@@ -657,12 +657,14 @@ export class StickyNotesAnnotation {
         if (collections && annotation) {
             for (let i: number = 0; i < collections.length; i++) {
                 if (isSignature) {
-                    if (collections[parseInt(i.toString(), 10)].signatureName === annotation.signatureName) {
+                    if (collections[parseInt(i.toString(), 10)].signatureName === annotation.signatureName &&
+                        collections[parseInt(i.toString(), 10)].pageNumber === annotation.pageNumber) {
                         isAdded = true;
                         break;
                     }
                 } else {
-                    if (collections[parseInt(i.toString(), 10)].annotationId === annotation.annotationId) {
+                    if (collections[parseInt(i.toString(), 10)].annotationId === annotation.annotationId &&
+                        collections[parseInt(i.toString(), 10)].pageNumber === annotation.pageNumber) {
                         isAdded = true;
                         break;
                     }
@@ -1074,12 +1076,36 @@ export class StickyNotesAnnotation {
             if (this.pdfViewer.enableHtmlSanitizer && args.value){
                 args.value = SanitizeHtmlHelper.sanitize(args.value);
             }
+            const annotationName: any = args.valueEle.parentNode.parentNode.parentNode.parentNode.id;
+            const currentAnnotation: any = this.pdfViewer.annotationCollection.filter(function (annot: any): any
+            { return annot.annotationId === annotationName; })[0];
+            const span: HTMLElement = args.element.parentElement.childNodes[0].childNodes[1].childNodes[0];
+            const type: string = commentsContainer.getAttribute('name');
+            let subType: string;
+            let subject: string;
+            if (!isNullOrUndefined(currentAnnotation)) {
+                if (type === 'textMarkup') {
+                    if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.textMarkupAnnotationModule &&
+                        this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
+                        subType = this.pdfViewer.annotationModule.textMarkupAnnotationModule.
+                            currentTextMarkupAnnotation.textMarkupAnnotationType;
+                    }
+                    else {
+                        subType = currentAnnotation.shapeAnnotationType;
+                    }
+                    subject = currentAnnotation.subject;
+                }
+            }
+            const modifiedAuthor: string = (args.value !== args.prevValue) ? this.updatedAuthor(type, subType, subject) : span.textContent;
+            span.textContent = modifiedAuthor;
             if ((args.value !== null && args.value !== '' && args.value !== ' ') || (args.value === '' && args.prevValue !== '')) {
                 if (this.pdfViewer.selectedItems.annotations[0] && this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText') {
-                    this.modifyTextProperty(args.value, args.prevValue, args.valueEle.parentNode.parentNode.parentNode.parentNode.id);
+                    this.modifyTextProperty(args.value, args.prevValue, args.valueEle.parentNode.parentNode.parentNode.parentNode.id,
+                                            modifiedAuthor);
                 } else {
                     try {
-                        this.modifyTextProperty(args.value, args.prevValue, args.valueEle.parentNode.parentNode.parentNode.parentNode.id);
+                        this.modifyTextProperty(args.value, args.prevValue, args.valueEle.parentNode.parentNode.parentNode.parentNode.id,
+                                                modifiedAuthor);
                     } catch (error) {
                         this.modifyTextProperty(args.value, args.prevValue);
                     }
@@ -1106,6 +1132,101 @@ export class StickyNotesAnnotation {
                 }, 50);
         }
         commentObj.actionSuccess = this.saveCommentDiv.bind(this, commentObj);
+    }
+
+    /**
+     * @param {string} type - It describes about type of annotation
+     * @param {string} annotType - It describes about subType of annotation
+     * @param {string} subject - It describes about the subject
+     * @private
+     * @returns {string} - string
+     */
+    public updatedAuthor(type: string, annotType: string, subject?: string): string
+    {
+        let author: string;
+        if (type === 'textMarkup') {
+            if (annotType === 'Highlight') {
+                author = (this.pdfViewer.highlightSettings.author !== 'Guest') ? this.pdfViewer.highlightSettings.author :
+                    this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
+            }
+            else if (annotType === 'Underline') {
+                author = (this.pdfViewer.underlineSettings.author !== 'Guest') ? this.pdfViewer.underlineSettings.author :
+                    this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
+            }
+            else if (annotType === 'Strikethrough') {
+                author = (this.pdfViewer.strikethroughSettings.author !== 'Guest') ?
+                    this.pdfViewer.strikethroughSettings.author : this.pdfViewer.annotationSettings.author ?
+                        this.pdfViewer.annotationSettings.author : 'Guest';
+            }
+        }
+        else if (type === 'shape') {
+            if ((annotType === 'Line' && subject === 'Line')) {
+                author = (this.pdfViewer.lineSettings.author !== 'Guest') ? this.pdfViewer.lineSettings.author :
+                    this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
+            }
+            else if ((annotType === 'Line' && subject === 'Arrow')) {
+                author = (this.pdfViewer.arrowSettings.author !== 'Guest') ? this.pdfViewer.arrowSettings.author :
+                    this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
+            }
+            else if ((annotType === 'Circle' && subject === 'Circle')) {
+                author = (this.pdfViewer.circleSettings.author !== 'Guest') ? this.pdfViewer.circleSettings.author :
+                    this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
+            }
+            else if ((annotType === 'Square' && subject === 'Rectangle')) {
+                author = (this.pdfViewer.rectangleSettings.author !== 'Guest') ? this.pdfViewer.rectangleSettings.author :
+                    this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
+            }
+            else if ((annotType === 'Polygon' && subject === 'Polygon')) {
+                author = (this.pdfViewer.polygonSettings.author !== 'Guest') ? this.pdfViewer.polygonSettings.author :
+                    this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
+            }
+        }
+        else if (type === 'shape_measure') {
+            if ((annotType === 'Line' && subject === 'Line')) {
+                author = (this.pdfViewer.distanceSettings.author !== 'Guest') ? this.pdfViewer.distanceSettings.author :
+                    this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
+            }
+            else if ((annotType === 'Polyline' && subject === 'Arrow')) {
+                author = (this.pdfViewer.perimeterSettings.author !== 'Guest') ? this.pdfViewer.perimeterSettings.author :
+                    this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
+            }
+            else if ((annotType === 'Circle' && subject === 'Circle')) {
+                author = (this.pdfViewer.radiusSettings.author !== 'Guest') ? this.pdfViewer.radiusSettings.author :
+                    this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
+            }
+            else if ((annotType === 'Polygon' && subject === 'Rectangle')) {
+                author = (this.pdfViewer.areaSettings.author !== 'Guest') ? this.pdfViewer.areaSettings.author :
+                    this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
+            }
+            else if ((annotType === 'Polygon' && subject === 'Polygon')) {
+                author = (this.pdfViewer.volumeSettings.author !== 'Guest') ? this.pdfViewer.volumeSettings.author :
+                    this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
+            }
+        }
+        else {
+            if (annotType === 'Ink') {
+                author = (this.pdfViewer.inkAnnotationSettings.author !== 'Guest') ?
+                    this.pdfViewer.inkAnnotationSettings.author : this.pdfViewer.annotationSettings.author ?
+                        this.pdfViewer.annotationSettings.author : 'Guest';
+            }
+            else if (annotType === 'FreeText') {
+                author = (this.pdfViewer.freeTextSettings.author !== 'Guest') ? this.pdfViewer.freeTextSettings.author :
+                    this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
+            }
+            else if (annotType === 'sticky') {
+                author = (this.pdfViewer.stickyNotesSettings.author !== 'Guest') ?
+                    this.pdfViewer.stickyNotesSettings.author : this.pdfViewer.annotationSettings.author ?
+                        this.pdfViewer.annotationSettings.author : 'Guest';
+            }
+            else if (annotType === 'stamp') {
+                author = (this.pdfViewer.stampSettings.author !== 'Guest') ? this.pdfViewer.stampSettings.author :
+                    this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
+            }
+        }
+        if (!author) {
+            author = this.pdfViewer.annotationSettings.author;
+        }
+        return author;
     }
 
     /**
@@ -1249,7 +1370,7 @@ export class StickyNotesAnnotation {
         saveObj.appendTo(replyTextBox);
         replyDiv.appendChild(replyTextBox);
         if (undoRedoAction) {
-            data.State = data.state;
+            data.State = data.state ? data.state : data.review && data.review.state ? data.review.state : null;
         }
         if (data.State) {
             const statusContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'status' + '_container', className: 'e-pv-status-container' });
@@ -1394,14 +1515,15 @@ export class StickyNotesAnnotation {
         commentDiv.appendChild(commentTextBox);
         if (data) {
             editObj.value = data.note;
-            if (data.state) {
+            const state: string = data.state ? data.state : data.review && data.review.state ? data.review.state : null;
+            if (state) {
                 const statusContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'status' + '_container', className: 'e-pv-status-container' });
                 const statusDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'status' + '_div', className: 'e-pv-status-div' });
                 const statusSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + 'status' + '_icon' });
                 statusDiv.appendChild(statusSpan);
                 statusContainer.appendChild(statusDiv);
                 commentDiv.appendChild(statusContainer);
-                this.updateStatusContainer(data.state, statusSpan, statusDiv, statusContainer);
+                this.updateStatusContainer(state, statusSpan, statusDiv, statusContainer);
             }
             if (data.comments) {
                 for (let j: number = 0; j < data.comments.length; j++) {
@@ -1426,7 +1548,28 @@ export class StickyNotesAnnotation {
         const parentElement: string = args.element.parentElement.parentElement.id;
         const titleElement: HTMLElement = args.element.previousSibling.firstChild;
         this.updateModifiedDate(titleElement);
-        this.modifyCommentsProperty(args.value, commentElement, parentElement, args.prevValue);
+        const currentAnnotation: any = this.pdfViewer.annotationCollection.filter(function (annot: any): any
+        { return annot.annotationId === parentElement; })[0];
+        const type: string = args.element.parentElement.parentElement.getAttribute('name');
+        let subType: string;
+        let subject: string;
+        if (!isNullOrUndefined(currentAnnotation)) {
+            if (type === 'textMarkup') {
+                if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.textMarkupAnnotationModule &&
+                    this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
+                    subType = this.pdfViewer.annotationModule.textMarkupAnnotationModule.
+                        currentTextMarkupAnnotation.textMarkupAnnotationType;
+                }
+                else {
+                    subType = currentAnnotation.shapeAnnotationType;
+                }
+                subject = currentAnnotation.subject;
+            }
+        }
+        const author: string = (args.value !== args.prevValue) ? this.updatedAuthor(type, subType, subject) :
+            titleElement.childNodes[0].textContent;
+        titleElement.childNodes[0].textContent = author;
+        this.modifyCommentsProperty(args.value, commentElement, parentElement, args.prevValue, author);
     }
 
     private createTitleContainer(commentsDivElement: HTMLElement, type: string, pageIndex: number, subType?: string,
@@ -1447,12 +1590,26 @@ export class StickyNotesAnnotation {
         commentTypeSpan.style.cssFloat = 'left';
         commentTitleContainer.appendChild(commentTypeSpan);
         const commentsTitle: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentTitle_' + pageIndex + '_' + this.commentsCount, className: 'e-pv-comment-title' });
+        const authorSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_commentAuthor' + pageIndex + '_' + this.commentsCount, className: 'e-pv-comment-author' });
+        const dateSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_commentDate' + pageIndex + '_' + this.commentsCount, className: 'e-pv-comment-date' });
         if (!modifiedDate) {
-            commentsTitle.textContent = annotationAuthor + ' - ' + this.setModifiedDate();
-        } else {
-            commentsTitle.textContent = annotationAuthor + ' - ' + this.convertUTCDateToLocalDate(modifiedDate);
+            authorSpan.textContent = annotationAuthor;
+            dateSpan.textContent = ' - ' + this.setModifiedDate();
+        }
+        else {
+            authorSpan.textContent = annotationAuthor;
+            dateSpan.textContent = ' - ' + this.convertUTCDateToLocalDate(modifiedDate);
         }
         commentTitleContainer.appendChild(commentsTitle);
+        commentsTitle.appendChild(authorSpan);
+        commentsTitle.appendChild(dateSpan);
+        commentsTitle.style.whiteSpace = 'nowrap';
+        commentsTitle.style.display = 'flex';
+        authorSpan.style.whiteSpace = 'nowrap';
+        authorSpan.style.overflow = 'hidden';
+        authorSpan.style.textOverflow = 'ellipsis';
+        authorSpan.style.minWidth = '40px';
+        authorSpan.style.marginRight = '8px';
         this.moreButtonId = this.pdfViewer.element.id + '_more-options_'  + this.commentsCount + '_' + this.commentsreplyCount;
         const moreOptionsButton: HTMLElement = createElement('button', { id: this.moreButtonId, className: 'e-pv-more-options-button e-btn', attrs: { 'tabindex': '-1' } });
         moreOptionsButton.style.visibility = 'hidden';
@@ -1477,7 +1634,7 @@ export class StickyNotesAnnotation {
             commentsTitle.style.maxWidth = (commentsTitle.parentElement.clientWidth - moreOptionsButton.clientWidth) + 'px';
         }
         else {
-            commentsTitle.style.maxWidth = '237px';
+            commentsTitle.style.maxWidth = '258px';
         }
         commentTitleContainer.addEventListener('dblclick', this.openTextEditor.bind(this));
         moreOptionsButton.addEventListener('mouseup', this.moreOptionsClick.bind(this));
@@ -1488,12 +1645,26 @@ export class StickyNotesAnnotation {
         const replyTitleContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_replyTitleConatiner_' + this.commentsCount + '_' + this.commentsreplyCount, className: 'e-pv-reply-title-container' });
         const replyTitle: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_replyTitle_' + this.commentsCount + '_' + this.commentsreplyCount, className: 'e-pv-reply-title' });
         annotationAuthor = annotationAuthor.replace(/(\r\n|\n|\r)/gm, '');
+        const replyAuthorSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_replyTitle_author' + '_' + this.commentsreplyCount, className: 'e-pv-reply-author' });
+        const replyDateSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_replyTitle_date' + '_' + this.commentsreplyCount, className: 'e-pv-reply-date' });
         if (!modifiedDate) {
-            replyTitle.textContent = annotationAuthor + ' - ' + this.setModifiedDate();
-        } else {
-            replyTitle.textContent = annotationAuthor + ' - ' + this.setExistingAnnotationModifiedDate(modifiedDate);
+            replyAuthorSpan.textContent = annotationAuthor;
+            replyDateSpan.textContent = ' - ' + this.setModifiedDate();
+        }
+        else {
+            replyAuthorSpan.textContent = annotationAuthor;
+            replyDateSpan.textContent = ' - ' + this.setExistingAnnotationModifiedDate(modifiedDate);
         }
         replyTitleContainer.appendChild(replyTitle);
+        replyTitle.appendChild(replyAuthorSpan);
+        replyTitle.appendChild(replyDateSpan);
+        replyTitle.style.whiteSpace = 'nowrap';
+        replyTitle.style.display = 'flex';
+        replyAuthorSpan.style.whiteSpace = 'nowrap';
+        replyAuthorSpan.style.overflow = 'hidden';
+        replyAuthorSpan.style.textOverflow = 'ellipsis';
+        replyAuthorSpan.style.minWidth = '40px';
+        replyAuthorSpan.style.marginRight = '8px';
         this.moreButtonId = this.pdfViewer.element.id + '_more-options_'  + this.commentsCount + '_' + this.commentsreplyCount;
         const moreButton: HTMLElement = createElement('button', { id: this.moreButtonId, className: 'e-pv-more-options-button e-btn', attrs: { 'tabindex': '-1' } });
         moreButton.style.visibility = 'hidden';
@@ -1505,13 +1676,13 @@ export class StickyNotesAnnotation {
         moreButtonSpan.style.opacity = '0.87';
         replyTitleContainer.appendChild(moreButton);
         commentsDivElement.appendChild(replyTitleContainer);
-        const parentCommentDiv: NodeListOf<Element> = document.querySelectorAll('[class="e-pv-comment-title"]');
+        const parentCommentDiv: HTMLElement = document.querySelector('[class="e-pv-comment-author"]');
         const moreactionIcon: NodeListOf<Element> = document.querySelectorAll('[class="e-pv-more-options-button e-btn"]');
-        if (parentCommentDiv[0] && moreactionIcon[0] && parentCommentDiv[0].parentElement &&
-             parentCommentDiv[0].parentElement.clientWidth !== 0) {
-            replyTitle.style.maxWidth = (parentCommentDiv[0].parentElement.clientWidth - (moreactionIcon[0] as HTMLElement).clientWidth) + 'px';
+        if (parentCommentDiv && moreactionIcon[0] && parentCommentDiv.parentElement &&
+            parentCommentDiv.parentElement.clientWidth !== 0) {
+            replyTitle.style.maxWidth = (parseInt(parentCommentDiv.parentElement.style.maxWidth, 10) - (moreactionIcon[0]).clientWidth) + 'px';
         } else {
-            replyTitle.style.maxWidth = '237px';
+            replyTitle.style.maxWidth = '217px';
         }
         replyTitleContainer.addEventListener('dblclick', this.openTextEditor.bind(this));
         moreButton.addEventListener('mouseup', this.moreOptionsClick.bind(this));
@@ -1847,7 +2018,8 @@ export class StickyNotesAnnotation {
                 return true;
             }
             for (let j: number = 0; j < annotCollection[parseInt(i.toString(), 10)].comments.length; j++) {
-                if (annotation && annotCollection[parseInt(i.toString(), 10)].annotationId === annotation.annotName) {
+                if (annotation && annotCollection[parseInt(i.toString(), 10)].annotationId === annotation.annotName &&
+                    annotCollection[parseInt(i.toString(), 10)].pageNumber === annotation.pageNumber) {
                     if (annotCollection[parseInt(i.toString(), 10)].comments[parseInt(j.toString(), 10)].isLock ===
                      true && commentEvent.textContent === annotCollection[parseInt(i.toString(), 10)].
                         comments[parseInt(j.toString(), 10)].note) {
@@ -2346,23 +2518,29 @@ export class StickyNotesAnnotation {
                         if (type === 'textMarkup') {
                             if (pageCollections[parseInt(i.toString(), 10)].rect || pageCollections[parseInt(i.toString(), 10)].bounds) {
                                 const scrollValue: number = this.pdfViewerBase.pageSize[pageNumber - 1].top *
-                                 this.pdfViewerBase.getZoomFactor() + (this.pdfViewer.annotationModule.
+                                this.pdfViewerBase.getZoomFactor() + (this.pdfViewer.annotationModule.
                                     getAnnotationTop(pageCollections[parseInt(i.toString(), 10)]) * this.pdfViewerBase.getZoomFactor());
                                 if (scrollValue) {
                                     const scroll: string = (scrollValue - 20).toString();
                                     this.pdfViewerBase.viewerContainer.scrollTop = parseInt(scroll, 10);
+                                    this.pdfViewerBase.viewerContainer.scrollLeft = ((pageCollections[parseInt(i.toString(), 10)].
+                                        bounds[0]).Left * this.pdfViewerBase.getZoomFactor()) - 20;
                                 }
                             }
                         } else {
                             let top: number = pageCollections[parseInt(i.toString(), 10)].bounds.top;
+                            let scrollLeft: number = ((pageCollections[parseInt(i.toString(), 10)].bounds as AnnotBoundsRect).left *
+                            this.pdfViewerBase.getZoomFactor()) - 20;
                             if (type === 'ink') {
                                 top = pageCollections[parseInt(i.toString(), 10)].bounds.y;
+                                scrollLeft = ((pageCollections[parseInt(i.toString(), 10)].bounds as IRect).x *
+                                this.pdfViewerBase.getZoomFactor()) - 20;
                             }
                             const scrollValue: number = this.pdfViewerBase.pageSize[pageNumber - 1].top *
                              this.pdfViewerBase.getZoomFactor() + ((top) * this.pdfViewerBase.getZoomFactor());
-
                             const scroll: string = (scrollValue - 20).toString();
                             this.pdfViewerBase.viewerContainer.scrollTop = parseInt(scroll, 10);
+                            this.pdfViewerBase.viewerContainer.scrollLeft = scrollLeft;
                         }
                         this.isCommentsSelected = true;
                     }
@@ -2371,7 +2549,7 @@ export class StickyNotesAnnotation {
         }
     }
 
-    private modifyTextProperty(text: string, previousValue: any, annotationName?: any): void {
+    private modifyTextProperty(text: string, previousValue: any, annotationName?: any, author?: any): void {
         let currentAnnotation: any;
         const module: any = this.pdfViewer.annotationModule.textMarkupAnnotationModule;
         if (module && module.currentTextMarkupAnnotation) {
@@ -2424,6 +2602,7 @@ export class StickyNotesAnnotation {
                         if (currentAnnotation.shapeAnnotationType === 'FreeText') {
                             if (currentAnnotation.dynamicText !== text) {
                                 this.textFromCommentPanel = true;
+                                currentAnnotation.author = author;
                                 this.pdfViewer.annotation.modifyDynamicTextValue(text, currentAnnotation.annotName);
                             }
                             currentAnnotation.dynamicText = text;
@@ -2451,6 +2630,7 @@ export class StickyNotesAnnotation {
                                     this.pdfViewer.annotation.addAction(pageIndex, i, pageAnnotations[parseInt(i.toString(), 10)], 'Text Property Added', '', clonedObject, pageAnnotations[parseInt(i.toString(), 10)]);
                                     currentAnnotation = pageAnnotations[parseInt(i.toString(), 10)];
                                     currentAnnotation.note = text;
+                                    currentAnnotation.author = author;
                                     if (currentAnnotation.enableShapeLabel) {
                                         currentAnnotation.labelContent = text;
                                     }
@@ -2502,7 +2682,7 @@ export class StickyNotesAnnotation {
         return dateTime;
     }
 
-    private modifyCommentsProperty(text: string, annotName: string, parentElement: string, previousValue?: any): void {
+    private modifyCommentsProperty(text: string, annotName: string, parentElement: string, previousValue?: any, newAuthor?: string): void {
         let currentAnnotation: any;
         if (this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
             currentAnnotation = this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation;
@@ -2548,6 +2728,7 @@ export class StickyNotesAnnotation {
                         isComment = true;
                         currentAnnotation.comments[parseInt(j.toString(), 10)].note = text;
                         currentAnnotation.comments[parseInt(j.toString(), 10)].modifiedDate = this.getDateAndTime();
+                        currentAnnotation.comments[parseInt(j.toString(), 10)].author = newAuthor;
                     }
                 }
                 if (currentAnnotation.annotName === parentElement) {
@@ -3315,8 +3496,8 @@ export class StickyNotesAnnotation {
         if (titleContainer.id === this.pdfViewer.element.id + '_commenttype_icon') {
             titleContainer = titleContainer.nextSibling;
         }
-        const author: string = titleContainer.textContent.split('-')[0];
-        titleContainer.textContent = author + ' - ' + this.setModifiedDate();
+        const span: any = titleContainer.querySelectorAll('span');
+        span[1].textContent = ' - ' + this.setModifiedDate();
     }
 
     /**
@@ -3333,8 +3514,8 @@ export class StickyNotesAnnotation {
             if (commentsContainer) {
                 if (!isBounds) {
                     titleContainer = commentsContainer.firstChild.firstChild.childNodes[1];
-                    const author: string = titleContainer.textContent.split('-')[0];
-                    titleContainer.textContent = author + ' - ' + this.setModifiedDate();
+                    const span: any = titleContainer.querySelectorAll('span');
+                    span[1].textContent = ' - ' + this.setModifiedDate();
                 } else {
                     const type: string = this.findAnnotationType(annotation);
                     const pageAnnotations: any = this.getAnnotations(annotation.pageIndex, null, type);
@@ -3346,8 +3527,8 @@ export class StickyNotesAnnotation {
                                   annotation.bounds.height !== pageAnnotations[parseInt(i.toString(), 10)].bounds.height ||
                                    annotation.bounds.width !== pageAnnotations[parseInt(i.toString(), 10)].bounds.width) {
                                     titleContainer = commentsContainer.firstChild.firstChild.childNodes[1];
-                                    const author: string = titleContainer.textContent.split('-')[0];
-                                    titleContainer.textContent = author + ' - ' + this.setModifiedDate();
+                                    const span: any = titleContainer.querySelectorAll('span');
+                                    span[1].textContent = ' - ' + this.setModifiedDate();
                                 }
                             }
                             if (pageAnnotations[parseInt(i.toString(), 10)].shapeAnnotationType === 'sticky') {
@@ -3360,8 +3541,8 @@ export class StickyNotesAnnotation {
                 if (isUndoRedoAction) {
                     titleContainer = commentsContainer.firstChild.firstChild.childNodes[1];
                     if (annotation.modifiedDate !== undefined) {
-                        const author: string = titleContainer.textContent.split('-')[0];
-                        titleContainer.textContent = author + ' - ' + this.setExistingAnnotationModifiedDate(annotation.modifiedDate);
+                        const span: any = titleContainer.querySelectorAll('span');
+                        span[1].textContent = ' - ' + this.setExistingAnnotationModifiedDate(annotation.modifiedDate);
                     }
                 }
             }

@@ -1626,6 +1626,9 @@ export class DatePicker extends Calendar implements IInput {
             this.changedArgs.element = this.element;
             this.changedArgs.isInteracted = this.isInteracted;
             if (!this.isDynamicValueChanged) {
+                if (this.isAngular) {
+                    this.previousDate = this.value && new Date(+this.value);
+                }
                 this.trigger('change', this.changedArgs);
             }
             this.previousDate = this.value && new Date(+this.value);

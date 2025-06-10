@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.2.10 (2025-06-10)
+
+### DatePicker
+
+#### Bug Fixes
+
+- `#I715669` - Resolved an issue where the duplicate change event triggers when opening a `dialog` from the DatePicker change event.
+
 ## 29.2.5 (2025-05-21)
 
 ### DatePicker

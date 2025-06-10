@@ -90,7 +90,8 @@ export class Renderer {
         return this.documentHelper.owner.viewer;
     }
     public renderWidgets(page: Page, left: number, top: number, width: number, height: number): void {
-        if (isNullOrUndefined(this.pageCanvas) || isNullOrUndefined(page) || isNullOrUndefined(page.bodyWidgets)) {
+        if (isNullOrUndefined(this.pageCanvas) || isNullOrUndefined(page) || isNullOrUndefined(page.bodyWidgets)
+        || !this.documentHelper.owner.enableLayout) {
             return;
         }
         this.pageContext.fillStyle = HelperMethods.getColor(this.documentHelper.backgroundColor);
@@ -998,7 +999,8 @@ private calculatePathBounds(data: string): Rect {
             this.clipRect(paraWidget.x + paddingLeft, this.getScaledValue(page.boundingRectangle.y), this.getScaledValue(page.boundingRectangle.width), this.getScaledValue(page.boundingRectangle.height));
             isClipped = true;
         }
-        if (!(paraWidget.containerWidget instanceof HeaderFooterWidget && paraWidget.containerWidget.isEmpty && !isNullOrUndefined(this.documentHelper.owner.selectionModule) && !isNullOrUndefined(this.documentHelper.selection.start.paragraph) && !this.documentHelper.selection.start.paragraph.isInHeaderFooter)) {
+        if (!(paraWidget.containerWidget instanceof HeaderFooterWidget && paraWidget.containerWidget.isEmpty && !isNullOrUndefined(this.documentHelper.owner.selectionModule) && !isNullOrUndefined(this.documentHelper.selection.start) 
+            && !isNullOrUndefined(this.documentHelper.selection.start.paragraph) && !this.documentHelper.selection.start.paragraph.isInHeaderFooter)) {
             this.renderParagraphBorder(page, paraWidget);
         }
         if (isClipped) {
@@ -1582,7 +1584,9 @@ private calculatePathBounds(data: string): Rect {
         }
     }
     private renderSelectionHighlight(page: Page, lineWidget: LineWidget, top: number): void {
-        if (!this.isPrinting && page.documentHelper.owner.selectionModule && !this.documentHelper.isScrollToSpellCheck && page.documentHelper.owner.selectionModule.selectedWidgets.length > 0) {
+        if (!this.isPrinting && page.documentHelper.owner.selectionModule && !this.documentHelper.isScrollToSpellCheck
+            && page.documentHelper.owner.selectionModule && page.documentHelper.owner.selectionModule.selectedWidgets
+            && page.documentHelper.owner.selectionModule.selectedWidgets.length > 0) {
             let renderHighlight: boolean = page.documentHelper.owner.selectionModule.selectedWidgets.containsKey(lineWidget);
             if (!renderHighlight && lineWidget.paragraph.isInHeaderFooter) {
                 let keys: IWidget[] = page.documentHelper.owner.selectionModule.selectedWidgets.keys;
@@ -2868,8 +2872,8 @@ private calculatePathBounds(data: string): Rect {
             isHeightType = ((containerWid as TableCellWidget).ownerRow.rowFormat.heightType === 'Exactly');
         }
         if (elementBox.textWrappingStyle === 'Inline') {
-            //If the image width is greater than the paragraph width, then we clip the image based on the current linewidget position from the top(X-axis) and left(Y-axis).
-            if ((topMargin < 0 || elementBox.line.paragraph.width < elementBox.width)) {
+            //If the image width is greater than the paragraph width, then we clip the image based on the current linewidget position from the left(X-axis) and top(Y-axis).
+            if ((topMargin < 0 || elementBox.line.paragraph.width < elementBox.width) && !isHeightType) {
                 // if (containerWid instanceof BodyWidget) {
                 //     widgetWidth = containerWid.width + containerWid.x;
                 // } else 
@@ -2883,11 +2887,16 @@ private calculatePathBounds(data: string): Rect {
                     isClipped = true;
                     this.clipRect(left + leftMargin, top + topMargin, this.getScaledValue(widgetWidth), this.getScaledValue(containerWid.height));
                 }
-                // If the containterWidget's(TableCellWdiget) row height type is 'Exactly', then we clip the image based on the containerWid.x(X-axis) and containerWid.y(Y-axis).
+                // If the containterWidget's(TableCellWdiget) row height type is 'Exactly', then we clip the image based on the left(X-axis) and containerWid.y(Y-axis).
             } else if (isHeightType) {
-                let width: number = containerWid.width + containerWid.margin.left - (containerWid as TableCellWidget).leftBorderWidth;
+                let leftIndent: number = 0;
+                if (containerWid.childWidgets[0] instanceof ParagraphWidget) {
+                    let paraAdv: ParagraphWidget = containerWid.childWidgets[0] as ParagraphWidget;
+                    leftIndent = paraAdv.paragraphFormat.leftIndent;
+                }
+                let width: number = containerWid.width + containerWid.margin.left - (containerWid as TableCellWidget).leftBorderWidth - leftIndent;
                 isClipped = true;
-                this.clipRect(containerWid.x, containerWid.y, this.getScaledValue(width), this.getScaledValue(containerWid.height));
+                this.clipRect(left + leftMargin, containerWid.y, this.getScaledValue(width), this.getScaledValue(containerWid.height));
             }
         }
         if (elementBox.isMetaFile && !isNullOrUndefined(elementBox.metaFileImageString)) {

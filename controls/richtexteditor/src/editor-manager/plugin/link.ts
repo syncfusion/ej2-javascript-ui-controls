@@ -214,7 +214,11 @@ export class LinkCommand {
             }
             if (!isNOU(e.item.text) && e.item.text !== '') {
                 linkText = anchorEle.innerText;
-                anchorEle.innerText =  e.item.text;
+                const walker: TreeWalker = document.createTreeWalker(anchorEle, NodeFilter.SHOW_TEXT, null);
+                const textnode: Node = walker.nextNode();
+                if (textnode) {
+                    textnode.textContent = e.item.text;
+                }
             }
             if (!isNOU(e.item.target)) {
                 anchorEle.setAttribute('target', e.item.target);
@@ -408,6 +412,13 @@ export class LinkCommand {
             this.unwrapLink(currentNode);
             currentNode.normalize();
             this.applyLinkToBlockNode(currentNode, e, appliedNodes);
+            if (blockNodes.length <= 1 && appliedNodes.length <= 1) {
+                const currentText: string = appliedNodes[appliedNodes.length - 1].textContent.trim();
+                const newText: string = e.item.text.trim();
+                if (currentText !== newText) {
+                    appliedNodes[appliedNodes.length - 1].textContent = newText;
+                }
+            }
         }
         if (appliedNodes.length === 0) {
             return;

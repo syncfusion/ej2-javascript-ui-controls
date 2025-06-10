@@ -191,7 +191,7 @@ export class _PdfStreamWriter {
     }
     _setLineDashPattern(pattern: number[], patternOffset: number): void {
         let tempPattern: string = '[';
-        if (pattern.length > 1) {
+        if (pattern.length >= 1) {
             for (let index: number = 0; index < pattern.length; index++) {
                 if (index === pattern.length - 1) {
                     tempPattern += pattern[index].toString(); // eslint-disable-line

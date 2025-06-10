@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 29.2.10 (2025-06-10)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I729260` -  Resolved an issue where connector lines couldn't connect between two tasks and the tooltip position was displayed incorrectly.
+- `#I731175` - The issue of incorrect dates in PDF export when the `showWeekend` property is disabled has been fixed.
+
 ## 29.2.8 (2025-06-03)
 
 ### GanttChart

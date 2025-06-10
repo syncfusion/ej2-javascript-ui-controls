@@ -865,9 +865,6 @@ export class Resize implements IAction {
         if (isNullOrUndefined(this.column)) {
             return;
         }
-        if (this.parent.isFrozenGrid()) {
-            this.refreshResizefrzCols();
-        }
         let offsetWidth: number = 0;
         if (isNullOrUndefined(this.column)) {
             offsetWidth = (parentsUntil(this.element, 'th') as HTMLTableCellElement).offsetWidth;
@@ -924,6 +921,9 @@ export class Resize implements IAction {
             }
             this.resizeProcess = false;
             this.updateHelper();
+        }
+        if (this.parent.isFrozenGrid()) {
+            this.refreshResizefrzCols();
         }
         this.isDblClk = false;
     }

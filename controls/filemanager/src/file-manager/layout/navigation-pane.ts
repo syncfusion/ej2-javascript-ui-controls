@@ -235,6 +235,7 @@ export class NavigationPane {
                 }
             }
             else if (this.previousSelected[0] !== args.node.getAttribute('data-uid')){
+                this.isSameNodeClicked = true;
                 const selecEventArgs: FileSelectEventArgs =
                 { action: args.action, fileDetails: nodeData[0], isInteracted: this.isNodeClickCalled };
                 this.parent.trigger('fileSelect', selecEventArgs);
@@ -291,6 +292,7 @@ export class NavigationPane {
         if (previousPath !== this.parent.path) {
             if (!this.isRightClick && this.isSameNodeClicked) {
                 read(this.parent, this.isPathDragged ? events.pasteEnd : events.pathChanged, this.parent.path);
+                this.isNodeClickCalled = true;
             }
             this.parent.visitedItem = args.node;
         }

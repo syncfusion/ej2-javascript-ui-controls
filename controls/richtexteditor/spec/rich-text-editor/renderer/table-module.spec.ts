@@ -879,6 +879,85 @@ describe('Table Module', () => {
         });
     });
 
+    describe('Bug 959900: Ta<tr> Element Gets Inline height Style When Resizing Table Column Widths in Blazor Rich Text Editor ', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                resizeStart: (args) => {
+                    expect(args.event.target.getAttribute('data-col') === '0');
+                },
+                resizeStop: (args) => {
+                    expect(args.requestType.toLocaleLowerCase() === 'table');
+                },
+                resizing: (args) => {
+                    expect(args.requestType.toLocaleLowerCase() === 'table');
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Resize Start Event check with first column', () => {
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
+            let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("click", false, true);
+            target.dispatchEvent(clickEvent);
+            target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
+            target.dispatchEvent(clickEvent);
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            (rteObj.tableModule as any).resizeHelper({ target: table, preventDefault: function () { } });
+            expect(rteObj.contentModule.getPanel().querySelectorAll('.e-column-resize').length === 4).toBe(true);
+            let reCol1: any = rteObj.contentModule.getPanel().querySelectorAll('.e-column-resize')[0];
+            clickEvent.initEvent("mousedown", false, true);
+            reCol1.dispatchEvent(clickEvent);
+            (rteObj.tableModule as any).resizeStart(clickEvent);
+        });
+        it('Percentage Check-While resizing first column', () => {
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            let mouseEvent = document.createEvent('MouseEvents');
+            mouseEvent.initEvent('mousedown', true, true);
+            (document.getElementsByClassName('e-column-resize')[0] as HTMLElement).dispatchEvent(mouseEvent);
+            mouseEvent.initEvent('mousemove', true, true);
+            document.dispatchEvent(mouseEvent);
+            mouseEvent.initEvent('mouseup', true, true);
+            document.dispatchEvent(mouseEvent);
+            let colWidth: string = (table as HTMLTableElement).rows[0].cells[0].style.width
+            expect(colWidth.indexOf('%') !== -1).toBe(true);
+        });
+        it('resize end after first column', () => {
+            let resizeBot: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('.e-column-resize') as HTMLElement;
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            (rteObj.tableModule as any).resizeEnd({ target: resizeBot });
+            expect(rteObj.contentModule.getEditPanel().querySelector('.e-column-resize')).toBe(null);
+            expect((rteObj.tableModule as any).pageX).toBe(null);
+            expect(rteObj.contentModule.getEditPanel().querySelector('tr').style.height === '').toBe(true); 
+        });
+        it('resizing first column', () => {
+            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+            expect(table.style.marginLeft !== '').toBe(false);
+            let clickEvent: any = document.createEvent("MouseEvents");
+            (rteObj.tableModule as any).resizeHelper({ target: table, preventDefault: function () { } });
+            let reCol1: any = rteObj.contentModule.getPanel().querySelectorAll('.e-column-resize')[0];
+            (<any>rteObj.tableModule).resizeBtnStat.column = true;
+            (rteObj.tableModule as any).resizeStart({ target: reCol1, pageX: 100, pageY: 0, preventDefault: function () { } });
+            clickEvent.initEvent("mousedown", false, true);
+            reCol1.dispatchEvent(clickEvent);
+            (rteObj.tableModule as any).resizeStart(clickEvent);
+            (<any>rteObj.tableModule).resizeBtnStat.column = true;
+            let width: any = (table as HTMLTableElement).rows[0].cells[0].offsetWidth;
+            (rteObj.tableModule as any).resizing({ target: reCol1, pageX: 200, pageY: 200, preventDefault: function () { } });
+            width += 200;
+            expect(table.style.marginLeft !== '').toBe(true);
+        });
+    });
+
     describe('EJ2-60291 - Table Last Column Resize check ', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -7915,6 +7994,129 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                     done();
                 }, 150);
             }, 100);
+        });
+    });
+
+    describe('EJ2-28899: Apply alignment to multiple selected table header cells', () => {
+        let rteObj: any;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: [
+                        'Bold', 'CreateTable', '|', 'Formats', 'Alignments',
+                        'OrderedList', 'UnorderedList', 'Outdent', 'Indent'
+                    ]
+                },
+                quickToolbarSettings: {
+                    table: ['Alignments', 'TableCell']
+                },
+                value:
+                    '<p><b>Description:</b></p><p>The Rich Text Editor (RTE) control is an easy to render in client side.</p>' +
+                    '<table class="e-rte-table" style="width: 100%;">' +
+                    '<thead><tr><th class="e-cell-select">Header 1</th><th>Header 2</th><th>Header 3</th></tr></thead>' +
+                    '<tbody><tr><td>test</td><td>test2</td><td>test3</td></tr></tbody></table>'
+            });
+            rteEle = rteObj.element as HTMLElement;
+            controlId = rteEle.id;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Apply right alignment to multiple selected table header cells', (done: DoneFn) => {
+            const tdCells: NodeListOf<HTMLTableCellElement> = rteEle.querySelectorAll('.e-rte-table td');
+            const startCell: HTMLTableCellElement = tdCells[0];
+            const endCell: HTMLTableCellElement = tdCells[2];
+            const eventsArg = {
+                pageX: 50,
+                pageY: 300,
+                target: startCell,
+                which: 1
+            };
+            rteObj.mouseDownHandler(eventsArg);
+            const mouseMoveEvent = new MouseEvent('mousemove', {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+            endCell.dispatchEvent(mouseMoveEvent);
+            rteObj.mouseUp(eventsArg);
+            setCursorPoint(endCell.firstChild as Element, 3)
+            rteObj.tableModule.editAreaClickHandler({ args: eventsArg });
+            setTimeout(() => {
+                const tablePopup = document.querySelector('.e-rte-quick-popup') as HTMLElement;
+                const alignBtn = tablePopup.querySelector(`#${controlId}_quick_Alignments`) as HTMLElement;
+                alignBtn.click();
+                const dropdown = document.querySelector(`#${controlId}_quick_Alignments-popup`) as HTMLElement;
+                const rightAlignItem = dropdown.querySelectorAll('.e-item')[2] as HTMLElement;
+                rightAlignItem.click();
+                expect(tdCells[0].style.textAlign).toBe('right');
+                expect(tdCells[1].style.textAlign).toBe('right');
+                expect(tdCells[2].style.textAlign).toBe('right');
+                done();
+            }, 600);
+        });
+    });
+    
+    describe("EJ2-957170: Apply vertical alignment to multiple selected table cells", function () {
+        let rteObj: any;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable', '|', 'Formats', 'Alignments', 'OrderedList',
+                        'UnorderedList', 'Outdent', 'Indent']
+                },
+                quickToolbarSettings: {
+                    table: ['TableCellVerticalAlign', 'TableCell'],
+                },
+                value: `<p><b>Description:</b></p>
+                        <p>The Rich Text Editor (RTE) control is easy to render on the client side.</p>
+                        <table class="e-rte-table" style="width: 100%;">
+                            <tbody>
+                                <tr>
+                                    <td class="e-cell-select">Cell 1</td>
+                                    <td>Cell 2</td>
+                                    <td>Cell 3</td>
+                                </tr>
+                                <tr>
+                                    <td>Cell 4</td>
+                                    <td>Cell 5</td>
+                                    <td>Cell 6</td>
+                                </tr>
+                            </tbody>
+                        </table>`
+            });
+            rteEle = rteObj.element as HTMLElement;
+            controlId = rteEle.id;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it('Apply middle vertical alignment to selected table data cells', (done: DoneFn) => {
+            const tdCells: NodeListOf<HTMLTableCellElement> = rteEle.querySelectorAll('.e-rte-table td');
+            const startCell: HTMLTableCellElement = tdCells[0];
+            const endCell: HTMLTableCellElement = tdCells[2];
+            const eventsArg = { pageX: 50, pageY: 300, target: startCell, which: 1 };
+            rteObj.mouseDownHandler(eventsArg);
+            const moveEvent = new MouseEvent("mousemove", { view: window, bubbles: true, cancelable: true });
+            endCell.dispatchEvent(moveEvent);
+            rteObj.mouseUp(eventsArg);
+            rteObj.tableModule.editAreaClickHandler({ args: eventsArg });
+            setTimeout(() => {
+                const tablePopup = document.querySelector('.e-rte-quick-popup') as HTMLElement;
+                const vAlignBtn = tablePopup.querySelector(`#${controlId}_quick_TableCellVerticalAlign`) as HTMLElement;
+                vAlignBtn.click();
+                const dropdown = document.querySelector(`#${controlId}_quick_TableCellVerticalAlign-popup`) as HTMLElement;
+                const middleAlignItem = dropdown.querySelectorAll('.e-item')[1] as HTMLElement;
+                middleAlignItem.click();
+                expect(tdCells[0].style.verticalAlign).toBe('middle');
+                expect(tdCells[1].style.verticalAlign).toBe('middle');
+                expect(tdCells[2].style.verticalAlign).toBe('middle');
+                done();
+            }, 600);
         });
     });
 });

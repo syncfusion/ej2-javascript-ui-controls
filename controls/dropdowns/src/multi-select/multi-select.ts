@@ -1302,8 +1302,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (!isNullOrUndefined(this.value)) {
             valuecheck = this.presentItemValue(this.ulElement);
         }
+        const isContainsValue: boolean = valuecheck.some((item: string | number | boolean | object) => item !== null);
         if (valuecheck.length > 0 && this.dataSource instanceof DataManager && !isNullOrUndefined(this.value)
-        && this.listData != null && !(valuecheck.length === 1 && valuecheck[0] == null)) {
+        && this.listData != null && isContainsValue) {
             this.isaddNonPresentItems = true;
             this.addNonPresentItems(valuecheck, this.ulElement, this.listData);
             this.isaddNonPresentItems = false;
@@ -1589,9 +1590,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                 return this.virtualFilterQuery(filterQuery);
             }
             if (this.virtualSelectAll) {
-                return query ? query.take(this.maximumSelectionLength).requiresCount() : this.query ?
-                    this.query.take(this.maximumSelectionLength).requiresCount() :
-                    new Query().take(this.maximumSelectionLength).requiresCount();
+                return query ? query.skip(0).take(this.maximumSelectionLength).requiresCount() : this.query ?
+                    this.query.skip(0).take(this.maximumSelectionLength).requiresCount() :
+                    new Query().skip(0).take(this.maximumSelectionLength).requiresCount();
             }
             return filterQuery;
         } else {
@@ -6207,6 +6208,10 @@ export class MultiSelect extends DropDownBase implements IInput {
         prop: string): void {
         if (!this.list) {
             this.onLoadSelect();
+            if (this.enableVirtualization) {
+                this.setProperties({ text: '' }, true);
+                this.checkInitialValue();
+            }
         } else if ((this.dataSource instanceof DataManager) && (!this.listData || !(this.mainList && this.mainData))) {
             this.onLoadSelect();
         } else {
@@ -6214,8 +6219,9 @@ export class MultiSelect extends DropDownBase implements IInput {
             if (!isNullOrUndefined(this.value) && !this.allowCustomValue) {
                 valuecheck = this.presentItemValue(this.ulElement);
             }
+            const isContainsValue: boolean = valuecheck.some((item: string | number | boolean | object) => item !== null);
             if (prop === 'value' && valuecheck.length > 0 && this.dataSource instanceof DataManager && !isNullOrUndefined(this.value)
-                && this.listData != null) {
+                && this.listData != null && isContainsValue) {
                 this.mainData = null;
                 this.setDynValue = true;
                 this.isaddNonPresentItems = true;
@@ -6241,10 +6247,39 @@ export class MultiSelect extends DropDownBase implements IInput {
                 } else if (this.enableVirtualization && (!(this.dataSource instanceof DataManager))) {
                     this.initialValueUpdate(this.dataSource, true);
                 } else if (!this.isInitRemoteVirtualData) {
-                    this.isDynamicRemoteVirtualData = true;
-                    this.initialValueUpdate(this.listData, true);
-                    this.isDynamicRemoteVirtualData = false;
-                    this.initialUpdate();
+                    if (this.allowObjectBinding && !isContainsValue && this.value && this.value.length) {
+                        const fields: string = !this.isPrimitiveData ? this.fields.value : '';
+                        let predicate: Predicate;
+                        for (let i: number = 0; i < this.value.length; i++) {
+                            const value: string | number | boolean = this.allowObjectBinding ?
+                                getValue((this.fields.value) ? this.fields.value : '', (this.value[i as number] as string)) :
+                                (this.value[i as number] as string);
+                            if (i === 0) {
+                                predicate = new Predicate(fields, 'equal', (value as string));
+                            } else {
+                                predicate = predicate.or(fields, 'equal', (value as string));
+                            }
+                        }
+                        if (this.dataSource instanceof DataManager) {
+                            this.dataSource.executeQuery(new Query().where(predicate))
+                                .then((e: Object) => {
+                                    if (((e as ResultData).result as object[]).length > 0) {
+                                        const listItems: object[] = ((e as ResultData).result as object[]);
+                                        this.isDynamicRemoteVirtualData = true;
+                                        setTimeout(() => {
+                                            this.initialValueUpdate(listItems, true);
+                                            this.isDynamicRemoteVirtualData = false;
+                                            this.initialUpdate();
+                                        }, 100);
+                                    }
+                                });
+                        }
+                    } else {
+                        this.isDynamicRemoteVirtualData = true;
+                        this.initialValueUpdate(this.listData, true);
+                        this.isDynamicRemoteVirtualData = false;
+                        this.initialUpdate();
+                    }
                 }
                 if (this.mode !== 'Box' && !this.inputFocus) {
                     this.updateDelimView();

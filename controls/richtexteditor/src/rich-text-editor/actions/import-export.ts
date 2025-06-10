@@ -3,6 +3,7 @@ import * as events from '../base/constant';
 import { SuccessEventArgs, Uploader } from '@syncfusion/ej2-inputs';
 import { RichTextEditor } from '../base';
 import { NotifyArgs } from '../base/interface';
+import { EXPORT_STYLES } from '../../common/export-styles';
 /**
  * ImportExport module called when import and export content in RichTextEditor
  */
@@ -58,12 +59,12 @@ export class ImportExport {
         if (args.member === 'ExportWord') {
             filename = this.parent.exportWord.fileName;
             serviceUrl = this.parent.exportWord.serviceUrl;
-            html = `<html><head><style>${this.parent.exportWord.stylesheet}</style></head><body>${rteHtmlData}</body></html>`;
+            html = `<html><head><style>${this.parent.exportWord.stylesheet + EXPORT_STYLES}</style></head><body><div class="e-content">${rteHtmlData}</div></body></html>`;
         }
         else if (args.member === 'ExportPdf') {
             filename = this.parent.exportPdf.fileName;
             serviceUrl = this.parent.exportPdf.serviceUrl;
-            html = `<html><head><style>${this.parent.exportPdf.stylesheet}</style></head><body>${rteHtmlData}</body></html>`;
+            html = `<html><head><style>${this.parent.exportPdf.stylesheet + EXPORT_STYLES}</style></head><body><div class="e-content">${rteHtmlData}</div></body></html>`;
         }
         const actionBegin: ActionBeginEventArgs = {
             requestType: args.member,

@@ -1984,6 +1984,7 @@ export class TaskProcessor extends DateProcessor {
      */
     public calculateLeftValue( timelineStartDate: Date, currentDate: Date): number {
         const startdate : Date = new Date(this.parent.timelineModule.timelineStartDate.getTime());
+        currentDate.setHours(0, 0, 0, 0);
         const nonWorkingDaysCount  : number = this.parent.timelineModule.calculateNonWorkingDaysBetweenDates(
             startdate, currentDate);
         let totalMilliseconds: number;

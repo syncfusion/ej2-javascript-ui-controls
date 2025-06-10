@@ -19,6 +19,7 @@ export class Canvas extends Container {
      *  @private
      */
     public measureChildren: boolean = undefined;
+
     /**
      * Measures the minimum space that the canvas requires
      * @param availableSize
@@ -83,7 +84,7 @@ export class Canvas extends Container {
         this.desiredSize = desired;
         return desired;
     }
-
+    
     /**
      * Measures the minimum space that the canvas requires
      * @param availableSize 

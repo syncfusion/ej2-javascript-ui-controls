@@ -2599,7 +2599,9 @@ export class Signature {
             for (let i: number = 0; i < collections.length; i++) {
                 const signatureName: string = collections[parseInt(i.toString(), 10)].annotationId ?
                     collections[parseInt(i.toString(), 10)].annotationId : collections[parseInt(i.toString(), 10)].signatureName;
-                if (signatureName === signature.signatureName) {
+                if (signatureName === signature.signatureName &&
+                    (collections[parseInt(i.toString(), 10)].pageNumber === signature.pageNumber ||
+                    collections[parseInt(i.toString(), 10)].pageNumber === signature.pageIndex)) {
                     this.pdfViewer.signatureCollection.splice(i, 1);
                     return { isExisting: true, position: i };
                 }
@@ -2617,7 +2619,9 @@ export class Signature {
         const collections: any = this.pdfViewer.signatureCollection;
         if (collections && signature) {
             for (let i: number = 0; i < collections.length; i++) {
-                if (collections[parseInt(i.toString(), 10)].annotationId === signature.signatureName) {
+                if (collections[parseInt(i.toString(), 10)].annotationId === signature.signatureName &&
+                    (collections[parseInt(i.toString(), 10)].pageNumber === signature.pageNumber ||
+                    collections[parseInt(i.toString(), 10)].pageNumber === signature.pageIndex)) {
                     this.pdfViewer.signatureCollection.splice(i, 1);
                     break;
                 }

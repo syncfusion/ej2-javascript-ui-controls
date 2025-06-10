@@ -2,8 +2,8 @@ import { _PdfDictionary, _PdfReference, _PdfName } from './../pdf-primitives';
 import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfForm } from './form';
 import { PdfRadioButtonListItem, PdfStateItem, PdfWidgetAnnotation, PdfListFieldItem, _PaintParameter, PdfInteractiveBorder } from './../annotations/annotation';
-import { _getItemValue, _checkField, _removeReferences, _removeDuplicateReference, _updateVisibility, _styleToString, _getStateTemplate, _findPage, _getInheritableProperty, _getNewGuidString, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _mapBorderStyle, _getUpdatedBounds, _setMatrix, _obtainFontDetails, _isNullOrUndefined, _stringToPdfString, _mapFont, _isRightToLeftCharacters, _getFontFromDescriptor, _encode, _getFontStyle, _createFontStream, _decodeFontFamily } from './../utils';
-import { _PdfCheckFieldState, PdfFormFieldVisibility, _FieldFlag, PdfAnnotationFlag, PdfTextAlignment, PdfHighlightMode, PdfBorderStyle, PdfRotationAngle, PdfCheckBoxStyle, PdfFormFieldsTabOrder, PdfFillMode, PdfTextDirection } from './../enumerator';
+import { _getItemValue, _checkField, _removeReferences, _removeDuplicateReference, _updateVisibility, _styleToString, _getStateTemplate, _findPage, _getInheritableProperty, _getNewGuidString, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _mapBorderStyle, _getUpdatedBounds, _setMatrix, _obtainFontDetails, _isNullOrUndefined, _stringToPdfString, _mapFont, _isRightToLeftCharacters, _getFontStyle, _createFontStream, _encode, _getFontFromDescriptor, _decodeFontFamily, _updateDashedBorderStyle } from './../utils';
+import { _PdfCheckFieldState, PdfFormFieldVisibility, _FieldFlag, PdfAnnotationFlag, PdfTextAlignment, PdfHighlightMode, PdfBorderStyle, PdfRotationAngle, PdfCheckBoxStyle, PdfFormFieldsTabOrder, PdfFillMode, PdfTextDirection, _PdfWordWrapType } from './../enumerator';
 import { PdfPage } from './../pdf-page';
 import { PdfDocument } from './../pdf-document';
 import { _PdfBaseStream } from './../base-stream';
@@ -2949,6 +2949,7 @@ export class PdfTextBoxField extends PdfField {
                 widget.borderColor = [255, 255, 255];
             }
             parameter.borderPen = new PdfPen(widget.borderColor,  border.width);
+            _updateDashedBorderStyle(border, parameter);
         }
         parameter.borderWidth = border.width;
         parameter.borderStyle = border.style;
@@ -3721,6 +3722,7 @@ export class PdfButtonField extends PdfField {
         const border: PdfInteractiveBorder = widget.border;
         if (widget.borderColor) {
             parameter.borderPen = new PdfPen(widget.borderColor, border.width);
+            _updateDashedBorderStyle(border, parameter);
         }
         parameter.borderWidth = border.width;
         parameter.borderStyle = border.style;
@@ -3848,7 +3850,10 @@ export class PdfButtonField extends PdfField {
                         if (rectangle[2] > rectangle[3]) {
                             g.translateTransform(0, g._size[1]);
                             g.rotateTransform(-90);
-                            rectangle = [parameter.bounds[0], parameter.bounds[1], parameter.bounds[2], parameter.bounds[3]];
+                            const x: number = g._size[1] - (rectangle[1] + rectangle[3]);
+                            const y: number = rectangle[0];
+                            rectangle = [x, y, rectangle[3], rectangle[2]];
+                            format._wordWrapType = _PdfWordWrapType.none;
                         } else {
                             const z: number = rectangle[0];
                             rectangle[0] = -(rectangle[1] + rectangle[3]);
@@ -3865,6 +3870,7 @@ export class PdfButtonField extends PdfField {
                     const x: number = rectangle[1];
                     const y: number = g._size[0] - (rectangle[0] + rectangle[2]);
                     rectangle = [x, y, rectangle[3], rectangle[2]];
+                    format._wordWrapType = _PdfWordWrapType.none;
                 } else if (parameter.rotationAngle === 180) {
                     g.translateTransform(g._size[0], g._size[1]);
                     g.rotateTransform(-180);
@@ -6434,6 +6440,7 @@ export class PdfComboBoxField extends PdfListField {
             const border: PdfInteractiveBorder = item.border;
             if (item.borderColor) {
                 parameter.borderPen = new PdfPen(item.borderColor, border.width);
+                _updateDashedBorderStyle(border, parameter);
             }
             parameter.borderStyle = border.style;
             parameter.borderWidth = border.width;
@@ -6469,6 +6476,7 @@ export class PdfComboBoxField extends PdfListField {
             const border: PdfInteractiveBorder = this.border;
             if (this.borderColor) {
                 parameter.borderPen = new PdfPen(this.borderColor, border.width);
+                _updateDashedBorderStyle(border, parameter);
             }
             parameter.borderStyle = border.style;
             parameter.borderWidth = border.width;
@@ -6864,6 +6872,7 @@ export class PdfListBoxField extends PdfListField {
             const border: PdfInteractiveBorder = item.border;
             if (item.borderColor) {
                 parameter.borderPen = new PdfPen(item.borderColor, border.width);
+                _updateDashedBorderStyle(border, parameter);
             }
             parameter.borderStyle = border.style;
             parameter.borderWidth = border.width;
@@ -6902,6 +6911,7 @@ export class PdfListBoxField extends PdfListField {
             const border: PdfInteractiveBorder = this.border;
             if (this.borderColor) {
                 parameter.borderPen = new PdfPen(this.borderColor, border.width);
+                _updateDashedBorderStyle(border, parameter);
             }
             parameter.borderStyle = border.style;
             parameter.borderWidth = border.width;

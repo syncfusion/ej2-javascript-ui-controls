@@ -2214,12 +2214,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (!isNOU(this.placeholder)) {
             this.setPlaceHolder();
         }
-        if (!isNOU(e) && !isNOU(e.code) && (e.code === 'Backspace' || e.code === 'Delete')) {
+        if (!isNOU(e) && !isNOU(e.code) && (e.code === 'Backspace' || e.code === 'Delete' || e.code === 'KeyX')) {
             const range : Range = this.contentModule.getDocument().getSelection().getRangeAt(0);
             const div: HTMLElement = document.createElement('div');
             div.appendChild(range.cloneContents());
             const selectedHTML: string = div.innerHTML;
-            if (selectedHTML === this.inputElement.innerHTML) {
+            if (selectedHTML === this.inputElement.innerHTML || selectedHTML === this.inputElement.textContent.trim()) {
                 this.isCopyAll = true;
             }
         }
@@ -2232,7 +2232,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private keyUp(e: KeyboardEvent): void {
         if (this.editorMode === 'HTML') {
             const range: Range = this.getRange();
-            if (!isNOU(e) && !isNOU(e.code) && (e.code === 'Backspace' || e.code === 'Delete')) {
+            if (!isNOU(e) && !isNOU(e.code) && (e.code === 'Backspace' || e.code === 'Delete' || e.code === 'KeyX')) {
                 // To prevent the reformatting the content removed browser behavior.
                 const currentRange: Range = this.getRange();
                 const selection: Selection = this.iframeSettings.enable ? this.contentModule.getPanel().ownerDocument.getSelection() :
@@ -2907,7 +2907,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     private replaceEntities(value: string): string {
         if (this.editorMode !== 'HTML' || isNOU(value) || !/&(amp;)*((times)|(divide)|(ne))/.test(value)) {
-            return value;
+            return value === ' ' ? '<p><br></p>' : value;
         }
         const isEncodedOrSanitized: boolean = this.enableHtmlEncode || this.enableHtmlSanitizer;
         const createReplacement: (entity: string) => [string, RegExp] = (entity: string): [string, RegExp] => {
@@ -3210,6 +3210,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.updateRTL();
         this.updateReadOnly();
         this.updatePanelValue();
+        if (this.inputElement) {
+            this.inputElement.innerHTML = resetContentEditableElements(this.inputElement.innerHTML, this.editorMode);
+        }
         if (this.enableHtmlEncode && !isNOU(this.value)) {
             this.setProperties({ value: this.encode(decode(this.value)) });
         }

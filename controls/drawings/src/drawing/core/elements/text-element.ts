@@ -94,7 +94,7 @@ export class TextElement extends DrawingElement {
         textOverflow: 'Wrap'
     };
 
-    /**
+     /**
      * Measures the minimum size that is required for the text element
      * @param availableSize
      * @private

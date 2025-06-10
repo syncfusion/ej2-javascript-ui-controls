@@ -712,6 +712,7 @@ export class SfdtReader {
         return undefined;
     }
     public parseAbstractList(data: any, abstractLists: WAbstractList[]): void {
+        let abstractListMap: Dictionary<number, WAbstractList> = new Dictionary<number, WAbstractList>();
         for (let i: number = 0; i < data[abstractListsProperty[this.keywordIndex]].length; i++) {
             const abstractList: WAbstractList = new WAbstractList();
             const abstract: any = data[abstractListsProperty[this.keywordIndex]][i];
@@ -732,6 +733,14 @@ export class SfdtReader {
                     }
                 }
             }
+            if (abstractListMap.containsKey(abstractList.abstractListId)) {
+                let index: number = abstractLists.indexOf(abstractListMap.get(abstractList.abstractListId));
+                if (index >= 0) {
+                    abstractLists.splice(index, 1);
+                    abstractListMap.remove(abstractList.abstractListId);
+                }
+            }
+            abstractListMap.add(abstractList.abstractListId, abstractList);
             abstractLists.push(abstractList);
         }
     }
@@ -880,6 +889,8 @@ export class SfdtReader {
                     paragraph.paragraphFormat = new WParagraphFormat(paragraph);
                     if (block[inlinesProperty[this.keywordIndex]].length > 0) {
                         hasValidElmts = this.parseParagraph(block[inlinesProperty[this.keywordIndex]], paragraph, writeInlineFormat, undefined, isFootnoteEndnote && i === 0);
+                    } else if (this.documentHelper.layout && !this.documentHelper.owner.enableLayout) {
+                        this.documentHelper.layout.addLineWidget(paragraph)
                     }
                     if (!(isSectionBreak && block === data[data.length - 1] && block[inlinesProperty[this.keywordIndex]].length === 0 && !hasValidElmts)) {
                         this.parseCharacterFormat(this.keywordIndex, block[characterFormatProperty[this.keywordIndex]], paragraph.characterFormat);

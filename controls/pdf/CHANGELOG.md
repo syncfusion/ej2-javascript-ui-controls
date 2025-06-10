@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 29.2.10 (2025-06-10)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Fixed an issue where the selected index of a combo box field was not visible in Chrome PDF viewer.
+- Fixed an issue where annotation comments and review history were not cleared after deleting the annotation.
+- Fixed incorrect parsing of radio button item values.
+- Fixed an issue with saving dashed borders on button fields in their appearance.
+- Fixed the appearance preservation issue with button field rotation.
+- Fixed the issue where the page was undefined while parsing a form field.
+
 ## 29.2.8 (2025-06-03)
 
 ### PDF Parser

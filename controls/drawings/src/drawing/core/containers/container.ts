@@ -161,7 +161,6 @@ export class Container extends DrawingElement {
         return desired;
     }
 
-
     /**
      * Arranges the container and its children
      * @param desiredSize 

@@ -193,11 +193,21 @@ export class PdfGantt extends PdfTreeGrid {
             {
                 detail.startDate = new Date(timelineStartDate.getTime());
                 const startDays1: number = (detail.startPoint / pixelToPoint(this.chartHeader.bottomTierCellWidth) * 7);
-                detail.startDate.setDate(detail.startDate.getDate() + startDays1 * count);
+                if (!this.parent.timelineSettings.showWeekend) {
+                    detail.startDate = this.calculateDaysWithoutNonworkingDays(detail.startDate, startDays1 * count);
+                }
+                else {
+                    detail.startDate.setDate(detail.startDate.getDate() + startDays1 * count);
+                }
                 const endDays1: number = Math.round((detail.endPoint - detail.startPoint)
                       / pixelToPoint(this.chartHeader.bottomTierCellWidth)) * 7 - 1;
                 detail.endDate = new Date(detail.startDate.getTime());
-                detail.endDate.setDate(detail.startDate.getDate() + endDays1 * count);
+                if (!this.parent.timelineSettings.showWeekend) {
+                    detail.endDate = this.calculateDaysWithoutNonworkingDays(detail.endDate, endDays1 * count);
+                }
+                else {
+                    detail.endDate.setDate(detail.startDate.getDate() + endDays1 * count);
+                }
                 break;
             }
             case 'Month':

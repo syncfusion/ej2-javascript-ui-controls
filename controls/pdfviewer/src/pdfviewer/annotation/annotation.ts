@@ -854,7 +854,9 @@ export class Annotation {
         const collections: any = this.pdfViewer.annotationCollection;
         if (collections && annotation) {
             for (let i: number = 0; i < collections.length; i++) {
-                if (collections[parseInt(i.toString(), 10)].annotationId === annotation.annotName) {
+                if (collections[parseInt(i.toString(), 10)].annotationId === annotation.annotName &&
+                    (collections[parseInt(i.toString(), 10)].pageNumber === annotation.pageNumber ||
+                    collections[parseInt(i.toString(), 10)].pageNumber === annotation.pageIndex)) {
                     this.pdfViewer.annotationCollection.splice(i, 1);
                     return { isExisting: true, position: i };
                 }
@@ -873,7 +875,8 @@ export class Annotation {
         if (collections && annotation) {
             for (let i: number = 0; i < collections.length; i++) {
                 if (collections[parseInt(i.toString(), 10)].annotationId ===
-                annotation.annotName || collections[parseInt(i.toString(), 10)].annotationId === annotation.annotationId) {
+                annotation.annotName || collections[parseInt(i.toString(), 10)].annotationId === annotation.annotationId &&
+                collections[parseInt(i.toString(), 10)].pageNumber === annotation.pageNumber) {
                     this.removedAnnotationCollection.push(collections[parseInt(i.toString(), 10)]);
                     this.pdfViewer.annotationCollection.splice(i, 1);
                     break;
@@ -938,7 +941,7 @@ export class Annotation {
         if (typeof annotationId === 'object') {
             annotation = annotationId;
             id = annotation.annotationId;
-            annotation = this.getAnnotationsFromAnnotationCollections(id);
+            annotation = this.getAnnotationsFromAnnotationCollections(id, annotationId);
         }
         if (typeof annotationId === 'string') {
             annotation = this.getAnnotationsFromAnnotationCollections(annotationId);
@@ -958,8 +961,8 @@ export class Annotation {
                         if (!this.isAnnotDeletionApiCall) {
                             const scroll: string = (scrollValue - 20).toString();
                             this.pdfViewerBase.viewerContainer.scrollTop = parseInt(scroll, 10);
-                            this.pdfViewerBase.viewerContainer.scrollLeft = this.getAnnotationLeft(annotation) *
-                            this.pdfViewerBase.getZoomFactor();
+                            this.pdfViewerBase.viewerContainer.scrollLeft = (annotation.bounds[0]).Left *
+                            this.pdfViewerBase.getZoomFactor() - 20;
                         }
                     } else {
                         if (this.pdfViewer.navigation) {
@@ -971,12 +974,12 @@ export class Annotation {
                         let scrollValue: number = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].top *
                         this.pdfViewerBase.getZoomFactor() + ((annotation.bounds as AnnotBoundsRect).top) *
                         this.pdfViewerBase.getZoomFactor();
-                        let scrollLeft: number = (annotation.bounds as AnnotBoundsRect).left * this.pdfViewerBase.getZoomFactor();
+                        let scrollLeft: number = ((annotation.bounds as AnnotBoundsRect).left * this.pdfViewerBase.getZoomFactor()) - 20;
                         if (annotation.shapeAnnotationType === 'Ink') {
                             scrollValue = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)].top *
                             this.pdfViewerBase.getZoomFactor() + ((annotation.bounds as IRect).y) *
                             this.pdfViewerBase.getZoomFactor();
-                            scrollLeft = (annotation.bounds as IRect).x * this.pdfViewerBase.getZoomFactor();
+                            scrollLeft = ((annotation.bounds as IRect).x * this.pdfViewerBase.getZoomFactor()) - 20;
                         }
                         if (!this.isAnnotDeletionApiCall) {
                             const scroll: string = (scrollValue - 20).toString();
@@ -1271,12 +1274,15 @@ export class Annotation {
         return isRender;
     }
 
-    private getAnnotationsFromAnnotationCollections(annotationId: string): any {
+    private getAnnotationsFromAnnotationCollections(annotationId: string, annotation?: any): any {
         const collections: AnnotationsInternal[] = this.pdfViewer.annotationCollection;
         if (collections && annotationId) {
+            const hasAnnotation: boolean = !isNullOrUndefined(annotation) && typeof annotation === 'object';
             for (let i: number = 0; i < collections.length; i++) {
                 if (collections[parseInt(i.toString(), 10)].annotationId === annotationId) {
-                    return collections[parseInt(i.toString(), 10)];
+                    if (!hasAnnotation || collections[parseInt(i.toString(), 10)].pageNumber === annotation.pageNumber) {
+                        return collections[parseInt(i.toString(), 10)];
+                    }
                 }
             }
         }
@@ -4507,7 +4513,7 @@ export class Annotation {
         if (overlappedAnnotations && this.overlappedCollections) {
             const overlappedCollections: any = [];
             for (let i: number = 0; i < overlappedAnnotations.length; i++) {
-                if (overlappedAnnotations[parseInt(i.toString(), 10)].shapeAnnotationType !== 'textMarkup' && this.overlappedCollections || isSelected) {
+                if ((overlappedAnnotations[parseInt(i.toString(), 10)].shapeAnnotationType !== 'textMarkup' && this.overlappedCollections && this.overlappedCollections.length > 0) || isSelected) {
                     for (let j: number = 0; j < this.overlappedCollections.length; j++) {
                         if (overlappedAnnotations[parseInt(i.toString(), 10)].annotName ===
                          this.overlappedCollections[parseInt(j.toString(), 10)].annotName) {
@@ -4869,21 +4875,32 @@ export class Annotation {
                 this.addReplyComments(annotation, annotation.nextComment, annotation.commentType);
                 this.isEdited = true;
             }
-            if (annotation.note === '' && annotation.commentType === 'delete') {
-                const commentDiv: HTMLElement = document.getElementById(annotation.annotationId);
-                this.deletComment(commentDiv);
-                this.isEdited = true;
-            }
-            if (annotation.comments && annotation.commentType === 'delete' && annotation.note !== '') {
+            if (isNullOrUndefined(annotation.commentId) && annotation.commentType === 'delete') {
                 const repliesDiv: any = document.querySelectorAll('.e-pv-more-options-button');
-                if (repliesDiv) {
-                    for (let i: number = 0; i < repliesDiv.length; i++) {
-                        if (repliesDiv[parseInt(i.toString(), 10)].style.visibility === 'visible') {
-                            const activeReplyDiv: any = repliesDiv[parseInt(i.toString(), 10)].parentElement.nextSibling;
+                for (let i: number = 0; i < repliesDiv.length; i++) {
+                    if (repliesDiv[parseInt(i.toString(), 10)].style.visibility === 'visible') {
+                        const activeReplyDiv: any = repliesDiv[parseInt(i.toString(), 10)].parentElement.nextSibling;
+                        const isLocked: boolean = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.
+                            checkIslockProperty(activeReplyDiv);
+                        if (activeReplyDiv && !isLocked) {
+                            this.deletComment(activeReplyDiv.parentElement);
+                            this.isEdited = true;
+                        }
+                        break;
+                    }
+                }
+            }
+            if (annotation.comments && annotation.commentType === 'delete') {
+                const repliesDiv: any = document.querySelectorAll('.e-pv-more-options-button');
+                if (repliesDiv && annotation.commentId) {
+                    for (let i: number = 0; i < annotation.comments.length; i++) {
+                        if (annotation.comments[parseInt(i.toString(), 10)].annotName === annotation.commentId) {
+                            const activeReplyDiv: any = repliesDiv[parseInt((i + 1).toString(), 10)].parentElement.parentElement;
                             const isLocked: boolean = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.
                                 checkIslockProperty(activeReplyDiv);
                             if (activeReplyDiv && !isLocked) {
-                                this.deletComment(activeReplyDiv.parentElement);
+                                this.pdfViewer.annotationModule.stickyNotesAnnotationModule
+                                    .modifyCommentDeleteProperty(activeReplyDiv.parentElement, activeReplyDiv);
                                 this.isEdited = true;
                             }
                             break;
@@ -4992,6 +5009,10 @@ export class Annotation {
                     this.isEdited = true;
                     this.pdfViewer.nodePropertyChange(currentAnnotation, { author: annotation.author });
                     this.triggerAnnotationPropChange(currentAnnotation, false, true, false, false);
+                    const commentDiv: any = document.getElementById(annotation.annotationId).firstChild.firstChild.childNodes[1];
+                    if (commentDiv instanceof Element && commentDiv.classList.contains('e-pv-comment-title')) {
+                        commentDiv.textContent = annotation.author + ' - ' + this.pdfViewer.annotationModule.stickyNotesAnnotationModule.getDateAndTime();
+                    }
                 }
                 if (currentAnnotation.subject !== annotation.subject) {
                     redoClonedObject.subject = annotation.subject;

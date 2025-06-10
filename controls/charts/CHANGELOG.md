@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.2.10 (2025-06-10)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I730840` - The console warning for the shared tooltip in trend line will no longer occurs.
+
 ## 29.2.8 (2025-06-03)
 
 ### Chart

@@ -3314,4 +3314,116 @@ describe ('left indent testing', () => {
             }, 100);
         });
     });
+
+    describe('956972 - Rich Text Editor Issues with Delete action When List Is at the End', () => {
+        let editorObj: RichTextEditor;
+        beforeAll(() => {
+            editorObj = renderRTE({
+                toolbarSettings: {
+                    items: ['OrderedList', 'UnorderedList']
+                },
+                value: `<p>
+                    <span>
+                        <span class="start">dasdas sadsa s asdasdsa as dsad </span>
+                        <br>
+                    </span>
+                </p>
+                <ol>
+                    <li style="font-style: normal;">
+                        <span><i> </i>dasdsadasd</span>
+                    </li>
+                    <li style="font-style: normal;">
+                        <span>
+                            <span style="font-size: inherit;">dasdsadas</span>
+                            <br>
+                        </span>
+                    </li>
+                </ol>
+                <p>
+                    <span>dsadsadas d asdsadsad sadasd</span>
+                </p>
+                <p>
+                    <span>
+                        <span>
+                            <span style="font-size: inherit;">dsadsadsadasasasdsa d sadas dasdas</span>
+                        </span>
+                    </span>
+                </p>
+                <p>
+                    <span>
+                        <span>
+                            <span style="font-size: inherit;">
+                                <span>dsa sad sadasd:</span>
+                                <br>
+                            </span>
+                        </span>
+                    </span>
+                </p>
+                <ol>
+                    <li style="font-style: normal;">
+                        <span>dsadassa</span>
+                    </li>
+                    <li style="font-style: normal;">
+                        <span>
+                            <span style="font-size: inherit;">dsadsadsa dsa as dasdsa</span>
+                            <br>
+                        </span>
+                    </li>
+                    <li style="font-style: normal;">
+                        <span>
+                            <span style="font-size: inherit;">
+                                <span>dsa asdsa  ad as</span>
+                                <br>
+                            </span>
+                        </span>
+                    </li>
+                    <li style="font-style: normal;">
+                        <span>
+                            <span style="font-size: inherit;">
+                                <span>
+                                    <span>
+                                        <i>das das dasda dasda</i>
+                                    </span>
+                                    <br>
+                                </span>
+                            </span>
+                        </span>
+                    </li>
+                    <li style="font-style: normal;">
+                        <span>
+                            <span style="font-size: inherit;">
+                                <span>
+                                    <span>
+                                        <p style="margin:0cm;font-size:12.0pt;font-family:&quot;Aptos&quot;,sans-serif;">
+                                            <b>
+                                                <span style="font-size:10.0pt;font-family:&quot;Arial&quot;,sans-serif;color:black;">dsad ad sada sda asda</span>
+                                            </b>
+                                        </p>
+                                        <p class="end" style="margin:0cm;font-size:12.0pt;font-family:&quot;Aptos&quot;,sans-serif;">&nbsp;</p>
+                                    </span>
+                                </span>
+                            </span>
+                        </span>
+                    </li>
+                </ol>`
+            });
+        });
+        afterAll(() => {
+            destroy(editorObj);
+        });
+        it('Select all content and then press the Backspace key now the all content in RTE should be removed.', (done) => {
+            let startNode = editorObj.inputElement.querySelector('.start');
+            let endNode = editorObj.inputElement.querySelector('.end');
+            editorObj.formatter.editorManager.nodeSelection.setSelectionText(document, startNode, endNode, 0, endNode.textContent.length);
+            let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'Backspace';
+            (editorObj as any).keyDown(keyBoardEvent);
+            (editorObj as any).keyUp(keyBoardEvent);
+            setTimeout(() => {
+                expect(editorObj.inputElement.textContent === '').toBe(true);
+                done();
+            }, 100);
+        });
+    });
 });

@@ -2981,7 +2981,7 @@ export class PdfViewerBase {
         if (measureElement) {
             measureElement = undefined;
         }
-        if (this.pdfViewer.annotationModule.measureAnnotationModule) {
+        if (!isNullOrUndefined(this.pdfViewer.annotationModule) && this.pdfViewer.annotationModule.measureAnnotationModule) {
             this.pdfViewer.annotationModule.measureAnnotationModule.destroy();
         }
     }

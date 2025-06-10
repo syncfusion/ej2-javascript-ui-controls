@@ -1436,6 +1436,7 @@ export class Timeline {
                     const currentDay: Date = new Date(startDate);
                     // Adjust the start date to find the next working day
                     while (tempCount < count) {
+                        currentDay.setHours(0, 0, 0, 0);
                         currentDay.setDate(currentDay.getDate() + 1);
                         // Check if the current day is a working day
                         if (this.parent.nonWorkingDayIndex.indexOf(currentDay.getDay()) === -1) {
@@ -1864,11 +1865,12 @@ export class Timeline {
             this.parent.timelineModule.customTimelineSettings.bottomTier.formatter;
         let thWidth: number;
         let increment: number = this.getIncrement(scheduleWeeks, count, mode, isFirstCell);
-        if (!this.parent.timelineSettings.showWeekend && (mode === 'Week' || mode === 'Month' || mode === 'Year') && tier === 'topTier' &&
-            this.parent.currentZoomingLevel.bottomTier.unit === 'Day') {
+        if (!this.parent.timelineSettings.showWeekend && (((mode === 'Week' || mode === 'Month' || mode === 'Year') && tier === 'topTier' &&
+            this.parent.currentZoomingLevel.bottomTier.unit === 'Day') || this.isZoomToFit)) {
             const copyStartDate: Date = new Date(scheduleWeeks);
             const orginalDate: Date = new Date(scheduleWeeks);
             const enddate: Date = new Date(orginalDate.getTime() + increment);
+            enddate.setHours(0, 0, 0, 0);
             const nonWorkingDay: number = this.calculateNonWorkingDaysBetweenDates(copyStartDate, enddate);
             increment = increment - (nonWorkingDay * 24 * 60 * 60 * 1000);
         }

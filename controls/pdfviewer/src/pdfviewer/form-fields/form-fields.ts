@@ -1645,7 +1645,9 @@ export class FormFields {
                         } else {
                             currentData.Text = target.value;
                             currentData.Value = target.value;
-                            currentData.Multiline = target.multiline;
+                            if (!isNullOrUndefined(target.multiline)) {
+                                currentData.Multiline = target.multiline;
+                            }
                         }
                     } else if (target.type === 'radio') {
                         if (currentData.uniqueID === target.id) {

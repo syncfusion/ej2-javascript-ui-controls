@@ -610,6 +610,11 @@ export class FreeTextAnnotation {
                         pageAnnotations[parseInt(i.toString(), 10)].modifiedDate =
                             this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
                     }
+                    if (isEdited) {
+                        pageAnnotations[parseInt(i.toString(), 10)].author = annotationBase.author;
+                        pageAnnotations[parseInt(i.toString(), 10)].modifiedDate =
+                            this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
+                    }
                     this.pdfViewer.annotationModule.storeAnnotationCollections(pageAnnotations[parseInt(i.toString(), 10)], pageNumber);
                 }
             }

@@ -622,7 +622,8 @@ export class HtmlEditor {
             this.rangeElement = (this.getRootBlockNode(currentRange.startContainer) as HTMLElement);
             if (this.rangeElement.tagName === 'OL' || this.rangeElement.tagName === 'UL') {
                 const liElement: HTMLElement = (this.getRangeLiNode(currentRange.startContainer) as HTMLElement);
-                if (liElement.previousElementSibling && liElement.previousElementSibling.childElementCount > 0) {
+                if (liElement.previousElementSibling && this.parent.inputElement.contains(liElement.previousElementSibling)
+                    && liElement.previousElementSibling.childElementCount > 0) {
                     this.oldRangeElement = liElement.previousElementSibling.lastElementChild.nodeName === 'BR' ?
                         liElement.previousElementSibling : liElement.previousElementSibling.lastChild as HTMLElement;
                     if (!isNOU(liElement.lastElementChild) && liElement.lastElementChild.nodeName !== 'BR' &&

@@ -3041,7 +3041,8 @@ export class TaskbarEdit extends DateProcessor {
                 if (!isNullOrUndefined(this.parent.connectorLineModule.tooltipTable.parentElement) &&
                     !isNullOrUndefined(this.parent.connectorLineModule.tooltipTable.parentElement.parentElement)) {
                     const tooltipElement: HTMLElement = this.parent.connectorLineModule.tooltipTable.parentElement.parentElement;
-                    if (tooltipElement.offsetTop + tooltipElement.offsetHeight > zoomedPageY) {
+                    const effectiveY: number = isNullOrUndefined(zoomedPageY) ? e.pageY : zoomedPageY;
+                    if (tooltipElement.offsetTop + tooltipElement.offsetHeight > effectiveY) {
                         tooltipElement.style.top = (e.pageY - tooltipElement.offsetHeight - 20) + 'px';
                     }
                 }

@@ -770,7 +770,7 @@ export class Selection implements IAction {
                 this.isFocusLastCell = false;
             }
             if (!target || preventFocus) { return; }
-            this.focus.onClick({ target }, true, true);
+            this.focus.onClick({ target }, true, !(this.parent.contextMenuModule && this.mouseButton === 2));
         }
     }
 

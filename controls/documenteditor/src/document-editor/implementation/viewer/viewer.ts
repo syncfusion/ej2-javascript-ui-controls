@@ -3641,9 +3641,11 @@ export class DocumentHelper {
         if (scrollLeft > x) {
             this.viewerContainer.scrollLeft = x - (this.pageContainer.offsetWidth / 100) * 20;
         } else if (scrollLeft + this.visibleBounds.width < x + scrollBarWidth) {
-            this.viewerContainer.scrollLeft = scrollLeft + (this.pageContainer.offsetWidth / 100) * 15 + scrollBarWidth;
-            while (x < this.owner.viewer.containerWidth && this.viewerContainer.scrollLeft + this.visibleBounds.width < x + scrollBarWidth) {
-                this.viewerContainer.scrollLeft = this.viewerContainer.scrollLeft + (this.pageContainer.offsetWidth / 100) * 15 + scrollBarWidth;
+            let currentLeft: number = scrollLeft + (this.pageContainer.offsetWidth / 100) * 15 + scrollBarWidth;
+            this.viewerContainer.scrollLeft = currentLeft;
+            while (x < this.owner.viewer.containerWidth && currentLeft + this.visibleBounds.width < x + scrollBarWidth) {
+                currentLeft += (this.pageContainer.offsetWidth / 100) * 15 + scrollBarWidth;
+                this.viewerContainer.scrollLeft = currentLeft;
                 if (this.viewerContainer.scrollLeft === 0) {
                     break;
                 }
@@ -6284,10 +6286,10 @@ export abstract class LayoutViewer {
         } else {
             this.documentHelper.viewerContainer.scrollLeft = 0;
         }
-        this.updateScrollBars();
         if (scrollToPosition) {
             this.documentHelper.scrollToPosition(this.documentHelper.selection.start, this.documentHelper.selection.end);
         }
+        this.updateScrollBars();
         if (this instanceof WebLayoutViewer) {
             this.documentHelper.layout.layoutWholeDocument();
         }

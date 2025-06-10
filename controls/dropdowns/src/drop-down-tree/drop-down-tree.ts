@@ -441,6 +441,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private isCheckAllCalled: boolean = false;
     private isFromFilterChange: boolean = false;
     private valueTemplateContainer: HTMLElement;
+    private previousFilterText: string;
 
     /**
      * Specifies the template that renders to the popup list content of the
@@ -1276,6 +1277,11 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     }
                 }
                 this.treeObj.fields = this.getTreeFields(fields);
+                if ((this.previousFilterText && this.previousFilterText !== '' && args.text !== '' && this.previousFilterText.indexOf(args.text) !== -1) ||
+                    (args.text && args.text !== '' && this.previousFilterText !== '' && args.text.indexOf(this.previousFilterText) !== -1)) {
+                    this.isFilterRestore = true;
+                }
+                this.previousFilterText = args.text;
                 this.treeObj.dataBind();
                 if (this.popupObj) {
                     this.popupObj.refreshPosition();

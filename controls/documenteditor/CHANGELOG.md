@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 29.2.10 (2025-06-10)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I681319` - Fixed content overlapping issue when pasting inside a table cell.
+- `#I728184` - Fixed table layout issue when the table height type is set to `Exactly`.
+- `#I722688` - Fixed list formatting issues in documents with duplicate abstract list collections.
+- `#I724060` - Fixed a script error that occurred when pasting content into merged cells.
+- `#I709787` - Improved rendering performance by reducing unnecessary re-rendering in Document Editor.
+- `#I723846` - Fixed a stack overflow error caused by recursive processing of a large number of paragraphs.
+- `#I723712` - Fixed incorrect offset calculation for space elements when inserting text at the beginning of a line.
+
 ## 29.2.8 (2025-06-03)
 
 ### DocumentEditor

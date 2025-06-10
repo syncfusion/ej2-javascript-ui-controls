@@ -2142,7 +2142,7 @@ describe('Link Module', () => {
                 let target: any = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
                 (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function () { } });
                 let result : string = document.querySelector('a').childNodes[0].nodeName;
-                expect(result === 'STRONG').not.toBe(true);
+                expect(result === 'STRONG').toBe(true);
                 done();
             },200);
         });

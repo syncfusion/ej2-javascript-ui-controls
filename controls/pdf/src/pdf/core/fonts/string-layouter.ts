@@ -212,7 +212,8 @@ export class _PdfStringLayouter {
         if (lineResult._lines !== null) {
             for (let i: number = 0, len: number = lineResult._lines.length; i < len; i++) {
                 const expHeight: number = height + lineResult._lineHeight;
-                if (expHeight <= maxHeight || maxHeight <= 0 || allowPartialLines) {
+                const value: number = Math.floor(expHeight);
+                if (value <= maxHeight || maxHeight <= 0 || allowPartialLines) {
                     let info: _LineInfo = lineResult._lines[i]; // eslint-disable-line
                     flag += info._text.length;
                     info = this._trimLine(info, (lines.length === 0));

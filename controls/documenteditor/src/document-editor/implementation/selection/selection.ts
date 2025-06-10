@@ -7309,7 +7309,7 @@ export class Selection {
                 }
                 if (element instanceof TextElementBox) {
                     top += element.margin.top > 0 ? element.margin.top : 0;
-                } else {
+                } else if (!(element instanceof BookmarkElementBox && element.indexInOwner === 0 && this.lineHasOnlyBookmarks(element.line))) {
                     let textMetrics: TextSizeInfo = this.documentHelper.textHelper.getHeight(element.characterFormat);     //for ascent and descent
                     let height: number = element.height;
                     if (element instanceof BookmarkElementBox && !this.documentHelper.layout.hasValidElement(element.line.paragraph)) {
@@ -7367,6 +7367,27 @@ export class Selection {
             'isImageSelected': isImageSelected
         };
     }
+
+    /**
+     * Returns true if the current line contains only the bookmark element.
+     */
+    private lineHasOnlyBookmarks(line: LineWidget) {
+        let lineHasOnlyBookmarks: boolean = false;
+        if (line.children.length === 0) {
+            return false;
+        }
+        for (let i: number = 0; i < line.children.length; i++) {
+            let elementBox = line.children[i];
+            if (elementBox instanceof BookmarkElementBox) {
+                lineHasOnlyBookmarks = true;
+            }
+            else {
+                return false;
+            }
+        }
+        return lineHasOnlyBookmarks;
+    }
+    
     /**
      * @private
      */
@@ -7918,7 +7939,7 @@ export class Selection {
             this.previousSelectedFormField = this.currentFormField;
         }
         if (this.owner.rulerHelper && this.owner.documentEditorSettings && this.owner.documentEditorSettings.showRuler &&
-            !this.owner.isReadOnlyMode) {
+            !this.owner.isReadOnlyMode && this.owner.enableLayout) {
             this.owner.rulerHelper.updateRuler(this.owner, false);
         }
     }
@@ -8815,7 +8836,10 @@ export class Selection {
                 || this.isCellSelected(startPosition.paragraph.associatedCell, startPosition, endPosition))) {
             this.getCharacterFormatInTableCell(startPosition.paragraph.associatedCell, selection, startPosition, endPosition);
         } else {
-            this.getCharacterFormat(paragraph, startPosition, endPosition);
+            let block: BlockWidget = this.getCharacterFormat(paragraph, startPosition, endPosition);
+            if (!isNullOrUndefined(block) && block != paragraph) {
+                this.getCharacterFormatForBlock(block, startPosition, endPosition);
+            }
         }
     }
     /**
@@ -8854,6 +8878,10 @@ export class Selection {
                     } else {
                         if (startCell === containerCell) {
                             this.getCharacterFormat(start.paragraph, start, end);
+                            let block: BlockWidget = this.getCharacterFormat(start.paragraph, start, end);
+                            if (!isNullOrUndefined(block) && block != start.paragraph) {
+                                this.getCharacterFormatForBlock(block, start, end);
+                            }
                         } else {
                             this.getCharacterFormatForTableRow(startCell.ownerRow, start, end);
                         }
@@ -8908,14 +8936,14 @@ export class Selection {
      * Get character format with in selection
      * @private
      */
-    public getCharacterFormat(paragraph: ParagraphWidget, start: TextPosition, end: TextPosition): void {
+    public getCharacterFormat(paragraph: ParagraphWidget, start: TextPosition, end: TextPosition): BlockWidget {
         if (paragraph !== start.paragraph && paragraph !== end.paragraph && !paragraph.isEmpty()) {
             this.getCharacterFormatInternal(paragraph, this);
             if(!this.characterFormat.canRetrieveNextCharacterFormat())
-                return;
+                return paragraph;
         }
         if (end.paragraph === paragraph && start.paragraph !== paragraph && end.offset === 0) {
-            return;
+            return paragraph;
         }
         let startOffset: number = 0;
         let length: number = this.getParagraphLength(paragraph);
@@ -8924,7 +8952,7 @@ export class Selection {
             //Sets selection character format.            
             let isUpdated: boolean = this.setCharacterFormat(paragraph, start, end, length);
             if (isUpdated) {
-                return;
+                return paragraph;
             }
         }
         let startLineWidget: number = paragraph.childWidgets.indexOf(start.currentWidget) !== -1 ?
@@ -8989,12 +9017,9 @@ export class Selection {
             }
         }
         if (end.paragraph === paragraph) {
-            return;
+             return paragraph;
         }
-        let block: BlockWidget = this.getNextRenderedBlock(paragraph) as BlockWidget;
-        if (!isNullOrUndefined(block)) {
-            this.getCharacterFormatForBlock(block, start, end);
-        }
+        return this.getNextRenderedBlock(paragraph);
     }
     private setCharacterFormat(para: ParagraphWidget, startPos: TextPosition, endPos: TextPosition, length: number): boolean {
         let index: number = 0;
@@ -9062,7 +9087,10 @@ export class Selection {
      */
     public getCharacterFormatForBlock(block: BlockWidget, start: TextPosition, end: TextPosition): void {
         if (block instanceof ParagraphWidget) {
-            this.getCharacterFormat(block, start, end);
+            let blockAdv: BlockWidget = this.getCharacterFormat(block, start, end);
+            if (!isNullOrUndefined(blockAdv) && blockAdv != block) {
+                this.getCharacterFormatForBlock(blockAdv, start, end);
+            }
         } else {
             this.getCharacterFormatInTable(block as TableWidget, start, end);
         }

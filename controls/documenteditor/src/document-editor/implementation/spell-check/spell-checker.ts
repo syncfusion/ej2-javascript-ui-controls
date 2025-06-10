@@ -188,8 +188,10 @@ export class SpellChecker {
         this.errorSuggestions = new Dictionary<string, string[]>();
         this.ignoreAllItems = [];
         this.uniqueSpelledWords = {};
-        this.textSearchResults = new TextSearchResults(this.documentHelper.owner);
-        this.uniqueKey = this.documentHelper.owner.element.id + '_' + this.createGuid();
+        if (!isNullOrUndefined(this.documentHelper)) {
+            this.textSearchResults = new TextSearchResults(this.documentHelper.owner);
+            this.uniqueKey = this.documentHelper.owner.element.id + '_' + this.createGuid();
+        }
     }
     private get viewer(): LayoutViewer {
         return this.documentHelper.owner.viewer;

@@ -923,6 +923,18 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     @Property(false)
     public enableLockAndEdit: boolean;
     /**
+     * Enables or disables pagination and layout rendering in the document editor.
+     * When set to `false`, the editor skips layout processing such as pagination,
+     * which can significantly improve performance during programmatic document updates.
+     *
+     * This is useful when applying multiple changes in bulk to avoid unnecessary reflows.
+     * Set it back to `true` to re-enable layout and pagination.
+     *
+     * @default true
+     */
+    @Property(true)
+    public enableLayout: boolean;
+    /**
      * Defines the settings for DocumentEditor customization.
      *
      * @default {}
@@ -1494,7 +1506,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @returns {TextPosition} - Returns isSpellCheck.
      */
     public get isSpellCheck(): boolean {
-        return this.enableSpellCheck && this.spellCheckerModule.enableSpellCheck;
+        return this.enableSpellCheck && this.spellCheckerModule && this.spellCheckerModule.enableSpellCheck;
     }
     /**
      * Specifies to enable image resizer option
@@ -1853,10 +1865,22 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 case 'enableAutoFocus':
                     this.enableAutoFocus = model.enableAutoFocus;
                     break;
+                case 'enableLayout':
+                    this.refreshLayout();
+                    break;
             }
         }
     }
 
+    private refreshLayout(): void {
+        if (this.searchModule && !isNullOrUndefined(this.searchModule.searchHighlighters)) {
+            this.searchModule.clearSearchHighlight();
+        }
+        if (this.selection) {
+            this.selection.moveToDocumentStart();
+        }
+        this.documentHelper.layout.layoutWholeDocument();
+    }
 
     private applyColorPickerProperties(model : DocumentEditorModel) : void {
         if(model.documentEditorSettings.colorPickerSettings) {
@@ -4315,6 +4339,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 const style: WStyle = this.documentHelper.styles.findByName('Normal') as WStyle;
                 for (let i: number = 0; i < sections.length; i++) {
                     const paragraph: ParagraphWidget = sections[parseInt(i.toString(), 10)].childWidgets[0] as ParagraphWidget;
+                    if (!this.enableLayout) {
+                        this.documentHelper.layout.addLineWidget(paragraph);
+                    }
                     paragraph.paragraphFormat.baseStyle = style;
                     paragraph.paragraphFormat.listFormat.baseStyle = style;
                 }
