@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.2.11 (2025-06-17)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I730840` - Now, the column with single point renders properly on date time category axis.
+
 ## 29.2.10 (2025-06-10)
 
 ### Chart

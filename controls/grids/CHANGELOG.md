@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 29.2.11 (2025-06-17)
+
+### Grid
+
+#### Bug Fixes
+
+- `#I730086` - Fixed issue where `getSelectedRecords()` did not return previously selected records after using `selectAll` with filtering.
+- `#I730853` - Fixed a script error that occurred when dynamically hiding columns in a grid with `lazyLoadGrouping` and `virtualization` enabled.
+
 ## 29.2.10 (2025-06-10)
 
 ### Grid

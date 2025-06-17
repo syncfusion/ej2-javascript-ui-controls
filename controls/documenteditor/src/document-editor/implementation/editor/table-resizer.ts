@@ -454,7 +454,8 @@ export class TableResizer {
             const selectedCells: TableCellWidget[] = selection.getSelectedCells();
             if (this.resizerPosition === 0) {
                 this.resizeColumnAtStart(table, dragValue, selectedCells);
-            } else if (table !== null && this.resizerPosition === table.tableHolder.columns.length) {
+            } else if (table !== null && (this.resizerPosition === table.tableHolder.columns.length
+                || (cellwidget.x + cellwidget.width) + 1 <= this.startingPoint.x)) {
                 const leftColumnCollection: TableCellWidget[] = this.getColumnCells(table, this.resizerPosition, true);
                 for (let i: number = 0; i < leftColumnCollection.length; i++) {
                     const cell: TableCellWidget = leftColumnCollection[parseInt(i.toString(), 10)];
@@ -474,8 +475,7 @@ export class TableResizer {
                 const columnIndex: number = this.resizerPosition;
                 const leftColumnCollection: TableCellWidget[] = this.getColumnCells(table, columnIndex, true);
                 const rightColumnCollection: TableCellWidget[] = this.getColumnCells(table, columnIndex, false);
-                const isColumnResizing: boolean = this.isColumnSelected(table, columnIndex);
-                if (leftColumnCollection.length > 0 && !isColumnResizing) {
+                if (leftColumnCollection.length > 0) {
                     for (let i: number = 0; i < leftColumnCollection.length; i++) {
                         if (selectedCells.indexOf(leftColumnCollection[parseInt(i.toString(), 10)]) === -1) {
                             leftColumnCollection.splice(i, 1);
@@ -483,7 +483,7 @@ export class TableResizer {
                         }
                     }
                 }
-                if (rightColumnCollection.length > 0 && !isColumnResizing) {
+                if (rightColumnCollection.length > 0) {
                     for (let i: number = 0; i < rightColumnCollection.length; i++) {
                         if (selectedCells.indexOf(rightColumnCollection[parseInt(i.toString(), 10)]) === -1) {
                             rightColumnCollection.splice(i, 1);
@@ -554,6 +554,21 @@ export class TableResizer {
                     for (let i: number = 0; i < table.childWidgets.length; i++) {
                         const tableRow: TableRowWidget = table.childWidgets[parseInt(i.toString(), 10)] as TableRowWidget;
                         if (selectedCells.indexOf(tableRow.childWidgets[0] as TableCellWidget) !== -1) {
+                            /* eslint-disable-next-line max-len */
+                            const nextCellWidget: TableCellWidget = (tableRow.childWidgets[0] as TableCellWidget).nextWidget as TableCellWidget;
+                            if (!isNullOrUndefined(nextCellWidget) &&
+                                nextCellWidget.cellFormat.preferredWidth - nextCellWidget.ownerColumn.minimumWidth <= dragValue) {
+                                let isContinue: boolean = true;
+                                let newRightWidth: number;
+                                while (isContinue) {
+                                    newRightWidth = HelperMethods.round(nextCellWidget.cellFormat.preferredWidth - dragValue, 2);
+                                    if (newRightWidth >= nextCellWidget.ownerColumn.minimumWidth) {
+                                        isContinue = false;
+                                    } else {
+                                        dragValue += newRightWidth - nextCellWidget.ownerColumn.minimumWidth;
+                                    }
+                                }
+                            }
                             this.updateGridBefore(tableRow, dragValue);
                             this.increaseOrDecreaseWidth(tableRow.childWidgets[0] as TableCellWidget, dragValue, false);
                         }
@@ -729,31 +744,74 @@ export class TableResizer {
         }
         return gridBefore;
     }
-    private increaseOrDecreaseWidth(cell: TableCellWidget, dragValue: number, isIncrease: boolean): void {
+    private increaseOrDecreaseWidth(cell: TableCellWidget, dragValue: number, isIncrease: boolean, isRightCellResized?: boolean): boolean {
         let preferredWidth: number = cell.cellFormat.preferredWidth;
         if (cell.cellFormat.preferredWidthType === 'Auto') {
             preferredWidth = cell.cellFormat.cellWidth;
             cell.cellFormat.preferredWidthType = 'Point';
         }
-        let minimumWidth: number = cell.ownerColumn.minWidth;
+        let minimumWidth: number = cell.ownerColumn.minimumWidth;
         if (cell.cellFormat.preferredWidthType === 'Percent') {
             minimumWidth = cell.convertPointToPercent(minimumWidth);
         }
         // Margins properties usedd for internal purpose.
         if (isIncrease) {
-            cell.cellFormat.preferredWidth = preferredWidth + dragValue > minimumWidth ? preferredWidth + dragValue : minimumWidth;
+            if (dragValue > 0 || this.resizerPosition === this.currentResizingTable.tableHolder.columns.length) {
+                const nextCellWidget: TableCellWidget = cell.nextWidget as TableCellWidget;
+                if (!isNullOrUndefined(nextCellWidget) &&
+                    nextCellWidget.cellFormat.preferredWidth - nextCellWidget.ownerColumn.minimumWidth <= dragValue) {
+                    let isContinue: boolean = true;
+                    let newRightWidth: number;
+                    while (isContinue) {
+                        newRightWidth = HelperMethods.round(nextCellWidget.cellFormat.preferredWidth - dragValue, 2);
+                        if (newRightWidth >= nextCellWidget.ownerColumn.minimumWidth) {
+                            nextCellWidget.cellFormat.preferredWidth = newRightWidth;
+                            cell.cellFormat.preferredWidth = preferredWidth + dragValue;
+                            isRightCellResized = true;
+                            isContinue = false;
+                        } else {
+                            dragValue += newRightWidth - (cell.nextWidget as TableCellWidget).ownerColumn.minimumWidth;
+                        }
+                    }
+                }
+                else {
+                    cell.cellFormat.preferredWidth = preferredWidth + dragValue > minimumWidth ? preferredWidth + dragValue : minimumWidth;
+                }
+            }
+            else if (isNullOrUndefined(cell.nextWidget)) {
+                cell.cellFormat.preferredWidth = preferredWidth + dragValue > minimumWidth ? preferredWidth + dragValue : minimumWidth;
+            }
         } else {
-            cell.cellFormat.preferredWidth = preferredWidth - dragValue > minimumWidth ? preferredWidth - dragValue : minimumWidth;
+            const previousCellWidget: TableCellWidget = cell.previousWidget as TableCellWidget;
+            if (dragValue < 0 && !isNullOrUndefined(previousCellWidget) &&
+                previousCellWidget.cellFormat.preferredWidth - previousCellWidget.ownerColumn.minimumWidth >= dragValue) {
+                let isContinue: boolean = true;
+                let newRightWidth: number;
+                while (isContinue) {
+                    newRightWidth = HelperMethods.round(previousCellWidget.cellFormat.preferredWidth + dragValue, 2);
+                    if (newRightWidth >= previousCellWidget.ownerColumn.minimumWidth) {
+                        previousCellWidget.cellFormat.preferredWidth = newRightWidth;
+                        cell.cellFormat.preferredWidth = preferredWidth - dragValue;
+                        isContinue = false;
+                    } else {
+                        dragValue -= newRightWidth - previousCellWidget.ownerColumn.minimumWidth;
+                    }
+                }
+            }
+            else {
+                cell.cellFormat.preferredWidth = preferredWidth - dragValue > minimumWidth ? preferredWidth - dragValue : minimumWidth;
+            }
         }
-
+        return isRightCellResized;
     }
     /* eslint-disable-next-line max-len */
     private changeWidthOfCells(table: TableWidget, leftColumnCollection: TableCellWidget[], rightColumnCollection: TableCellWidget[], dragValue: number): void {
+        let isRightCellWidthUpdated: boolean = false;
         if (leftColumnCollection.length > 0) {
             let flag: boolean = false;
             for (let i: number = 0; i < leftColumnCollection.length; i++) {
                 const cell: TableCellWidget = leftColumnCollection[parseInt(i.toString(), 10)];
-                this.increaseOrDecreaseWidth(cell, dragValue, true);
+                isRightCellWidthUpdated = this.increaseOrDecreaseWidth(cell, dragValue, true, isRightCellWidthUpdated);
                 if (cell.cellIndex === cell.ownerRow.childWidgets.length - 1) {
                     flag = true;
                 }
@@ -762,7 +820,7 @@ export class TableResizer {
                 this.updateRowsGridAfterWidth(table);
             }
         }
-        if (rightColumnCollection.length > 0) {
+        if (rightColumnCollection.length > 0 && !isRightCellWidthUpdated) {
             let diff: number = 0;
             for (let i: number = 0; i < rightColumnCollection.length; i++) {
                 const cell: TableCellWidget = rightColumnCollection[parseInt(i.toString(), 10)];
@@ -812,7 +870,7 @@ export class TableResizer {
         }
         for (let i: number = 0; i < row.childWidgets.length; i++) {
             const cell: TableCellWidget = row.childWidgets[parseInt(i.toString(), 10)] as TableCellWidget;
-            rowWidth += cell.cellFormat.cellWidth;
+            rowWidth += cell.cellFormat.preferredWidth;
         }
         return rowWidth;
     }
@@ -826,31 +884,13 @@ export class TableResizer {
             }
             for (let i: number = 0; i < row.childWidgets.length; i++) {
                 const cell: TableCellWidget = row.childWidgets[parseInt(i.toString(), 10)] as TableCellWidget;
-                rowWidth += cell.cellFormat.cellWidth;
+                rowWidth += cell.cellFormat.preferredWidth;
             }
             if (width < rowWidth) {
                 width = rowWidth;
             }
         }
         return width;
-    }
-    private isColumnSelected(table: TableWidget, columnIndex: number): boolean {
-        const selection: Selection = this.owner.selectionModule;
-        const selectedCells: TableCellWidget[] = selection.getSelectedCells();
-        const leftColumnCells: TableCellWidget[] = this.getColumnCells(table, columnIndex, true);
-        const rightColumnCells: TableCellWidget[] = this.getColumnCells(table, columnIndex, false);
-        let isColumnSelected: boolean = false;
-        for (let i: number = 0; i < leftColumnCells.length; i++) {
-            const columnCell: TableCellWidget = leftColumnCells[parseInt(i.toString(), 10)];
-            isColumnSelected = selectedCells.indexOf(columnCell) !== -1 ? true : false;
-        }
-        if (!isColumnSelected) {
-            for (let i: number = 0; i < rightColumnCells.length; i++) {
-                const columnCell: TableCellWidget = rightColumnCells[parseInt(i.toString(), 10)];
-                isColumnSelected = selectedCells.indexOf(columnCell) !== -1 ? true : false;
-            }
-        }
-        return isColumnSelected;
     }
 
     public applyProperties(table: TableWidget, tableHistoryInfo: TableHistoryInfo): void {

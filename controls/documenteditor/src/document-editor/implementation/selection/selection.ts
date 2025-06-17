@@ -27,7 +27,10 @@ import {
     ContentControlInfo,
     ContentControlType,
     aftercontentControlFillEvent,
-    beforecontentControlFillEvent
+    beforecontentControlFillEvent,
+    viewChangeEvent,
+    internalviewChangeEvent,
+    ViewChangeEventArgs
 } from '../../base/index';
 import { TextPositionInfo, PositionInfo, ParagraphInfo } from '../editor/editor-helper';
 import { WCharacterFormat, WParagraphFormat, WStyle, WParagraphStyle, WSectionFormat } from '../index';
@@ -3027,9 +3030,9 @@ export class Selection {
         }
         if (!isNullOrUndefined(start) && !isNullOrUndefined(end) && !isNullOrUndefined(this.getTable(start, end))) {
             const containerCell: TableCellWidget = this.getContainerCellOf(start.paragraph.associatedCell, end.paragraph.associatedCell);
-            const table: TableWidget = containerCell.ownerTable;
-            const firstPara: ParagraphWidget = this.documentHelper.getFirstParagraphBlock(table);
-            const lastPara: ParagraphWidget = this.documentHelper.getLastParagraphBlock(table);
+            const table: TableWidget[] = containerCell.ownerTable.getSplitWidgets() as TableWidget[];
+            const firstPara: ParagraphWidget = this.documentHelper.getFirstParagraphBlock(table[0]);
+            const lastPara: ParagraphWidget = this.documentHelper.getLastParagraphBlock(table[table.length -1]);
             const offset: number = (lastPara.lastChild as LineWidget).getEndOffset();
             this.start.setPosition(firstPara.childWidgets[0] as LineWidget, true);
             this.end.setPositionParagraph((lastPara.lastChild as LineWidget), offset + 1);
@@ -6034,7 +6037,7 @@ export class Selection {
      */
     public getNextParagraphCell(cell: TableCellWidget): ParagraphWidget {
         if ((cell as TableCellWidget).nextRenderedWidget && cell.nextRenderedWidget instanceof TableCellWidget) {
-            if (cell.ownerRow.index === cell.nextRenderedWidget.rowIndex) {
+            if (cell.rowIndex === cell.nextRenderedWidget.rowIndex) {
                 //Return first paragraph in cell.
                 cell = cell.nextRenderedWidget as TableCellWidget;
                 if (cell.getSplitWidgets()[0] instanceof TableCellWidget) {
@@ -7941,6 +7944,22 @@ export class Selection {
         if (this.owner.rulerHelper && this.owner.documentEditorSettings && this.owner.documentEditorSettings.showRuler &&
             !this.owner.isReadOnlyMode && this.owner.enableLayout) {
             this.owner.rulerHelper.updateRuler(this.owner, false);
+        }
+        // if selection is changed to another page, we need to update the selection end's page number if it is present in viewport.
+        if (!isNullOrUndefined(this.viewer) && this.documentHelper.pages.length > 0) {
+            if ((this.viewer as PageLayoutViewer).visiblePages.length > 0) {
+                const pages: Page[] = (this.viewer as PageLayoutViewer).visiblePages;
+                const startPageNumber: number = pages[0].index + 1;
+                const endPageNumber: number = pages[pages.length - 1].index + 1;
+                if (this.endPage >= startPageNumber && this.endPage <= endPageNumber) {
+                    const eventArgs: ViewChangeEventArgs = {
+                        startPage: startPageNumber,
+                        endPage: endPageNumber,
+                        source: this.owner
+                    };
+                    this.owner.notify(internalviewChangeEvent, eventArgs);
+                }
+            }
         }
     }
     /**
@@ -11943,13 +11962,28 @@ export class Selection {
         let editRange: EditRangeStartElementBox = this.getEditRangeStartElement(true) as EditRangeStartElementBox;
         if (this.editRangeCollection.length > 0) {
             this.sortEditRangeCollection();
+            let editRangeStart:EditRangeStartElementBox;
             let length: number = this.editRangeCollection.length;
             let index: number = length;
             if (!isNullOrUndefined(editRange)) {
                 index = this.editRangeCollection.indexOf(editRange);
-            }
-            let editRangeStart: EditRangeStartElementBox = index < length - 1 ?
+                editRangeStart = index < length - 1 ?
                 this.editRangeCollection[index + 1] as EditRangeStartElementBox : this.editRangeCollection[0] as EditRangeStartElementBox;
+            }
+            else {
+                for (var i = 0; i < this.editRangeCollection.length; i++) {
+                let editStart: EditRangeStartElementBox = this.editRangeCollection[i];
+                let position: PositionInfo = this.getPosition(editStart, true);
+                let start: TextPosition = position.startPosition;
+                if ((start.isExistAfter(this.start))) {
+                    editRangeStart = this.editRangeCollection[i];
+                    break;
+                }
+            }
+            if (isNullOrUndefined(editRangeStart)) {
+                editRangeStart = this.editRangeCollection[0] as EditRangeStartElementBox;
+            }
+        }
             let positionInfo: PositionInfo = this.getPosition(editRangeStart, true);
             let startPosition: TextPosition = positionInfo.startPosition;
             let endPosition: TextPosition = positionInfo.endPosition;
@@ -11995,8 +12029,8 @@ export class Selection {
                 } else {
                     return editStart;
                 }
-
             }
+
         }
         if (returnAllMatches) {
             return editRangeStartElementBox;
@@ -12141,8 +12175,9 @@ export class Selection {
      */
     public checkContentControlLocked(checkFormat?: boolean): boolean {
         this.owner.editorModule.isXmlMapped = false;
-        for (let i: number = 0; i < this.documentHelper.contentControlCollection.length; i++) {
-            let contentControlStart: ContentControl = this.documentHelper.contentControlCollection[i];
+        let contentControlCollection: ContentControl[] = this.isForward ? [...this.documentHelper.contentControlCollection].reverse() : this.documentHelper.contentControlCollection;
+        for (let i: number = 0; i < contentControlCollection.length; i++) {
+            let contentControlStart: ContentControl = contentControlCollection[i];
             if (isNullOrUndefined(contentControlStart.reference) || contentControlStart.reference.indexInOwner === -1) {
                 continue;
             }

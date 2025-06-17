@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 29.2.11 (2025-06-17)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I731138` - Fixed an issue where the MultiSelect Checkbox would unintentionally select all options when navigating with the keyboard after interacting with the `SelectAll` feature.
+
+## 29.2.10 (2025-06-10)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I731530` - Resolved an issue where the popup displayed skeletons upon reopening when using virtualization and checkbox mode.
+
 ## 29.2.8 (2025-06-03)
 
 ### DropDownTree
@@ -509,7 +525,7 @@
 
 #### Bug Fixes
 
-- `#I343913` -  Issue with "exception throws while preventing the request to the server in the `actionBegin` event" has been resolved.
+- `#I343913` - Issue with "exception throws while preventing the request to the server in the `actionBegin` event" has been resolved.
 
 ## 19.3.53 (2021-11-12)
 
@@ -543,7 +559,7 @@
 
 - `#F169190` - The issue with "The Dropdown tree is not focused while pressing single tab key" has been resolved.
 
-- `#I341135` - The issue with "The Dropdown Tree selected items are misaligned while adding  the `e-outline` and `e-filled` CSS classes" has been resolved.
+- `#I341135` - The issue with "The Dropdown Tree selected items are misaligned while adding the `e-outline` and `e-filled` CSS classes" has been resolved.
 
 ## 19.3.45 (2021-10-12)
 
@@ -2074,7 +2090,7 @@ The ListBox is a graphical user interface component used to display a list of it
 
 - custom value support has been given in MultiSelect when the filtering is enabled instead of 'no records found' template.
 
-- The issue, 'Input is rendered again  on typing while resetting value from null with remote data and custom value as true.' has been fixed.
+- The issue, 'Input is rendered again on typing while resetting value from null with remote data and custom value as true.' has been fixed.
 
 - The issue, 'Enable persistence is not working properly when all the items in the list are selected.' has been fixed.
 
@@ -2356,7 +2372,7 @@ MultiSelect component contains a list of predefined values from which a multiple
 
 - **Custom Value** - Allows user to select a new custom value.
 
-- **Accessibility** - Provided with built-in accessibility support which helps to access all the MultiSelect component features through  the keyboard, screen readers, or other assistive technology devices.
+- **Accessibility** - Provided with built-in accessibility support which helps to access all the MultiSelect component features through the keyboard, screen readers, or other assistive technology devices.
 
 ### ComboBox
 

@@ -91,9 +91,11 @@ export class CommentReviewPane {
                     this.owner.notify('reviewPane', { comment: this.isCommentTabVisible, changes: true });
                     this.reviewTab.select(1);
                 } else {
-                    this.owner.trackChangesPane.isChangesTabVisible = false;
-                    this.owner.notify('reviewPane', { comment: true, changes: this.owner.trackChangesPane.isChangesTabVisible, isUserClosed: false });
-                    this.reviewTab.select(0);
+                    if (this.owner.documentHelper.comments.length != 0) {
+                        this.owner.trackChangesPane.isChangesTabVisible = false;
+                        this.owner.notify('reviewPane', { comment: true, changes: this.owner.trackChangesPane.isChangesTabVisible, isUserClosed: false });
+                        this.reviewTab.select(0);
+                    }
                 }
                 this.owner.trackChangesPane.updateTrackChanges(this.owner.showRevisions);
                 this.commentPane.updateCommentStatus();

@@ -1359,6 +1359,7 @@ export class SpellChecker {
             sfdtExport.Initialize(); 
             const document: any = sfdtExport.writePage(page, true);
             sfdtExport.keywordIndex = index;
+            sfdtExport.blocks = [];
             if (this.documentHelper.owner.textExportModule) {
                 const textExport: TextExport = this.documentHelper.owner.textExportModule;
                 textExport.pageContent = '';

@@ -1115,7 +1115,7 @@ describe('MultiSelect_Virtualization', () => {
                 multiObj.showPopup();
                 setTimeout(() => {
                     expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
-                    expect(multiObj.list.querySelectorAll('.e-virtual-list').length).toBe(30);
+                    expect(multiObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
                     done();
                 }, 500);
             }, 800);

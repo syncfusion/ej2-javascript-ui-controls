@@ -903,7 +903,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     isContainSkeleton.firstChild.insertBefore(liElement, (isContainSkeleton.firstChild as any).children[0]);
                 }
             }
-            if (this.getModuleName() === 'multiselect') {
+            if (this.getModuleName() === 'multiselect' && !this.isVirtualReorder && !(isContainSkeleton.firstChild as HTMLElement).classList.contains('e-reorder')) {
                 for (let i: number = 0; i < totalSkeletonCount && this.totalItemCount !== this.viewPortInfo.endIndex; i++) {
                     const liElement: HTMLElement = this.createElement('li', { className: `${dropDownBaseClasses.virtualList} e-virtual-list-end` , styles: 'overflow: inherit' });
                     if (this.isVirtualizationEnabled && this.itemTemplate) {

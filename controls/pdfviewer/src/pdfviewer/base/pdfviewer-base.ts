@@ -2984,6 +2984,9 @@ export class PdfViewerBase {
         if (!isNullOrUndefined(this.pdfViewer.annotationModule) && this.pdfViewer.annotationModule.measureAnnotationModule) {
             this.pdfViewer.annotationModule.measureAnnotationModule.destroy();
         }
+        if (this.pdfViewerRunner !== null && this.pdfViewerRunner !== undefined) {
+            this.pdfViewerRunner.terminate();
+        }
     }
 
     /**
@@ -7444,7 +7447,7 @@ export class PdfViewerBase {
                 }
             }
         }
-        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode) {
+        if (Browser.isDevice && !this.pdfViewer.enableDesktopMode && this.pageCount > 0) {
             this.mobileSpanContainer.innerHTML = this.currentPageNumber.toString();
             this.mobilecurrentPageContainer.innerHTML = this.currentPageNumber.toString();
         }
@@ -11591,7 +11594,12 @@ export class PdfViewerBase {
     public convertUTCDateTimeToLocalDateTime(date: any): string {
         let dateTime: Date;
         // We have globalized the date and time based on the given locale.
-        this.globalize = new Internationalization(this.pdfViewer.locale);
+        if (this.pdfViewer.locale !== 'en-US') {
+            this.globalize = new Internationalization('en-US');
+        }
+        else {
+            this.globalize = new Internationalization(this.pdfViewer.locale);
+        }
         if (date !== null && date !== undefined && date !== '') {
             if (!this.clientSideRendering) {
                 dateTime = new Date(Date.parse(date + ' ' + 'UTC'));

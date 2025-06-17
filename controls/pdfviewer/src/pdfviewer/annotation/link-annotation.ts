@@ -197,7 +197,7 @@ export class LinkAnnotation {
                 let scrollValue: number;
                 const pageSize: any = this.pdfViewerBase.pageSize[parseInt(linkPageNum.toString(), 10)];
                 if (pageSize) {
-                    if (annotationY.length !== 0) {
+                    if (!isNullOrUndefined(annotationY) && annotationY.length !== 0) {
                         destLocation = (annotationY[parseInt(i.toString(), 10)]);
                         scrollValue = pageSize.top * this.pdfViewerBase.getZoomFactor() +
                          ((destPageHeight - destLocation) * this.pdfViewerBase.getZoomFactor());

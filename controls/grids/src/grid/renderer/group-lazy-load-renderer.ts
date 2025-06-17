@@ -1286,8 +1286,9 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
             const idx: number = this.parent.getNormalizedColumnIndex(column.uid);
             const colIdx: number = this.parent.getColumnIndexByUid(column.uid);
             const displayVal: string = column.visible === true ? '' : 'none';
-            if (idx !== -1 && testRow && idx < testRow.cells.length) {
-                setStyleAttribute(<HTMLElement>this.getColGroup().childNodes[parseInt(idx.toString(), 10)], { 'display': displayVal });
+            const colGroup: Element = this.getColGroup();
+            if (idx !== -1 && testRow && idx < testRow.cells.length && !isNullOrUndefined(colGroup)) {
+                setStyleAttribute(<HTMLElement>colGroup.childNodes[parseInt(idx.toString(), 10)], { 'display': displayVal });
             }
             this.setDisplayNone(gObj.getDataRows(), colIdx, displayVal, contentrows, idx);
             if (!this.parent.invokedFromMedia && column.hideAtMedia) {

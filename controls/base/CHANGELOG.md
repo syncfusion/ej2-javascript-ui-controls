@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 29.2.10 (2025-06-10)
+## 29.2.11 (2025-06-17)
+
+### Common
+
+#### Bug Fixes
+
+- `#I734291` -  Resolved invalid CSS custom property issue in Fluent 2 theme
+
+## 29.2.4 (2025-05-14)
 
 ### Common
 

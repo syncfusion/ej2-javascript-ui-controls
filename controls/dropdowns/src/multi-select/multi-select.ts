@@ -978,8 +978,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         } else {
             this.resetList(this.dataSource, this.fields, query);
         }
-        this.isVirtualReorder = false;
         this.UpdateSkeleton();
+        this.isVirtualReorder = false;
         this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + dropDownBaseClasses.li);
         this.virtualItemCount = this.itemCount;
         if (this.mode !== 'CheckBox') {
@@ -1172,7 +1172,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (!isNullOrUndefined(this.value)) {
             this.tempValues = this.allowObjectBinding ? this.value.slice() : <string[]>this.value.slice();
         }
-        let customValue: string | number | boolean | object = this.allowObjectBinding ?
+        let customValue: string | number | boolean | object = this.allowObjectBinding ? this.enableVirtualization ?
+            this.getVirtualDataByValue(this.getFormattedValue(value)) :
             this.getDataByValue(this.getFormattedValue(value)) : this.getFormattedValue(value);
         if (this.allowCustomValue && (value !== 'false' && customValue === false || (!isNullOrUndefined(customValue) &&
             customValue.toString() === 'NaN'))) {
@@ -1600,9 +1601,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                 return this.virtualFilterQuery(filterQuery);
             }
             if (this.virtualSelectAll) {
-                return query ? query.take(this.maximumSelectionLength).requiresCount() : this.query ?
-                    this.query.take(this.maximumSelectionLength).requiresCount() :
-                    new Query().take(this.maximumSelectionLength).requiresCount();
+                return query ? query.skip(0).take(this.maximumSelectionLength).requiresCount() : this.query ?
+                    this.query.skip(0).take(this.maximumSelectionLength).requiresCount() :
+                    new Query().skip(0).take(this.maximumSelectionLength).requiresCount();
             }
             return query ? query : this.query ? this.query : new Query();
         }
@@ -2615,6 +2616,15 @@ export class MultiSelect extends DropDownBase implements IInput {
         const focuseElem: Element = <HTMLElement>this.list.querySelector('li.' + dropDownBaseClasses.focus);
         this.focusFirstListItem = !isNullOrUndefined(this.liCollections[0]) ? this.liCollections[0].classList.contains('e-item-focus') :
             false;
+        if (this.list && this.list.querySelector('.e-list-parent.e-ul.e-reorder')) {
+            const elements: NodeListOf<Element> = <NodeListOf<HTMLElement>>this.list.querySelectorAll('li.'
+                + dropDownBaseClasses.li
+                + ':not(.' + HIDE_LIST + ')' + ':not(.e-reorder-hide)' + ':not(.e-virtual-list-end)');
+            if (elements.length > 0) {
+                this.focusFirstListItem = !isNullOrUndefined(elements[0]) ? elements[0].classList.contains('e-item-focus') :
+                    false;
+            }
+        }
         const index: number = Array.prototype.slice.call(list).indexOf(focuseElem);
         if (index <= 0 && (this.mode === 'CheckBox' && this.allowFiltering)) {
             this.keyAction = false;
@@ -3034,10 +3044,10 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
             else if (elements.length) {
                 if (this.mode === 'CheckBox' && this.showSelectAll && !isNullOrUndefined(selectAllParent && position === -1)){
-                    if (!this.focusFirstListItem && selectAllParent.classList.contains('e-item-focus')) {
+                    if ((!this.focusFirstListItem || position === 1) && selectAllParent.classList.contains('e-item-focus')) {
                         selectAllParent.classList.remove('e-item-focus');
                     }
-                    else if (this.focusFirstListItem && !selectAllParent.classList.contains('e-item-focus')){
+                    else if (this.focusFirstListItem && !selectAllParent.classList.contains('e-item-focus') && !(position === 1 && this.list.querySelector('.e-item-focus'))) {
                         selectAllParent.classList.add('e-item-focus');
                     }
                 }
@@ -3172,6 +3182,26 @@ export class MultiSelect extends DropDownBase implements IInput {
         addClass([element], CHIP_SELECTED);
         this.trigger('chipSelection', e);
     }
+    private getVirtualDataByValue(value: string | number | boolean | object)
+        : { [key: string]: Object } | string | number | boolean {
+        if (!isNullOrUndefined(this.selectedListData)) {
+            const type: string = this.typeOfData(this.selectedListData).typeof as string;
+            if (type === 'string' || type === 'number' || type === 'boolean') {
+                for (const item of this.selectedListData) {
+                    if (!isNullOrUndefined(item) && item === value as Object) {
+                        return item;
+                    }
+                }
+            } else {
+                for (const item of this.selectedListData) {
+                    if (!isNullOrUndefined(item) && getValue((this.fields.value ? this.fields.value : 'value'), item) === value) {
+                        return item;
+                    }
+                }
+            }
+        }
+        return null;
+    }
     private onChipRemove(e: MouseEvent): void {
         if (e.which === 3 || e.button === 2) {
             return;
@@ -3179,7 +3209,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.enabled && !this.readonly) {
             const element: HTMLElement = (<HTMLElement>e.target).parentElement;
             const customVal: string | number | boolean = element.getAttribute('data-value');
-            let value: string | number | boolean | object = this.allowObjectBinding ?
+            let value: string | number | boolean | object = this.allowObjectBinding ? this.enableVirtualization ?
+                this.getVirtualDataByValue(this.getFormattedValue(customVal)) :
                 this.getDataByValue(this.getFormattedValue(customVal)) : this.getFormattedValue(customVal);
             if (this.allowCustomValue && (( customVal !== 'false' && value === false ) ||
             (!isNullOrUndefined(value) && value.toString() === 'NaN'))) {
@@ -3300,7 +3331,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     this.virtualSelectAll = false;
                     const removeVal: number[] | string[] | boolean[] | object[] = this.value.slice(0);
                     removeVal.splice(index, 1);
-                    if (this.enableVirtualization && this.mode === 'CheckBox') {
+                    if (this.enableVirtualization && this.selectedListData) {
                         this.selectedListData.splice(index, 1);
                     }
                     this.setProperties({ value: <[number | string]>[].concat([], removeVal) }, true);
@@ -3563,7 +3594,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     value = this.allowObjectBinding ? this.getDataByValue(value) : value;
                     if (this.enableVirtualization) {
                         if (isNullOrUndefined(this.selectedListData)) {
-                            this.selectedListData = [(this.getDataByValue(value)) as any];
+                            this.selectedListData = this.allowObjectBinding ? [value] : [(this.getDataByValue(value)) as any];
                         } else {
                             if (dataValue) {
                                 if (Array.isArray(this.selectedListData)) {
@@ -3574,9 +3605,11 @@ export class MultiSelect extends DropDownBase implements IInput {
                             }
                             else {
                                 if (Array.isArray(this.selectedListData)) {
-                                    this.selectedListData.push((this.getDataByValue(value)) as never);
+                                    this.selectedListData.push(this.allowObjectBinding ? value as never :
+                                        (this.getDataByValue(value)) as never);
                                 } else {
-                                    this.selectedListData = [this.selectedListData, (this.getDataByValue(value)) as any];
+                                    this.selectedListData = [this.selectedListData, this.allowObjectBinding ? value :
+                                        (this.getDataByValue(value)) as any];
                                 }
                             }
                         }
@@ -4609,10 +4642,14 @@ export class MultiSelect extends DropDownBase implements IInput {
                                         if (isNullOrUndefined(this.selectedListData)) {
                                             this.selectedListData = [listItems[i as number]];
                                         } else {
-                                            if (Array.isArray(this.selectedListData)) {
-                                                this.selectedListData.push((listItems[i as number]) as never);
-                                            } else {
-                                                this.selectedListData = [this.selectedListData, (listItems[i as number]) as any];
+                                            if ((this.allowObjectBinding && !this.isObjectInArray(listItems[i as number],
+                                                                                                  this.selectedListData)) ||
+                                                                                                !this.allowObjectBinding) {
+                                                if (Array.isArray(this.selectedListData)) {
+                                                    this.selectedListData.push((listItems[i as number]) as never);
+                                                } else {
+                                                    this.selectedListData = [this.selectedListData, (listItems[i as number]) as any];
+                                                }
                                             }
                                         }
                                     }
@@ -5699,6 +5736,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
             this.updateHiddenElement();
             this.setProperties({ value: [] }, true);
+            this.selectedListData = [];
             this.virtualSelectAll = false;
             if (!isNullOrUndefined(this.viewPortInfo.startIndex) && !isNullOrUndefined(this.viewPortInfo.endIndex)) {
                 this.notify('setCurrentViewDataAsync', {
@@ -6210,6 +6248,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.onLoadSelect();
             if (this.enableVirtualization) {
                 this.setProperties({ text: '' }, true);
+                this.selectedListData = [];
                 this.checkInitialValue();
             }
         } else if ((this.dataSource instanceof DataManager) && (!this.listData || !(this.mainList && this.mainData))) {

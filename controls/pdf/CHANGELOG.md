@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 29.2.11 (2025-06-17)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Fixed an issue where rotation angle was not retrieved properly from text box field.
+- Resolved an issue with the annotation count while parsing from a PDF page.
+
 ## 29.2.10 (2025-06-10)
 
 ### PDF Parser

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.2.11 (2025-06-17)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I732468` - Now, The issue with the arrow key navigation behaves incorrectly in pasted tables within the Rich Text Editor has now been resolved.
+
 ## 29.2.10 (2025-06-10)
 
 ### RichTextEditor

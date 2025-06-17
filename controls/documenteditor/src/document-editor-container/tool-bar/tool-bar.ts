@@ -1057,7 +1057,7 @@ export class Toolbar {
                     }
                 }
             }
-            if (this.documentEditor.selection.isCellOrRowSelected()) {
+            if (this.documentEditor.selection.isCellOrRowSelected() && this.containsItem(id + INSERT_LINK_ID)) {
                 this.toolbar.enableItems(document.getElementById(id + INSERT_LINK_ID).parentElement, false);
             }
             if (!isProtectedContent || this.container.showPropertiesPane) {

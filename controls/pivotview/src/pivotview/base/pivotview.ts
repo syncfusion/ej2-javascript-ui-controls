@@ -2935,14 +2935,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     const fileName: string = isNullOrUndefined(excelExportProperties.fileName) ? (this.currentAction === 'onExcelExport' ? 'default.xlsx' : 'default.csv') : excelExportProperties.fileName;
                     if (!this.isBlobData) {
                         Save.save(fileName, buffer as Blob);
-                    } else {
-                        const exportCompleteEventArgs: ExportCompleteEventArgs = {
-                            type: this.currentAction === 'onExcelExport' ? 'xlsx' : 'csv',
-                            promise: this.isBlobData ? (buffer as Promise<{ blobData: Blob; }>) : null
-                        };
-                        this.isBlobData = false;
-                        this.trigger(events.exportComplete, exportCompleteEventArgs);
                     }
+                    const exportCompleteEventArgs: ExportCompleteEventArgs = {
+                        type: this.currentAction === 'onExcelExport' ? 'xlsx' : 'csv',
+                        promise: this.isBlobData ? (buffer as Promise<{ blobData: Blob; }>) : null
+                    };
+                    this.isBlobData = false;
+                    this.trigger(events.exportComplete, exportCompleteEventArgs);
                     this.triggerAfterServiceInvoke();
                 }
                 else {

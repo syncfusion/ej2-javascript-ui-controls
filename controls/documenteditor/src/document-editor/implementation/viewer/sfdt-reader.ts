@@ -1891,7 +1891,13 @@ export class SfdtReader {
                 (formFieldData as CheckBoxFormField).checked = HelperMethods.parseBoolValue(sourceData[formFieldDataProperty[keywordIndex]][checkBoxProperty[keywordIndex]][checkedProperty[keywordIndex]]);
             } else {
                 formFieldData = new DropDownFormField();
-                (formFieldData as DropDownFormField).dropdownItems = sourceData[formFieldDataProperty[keywordIndex]][dropDownListProperty[keywordIndex]][dropDownItemsProperty[keywordIndex]];
+                const sourceItems: any = sourceData[formFieldDataProperty[keywordIndex]][dropDownListProperty[keywordIndex]][dropDownItemsProperty[keywordIndex]];
+                for (let i = 0; i < sourceItems.length; i++) {
+                    if ((formFieldData as DropDownFormField).dropdownItems.length > 24) {
+                        break;
+                    }
+                    (formFieldData as DropDownFormField).dropdownItems.push(sourceItems[i]);
+                }
                 (formFieldData as DropDownFormField).selectedIndex = sourceData[formFieldDataProperty[keywordIndex]][dropDownListProperty[keywordIndex]][selectedIndexProperty[keywordIndex]];
             }
             formFieldData.name = sourceData[formFieldDataProperty[keywordIndex]][nameProperty[keywordIndex]];

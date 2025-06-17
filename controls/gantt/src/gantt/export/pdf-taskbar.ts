@@ -1715,9 +1715,10 @@ export class PdfGanttTaskbarCollection {
                     }
                 }
             }
-            if (detail.startPoint <= left && left < detail.endPoint && !isNullOrUndefined(this.leftTaskLabel.value)
+            const leftForLabel: number = this.isAutoFit() ? pixelToPoint(left) : left;
+            if (detail.startPoint <= leftForLabel && leftForLabel < detail.endPoint && !isNullOrUndefined(this.leftTaskLabel.value)
                 && !this.leftTaskLabel.isCompleted) {
-                const result: PdfStringLayoutResult = this.getWidth(this.leftTaskLabel.value, detail.endPoint - left, 15);
+                const result: PdfStringLayoutResult = this.getWidth(this.leftTaskLabel.value, detail.endPoint - leftForLabel, 15);
                 let font: PdfFont = new PdfStandardFont(this.fontFamily, 9);
                 let customizedFont : PdfFont;
                 const ganttStyle : IGanttStyle = this.parent.pdfExportModule['helper']['exportProps'].ganttStyle;

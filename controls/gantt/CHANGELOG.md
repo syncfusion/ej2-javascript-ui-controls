@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 29.2.11 (2025-06-17)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I732237` - The issue of timelines and labels rendering in incorrect positions when using `gridWidth` and `chartWidth` has been resolved
+
 ## 29.2.10 (2025-06-10)
 
 ### GanttChart

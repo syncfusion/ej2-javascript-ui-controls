@@ -60,7 +60,6 @@ export class PdfAnnotationCollection {
      * ```
      */
     get count(): number {
-        this._getAnnotations();
         return this._annotations.length;
     }
     /**
@@ -354,10 +353,7 @@ export class PdfAnnotationCollection {
         if (dictionary && dictionary.has('Subtype')) {
             const key: _PdfName = dictionary.get('Subtype');
             if (key && key.name === 'Popup' && dictionary.has('Parent')) {
-                const parentEntry: _PdfReference = dictionary.getRaw('Parent');
-                if (parentEntry && parentEntry instanceof _PdfReference && this._annotations.indexOf(parentEntry) === -1) {
-                    return true;
-                }
+                return true;
             }
         }
         return false;

@@ -7432,3 +7432,62 @@ describe('EJ2-915005: The cell is not highlighted when selecting a row using the
         gridObj = null;
     });
 });
+
+describe('EJ2-960012: Previously selected records gets removed in getSelectedRecords when clicking selectAll after filtering', () => {
+    let gridObj: Grid;
+    let rows: any;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                selectionSettings: {
+                    persistSelection: true,
+                    type: 'Multiple',
+                },
+                allowFiltering: true,
+                filterSettings: { type: 'Excel' },
+                columns: [
+                    {type: 'checkbox', width: 40},
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID', freeze: 'Right' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: "ShipCountry", headerText: "Ship Country", width: 250, freeze: 'Left' },
+                ],
+            }, done);
+    });
+    
+    it('Selecting First row', (done: Function) => {
+        let rowSelected = (): void => {
+            gridObj.rowSelected = null;
+            done();
+        };
+        gridObj.rowSelected = rowSelected;
+        gridObj.selectRow(0);
+    });
+
+    it('Filter any value', (done: Function) => {
+        let actionComplete = (args: any): void => {
+            if (args.requestType === 'filtering') {
+                gridObj.actionComplete = null;
+                done();
+            }
+        };
+        gridObj.actionComplete = actionComplete;
+        gridObj.filterByColumn('ShipCountry', 'contains', 'Brazil');
+    });
+
+    it('Click header to chek the selected records length', (done: Function) => {
+        let rowSelected = (): void => {
+            expect(gridObj.getSelectedRecords().length).toBe(5);
+            gridObj.rowSelected = null;
+            done();
+        };
+        gridObj.rowSelected = rowSelected;
+        (gridObj.element.querySelector('.e-checkselectall') as HTMLElement).click();
+    });
+    
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

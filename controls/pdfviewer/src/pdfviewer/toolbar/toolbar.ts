@@ -994,23 +994,25 @@ export class Toolbar {
      * @returns {void}
      */
     public updateCurrentPage(pageIndex: number): void {
-        if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
-            if (!isBlazor()) {
-                if (!isNullOrUndefined(this.currentPageBox)) {
-                    if (this.currentPageBox.value === pageIndex) {
-                        (this.currentPageBoxElement as HTMLInputElement).value = pageIndex.toString();
+        if (this.pdfViewerBase.pageCount > 0) {
+            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
+                if (!isBlazor()) {
+                    if (!isNullOrUndefined(this.currentPageBox)) {
+                        if (this.currentPageBox.value === pageIndex) {
+                            (this.currentPageBoxElement as HTMLInputElement).value = pageIndex.toString();
+                        }
+                        this.currentPageBox.value = pageIndex;
                     }
-                    this.currentPageBox.value = pageIndex;
+                } else {
+                    //this.pdfViewer._dotnetInstance.invokeMethodAsync('OnPageChanged', pageIndex);
+                    this.pdfViewerBase.blazorUIAdaptor.pageChanged(pageIndex);
                 }
+                this.pdfViewerBase.currentPageNumber = pageIndex;
+                this.pdfViewer.currentPageNumber = pageIndex;
             } else {
-                //this.pdfViewer._dotnetInstance.invokeMethodAsync('OnPageChanged', pageIndex);
-                this.pdfViewerBase.blazorUIAdaptor.pageChanged(pageIndex);
+                this.pdfViewerBase.mobileSpanContainer.innerHTML = pageIndex.toString();
+                this.pdfViewerBase.mobilecurrentPageContainer.innerHTML = pageIndex.toString();
             }
-            this.pdfViewerBase.currentPageNumber = pageIndex;
-            this.pdfViewer.currentPageNumber = pageIndex;
-        } else {
-            this.pdfViewerBase.mobileSpanContainer.innerHTML = pageIndex.toString();
-            this.pdfViewerBase.mobilecurrentPageContainer.innerHTML = pageIndex.toString();
         }
     }
 

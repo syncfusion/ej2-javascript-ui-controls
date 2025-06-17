@@ -551,8 +551,21 @@ export function PdfiumRunner(): void {
                         let rotationAngle: number = parseInt((rotationRadian * 180 / Math.PI).toString(), 10);
                         if (charCount < totalCharacterCount) {
                             pageText += character;
-                            const currentCharacterBounds: RectAngle = new RectAngle(X, Y, Width, Height, character, rotationAngle);
-                            this.CharacterBounds.push(currentCharacterBounds);
+                            if (rotationAngle === 270 && pageRotation === 1) {
+                                const newX: number =
+                                    this.pointerToPixelConverter(charBottom) -
+                                    this.pointerToPixelConverter(cropBoxRect && cropBoxRect.x ? cropBoxRect.x : 0);
+                                const newY: number =
+                                    this.pointerToPixelConverter(charLeft);
+                                Height = this.pointerToPixelConverter(Height);
+                                const currentCharacterBounds: RectAngle = new RectAngle(newX, newY, Width, Height, character,
+                                                                                        rotationAngle);
+                                this.CharacterBounds.push(currentCharacterBounds);
+                            }
+                            else {
+                                const currentCharacterBounds: RectAngle = new RectAngle(X, Y, Width, Height, character, rotationAngle);
+                                this.CharacterBounds.push(currentCharacterBounds);
+                            }
                         }
                         if (pageRotation === 1 || pageRotation === 3) {
                             Y = (pageWidth) - this.pointerToPixelConverter(charTop);

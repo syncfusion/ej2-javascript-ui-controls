@@ -896,9 +896,9 @@ export class Table {
         const selText: Node = selection.range.startContainer;
         this.previousTableElement = ele;
         if ((event.keyCode === 40 && selText.nodeType === 3 && (selText.nextSibling && selText.nextSibling.nodeName === 'BR' ||
-            selText.parentNode && selText.parentNode.nodeName !== 'TD')) ||
+            selText.parentNode && !this.isInsideTableCell(selText.parentNode))) ||
             (event.keyCode === 38 && selText.nodeType === 3 && (selText.previousSibling && selText.previousSibling.nodeName === 'BR' ||
-                selText.parentNode && selText.parentNode.nodeName !== 'TD'))) {
+                selText.parentNode && !this.isInsideTableCell(selText.parentNode)))) {
             return;
         }
         event.preventDefault();
@@ -922,6 +922,16 @@ export class Table {
         if (ele) {
             selection.setSelectionText(this.contentModule.getDocument(), ele, ele, 0, 0);
         }
+    }
+
+    private isInsideTableCell(node: Node): boolean {
+        while (node) {
+            if (node.nodeName === 'TD') {
+                return true;
+            }
+            node = node.parentNode;
+        }
+        return false;
     }
 
     private hideTableQuickToolbar(): void {

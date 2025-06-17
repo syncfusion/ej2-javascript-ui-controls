@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+## 29.2.11 (2025-06-17)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I717795` - Fixed the duplicate text insertion issue on mobile devices when using a custom keyboard.
+- `#I725685` - Resolved the content overlap issue when copying and pasting list content inside a table cell.
+- `#I686769` - Fixed the RTL text layout problem in exported DOCX documents.
+- `#I682661` - Corrected the `navigateToNextEditingRegion` API to work properly when the selection is outside the editing region.
+- `#I728691` - Fixed the duplicate table issue in exported DOCX documents when the spell checker is enabled.
+- `#I725974` - Handled alert pop-ups when a dropdown form field list exceeds its maximum limit.
+- `#I731469` - Fixed a script error that occurred when double-clicking inside a table cell while using a custom toolbar.
+- `#I718435` - Improved performance when inserting text into an auto-fit table.
+- `#I723712` - Fixed the text offset issue that occurred when a line starts with a space character.
+- `#I731065` - Resolved the bookmark positioning issue when pressing the Enter key if a bookmark ends after a paragraph mark.
+- `#I727094` - Fixed the IME text insertion issue when using backward text selection.
+- `#I728082` - Resolved the rendering issue of list elements when the paragraph’s hidden property is enabled.
+- `#I726625` - Fixed the comment pane behaviour after disabling the restrict editing mode.
+- `#I724502`, `#I724504`, `#I725183` - Resolved various issues with content controls during paste and backspace operations.
+
 ## 29.2.10 (2025-06-10)
 
 ### DocumentEditor

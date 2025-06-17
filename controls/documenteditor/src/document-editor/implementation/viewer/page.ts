@@ -2355,7 +2355,7 @@ export class TableWidget extends BlockWidget {
         }
         tempGrid.sort((a: number, b: number) => { return a - b; });
         tempSpanDecimal.sort((a: number, b: number) => { return a - b; });
-        if (this.tableHolder.columns.length > 0 && (tempGrid.length - 1 !== this.tableHolder.columns.length || isInsertRow)) {
+        if (this.tableHolder.columns.length > 0 && (tempGrid.length !== this.tableHolder.columns.length || isInsertRow)) {
             this.updateColumnSpans(tempGrid, tableWidth, tempSpanDecimal);
         }
         this.tableCellInfo.clear();

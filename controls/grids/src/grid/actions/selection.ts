@@ -3082,6 +3082,16 @@ export class Selection implements IAction {
 
     private updatePersistSelectedData(checkState: boolean): void {
         if (this.parent.isPersistSelection) {
+            let nonFilteredSelectedData: object[] = [];
+            if (this.parent.checkAllRows === 'Check' && (this.parent.searchSettings.key.length > 0
+                || this.parent.filterSettings.columns.length > 0) && this.persistSelectedData.length
+                && !(this.parent.getDataModule().isRemote() || (!isNullOrUndefined(this.parent.dataSource)
+                && (<{result: object[]}>this.parent.dataSource).result)) && !this.isPartialSelection) {
+                const availableFilteredSelectedData: object[] = this.getAvailableSelectedData(this.persistSelectedData);
+                const filteredIds: Set<string | number> =
+                new Set(availableFilteredSelectedData.map((item: object) => item[this.primaryKey]));
+                nonFilteredSelectedData = this.persistSelectedData.filter((item: object) => !filteredIds.has(item[this.primaryKey]));
+            }
             const rows: Element[] = this.parent.getRows();
             for (let i: number = 0; i < rows.length; i++) {
                 this.updatePersistCollection(rows[parseInt(i.toString(), 10)], checkState);
@@ -3098,6 +3108,11 @@ export class Selection implements IAction {
                      && !this.isPartialSelection ?
                     this.parent.groupSettings.columns.length ? (<{ records?: Object[] }>this.getData()).records.slice() :
                         this.getData().slice() : this.persistSelectedData;
+                if (nonFilteredSelectedData.length > 0) {
+                    for (let i: number = 0; i < nonFilteredSelectedData.length; i++) {
+                        this.persistSelectedData.push(nonFilteredSelectedData[parseInt(i.toString(), 10)]);
+                    }
+                }
             }
         }
     }

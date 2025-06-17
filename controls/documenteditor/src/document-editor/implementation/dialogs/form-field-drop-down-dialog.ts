@@ -1,4 +1,4 @@
-import { createElement, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, L10n, isNullOrUndefined, updateCSSText } from '@syncfusion/ej2-base';
 import { CheckBox, Button } from '@syncfusion/ej2-buttons';
 import { DocumentEditor } from '../../document-editor';
 import { DocumentHelper } from '../viewer';
@@ -6,6 +6,7 @@ import { FieldElementBox, ElementBox, DropDownFormField } from '../viewer/page';
 import { ListView } from '@syncfusion/ej2-lists';
 import { TextBox } from '@syncfusion/ej2-inputs';
 import { SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { DialogUtility } from '@syncfusion/ej2-popups';
 
 /**
  * Form field drop-down dialog is used to modify the value in drop-down form field.
@@ -293,11 +294,34 @@ export class DropDownFormFieldDialog {
      * @returns {void}
      */
     public addItemtoList = (): void => {
-        this.dropDownItems.push((this.drpDownItemsInput as HTMLInputElement).value);
-        this.currentSelectedItem = (this.drpDownItemsInput as HTMLInputElement).value;
-        (this.drpDownItemsInput as HTMLInputElement).value = '';
-        this.enableOrDisableButton();
-        this.updateList();
+        if (this.dropDownItems.length < 25) {
+            this.dropDownItems.push((this.drpDownItemsInput as HTMLInputElement).value);
+            this.currentSelectedItem = (this.drpDownItemsInput as HTMLInputElement).value;
+            (this.drpDownItemsInput as HTMLInputElement).value = '';
+            this.enableOrDisableButton();
+            this.updateList();
+        }
+        else {
+            let localObj: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+            localObj.setLocale(this.documentHelper.owner.locale);
+            (this.drpDownItemsInput as HTMLInputElement).value = '';
+            DialogUtility.alert({
+                title: localObj.getConstant('Information'),
+                content: localObj.getConstant('DropDownLimitWarning'),
+                okButton: {
+                    text: localObj.getConstant('Ok'),
+                    cssClass: 'e-ok-center'
+                },
+                showCloseIcon: true,
+                closeOnEscape: true,
+                animationSettings: { effect: 'Zoom' },
+                position: { X: 'center', Y: 'center' }
+            });
+            const okBtn: HTMLElement = document.querySelector('.e-ok-center');
+            if (!isNullOrUndefined(okBtn)) {
+                updateCSSText(okBtn, 'margin: 0 auto; display: block');
+            }
+        }
     }
     private onRemoveItemFromListClick(): void {
         this.removeItemFromList();

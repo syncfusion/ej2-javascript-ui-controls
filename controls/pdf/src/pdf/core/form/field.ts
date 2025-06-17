@@ -899,12 +899,27 @@ export abstract class PdfField {
      * ```
      */
     get rotationAngle(): PdfRotationAngle {
-        let value: PdfRotationAngle = PdfRotationAngle.angle0;
         const widget: PdfWidgetAnnotation = this.itemAt(this._defaultIndex);
-        if (widget) {
-            value = widget.rotationAngle;
+        if (!widget) {
+            return PdfRotationAngle.angle0;
         }
-        return value;
+        const mkDictionary: _PdfDictionary = widget._dictionary.get('MK');
+        if (mkDictionary.has('R')) {
+            const rotationValue: number = mkDictionary.get('R');
+            if (rotationValue !== undefined) {
+                switch (rotationValue) {
+                case 90:
+                    return PdfRotationAngle.angle90;
+                case 180:
+                    return PdfRotationAngle.angle180;
+                case 270:
+                    return PdfRotationAngle.angle270;
+                default:
+                    return PdfRotationAngle.angle0;
+                }
+            }
+        }
+        return widget.rotationAngle;
     }
     /**
      * Gets a value indicating whether the field is allow to export data or not.

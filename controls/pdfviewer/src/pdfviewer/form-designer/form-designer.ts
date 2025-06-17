@@ -996,7 +996,6 @@ export class FormDesigner {
                                      currentData.lineBound;
                                     this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)].FormField.zoomValue = zoomValue;
                                 }
-                                this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
                             }
                         }
                     }
@@ -1014,6 +1013,7 @@ export class FormDesigner {
                         }
                     }
                 }
+                this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formDesigner');
             }
         }
     }

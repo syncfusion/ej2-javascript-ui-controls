@@ -283,9 +283,9 @@ export class StatusBar {
     }
     public updatePageNumberOnViewChange(args: ViewChangeEventArgs): void {
         if (this.documentEditor.selectionModule
-            && this.documentEditor.selectionModule.startPage >= args.startPage
-            && this.documentEditor.selectionModule.startPage <= args.endPage) {
-            this.startPage = this.documentEditor.selectionModule.startPage;
+            && this.documentEditor.selectionModule.endPage >= args.startPage
+            && this.documentEditor.selectionModule.endPage <= args.endPage) {
+            this.startPage = this.documentEditor.selectionModule.endPage;
         } else {
             this.startPage = args.startPage;
         }

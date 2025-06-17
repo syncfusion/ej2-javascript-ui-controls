@@ -2694,7 +2694,8 @@ export class Layout {
             }
             this.moveToNextLine(element.line);
             if (text === '\v' && isNullOrUndefined(element.nextNode)) {
-                this.layoutEmptyLineWidget(paragraph, true, line, true);
+                // Need to add empty line widget for line's paragraph because paragraph may be splitted. So passed the arguement as line's paragraph
+                this.layoutEmptyLineWidget(line.paragraph, true, line, true);
             } else if ((text === '\f' || text === String.fromCharCode(14)) && this.viewer instanceof PageLayoutViewer && !(element.line.paragraph.containerWidget instanceof TableCellWidget)) {
                 let isRTLLayout: boolean = this.isRTLLayout;
                 this.isRTLLayout = false;
@@ -4159,7 +4160,7 @@ export class Layout {
             } else {
                 let firstElement: ElementBox = lineWidget.children[0];
                 while (firstElement) {
-                    if (!firstElement.characterFormat.hidden) {
+                    if (firstElement.isValidNodeForTracking && !firstElement.characterFormat.hidden) {
                         considerAsHidden = false;
                         break;
                     } else {
@@ -4179,7 +4180,8 @@ export class Layout {
         } else {
             element.text = this.getListNumber(paragraph.paragraphFormat.listFormat);
         }
-        if(currentListLevel.numberFormat === '' && paragraph.paragraphFormat.tabs.length === 0) {
+        let isRenderList: boolean = currentListLevel.paraStyleName !== "Normal" && paragraph.paragraphFormat.tabs.length > 0 && currentListLevel.listLevelPattern !== 'None';
+        if(currentListLevel.numberFormat === '' && !isRenderList) {
             return;
         }
         this.viewer.updateClientWidth(-HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent));
@@ -5069,7 +5071,7 @@ export class Layout {
         let lineY: number = para.y;
         if (!para.isEmpty()) {
             let lineWidget: LineWidget = para.firstChild as LineWidget;
-            while (lineWidget !== line) {
+            while (!isNullOrUndefined(lineWidget) && lineWidget !== line) {
                 lineY = lineY + lineWidget.height + lineWidget.marginTop;
                 lineWidget = lineWidget.nextLine;
             }
@@ -7788,6 +7790,7 @@ export class Layout {
                 }
                 splittedCell = this.getSplittedWidget(bottom, true, tableCollection, rowCollection, cellWidget, footNoteCollection);
                 splittedWidget.childWidgets.splice(0, 0, splittedCell);
+                splittedCell.rightBorderWidth = 0;
                 splittedCell.containerWidget = splittedWidget;
                 previousColumnIndex--;
             }
@@ -9634,7 +9637,7 @@ export class Layout {
                     const tableHolderBeforeBuildColumn: WTableHolder = parentTable.tableHolder.clone();
                     let isSameColumnWidth: boolean = true;
                     if (parentTable.tableFormat.allowAutoFit) {
-                        const tableWidget: TableWidget = parentTable.getSplitWidgets().length > 1 ? (parentTable.clone()).combineWidget(this.viewer) as TableWidget : parentTable;
+                        const tableWidget: TableWidget = parentTable;
                         tableWidget.isGridUpdated = false;
                         tableWidget.buildTableColumns();
                         tableWidget.isGridUpdated = true;
@@ -10817,7 +10820,7 @@ export class Layout {
 
     //#region Shifting
 
-    public shiftLayoutedItems(reLayout: boolean, isMultiColumnShift?: boolean): void {
+    public shiftLayoutedItems(reLayout: boolean, isMultiColumnShift?: boolean, isSkiptUpdateScrollBars?: boolean): void {
         if (isNullOrUndefined(this.documentHelper.blockToShift) || isNullOrUndefined(this.documentHelper.blockToShift.containerWidget) || (this.viewer.owner.editorModule && this.viewer.owner.editorModule.restrictLayout) || !this.viewer.owner.enableLayout) {
             this.documentHelper.blockToShift = undefined;
             this.checkAndShiftEndnote();
@@ -10967,7 +10970,7 @@ export class Layout {
         if (!(block.bodyWidget instanceof FootNoteWidget) && !this.isRelayoutFootnote && block.bodyWidget.page.endnoteWidget) {
             this.checkAndShiftEndnote(true);
         }
-        if (((!this.documentHelper.owner.enableLockAndEdit && !this.documentHelper.owner.enableHeaderAndFooter) || !reLayout) && !this.isMultiColumnSplit) {
+        if (((!this.documentHelper.owner.enableLockAndEdit && !this.documentHelper.owner.enableHeaderAndFooter) || !reLayout) && !this.isMultiColumnSplit && !isSkiptUpdateScrollBars) {
             viewer.updateScrollBars();
         }
         // }

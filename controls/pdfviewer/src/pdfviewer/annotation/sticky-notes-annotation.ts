@@ -1090,11 +1090,10 @@ export class StickyNotesAnnotation {
                         subType = this.pdfViewer.annotationModule.textMarkupAnnotationModule.
                             currentTextMarkupAnnotation.textMarkupAnnotationType;
                     }
-                    else {
-                        subType = currentAnnotation.shapeAnnotationType;
-                    }
-                    subject = currentAnnotation.subject;
+                } else {
+                    subType = currentAnnotation.shapeAnnotationType;
                 }
+                subject = currentAnnotation.subject;
             }
             const modifiedAuthor: string = (args.value !== args.prevValue) ? this.updatedAuthor(type, subType, subject) : span.textContent;
             span.textContent = modifiedAuthor;
@@ -1182,23 +1181,23 @@ export class StickyNotesAnnotation {
             }
         }
         else if (type === 'shape_measure') {
-            if ((annotType === 'Line' && subject === 'Line')) {
+            if ((annotType === 'Line' && (subject === 'Line' || subject === 'Distance calculation'))) {
                 author = (this.pdfViewer.distanceSettings.author !== 'Guest') ? this.pdfViewer.distanceSettings.author :
                     this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
             }
-            else if ((annotType === 'Polyline' && subject === 'Arrow')) {
+            else if ((annotType === 'Polyline' && (subject === 'Arrow' || subject === 'Perimeter calculation'))) {
                 author = (this.pdfViewer.perimeterSettings.author !== 'Guest') ? this.pdfViewer.perimeterSettings.author :
                     this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
             }
-            else if ((annotType === 'Circle' && subject === 'Circle')) {
+            else if ((annotType === 'Circle' && (subject === 'Circle' || subject === 'Radius calculation'))) {
                 author = (this.pdfViewer.radiusSettings.author !== 'Guest') ? this.pdfViewer.radiusSettings.author :
                     this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
             }
-            else if ((annotType === 'Polygon' && subject === 'Rectangle')) {
+            else if ((annotType === 'Polygon' && (subject === 'Rectangle' || subject === 'Area calculation'))) {
                 author = (this.pdfViewer.areaSettings.author !== 'Guest') ? this.pdfViewer.areaSettings.author :
                     this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
             }
-            else if ((annotType === 'Polygon' && subject === 'Polygon')) {
+            else if ((annotType === 'Polygon' && (subject === 'Polygon' || subject === 'Volume calculation'))) {
                 author = (this.pdfViewer.volumeSettings.author !== 'Guest') ? this.pdfViewer.volumeSettings.author :
                     this.pdfViewer.annotationSettings.author ? this.pdfViewer.annotationSettings.author : 'Guest';
             }
@@ -2666,7 +2665,12 @@ export class StickyNotesAnnotation {
         if (!date) {
             date = new Date();
         }
-        this.globalize = new Internationalization();
+        if (this.pdfViewer.locale !== 'en-US') {
+            this.globalize = new Internationalization('en-US');
+        }
+        else {
+            this.globalize = new Internationalization();
+        }
         const dateOptions: object = { format: 'M/d/yyyy h:mm:ss a', type: 'dateTime'};
         const dateTime: string = this.globalize.formatDate(new Date(date), dateOptions);
         return dateTime;
@@ -2677,9 +2681,26 @@ export class StickyNotesAnnotation {
             date = new Date();
         }
         this.globalize = new Internationalization();
-        const dateOptions: object = { format: this.pdfViewer.dateTimeFormat, type: 'dateTime'};
-        const dateTime: string = this.globalize.formatDate(new Date(date), dateOptions);
-        return dateTime;
+        if (this.pdfViewer.dateTimeFormat === 'M/d/yyyy h:mm:ss a' && this.pdfViewer.locale !== 'en-US') {
+            const dateFormat: string = this.globalize.getDatePattern({
+                skeleton: 'medium',
+                type: 'date'
+            });
+            const timeFormat: string = this.globalize.getDatePattern({
+                skeleton: 'medium',
+                type: 'time'
+            });
+            const dateOptions: object = { format: dateFormat, type: 'date' };
+            const timeOptions: object = { format: timeFormat, type: 'time' };
+            const convertedDate: string = this.globalize.formatDate(new Date(date), dateOptions);
+            const convertedTime: string = this.globalize.formatDate(new Date(date), timeOptions);
+            return convertedDate + ' ' + convertedTime;
+        }
+        else {
+            const dateOptions: object = { format: this.pdfViewer.dateTimeFormat, type: 'dateTime' };
+            const dateTime: string = this.globalize.formatDate(new Date(date), dateOptions);
+            return dateTime;
+        }
     }
 
     private modifyCommentsProperty(text: string, annotName: string, parentElement: string, previousValue?: any, newAuthor?: string): void {
@@ -3487,9 +3508,26 @@ export class StickyNotesAnnotation {
 
     private convertUTCDateToLocalDate(date: any): string{
         this.globalize = new Internationalization();
-        const dateOptions: object = { format: this.pdfViewer.dateTimeFormat, type: 'dateTime'};
-        const dateTime: string = this.globalize.formatDate(new Date(date), dateOptions);
-        return dateTime;
+        if (this.pdfViewer.dateTimeFormat === 'M/d/yyyy h:mm:ss a' && this.pdfViewer.locale !== 'en-US') {
+            const dateFormat: string = this.globalize.getDatePattern({
+                skeleton: 'medium',
+                type: 'date'
+            });
+            const timeFormat: string = this.globalize.getDatePattern({
+                skeleton: 'medium',
+                type: 'time'
+            });
+            const dateOptions: object = { format: dateFormat, type: 'date' };
+            const timeOptions: object = { format: timeFormat, type: 'time' };
+            const convertedDate: string = this.globalize.formatDate(new Date(date), dateOptions);
+            const convertedTime: string = this.globalize.formatDate(new Date(date), timeOptions);
+            return convertedDate + ' ' + convertedTime;
+        }
+        else {
+            const dateOptions: object = { format: this.pdfViewer.dateTimeFormat, type: 'dateTime' };
+            const dateTime: string = this.globalize.formatDate(new Date(date), dateOptions);
+            return dateTime;
+        }
     }
 
     private updateModifiedDate(titleContainer: any): void {

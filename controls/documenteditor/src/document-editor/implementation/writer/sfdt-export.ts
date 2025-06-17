@@ -58,7 +58,10 @@ export class SfdtExport {
     private endBlock: BlockWidget;
     private nestedBlockContent: boolean = false;
     private nestedBlockEnabled: boolean = false;
-    private blocks: any = [];
+    /**
+     * @private
+     */
+    public blocks: any = [];
     private contentInline: any = [];
     private isContentControl: boolean = false;
     private isBlockClosed: boolean = true;
@@ -884,7 +887,7 @@ export class SfdtExport {
                     && element.previousNode.characterFormat.isEqualFormat(element.characterFormat)
                     && element.previousNode.scriptType === element.scriptType
                     && element.revisions.length === 0 && element.previousNode.revisions.length === 0
-                    && (element.previousNode.text.length > 0 && element.previousNode.text[element.previousNode.text.length - 1] !== '-')
+                    && (element.previousNode.text.length > 0 && element.previousNode.text[element.previousNode.text.length - 1] !== '-'  && element.previousNode.text[element.previousNode.text.length - 1] !== '/')
                     && inlines.length > 0) {
                     let elementText: string = element.text;
                     if (!this.isWriteEndFootNote && (isNullOrUndefined(this.owner.editorModule) || !this.owner.editorModule.isPaste)) {

@@ -84,9 +84,11 @@ export class ExportHelper {
         let gridWidth: number;
         if (this.exportProps.fitToWidthSettings.gridWidth) {
             gridWidth = parseInt(this.exportProps.fitToWidthSettings.gridWidth.split('%')[0], 10);
+            gridWidth = gridWidth > 100 ? 100 : gridWidth;
         }
         if (this.exportProps.fitToWidthSettings.chartWidth) {
             chartsideWidth = parseInt(this.exportProps.fitToWidthSettings.chartWidth.split('%')[0], 10);
+            chartsideWidth = chartsideWidth > 100 ? 100 : chartsideWidth;
         }
         else {
             if (this.exportProps.fitToWidthSettings.gridWidth) {

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 29.2.11 (2025-06-17)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I724481` - Fixed an issue where the current page number not reset properly when `unload` method called.
+- `#I723913` - Resolved an issue where text search and `findText` functionalities are not working with the provided document.
+- `#I729976` - Fixed an issue where the form fields lagged when zooming in and out with a large number of fields.
+- `#I728939` - Fixed an issue where the date time format is not proper when using the `loadCldr` method.
+- `#I732950` - Resolved an issue where a memory leak occurred after destroying the PDF viewer.
+
 ## 29.2.10 (2025-06-10)
 
 ### PDF Viewer

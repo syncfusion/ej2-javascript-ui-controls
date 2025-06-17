@@ -107,6 +107,7 @@ export class PdfPage {
             if (typeof this._annotations === 'undefined') {
                 this._annotations = new PdfAnnotationCollection([], this._crossReference, this);
             }
+            this._annotations._getAnnotations();
         }
         return this._annotations;
     }

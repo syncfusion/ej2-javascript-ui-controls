@@ -1841,9 +1841,11 @@ export class TextSearch {
         let top: number = 0;
         let left: number = 0;
         let isRTL: boolean = false;
+        let charRotation: number = 0;
         if (characterBounds[parseInt(count.toString(), 10)]) {
             left = characterBounds[parseInt(count.toString(), 10)].X;
             top = characterBounds[parseInt(count.toString(), 10)].Y;
+            charRotation = characterBounds[parseInt(count.toString(), 10)].Rotation;
         }
         let v: number = 0;
         if ((count - initial) !== 0) {
@@ -1885,7 +1887,15 @@ export class TextSearch {
                 if (characterBounds[parseInt(count.toString(), 10)]) {
                     if (pageText && (pageText[parseInt(count.toString(), 10)] === '' || pageText[parseInt(count.toString(), 10)] === ' ' || pageText[parseInt(count.toString(), 10)] === '\r' || pageText[parseInt(count.toString(), 10)] === '\n') && (characterBounds[parseInt(count.toString(), 10)].Width) === 0) {
                         width = (characterBounds[count - 1].X - left) + characterBounds[count - 1].Width;
-                    } else {
+                    }
+                    else if ((characterBounds[parseInt(count.toString(), 10)].Text === '' ||
+                             characterBounds[parseInt(count.toString(), 10)].Text === ' ' ||
+                             characterBounds[parseInt(count.toString(), 10)].Text === '\r' ||
+                             characterBounds[parseInt(count.toString(), 10)].Text === '\n') &&
+                             ((characterBounds[parseInt(count.toString(), 10)].Width) === 0)) {
+                        width = (characterBounds[count - 1].X - left) + characterBounds[count - 1].Width;
+                    }
+                    else {
                         width = (characterBounds[parseInt(count.toString(), 10)].X - left);
                     }
                 } else {
@@ -1912,13 +1922,14 @@ export class TextSearch {
             }
             width = width + widthDifference;
         }
-        this.createSearchTextDiv(index, pageIndex, height, width, top, left, className, isContinuation, divCount, nestedIndex);
+        this.createSearchTextDiv(index, pageIndex, height, width, top, left, className, isContinuation, divCount, nestedIndex,
+                                 charRotation);
         return count;
     }
 
     private createSearchTextDiv(index: number, pageIndex: number, height: number, width: number,
                                 top: number, left: number, className: string, isContinuation: boolean,
-                                divCount: number, nestedIndex: any): void {
+                                divCount: number, nestedIndex: any, charRotation?: number): void {
         let idString: string = '_searchtext_' + pageIndex + '_' + index;
         if (isContinuation) {
             idString += '_' + divCount;
@@ -1927,7 +1938,7 @@ export class TextSearch {
         if (nestedIndex !== undefined && this.pdfViewerBase.getElement(idString) && !nestedElement[parseInt(nestedIndex.toString(), 10)]) {
             const textDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + idString + '_' + nestedIndex });
             const pageDetails: any = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)];
-            this.calculateBounds(textDiv, height, width, top, left, pageDetails);
+            this.calculateBounds(textDiv, height, width, top, left, pageDetails, charRotation);
             textDiv.classList.add(className);
             if (className === 'e-pv-search-text-highlight') {
                 textDiv.style.backgroundColor = (this.pdfViewer.textSearchColorSettings.searchHighlightColor === '') ? '#fdd835' : this.pdfViewer.textSearchColorSettings.searchHighlightColor;
@@ -1945,7 +1956,7 @@ export class TextSearch {
         if (!this.pdfViewerBase.getElement(idString)) {
             const textDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + idString });
             const pageDetails: any = this.pdfViewerBase.pageSize[parseInt(pageIndex.toString(), 10)];
-            this.calculateBounds(textDiv, height, width, top, left, pageDetails);
+            this.calculateBounds(textDiv, height, width, top, left, pageDetails, charRotation);
             textDiv.classList.add(className);
             if (className === 'e-pv-search-text-highlight') {
                 textDiv.style.backgroundColor = (this.pdfViewer.textSearchColorSettings.searchHighlightColor === '') ? '#fdd835' : this.pdfViewer.textSearchColorSettings.searchHighlightColor;
@@ -1962,7 +1973,8 @@ export class TextSearch {
         }
     }
 
-    private calculateBounds(textDiv: HTMLElement, height: number, width: number, top: number, left: number, pageDetails: any): void {
+    private calculateBounds(textDiv: HTMLElement, height: number, width: number, top: number, left: number, pageDetails: any,
+                            charRotation?: number): void {
         if (pageDetails.rotation === 0 || pageDetails.rotation === 4 || pageDetails.rotation === 2) {
             textDiv.style.height = Math.ceil(height) * this.pdfViewerBase.getZoomFactor() + 'px';
             textDiv.style.width = width * this.pdfViewerBase.getZoomFactor() + 'px';
@@ -1975,10 +1987,18 @@ export class TextSearch {
                 textDiv.style.left = left * this.pdfViewerBase.getZoomFactor() + 'px';
             }
         } else if (pageDetails.rotation === 1) {
-            textDiv.style.height = width * this.pdfViewerBase.getZoomFactor() + 'px';
-            textDiv.style.width = height * this.pdfViewerBase.getZoomFactor() + 'px';
-            textDiv.style.top = left * this.pdfViewerBase.getZoomFactor() + 'px';
-            textDiv.style.left = (pageDetails.height - top - height) * this.pdfViewerBase.getZoomFactor() + 'px';
+            if (charRotation === 270) {
+                textDiv.style.height = height * this.pdfViewerBase.getZoomFactor() + 'px';
+                textDiv.style.width = width * this.pdfViewerBase.getZoomFactor() + 'px';
+                textDiv.style.left = left * this.pdfViewerBase.getZoomFactor() + 'px';
+                textDiv.style.top = top * this.pdfViewerBase.getZoomFactor() + 'px';
+            }
+            else {
+                textDiv.style.height = width * this.pdfViewerBase.getZoomFactor() + 'px';
+                textDiv.style.width = height * this.pdfViewerBase.getZoomFactor() + 'px';
+                textDiv.style.top = left * this.pdfViewerBase.getZoomFactor() + 'px';
+                textDiv.style.left = (pageDetails.height - top - height) * this.pdfViewerBase.getZoomFactor() + 'px';
+            }
         }
         else if (pageDetails.rotation === 3) {
             textDiv.style.height = width * this.pdfViewerBase.getZoomFactor() + 'px';

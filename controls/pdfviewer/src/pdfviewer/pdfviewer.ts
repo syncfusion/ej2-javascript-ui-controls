@@ -9421,6 +9421,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         }
         this.viewerBase.clear(true);
         this.pageCount = 0;
+        if (Browser.isDevice && this.pageCount === 0 && !this.enableDesktopMode) {
+            this.viewerBase.mobileSpanContainer.innerHTML = this.pageCount.toString();
+            this.viewerBase.mobilecurrentPageContainer.innerHTML = this.pageCount.toString();
+        }
         if (!isBlazor()) {
             if (this.toolbarModule) {
                 this.viewerBase.pageCount = 0;

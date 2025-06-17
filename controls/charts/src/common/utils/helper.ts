@@ -1083,7 +1083,7 @@ export function getMinPointsDelta(axis: Axis | Chart3DAxis, seriesCollection: Se
                     if (delta !== 0) {
                         minDelta = Math.min(minDelta, delta);
                     }
-                } else if (axis.valueType.indexOf('DateTime') > -1) {
+                } else if (axis.valueType === 'DateTime') {
                     const timeOffset: number = seriesCollection.length === 1 ? 25920000 : 2592000000;
                     seriesMin = (series.xMin === series.xMax) ? (series.xMin - timeOffset) : series.xMin;
                     minVal = <number>xValues[0] - (!isNullOrUndefined(seriesMin) ? seriesMin : axis.visibleRange.min);
